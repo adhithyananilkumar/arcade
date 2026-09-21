@@ -26,7 +26,7 @@ import {
   type RecognitionSubjectType,
 } from '@/domains/recognition';
 import { UserService } from '@/domains/identity';
-import { channelService, type Channel } from '@/domains/channels';
+import { channelService, type ChannelSummary } from '@/domains/channels';
 import { getAvatarUrl } from '@/shared/utils/avatar';
 
 interface SubjectOption {
@@ -115,24 +115,25 @@ export function BadgeGrantDialog({
             })),
           );
         } else {
-          const channels = await channelService.getAllChannels();
+          // Asked for as a search: active organization channels matching the term, ten of them.
+          // This used to fetch every channel — 4,042 rows, 2.5 MB — and apply all three filters in
+          // the browser before keeping the first ten.
+          const page = await channelService.getChannelSummaries({
+            status: 'ACTIVE',
+            type: 'ORGANIZATION',
+            search: query.trim() || undefined,
+            size: 10,
+          });
           if (cancelled) return;
-          const needle = query.trim().toLowerCase();
           setResults(
-            channels
-              .filter(
-                (channel: Channel) =>
-                  !channel.isPersonal &&
-                  channel.status === 'ACTIVE' &&
-                  channel.name.toLowerCase().includes(needle),
-              )
-              .slice(0, 10)
-              .map((channel: Channel) => ({
-                id: channel.id,
-                name: channel.name,
-                secondary: channel.handle ? `@${channel.handle}` : 'No handle yet',
-                avatarUrl: channel.iconUrl,
-              })),
+            page.content.map((channel: ChannelSummary) => ({
+              id: channel.id,
+              name: channel.name,
+              // The listing endpoint does not resolve the handle registry, so this has always
+              // rendered the placeholder. Left as-is rather than made to look resolved.
+              secondary: 'No handle yet',
+              avatarUrl: channel.iconUrl,
+            })),
           );
         }
       } catch {

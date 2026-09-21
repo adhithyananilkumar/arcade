@@ -2,8 +2,18 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { Channel, ChannelContentItem, channelService } from "@/domains/channels";
+import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
+import {
+  Channel,
+  ChannelContentItem,
+  ChannelSummary,
+  channelService,
+  useChannelCountsQuery,
+  useChannelSummariesQuery,
+  useInvalidateChannelAdmin,
+} from "@/domains/channels";
 import { 
   Search, 
   Check, 
@@ -48,26 +58,52 @@ export function PendingChannels() {
   const [viewMode, setViewMode] = useState<ViewMode>('TABLE');
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const typeDropdownRef = useRef<HTMLDivElement>(null);
-  const [pendingChannels, setPendingChannels] = useState<Channel[]>([]);
-  const [allChannels, setAllChannels] = useState<Channel[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
+  const invalidateChannelAdmin = useInvalidateChannelAdmin();
+  // The row that is open in the detail drawer. Rows are summaries, so the drawer fetches that one
+  // channel in full — the applicant KYC profile, purpose and owner phone it shows are exactly the
+  // fields the listing no longer carries for all 4,042 rows.
+  const [selectedRow, setSelectedRow] = useState<ChannelSummary | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Pagination
+  // Pagination. `page` stays 1-based for the existing controls; the API is 0-based.
   const [page, setPage] = useState(1);
   const pageSize = 8;
 
+  // Debounced so typing in the search box does not issue a request per keystroke now that search
+  // is served by the backend.
+  const debouncedSearch = useDebouncedValue(searchQuery.trim(), 300);
+
+  // The table is served one page at a time, filtered and searched in the database. All of that
+  // used to happen in the browser over the full channel list — 2.5 MB for 4,042 rows plus 775 KB
+  // of pending requests, to render eight.
+  const {
+    channels: pageChannels,
+    totalElements,
+    totalPages: serverTotalPages,
+    isLoading: loading,
+    isFetching,
+  } = useChannelSummariesQuery({
+    status: statusFilter === 'ALL' ? undefined : statusFilter,
+    type: typeFilter === 'ALL' ? undefined : typeFilter,
+    search: debouncedSearch || undefined,
+    page: page - 1,
+    size: pageSize,
+  });
+
+  // The stat tiles show every status at once, so they come from a grouped count rather than from
+  // counting over a list that would then have to be complete.
+  const counts = useChannelCountsQuery();
+
   // Dialog states
-  const [suspendTarget, setSuspendTarget] = useState<Channel | null>(null);
+  const [suspendTarget, setSuspendTarget] = useState<ChannelSummary | null>(null);
   const [suspendReason, setSuspendReason] = useState('');
   const [suspendForce, setSuspendForce] = useState(false);
-  const [rejectTarget, setRejectTarget] = useState<Channel | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<ChannelSummary | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [rejectSubmitting, setRejectSubmitting] = useState(false);
   const [channelContent, setChannelContent] = useState<ChannelContentItem[]>([]);
   const [contentLoading, setContentLoading] = useState(false);
-  const [hardDeleteTarget, setHardDeleteTarget] = useState<Channel | null>(null);
+  const [hardDeleteTarget, setHardDeleteTarget] = useState<ChannelSummary | null>(null);
   const [hardDeleteReason, setHardDeleteReason] = useState('');
   const [hardDeleteConfirmText, setHardDeleteConfirmText] = useState('');
   const [hardDeleteAcknowledged, setHardDeleteAcknowledged] = useState(false);
@@ -76,22 +112,6 @@ export function PendingChannels() {
   const { hasPermission } = usePermissions();
   const canApprove = hasPermission('platform.channels.manage');
   const canSuspend = hasPermission('platform.channels.manage');
-
-  const fetchChannels = async () => {
-    try {
-      setLoading(true);
-      const [pendingData, allData] = await Promise.all([
-        channelService.getPendingRequests(),
-        channelService.getAllChannels()
-      ]);
-      setPendingChannels(pendingData || []);
-      setAllChannels(allData || []);
-    } catch {
-      toast.error('Failed to load channels');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Close type dropdown on click outside
   useEffect(() => {
@@ -106,34 +126,41 @@ export function PendingChannels() {
     }
   }, [typeDropdownOpen]);
 
-  useEffect(() => {
-    fetchChannels();
-  }, []);
+  // The drawer's full record, fetched for the one channel that is open. Cached by id, so
+  // reopening a row the admin already looked at is instant.
+  const { data: selectedChannel } = useQuery({
+    queryKey: ['channel-detail', selectedRow?.id ?? null],
+    enabled: Boolean(selectedRow),
+    queryFn: () => channelService.getChannel(selectedRow!.id),
+    // Falls back to the row while the full record loads, so the drawer opens with the name, icon
+    // and status already on screen instead of empty.
+    placeholderData: selectedRow ? ({ ...selectedRow } as unknown as Channel) : undefined,
+  });
 
   useEffect(() => {
-    if (!selectedChannel) {
+    if (!selectedRow) {
       setChannelContent([]);
       return;
     }
     setContentLoading(true);
     channelService
-      .getChannelContent(selectedChannel.id)
+      .getChannelContent(selectedRow.id)
       .then(setChannelContent)
       .catch(() => toast.error('Failed to load channel content'))
       .finally(() => setContentLoading(false));
-  }, [selectedChannel]);
+  }, [selectedRow]);
 
   const handleAccept = async (id: string) => {
     try {
       await channelService.acceptChannelRequest(id);
       toast.success('Channel request accepted');
-      fetchChannels();
+      invalidateChannelAdmin();
     } catch {
       toast.error('Failed to accept request');
     }
   };
 
-  const openRejectDialog = (channel: Channel) => {
+  const openRejectDialog = (channel: ChannelSummary) => {
     setRejectTarget(channel);
     setRejectReason('');
   };
@@ -149,8 +176,8 @@ export function PendingChannels() {
       await channelService.deleteChannelRequest(rejectTarget.id, rejectReason.trim());
       toast.success('Channel request rejected — the owner has been notified');
       setRejectTarget(null);
-      setSelectedChannel(null);
-      fetchChannels();
+      setSelectedRow(null);
+      invalidateChannelAdmin();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to reject request');
     } finally {
@@ -158,7 +185,7 @@ export function PendingChannels() {
     }
   };
 
-  const openSuspendDialog = (channel: Channel) => {
+  const openSuspendDialog = (channel: ChannelSummary) => {
     setSuspendTarget(channel);
     setSuspendReason('');
     setSuspendForce(false);
@@ -178,14 +205,14 @@ export function PendingChannels() {
           : 'Channel suspended — content will be unlisted within 6 months'
       );
       setSuspendTarget(null);
-      setSelectedChannel(null);
-      fetchChannels();
+      setSelectedRow(null);
+      invalidateChannelAdmin();
     } catch {
       toast.error('Failed to suspend channel');
     }
   };
 
-  const openHardDeleteDialog = (channel: Channel) => {
+  const openHardDeleteDialog = (channel: ChannelSummary) => {
     setHardDeleteTarget(channel);
     setHardDeleteReason('');
     setHardDeleteConfirmText('');
@@ -211,8 +238,8 @@ export function PendingChannels() {
       await channelService.hardDeleteChannel(hardDeleteTarget.id, hardDeleteReason.trim(), hardDeleteConfirmText);
       toast.success('Channel permanently deleted');
       setHardDeleteTarget(null);
-      setSelectedChannel(null);
-      fetchChannels();
+      setSelectedRow(null);
+      invalidateChannelAdmin();
     } catch {
       toast.error('Failed to permanently delete channel');
     } finally {
@@ -224,76 +251,23 @@ export function PendingChannels() {
     try {
       await channelService.reactivateChannel(id);
       toast.success('Channel reactivated');
-      fetchChannels();
+      invalidateChannelAdmin();
     } catch {
       toast.error('Failed to reactivate channel');
     }
   };
 
-  // Combine and deduplicate channels list
-  const channelPool = useMemo(() => {
-    const map = new Map<string, Channel>();
-    allChannels.forEach(c => map.set(c.id, c));
-    pendingChannels.forEach(c => {
-      map.set(c.id, { ...c, status: c.status || 'PENDING' });
-    });
-    return Array.from(map.values());
-  }, [allChannels, pendingChannels]);
+  const paginatedChannels = pageChannels;
+  const totalPages = serverTotalPages || 1;
 
-  // Metric counts
-  const counts = useMemo(() => {
-    const pending = pendingChannels.length;
-    let active = 0;
-    let suspended = 0;
-    allChannels.forEach(c => {
-      if (c.status === 'ACTIVE') active++;
-      else if (c.status === 'SUSPENDED') suspended++;
-    });
-    return {
-      pending,
-      active,
-      suspended,
-      total: allChannels.length + pendingChannels.filter(p => !allChannels.some(a => a.id === p.id)).length
-    };
-  }, [allChannels, pendingChannels]);
-
-  // Filtered list
-  const filteredChannels = useMemo(() => {
-    return channelPool.filter((c) => {
-      if (statusFilter === 'PENDING' && c.status !== 'PENDING') return false;
-      if (statusFilter === 'ACTIVE' && c.status !== 'ACTIVE') return false;
-      if (statusFilter === 'SUSPENDED' && c.status !== 'SUSPENDED') return false;
-
-      if (typeFilter === 'PERSONAL' && !c.isPersonal) return false;
-      if (typeFilter === 'ORGANIZATION' && c.isPersonal) return false;
-
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const matchesName = c.name?.toLowerCase().includes(q);
-        const matchesOwner = c.ownerName?.toLowerCase().includes(q);
-        const matchesUsername = c.ownerUsername?.toLowerCase().includes(q);
-        const matchesEmail = c.ownerEmail?.toLowerCase().includes(q);
-        const matchesDesc = c.description?.toLowerCase().includes(q);
-        if (!matchesName && !matchesOwner && !matchesUsername && !matchesEmail && !matchesDesc) {
-          return false;
-        }
-      }
-      return true;
-    });
-  }, [channelPool, statusFilter, typeFilter, searchQuery]);
-
+  // Any filter change restarts at the first page — otherwise a narrower filter can leave the
+  // table on a page that no longer exists.
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, typeFilter, searchQuery]);
-
-  const totalPages = Math.ceil(filteredChannels.length / pageSize) || 1;
-  const paginatedChannels = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filteredChannels.slice(start, start + pageSize);
-  }, [filteredChannels, page, pageSize]);
+  }, [statusFilter, typeFilter, debouncedSearch]);
 
   // Clean owner subtitle display helper
-  const getOwnerSubtitle = (channel: Channel) => {
+  const getOwnerSubtitle = (channel: ChannelSummary) => {
     if (channel.ownerUsername) return `@${channel.ownerUsername}`;
     if (channel.ownerEmail && !channel.ownerEmail.startsWith('owner-') && channel.ownerEmail.includes('@')) {
       return channel.ownerEmail;
@@ -557,7 +531,7 @@ export function PendingChannels() {
             return (
               <div
                 key={channel.id}
-                onClick={() => setSelectedChannel(channel)}
+                onClick={() => setSelectedRow(channel)}
                 className="group relative flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_2px_10px_rgba(20,20,43,0.03)] hover:border-slate-300 hover:shadow-[0_8px_24px_rgba(20,20,43,0.06)] hover:-translate-y-0.5 transition-all cursor-pointer"
               >
                 {/* Card Top: Avatar, Name, Badges */}
@@ -736,7 +710,7 @@ export function PendingChannels() {
                   {/* View Details Button */}
                   <button
                     type="button"
-                    onClick={() => setSelectedChannel(channel)}
+                    onClick={() => setSelectedRow(channel)}
                     className="inline-flex size-8 items-center justify-center rounded-xl border border-slate-200/90 bg-white text-slate-400 hover:bg-slate-100 hover:text-slate-800 transition-colors shrink-0"
                     title="View details"
                   >
@@ -774,7 +748,7 @@ export function PendingChannels() {
                   return (
                     <tr
                       key={channel.id}
-                      onClick={() => setSelectedChannel(channel)}
+                      onClick={() => setSelectedRow(channel)}
                       className="group cursor-pointer hover:bg-slate-50/80 transition-all duration-150"
                     >
                       {/* Channel Column */}
@@ -963,7 +937,7 @@ export function PendingChannels() {
 
                           <button
                             type="button"
-                            onClick={() => setSelectedChannel(channel)}
+                            onClick={() => setSelectedRow(channel)}
                             className="inline-flex size-8 items-center justify-center rounded-xl border border-slate-200/90 bg-white text-slate-400 hover:text-slate-800 hover:bg-slate-100 hover:border-slate-300 transition-all"
                             title="View channel details"
                           >
@@ -981,14 +955,14 @@ export function PendingChannels() {
       )}
 
       {/* Clean Footer Pagination */}
-      {filteredChannels.length > 0 && (
+      {totalElements > 0 && (
         <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white px-5 py-3 sm:flex-row sm:items-center sm:justify-between text-xs text-slate-500 shadow-2xs">
           <div>
             Showing <span className="font-semibold text-slate-800">{(page - 1) * pageSize + 1}</span>–
             <span className="font-semibold text-slate-800">
-              {Math.min(page * pageSize, filteredChannels.length)}
+              {Math.min(page * pageSize, totalElements)}
             </span>{' '}
-            of <span className="font-semibold text-slate-800">{filteredChannels.length}</span> channels
+            of <span className="font-semibold text-slate-800">{totalElements}</span> channels
           </div>
 
           {totalPages > 1 && (
@@ -1020,7 +994,7 @@ export function PendingChannels() {
       )}
 
       {/* Modal: Channel Details */}
-      <Dialog open={!!selectedChannel} onOpenChange={(open) => !open && setSelectedChannel(null)}>
+      <Dialog open={!!selectedRow} onOpenChange={(open) => !open && setSelectedRow(null)}>
         <DialogContent className="max-w-lg p-6 sm:p-7">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-slate-900">Channel Overview</DialogTitle>
@@ -1324,7 +1298,7 @@ export function PendingChannels() {
                         type="button"
                         onClick={() => {
                           handleAccept(selectedChannel.id);
-                          setSelectedChannel(null);
+                          setSelectedRow(null);
                         }}
                         className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-[#14142b] text-white rounded-xl hover:bg-[#232735] transition-colors font-semibold text-xs shadow-sm"
                       >
@@ -1348,7 +1322,7 @@ export function PendingChannels() {
                     <button
                       type="button"
                       onClick={() => {
-                        setSelectedChannel(null);
+                        setSelectedRow(null);
                         openSuspendDialog(selectedChannel);
                       }}
                       className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-rose-50 text-rose-700 rounded-xl hover:bg-rose-100 transition-colors font-semibold text-xs border border-rose-200"
@@ -1372,7 +1346,7 @@ export function PendingChannels() {
                       type="button"
                       onClick={() => {
                         handleReactivate(selectedChannel.id);
-                        setSelectedChannel(null);
+                        setSelectedRow(null);
                       }}
                       className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold text-xs shadow-sm"
                     >
@@ -1387,7 +1361,7 @@ export function PendingChannels() {
                     <button
                       type="button"
                       onClick={() => {
-                        setSelectedChannel(null);
+                        setSelectedRow(null);
                         openHardDeleteDialog(selectedChannel);
                       }}
                       className="w-full inline-flex justify-center items-center gap-1.5 px-3 py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-xl transition-colors font-semibold text-xs border border-rose-200"

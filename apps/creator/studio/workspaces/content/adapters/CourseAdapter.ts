@@ -13,6 +13,7 @@ import type { CourseResponse, ModuleResponse, LessonResponse, QuizResponse, Badg
 import {
   createExam,
   createExamPlan,
+  deleteExamPlan,
   getCourseExam,
   createCourseExam,
   detachExamFromCourse,
@@ -253,9 +254,14 @@ export class CourseAdapter implements ContentDataAdapter {
     };
   }
 
-  async removeContainerAssessment(placementId: string): Promise<void> {
-    // Removes the assessment from this module only — the exam itself survives, as it may be placed
-    // in other courses and is a standalone content item in its own right.
+  async removeContainerAssessment(placementId: string, planId: string | null): Promise<void> {
+    // The exam itself survives — it's the course's single shared question bank, and may back other
+    // placements too. The plan, though, is created fresh for this placement alone (see
+    // addContainerAssessment) and nothing else can reference it, so it would otherwise be left
+    // behind still requiring questions and blocking course submission indefinitely.
     await removeAssessmentPlacement(placementId);
+    if (planId) {
+      await deleteExamPlan(planId);
+    }
   }
 }

@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { ChannelAuditLogEntry, channelService } from "@/domains/channels";
+import { useChannelAuditLogQuery } from "@/domains/channels";
 import { toast } from 'sonner';
 import { 
   History, 
@@ -75,8 +75,6 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 export function ChannelAuditLog() {
-  const [entries, setEntries] = useState<ChannelAuditLogEntry[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [actionFilter, setActionFilter] = useState('ALL');
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -86,21 +84,10 @@ export function ChannelAuditLog() {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
-  const fetchLogs = async () => {
-    try {
-      setLoading(true);
-      const data = await channelService.getAuditLog();
-      setEntries(data || []);
-    } catch {
-      toast.error('Failed to load audit log');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchLogs();
-  }, []);
+  // A shared query, so the Refresh button below refetches through React Query rather than holding
+  // its own copy of the list — and the panel costs nothing while it is the hidden tab.
+  const { data: auditEntries, isLoading: loading, refetch: fetchLogs } = useChannelAuditLogQuery();
+  const entries = auditEntries ?? [];
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -232,7 +219,7 @@ export function ChannelAuditLog() {
           {/* Refresh Action */}
           <button
             type="button"
-            onClick={fetchLogs}
+            onClick={() => { void fetchLogs(); }}
             title="Refresh audit log"
             className="flex size-8 items-center justify-center rounded-xl border border-slate-200/90 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-800 shadow-2xs transition-colors"
           >

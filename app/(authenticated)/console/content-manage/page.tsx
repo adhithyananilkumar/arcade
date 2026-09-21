@@ -1,7 +1,11 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
+import { useInfiniteScrollSentinel } from '@/shared/hooks/useInfiniteScrollSentinel';
+import type { SpringPage } from '@/shared/types/api.types';
 import { notFound, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
@@ -50,9 +54,7 @@ export default function ContentManagePage() {
   const { user } = useAuthStore();
   const canManageCategories = AuthorizationService.canManageCategories(user);
   const [activeTab, setActiveTab] = useState<'PUBLISHED' | 'SUSPENDED' | 'CATEGORIES'>('PUBLISHED');
-  const [courses, setCourses] = useState<ConsoleCourse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const [categories, setCategories] = useState<ConsoleCategory[]>([]);
@@ -69,18 +71,45 @@ export default function ContentManagePage() {
     notFound();
   }
 
-  const loadCourses = () => {
-    setLoading(true);
-    api
-      .get<ConsoleCourse[]>('/api/v1/console/content/courses')
-      .then(setCourses)
-      .catch((e) => setError(e.message || 'Failed to load courses'))
-      .finally(() => setLoading(false));
-  };
+  // Debounced because search is now the backend's job — otherwise each keystroke is a request.
+  const debouncedSearch = useDebouncedValue(searchQuery.trim(), 300);
+
+  // The status tab and the search term are query parameters, and rows arrive a page at a time.
+  // This table previously fetched every published and suspended course — 1,240 rows, 192 KB, with
+  // a per-course enrollment count behind it — and did both the tab filter and the search in the
+  // browser, rendering the lot with no pagination at all.
+  const coursesQuery = useInfiniteQuery({
+    queryKey: ['console-content-courses', activeTab, debouncedSearch],
+    enabled: activeTab === 'PUBLISHED' || activeTab === 'SUSPENDED',
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => {
+      const params = new URLSearchParams({ page: String(pageParam), size: '25', status: activeTab });
+      if (debouncedSearch) params.set('q', debouncedSearch);
+      return api.get<SpringPage<ConsoleCourse>>(
+        `/api/v1/console/content/courses?${params.toString()}`,
+      );
+    },
+    getNextPageParam: (last) => (last.last ? undefined : last.number + 1),
+  });
+
+  const courses = useMemo(
+    () => (coursesQuery.data?.pages ?? []).flatMap((p) => p.content),
+    [coursesQuery.data],
+  );
+  const loading = coursesQuery.isLoading;
+  const totalCourses = coursesQuery.data?.pages[0]?.totalElements ?? 0;
+
+  const { sentinelRef: coursesSentinelRef } = useInfiniteScrollSentinel({
+    hasMore: Boolean(coursesQuery.hasNextPage),
+    isLoading: coursesQuery.isFetchingNextPage,
+    onLoadMore: coursesQuery.fetchNextPage,
+  });
 
   useEffect(() => {
-    loadCourses();
-  }, []);
+    if (coursesQuery.error) {
+      setError((coursesQuery.error as Error).message || 'Failed to load courses');
+    }
+  }, [coursesQuery.error]);
 
   const loadCategories = () => {
     setCategoriesLoading(true);
@@ -151,14 +180,8 @@ export default function ContentManagePage() {
     }
   };
 
-  const filteredCourses = courses.filter(c => {
-    if (c.status !== activeTab) return false;
-    if (!searchQuery) return true;
-    
-    const query = searchQuery.toLowerCase();
-    return c.title.toLowerCase().includes(query) || 
-           c.authorName.toLowerCase().includes(query);
-  });
+  // Already filtered by status and search in the database, so these are the rows to render.
+  const filteredCourses = courses;
 
   return (
     <div className="flex w-full flex-col h-full space-y-5 pb-6">
@@ -416,6 +439,24 @@ export default function ContentManagePage() {
               </tbody>
             </table>
           </div>
+
+          {/*
+            Loads the next page as the admin scrolls. The table has no pagination controls, so
+            without this only the first 25 rows would ever be reachable.
+          */}
+          {coursesQuery.hasNextPage && (
+            <div ref={coursesSentinelRef} className="flex justify-center py-6">
+              {coursesQuery.isFetchingNextPage && (
+                <span className="text-[12px] font-medium text-slate-400">Loading more…</span>
+              )}
+            </div>
+          )}
+
+          {totalCourses > 0 && (
+            <div className="border-t border-slate-100 px-6 py-3 text-[11px] font-medium text-slate-400">
+              Showing {filteredCourses.length} of {totalCourses}
+            </div>
+          )}
         </div>
       </div>
       )}

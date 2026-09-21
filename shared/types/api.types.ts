@@ -135,6 +135,103 @@ export interface CourseReviewStats {
   reviewsCount: number;
 }
 
+/**
+ * One row of the console's exam-scheduling table — mirrors `ExamScheduleCourseResponse`.
+ *
+ * <p>Deliberately not `CourseResponse`. That screen used to read the review-queue endpoint, which
+ * returns full course aggregates — 3.1 MB for 2,431 courses — to render these seven fields.
+ *
+ * <p>`examSchedule` is the stored schedule text, parsed into slots by the editor that writes it.
+ */
+export interface ExamScheduleCourse {
+  id: string;
+  title: string;
+  authorName?: string;
+  authorAvatarUrl?: string;
+  coverImageUrl?: string;
+  examSchedule?: string;
+  status: string;
+}
+
+/**
+ * One of the caller's own courses, as a Studio card — mirrors `AuthoredCourseSummaryResponse`.
+ *
+ * <p>Deliberately not `CourseResponse`. The Studio listings used to read `/api/courses`, which
+ * builds a full aggregate per course (modules, lessons, badges, assessments and a published
+ * snapshot each). `moduleCount` replaces the module tree those pages loaded only to render
+ * "N modules · Self-paced learning" when a course has no description.
+ *
+ * <p>Carries `status` because these are the author's own courses and Studio is where they see what
+ * is in review — unlike the public catalogue summary, which must not leak workflow state.
+ */
+export interface AuthoredCourseSummary {
+  id: string;
+  title: string;
+  description?: string;
+  coverImageUrl?: string;
+  authorName?: string;
+  status: ContentStatus;
+  moduleCount: number;
+  updatedAt: string;
+}
+
+/** Tab counts for the exam-scheduling table. */
+export interface ExamScheduleCounts {
+  all: number;
+  scheduled: number;
+  unscheduled: number;
+}
+
+/**
+ * One page of results, mirroring Spring Data's `Page` serialization.
+ *
+ * <p>Field names are Spring's own, verified against a live response: the current page index is
+ * `number`, not `page`. `domains/community` declares its own `PagedResponse` with a `page` field
+ * for an endpoint that returns a hand-rolled DTO; this is the shape a Spring `Page` actually has,
+ * and it lives in `shared` so any domain can use it without importing across domain boundaries.
+ */
+export interface SpringPage<T> {
+  content: T[];
+  number: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+}
+
+/**
+ * One course as a catalogue listing renders it — `GET /api/v1/public/courses`.
+ *
+ * <p>Mirrors the backend's `CourseSummaryResponse`. Deliberately not `CourseResponse`: that is the
+ * full editing aggregate, and serving it for listings meant this endpoint returned 1.68 MB of
+ * module trees, assessments and workflow fields for a page of cards. Where a card needs only the
+ * size of a collection, this carries the count — `moduleCount`, not `modules`.
+ *
+ * <p>A surface that genuinely needs a course's full detail fetches that one course by id.
+ */
+export interface CourseSummaryResponse {
+  id: string;
+  title: string;
+  description?: string;
+  coverImageUrl?: string;
+  duration?: string;
+  categoryId?: string;
+  pricingModel?: PricingModel;
+  priceAmount?: number;
+  currency?: string;
+  authorId?: string;
+  authorName?: string;
+  authorUsername?: string;
+  authorAvatarUrl?: string;
+  channel?: CourseResponse["channel"];
+  collaborators?: CourseResponse["collaborators"];
+  moduleCount: number;
+  hasExam: boolean;
+  enrollmentCount: number;
+}
+
 // ── Module ────────────────────────────────────────────────────────────────────
 
 export interface ModuleResponse {

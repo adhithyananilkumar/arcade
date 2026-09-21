@@ -7,6 +7,8 @@ import { motion, useScroll, useTransform, useMotionValue, MotionValue } from "fr
 import { CATEGORY_DATA, categoriesList, CategoryWatermark } from "@/app/(public)/explore/page";
 import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
 import { usePublicCourses } from "@/shared/hooks/usePublicCourses";
+import { usePublicCourseCounts } from "@/shared/hooks/usePublicCourseCounts";
+import { useInfiniteScrollSentinel } from "@/shared/hooks/useInfiniteScrollSentinel";
 import DotGrid from "@/components/landing/DotGrid";
 import GradientText from "@/components/landing/GradientText";
 import BorderGlow from "./BorderGlow";
@@ -1456,7 +1458,42 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
   const categoryType = mode === "events" ? "EVENTS" : mode === "articles" ? "ARTICLES" : "COURSES";
   const allPublicCategories = usePublicCategories();
   const adminCategories = allPublicCategories.filter((c) => c.type === categoryType || c.type === "ALL");
-  const publicCourses = usePublicCourses();
+
+  // Resolve the selected category to its admin id so the catalogue query can be filtered by the
+  // backend. This is the same name/slug matching the pill strip does — done once, here, rather
+  // than by comparing every downloaded course against it.
+  const selectedCategoryName = activeCategory || initialCategory || "All";
+  const selectedAdminCategory =
+    selectedCategoryName.toLowerCase() === "all"
+      ? undefined
+      : allPublicCategories.find(
+          (c) =>
+            c.name === selectedCategoryName ||
+            c.name.toLowerCase() === selectedCategoryName.toLowerCase() ||
+            slugify(c.name) === slugify(selectedCategoryName)
+        );
+
+  // Cards for the category on screen, loaded a page at a time and appended as the reader scrolls,
+  // plus every category's count for the pills. This replaced a full download of the published
+  // catalogue (1.68 MB) that existed only because both of those answers were derived in the
+  // browser. Filtering and searching change the query key, so each starts a fresh sequence from
+  // page 0 rather than appending unrelated results.
+  const {
+    courses: publicCourses,
+    hasMore: hasMoreCourses,
+    isLoadingMore: loadingMoreCourses,
+    loadMore: loadMoreCourses,
+  } = usePublicCourses({
+    categoryId: selectedAdminCategory?.id,
+    search: courseSearchQuery || undefined,
+  });
+  const publicCourseCounts = usePublicCourseCounts();
+
+  const { sentinelRef: coursesSentinelRef } = useInfiniteScrollSentinel({
+    hasMore: hasMoreCourses,
+    isLoading: loadingMoreCourses,
+    onLoadMore: loadMoreCourses,
+  });
 
   const mergedCategoriesList = [
     "All",
@@ -1476,6 +1513,9 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
         val.resources.forEach((r) => allResources.push({ ...r, category: k }));
       });
 
+      // `publicCourses` is one page, not the catalogue, so the cards shown here are this page's
+      // and the count comes from the counts endpoint. Deriving the count from the array would
+      // report the page size ("24 courses") rather than the catalogue size.
       publicCourses.forEach((c) => {
         allCourses.unshift({
           id: c.id,
@@ -1491,9 +1531,11 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
         });
       });
 
+      const staticAllCoursesCount = allCourses.length - publicCourses.length;
+
       return {
         desc: "Explore all comprehensive courses, interactive bootcamps, and guides across every department.",
-        coursesCount: allCourses.length,
+        coursesCount: staticAllCoursesCount + publicCourseCounts.total,
         gradient: "linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)",
         colors: { primary: "#2563EB", secondary: "rgba(37, 99, 235, 0.08)" },
         courses: allCourses,
@@ -1508,31 +1550,32 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
     );
     const catId = admin?.id;
 
-    const publishedForCat = publicCourses
-      .filter((c) => {
-        if (!c.categoryId) return false;
-        const matchesId = (catId && c.categoryId === catId) || (admin && c.categoryId === admin.id);
-        const matchesName = (admin && c.categoryId.toLowerCase() === admin.name.toLowerCase()) || c.categoryId.toLowerCase() === cat.toLowerCase();
-        const matchesSlug = (admin && c.categoryId.toLowerCase() === admin.slug.toLowerCase()) || c.categoryId.toLowerCase() === slugify(cat);
-        return Boolean(matchesId || matchesName || matchesSlug);
-      })
-      .map((c) => ({
-        id: c.id,
-        title: c.title,
-        duration: c.duration || "Self-Paced",
-        level: "All Levels",
-        desc: c.description || "",
-        channel: c.channel,
-        authorName: c.authorName,
-        authorAvatarUrl: c.authorAvatarUrl,
-        collaborators: c.collaborators,
-      }));
+    // The catalogue query is already filtered to the selected category by the backend, so the
+    // cards for that category are simply this page. Every other category is only being asked for
+    // its pill count here, and gets its cards when it becomes the selection.
+    //
+    // The client-side match this replaced compared `categoryId` against category names and slugs
+    // as well as ids. `categoryId` is a UUID column, so only the id comparison could ever match —
+    // the name and slug branches were dead, and the backend filter is equivalent to the live one.
+    const isSelectedCategory = cat.toLowerCase() === selectedCategoryName.toLowerCase();
+    const publishedForCat = (isSelectedCategory ? publicCourses : []).map((c) => ({
+      id: c.id,
+      title: c.title,
+      duration: c.duration || "Self-Paced",
+      level: "All Levels",
+      desc: c.description || "",
+      channel: c.channel,
+      authorName: c.authorName,
+      authorAvatarUrl: c.authorAvatarUrl,
+      collaborators: c.collaborators,
+    }));
+    const publishedCountForCat = catId ? (publicCourseCounts.byCategory[catId] ?? 0) : 0;
 
     if (base) {
       return {
         ...base,
         courses: [...publishedForCat, ...base.courses],
-        coursesCount: base.coursesCount + publishedForCat.length,
+        coursesCount: base.coursesCount + publishedCountForCat,
       };
     }
 
@@ -1540,7 +1583,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
       if (publishedForCat.length > 0) {
         return {
           desc: `${cat} Courses & Resources`,
-          coursesCount: publishedForCat.length,
+          coursesCount: publishedCountForCat || publishedForCat.length,
           gradient: `linear-gradient(135deg, #3B82F6 0%, #3B82F6 100%)`,
           colors: { primary: "#3B82F6", secondary: "#3B82F614" },
           courses: publishedForCat,
@@ -1553,7 +1596,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
     const color = admin.color || "#64748B";
     return {
       desc: admin.description || "",
-      coursesCount: publishedForCat.length,
+      coursesCount: publishedCountForCat,
       gradient: `linear-gradient(135deg, ${color} 0%, ${color} 100%)`,
       colors: { primary: color, secondary: `${color}14` },
       courses: publishedForCat,
@@ -2723,15 +2766,31 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
         </div>
 
         {mode === "courses" && (
-          <CoursesView
-            activeData={activeData}
-            activeCategoryName={activeCategoryName}
-            router={router}
-            isEmbeddedHub={isEmbeddedHub}
-            courseSearchQuery={courseSearchQuery}
-            setCourseSearchQuery={setCourseSearchQuery}
-            courseStats={courseStats}
-          />
+          <>
+            <CoursesView
+              activeData={activeData}
+              activeCategoryName={activeCategoryName}
+              router={router}
+              isEmbeddedHub={isEmbeddedHub}
+              courseSearchQuery={courseSearchQuery}
+              setCourseSearchQuery={setCourseSearchQuery}
+              courseStats={courseStats}
+            />
+
+            {/*
+              Loads the next page of published courses as the reader approaches the end. The
+              catalogue is paged server-side, so without this only the first page would ever be
+              reachable. Rendered only when there is more to fetch, so it never sits in the layout
+              as an empty element.
+            */}
+            {hasMoreCourses && (
+              <div ref={coursesSentinelRef} className="flex justify-center py-8" aria-hidden={!loadingMoreCourses}>
+                {loadingMoreCourses && (
+                  <span className="text-[13px] font-medium text-slate-400">Loading more courses…</span>
+                )}
+              </div>
+            )}
+          </>
         )}
 
         {mode === "events" && (

@@ -2,15 +2,22 @@
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Trophy } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Trophy, ArrowLeft } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { AuthService } from '@/infrastructure/auth/auth.service';
 import { ChannelStaffService, ChannelInvitation } from "@/domains/channels";
 import { useNotifications, NotificationList } from "@/domains/notifications";
 import { usePermissions } from "@/domains/identity";
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
-import { channelService, useStudioAccess } from "@/domains/channels";
+import {
+  useStudioAccess,
+  useHasAnyChannel,
+  myChannelsKeys,
+  usePendingChannelRequestsQuery,
+  usePendingDeletionRequestsQuery,
+} from "@/domains/channels";
 import { platformReviewApi } from "@/domains/publishing";
 import { api } from '@/infrastructure/http/api';
 import Link from 'next/link';
@@ -18,6 +25,16 @@ import Image from 'next/image';
 import { MenuContainer, MenuItem } from '@/shared/design-system/ui/fluid-menu';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { getAvatarUrl } from '@/shared/utils/avatar';
+
+/** Shared so the accept/decline handlers can invalidate exactly this query. */
+const NAVBAR_INVITATIONS_KEY = ['my-channel-invitations'] as const;
+
+/**
+ * How many pending items the console's task menu lists. It is a "needs attention" dropdown, not a
+ * queue view — the queue itself lives at /console/reviews — so there is no reason to fetch beyond
+ * what the menu shows.
+ */
+const ADMIN_TASK_LIMIT = 10;
 
 export default function LearnerNavbar() {
   const { user, clearAuth } = useAuthStore();
@@ -27,7 +44,6 @@ export default function LearnerNavbar() {
   
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
   // The bell shows only what is still unread. It is a "what needs my attention right now"
   // surface, not a history: re-showing notifications the user has already read pushed the new
   // ones off the bottom of a 420px panel, which is exactly when they are least likely to be seen.
@@ -35,12 +51,98 @@ export default function LearnerNavbar() {
   const { notifications, unreadCount, markAllRead, markRead, refresh } = useNotifications({
     status: 'unread',
   });
-  const [hasChannels, setHasChannels] = useState(false);
-  const [collaboratedEventId, setCollaboratedEventId] = useState<string | null>(null);
-  const [hasMultipleCollabs, setHasMultipleCollabs] = useState<boolean>(false);
-  
-  // Pending tasks for platform admins
-  const [pendingAdminTasks, setPendingAdminTasks] = useState<{ id: string; title: string; subtitle: string; href: string; type: string; timestamp: string }[]>([]);
+  const queryClient = useQueryClient();
+
+  // Everything the navbar reads is a cached query rather than a `useEffect`. This component
+  // persists across every authenticated page, and each of these was previously an uncached fetch
+  // re-issued on every full page load — two of them duplicating requests `useStudioAccess` was
+  // making on the same render for the same question.
+  const hasChannels = useHasAnyChannel() ?? false;
+
+  const { data: invitations = [] } = useQuery<ChannelInvitation[]>({
+    queryKey: NAVBAR_INVITATIONS_KEY,
+    queryFn: () => ChannelStaffService.getMyInvitations(),
+    staleTime: 60 * 1000,
+  });
+
+  const { data: collaborations = [] } = useQuery<any[]>({
+    queryKey: ['my-event-collaborations'],
+    queryFn: () => api.get<any[]>('/api/v1/events/my-collaborations'),
+    staleTime: 5 * 60 * 1000,
+  });
+  const collaboratedEventId = collaborations.length > 0 ? collaborations[0].id : null;
+  const hasMultipleCollabs = collaborations.length > 1;
+
+  // The pending-task menu is derived from the *shared* admin queries rather than a composite
+  // query of its own. A composite one still worked, but its fetches happened inside its own query
+  // function, so they could not deduplicate against the identical requests `/console/channels`
+  // makes — that page issued `delete-requests` three times and `requests` twice on one load.
+  // Reading the same keys the page reads means the navbar adds nothing on top of it.
+  const canManageChannels = AuthorizationService.canManageChannels(user);
+  const canReviewContent = AuthorizationService.canReviewContent(user);
+
+  // Only as many as the menu shows. Unpaged this returned all 1,235 pending requests — 775 KB —
+  // on every authenticated page load.
+  const { requests: pendingChannelRequests } = usePendingChannelRequestsQuery(
+    { page: 0, size: ADMIN_TASK_LIMIT },
+    { enabled: canManageChannels },
+  );
+  const { data: pendingDeletions } = usePendingDeletionRequestsQuery({
+    enabled: canManageChannels,
+  });
+  const { data: openReviews } = useQuery({
+    queryKey: ['open-platform-reviews', ADMIN_TASK_LIMIT],
+    enabled: canReviewContent,
+    staleTime: 60 * 1000,
+    // Filtered and bounded server-side. Asking for everything and keeping the OPEN ones in the
+    // browser also got the filtering wrong: the endpoint defaults to the first 25 rows of the whole
+    // queue, so a queue whose first 25 happened to be closed showed no pending tasks even when open
+    // work existed.
+    queryFn: () =>
+      platformReviewApi.list({ status: 'OPEN', page: 0, size: ADMIN_TASK_LIMIT }).catch(() => []),
+  });
+
+  const pendingAdminTasks = useMemo(() => {
+    const tasks: { id: string; title: string; subtitle: string; href: string; type: string; timestamp: string }[] = [];
+
+    pendingChannelRequests.forEach((ch) => {
+      tasks.push({
+        id: `ch-${ch.id}`,
+        title: `New Channel Request: ${ch.name}`,
+        subtitle: `Requested by ${ch.ownerName}`,
+        href: `/console/channels`,
+        type: 'channel_approval',
+        timestamp: ch.createdAt,
+      });
+    });
+
+    (pendingDeletions ?? [])
+      .filter((d) => d.status === 'PENDING')
+      .forEach((d) => {
+        tasks.push({
+          id: `del-${d.id}`,
+          title: `Channel Deletion: ${d.channelName}`,
+          subtitle: `Requested by ${d.requestedByName}`,
+          href: `/console/channels`,
+          type: 'channel_deletion',
+          timestamp: d.createdAt,
+        });
+      });
+
+    (openReviews ?? []).forEach((r) => {
+      tasks.push({
+        id: `rev-${r.id}`,
+        title: `Content Review: ${r.title}`,
+        subtitle: `Submitted by ${r.ownerName} (${r.channelName})`,
+        href: `/console/reviews/${r.id}`,
+        type: 'content_review',
+        timestamp: r.submittedAt || new Date().toISOString(),
+      });
+    });
+
+    tasks.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return tasks;
+  }, [pendingChannelRequests, pendingDeletions, openReviews]);
   
   // Intelligent header scroll behavior
   const { scrollY } = useScroll();
@@ -57,95 +159,21 @@ export default function LearnerNavbar() {
     setLastY(latest);
   });
 
-  useEffect(() => {
-    fetchInvitations();
-    fetchAdminTasks();
-    
-    Promise.all([
-      channelService.getMyChannels(),
-      channelService.getMyWorkspaces()
-    ])
-      .then(([channels, workspaces]) => {
-        setHasChannels(channels.length > 0 || workspaces.length > 0);
-      })
-      .catch(() => setHasChannels(false));
-  }, []);
-
-  const fetchInvitations = async () => {
-    try {
-      const data = await ChannelStaffService.getMyInvitations();
-      setInvitations(data);
-    } catch {
-      // silently fail for notifications
-    }
-  };
-
-  const fetchAdminTasks = async () => {
-    if (!AuthorizationService.canAccessConsole(user)) return;
-    
-    try {
-      const tasks: { id: string; title: string; subtitle: string; href: string; type: string; timestamp: string }[] = [];
-      
-      if (AuthorizationService.canManageChannels(user)) {
-        const [channels, deletions] = await Promise.all([
-          channelService.getPendingRequests().catch(() => []),
-          channelService.getPendingDeletionRequests().catch(() => [])
-        ]);
-        
-        channels.forEach(ch => {
-          tasks.push({
-            id: `ch-${ch.id}`,
-            title: `New Channel Request: ${ch.name}`,
-            subtitle: `Requested by ${ch.ownerName}`,
-            href: `/console/channels`,
-            type: 'channel_approval',
-            timestamp: ch.createdAt
-          });
-        });
-        
-        deletions.filter(d => d.status === 'PENDING').forEach(d => {
-          tasks.push({
-            id: `del-${d.id}`,
-            title: `Channel Deletion: ${d.channelName}`,
-            subtitle: `Requested by ${d.requestedByName}`,
-            href: `/console/channels`,
-            type: 'channel_deletion',
-            timestamp: d.createdAt
-          });
-        });
-      }
-      
-      if (AuthorizationService.canReviewContent(user)) {
-        const reviews = await platformReviewApi.list().catch(() => []);
-        reviews.filter(r => r.status === 'OPEN').forEach(r => {
-          tasks.push({
-            id: `rev-${r.id}`,
-            title: `Content Review: ${r.title}`,
-            subtitle: `Submitted by ${r.ownerName} (${r.channelName})`,
-            href: `/console/reviews/${r.id}`,
-            type: 'content_review',
-            timestamp: r.submittedAt || new Date().toISOString()
-          });
-        });
-      }
-      
-      tasks.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-      setPendingAdminTasks(tasks);
-    } catch {
-      // silently fail
-    }
-  };
+  /** Re-reads the invitation list after the user accepts or declines one. */
+  const refreshInvitations = () =>
+    queryClient.invalidateQueries({ queryKey: NAVBAR_INVITATIONS_KEY });
 
   const handleAcceptInvite = async (id: string) => {
     try {
       await ChannelStaffService.acceptInvitation(id);
       toast.success('Invitation accepted! You are now staff.');
-      setHasChannels(true);
+      // Accepting makes the user staff somewhere, so the shared channel queries are now stale.
+      queryClient.invalidateQueries({ queryKey: myChannelsKeys.workspaces });
     } catch (error) {
       // e.g. expired, channel suspended, already staff — the backend says which.
       toast.error(error instanceof Error ? error.message : 'Failed to accept invitation');
     } finally {
-      fetchInvitations();
+      refreshInvitations();
     }
   };
 
@@ -156,7 +184,7 @@ export default function LearnerNavbar() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to decline invitation');
     } finally {
-      fetchInvitations();
+      refreshInvitations();
     }
   };
 
@@ -181,27 +209,22 @@ export default function LearnerNavbar() {
   const { hasAccess: hasStudioAccess } = useStudioAccess();
   const showStudio = hasStudioAccess;
 
-  useEffect(() => {
-    api.get<any[]>('/api/v1/events/my-collaborations')
-      .then(res => {
-        if (res && res.length > 0) {
-          setCollaboratedEventId(res[0].id);
-          setHasMultipleCollabs(res.length > 1);
-        } else {
-          setCollaboratedEventId(null);
-          setHasMultipleCollabs(false);
-        }
-      })
-      .catch(() => {
-        setCollaboratedEventId(null);
-        setHasMultipleCollabs(false);
-      });
-  }, []);
 
   const searchParams = useSearchParams();
   const isConsole = pathname.startsWith('/console');
   const isChannelManage = pathname.includes('/channels/') && pathname.includes('/manage');
   const isChannelPage = pathname.startsWith('/channels/') && !pathname.includes('/manage');
+  const courseLearnMatch = pathname.match(/^\/learn\/([^/]+)\/learn\/?$/);
+  const courseLearnId = courseLearnMatch?.[1];
+
+  // Just the title, so this stays a light island fetch rather than the full course payload the
+  // page itself loads for the lesson tree and progress.
+  const { data: courseLearnData } = useQuery({
+    queryKey: ['course-title', courseLearnId],
+    queryFn: () => api.get<{ title: string }>(`/api/v1/public/courses/${courseLearnId}`),
+    enabled: Boolean(courseLearnId),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const channelTabLabel = (() => {
     if (!isChannelManage) return 'Overview';
@@ -241,16 +264,30 @@ export default function LearnerNavbar() {
       className="fixed top-6 left-0 right-0 z-40 flex w-full items-center justify-between gap-3 px-4 md:px-8 pointer-events-none"
     >
       {/* Left Island: Branding */}
-      <div className="pointer-events-auto flex h-12 shrink-0 items-center rounded-full px-5 apple-glass-dock shadow-none [box-shadow:none]">
-        <Link href="/" className="group flex cursor-pointer items-center">
-          <Image
-            src="/arcade.svg"
-            alt="Arcade"
-            width={85}
-            height={24}
-            className="h-6 w-auto transition-transform duration-200 group-hover:scale-[1.02]"
-          />
-        </Link>
+      <div className="pointer-events-auto flex shrink-0 items-center gap-2">
+        <div className="flex h-12 shrink-0 items-center rounded-full px-5 apple-glass-dock shadow-none [box-shadow:none]">
+          <Link href="/" className="group flex cursor-pointer items-center">
+            <Image
+              src="/arcade.svg"
+              alt="Arcade"
+              width={85}
+              height={24}
+              className="h-6 w-auto transition-transform duration-200 group-hover:scale-[1.02]"
+            />
+          </Link>
+        </div>
+
+        {/* Course learn page — separate back-to-Learning pill beside the logo */}
+        {courseLearnId && (
+          <button
+            type="button"
+            onClick={() => router.push('/learning')}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full apple-glass-dock text-slate-600 shadow-none transition-colors [box-shadow:none] hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
+            title="Back to Learning"
+          >
+            <ArrowLeft size={18} />
+          </button>
+        )}
       </div>
 
       {/* Center: Channel Manage breadcrumbs */}
@@ -278,6 +315,15 @@ export default function LearnerNavbar() {
           >
             Channels
           </Link>
+        </div>
+      )}
+
+      {/* Center: Course learn page — course title */}
+      {courseLearnId && (
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex h-12 items-center rounded-full px-5 apple-glass-dock text-xs shadow-none [box-shadow:none]">
+          <span className="max-w-[220px] truncate font-extrabold text-[#14142b] dark:text-white whitespace-nowrap">
+            {courseLearnData?.title ?? 'Course'}
+          </span>
         </div>
       )}
 

@@ -1,4 +1,5 @@
 import { api } from '@/infrastructure/http/api';
+import type { SpringPage } from '@/shared/types/api.types';
 
 /**
  * Applicant KYC-style profile captured on channel creation (both Personal and Organization
@@ -71,6 +72,46 @@ export interface Channel {
   websiteUrl?: string | null;
   /** Present when the requester/an admin may see it — the applicant's KYC submission. */
   applicantProfile?: ChannelApplicantProfile;
+}
+
+/**
+ * One channel as an administration table row — mirrors the backend's `ChannelSummaryResponse`.
+ *
+ * <p>Deliberately not `Channel`. That is the full record, and serving it for the console's tables
+ * meant every row carried a nested applicant KYC profile, the social-link list, banner, purpose,
+ * tagline, location, website and the owner's phone — 2.5 MB across 4,042 rows, none of it rendered
+ * in a table.
+ *
+ * <p>No `handle`: the listing endpoint never populated that field, so it has always arrived null.
+ * A surface needing a channel's handle should resolve it from the handle registry.
+ */
+export interface ChannelSummary {
+  id: string;
+  name: string;
+  iconUrl?: string;
+  description?: string;
+  isPersonal: boolean;
+  status: string;
+  suspensionReason?: string;
+  suspendedAt?: string;
+  forcedSuspension?: boolean;
+  contentUnlistDate?: string;
+  ownerId?: string;
+  ownerName?: string;
+  ownerUsername?: string;
+  ownerEmail?: string;
+  createdAt: string;
+}
+
+export interface ChannelSummaryQuery {
+  /** Exact channel status, or omit for any. */
+  status?: string;
+  /** 'PERSONAL' or 'ORGANIZATION', or omit for both. */
+  type?: 'PERSONAL' | 'ORGANIZATION';
+  /** Free text over channel name/description and owner name/username/email. */
+  search?: string;
+  page?: number;
+  size?: number;
 }
 
 /** Applicant-side fields collected on the invite-gated channel creation form. */
@@ -377,14 +418,45 @@ export const channelService = {
     return response;
   },
 
-  getPendingRequests: async (): Promise<Channel[]> => {
-    const response = await api.get<Channel[]>('/api/v1/channels/requests');
-    return response;
+  /**
+   * One page of the administration channel listing.
+   *
+   * <p>Filtering, searching and paging are all the backend's job here. The console used to fetch
+   * every channel — 2.5 MB for 4,042 rows — and do all three in the browser.
+   */
+  getChannelSummaries: async (
+    params: ChannelSummaryQuery = {},
+  ): Promise<SpringPage<ChannelSummary>> => {
+    const query = new URLSearchParams({
+      page: String(params.page ?? 0),
+      size: String(params.size ?? 20),
+    });
+    if (params.status) query.set('status', params.status);
+    if (params.type) query.set('type', params.type);
+    if (params.search?.trim()) query.set('q', params.search.trim());
+    return api.get<SpringPage<ChannelSummary>>(`/api/v1/channels?${query.toString()}`);
   },
 
-  getAllChannels: async (): Promise<Channel[]> => {
-    const response = await api.get<Channel[]>('/api/v1/channels');
-    return response;
+  /** Channel counts per status, for the console's stat tiles. */
+  getChannelCounts: async (): Promise<Record<string, number>> => {
+    return api.get<Record<string, number>>('/api/v1/channels/counts');
+  },
+
+  /**
+   * One page of pending channel creation requests.
+   *
+   * <p>Paged because the app navbar reads this on every authenticated page for its pending-task
+   * menu, and unpaged it returned all 1,235 rows (775 KB) to fill a dropdown.
+   */
+  getPendingRequests: async (
+    params: { page?: number; size?: number; search?: string } = {},
+  ): Promise<SpringPage<ChannelSummary>> => {
+    const query = new URLSearchParams({
+      page: String(params.page ?? 0),
+      size: String(params.size ?? 20),
+    });
+    if (params.search?.trim()) query.set('q', params.search.trim());
+    return api.get<SpringPage<ChannelSummary>>(`/api/v1/channels/requests?${query.toString()}`);
   },
 
   getMyChannels: async (): Promise<Channel[]> => {
@@ -395,6 +467,17 @@ export const channelService = {
   getMyWorkspaces: async (): Promise<Channel[]> => {
     const response = await api.get<Channel[]>('/api/v1/channels/workspaces');
     return response;
+  },
+
+  /**
+   * How many courses this user authors or collaborates on.
+   *
+   * <p>For callers that only need to know whether the number is zero — the app shell's "is Content
+   * Studio reachable?" check. Fetching `/api/courses` and reading `.length` made every
+   * authenticated page load serialize every course the user can see, trees included.
+   */
+  getMyAuthoredContentCount: async (): Promise<number> => {
+    return api.get<number>('/api/courses/mine/count');
   },
 
   getChannelContent: async (channelId: string): Promise<ChannelContentItem[]> => {

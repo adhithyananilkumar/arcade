@@ -15,7 +15,7 @@ import {
   Palette,
   ChevronRight,
 } from 'lucide-react';
-import type { CourseResponse } from '@/shared/types/api.types';
+import type { CourseSummaryResponse } from '@/shared/types/api.types';
 import { RubiksCube3D } from './RubiksCube3D';
 
 export type EventCard = {
@@ -170,7 +170,7 @@ export function pickDailyEvents(pool: EventCard[], count = 3): EventCard[] {
   return picked;
 }
 
-function RecommendedFeaturedCard({ course }: { course: CourseResponse }) {
+function RecommendedFeaturedCard({ course }: { course: CourseSummaryResponse }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -203,7 +203,7 @@ function RecommendedFeaturedCard({ course }: { course: CourseResponse }) {
             {course.title}
           </h3>
           <p className="mt-1 line-clamp-2 text-xs sm:text-[13px] font-medium leading-relaxed text-slate-500">
-            {course.description || `${course.modules?.length ?? 0} modules · Self-paced learning`}
+            {course.description || `${course.moduleCount} modules · Self-paced learning`}
           </p>
         </div>
 
@@ -387,7 +387,7 @@ export function ResumeAndEventsSection({
 }: {
   resumeCourse: ResumeCourse | null;
   events: EventCard[];
-  recommendedCourses?: CourseResponse[];
+  recommendedCourses?: CourseSummaryResponse[];
 }) {
   const displayedEvents = events.slice(0, 3);
   const featuredRecommended = recommendedCourses[0] || null;

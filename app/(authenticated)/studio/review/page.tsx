@@ -4,9 +4,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteScrollSentinel } from "@/shared/hooks/useInfiniteScrollSentinel";
 import { api } from "@/infrastructure/http/api";
-import type { CourseResponse } from "@/shared/types/api.types";
+import type { AuthoredCourseSummary, SpringPage } from "@/shared/types/api.types";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import ShinyText from "@/components/ui/ShinyText";
 import {
@@ -17,29 +19,37 @@ import {
   Inbox,
 } from "lucide-react";
 
-const REVIEW_STATUSES: ReadonlyArray<CourseResponse["status"]> = [
-  "SUBMITTED",
-  "APPROVED",
-];
+/** The statuses this page shows — now sent to the backend rather than filtered in the browser. */
+const REVIEW_STATUSES = ["SUBMITTED", "APPROVED"] as const;
 
 export default function ReviewCoursesPage() {
-  const [courses, setCourses] = useState<CourseResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Filtered by status in the database and projected to card fields. This read `/api/courses` —
+  // every course the author can reach, as full aggregates — and kept the in-review ones in the
+  // browser.
+  const reviewQuery = useInfiniteQuery({
+    queryKey: ["authored-courses", "in-review"],
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => {
+      const params = new URLSearchParams({ page: String(pageParam), size: "24" });
+      REVIEW_STATUSES.forEach((st) => params.append("status", st));
+      return api.get<SpringPage<AuthoredCourseSummary>>(
+        `/api/courses/mine?${params.toString()}`,
+      );
+    },
+    getNextPageParam: (last) => (last.last ? undefined : last.number + 1),
+  });
 
-  const fetchReviews = () => {
-    setLoading(true);
-    api
-      .get<CourseResponse[]>("/api/courses")
-      .then((all) =>
-        setCourses(all.filter((c) => REVIEW_STATUSES.includes(c.status)))
-      )
-      .catch(() => setCourses([]))
-      .finally(() => setLoading(false));
-  };
+  const courses = useMemo(
+    () => (reviewQuery.data?.pages ?? []).flatMap((pg) => pg.content),
+    [reviewQuery.data],
+  );
+  const loading = reviewQuery.isLoading;
 
-  useEffect(() => {
-    fetchReviews();
-  }, []);
+  const { sentinelRef } = useInfiniteScrollSentinel({
+    hasMore: Boolean(reviewQuery.hasNextPage),
+    isLoading: reviewQuery.isFetchingNextPage,
+    onLoadMore: reviewQuery.fetchNextPage,
+  });
 
   return (
     <div
@@ -170,7 +180,7 @@ export default function ReviewCoursesPage() {
                     </h3>
 
                     <p className="line-clamp-2 text-xs leading-relaxed text-slate-600 font-medium min-h-[32px]">
-                      {course.description || `${course.modules?.length ?? 0} modules · Self-paced learning`}
+                      {course.description || `${course.moduleCount} modules · Self-paced learning`}
                     </p>
                   </div>
 
@@ -199,6 +209,15 @@ export default function ReviewCoursesPage() {
                 </div>
               </SpotlightCard>
             ))}
+          </div>
+        )}
+
+        {/* Loads the next page as the author scrolls; the grid has no pagination controls. */}
+        {reviewQuery.hasNextPage && (
+          <div ref={sentinelRef} className="flex justify-center py-8">
+            {reviewQuery.isFetchingNextPage && (
+              <span className="text-xs font-medium text-slate-400">Loading more…</span>
+            )}
           </div>
         )}
       </div>

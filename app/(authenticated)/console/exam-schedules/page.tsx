@@ -3,11 +3,13 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue";
 import { notFound } from "next/navigation";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import { AuthorizationService } from "@/infrastructure/auth/authorization.service";
 import { api } from "@/infrastructure/http/api";
-import type { CourseResponse } from "@/shared/types/api.types";
+import type { ExamScheduleCourse, ExamScheduleCounts, SpringPage } from "@/shared/types/api.types";
 import { getAvatarUrl } from "@/shared/utils/avatar";
 import { 
   Calendar, 
@@ -48,68 +50,64 @@ export default function ExamSchedulesPage() {
     notFound();
   }
 
-  const [courses, setCourses] = useState<CourseResponse[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterMode, setFilterMode] = useState<"ALL" | "SCHEDULED" | "UNSCHEDULED">("ALL");
   const [saving, setSaving] = useState(false);
 
   // Modal editor state
-  const [selectedCourse, setSelectedCourse] = useState<CourseResponse | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<ExamScheduleCourse | null>(null);
   const [scheduleSlots, setScheduleSlots] = useState<SlotItem[]>([]);
 
   // Pagination
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
-  const fetchCourses = () => {
-    setLoading(true);
-    api
-      .get<CourseResponse[]>("/api/courses/review")
-      .then((all) => setCourses(all.filter((c) => c.status === "PUBLISHED")))
-      .catch(() => setCourses([]))
-      .finally(() => setLoading(false));
-  };
+  const queryClient = useQueryClient();
+  const debouncedSearch = useDebouncedValue(searchQuery.trim(), 300);
 
+  // Purpose-built, paged and filtered in the database. This screen used to read
+  // `/api/courses/review` — the review queue as full course aggregates, 3.1 MB over 1,159 ms for
+  // 2,431 courses — and keep the PUBLISHED ones in the browser, to render seven scalar fields per
+  // row. It was also the wrong question to ask: this is the scheduling surface, not a review queue.
+  const coursesQuery = useQuery({
+    queryKey: ["exam-schedule-courses", filterMode, debouncedSearch, page],
+    staleTime: 30 * 1000,
+    placeholderData: (previous) => previous,
+    queryFn: () => {
+      const params = new URLSearchParams({ page: String(page - 1), size: String(pageSize) });
+      if (filterMode === "SCHEDULED") params.set("scheduled", "true");
+      if (filterMode === "UNSCHEDULED") params.set("scheduled", "false");
+      if (debouncedSearch) params.set("q", debouncedSearch);
+      return api.get<SpringPage<ExamScheduleCourse>>(
+        `/api/courses/exam-schedules?${params.toString()}`,
+      );
+    },
+  });
+
+  const loading = coursesQuery.isLoading;
+
+  // Tab badges show all three totals at once while the table shows one page of one of them, so
+  // they come from a grouped count rather than from a list that would then have to be complete.
+  const { data: countsData } = useQuery({
+    queryKey: ["exam-schedule-counts"],
+    queryFn: () => api.get<ExamScheduleCounts>("/api/courses/exam-schedules/counts"),
+    staleTime: 30 * 1000,
+  });
+  const counts = countsData ?? { all: 0, scheduled: 0, unscheduled: 0 };
+
+  // A filter or search change restarts at the first page; otherwise a narrower result set can
+  // leave the table on a page that no longer exists.
   useEffect(() => {
-    fetchCourses();
-  }, []);
+    setPage(1);
+  }, [filterMode, debouncedSearch]);
 
-  const counts = useMemo(() => {
-    let scheduled = 0;
-    let unscheduled = 0;
-    courses.forEach((c) => {
-      const slots = parseSlots(c.examSchedule);
-      if (slots.length > 0) scheduled++;
-      else unscheduled++;
-    });
-    return { all: courses.length, scheduled, unscheduled };
-  }, [courses]);
+  // Already filtered and paged by the backend, so this page's rows are the rows to render.
+  const filteredCourses = coursesQuery.data?.content ?? [];
+  const paginatedCourses = filteredCourses;
+  const totalElements = coursesQuery.data?.totalElements ?? 0;
+  const totalPages = coursesQuery.data?.totalPages ?? 1;
 
-  const filteredCourses = useMemo(() => {
-    return courses.filter((c) => {
-      const slots = parseSlots(c.examSchedule);
-      if (filterMode === "SCHEDULED" && slots.length === 0) return false;
-      if (filterMode === "UNSCHEDULED" && slots.length > 0) return false;
-
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        return (
-          (c.title || "").toLowerCase().includes(q) ||
-          (c.authorName || "").toLowerCase().includes(q)
-        );
-      }
-      return true;
-    });
-  }, [courses, filterMode, searchQuery]);
-
-  const totalPages = Math.ceil(filteredCourses.length / pageSize);
-  const paginatedCourses = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filteredCourses.slice(start, start + pageSize);
-  }, [filteredCourses, page]);
-
-  const handleOpenEditModal = (course: CourseResponse) => {
+  const handleOpenEditModal = (course: ExamScheduleCourse) => {
     setSelectedCourse(course);
     setScheduleSlots(parseSlots(course.examSchedule));
   };
@@ -140,7 +138,8 @@ export default function ExamSchedulesPage() {
         examSchedule: scheduleString,
       });
       setSelectedCourse(null);
-      fetchCourses();
+      queryClient.invalidateQueries({ queryKey: ["exam-schedule-courses"] });
+      queryClient.invalidateQueries({ queryKey: ["exam-schedule-counts"] });
       toast.success("Exam schedule saved successfully");
     } catch {
       toast.error("Failed to update exam schedule");
@@ -219,7 +218,10 @@ export default function ExamSchedulesPage() {
 
           <button
             type="button"
-            onClick={fetchCourses}
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ["exam-schedule-courses"] });
+              queryClient.invalidateQueries({ queryKey: ["exam-schedule-counts"] });
+            }}
             title="Refresh courses"
             className="flex size-8 items-center justify-center rounded-xl border border-slate-200/90 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-800 shadow-2xs transition-colors"
           >

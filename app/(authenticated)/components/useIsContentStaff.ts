@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { channelService } from '@/domains/channels';
+import { useMyChannelsQuery } from '@/domains/channels';
 
 /** Channel roles whose holders publish content and therefore appear on course pages. */
 const PUBLISHING_ROLES = ['CONTENT_CREATOR', 'CHANNEL_ADMIN', 'REVIEWER'];
@@ -22,33 +21,22 @@ const PUBLISHING_ROLES = ['CONTENT_CREATOR', 'CHANNEL_ADMIN', 'REVIEWER'];
  */
 export function useIsContentStaff(): boolean | null {
   const { user } = useAuthStore();
-  const [ownsChannel, setOwnsChannel] = useState<boolean | null>(null);
 
   const hasStaffRole = Boolean(
     user?.channelMemberships?.some((m) => m.roles.some((r) => PUBLISHING_ROLES.includes(r.code))) ||
       user?.platformRoles?.some((r) => r.code === 'PLATFORM_ADMIN')
   );
 
-  useEffect(() => {
-    // Nothing to look up: either there is no session, or a staff role already answers it.
-    // Returning early rather than setting state keeps this effect free of synchronous
-    // setState, which cascades a render for every navigation this component survives.
-    if (!user || hasStaffRole) return;
-    let cancelled = false;
-    channelService
-      .getMyChannels()
-      .then((channels) => {
-        if (!cancelled) setOwnsChannel(channels.length > 0);
-      })
-      .catch(() => {
-        if (!cancelled) setOwnsChannel(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [user, hasStaffRole]);
+  // Shares the app shell's channel query rather than issuing its own. The navbar and
+  // `useStudioAccess` ask the same question on the same render, so three `useEffect`s meant three
+  // identical uncached requests per page load; under one query key they collapse to one.
+  //
+  // `enabled` keeps it off the wire entirely when the answer is already known: no session, or a
+  // staff role that settles it without any lookup.
+  const owned = useMyChannelsQuery({ enabled: Boolean(user) && !hasStaffRole });
 
   if (!user) return false;
   if (hasStaffRole) return true;
-  return ownsChannel;
+  if (owned.isPending) return null;
+  return (owned.data?.length ?? 0) > 0;
 }

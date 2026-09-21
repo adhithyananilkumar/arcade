@@ -108,7 +108,7 @@ export interface ContentDataAdapter {
     title: string,
     contentId: string
   ): Promise<AssessmentLeaf>;
-  removeContainerAssessment?(placementId: string): Promise<void>;
+  removeContainerAssessment?(placementId: string, planId: string | null): Promise<void>;
 
   // Exams attached to this content item. Every content type that hosts the shared content
   // editor runtime supports this (there is no capability gate here, unlike badges) — it exists

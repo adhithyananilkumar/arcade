@@ -829,10 +829,10 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   );
 
   const removeAssessment = useCallback(
-    async (placementId: string) => {
+    async (placementId: string, planId: string | null) => {
       if (!adapter.removeContainerAssessment) return;
       try {
-        await adapter.removeContainerAssessment(placementId);
+        await adapter.removeContainerAssessment(placementId, planId);
         setModules((prev) =>
           prev.map((m) => ({ ...m, assessments: m.assessments.filter((a) => a.id !== placementId) }))
         );
@@ -841,6 +841,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
         setHasDraftChanges(true);
       } catch (e) {
         console.error("Failed to remove assessment", e);
+        toast.error("Failed to remove assessment.");
       }
     },
     [adapter]
@@ -1389,7 +1390,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                                 <IconBtn
                                   title="Remove assessment from this module"
                                   danger
-                                  onClick={() => removeAssessment(assessment.id)}
+                                  onClick={() => removeAssessment(assessment.id, assessment.planId)}
                                 >
                                   <Trash2 size={12} />
                                 </IconBtn>

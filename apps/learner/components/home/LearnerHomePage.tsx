@@ -17,7 +17,8 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/infrastructure/http/api';
-import type { CourseResponse } from '@/shared/types/api.types';
+import { usePublicCoursesPage } from '@/shared/hooks/usePublicCourses';
+import type { CourseSummaryResponse } from '@/shared/types/api.types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import DashboardLoading from '@/app/(authenticated)/loading';
@@ -48,6 +49,12 @@ const NAME_GRADIENT = [
   '#6366F1',
   '#4C6FFF',
 ];
+
+/**
+ * How many courses to consider when picking the four recommendation cards. Enough that removing
+ * the learner's existing enrolments still leaves a full set, without fetching the catalogue.
+ */
+const RECOMMENDATION_POOL_SIZE = 24;
 
 const RECOMMEND_HOVER_BORDERS = [
   'hover:border-[#4C6FFF]',
@@ -111,7 +118,7 @@ function eventToCard(e: EventDto, index: number): EventCard {
 }
 
 /** Stable daily shuffle so recommendations change without jumping every refresh. */
-function pickDailyCourses(pool: CourseResponse[], count: number): CourseResponse[] {
+function pickDailyCourses(pool: CourseSummaryResponse[], count: number): CourseSummaryResponse[] {
   if (pool.length <= count) return pool;
   const day = Math.floor(Date.now() / 86_400_000);
   const scored = pool.map((course, i) => {
@@ -125,7 +132,6 @@ function pickDailyCourses(pool: CourseResponse[], count: number): CourseResponse
 export default function LearnerHomePage() {
   const { user, status } = useAuthStore();
   const router = useRouter();
-  const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [hasSeenHomeBefore, setHasSeenHomeBefore] = useState(true);
@@ -137,13 +143,19 @@ export default function LearnerHomePage() {
     if (!seen) localStorage.setItem(HOME_SEEN_KEY, '1');
   }, []);
 
+  // A page of candidates, not the catalogue. This used to fetch every published course —
+  // 1.68 MB over 2.35 s — in order to show four recommendation cards. The pool only has to be
+  // large enough that filtering out already-enrolled courses still leaves four.
+  // A bounded pool, not a browsable list — four cards are chosen from it, so there is nothing to
+  // scroll and no reason for the infinite variant.
+  const { courses, isLoading: coursesLoading } = usePublicCoursesPage({
+    size: RECOMMENDATION_POOL_SIZE,
+    enabled: Boolean(user),
+  });
+
   useEffect(() => {
-    api
-      .get<CourseResponse[]>('/api/v1/public/courses')
-      .then(setCourses)
-      .catch(() => setCourses([]))
-      .finally(() => setLoading(false));
-  }, []);
+    if (!coursesLoading) setLoading(false);
+  }, [coursesLoading]);
 
   useEffect(() => {
     getPublishedEvents({ size: 12 })
@@ -462,7 +474,7 @@ export default function LearnerHomePage() {
                         </h3>
                         <p className="mt-0.5 line-clamp-1 text-[12px] font-medium text-slate-500">
                           {course.description ||
-                            `${course.modules?.length ?? 0} modules · Self-paced`}
+                            `${course.moduleCount} modules · Self-paced`}
                         </p>
                       </div>
 

@@ -4,9 +4,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteScrollSentinel } from "@/shared/hooks/useInfiniteScrollSentinel";
 import { api } from "@/infrastructure/http/api";
-import type { CourseResponse } from "@/shared/types/api.types";
+import type { AuthoredCourseSummary, SpringPage } from "@/shared/types/api.types";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import ShinyText from "@/components/ui/ShinyText";
 import {
@@ -17,21 +19,30 @@ import {
 } from "lucide-react";
 
 export default function PublishedCoursesPage() {
-  const [courses, setCourses] = useState<CourseResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  // A projected, paged listing. This read `/api/courses`, which builds a full course aggregate per
+  // row — modules, lessons, badges, assessments and a published snapshot each — to render a card.
+  const coursesQuery = useInfiniteQuery({
+    queryKey: ["authored-courses", "all"],
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) =>
+      api.get<SpringPage<AuthoredCourseSummary>>(
+        `/api/courses/mine?page=${pageParam}&size=24`,
+      ),
+    getNextPageParam: (last) => (last.last ? undefined : last.number + 1),
+  });
 
-  const fetchCourses = () => {
-    setLoading(true);
-    api
-      .get<CourseResponse[]>("/api/courses")
-      .then(setCourses)
-      .catch(() => setCourses([]))
-      .finally(() => setLoading(false));
-  };
+  const courses = useMemo(
+    () => (coursesQuery.data?.pages ?? []).flatMap((pg) => pg.content),
+    [coursesQuery.data],
+  );
+  const loading = coursesQuery.isLoading;
+  const totalCourses = coursesQuery.data?.pages[0]?.totalElements ?? 0;
 
-  useEffect(() => {
-    fetchCourses();
-  }, []);
+  const { sentinelRef } = useInfiniteScrollSentinel({
+    hasMore: Boolean(coursesQuery.hasNextPage),
+    isLoading: coursesQuery.isFetchingNextPage,
+    onLoadMore: coursesQuery.fetchNextPage,
+  });
 
   return (
     <div
@@ -58,7 +69,7 @@ export default function PublishedCoursesPage() {
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border border-amber-900/10 bg-white/90 px-4 py-2 text-xs font-bold text-slate-700 shadow-3xs">
               <GraduationCap size={15} className="text-amber-700" />
-              <span>{courses.length} {courses.length === 1 ? "course" : "courses"} authored</span>
+              <span>{totalCourses} {totalCourses === 1 ? "course" : "courses"} authored</span>
             </span>
           </div>
         </div>
@@ -69,7 +80,7 @@ export default function PublishedCoursesPage() {
             <BookOpen size={15} className="text-amber-700" />
             <span>Your Courses</span>
             <span className="rounded-full bg-[#14142b] px-2 py-0.5 text-[11px] font-semibold text-white">
-              {courses.length}
+              {totalCourses}
             </span>
             <div className="absolute -bottom-3 left-0 right-0 h-[2.5px] bg-[#14142b] rounded-full" />
           </div>
@@ -162,7 +173,7 @@ export default function PublishedCoursesPage() {
                     </h3>
 
                     <p className="line-clamp-2 text-xs leading-relaxed text-slate-600 font-medium min-h-[32px]">
-                      {course.description || `${course.modules?.length ?? 0} modules · Self-paced learning`}
+                      {course.description || `${course.moduleCount} modules · Self-paced learning`}
                     </p>
                   </div>
 
@@ -191,6 +202,18 @@ export default function PublishedCoursesPage() {
                 </div>
               </SpotlightCard>
             ))}
+          </div>
+        )}
+
+        {/*
+          Loads the next page as the author scrolls. The grid has no pagination controls, so
+          without this only the first page would be reachable.
+        */}
+        {coursesQuery.hasNextPage && (
+          <div ref={sentinelRef} className="flex justify-center py-8">
+            {coursesQuery.isFetchingNextPage && (
+              <span className="text-xs font-medium text-slate-400">Loading more courses…</span>
+            )}
           </div>
         )}
       </div>

@@ -11,13 +11,17 @@ import type {
 } from '@/shared/types/api.types';
 import {
   BookOpen,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Check,
   CheckCircle2,
   FileText,
   Flag,
+  GraduationCap,
   MoreVertical,
+  NotebookPen,
+  Sparkles,
   Star,
 } from 'lucide-react';
 import {
@@ -34,7 +38,6 @@ import {
   useLessonEngagementTracker,
   type CourseProgress,
 } from '@/domains/learning';
-import Link from 'next/link';
 import { toast } from 'sonner';
 import { ReportModal } from '@/shared/design-system/ui/ReportModal';
 import { courseReviewService } from '@/domains/learning';
@@ -93,6 +96,41 @@ export default function CourseLearnPage() {
   const [reportNote, setReportNote] = useState('');
   const [isReporting, setIsReporting] = useState(false);
   const [activeMenuLessonId, setActiveMenuLessonId] = useState<string | null>(null);
+  const [collapsedModules, setCollapsedModules] = useState<Record<string, boolean>>({});
+  const toggleModule = (moduleId: string) =>
+    setCollapsedModules((prev) => ({ ...prev, [moduleId]: !prev[moduleId] }));
+  const [rightPanelTab, setRightPanelTab] = useState<'notes' | 'ai'>('notes');
+  const [notesDraft, setNotesDraft] = useState('');
+  const [rightPanelWidth, setRightPanelWidth] = useState(380);
+  const [isDesktopViewport, setIsDesktopViewport] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches,
+  );
+
+  // The right rail's width is only meaningful once it sits beside the content instead of
+  // stacking full-width on mobile, so the drag-resize only takes effect at the md breakpoint.
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)');
+    const update = () => setIsDesktopViewport(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+
+  const handleRightPanelResizeStart = (e: React.PointerEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = rightPanelWidth;
+    const onMove = (moveEvent: PointerEvent) => {
+      const next = Math.min(640, Math.max(280, startWidth + (startX - moveEvent.clientX)));
+      setRightPanelWidth(next);
+    };
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
   const [reportingContext, setReportingContext] = useState<{
     moduleId: string;
     moduleTitle: string;
@@ -206,13 +244,6 @@ export default function CourseLearnPage() {
     [course],
   );
 
-  /** One running number across the whole course, counting assessments as steps too. */
-  const itemNumberById = useMemo(() => {
-    const map = new Map<string, number>();
-    orderedItems.forEach((item, index) => map.set(item.id, index + 1));
-    return map;
-  }, [orderedItems]);
-
   const currentIndex = selectedItem
     ? orderedItems.findIndex((item) => item.id === selectedItem.id)
     : -1;
@@ -324,60 +355,36 @@ export default function CourseLearnPage() {
       />
 
       {/* Clear floating navbar */}
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1400px] flex-col pt-28 md:flex-row md:pt-32">
+      <div className="relative z-10 flex min-h-screen w-full flex-col gap-4 px-4 pt-28 md:flex-row md:px-8 md:pt-32 lg:px-12 xl:px-16">
         {/* Sidebar */}
-        <aside className="flex w-full shrink-0 flex-col border-b border-slate-200/70 md:sticky md:top-32 md:h-[calc(100vh-8.5rem)] md:w-[280px] md:border-b-0 md:border-r md:border-slate-200/70 lg:w-[300px]">
-          <div className="space-y-4 px-5 pb-4 md:px-6">
-            <Link
-              href="/learning"
-              className="inline-flex items-center gap-1 text-[12px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
-            >
-              <ChevronLeft size={14} />
-              Learning
-            </Link>
-
-            <div>
-              <h2 className="text-[17px] font-bold leading-snug tracking-tight text-[#14142b] line-clamp-2">
-                {course.title}
-              </h2>
-              {progress?.enrollmentStatus === 'COMPLETED' && (
-                <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
-                  <CheckCircle2 size={12} />
-                  Course completed
-                </p>
-              )}
-            </div>
-
-            {progress && progress.totalLessons > 0 && (
-              <div>
-                <div className="mb-1.5 flex items-center justify-between text-[11px] font-semibold text-slate-400">
-                  <span>
-                    {progress.completedLessons} of {progress.totalLessons}
-                  </span>
-                  <span className="tabular-nums text-[#14142b]">{progress.percent}%</span>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200/80">
-                  <div
-                    className="h-full rounded-full bg-[#FF6B4A] transition-all duration-500"
-                    style={{ width: `${progress.percent}%` }}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          <nav className="flex-1 space-y-5 overflow-y-auto px-3 pb-8 md:px-4">
+        <aside className="flex w-full shrink-0 flex-col md:sticky md:top-32 md:h-[calc(100vh-8.5rem)] md:w-[280px] lg:w-[300px]">
+          <div className="flex h-full flex-col">
+          <nav className="flex-1 space-y-3 overflow-y-auto px-3 pb-5 pt-5 md:px-4 arcade-scrollbar-mini">
             {course.modules.length === 0 ? (
               <p className="px-2 text-sm text-slate-400">No modules yet.</p>
             ) : (
-              course.modules.map((mod, modIdx) => (
-                <div key={mod.id}>
-                  <p className="mb-1.5 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                    {mod.title?.trim() ? mod.title : `Module ${modIdx + 1}`}
-                  </p>
-                  <ul className="space-y-0.5">
+              course.modules.map((mod, modIdx) => {
+                const isCollapsed = Boolean(collapsedModules[mod.id]);
+                return (
+                <div key={mod.id} className="mb-2 flex flex-col gap-1">
+                  <button
+                    type="button"
+                    onClick={() => toggleModule(mod.id)}
+                    className="group flex w-full items-center gap-2 rounded-2xl border border-white/40 bg-white/60 px-3.5 py-2.5 text-left shadow-sm backdrop-blur-md transition-all hover:border-white/60 hover:bg-white/80"
+                  >
+                    {isCollapsed ? (
+                      <ChevronRight size={15} className="flex-shrink-0 text-[#14142b]/50" />
+                    ) : (
+                      <ChevronDown size={15} className="flex-shrink-0 text-[#14142b]/50" />
+                    )}
+                    <span className="flex-1 truncate text-[13px] font-bold text-[#14142b]">
+                      {mod.title?.trim() ? mod.title : `Module ${modIdx + 1}`}
+                    </span>
+                  </button>
+
+                  {!isCollapsed && (
+                  <div className="ml-5 flex flex-col gap-1 pl-3 pt-1">
                     {itemsForModule(mod).map((item) => {
-                      const num = itemNumberById.get(item.id) ?? 0;
                       const isSelected = selectedItem?.id === item.id;
 
                       // Assessments get a distinct row: no completion tick (passing is what counts,
@@ -385,158 +392,152 @@ export default function CourseLearnPage() {
                       // of a step number so they read as a different kind of thing in the tree.
                       if (item.kind === 'assessment') {
                         return (
-                          <li key={item.id} className="relative">
-                            <div
-                              role="button"
-                              tabIndex={0}
+                          <div
+                            key={item.id}
+                            className={`group flex items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
+                              isSelected ? 'bg-[#14142b] shadow-md' : 'bg-white/50 hover:bg-white/80'
+                            }`}
+                          >
+                            <button
+                              type="button"
                               onClick={() => goTo(item)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  e.preventDefault();
-                                  goTo(item);
-                                }
-                              }}
-                              className={`flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left transition-colors ${
-                                isSelected
-                                  ? 'bg-[#14142b] text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)]'
-                                  : 'text-slate-600 hover:bg-white/80 hover:text-[#14142b]'
+                              className={`flex min-w-0 flex-1 items-center gap-1.5 py-2 text-left text-[13px] ${
+                                isSelected ? 'font-semibold text-white' : 'text-slate-500'
                               }`}
                             >
-                              <span
-                                className={`grid size-6 shrink-0 place-items-center rounded-md ${
-                                  isSelected ? 'bg-white/15 text-white' : 'bg-amber-50 text-amber-600'
-                                }`}
-                              >
-                                <FileText size={12} />
-                              </span>
-                              <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
-                                {item.assessment.title}
-                              </span>
+                              <GraduationCap size={13} className="flex-shrink-0" />
+                              <span className="truncate">{item.assessment.title}</span>
                               {item.assessment.requiredForCompletion && (
-                                <span
-                                  className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
-                                    isSelected
-                                      ? 'bg-white/15 text-white'
-                                      : 'bg-amber-50 text-amber-700'
-                                  }`}
-                                >
+                                <span className="flex-shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-700">
                                   Required
                                 </span>
                               )}
-                            </div>
-                          </li>
+                            </button>
+                          </div>
                         );
                       }
 
                       const lesson = item.lesson;
                       const isComplete = isLessonComplete(lesson.id);
                       return (
-                        <li key={lesson.id} className="relative group/item">
-                          <div
-                            role="button"
-                            tabIndex={0}
+                        <div
+                          key={lesson.id}
+                          className={`group/item flex items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
+                            isSelected ? 'bg-[#14142b] shadow-md' : 'bg-white/50 hover:bg-white/80'
+                          }`}
+                        >
+                          <button
+                            type="button"
                             onClick={() => goTo(item)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                goTo(item);
-                              }
-                            }}
-                            className={`flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left transition-colors ${
+                            className={`flex min-w-0 flex-1 items-center gap-1.5 py-2 text-left text-[13px] ${
                               isSelected
-                                ? 'bg-[#14142b] text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)]'
-                                : 'text-slate-600 hover:bg-white/80 hover:text-[#14142b]'
+                                ? 'font-semibold text-white'
+                                : isComplete
+                                  ? 'text-slate-400'
+                                  : 'text-slate-500'
                             }`}
                           >
-                            <span
-                              className={`grid size-6 shrink-0 place-items-center rounded-md text-[11px] font-bold tabular-nums ${
-                                isSelected
-                                  ? 'bg-white/15 text-white'
-                                  : isComplete
-                                    ? 'bg-emerald-50 text-emerald-600'
-                                    : 'bg-slate-100 text-slate-400'
-                              }`}
-                            >
-                              {isComplete && !isSelected ? (
-                                <Check size={12} strokeWidth={2.5} />
-                              ) : (
-                                num
-                              )}
-                            </span>
-                            <span
-                              className={`min-w-0 flex-1 truncate text-[13px] font-semibold ${
-                                isComplete && !isSelected ? 'text-slate-400' : ''
-                              }`}
-                            >
+                            {isComplete && !isSelected ? (
+                              <Check size={13} strokeWidth={2.5} className="flex-shrink-0 text-emerald-500" />
+                            ) : (
+                              <FileText size={13} className="flex-shrink-0" />
+                            )}
+                            <span className="truncate" title={lesson.title}>
                               {lesson.title}
                             </span>
+                          </button>
 
-                            <div className="relative shrink-0">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActiveMenuLessonId(activeMenuLessonId === lesson.id ? null : lesson.id);
-                                }}
-                                onKeyDown={(e) => {
-                                  e.stopPropagation();
-                                }}
-                                className={`p-1 rounded-md transition-all ${
-                                  activeMenuLessonId === lesson.id
-                                    ? 'opacity-100 bg-white/20 text-white'
-                                    : isSelected
-                                      ? 'opacity-0 group-hover/item:opacity-100 text-white/70 hover:text-white hover:bg-white/15'
-                                      : 'opacity-0 group-hover/item:opacity-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60'
-                                }`}
-                                title="Lesson options"
-                              >
-                                <MoreVertical size={14} />
-                              </button>
+                          <div className="relative flex flex-shrink-0 items-center opacity-0 transition-opacity group-hover/item:opacity-100">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveMenuLessonId(activeMenuLessonId === lesson.id ? null : lesson.id);
+                              }}
+                              onKeyDown={(e) => {
+                                e.stopPropagation();
+                              }}
+                              className={`rounded-full p-1 transition-all ${
+                                activeMenuLessonId === lesson.id ? 'opacity-100' : ''
+                              } ${
+                                isSelected
+                                  ? 'text-white/70 hover:bg-white/15 hover:text-white'
+                                  : 'text-[#14142b]/50 hover:bg-[#14142b]/10 hover:text-[#14142b]'
+                              }`}
+                              title="Lesson options"
+                            >
+                              <MoreVertical size={14} />
+                            </button>
 
-                              {activeMenuLessonId === lesson.id && (
-                                <>
-                                  <div
-                                    className="fixed inset-0 z-30"
+                            {activeMenuLessonId === lesson.id && (
+                              <>
+                                <div
+                                  className="fixed inset-0 z-30"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveMenuLessonId(null);
+                                  }}
+                                />
+                                <div className="absolute right-0 top-full mt-1 z-40 w-32 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
+                                  <button
+                                    type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setActiveMenuLessonId(null);
+                                      setReportingContext({
+                                        moduleId: mod.id,
+                                        moduleTitle: mod.title?.trim() ? mod.title : `Module ${modIdx + 1}`,
+                                        lessonId: lesson.id,
+                                        lessonTitle: lesson.title,
+                                      });
+                                      setReportModalOpen(true);
                                     }}
-                                  />
-                                  <div className="absolute right-0 top-full mt-1 z-40 w-32 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setActiveMenuLessonId(null);
-                                        setReportingContext({
-                                          moduleId: mod.id,
-                                          moduleTitle: mod.title?.trim() ? mod.title : `Module ${modIdx + 1}`,
-                                          lessonId: lesson.id,
-                                          lessonTitle: lesson.title,
-                                        });
-                                        setReportModalOpen(true);
-                                      }}
-                                      onKeyDown={(e) => {
-                                        e.stopPropagation();
-                                      }}
-                                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-red-50 hover:text-red-600"
-                                    >
-                                      <Flag size={13} />
-                                      <span>Report</span>
-                                    </button>
-                                  </div>
-                                </>
-                              )}
-                            </div>
+                                    onKeyDown={(e) => {
+                                      e.stopPropagation();
+                                    }}
+                                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-red-50 hover:text-red-600"
+                                  >
+                                    <Flag size={13} />
+                                    <span>Report</span>
+                                  </button>
+                                </div>
+                              </>
+                            )}
                           </div>
-                        </li>
+                        </div>
                       );
                     })}
-                  </ul>
+                  </div>
+                  )}
                 </div>
-              ))
+                );
+              })
             )}
           </nav>
+
+          {progress && progress.totalLessons > 0 && (
+            <div className="space-y-2 px-5 pt-3 pb-5 md:px-6">
+              {progress.enrollmentStatus === 'COMPLETED' && (
+                <p className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                  <CheckCircle2 size={12} />
+                  Course completed
+                </p>
+              )}
+              <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400">
+                <span>
+                  {progress.completedLessons} of {progress.totalLessons}
+                </span>
+                <span className="tabular-nums text-[#14142b]">{progress.percent}%</span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200/80">
+                <div
+                  className="h-full rounded-full bg-[#FF6B4A] transition-all duration-500"
+                  style={{ width: `${progress.percent}%` }}
+                />
+              </div>
+            </div>
+          )}
+          </div>
         </aside>
 
         {/* Lesson canvas — centered & wide */}
@@ -554,30 +555,12 @@ export default function CourseLearnPage() {
               />
             ) : selectedLesson ? (
               <>
-                <header className="mb-6 flex items-start justify-between gap-4 md:mb-8">
-                  <div>
-                    <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                      Lesson {currentIndex + 1}
-                      {orderedItems.length > 0 ? ` · ${orderedItems.length}` : ''}
-                    </p>
-                    <h1 className="text-[1.75rem] font-bold leading-tight tracking-tight text-[#14142b] md:text-[2.15rem]">
-                      {selectedLesson.title}
-                    </h1>
-                    {lessonDone && (
-                      <p className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-semibold text-emerald-600">
-                        <CheckCircle2 size={14} />
-                        Completed
-                      </p>
-                    )}
-                  </div>
-                </header>
-
-                <div className="min-h-[42vh] flex-1 rounded-lg border border-slate-200/80 bg-white/95 px-5 py-7 shadow-[0_8px_28px_rgba(20,20,43,0.05)] sm:px-8 sm:py-9 md:px-12 md:py-11">
+                <div className="min-h-[42vh] flex-1 rounded-3xl border border-white/40 bg-white/30 px-5 py-7 shadow-lg backdrop-blur-xl sm:px-8 sm:py-9 md:px-12 md:py-11">
                   <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-[#14142b] prose-a:text-[#FF6B4A] hover:prose-a:text-[#D94F32] prose-p:text-slate-700">
                     {selectedLesson.body ? (
                       <TiptapContentView body={selectedLesson.body} />
                     ) : (
-                      <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/80 px-6 py-14 text-center">
+                      <div className="rounded-2xl border border-white/40 bg-white/20 px-6 py-14 text-center backdrop-blur-md">
                         <BookOpen size={36} className="mx-auto mb-3 text-slate-300" />
                         <p className="text-[15px] font-semibold text-[#14142b]">No content yet</p>
                         <p className="mt-1 text-sm text-slate-400">
@@ -589,13 +572,13 @@ export default function CourseLearnPage() {
                 </div>
 
                 {/* Bottom actions only — hide absent prev/next */}
-                <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/80 pt-5 pb-10">
+                <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 pt-5 pb-10">
                   <div>
                     {previousItem && (
                       <button
                         type="button"
                         onClick={handlePrevious}
-                        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2.5 text-[13px] font-semibold text-[#14142b] transition-colors hover:border-slate-300 hover:bg-white"
+                        className="inline-flex items-center gap-2 rounded-full bg-white/70 backdrop-blur-md px-4 py-2.5 text-[13px] font-semibold text-[#14142b] transition-colors hover:bg-white"
                       >
                         <ChevronLeft size={16} />
                         Previous
@@ -640,7 +623,7 @@ export default function CourseLearnPage() {
                 </footer>
               </>
             ) : (
-              <div className="flex min-h-[50vh] flex-col items-center justify-center rounded-lg border border-slate-200/80 bg-white/90 px-6 py-16 text-center shadow-[0_8px_28px_rgba(20,20,43,0.05)]">
+              <div className="flex min-h-[50vh] flex-col items-center justify-center rounded-3xl border border-white/40 bg-white/30 px-6 py-16 text-center shadow-lg backdrop-blur-xl">
                 <BookOpen size={40} className="mb-3 text-slate-300" />
                 <p className="text-lg font-bold text-[#14142b]">Pick a lesson</p>
                 <p className="mt-1 text-sm text-slate-400">Choose one from the sidebar to start.</p>
@@ -648,6 +631,68 @@ export default function CourseLearnPage() {
             )}
           </article>
         </main>
+
+        {/* Drag handle — resizes the right rail against the lesson canvas. Invisible at rest; the
+            full-height gap itself becomes the grabbable affordance on hover, rather than a small
+            icon or a hard line sitting in the middle of it. */}
+        <div
+          onPointerDown={handleRightPanelResizeStart}
+          className="group hidden w-4 shrink-0 cursor-col-resize md:sticky md:top-32 md:flex md:h-[calc(100vh-8.5rem)] md:items-stretch md:justify-center"
+        >
+          <div className="w-1.5 rounded-full bg-transparent transition-colors group-hover:bg-slate-300/60 group-active:bg-slate-400/70" />
+        </div>
+
+        {/* Right rail — notes / AI chat, glass-pill styled to match the left nav */}
+        <aside
+          className="flex w-full shrink-0 flex-col md:sticky md:top-32 md:h-[calc(100vh-8.5rem)]"
+          style={isDesktopViewport ? { width: rightPanelWidth } : undefined}
+        >
+          <div className="flex flex-col gap-3 h-full px-5 pb-8 md:px-4">
+            <div className="flex items-center gap-1.5 rounded-full border border-white/40 bg-white/30 p-1 shadow-lg backdrop-blur-xl">
+              <button
+                type="button"
+                onClick={() => setRightPanelTab('notes')}
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[12px] font-semibold transition-all ${
+                  rightPanelTab === 'notes'
+                    ? 'bg-[#14142b] text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)]'
+                    : 'text-slate-500 hover:text-[#14142b]'
+                }`}
+              >
+                <NotebookPen size={13} />
+                Notes
+              </button>
+              <button
+                type="button"
+                onClick={() => setRightPanelTab('ai')}
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[12px] font-semibold transition-all ${
+                  rightPanelTab === 'ai'
+                    ? 'bg-[#14142b] text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)]'
+                    : 'text-slate-500 hover:text-[#14142b]'
+                }`}
+              >
+                <Sparkles size={13} />
+                AI Chat
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto rounded-3xl border border-white/40 bg-white/30 p-4 shadow-lg backdrop-blur-xl arcade-scrollbar-mini">
+              {rightPanelTab === 'notes' ? (
+                <textarea
+                  value={notesDraft}
+                  onChange={(e) => setNotesDraft(e.target.value)}
+                  placeholder="Jot notes for this lesson…"
+                  className="h-full min-h-[50vh] w-full resize-none bg-transparent text-[13px] text-slate-700 placeholder:text-slate-400 focus:outline-none arcade-scrollbar-mini"
+                />
+              ) : (
+                <div className="flex h-full min-h-[50vh] flex-col items-center justify-center text-center">
+                  <Sparkles size={28} className="mb-3 text-slate-300" />
+                  <p className="text-[13px] font-semibold text-[#14142b]">AI chat coming soon</p>
+                  <p className="mt-1 text-[12px] text-slate-400">Ask questions about this lesson.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </aside>
       </div>
 
       {/* Report Lesson Modal */}

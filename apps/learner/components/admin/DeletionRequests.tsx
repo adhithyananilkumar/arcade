@@ -1,23 +1,42 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { Channel, ChannelDeletionRequestDto, channelService } from "@/domains/channels";
+import { useState, useMemo } from 'react';
+import {
+  ChannelDeletionRequestDto,
+  ChannelSummary,
+  channelService,
+  useChannelSummariesQuery,
+  useInvalidateChannelAdmin,
+  usePendingDeletionRequestsQuery,
+} from "@/domains/channels";
 import { Check, X, AlertTriangle, ShieldCheck, Trash2, Clock, User, Building2, Calendar, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePermissions } from "@/domains/identity";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
 
 export function DeletionRequests() {
-  const [requests, setRequests] = useState<ChannelDeletionRequestDto[]>([]);
-  const [pipelineChannels, setPipelineChannels] = useState<Channel[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Both reads are shared queries. The page's tab badge and the navbar's task menu ask for the
+  // same deletion list on the same render, and the sibling Channels panel asks for the same
+  // `allChannels`; one key each means one request each rather than one per caller.
+  const { data: requestsData, isLoading: requestsLoading } = usePendingDeletionRequestsQuery();
+  // Only the suspended channels, asked for by status. This used to fetch every channel — 4,042
+  // rows, 2.5 MB — and keep the suspended ones in the browser.
+  const { channels: suspendedChannels, isLoading: channelsLoading } = useChannelSummariesQuery({
+    status: 'SUSPENDED',
+    size: 100,
+  });
+  const invalidateChannelAdmin = useInvalidateChannelAdmin();
+
+  const requests = requestsData ?? [];
+  const loading = requestsLoading || channelsLoading;
+  const pipelineChannels = suspendedChannels;
   const [selectedRequest, setSelectedRequest] = useState<ChannelDeletionRequestDto | null>(null);
   const [filter, setFilter] = useState<'ALL' | 'PERSONAL' | 'ORGANIZATION'>('ALL');
   const [approveForce, setApproveForce] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [hardDeleteTarget, setHardDeleteTarget] = useState<Channel | null>(null);
+  const [hardDeleteTarget, setHardDeleteTarget] = useState<ChannelSummary | null>(null);
   const [hardDeleteReason, setHardDeleteReason] = useState('');
   const [hardDeleteConfirmText, setHardDeleteConfirmText] = useState('');
   const [hardDeleteAcknowledged, setHardDeleteAcknowledged] = useState(false);
@@ -26,37 +45,17 @@ export function DeletionRequests() {
   const { hasPermission } = usePermissions();
   const canReview = hasPermission('platform.channels.manage');
 
-  const fetchRequests = async () => {
-    try {
-      setLoading(true);
-      const [requestsData, allChannels] = await Promise.all([
-        channelService.getPendingDeletionRequests(),
-        channelService.getAllChannels(),
-      ]);
-      setRequests(requestsData || []);
-      setPipelineChannels((allChannels || []).filter((c) => c.status === 'SUSPENDED'));
-    } catch {
-      toast.error('Failed to load deletion requests');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRequests();
-  }, []);
-
   const handleReactivate = async (id: string) => {
     try {
       await channelService.reactivateChannel(id);
       toast.success('Channel reactivated');
-      fetchRequests();
+      invalidateChannelAdmin();
     } catch {
       toast.error('Failed to reactivate channel');
     }
   };
 
-  const openHardDeleteDialog = (channel: Channel) => {
+  const openHardDeleteDialog = (channel: ChannelSummary) => {
     setHardDeleteTarget(channel);
     setHardDeleteReason('');
     setHardDeleteConfirmText('');
@@ -82,7 +81,7 @@ export function DeletionRequests() {
       await channelService.hardDeleteChannel(hardDeleteTarget.id, hardDeleteReason.trim(), hardDeleteConfirmText);
       toast.success('Channel and all its content have been permanently deleted');
       setHardDeleteTarget(null);
-      fetchRequests();
+      invalidateChannelAdmin();
     } catch {
       toast.error('Failed to permanently delete channel');
     } finally {
@@ -102,7 +101,7 @@ export function DeletionRequests() {
       );
       setSelectedRequest(null);
       setApproveForce(false);
-      fetchRequests();
+      invalidateChannelAdmin();
     } catch {
       toast.error('Failed to review request');
     }

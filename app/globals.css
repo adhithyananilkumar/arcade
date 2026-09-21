@@ -265,6 +265,47 @@
     background-color: oklch(0.35 0 0);
   }
 
+  /* A thinner scrollbar with an inset track, so it doesn't run flush through a rounded
+     card's corner the way the default 8px bar does. Hidden until the container is hovered
+     or actively scrolled, so it doesn't sit there as a visible line at rest. */
+  .arcade-scrollbar-mini::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+
+  .arcade-scrollbar-mini::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .arcade-scrollbar-mini::-webkit-scrollbar-track {
+    background: transparent;
+    margin-block: 28px;
+  }
+
+  .arcade-scrollbar-mini::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 10px;
+  }
+
+  .arcade-scrollbar-mini:hover::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.55);
+  }
+
+  .arcade-scrollbar-mini::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.8);
+  }
+
+  .arcade-scrollbar-mini {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .arcade-scrollbar-mini:hover {
+    scrollbar-color: rgba(100, 116, 139, 0.55) transparent;
+  }
+
   .font-script {
     font-family: 'Dancing Script', 'Caveat', cursive;
   }

@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { AlertTriangle, History, Tv, UserPlus } from 'lucide-react';
 import { PendingChannels } from '@/apps/learner/components/channels/PendingChannels';
 import { DeletionRequests } from '@/apps/learner/components/admin/DeletionRequests';
 import { ChannelAuditLog } from '@/apps/learner/components/admin/ChannelAuditLog';
-import { channelService, InviteUserModal } from '@/domains/channels';
+import { InviteUserModal, usePendingDeletionRequestsQuery } from '@/domains/channels';
 import { notFound } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
@@ -15,23 +15,14 @@ type AdminTab = 'CHANNELS' | 'DELETION_REQUESTS' | 'AUDIT_LOG';
 export default function AdminChannelsPage() {
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<AdminTab>('CHANNELS');
-  const [deletionRequestCount, setDeletionRequestCount] = useState<number | null>(null);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    channelService
-      .getPendingDeletionRequests()
-      .then((requests) => {
-        if (!cancelled) setDeletionRequestCount(requests.length);
-      })
-      .catch(() => {
-        if (!cancelled) setDeletionRequestCount(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [activeTab]);
+  // Shares the query the Deletions panel and the navbar's task menu already run, so the tab badge
+  // costs nothing extra. It also used to re-fetch on every tab switch — `activeTab` was in the
+  // effect's dependencies — which meant clicking between tabs re-requested the whole list to
+  // recompute a number that had not changed.
+  const { data: deletionRequests } = usePendingDeletionRequestsQuery();
+  const deletionRequestCount = deletionRequests?.length ?? null;
 
   if (!AuthorizationService.canManageChannels(user)) {
     notFound();

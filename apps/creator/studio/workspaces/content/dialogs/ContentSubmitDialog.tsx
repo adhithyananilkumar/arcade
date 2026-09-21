@@ -7,7 +7,7 @@ import { CourseResponse } from "@/shared/types/api.types";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { api } from "@/infrastructure/http/api";
+import { api, ApiError } from "@/infrastructure/http/api";
 
 export interface ContentSubmitDialogProps {
   course?: CourseResponse | null;
@@ -95,7 +95,7 @@ export function ContentSubmitDialog({ course, contentType = 'course', open, onCl
       onClose();
     } catch (error) {
       console.error(error);
-      toast.error("Failed to submit for review.");
+      toast.error(error instanceof ApiError ? error.message : "Failed to submit for review.");
     } finally {
       setIsSubmitting(false);
     }

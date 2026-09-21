@@ -28,6 +28,8 @@ export type {
   ValidateCreationInvitationResponse,
   ChannelAuditLogEntry,
   ChannelContentItem,
+  ChannelSummary,
+  ChannelSummaryQuery,
   ChannelSettingsUpdate,
   OwnershipTransferResponse,
 } from './api/channel.service';
@@ -35,3 +37,18 @@ export { InviteUserModal } from './components/InviteUserModal';
 export { ChannelPicker } from './components/ChannelPicker';
 export { useStudioAccess } from './hooks/useStudioAccess';
 export { useEligibleChannels } from './hooks/useEligibleChannels';
+export {
+  useMyChannelsQuery,
+  useMyWorkspacesQuery,
+  useHasAnyChannel,
+  myChannelsKeys,
+} from './hooks/useMyChannelsQuery';
+export {
+  useChannelSummariesQuery,
+  useChannelCountsQuery,
+  usePendingChannelRequestsQuery,
+  usePendingDeletionRequestsQuery,
+  useChannelAuditLogQuery,
+  useInvalidateChannelAdmin,
+  channelAdminKeys,
+} from './hooks/useChannelAdminQueries';

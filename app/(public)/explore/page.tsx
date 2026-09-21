@@ -9,7 +9,8 @@ import CategoryDetailedView, { CourseCard } from "@/components/explore/CategoryD
 import Link from "next/link";
 import "@/apps/public/landing.css";
 import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
-import { usePublicCourses } from "@/shared/hooks/usePublicCourses";
+import { usePublicCoursesPage } from "@/shared/hooks/usePublicCourses";
+import { usePublicCourseCounts } from "@/shared/hooks/usePublicCourseCounts";
 
 export const CATEGORY_DATA: Record<string, {
   desc: string;
@@ -1056,7 +1057,27 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
   const categoryType = activeTab === "bootcamps" ? "EVENTS" : activeTab === "articles" ? "ARTICLES" : activeTab === "courses" ? "COURSES" : null;
   const allPublicCategories = usePublicCategories();
   const adminCategories = allPublicCategories.filter((c) => c.type === categoryType || c.type === "ALL");
-  const publicCourses = usePublicCourses();
+
+  // Resolve the selected category to its admin id so the catalogue query is filtered by the
+  // backend rather than by comparing every downloaded course against it.
+  const selectedCategoryName = activeCategory || "All";
+  const selectedAdminCategory =
+    selectedCategoryName.toLowerCase() === "all"
+      ? undefined
+      : allPublicCategories.find(
+          (c) =>
+            c.name === selectedCategoryName ||
+            c.name.toLowerCase() === selectedCategoryName.toLowerCase()
+        );
+
+  // A bounded sample, plus every category's count for the pills. This landing view shows a few
+  // courses inside each category card rather than a browsable list — the scrollable list lives in
+  // CategoryDetailedView, which uses the infinite variant. This replaced a full download of the
+  // catalogue that existed only because both of those answers were derived in the browser.
+  const { courses: publicCourses } = usePublicCoursesPage({
+    categoryId: selectedAdminCategory?.id,
+  });
+  const publicCourseCounts = usePublicCourseCounts();
 
   const mergedCategoriesList = [
     "All",
@@ -1088,9 +1109,13 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
         });
       });
 
+      // `publicCourses` is one page, not the catalogue, so the count comes from the counts
+      // endpoint — deriving it from the array would report the page size.
+      const staticAllCoursesCount = allCourses.length - publicCourses.length;
+
       return {
         desc: "Access all self-paced courses, expert bootcamps, and in-depth articles across every topic.",
-        coursesCount: allCourses.length,
+        coursesCount: staticAllCoursesCount + publicCourseCounts.total,
         gradient: "linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)",
         colors: { primary: "#2563EB", secondary: "rgba(37, 99, 235, 0.08)" },
         courses: allCourses,
@@ -1105,26 +1130,23 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
     );
     const catId = admin?.id;
 
-    const publishedForCat = publicCourses
-      .filter((c) => {
-        if (!c.categoryId) return false;
-        const matchesId = (catId && c.categoryId === catId) || (admin && c.categoryId === admin.id);
-        const matchesName = (admin && c.categoryId.toLowerCase() === admin.name.toLowerCase()) || c.categoryId.toLowerCase() === cat.toLowerCase();
-        return Boolean(matchesId || matchesName);
-      })
-      .map((c) => ({
-        id: c.id,
-        title: c.title,
-        duration: "Self-Paced",
-        level: "All Levels",
-        desc: c.description || "",
-      }));
+    // Already filtered to the selected category by the backend, so its cards are this page.
+    // Other categories are only being asked for a pill count here.
+    const isSelectedCategory = cat.toLowerCase() === selectedCategoryName.toLowerCase();
+    const publishedForCat = (isSelectedCategory ? publicCourses : []).map((c) => ({
+      id: c.id,
+      title: c.title,
+      duration: "Self-Paced",
+      level: "All Levels",
+      desc: c.description || "",
+    }));
+    const publishedCountForCat = catId ? (publicCourseCounts.byCategory[catId] ?? 0) : 0;
 
     if (base) {
       return {
         ...base,
         courses: [...publishedForCat, ...base.courses],
-        coursesCount: base.coursesCount + publishedForCat.length,
+        coursesCount: base.coursesCount + publishedCountForCat,
       };
     }
 
