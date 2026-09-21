@@ -182,10 +182,10 @@ describe('isOpenable / resourceHrefFor — inaccessible enrollments must not be 
 });
 
 describe('primaryActionLabelFor', () => {
-  it('says Start for a not-started course, Continue for in-progress, Review for completed', () => {
+  it('says Start for a not-started course, Continue for in-progress, Completed for completed', () => {
     expect(primaryActionLabelFor(course({ progressState: 'NOT_STARTED' }))).toBe('Start');
     expect(primaryActionLabelFor(course({ progressState: 'IN_PROGRESS' }))).toBe('Continue');
-    expect(primaryActionLabelFor(course({ progressState: 'COMPLETED' }))).toBe('Review');
+    expect(primaryActionLabelFor(course({ progressState: 'COMPLETED' }))).toBe('Completed');
   });
 });
 

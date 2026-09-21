@@ -128,7 +128,7 @@ export function resourceHrefFor(item: LearnerEnrollmentSummary): string | null {
 /** Label for the primary action, driven by progress rather than guessed from a percentage. */
 export function primaryActionLabelFor(item: LearnerEnrollmentSummary): string {
   if (item.resourceType === 'EVENT') return 'View event';
-  if (item.progressState === 'COMPLETED') return 'Review';
+  if (item.progressState === 'COMPLETED') return 'Completed';
   if (item.progressState === 'IN_PROGRESS') return 'Continue';
   return 'Start';
 }

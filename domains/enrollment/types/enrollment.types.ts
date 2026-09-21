@@ -131,6 +131,6 @@ export interface MyEnrollmentsQueryParams {
   page?: number;
   /** Server clamps to 1..100. */
   size?: number;
-  sort?: 'enrolledAt' | 'updatedAt' | 'grantedAt';
+  sort?: 'enrolledAt' | 'updatedAt' | 'grantedAt' | 'completedAt' | 'title' | 'dueDate' | string;
   direction?: 'asc' | 'desc';
 }
