@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Channel, channelService, CreateChannelModal } from '@/domains/channels';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { Tv, Clock, CheckCircle, ChevronRight, Plus, Users, Crown } from 'lucide-react';
+import { Tv, Clock, CheckCircle, ChevronRight, Plus, Users, Crown, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
@@ -48,7 +48,11 @@ export function MyChannels() {
   }, [fetchMyChannels]);
 
   const ownsPersonalChannel = rows.some(
-    (c) => c.relationship === 'OWNER' && c.isPersonal && c.status !== 'SUSPENDED'
+    (c) =>
+      c.relationship === 'OWNER' &&
+      c.isPersonal &&
+      c.status !== 'SUSPENDED' &&
+      c.status !== 'REJECTED'
   );
 
   const createButton = (
@@ -124,6 +128,13 @@ export function MyChannels() {
                         <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 font-semibold text-rose-700">
                           Suspended
                         </span>
+                      ) : channel.status === 'REJECTED' ? (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 font-semibold text-slate-600"
+                          title={channel.rejectionReason || undefined}
+                        >
+                          <XCircle size={11} /> Rejected
+                        </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700">
                           <CheckCircle size={11} /> Active
@@ -137,10 +148,13 @@ export function MyChannels() {
                       {channel.status === 'PENDING' && channel.createdAt && (
                         <span>Requested {new Date(channel.createdAt).toLocaleDateString()}</span>
                       )}
+                      {channel.status === 'REJECTED' && channel.rejectionReason && (
+                        <span className="truncate max-w-[220px]">{channel.rejectionReason}</span>
+                      )}
                     </p>
                   </div>
                 </div>
-                {channel.status !== 'PENDING' && (
+                {channel.status !== 'PENDING' && channel.status !== 'REJECTED' && (
                   <Link
                     href={`/channels/${channel.id}/manage`}
                     className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#14142b] px-3.5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#232735]"

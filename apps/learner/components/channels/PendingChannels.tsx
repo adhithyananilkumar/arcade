@@ -60,6 +60,9 @@ export function PendingChannels() {
   const [suspendTarget, setSuspendTarget] = useState<Channel | null>(null);
   const [suspendReason, setSuspendReason] = useState('');
   const [suspendForce, setSuspendForce] = useState(false);
+  const [rejectTarget, setRejectTarget] = useState<Channel | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectSubmitting, setRejectSubmitting] = useState(false);
   const [channelContent, setChannelContent] = useState<ChannelContentItem[]>([]);
   const [contentLoading, setContentLoading] = useState(false);
   const [hardDeleteTarget, setHardDeleteTarget] = useState<Channel | null>(null);
@@ -128,13 +131,28 @@ export function PendingChannels() {
     }
   };
 
-  const handleReject = async (id: string) => {
+  const openRejectDialog = (channel: Channel) => {
+    setRejectTarget(channel);
+    setRejectReason('');
+  };
+
+  const confirmReject = async () => {
+    if (!rejectTarget) return;
+    if (!rejectReason.trim()) {
+      toast.error('A reason is required to reject a channel request');
+      return;
+    }
+    setRejectSubmitting(true);
     try {
-      await channelService.deleteChannelRequest(id);
-      toast.success('Channel request rejected');
+      await channelService.deleteChannelRequest(rejectTarget.id, rejectReason.trim());
+      toast.success('Channel request rejected — the owner has been notified');
+      setRejectTarget(null);
+      setSelectedChannel(null);
       fetchChannels();
-    } catch {
-      toast.error('Failed to reject request');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to reject request');
+    } finally {
+      setRejectSubmitting(false);
     }
   };
 
@@ -532,6 +550,7 @@ export function PendingChannels() {
             const isPending = channel.status === 'PENDING';
             const isActive = channel.status === 'ACTIVE';
             const isSuspended = channel.status === 'SUSPENDED';
+            const isRejected = channel.status === 'REJECTED';
 
             return (
               <div
@@ -580,6 +599,8 @@ export function PendingChannels() {
                           ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                           : isSuspended
                           ? 'border-rose-200 bg-rose-50 text-rose-700'
+                          : isRejected
+                          ? 'border-slate-200 bg-slate-100 text-slate-600'
                           : 'border-amber-200 bg-amber-50 text-amber-700'
                       }`}
                     >
@@ -589,6 +610,8 @@ export function PendingChannels() {
                             ? 'bg-emerald-500'
                             : isSuspended
                             ? 'bg-rose-500'
+                            : isRejected
+                            ? 'bg-slate-400'
                             : 'bg-amber-500'
                         }`}
                       />
@@ -645,7 +668,7 @@ export function PendingChannels() {
                         {canSuspend && (
                           <button
                             type="button"
-                            onClick={() => handleReject(channel.id)}
+                            onClick={() => openRejectDialog(channel)}
                             className="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-colors"
                             title="Reject channel"
                           >
@@ -742,6 +765,7 @@ export function PendingChannels() {
                   const isPending = channel.status === 'PENDING';
                   const isActive = channel.status === 'ACTIVE';
                   const isSuspended = channel.status === 'SUSPENDED';
+                  const isRejected = channel.status === 'REJECTED';
                   const ownerName = channel.ownerName || 'Owner';
                   const ownerInitial = (channel.ownerName || channel.name || 'O').charAt(0).toUpperCase();
 
@@ -835,6 +859,8 @@ export function PendingChannels() {
                               ? 'border-emerald-200/80 bg-emerald-50 text-emerald-700'
                               : isSuspended
                               ? 'border-rose-200/80 bg-rose-50 text-rose-700'
+                              : isRejected
+                              ? 'border-slate-200/80 bg-slate-100 text-slate-600'
                               : 'border-amber-200/80 bg-amber-50 text-amber-700'
                           }`}
                         >
@@ -844,6 +870,8 @@ export function PendingChannels() {
                                 ? 'bg-emerald-500'
                                 : isSuspended
                                 ? 'bg-rose-500'
+                                : isRejected
+                                ? 'bg-slate-400'
                                 : 'bg-amber-500 animate-pulse'
                             }`}
                           />
@@ -870,7 +898,7 @@ export function PendingChannels() {
                               {canSuspend && (
                                 <button
                                   type="button"
-                                  onClick={() => handleReject(channel.id)}
+                                  onClick={() => openRejectDialog(channel)}
                                   className="inline-flex items-center gap-1 rounded-xl border border-rose-200/90 bg-white px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:border-rose-300 shadow-2xs hover:scale-[1.02] active:scale-[0.98] transition-all"
                                   title="Reject channel"
                                 >
@@ -1031,6 +1059,8 @@ export function PendingChannels() {
                           ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                           : selectedChannel.status === 'SUSPENDED'
                           ? 'border-rose-200 bg-rose-50 text-rose-700'
+                          : selectedChannel.status === 'REJECTED'
+                          ? 'border-slate-200 bg-slate-100 text-slate-600'
                           : 'border-amber-200 bg-amber-50 text-amber-700'
                       }`}
                     >
@@ -1059,6 +1089,16 @@ export function PendingChannels() {
                     <AlertTriangle size={13} /> Suspension Reason
                   </h4>
                   <p className="text-xs text-rose-700">{selectedChannel.suspensionReason}</p>
+                </div>
+              )}
+
+              {/* Rejection Reason */}
+              {selectedChannel.status === 'REJECTED' && selectedChannel.rejectionReason && (
+                <div className="space-y-1 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                  <h4 className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <AlertTriangle size={13} /> Rejection Reason
+                  </h4>
+                  <p className="text-xs text-slate-600">{selectedChannel.rejectionReason}</p>
                 </div>
               )}
 
@@ -1159,10 +1199,7 @@ export function PendingChannels() {
                     {canSuspend && (
                       <button
                         type="button"
-                        onClick={() => {
-                          handleReject(selectedChannel.id);
-                          setSelectedChannel(null);
-                        }}
+                        onClick={() => openRejectDialog(selectedChannel)}
                         className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-rose-50 text-rose-700 rounded-xl hover:bg-rose-100 transition-colors font-semibold text-xs border border-rose-200"
                       >
                         <X size={14} /> Reject Request
@@ -1284,6 +1321,58 @@ export function PendingChannels() {
                 <button
                   type="button"
                   onClick={() => setSuspendTarget(null)}
+                  className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold text-xs"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: Reject Dialog */}
+      <Dialog open={!!rejectTarget} onOpenChange={(open) => !open && setRejectTarget(null)}>
+        <DialogContent className="max-w-md p-6 sm:p-7">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-rose-700 flex items-center gap-2">
+              <X size={18} /> Reject Channel Request
+            </DialogTitle>
+          </DialogHeader>
+
+          {rejectTarget && (
+            <div className="space-y-5 mt-3">
+              <div>
+                <span className="block text-[11px] font-medium text-slate-400">Target Channel</span>
+                <p className="text-sm font-bold text-slate-900">{rejectTarget.name}</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-800" htmlFor="reject-reason-modal">
+                  Reason for Rejection (Visible to requester)
+                </label>
+                <textarea
+                  id="reject-reason-modal"
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all placeholder:text-slate-400"
+                  placeholder="e.g. Name conflicts with an existing brand, incomplete description..."
+                />
+              </div>
+
+              <div className="flex gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={confirmReject}
+                  disabled={rejectSubmitting || !rejectReason.trim()}
+                  className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition-colors font-semibold text-xs shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <X size={14} /> {rejectSubmitting ? 'Rejecting...' : 'Reject Request'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRejectTarget(null)}
                   className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold text-xs"
                 >
                   Cancel
