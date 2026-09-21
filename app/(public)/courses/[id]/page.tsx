@@ -484,7 +484,7 @@ export default function CoursePreviewPage() {
                     <p className="mt-6 whitespace-pre-wrap text-[15px] leading-relaxed text-subtle">{person.bio}</p>
                   ) : (
                     <p className="mt-6 text-[15px] italic leading-relaxed text-subtle/75">
-                      {person.name} hasn&apos;t added a bio yet.
+                      {`${person.name || "This instructor"} hasn't added a bio yet.`}
                     </p>
                   )}
 
@@ -614,7 +614,7 @@ export default function CoursePreviewPage() {
 
   const ctaContent = (
     <LearningCta
-      title={<>Light the path to your next <span className="italic text-amber">design role.</span></>}
+      title={<>Light the path to your next <span className="italic text-amber">step.</span></>}
       description="Learn at your own pace, with feedback from the people who built the course."
       primaryAction={
         isEnrolled && course?.id ? (

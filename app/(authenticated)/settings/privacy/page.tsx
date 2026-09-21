@@ -2,16 +2,14 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ToggleLeft, Download, Trash2, Activity, Plus, ExternalLink, Users } from 'lucide-react';
+import { ToggleLeft, Download, Trash2, Activity, ExternalLink, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { CreateChannelModal } from "@/domains/channels";
 
 export default function PrivacyPage() {
   const [analytics, setAnalytics] = useState(true);
   const [marketing, setMarketing] = useState(false);
   const [personalization, setPersonalization] = useState(true);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   return (
     <motion.div 
@@ -32,12 +30,6 @@ export default function PrivacyPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition-all"
-            >
-              <Plus size={14} /> Create Channel
-            </button>
             <Link
               href="/manage-channels"
               className="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-800 text-xs font-semibold text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
@@ -49,7 +41,7 @@ export default function PrivacyPage() {
 
         <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50/50 dark:bg-neutral-950/50 border border-slate-100 dark:border-neutral-800 text-xs text-gray-600 dark:text-neutral-300">
           <Users size={20} className="text-indigo-500 shrink-0" />
-          <p>You can create public or private channels to interact with learners, publish resources, and manage member permissions safely.</p>
+          <p>Channel creation is invite-only — a platform admin invites specific people to start a channel. Manage the channels you already own or staff below.</p>
         </div>
       </div>
 
@@ -132,12 +124,6 @@ export default function PrivacyPage() {
           Delete Account
         </button>
       </div>
-
-      <CreateChannelModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSuccess={() => {}}
-      />
     </motion.div>
   );
 }

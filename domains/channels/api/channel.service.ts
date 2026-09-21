@@ -1,11 +1,46 @@
 import { api } from '@/infrastructure/http/api';
 
+/**
+ * Applicant KYC-style profile captured on channel creation (both Personal and Organization
+ * requests). Organization sub-fields are only populated when the channel is not personal.
+ * Mirrors `ChannelApplicantProfile` / the `applicantProfile` field on the backend's
+ * `ChannelResponse` DTO.
+ */
+export interface ChannelApplicantProfile {
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+  dateOfBirth: string;
+  gender: string;
+  nationality: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  pinCode: string;
+  personalIdProofType: string;
+  personalIdProofNumber: string;
+  personalIdProofDocumentUrl?: string;
+  organizationName?: string;
+  organizationType?: string;
+  organizationDescription?: string;
+  organizationWebsite?: string;
+  organizationEmail?: string;
+  organizationAddress?: string;
+  organizationRegistrationNumber?: string;
+  roleInOrganization?: string;
+  organizationProofNumber?: string;
+  organizationProofDocumentUrl?: string;
+}
+
 export interface Channel {
   id: string;
   name: string;
   iconUrl?: string;
   bannerUrl?: string;
   description?: string;
+  /** Free-text reason the requester wants this channel, distinct from `description`. */
+  purpose?: string;
   socialLinks?: string[];
   isPersonal: boolean;
   status: string;
@@ -21,6 +56,61 @@ export interface Channel {
   ownerEmail?: string;
   ownerPhone?: string;
   createdAt: string;
+  /** Present when the requester/an admin may see it — the applicant's KYC submission. */
+  applicantProfile?: ChannelApplicantProfile;
+}
+
+/** Applicant-side fields collected on the invite-gated channel creation form. */
+export interface ChannelApplicantInput {
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+  dateOfBirth: string;
+  gender: string;
+  nationality: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  pinCode: string;
+  personalIdProofType: string;
+  personalIdProofNumber: string;
+  personalIdProofDocument?: File;
+}
+
+/** Organization-side fields, required only when submitting a non-personal channel request. */
+export interface ChannelOrganizationInput {
+  organizationName: string;
+  organizationType: string;
+  organizationDescription: string;
+  organizationWebsite?: string;
+  organizationEmail: string;
+  organizationAddress: string;
+  organizationRegistrationNumber: string;
+  roleInOrganization: string;
+  organizationProofNumber: string;
+  organizationProofDocument?: File;
+}
+
+/**
+ * Fields for a channel creation request. `invitationToken` and `applicant` (with its ID proof
+ * document) are required by the backend for every request — there is no ungated path — the
+ * fields stay optional here only so callers that fail validation before submitting get a
+ * client-side error instead of a raw 400 from the API layer.
+ */
+export interface CreateChannelRequestOptions {
+  invitationToken: string;
+  purpose?: string;
+  applicant: ChannelApplicantInput;
+  organization?: ChannelOrganizationInput;
+}
+
+export interface ValidateCreationInvitationResponse {
+  valid: boolean;
+  email?: string;
+  invitedByName?: string;
+  expired?: boolean;
+  accountExists?: boolean;
 }
 
 export interface ChannelContentItem {
@@ -91,10 +181,16 @@ export interface ChannelSettingsUpdate {
 }
 
 export const channelService = {
+  /**
+   * The sole channel-creation entry point: requires a still-valid invitation token (see {@link
+   * validateCreationInvitation}/{@link sendCreationInvitation}) and full applicant KYC — the
+   * backend rejects any request missing either.
+   */
   createChannelRequest: async (
     name: string,
     description: string,
     isPersonal: boolean,
+    options: CreateChannelRequestOptions,
     iconFile?: File
   ): Promise<Channel> => {
     const formData = new FormData();
@@ -106,7 +202,67 @@ export const channelService = {
       formData.append('icon', iconFile);
     }
 
+    formData.append('invitationToken', options.invitationToken);
+    if (options.purpose !== undefined) {
+      formData.append('purpose', options.purpose);
+    }
+
+    const { personalIdProofDocument, ...applicantFields } = options.applicant;
+    formData.append('fullName', applicantFields.fullName);
+    formData.append('phoneNumber', applicantFields.phoneNumber);
+    formData.append('applicantEmail', applicantFields.email);
+    formData.append('dateOfBirth', applicantFields.dateOfBirth);
+    formData.append('gender', applicantFields.gender);
+    formData.append('nationality', applicantFields.nationality);
+    formData.append('address', applicantFields.address);
+    formData.append('city', applicantFields.city);
+    formData.append('state', applicantFields.state);
+    formData.append('country', applicantFields.country);
+    formData.append('pinCode', applicantFields.pinCode);
+    formData.append('personalIdProofType', applicantFields.personalIdProofType);
+    formData.append('personalIdProofNumber', applicantFields.personalIdProofNumber);
+    if (personalIdProofDocument) {
+      formData.append('personalIdProofDocument', personalIdProofDocument);
+    }
+
+    if (options.organization) {
+      const { organizationProofDocument, ...orgFields } = options.organization;
+      formData.append('organizationName', orgFields.organizationName);
+      formData.append('organizationType', orgFields.organizationType);
+      formData.append('organizationDescription', orgFields.organizationDescription);
+      if (orgFields.organizationWebsite) {
+        formData.append('organizationWebsite', orgFields.organizationWebsite);
+      }
+      formData.append('organizationEmail', orgFields.organizationEmail);
+      formData.append('organizationAddress', orgFields.organizationAddress);
+      formData.append('organizationRegistrationNumber', orgFields.organizationRegistrationNumber);
+      formData.append('roleInOrganization', orgFields.roleInOrganization);
+      formData.append('organizationProofNumber', orgFields.organizationProofNumber);
+      if (organizationProofDocument) {
+        formData.append('organizationProofDocument', organizationProofDocument);
+      }
+    }
+
     const response = await api.post<Channel>('/api/v1/channels', formData);
+    return response;
+  },
+
+  /** Admin-only: invite a user (by email or username) to go through the channel creation flow. */
+  sendCreationInvitation: async (identifier: string): Promise<void> => {
+    await api.post('/api/v1/channels/creation-invitations', { identifier });
+  },
+
+  /** Admin-only: cancels a still-pending channel-creation invitation. */
+  revokeCreationInvitation: async (invitationId: string): Promise<void> => {
+    await api.delete(`/api/v1/channels/creation-invitations/${invitationId}`);
+  },
+
+  /** Public, unauthenticated check of an invite token — no mutation. */
+  validateCreationInvitation: async (token: string): Promise<ValidateCreationInvitationResponse> => {
+    const query = new URLSearchParams({ token }).toString();
+    const response = await api.get<ValidateCreationInvitationResponse>(
+      `/api/v1/channels/creation-invitations/validate?${query}`
+    );
     return response;
   },
 

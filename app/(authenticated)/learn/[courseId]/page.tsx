@@ -733,7 +733,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
                   <p className="mt-6 whitespace-pre-wrap text-[15px] leading-relaxed text-subtle">{person.bio}</p>
                 ) : (
                   <p className="mt-6 text-[15px] italic leading-relaxed text-subtle/75">
-                    {person.name} hasn&apos;t added a bio yet.
+                    {`${person.name || "This instructor"} hasn't added a bio yet.`}
                   </p>
                 )}
 
@@ -993,7 +993,7 @@ function EnrollCta({ onEnroll, initialState = "NOT_ENROLLED", pendingReason, pri
         className="arcade-spin pointer-events-none absolute -right-8 -top-8"
       />
       <h2 className="mx-auto max-w-2xl font-serif text-3xl font-light leading-tight text-paper text-balance sm:text-4xl">
-        Light the path to your next <span className="italic text-amber">design role.</span>
+        Light the path to your next <span className="italic text-amber">step.</span>
       </h2>
       <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-white/60">
         Learn at your own pace, with feedback from the people who built the course.

@@ -17,14 +17,16 @@ import {
   ExternalLink, 
   ChevronLeft, 
   ChevronRight, 
-  ChevronDown, 
-  Eye, 
-  SlidersHorizontal, 
-  User, 
-  Building2, 
-  LayoutGrid, 
-  List, 
-  Calendar 
+  ChevronDown,
+  Eye,
+  SlidersHorizontal,
+  User,
+  Building2,
+  LayoutGrid,
+  List,
+  Calendar,
+  FileText,
+  UserCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePermissions } from "@/domains/identity";
@@ -1099,6 +1101,139 @@ export function PendingChannels() {
                     <AlertTriangle size={13} /> Rejection Reason
                   </h4>
                   <p className="text-xs text-slate-600">{selectedChannel.rejectionReason}</p>
+                </div>
+              )}
+
+              {/* Purpose */}
+              {selectedChannel.purpose && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Purpose
+                  </h4>
+                  <p className="text-xs text-slate-600 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 leading-relaxed">
+                    {selectedChannel.purpose}
+                  </p>
+                </div>
+              )}
+
+              {/* Applicant / Organization KYC — captured on the invite-gated creation request */}
+              {selectedChannel.applicantProfile && (
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                    <UserCircle2 size={13} /> Applicant Details
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 text-xs">
+                    <div>
+                      <span className="block text-[10px] font-medium text-slate-400">Full Name</span>
+                      <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.fullName}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] font-medium text-slate-400">Email</span>
+                      <span className="font-semibold text-slate-800 break-all">{selectedChannel.applicantProfile.email}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] font-medium text-slate-400">Phone</span>
+                      <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.phoneNumber}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] font-medium text-slate-400">Date of Birth</span>
+                      <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.dateOfBirth}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] font-medium text-slate-400">Gender</span>
+                      <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.gender}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] font-medium text-slate-400">Nationality</span>
+                      <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.nationality}</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="block text-[10px] font-medium text-slate-400">Address</span>
+                      <span className="font-semibold text-slate-800">
+                        {[selectedChannel.applicantProfile.address, selectedChannel.applicantProfile.city, selectedChannel.applicantProfile.state, selectedChannel.applicantProfile.country, selectedChannel.applicantProfile.pinCode]
+                          .filter(Boolean)
+                          .join(', ')}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] font-medium text-slate-400">ID Proof Type</span>
+                      <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.personalIdProofType}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] font-medium text-slate-400">ID Proof Number</span>
+                      <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.personalIdProofNumber}</span>
+                    </div>
+                    {selectedChannel.applicantProfile.personalIdProofDocumentUrl && (
+                      <div className="col-span-2">
+                        <a
+                          href={selectedChannel.applicantProfile.personalIdProofDocumentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 font-semibold text-indigo-600 hover:text-indigo-700"
+                        >
+                          <FileText size={13} /> View ID Proof Document
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {!selectedChannel.isPersonal && (
+                    <>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5 pt-1">
+                        <Building2 size={13} /> Organization Details
+                      </h4>
+                      <div className="grid grid-cols-2 gap-3 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 text-xs">
+                        <div>
+                          <span className="block text-[10px] font-medium text-slate-400">Organization Name</span>
+                          <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.organizationName || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] font-medium text-slate-400">Organization Type</span>
+                          <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.organizationType || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] font-medium text-slate-400">Organization Email</span>
+                          <span className="font-semibold text-slate-800 break-all">{selectedChannel.applicantProfile.organizationEmail || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] font-medium text-slate-400">Website</span>
+                          <span className="font-semibold text-slate-800 break-all">{selectedChannel.applicantProfile.organizationWebsite || '—'}</span>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="block text-[10px] font-medium text-slate-400">Description</span>
+                          <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.organizationDescription || '—'}</span>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="block text-[10px] font-medium text-slate-400">Address</span>
+                          <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.organizationAddress || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] font-medium text-slate-400">Registration Number</span>
+                          <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.organizationRegistrationNumber || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] font-medium text-slate-400">Role in Organization</span>
+                          <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.roleInOrganization || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] font-medium text-slate-400">Proof Number</span>
+                          <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.organizationProofNumber || '—'}</span>
+                        </div>
+                        {selectedChannel.applicantProfile.organizationProofDocumentUrl && (
+                          <div className="col-span-2">
+                            <a
+                              href={selectedChannel.applicantProfile.organizationProofDocumentUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 font-semibold text-indigo-600 hover:text-indigo-700"
+                            >
+                              <FileText size={13} /> View Organization Proof Document
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
