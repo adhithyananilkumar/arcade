@@ -18,6 +18,15 @@ function buildQuery(params: Record<string, string | number | undefined>): string
   return qs ? `?${qs}` : '';
 }
 
+/** One row from {@link UserService.searchUsers}. Mirrors the backend's `UserSearchResponse`. */
+export interface UserSearchResult {
+  id: string;
+  label: string;
+  /** The account's handle, or null when it has not claimed one. */
+  handle?: string | null;
+  avatarUrl?: string | null;
+}
+
 export class UserService {
   static async getMe(): Promise<User> {
     const data = await api.get<User>('/api/v1/users/me');
@@ -123,6 +132,31 @@ export class UserService {
     });
   }
 
+  /**
+   * Updates only the public-profile presentation fields.
+   *
+   * Same reasoning as {@link updateInstructorProfile}: {@link updateProfile} takes every field
+   * positionally, so calling it from a form that does not own the handle would re-submit
+   * whatever the form happens to hold for it. `username` is deliberately absent here — a handle
+   * is claimed through the handle registry (`HandleService.claimForMe`), not as a side effect of
+   * saving a headline.
+   */
+  static async updateProfilePresentation(
+    firstName: string,
+    lastName: string,
+    fields: {
+      headline?: string;
+      location?: string;
+      showLearnerActivity?: boolean;
+    }
+  ): Promise<User> {
+    return api.put<User>('/api/v1/users/me', {
+      firstName,
+      lastName,
+      ...fields,
+    });
+  }
+
   static async uploadAvatar(file: File): Promise<User> {
     const formData = new FormData();
     formData.append('file', file);
@@ -133,6 +167,18 @@ export class UserService {
   static async removeAvatar(): Promise<User> {
     const data = await api.delete<User>('/api/v1/users/me/avatar');
     return data;
+  }
+
+  /**
+   * Lean autocomplete search over every account, for @mention pickers and admin surfaces that
+   * need to name someone. Available to any authenticated user — it returns display name, handle
+   * and avatar only, never contact details.
+   */
+  static async searchUsers(query: string): Promise<UserSearchResult[]> {
+    if (!query.trim()) return [];
+    return api.get<UserSearchResult[]>(
+      `/api/v1/users/search?q=${encodeURIComponent(query.trim())}`
+    );
   }
 
   static async checkUsername(username: string): Promise<{ available: boolean; suggestions: string[] }> {

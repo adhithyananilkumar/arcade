@@ -36,6 +36,28 @@ export interface User {
   courses?: { id: string; title: string; description?: string; coverImageUrl?: string; status?: string; createdAt?: string }[];
   workshops?: { id: string; title: string; description?: string; coverImageUrl?: string; status?: string; createdAt?: string }[];
   certificates?: { name: string; issuer?: string; date?: string; idCode?: string }[];
+  /**
+   * Public-profile presentation, mirrored from the backend's `ProfileResponse`.
+   * `username` above is the handle; it is null when the account has not claimed one, which the
+   * settings screen prompts for rather than inventing a value.
+   */
+  headline?: string;
+  location?: string;
+  showLearnerActivity?: boolean;
+  /** Verification and staff badges, so signed-in chrome can render the tick without a refetch. */
+  badges?: {
+    code: string;
+    label: string;
+    description?: string | null;
+    category: string;
+    icon: string;
+    accentColor: string;
+    effect: string;
+    displayOrder: number;
+    tenure?: string | null;
+    note?: string | null;
+    grantedAt: string;
+  }[];
   // Legacy fields (kept for fallback)
   roles?: any[];
   permissions?: string[];

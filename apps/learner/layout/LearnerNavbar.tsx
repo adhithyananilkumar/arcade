@@ -28,7 +28,13 @@ export default function LearnerNavbar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
-  const { notifications, unreadCount, markAllRead, markRead, refresh } = useNotifications();
+  // The bell shows only what is still unread. It is a "what needs my attention right now"
+  // surface, not a history: re-showing notifications the user has already read pushed the new
+  // ones off the bottom of a 420px panel, which is exactly when they are least likely to be seen.
+  // The full inbox at /notifications is where history lives.
+  const { notifications, unreadCount, markAllRead, markRead, refresh } = useNotifications({
+    status: 'unread',
+  });
   const [hasChannels, setHasChannels] = useState(false);
   const [collaboratedEventId, setCollaboratedEventId] = useState<string | null>(null);
   const [hasMultipleCollabs, setHasMultipleCollabs] = useState<boolean>(false);
@@ -302,13 +308,7 @@ export default function LearnerNavbar() {
         <div className="pointer-events-auto flex items-center justify-center h-12 w-12 rounded-full apple-glass-dock relative z-50">
           <div className="relative flex items-center justify-center">
             <button 
-              onClick={() => {
-                const next = !isNotificationsOpen;
-                setIsNotificationsOpen(next);
-                if (next) {
-                  refresh();
-                }
-              }}
+              onClick={() => setIsNotificationsOpen((open) => !open)}
               className="relative p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
               title="Notifications"
             >

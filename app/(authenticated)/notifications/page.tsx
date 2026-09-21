@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Alex_Brush } from "next/font/google";
@@ -10,6 +10,9 @@ import {
   getNotificationTargetUrl,
   getVisualType,
   parseMetadata,
+  CATEGORY_LABELS,
+  CATEGORY_ORDER,
+  type NotificationCategory,
   type NotificationDto,
   type VisualType,
 } from "@/domains/notifications";
@@ -17,7 +20,6 @@ import {
   Bell,
   User,
   Trash2,
-  RefreshCw,
   ChevronDown,
   ArrowRight,
   Eye,
@@ -29,6 +31,9 @@ import {
   Users,
   Inbox,
   Loader2,
+  Search,
+  X,
+  Layers,
 } from "lucide-react";
 
 const alexBrush = Alex_Brush({
@@ -39,7 +44,8 @@ const alexBrush = Alex_Brush({
 
 // ─── Per-bucket visual styling ──────────────────────────────────────────────
 // Purely presentational — which of six looks a real notification's `type` gets skinned with.
-// See domains/notifications/lib/visualType.ts for how `type` maps to a bucket.
+// See domains/notifications/lib/visualType.ts for how `type` maps to a bucket. Note this is a
+// different axis from `category`, which drives the filter chips and comes from the backend.
 
 const TYPE_STYLES: Record<
   VisualType,
@@ -185,6 +191,14 @@ function isToday(iso: string): boolean {
   );
 }
 
+/**
+ * When the row last had something happen to it. A collapsed group keeps its original createdAt but
+ * advances lastEventAt every time it absorbs another event, and the reader cares about the latter.
+ */
+function eventTime(n: NotificationDto): string {
+  return n.lastEventAt ?? n.createdAt;
+}
+
 /** camelCase -> "Camel Case", for displaying a metadata key as a label. */
 function humanizeKey(key: string): string {
   return key
@@ -227,29 +241,50 @@ function ctaLabel(bucket: VisualType): string {
   }
 }
 
+/** How long to wait after the last keystroke before asking the server. */
+const SEARCH_DEBOUNCE_MS = 300;
+
+type TabId = "unread" | "all";
+
 export default function NotificationsHubPage() {
+  const [activeTab, setActiveTab] = useState<TabId>("unread");
+  const [activeCategory, setActiveCategory] = useState<NotificationCategory | null>(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [expandedIds, setExpandedIds] = useState<string[]>([]);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  // Debounced so typing does not fire a request per keystroke. The search itself runs on the
+  // server against the whole history, not over whichever page happens to be loaded.
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchTerm(searchInput), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
   const {
     notifications,
+    totalCount,
     unreadCount,
+    unreadByCategory,
     loading,
-    refresh,
+    isRefetching,
+    hasMore,
+    loadMore,
+    isLoadingMore,
     markAllRead,
     markRead,
     deleteNotification,
-    deleteAllNotifications,
-  } = useNotifications();
-
-  const [expandedIds, setExpandedIds] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<"all" | "unread">("all");
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const [clearingAll, setClearingAll] = useState(false);
+  } = useNotifications({
+    status: activeTab === "unread" ? "unread" : "all",
+    category: activeCategory,
+    search: searchTerm,
+  });
 
   const handleCardClick = useCallback(
     (item: NotificationDto) => {
       if (!item.read) markRead(item.id);
       setExpandedIds((prev) =>
-        prev.includes(item.id) ? prev.filter((x) => x !== item.id) : [...prev, item.id]
+        prev.includes(item.id) ? prev.filter((id) => id !== item.id) : [...prev, item.id]
       );
     },
     [markRead]
@@ -269,9 +304,8 @@ export default function NotificationsHubPage() {
       setPendingDeleteId(id);
       try {
         await deleteNotification(id);
-        setExpandedIds((prev) => prev.filter((x) => x !== id));
       } catch {
-        toast.error("Failed to delete notification.");
+        toast.error("Could not delete that notification. Please try again.");
       } finally {
         setPendingDeleteId(null);
       }
@@ -279,43 +313,30 @@ export default function NotificationsHubPage() {
     [deleteNotification]
   );
 
-  const handleClearAll = useCallback(async () => {
-    if (notifications.length === 0) return;
-    if (!window.confirm("Clear all notifications? This cannot be undone.")) return;
-    setClearingAll(true);
-    try {
-      await deleteAllNotifications();
-      setExpandedIds([]);
-      toast.success("Notifications cleared.");
-    } catch {
-      toast.error("Failed to clear notifications.");
-    } finally {
-      setClearingAll(false);
-    }
-  }, [notifications.length, deleteAllNotifications]);
+  const handleTabChange = useCallback((tab: TabId) => {
+    setActiveTab(tab);
+    setExpandedIds([]);
+  }, []);
 
-  const handleRefresh = useCallback(async () => {
-    setIsRefreshing(true);
-    try {
-      await refresh();
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [refresh]);
+  const handleCategoryChange = useCallback((category: NotificationCategory | null) => {
+    setActiveCategory(category);
+    setExpandedIds([]);
+  }, []);
 
-  const filteredNotifications = useMemo(() => {
-    if (activeTab === "unread") return notifications.filter((n) => !n.read);
-    return notifications;
-  }, [notifications, activeTab]);
+  const clearFilters = useCallback(() => {
+    setActiveCategory(null);
+    setSearchInput("");
+    setSearchTerm("");
+  }, []);
 
-  const todayItems = useMemo(
-    () => filteredNotifications.filter((n) => isToday(n.createdAt)),
-    [filteredNotifications]
-  );
-  const earlierItems = useMemo(
-    () => filteredNotifications.filter((n) => !isToday(n.createdAt)),
-    [filteredNotifications]
-  );
+  const { todayItems, earlierItems } = useMemo(() => {
+    const today: NotificationDto[] = [];
+    const earlier: NotificationDto[] = [];
+    notifications.forEach((n) => (isToday(eventTime(n)) ? today : earlier).push(n));
+    return { todayItems: today, earlierItems: earlier };
+  }, [notifications]);
+
+  const isFiltered = Boolean(activeCategory) || searchTerm.trim().length > 0;
 
   const renderCard = (item: NotificationDto) => {
     const isExpanded = expandedIds.includes(item.id);
@@ -334,9 +355,11 @@ export default function NotificationsHubPage() {
         exit={{ x: 50, opacity: 0 }}
         onClick={() => handleCardClick(item)}
         className={`p-5 rounded-2xl transition-all cursor-pointer relative group flex flex-col gap-3.5 w-full overflow-hidden border ${style.borderColor} ${
-          !item.read ? style.cardUnreadBg : style.cardBg
+          !item.read ? style.cardUnreadBg : `${style.cardBg} opacity-[0.72] hover:opacity-100`
         } ${style.cardHoverEffect} hover:-translate-y-0.5 hover:shadow-md`}
       >
+        {/* The accent bar is the at-a-glance "this still needs you" signal, so a read card loses
+            it entirely rather than merely dimming it. */}
         {!item.read && (
           <div className={`absolute left-0 top-0 bottom-0 w-[4px] rounded-l-2xl ${style.leftBar}`} />
         )}
@@ -349,18 +372,39 @@ export default function NotificationsHubPage() {
           <div className="flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
               <div className="flex items-center gap-2 min-w-0">
-                <h4 className="text-xs font-black text-slate-900 dark:text-slate-100 leading-none truncate">
+                <h4
+                  className={`text-xs leading-none truncate ${
+                    item.read
+                      ? "font-semibold text-slate-600 dark:text-slate-400"
+                      : "font-black text-slate-900 dark:text-slate-100"
+                  }`}
+                >
                   {item.title}
                 </h4>
                 <span className={`shrink-0 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider ${style.badgeBg}`}>
                   {style.badgeText}
                 </span>
+                {item.groupCount > 1 && (
+                  // A collapsed group stands for many events; say so explicitly rather than
+                  // letting one row quietly under-represent a backlog.
+                  <span
+                    className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-slate-900/5 dark:bg-white/10 text-slate-600 dark:text-slate-300"
+                    title={`${item.groupCount} events collapsed into this notification`}
+                  >
+                    <Layers size={8} />
+                    {item.groupCount}
+                  </span>
+                )}
               </div>
               <span className="text-[9px] text-slate-400 font-bold select-none shrink-0">
-                {formatTimestamp(item.createdAt)}
+                {formatTimestamp(eventTime(item))}
               </span>
             </div>
-            <p className="text-[11px] text-slate-550 dark:text-slate-400 font-semibold leading-relaxed mt-1">
+            <p
+              className={`text-[11px] font-semibold leading-relaxed mt-1 ${
+                item.read ? "text-slate-400 dark:text-slate-500" : "text-slate-550 dark:text-slate-400"
+              }`}
+            >
               {item.message}
             </p>
           </div>
@@ -369,7 +413,7 @@ export default function NotificationsHubPage() {
             {item.read ? (
               <span
                 className="p-1.5 rounded-lg bg-slate-50 dark:bg-neutral-800 text-emerald-500"
-                title="Read"
+                title={item.readAt ? `Read ${formatTimestamp(item.readAt)}` : "Read"}
               >
                 <Check size={12} />
               </span>
@@ -419,6 +463,13 @@ export default function NotificationsHubPage() {
                   </p>
                 )}
 
+                {item.groupCount > 1 && (
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
+                    This groups {item.groupCount} similar updates. Open the linked queue to see each
+                    one individually.
+                  </p>
+                )}
+
                 {metadataEntries.length > 0 && (
                   <div className={`p-4 rounded-xl space-y-1.5 ${style.detailsBg}`}>
                     {metadataEntries.map(([label, value]) => (
@@ -453,6 +504,30 @@ export default function NotificationsHubPage() {
     );
   };
 
+  const renderSection = (label: string, items: NotificationDto[]) => {
+    if (items.length === 0) return null;
+    return (
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h3 className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+            {label}
+          </h3>
+          {label === "Today" && unreadCount > 0 && (
+            <button
+              onClick={markAllRead}
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 hover:text-blue-700 dark:text-blue-400 transition-colors"
+            >
+              Mark all as read <CheckCircle2 size={12} />
+            </button>
+          )}
+        </div>
+        <div className="grid grid-cols-1 gap-3">
+          <AnimatePresence initial={false}>{items.map(renderCard)}</AnimatePresence>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950 pt-10 pb-16 text-slate-800 dark:text-slate-200">
       <style jsx global>{`
@@ -478,164 +553,62 @@ export default function NotificationsHubPage() {
         }
 
         .title-left {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          width: 100%;
+          position: relative;
+          display: inline-block;
         }
 
         .title-left h1 {
+          font-size: 52px;
+          line-height: 1.05;
           margin: 0;
-          font-size: 58px;
-          font-weight: 400;
-          line-height: 0.95;
-
-          background: linear-gradient(
-            90deg,
-            #1769ff 0%,
-            #159fe8 50%,
-            #00b894 100%
-          );
-
+          background: linear-gradient(90deg, #1769ff 0%, #00b894 100%);
           -webkit-background-clip: text;
           background-clip: text;
-          color: transparent;
+          -webkit-text-fill-color: transparent;
         }
 
         .title-underline {
-          width: 300px;
-          height: 20px;
           display: block;
-          margin: 2px auto 0;
+          width: 100%;
+          height: 22px;
+          margin-top: -4px;
+          overflow: visible;
         }
 
         .title-underline path {
           fill: none;
-          stroke-width: 2.2;
           stroke-linecap: round;
         }
 
         .underline-blue {
           stroke: #1769ff;
+          stroke-width: 2.2;
+          opacity: 0.85;
         }
 
         .underline-gradient {
           stroke: url(#underlineGradient);
+          stroke-width: 1.6;
+          opacity: 0.65;
         }
 
         .title-left p {
           margin: 10px 0 0;
-
-          font-family: "Inter", sans-serif;
           font-size: 13px;
           font-weight: 500;
-          line-height: 1.5;
-
           color: #64748b;
         }
 
-        .actions {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-top: 24px;
-        }
-
-        .action-button {
-          height: 34px;
-          padding: 0 14px;
-
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-
-          border: 1px solid #e6ecf5;
-          border-radius: 8px;
-
-          background: #ffffff;
-
-          color: #15264a;
-
-          font-family: "Inter", sans-serif;
-          font-size: 11px;
-          font-weight: 700;
-
-          box-shadow: 0 2px 8px rgba(25, 50, 90, 0.05);
-
-          cursor: pointer;
-
-          transition:
-            transform 0.2s ease,
-            box-shadow 0.2s ease,
-            border-color 0.2s ease;
-        }
-
-        .action-button:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(25, 50, 90, 0.08);
-          border-color: #d6e1f0;
-        }
-
-        .action-button:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .action-button svg {
-          color: #172d52;
-        }
-
-        .action-button.unread {
-          color: #1769ff;
-        }
-
-        .action-button.unread svg {
-          color: #172d52;
-        }
-
-        .action-button.unread.active-filter {
-          border-color: #1769ff;
-          background-color: #f0f5ff;
-        }
-
-        :global(.dark) .action-button {
-          background: #171717;
-          border-color: #333;
-          color: #e5e5e5;
-        }
-
-        :global(.dark) .action-button svg {
-          color: #e5e5e5;
+        :global(.dark) .title-left p {
+          color: #94a3b8;
         }
 
         @media (max-width: 768px) {
-          .notification-header {
-            padding: 20px 16px;
-          }
-
-          .title-area {
-            flex-direction: column;
-          }
-
           .title-left h1 {
-            font-size: 44px;
+            font-size: 38px;
           }
-
-          .title-underline {
-            width: 230px;
-          }
-
-          .actions {
-            flex-wrap: wrap;
-            margin-top: 20px;
-          }
-
-          .action-button {
-            height: 32px;
-            padding: 0 12px;
+          .title-left p {
+            font-size: 12px;
           }
         }
       `}</style>
@@ -660,108 +633,201 @@ export default function NotificationsHubPage() {
               <p>Stay updated with course collaboration, channel events, and platform activity.</p>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="actions">
-            <button
-              onClick={() => setActiveTab(activeTab === "unread" ? "all" : "unread")}
-              className={`action-button unread ${activeTab === "unread" ? "active-filter" : ""}`}
+      <div className="notification-content px-4 sm:px-6">
+        {/* ── Controls ──────────────────────────────────────────────────────
+            No Refresh button: the list is kept current by the server's event
+            stream, so asking the user to fetch would be asking them to do the
+            client's job. No Clear All either — see NotificationController. */}
+        <div className="flex flex-col gap-3 mb-6">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Read-state tabs. The unread total lives here rather than in a standalone
+                "589 UNREAD" chip: it is a property of a tab, not an action to press. */}
+            <div
+              role="tablist"
+              aria-label="Filter notifications by read state"
+              className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-neutral-900 p-1 border border-slate-200 dark:border-neutral-800"
             >
-              <Bell size={13} strokeWidth={1.8} />
-              <span>{unreadCount} UNREAD</span>
-            </button>
+              {(
+                [
+                  ["unread", "Unread", unreadCount],
+                  ["all", "All", null],
+                ] as Array<[TabId, string, number | null]>
+              ).map(([id, label, count]) => (
+                <button
+                  key={id}
+                  role="tab"
+                  aria-selected={activeTab === id}
+                  onClick={() => handleTabChange(id)}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                    activeTab === id
+                      ? "bg-white dark:bg-neutral-800 text-slate-900 dark:text-slate-100 shadow-sm"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {label}
+                  {count !== null && count > 0 && (
+                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-blue-600 text-white text-[9px] font-black">
+                      {count > 99 ? "99+" : count}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
 
-            <button onClick={handleRefresh} disabled={isRefreshing} className="action-button">
-              <RefreshCw size={12} strokeWidth={1.8} className={isRefreshing ? "animate-spin" : ""} />
-              <span>Refresh</span>
-            </button>
+            {/* Search runs server-side across the whole history, not over the loaded page. */}
+            <div className="relative flex-1 min-w-[200px]">
+              <Search
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              />
+              <input
+                type="search"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Search notifications…"
+                aria-label="Search notifications"
+                className="w-full rounded-full border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 py-2 pl-9 pr-9 text-xs font-semibold text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+              />
+              {searchInput && (
+                <button
+                  onClick={() => setSearchInput("")}
+                  aria-label="Clear search"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <X size={13} />
+                </button>
+              )}
+            </div>
 
-            {notifications.length > 0 && (
-              <button onClick={handleClearAll} disabled={clearingAll} className="action-button">
-                {clearingAll ? (
-                  <Loader2 size={12} strokeWidth={1.8} className="animate-spin" />
-                ) : (
-                  <Trash2 size={12} strokeWidth={1.8} />
-                )}
-                <span>Clear All</span>
+            {unreadCount > 0 && (
+              <button
+                onClick={markAllRead}
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-neutral-800 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-neutral-900 transition-colors"
+              >
+                <CheckCircle2 size={13} /> Mark all read
+              </button>
+            )}
+          </div>
+
+          {/* Category chips, each showing how many unread it holds. */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              onClick={() => handleCategoryChange(null)}
+              className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider border transition-colors ${
+                activeCategory === null
+                  ? "border-slate-900 dark:border-slate-100 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900"
+                  : "border-slate-200 dark:border-neutral-800 text-slate-500 dark:text-slate-400 hover:border-slate-400"
+              }`}
+            >
+              All types
+            </button>
+            {CATEGORY_ORDER.map((category) => {
+              const count = unreadByCategory[category] ?? 0;
+              const isActive = activeCategory === category;
+              return (
+                <button
+                  key={category}
+                  onClick={() => handleCategoryChange(isActive ? null : category)}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider border transition-colors ${
+                    isActive
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : "border-slate-200 dark:border-neutral-800 text-slate-500 dark:text-slate-400 hover:border-slate-400"
+                  }`}
+                >
+                  {CATEGORY_LABELS[category]}
+                  {count > 0 && (
+                    <span
+                      className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 rounded-full text-[9px] font-black ${
+                        isActive ? "bg-white/25 text-white" : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300"
+                      }`}
+                    >
+                      {count > 99 ? "99+" : count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center justify-between gap-2 px-1 min-h-[16px]">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              {isRefetching && notifications.length > 0 ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <Loader2 size={10} className="animate-spin" /> Updating…
+                </span>
+              ) : totalCount > 0 ? (
+                `Showing ${notifications.length} of ${totalCount}`
+              ) : null}
+            </p>
+            {isFiltered && (
+              <button
+                onClick={clearFilters}
+                className="text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+              >
+                Clear filters
               </button>
             )}
           </div>
         </div>
-      </section>
 
-      <div className="notification-content px-4 sm:px-6 mt-4">
+        {/* ── Body ─────────────────────────────────────────────────────────── */}
         {loading && notifications.length === 0 ? (
           <div className="py-20 flex items-center justify-center">
             <Loader2 size={22} className="animate-spin text-slate-400" />
           </div>
-        ) : filteredNotifications.length === 0 ? (
+        ) : notifications.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="py-20 flex flex-col items-center text-center gap-4 select-none w-full"
+            className="py-20 text-center select-none"
           >
-            <div className="relative w-28 h-28 flex items-center justify-center mx-auto">
-              <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none" fill="none">
-                <path d="M 22 55 C 16 48, 16 38, 24 32 C 26 40, 24 48, 22 55 Z" fill="#10b981" opacity="0.75" />
-                <path d="M 12 42 C 8 36, 12 28, 20 28 C 18 34, 16 38, 12 42 Z" fill="#34d399" opacity="0.65" />
-                <path d="M 28 62 C 24 58, 26 52, 32 48 C 30 54, 30 58, 28 62 Z" fill="#059669" opacity="0.5" />
-                <path d="M 78 55 C 84 48, 84 38, 76 32 C 74 40, 76 48, 78 55 Z" fill="#3b82f6" opacity="0.75" />
-                <path d="M 88 42 C 92 36, 88 28, 80 28 C 82 34, 84 38, 88 42 Z" fill="#60a5fa" opacity="0.65" />
-                <path d="M 72 62 C 76 58, 74 52, 68 48 C 70 54, 70 58, 72 62 Z" fill="#2563eb" opacity="0.5" />
-              </svg>
-
-              <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-slate-855 shadow-sm relative z-10">
-                <svg viewBox="0 0 24 24" className="w-8 h-8 text-slate-800 dark:text-slate-300 animate-bounce" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                </svg>
-              </div>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 flex items-center justify-center text-slate-400">
+              <Bell size={24} />
             </div>
-
-            <div className="space-y-1">
-              <h3 className="text-sm font-black text-slate-855 dark:text-slate-200">
-                {activeTab === "unread" ? "No unread notifications" : "You’re all caught up!"}
-              </h3>
-              <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">
-                We&apos;ll notify you when something new arrives.
-              </p>
-            </div>
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+              {isFiltered
+                ? "Nothing matches those filters"
+                : activeTab === "unread"
+                  ? "You're all caught up"
+                  : "No notifications yet"}
+            </p>
+            <p className="text-xs text-slate-400 mt-1.5">
+              {isFiltered
+                ? "Try a different category, or clear the filters to see everything."
+                : activeTab === "unread"
+                  ? "New notifications will appear here the moment they arrive."
+                  : "Activity on your channels and content will show up here."}
+            </p>
+            {isFiltered && (
+              <button
+                onClick={clearFilters}
+                className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-neutral-800 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-neutral-900"
+              >
+                Clear filters
+              </button>
+            )}
           </motion.div>
         ) : (
-          <div className="space-y-8 w-full">
-            {todayItems.length > 0 && (
-              <div className="space-y-4 w-full">
-                <div className="flex items-center justify-between pb-1 select-none w-full">
-                  <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider">Today</h3>
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={markAllRead}
-                      className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 transition-colors"
-                    >
-                      Mark all as read
-                      <CheckCircle2 size={14} className="stroke-[2.5]" />
-                    </button>
-                  )}
-                </div>
+          <>
+            {renderSection("Today", todayItems)}
+            {renderSection("Earlier", earlierItems)}
 
-                <div className="grid grid-cols-1 gap-3 w-full">
-                  <AnimatePresence>{todayItems.map(renderCard)}</AnimatePresence>
-                </div>
+            {hasMore && (
+              <div className="flex justify-center pt-2">
+                <button
+                  onClick={() => loadMore()}
+                  disabled={isLoadingMore}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-neutral-800 px-5 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-neutral-900 transition-colors disabled:opacity-50"
+                >
+                  {isLoadingMore && <Loader2 size={12} className="animate-spin" />}
+                  {isLoadingMore ? "Loading" : "Load more"}
+                </button>
               </div>
             )}
-
-            {earlierItems.length > 0 && (
-              <div className="space-y-4 w-full">
-                <div className="flex items-center justify-between pb-1 select-none w-full">
-                  <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider">Earlier</h3>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 w-full">
-                  <AnimatePresence>{earlierItems.map(renderCard)}</AnimatePresence>
-                </div>
-              </div>
-            )}
-          </div>
+          </>
         )}
       </div>
     </div>

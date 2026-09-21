@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { CreditCard, User, Shield, ToggleLeft, Palette, ChevronRight, Settings as SettingsIcon } from 'lucide-react';
+import { AtSign, CreditCard, User, Shield, ToggleLeft, Palette, ChevronRight, Settings as SettingsIcon } from 'lucide-react';
 import { cn } from '@/shared/utils/utils';
 
 const sidebarItems = [
@@ -12,6 +12,14 @@ const sidebarItems = [
     href: '/settings/info', 
     icon: User, 
     iconBg: 'bg-[#bbf7d0] text-[#14532d]',
+  },
+  {
+    // Distinct from Personal info on purpose: that page holds private account data (contact
+    // details, billing address); this one holds what the world sees at domain/<handle>.
+    name: 'Public profile',
+    href: '/settings/profile',
+    icon: AtSign,
+    iconBg: 'bg-[#c7d2fe] text-[#312e81]',
   },
   { 
     name: 'Appearance', 

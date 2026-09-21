@@ -11,6 +11,7 @@ import {
 import { platformReviewApi } from '@/domains/publishing';
 import { toast } from 'sonner';
 import {
+  AtSign,
   Home,
   LayoutGrid,
   AlertTriangle,
@@ -34,6 +35,7 @@ import { ChannelStaffManager } from './ChannelStaffManager';
 import { ChannelAuditLogManager } from './ChannelAuditLogManager';
 import { ChannelDangerZone } from './ChannelDangerZone';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { ChannelIdentityManager } from './ChannelIdentityManager';
 import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/design-system/ui/tooltip';
 
@@ -42,6 +44,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shar
 type ManageTab =
   | 'OVERVIEW'
   | 'CONTENT'
+  | 'IDENTITY'
   | 'STAFF'
   | 'ANALYTICS'
   | 'LOGS'
@@ -179,9 +182,14 @@ export default function ManageChannelPage() {
   const mainTabs: { id: ManageTab; label: string; icon: any; danger?: boolean }[] = [
     { id: 'OVERVIEW', label: 'Overview', icon: LayoutGrid },
     { id: 'CONTENT', label: 'Content', icon: BookOpen },
-    // Personal channels have no staff or policies — the owner is the sole authority.
+    // Personal channels have no handle, no standalone page and no staff — their owner's profile
+    // IS their page, and the owner is the sole authority. Both tabs are omitted rather than
+    // shown disabled: "you cannot have this" is not a setting.
     ...(!channel.isPersonal
-      ? [{ id: 'STAFF' as const, label: 'Staff & Policies', icon: Users }]
+      ? [
+          { id: 'IDENTITY' as const, label: 'Identity & Handle', icon: AtSign },
+          { id: 'STAFF' as const, label: 'Staff & Policies', icon: Users },
+        ]
       : []),
     { id: 'ANALYTICS', label: 'Analytics & Reviews', icon: BarChart3 },
     { id: 'LOGS', label: 'Logs', icon: Activity },
@@ -336,6 +344,15 @@ export default function ManageChannelPage() {
               permissions={permissions}
               isSuspended={isSuspended}
               isPersonalChannel={isPersonalChannel}
+            />
+          )}
+
+          {/* TAB: IDENTITY & HANDLE (organization channels only) */}
+          {activeTab === 'IDENTITY' && !channel.isPersonal && (
+            <ChannelIdentityManager
+              channel={channel}
+              canEdit={canEdit}
+              onUpdate={(updated) => setChannel(updated)}
             />
           )}
 

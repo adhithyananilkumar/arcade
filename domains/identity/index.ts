@@ -16,7 +16,7 @@
  */
 
 export { UserService } from './api/user.service';
-export type { Page } from './api/user.service';
+export type { Page, UserSearchResult } from './api/user.service';
 export { default as AuthForm } from './components/AuthForm';
 export type { AuthView, AuthFormProps } from './components/AuthForm';
 export { AuthPeriodGear } from './components/AuthPeriodGear';

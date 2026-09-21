@@ -36,6 +36,15 @@ export interface ChannelApplicantProfile {
 export interface Channel {
   id: string;
   name: string;
+  /**
+   * The channel's address in the shared `domain/<handle>` namespace, or null when it has not
+   * claimed one. Personal channels never have one — their owner's profile is their page — so
+   * check this before building a link rather than deriving a URL from the name.
+   *
+   * Absent on endpoints that do not resolve the handle registry; treat undefined as "unknown",
+   * not as "none".
+   */
+  handle?: string | null;
   iconUrl?: string;
   bannerUrl?: string;
   description?: string;
@@ -56,6 +65,10 @@ export interface Channel {
   ownerEmail?: string;
   ownerPhone?: string;
   createdAt: string;
+  /** Profile presentation, shown on an organization channel's standalone page. */
+  tagline?: string | null;
+  location?: string | null;
+  websiteUrl?: string | null;
   /** Present when the requester/an admin may see it — the applicant's KYC submission. */
   applicantProfile?: ChannelApplicantProfile;
 }
@@ -168,6 +181,10 @@ export interface OwnershipTransferResponse {
 }
 
 export interface ChannelSettingsUpdate {
+  /** Profile presentation. Omit a field to leave it as it is; pass '' to clear it. */
+  tagline?: string;
+  location?: string;
+  websiteUrl?: string;
   /** Omit to leave the name unchanged. */
   name?: string;
   /** Omit to leave the description unchanged. */
@@ -289,6 +306,15 @@ export const channelService = {
     }
     formData.append('removeIcon', String(!!update.removeIcon));
     formData.append('removeBanner', String(!!update.removeBanner));
+    if (update.tagline !== undefined) {
+      formData.append('tagline', update.tagline);
+    }
+    if (update.location !== undefined) {
+      formData.append('location', update.location);
+    }
+    if (update.websiteUrl !== undefined) {
+      formData.append('websiteUrl', update.websiteUrl);
+    }
     if (update.socialLinks) {
       // An empty list must still reach the backend as "clear", which multipart can't express with
       // zero entries — send one empty value that the backend trims away.
@@ -321,6 +347,29 @@ export const channelService = {
       removeBanner,
       socialLinks,
     }),
+
+  /**
+   * Saves only the channel's public-profile presentation fields.
+   *
+   * Separate from {@link updateChannelProfile} so the identity tab cannot resubmit the icon,
+   * banner or social links it does not own — the settings endpoint takes every field at once, and
+   * a partial caller that sends `removeIcon` by omission would wipe the channel's icon.
+   */
+  updateProfileFields: async (
+    channelId: string,
+    fields: { tagline?: string; location?: string; websiteUrl?: string }
+  ): Promise<Channel> => {
+    const formData = new FormData();
+    if (fields.tagline !== undefined) formData.append('tagline', fields.tagline);
+    if (fields.location !== undefined) formData.append('location', fields.location);
+    if (fields.websiteUrl !== undefined) formData.append('websiteUrl', fields.websiteUrl);
+    // The backend reads removeIcon/removeBanner as booleans defaulting to false; sending them
+    // explicitly documents that this call leaves the imagery alone.
+    formData.append('removeIcon', 'false');
+    formData.append('removeBanner', 'false');
+
+    return api.post<Channel>(`/api/v1/channels/${channelId}/settings`, formData);
+  },
 
   /** The caller's own channel requests still awaiting platform review. */
   getMyChannelRequests: async (): Promise<Channel[]> => {

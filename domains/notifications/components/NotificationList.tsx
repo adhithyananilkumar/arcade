@@ -473,6 +473,13 @@ export function NotificationList({
                   </span>
                 )}
                 <p className="text-sm text-slate-800 dark:text-slate-200 font-bold">{n.title}</p>
+                {n.groupCount > 1 && (
+                  // A collapsed group stands for many events. The count is shown explicitly so the
+                  // row never reads like a single occurrence the reader might under-weight.
+                  <span className="mt-1 inline-flex items-center rounded-full bg-slate-100 dark:bg-neutral-800 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:text-slate-300">
+                    {n.groupCount} updates
+                  </span>
+                )}
               </div>
               {!n.read && <span className="mt-1 h-2 w-2 rounded-full bg-indigo-500 shrink-0" />}
             </div>

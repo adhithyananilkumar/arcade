@@ -1,0 +1,152 @@
+/**
+ * Badge presentation.
+ *
+ * Three treatments, matching the backend's `BadgeEffect`:
+ *   NONE  — flat fill. The ordinary verification tick.
+ *   GLOW  — a soft coloured halo behind the mark.
+ *   PRISM — the animated treatment reserved for staff badges. Its whole job is
+ *           to be distinguishable from a verification tick at a glance, so it
+ *           gets a rotating conic ring and a slow sheen rather than a brighter
+ *           version of the same thing.
+ *
+ * The accent colour arrives from the server as a CSS custom property
+ * (`--badge-accent`) set inline, so one stylesheet covers every badge including
+ * ones created after this build shipped.
+ */
+
+.arc-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+  border-radius: 9999px;
+  color: var(--badge-accent, #1d9bf0);
+  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.arc-badge:hover {
+  transform: translateY(-1px);
+}
+
+.arc-badge__mark {
+  position: relative;
+  z-index: 2;
+  display: block;
+}
+
+/* --- GLOW ---------------------------------------------------------------- */
+
+.arc-badge--glow::before {
+  content: '';
+  position: absolute;
+  inset: -35%;
+  z-index: 1;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--badge-accent, #1d9bf0) 45%, transparent) 0%,
+    transparent 70%
+  );
+  opacity: 0.85;
+}
+
+/* --- PRISM --------------------------------------------------------------- */
+
+.arc-badge--prism::before {
+  content: '';
+  position: absolute;
+  inset: -22%;
+  z-index: 1;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from 0deg,
+    var(--badge-accent, #7c3aed),
+    #22d3ee,
+    #f472b6,
+    #fbbf24,
+    var(--badge-accent, #7c3aed)
+  );
+  filter: blur(4px);
+  opacity: 0.75;
+  animation: arc-badge-spin 4.5s linear infinite;
+}
+
+/* The inner disc that keeps the mark readable on top of the spinning ring. */
+.arc-badge--prism::after {
+  content: '';
+  position: absolute;
+  inset: -4%;
+  z-index: 1;
+  border-radius: 9999px;
+  background: #ffffff;
+}
+
+:is(.dark) .arc-badge--prism::after {
+  background: #030712;
+}
+
+@keyframes arc-badge-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Respect the reader's motion preference: the ring still distinguishes the
+   badge when it is not spinning, so the animation is genuinely decorative. */
+@media (prefers-reduced-motion: reduce) {
+  .arc-badge--prism::before {
+    animation: none;
+  }
+  .arc-badge {
+    transition: none;
+  }
+  .arc-badge:hover {
+    transform: none;
+  }
+}
+
+/* --- Hover card ---------------------------------------------------------- */
+
+.arc-badge-card {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 10px);
+  left: 50%;
+  width: max-content;
+  max-width: 280px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* Flips to the right edge when the badge sits near the viewport's left edge;
+   the component sets this when it measures an overflow. */
+.arc-badge-card--start {
+  left: 0;
+  transform: none;
+}
+
+.arc-badge-card--end {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.arc-badge-card__inner {
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid rgb(226 232 240);
+  box-shadow:
+    0 12px 32px -8px rgb(15 23 42 / 0.18),
+    0 2px 6px -2px rgb(15 23 42 / 0.08);
+}
+
+:is(.dark) .arc-badge-card__inner {
+  background: #0a0a0a;
+  border-color: rgb(38 38 38);
+  box-shadow:
+    0 12px 32px -8px rgb(0 0 0 / 0.7),
+    0 2px 6px -2px rgb(0 0 0 / 0.4);
+}

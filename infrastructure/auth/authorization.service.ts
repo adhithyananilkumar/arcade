@@ -21,9 +21,31 @@ export const AuthorizationService = {
     AuthorizationService.canManageExams(user) ||
     AuthorizationService.canViewPayments(user) ||
     AuthorizationService.canManageInbox(user) ||
+    AuthorizationService.canManageRecognition(user) ||
+    AuthorizationService.canManageHandles(user) ||
     AuthorizationService.canAccessIamConsole(user),
 
   canManageChannels: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.channels.manage'),
+
+  /**
+   * Console -> Recognition: defining badges and granting or revoking them.
+   *
+   * Deliberately NOT implied by user management. Changing what an account may DO and changing
+   * what the platform publicly ASSERTS about it are different powers — an organization may well
+   * want a trust-and-safety reviewer who can verify accounts without also handing out
+   * permissions. Mirrors the backend's platform.recognition.manage, which is the real gate.
+   */
+  canManageRecognition: (user: User | null | undefined) =>
+    AuthorizationService.hasPermission(user, 'platform.recognition.manage'),
+
+  /**
+   * Console -> Handles: deciding appeals and reassigning a handle from one holder to another.
+   *
+   * There is no channel-level equivalent: a channel admin may rename their own channel, but
+   * nobody below the platform may rename somebody else's.
+   */
+  canManageHandles: (user: User | null | undefined) =>
+    AuthorizationService.hasPermission(user, 'platform.handles.manage'),
 
   /** Accepts platform.content.review, legacy platform.courses.review, or channel.content.review. */
   canReviewContent: (user: User | null | undefined) =>

@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { createPortal } from 'react-dom';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { UserService } from "@/domains/identity";
@@ -10,6 +11,7 @@ import { useActivitySummaryQuery, useDailyActivityQuery } from '@/domains/learni
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAvatarUrl } from '@/shared/utils/avatar';
+import { BadgeRow, type ProfileBadge } from '@/domains/recognition';
 import {
   User as UserIcon, MapPin, Mail, Calendar, Edit3,
   Code, Star,
@@ -399,91 +401,52 @@ function ProfilePageContent() {
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center justify-center md:justify-start gap-2">
                 {currentUser.fullName || (currentUser.firstName + (currentUser.lastName ? ' ' + currentUser.lastName : '')) || 'User'}
                 
-                {/* Verification Tick */}
-                {(() => {
-                  const bioLower = (currentUser.bio || '').toLowerCase();
-                  const isAdmin = 
-                    currentUser.role === 'ADMIN' ||
-                    currentUser.role === 'ROLE_ADMIN' ||
-                    currentUser.role === 'PLATFORM_ADMIN' ||
-                    currentUser.isAdmin === true ||
-                    currentUser.platformRoles?.some((r: any) => ['PLATFORM_OWNER', 'PLATFORM_ADMIN'].includes((r.code || r.name || '').toUpperCase())) ||
-                    currentUser.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('ADMIN'));
+                {/*
+                  Real, granted badges — not a guess.
 
-                  const isCreator = 
-                    currentUser.role === 'CREATOR' ||
-                    currentUser.role === 'ROLE_CREATOR' ||
-                    currentUser.role === 'INSTRUCTOR' ||
-                    currentUser.isCreator === true ||
-                    currentUser.platformRoles?.some((r: any) => ['CREATOR', 'INSTRUCTOR', 'TEACHER', 'AUTHOR'].includes((r.code || r.name || '').toUpperCase())) ||
-                    currentUser.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('CREATOR')) ||
-                    bioLower.includes('creator');
-
-                  if (isAdmin) {
-                    return (
-                      <span title="Verified Admin" className="inline-flex items-center">
-                        <BadgeCheck className="text-white fill-[#8b5cf6] dark:fill-[#8b5cf6] drop-shadow-[0_2px_6px_rgba(139,92,246,0.4)] shrink-0 ml-1 align-middle" size={24} strokeWidth={2.2} />
-                      </span>
-                    );
-                  }
-
-                  if (isCreator) {
-                    return (
-                      <span title="Verified Creator" className="inline-flex items-center">
-                        <BadgeCheck className="text-white fill-[#1d9bf0] dark:fill-[#1d9bf0] drop-shadow-[0_2px_6px_rgba(29,155,240,0.4)] shrink-0 ml-1 align-middle" size={24} strokeWidth={2.2} />
-                      </span>
-                    );
-                  }
-                  return null;
-                })()}
+                  This used to infer a "verified" tick from role-code substrings and, failing
+                  that, from whether the word "creator" appeared anywhere in the bio. That is not
+                  verification: it could not be granted, revoked, or explained to the person
+                  looking at it, and anyone could award themselves one by editing their bio.
+                  Badges now come from the backend's recognition context, which owns the grant
+                  lifecycle and the audit trail.
+                */}
+                <BadgeRow badges={(currentUser.badges ?? []) as ProfileBadge[]} size={22} />
               </h1>
 
               <div className="flex items-center justify-center md:justify-start gap-2 mt-1">
-                <span className="text-base font-normal text-slate-500 dark:text-slate-400">
-                  @{username}
-                </span>
+                {/*
+                  The handle is also the public address, so it links there — this page is the
+                  private dashboard (editing, streaks, enrolments) and domain/<handle> is what
+                  everyone else sees. `user.username` is null until a handle is claimed, in which
+                  case there is nowhere to link to and it renders as plain text.
+                */}
+                {currentUser.username ? (
+                  <Link
+                    href={`/${currentUser.username}`}
+                    className="text-base font-normal text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+                  >
+                    @{username}
+                  </Link>
+                ) : (
+                  <span className="text-base font-normal text-slate-500 dark:text-slate-400">
+                    @{username}
+                  </span>
+                )}
+                {/*
+                  What this account actually is on Arcade, decided by the backend rather than by
+                  reading role names here. "Instructor" means they staff a channel or have
+                  published work; everyone else is a learner, which is what every account is to
+                  begin with.
+                */}
                 <span className="text-slate-400 font-medium">•</span>
-                {(() => {
-                  const bioLower = (currentUser.bio || '').toLowerCase();
-                  const isAdmin = 
-                    currentUser.role === 'ADMIN' ||
-                    currentUser.role === 'ROLE_ADMIN' ||
-                    currentUser.role === 'PLATFORM_ADMIN' ||
-                    currentUser.isAdmin === true ||
-                    currentUser.platformRoles?.some((r: any) => ['PLATFORM_OWNER', 'PLATFORM_ADMIN'].includes((r.code || r.name || '').toUpperCase())) ||
-                    currentUser.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('ADMIN'));
-
-                  const isCreator = 
-                    currentUser.role === 'CREATOR' ||
-                    currentUser.role === 'ROLE_CREATOR' ||
-                    currentUser.role === 'INSTRUCTOR' ||
-                    currentUser.isCreator === true ||
-                    currentUser.platformRoles?.some((r: any) => ['CREATOR', 'INSTRUCTOR', 'TEACHER', 'AUTHOR'].includes((r.code || r.name || '').toUpperCase())) ||
-                    currentUser.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('CREATOR')) ||
-                    bioLower.includes('creator');
-
-                  if (isAdmin) {
-                    return (
-                      <span className="text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                        <Shield size={13} className="fill-rose-500/20 text-rose-600 dark:text-rose-400" /> Admin
-                      </span>
-                    );
-                  }
-
-                  if (isCreator) {
-                    return (
-                      <span className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1">
-                        <Sparkles size={13} className="fill-blue-500 text-blue-500" /> Creator
-                      </span>
-                    );
-                  }
-
-                  return (
-                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                      <Star size={13} className="fill-amber-500 text-amber-500" /> Learner
-                    </span>
-                  );
-                })()}
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                  <Star size={13} className="fill-amber-500 text-amber-500" />
+                  {(currentUser.channelMemberships?.length ?? 0) > 0 ||
+                  (currentUser.courses?.length ?? 0) > 0
+                    ? 'Instructor'
+                    : 'Learner'}
+                </span>
               </div>
             </div>
 

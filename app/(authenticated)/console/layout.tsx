@@ -2,7 +2,7 @@
 
 import { usePathname, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Tv, ClipboardCheck, Shield, Calendar, Inbox, Receipt, Library } from 'lucide-react';
+import { Tv, ClipboardCheck, Shield, Calendar, Inbox, Receipt, Library, AtSign, BadgeCheck } from 'lucide-react';
 import { cn } from '@/shared/utils/utils';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
@@ -21,6 +21,8 @@ export default function ArcConsoleLayout({
   const showPayments = AuthorizationService.canViewPayments(user);
   const showIam = AuthorizationService.canAccessIamConsole(user);
   const showInbox = AuthorizationService.canManageInbox(user);
+  const showRecognition = AuthorizationService.canManageRecognition(user);
+  const showHandles = AuthorizationService.canManageHandles(user);
 
   const navItems = [
     ...(showAdminChannels
@@ -40,6 +42,12 @@ export default function ArcConsoleLayout({
       : []),
     ...(showInbox
       ? [{ name: 'Inbox', href: '/console/inbox', icon: Inbox, iconBg: 'bg-[#dbeafe] text-[#1e40af]' }]
+      : []),
+    ...(showRecognition
+      ? [{ name: 'Recognition', href: '/console/recognition', icon: BadgeCheck, iconBg: 'bg-[#ddd6fe] text-[#4c1d95]' }]
+      : []),
+    ...(showHandles
+      ? [{ name: 'Handles', href: '/console/handles', icon: AtSign, iconBg: 'bg-[#c7d2fe] text-[#312e81]' }]
       : []),
     ...(showIam ? [{ name: 'IAM', href: '/console/iam', icon: Shield, iconBg: 'bg-[#fed7aa] text-[#7c2d12]' }] : []),
   ];

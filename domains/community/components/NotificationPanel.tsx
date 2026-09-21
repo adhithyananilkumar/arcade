@@ -9,7 +9,11 @@ import { useNotifications, NotificationList } from '@/domains/notifications';
 export function NotificationPanel() {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  const { notifications, unreadCount, markAllRead, markRead, refresh } = useNotifications();
+  // Unread only — same reasoning as the main navbar bell: a dropdown is a "needs attention"
+  // surface, and mixing in already-read history buries the items that still matter.
+  const { notifications, unreadCount, markAllRead, markRead, refresh } = useNotifications({
+    status: 'unread',
+  });
 
   // Close on outside click
   useEffect(() => {
@@ -27,13 +31,7 @@ export function NotificationPanel() {
       {/* Bell button */}
       <button
         type="button"
-        onClick={() => {
-          const next = !open;
-          setOpen(next);
-          if (next) {
-            refresh();
-          }
-        }}
+        onClick={() => setOpen((isOpen) => !isOpen)}
         className="relative flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 cursor-pointer text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
         title="Notifications"
       >
@@ -82,7 +80,7 @@ export function NotificationPanel() {
                   setOpen(false);
                 }}
                 onNotificationAction={refresh}
-                emptyMessage="No notifications yet"
+                emptyMessage="You’re all caught up"
               />
             </div>
 
