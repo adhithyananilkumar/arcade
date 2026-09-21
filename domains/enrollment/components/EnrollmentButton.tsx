@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -15,6 +15,12 @@ export interface EnrollmentButtonProps {
   resourceType: ResourceType;
   resourceId: string;
   initialState: UIEnrollmentState;
+  /**
+   * Why a PENDING enrollment is pending, when the caller knows. `PAYMENT` means a checkout is
+   * settling and the learner has nothing to do; `REQUIREMENTS` means they or a reviewer must
+   * act. Omitted falls back to the "action required" wording.
+   */
+  pendingReason?: 'PAYMENT' | 'REQUIREMENTS';
   className?: string;
   onStateChange?: (newState: UIEnrollmentState) => void;
   onGoToResource?: () => void;
@@ -25,6 +31,7 @@ export function EnrollmentButton({
   resourceType,
   resourceId,
   initialState,
+  pendingReason,
   className = '',
   onStateChange,
   onGoToResource,
@@ -223,6 +230,25 @@ export function EnrollmentButton({
     }
   };
 
+  /**
+   * Adopt a *stronger* server state when the parent re-renders with fresher data — this is what
+   * makes the button survive a page reload mid-checkout instead of offering "Enroll Now" again.
+   *
+   * Deliberately one-way: local state is never downgraded back towards NOT_ENROLLED. Right after
+   * a successful payment this component knows the learner is ENROLLED before the enrollment
+   * query has refetched, and a naive sync would flip the button back and let them pay twice.
+   */
+  useEffect(() => {
+    if (isProcessing || isPaying) return;
+    const rank: Record<UIEnrollmentState, number> = {
+      NOT_ENROLLED: 0,
+      PENDING: 1,
+      WAITLISTED: 1,
+      ENROLLED: 2,
+    };
+    setCurrentState((prev) => (rank[initialState] > rank[prev] ? initialState : prev));
+  }, [initialState, isProcessing, isPaying]);
+
   // Render logic based on explicit UI state
   if (currentState === 'ENROLLED') {
     const resourceLabel = resourceType === 'COURSE' ? 'Course' : 'Event';
@@ -283,11 +309,23 @@ export function EnrollmentButton({
         </button>
       );
     }
+    // No payment handle in this component instance — either the page was reloaded while a
+    // payment settles, or the enrollment is waiting on someone's approval. `pendingReason`
+    // tells the two apart; "Action required" on a payment that is merely settling would tell
+    // the learner to do something there is nothing to do about.
+    const isSettlingPayment = pendingReason === 'PAYMENT';
     return (
       <button
         disabled
-        className={`bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold py-3 px-4 rounded-xl shadow-sm opacity-90 cursor-default border border-blue-200 dark:border-blue-800 w-full text-sm ${className}`}>
-        Action required
+        className={`bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold py-3 px-4 rounded-xl shadow-sm opacity-90 cursor-default border border-blue-200 dark:border-blue-800 w-full text-sm ${isSettlingPayment ? 'flex items-center justify-center gap-2' : ''} ${className}`}>
+        {isSettlingPayment ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+            <span>Processing…</span>
+          </>
+        ) : (
+          'Action required'
+        )}
       </button>
     );
   }

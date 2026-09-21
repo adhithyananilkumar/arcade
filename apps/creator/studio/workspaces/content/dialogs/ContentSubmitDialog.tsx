@@ -1,199 +1,196 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/shared/design-system/ui/dialog";
-import { Button } from "@/shared/design-system/ui/button";
-import { Input } from "@/shared/design-system/ui/input";
+import { Button, buttonVariants } from "@/shared/design-system/ui/button";
 import { CourseResponse } from "@/shared/types/api.types";
-import { IndianRupee, Image as ImageIcon } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
-import { toMinorUnits, fromMinorUnits } from "@/shared/utils/money";
 
 export interface ContentSubmitDialogProps {
-  course?: CourseResponse;
+  course?: CourseResponse | null;
   contentType?: 'course' | 'event' | 'workshop' | 'question-bank';
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: { coverImageUrl?: string; pricingModel: 'FREE' | 'PAID'; priceAmount?: number; message?: string }) => Promise<void>;
+  /**
+   * Pricing and cover image are no longer set here — they live on the course's own page, so
+   * there is one place to set them. This only carries the reviewer message.
+   */
+  onSubmit: (data: { message?: string }) => Promise<void>;
+}
+
+interface ReadinessItem {
+  label: string;
+  done: boolean;
+  hint: string;
+}
+
+/**
+ * Pre-submission checklist, computed from the course as it actually stands.
+ *
+ * Every item reflects a real field, so an unticked row tells the author something they can go
+ * and fix. A checklist that is always green tells them nothing and quietly trains them to
+ * ignore it.
+ */
+function readinessFor(course: CourseResponse): ReadinessItem[] {
+  const hasPricing =
+    course.pricingModel === 'FREE' ||
+    (course.pricingModel === 'PAID' && (course.priceAmount ?? 0) > 0);
+  const hasOverview = Boolean(course.description?.trim());
+  const hasOutcomes = Boolean(course.learningOutcomes?.trim());
+  const hasContent = (course.modules?.length ?? 0) > 0;
+
+  return [
+    { label: 'Pricing is set', done: hasPricing, hint: 'Set Free, or Paid with a price above zero.' },
+    { label: 'Course overview written', done: hasOverview, hint: 'Learners read this before enrolling.' },
+    { label: 'Learning outcomes listed', done: hasOutcomes, hint: 'One outcome per line on the course page.' },
+    { label: 'At least one module', done: hasContent, hint: 'A course with no modules has nothing to deliver.' },
+  ];
 }
 
 export function ContentSubmitDialog({ course, contentType = 'course', open, onClose, onSubmit }: ContentSubmitDialogProps) {
   const isEvent = contentType === 'event' || contentType === 'workshop';
-  const [coverImageUrl, setCoverImageUrl] = useState(course?.coverImageUrl || "");
-  const [pricingModel, setPricingModel] = useState<'FREE' | 'PAID'>(course?.pricingModel || 'FREE');
-  // Displayed/edited as a decimal amount; converted to minor units at the API boundary.
-  const [priceAmount, setPriceAmount] = useState<number | "">(
-    course?.priceAmount ? fromMinorUnits(course.priceAmount) : ""
-  );
   const [message, setMessage] = useState("");
-
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // The `course` prop can be a stale snapshot from when the workspace loaded, so the checklist
+  // re-reads the course each time the dialog opens — otherwise it could show "pricing missing"
+  // to someone who set the price a minute ago.
+  // `null` means the re-read is still in flight; it is only ever set from the async callback,
+  // so nothing here sets state synchronously during a render or an effect.
+  const [latest, setLatest] = useState<CourseResponse | null>(null);
 
-    setIsUploading(true);
-    try {
-      // 1. Get presigned URL
-      const { key, uploadUrl, publicUrl } = await api.post<{ key: string; uploadUrl: string; publicUrl: string }>('/api/media/presign', {
-        fileName: file.name,
-        contentType: file.type
+  useEffect(() => {
+    if (!open || contentType !== 'course' || !course?.id) return;
+    let cancelled = false;
+    api
+      .get<CourseResponse>(`/api/courses/${course.id}`)
+      .then((data) => {
+        if (!cancelled) setLatest(data);
+      })
+      .catch(() => {
+        // Fall back to the snapshot we were handed rather than blocking submission.
+        if (!cancelled) setLatest(course ?? null);
       });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, contentType, course]);
 
-      // 2. Upload file to presigned URL via internal proxy (bypasses CORS)
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('uploadUrl', uploadUrl);
-
-      const uploadRes = await fetch('/api/internal/media/upload', {
-        method: 'POST',
-        body: formData
-      });
-      if (!uploadRes.ok) throw new Error("Failed to upload file to storage");
-
-      // 3. Register metadata
-      await api.post('/api/media/metadata', {
-        key,
-        fileName: file.name,
-        contentType: file.type,
-        sizeBytes: file.size
-      });
-
-      setCoverImageUrl(publicUrl);
-      toast.success("Image uploaded successfully");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to upload image");
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  const isChecking = contentType === 'course' && latest === null;
+  const checklist = contentType === 'course' && latest ? readinessFor(latest) : [];
+  const unmet = checklist.filter((item) => !item.done);
 
   const handleSubmit = async () => {
-    if (contentType === 'course' && pricingModel === 'PAID' && (priceAmount === "" || priceAmount <= 0)) {
-      toast.error("Please enter a valid price for a paid course.");
-      return;
-    }
     if (!message.trim()) {
       toast.error("Please provide a submission message.");
       return;
     }
-    
+
     setIsSubmitting(true);
     try {
-      await onSubmit({
-        coverImageUrl: coverImageUrl || undefined,
-        pricingModel,
-        priceAmount: pricingModel === 'PAID' ? toMinorUnits(Number(priceAmount)) : undefined,
-        message
-      });
+      await onSubmit({ message });
       onClose();
-    } catch (e) {
-      console.error(e);
-      toast.error(`Failed to submit ${isEvent ? 'event' : 'course'}.`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to submit for review.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
-          <DialogTitle className="text-xl">Submit {isEvent ? 'Event' : 'Course'} for Review</DialogTitle>
+          <DialogTitle>Submit for review</DialogTitle>
           <DialogDescription>
-            Configure the final details before sending your {isEvent ? 'event' : 'course'} for approval.
+            {isEvent
+              ? "Your event will be sent to a reviewer."
+              : "Your course will be sent to a reviewer before it goes live."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-8 py-4">
           {contentType === 'course' && (
-            <>
-              {/* Thumbnail Section */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold flex items-center gap-2 text-slate-800">
-                  <ImageIcon size={16}/> Course Thumbnail
-                </h3>
-                <div className="flex gap-4 items-start">
-                  <div className="flex-1 space-y-2">
-                    <Input 
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      disabled={isUploading}
-                    />
-                    <p className="text-xs text-slate-500">{isUploading ? "Uploading..." : "Upload a cover image for your course."}</p>
-                  </div>
-                  {coverImageUrl && (
-                    <div className="w-32 h-20 bg-slate-100 rounded-md overflow-hidden flex-shrink-0 border">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={coverImageUrl} alt="Preview" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                </div>
-              </div>
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-slate-800">Before you submit</h3>
 
-              {/* Pricing Section */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold flex items-center gap-2 text-slate-800">
-                  <IndianRupee size={16}/> Pricing
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <select 
-                      className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 h-9"
-                      value={pricingModel}
-                      onChange={(e) => setPricingModel(e.target.value as 'FREE' | 'PAID')}
-                    >
-                      <option value="FREE">Free</option>
-                      <option value="PAID">Paid</option>
-                    </select>
-                  </div>
-                  {pricingModel === 'PAID' && (
-                    <div className="space-y-2 relative">
-                      <span className="absolute left-3 top-2 text-slate-500">$</span>
-                      <Input 
-                        type="number" 
-                        min="0"
-                        step="0.01"
-                        className="pl-7"
-                        placeholder="e.g. 49.99"
-                        value={priceAmount}
-                        onChange={(e) => setPriceAmount(e.target.value ? parseFloat(e.target.value) : "")}
-                      />
-                    </div>
-                  )}
+              {isChecking ? (
+                <div className="flex items-center gap-2 py-4 text-sm text-slate-500">
+                  <Loader2 size={16} className="animate-spin" /> Checking your course…
                 </div>
-                {pricingModel === 'PAID' && (
-                  <p className="mt-2 text-xs text-[#14142b] bg-slate-50 border border-slate-200 p-2 rounded flex items-start gap-1.5 font-medium">
-                    <span className="text-[10px] mt-[1px]">💡</span> Note: A 20% platform fee will be applied to all paid courses.
-                  </p>
-                )}
-              </div>
-            </>
+              ) : (
+                <>
+                  <ul className="space-y-3">
+                    {checklist.map((item) => (
+                      <li key={item.label} className="flex items-start gap-2 text-sm">
+                        {item.done ? (
+                          <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-500" />
+                        ) : (
+                          <AlertCircle size={16} className="mt-0.5 shrink-0 text-amber-500" />
+                        )}
+                        <span className="flex flex-col">
+                          <span className={item.done ? 'text-slate-600' : 'font-medium text-slate-800'}>
+                            {item.label}
+                          </span>
+                          {!item.done && (
+                            <span className="text-xs text-slate-500">{item.hint}</span>
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* A warning, not a block: a reviewer may still be the right person to
+                      decide, and the backend owns what is actually publishable. */}
+                  {unmet.length > 0 && (
+                    <p className="rounded-md border border-amber-200 bg-amber-50 p-2.5 text-xs font-medium text-amber-900">
+                      {unmet.length === 1
+                        ? "1 item isn't ready yet."
+                        : `${unmet.length} items aren't ready yet.`}{" "}
+                      You can still submit, but reviewers usually send these back.
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
           )}
 
-          {/* Submission Note */}
-          <div className="space-y-3 pt-3 border-t border-slate-100">
-            <h3 className="text-sm font-semibold text-slate-800">Submission Note (Optional)</h3>
-            <p className="text-xs text-slate-500 mb-2">Leave a comment for the reviewer summarizing your changes.</p>
+          <div className="space-y-2">
+            <label htmlFor="submit-message" className="text-sm font-semibold text-slate-800">
+              Message for the reviewer
+            </label>
             <textarea
-              className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 min-h-[80px]"
-              placeholder="e.g., Added new module on React Hooks and fixed typo in Lesson 1."
+              id="submit-message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              placeholder="Anything the reviewer should know about this submission…"
+              className="min-h-[90px] w-full resize-y rounded-md border border-slate-200 p-3 text-sm focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-300"
             />
           </div>
         </div>
 
-        <DialogFooter className="pt-2">
-          <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : "Confirm & Submit"}
-          </Button>
+        <DialogFooter className="pt-2 sm:justify-between">
+          {contentType === 'course' && course?.id ? (
+            <Link
+              href={`/studio/content/course/${course.id}`}
+              className={buttonVariants({ variant: 'outline' })}
+              onClick={onClose}
+            >
+              Go to course page
+            </Link>
+          ) : (
+            <div />
+          )}
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>Cancel</Button>
+            <Button onClick={handleSubmit} disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Confirm & Submit"}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

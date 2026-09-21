@@ -18,6 +18,7 @@ import {
   FileText,
   Flag,
   MoreVertical,
+  Star,
 } from 'lucide-react';
 import {
   Dialog,
@@ -36,6 +37,7 @@ import {
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { ReportModal } from '@/shared/design-system/ui/ReportModal';
+import { courseReviewService } from '@/domains/learning';
 import { AssessmentLandingPane } from './AssessmentLandingPane';
 
 /**
@@ -98,7 +100,47 @@ export default function CourseLearnPage() {
     lessonTitle: string;
   } | null>(null);
 
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
+
   const courseId = params?.courseId as string | undefined;
+
+  /**
+   * The rating is the point of this form, so a learner who picks stars and writes nothing still
+   * submits. Nothing is sent without a rating, and no rating is assumed on their behalf — a
+   * silent default would quietly move the course's public average.
+   */
+  const handleFeedbackSubmit = async () => {
+    if (!courseId || feedbackRating < 1) {
+      setFeedbackModalOpen(false);
+      router.push('/learning');
+      return;
+    }
+
+    setSubmittingFeedback(true);
+    try {
+      const text = feedbackText.trim();
+      await courseReviewService.submit(courseId, {
+        rating: feedbackRating,
+        reviewText: text.length > 0 ? text : undefined,
+      });
+      toast.success('Thank you for your feedback!');
+      setFeedbackModalOpen(false);
+      router.push('/learning');
+    } catch {
+      // Keep the modal open so the learner does not lose what they wrote.
+      toast.error('Could not submit your feedback. Please try again.');
+    } finally {
+      setSubmittingFeedback(false);
+    }
+  };
+
+  const handleFeedbackSkip = () => {
+    setFeedbackModalOpen(false);
+    router.push('/learning');
+  };
 
   const handleReportSubmit = async (combinedNote: string) => {
     if (!courseId || !reportingContext) return;
@@ -192,6 +234,7 @@ export default function CourseLearnPage() {
     setProgress(updated);
     if (previousStatus !== 'COMPLETED' && updated.enrollmentStatus === 'COMPLETED') {
       toast.success('Course completed!');
+      setFeedbackModalOpen(true);
     }
     return updated;
   };
@@ -573,13 +616,14 @@ export default function CourseLearnPage() {
                       </button>
                     ) : isLastItem ? (
                       lessonDone ? (
-                        <Link
-                          href="/learning"
+                        <button
+                          type="button"
+                          onClick={() => setFeedbackModalOpen(true)}
                           className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(5,150,105,0.22)] transition-colors hover:bg-emerald-700"
                         >
                           <CheckCircle2 size={16} />
                           Back to Learning
-                        </Link>
+                        </button>
                       ) : (
                         <button
                           type="button"
@@ -626,6 +670,80 @@ export default function CourseLearnPage() {
         }
         contentType={reportingContext?.lessonTitle ? 'LESSON' : 'COURSE'}
       />
+
+      {/* Post-completion feedback. Opens when the course flips to COMPLETED, and again from
+          "Back to Learning" so a learner who dismissed it can still rate the course. */}
+      <Dialog
+        open={feedbackModalOpen}
+        onOpenChange={(open) => {
+          if (!open) handleFeedbackSkip();
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Share your experience</DialogTitle>
+            <DialogDescription>
+              How was this course? Your rating helps other learners decide.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <div
+              className="mb-2 flex justify-center gap-2"
+              role="radiogroup"
+              aria-label="Course rating, 1 to 5 stars"
+            >
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  role="radio"
+                  aria-checked={feedbackRating === star}
+                  aria-label={`${star} ${star === 1 ? 'star' : 'stars'}`}
+                  onClick={() => setFeedbackRating(star)}
+                  className="rounded transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                >
+                  <Star
+                    size={28}
+                    className={
+                      star <= feedbackRating
+                        ? 'fill-amber-400 text-amber-400'
+                        : 'fill-transparent text-slate-300'
+                    }
+                  />
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              className="min-h-[120px] w-full resize-y rounded-lg border border-slate-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Anything you'd like to add? (optional)"
+              value={feedbackText}
+              onChange={(e) => setFeedbackText(e.target.value)}
+            />
+          </div>
+
+          <DialogFooter className="sm:justify-between">
+            <button
+              type="button"
+              onClick={handleFeedbackSkip}
+              disabled={submittingFeedback}
+              className="inline-flex h-10 items-center justify-center rounded-full px-5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-50"
+            >
+              Skip
+            </button>
+            <button
+              type="button"
+              onClick={handleFeedbackSubmit}
+              disabled={submittingFeedback || feedbackRating < 1}
+              title={feedbackRating < 1 ? 'Pick a star rating to submit' : undefined}
+              className="inline-flex h-10 items-center justify-center rounded-full bg-indigo-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {submittingFeedback ? 'Saving…' : 'Submit'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

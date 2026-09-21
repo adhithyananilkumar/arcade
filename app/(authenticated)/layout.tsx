@@ -1,4 +1,5 @@
 import LearnerShell from '@/apps/learner/layout/LearnerShell';
+import { StaffOnboardingModal } from './components/StaffOnboardingModal';
 
 export default function AuthenticatedLayout({
   children,
@@ -8,6 +9,7 @@ export default function AuthenticatedLayout({
   return (
     <LearnerShell>
       {children}
+      <StaffOnboardingModal />
     </LearnerShell>
   );
 }

@@ -18,9 +18,11 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { api } from "@/infrastructure/http/api"
-import type { CourseResponse } from "@/shared/types/api.types"
+import type { CourseResponse, CourseReviewStats } from "@/shared/types/api.types"
+import { courseReviewService, type CourseReview } from "@/domains/learning"
 import { UserService } from "@/domains/identity"
 import { useAuthStore } from "@/infrastructure/auth/auth.store"
+import { usePublicCategories } from "@/shared/hooks/usePublicCategories"
 import {
   EnrollmentButton,
   useMyEnrollmentForResourceQuery,
@@ -53,141 +55,35 @@ import {
 /*  Data                                                               */
 /* ------------------------------------------------------------------ */
 
-type Module = {
-  title: string
-  duration: string
-  accent: string
-  lessons: { title: string; length: string }[]
-}
-
 const COURSE_TITLE = "Design interfaces people actually love"
-const CATEGORY = "UI / UX & Product Design"
+/** Shown when a course has no category set, or its category no longer resolves. */
+const FALLBACK_CATEGORY = "Course"
 
-const INSTRUCTOR = {
-  name: "Maya Okafor",
-  role: "Senior Product Designer",
-  channel: "Maya Okafor",
-  org: "Pixelcraft Studio",
-  accent: "var(--color-purple)",
-  bio: "Maya has spent twelve years designing products used by millions — leading design at two Series B startups and shipping systems at Meta and Notion. She teaches design as a craft you build in public, not a set of screens you decorate.",
-  expertise: ["Design systems", "Interaction & motion", "Figma", "Prototyping", "Design critique"],
-  stats: [
-    { k: "5", label: "courses", c: "var(--color-blue)", icon: BookOpen },
-    { k: "40,000", label: "students", c: "var(--color-amber)", icon: Users },
-    { k: "4.9", label: "avg rating", c: "var(--color-teal)", icon: Star },
-    { k: "12 yrs", label: "experience", c: "var(--color-purple)", icon: GraduationCap },
-  ],
+/** The hero/instructor accent from the original design — the only part of the old hardcoded
+ * "Maya Okafor" persona that was ever design rather than fake data. */
+const INSTRUCTOR_ACCENT = "var(--color-purple)"
+
+/** Per-module colours, cycled. Modules have no colour of their own in the domain. */
+const MODULE_ACCENTS = [
+  "var(--color-blue)",
+  "var(--color-purple)",
+  "var(--color-amber)",
+  "var(--color-teal)",
+]
+
+/** `AUTHOR`/`CO_AUTHOR` → "Author"/"Co author" for display. */
+function formatCollaboratorRole(role?: string): string {
+  if (!role) return "Instructor"
+  const cleaned = role.replace(/_/g, " ").toLowerCase()
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1)
 }
 
-const META = [
-  { icon: Clock, label: "4h 30m", dot: "var(--color-blue)" },
-  { icon: BookOpen, label: "19 lessons", dot: "var(--color-amber)" },
-  { icon: Users, label: "12,480 enrolled", dot: "var(--color-teal)" },
-]
-
-const MODULES: Module[] = [
-  {
-    title: "Foundations of interface design",
-    duration: "1h 10m",
-    accent: "var(--color-blue)",
-    lessons: [
-      { title: "Visual hierarchy and grid systems", length: "14m" },
-      { title: "Color theory for products", length: "12m" },
-      { title: "Typography that scales", length: "16m" },
-      { title: "Building your first component set", length: "18m" },
-      { title: "Critique: heuristic review", length: "10m" },
-    ],
-  },
-  {
-    title: "Interaction and motion design",
-    duration: "58m",
-    accent: "var(--color-amber)",
-    lessons: [
-      { title: "Micro-interactions that feel right", length: "13m" },
-      { title: "Prototyping with real timing curves", length: "15m" },
-      { title: "State changes and feedback", length: "12m" },
-      { title: "Assignment: an animated onboarding flow", length: "18m" },
-    ],
-  },
-  {
-    title: "Design systems that scale",
-    duration: "1h 40m",
-    accent: "var(--color-purple)",
-    lessons: [
-      { title: "Tokens over hard-coded values", length: "15m" },
-      { title: "Component variants and props", length: "17m" },
-      { title: "Documentation your team will read", length: "16m" },
-      { title: "Versioning a design system", length: "18m" },
-      { title: "Handoff without the back-and-forth", length: "20m" },
-      { title: "Case study teardown", length: "14m" },
-    ],
-  },
-  {
-    title: "Portfolio and case studies",
-    duration: "1h 02m",
-    accent: "var(--color-teal)",
-    lessons: [
-      { title: "Choosing your strongest project", length: "13m" },
-      { title: "Writing a case study people finish", length: "16m" },
-      { title: "Presenting process, not just polish", length: "15m" },
-      { title: "Final review with a mentor", length: "18m" },
-    ],
-  },
-]
-
-const TOTAL_LESSONS = MODULES.reduce((sum, m) => sum + m.lessons.length, 0)
-
-const REVIEWS = [
-  {
-    name: "Adam Wathan",
-    role: "Founder, Tailwind",
-    quote:
-      "I've been using this course as a refresher for nearly a semester and keep coming back to the systems module.",
-    dark: true,
-    accent: "var(--color-blue)",
-  },
-  {
-    name: "Ian Callahan",
-    role: "Harvard Art Museums",
-    quote: "Genuinely the clearest explanation of design systems I've seen taught anywhere.",
-    dark: false,
-    accent: "var(--color-amber)",
-  },
-  {
-    name: "Aaron Francis",
-    role: "Co-founder, Try Hard Studios",
-    quote: "Takes the pain out of learning motion design — the pacing is exactly right.",
-    dark: false,
-    accent: "var(--color-purple)",
-  },
-  {
-    name: "Chandresh Patel",
-    role: "CEO, Bacancy",
-    quote: "Elegance, pacing, and student experience are completely unmatched.",
-    dark: false,
-    accent: "var(--color-teal)",
-  },
-  {
-    name: "Fathom Analytics",
-    role: "Team account",
-    quote: "This course has been integral to how we onboard new hires into design.",
-    dark: true,
-    accent: "var(--color-coral)",
-  },
-  {
-    name: "Priya Menon",
-    role: "Design Lead, Freshworks",
-    quote: "The final case study review alone was worth the price. My portfolio has never been stronger.",
-    dark: false,
-    accent: "var(--color-blue)",
-  },
-]
-
-const HIGHLIGHTS = [
-  "A working design system in Figma",
-  "A recorded portfolio case study",
-  "Feedback from a working designer",
-  "A shareable, verified certificate",
+/** Card accents for the reviews grid, cycled. Design, not data. */
+const REVIEW_ACCENTS = [
+  "var(--color-blue)",
+  "var(--color-amber)",
+  "var(--color-purple)",
+  "var(--color-teal)",
 ]
 
 function getTitleFromSlug(slug?: string): string {
@@ -230,6 +126,7 @@ export default function CoursePreviewPage() {
   const [course, setCourse] = useState<CourseResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const { user, updateUser } = useAuthStore()
+  const publicCategories = usePublicCategories("COURSES")
 
   const [reportModalOpen, setReportModalOpen] = useState(false)
   const [reportNote, setReportNote] = useState("")
@@ -261,6 +158,33 @@ export default function CoursePreviewPage() {
       })
   }, [course?.id, user])
 
+  // Real learner reviews, plus the aggregate the heading shows. Both are public, because
+  // someone deciding whether to enrol reads them before they have an account.
+  const [courseReviews, setCourseReviews] = useState<CourseReview[]>([])
+  const [reviewStats, setReviewStats] = useState<CourseReviewStats | null>(null)
+  useEffect(() => {
+    const id = params?.id
+    if (!id) return
+    let cancelled = false
+    courseReviewService
+      .listPublicForCourse(id)
+      .then((rows) => {
+        if (!cancelled) setCourseReviews(rows)
+      })
+      .catch(() => {
+        // The page reads fine without reviews.
+      })
+    courseReviewService
+      .statsFor([id])
+      .then((stats) => {
+        if (!cancelled) setReviewStats(stats[id] ?? null)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [params?.id])
+
   const handleReportSubmit = async (combinedNote: string) => {
     await api.post("/api/v1/reports", {
       contentId: params?.id,
@@ -290,33 +214,70 @@ export default function CoursePreviewPage() {
   }
 
   const displayTitle = titleFromQuery || course?.title || getTitleFromSlug(params?.id) || COURSE_TITLE
-  const authorName = course?.authorName || INSTRUCTOR.name
-  const authorUsername = course?.authorUsername || INSTRUCTOR.channel
+  const authorName = course?.authorName || "Unknown author"
+  const authorUsername = course?.authorUsername || undefined
   const authorAvatarUrl = course?.authorAvatarUrl
-  const lessonCount = course?.modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0
+  const modules = course?.modules ?? []
+  const moduleCount = modules.length
+  const lessonCount = modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0)
+  const learningOutcomes = (course?.learningOutcomes ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
   // ACCESSIBLE is the only state that grants entry — a PENDING (unpaid / waitlisted) or REVOKED
   // enrollment is deliberately not "enrolled" for the purposes of this page's CTA.
   const isEnrolled = myEnrollment?.enrollment?.accessState === "ACCESSIBLE"
+
+  // The CTA has to survive a reload: a learner who has paid but whose grant is still settling
+  // must not be shown "Enroll Now" again. The server's own enrollment record is the authority.
+  const enrollmentStatus = myEnrollment?.enrollment?.enrollmentStatus
+  // The course's real category, resolved against the super-user-managed taxonomy. A course
+  // with no category set (or a stale id) falls back to a neutral label rather than borrowing
+  // whatever category the page was originally designed around.
+  const categoryName =
+    publicCategories.find((c) => c.id === course?.categoryId)?.name ?? FALLBACK_CATEGORY
+
+  // Only an organization channel gets the org badge — a personal channel is the person.
+  const orgName = course?.channel && !course.channel.isPersonal ? course.channel.name : null
+
+  const enrollButtonState: "ENROLLED" | "NOT_ENROLLED" | "PENDING" | "WAITLISTED" = isEnrolled
+    ? "ENROLLED"
+    : enrollmentStatus === "PENDING" || enrollmentStatus === "REQUESTED"
+      ? "PENDING"
+      : "NOT_ENROLLED"
+  // Distinguishes "your payment is settling" from "someone must approve you" on the CTA.
+  const pendingReason = myEnrollment?.enrollment?.requiresPayment ? "PAYMENT" : "REQUIREMENTS"
 
   const heroContent = (
     <LearningHero
       breadcrumbs={[
         { label: "Explore", href: "/explore" },
-        { label: CATEGORY, href: "/explore" }
+        { label: categoryName, href: "/explore" }
       ]}
-      category={CATEGORY}
+      category={categoryName}
       title={displayTitle}
       authorName={authorName}
       authorUsername={authorUsername}
       authorAvatarUrl={authorAvatarUrl}
-      authorAccent={INSTRUCTOR.accent}
+      authorAccent={INSTRUCTOR_ACCENT}
       metaChips={[
-        { icon: Clock, label: "4h 30m", dotColor: "var(--color-blue)" },
-        { icon: BookOpen, label: `${lessonCount || 19} lessons`, dotColor: "var(--color-amber)" },
-        { icon: Users, label: "12,480 enrolled", dotColor: "var(--color-teal)" },
+        { icon: Clock, label: course?.duration || "Self-paced", dotColor: "var(--color-blue)" },
+        {
+          icon: BookOpen,
+          label: `${lessonCount} ${lessonCount === 1 ? "lesson" : "lessons"}`,
+          dotColor: "var(--color-amber)",
+        },
+        {
+          icon: Users,
+          label: `${(course?.enrollmentCount ?? 0).toLocaleString()} enrolled`,
+          dotColor: "var(--color-teal)",
+        },
       ]}
-      pricingModel="PAID"
-      priceAmount={course?.priceAmount || 20}
+      pricingModel={course?.pricingModel ?? "FREE"}
+      priceAmount={course?.priceAmount ?? 0}
+      authorId={course?.authorId}
+      channel={course?.channel}
+      collaborators={course?.collaborators}
       isWishlisted={isWishlisted}
       onWishlistToggle={() => setIsWishlisted(!isWishlisted)}
       onReportClick={() => setReportModalOpen(true)}
@@ -332,7 +293,8 @@ export default function CoursePreviewPage() {
               <EnrollmentButton
                 resourceType="COURSE"
                 resourceId={course.id}
-                initialState="NOT_ENROLLED"
+                initialState={enrollButtonState}
+                pendingReason={pendingReason}
                 targetUrl={`/learn/${course.id}/learn${titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''}`}
                 onGoToResource={() => {
                   const queryStr = titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''
@@ -362,24 +324,34 @@ export default function CoursePreviewPage() {
             <div className="grid gap-8 md:grid-cols-2">
               <div className="rounded-3xl border border-line bg-paper p-7">
                 <h3 className="font-serif text-2xl font-light text-ink">About this course</h3>
-                <p className="mt-4 text-[15px] leading-relaxed text-subtle">
-                  This course treats design as a craft you build in public — every module ends with a real
-                  assignment, reviewed by a working product designer. You&apos;ll leave with a portfolio piece, not
-                  just a certificate.
-                </p>
+                {course?.description ? (
+                  <p className="mt-4 whitespace-pre-wrap text-[15px] leading-relaxed text-subtle">
+                    {course.description}
+                  </p>
+                ) : (
+                  <p className="mt-4 text-[15px] italic leading-relaxed text-subtle/75">
+                    The author hasn&apos;t written an overview for this course yet.
+                  </p>
+                )}
               </div>
               <div className="rounded-3xl border border-line bg-paper p-7">
                 <h3 className="font-serif text-2xl font-light text-ink">What you&apos;ll walk away with</h3>
-                <ul className="mt-4 flex flex-col gap-3">
-                  {HIGHLIGHTS.map((h) => (
-                    <li key={h} className="flex items-center gap-3 text-[15px] text-ink">
-                      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-teal/12">
-                        <Check size={13} className="text-teal" />
-                      </span>
-                      {h}
-                    </li>
-                  ))}
-                </ul>
+                {learningOutcomes.length > 0 ? (
+                  <ul className="mt-4 flex flex-col gap-3">
+                    {learningOutcomes.map((h) => (
+                      <li key={h} className="flex items-center gap-3 text-[15px] text-ink">
+                        <span className="grid size-5 shrink-0 place-items-center rounded-full bg-teal/12">
+                          <Check size={13} className="text-teal" />
+                        </span>
+                        {h}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-4 text-[15px] italic text-subtle/75">
+                    The author hasn&apos;t listed learning outcomes for this course yet.
+                  </p>
+                )}
               </div>
             </div>
           )
@@ -391,9 +363,9 @@ export default function CoursePreviewPage() {
             <div className="mx-auto max-w-3xl">
               <div className="mb-6 flex flex-wrap items-center justify-center gap-2.5">
                 {[
-                  { icon: BookOpen, label: `${MODULES.length} modules`, c: "var(--color-blue)" },
-                  { icon: PlayCircle, label: `${TOTAL_LESSONS} lessons`, c: "var(--color-amber)" },
-                  { icon: Clock, label: "4h 30m total", c: "var(--color-teal)" },
+                  { icon: BookOpen, label: `${moduleCount} ${moduleCount === 1 ? "module" : "modules"}`, c: "var(--color-blue)" },
+                  { icon: PlayCircle, label: `${lessonCount} ${lessonCount === 1 ? "lesson" : "lessons"}`, c: "var(--color-amber)" },
+                  ...(course?.duration ? [{ icon: Clock, label: `${course.duration} total`, c: "var(--color-teal)" }] : []),
                 ].map(({ icon: Icon, label, c }) => (
                   <span
                     key={label}
@@ -405,11 +377,15 @@ export default function CoursePreviewPage() {
               </div>
 
               <div className="flex flex-col gap-3">
-                {MODULES.map((m, idx) => {
+                {modules.map((m, idx) => {
                   const open = openMod === idx
+                  // Modules carry no colour of their own; cycle the palette so the list keeps
+                  // the visual rhythm the design had without inventing per-module data.
+                  const accent = MODULE_ACCENTS[idx % MODULE_ACCENTS.length]
+                  const moduleLessons = m.lessons ?? []
                   return (
                     <div
-                      key={m.title}
+                      key={m.id}
                       className="overflow-hidden rounded-2xl border border-line bg-paper transition-colors hover:border-ink/15"
                     >
                       <button
@@ -419,7 +395,7 @@ export default function CoursePreviewPage() {
                       >
                         <span
                           className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-base font-medium text-paper"
-                          style={{ background: m.accent }}
+                          style={{ background: accent }}
                         >
                           {idx + 1}
                         </span>
@@ -430,7 +406,7 @@ export default function CoursePreviewPage() {
                           <span className="block text-[15px] font-semibold text-ink">{m.title}</span>
                         </span>
                         <span className="hidden text-xs text-subtle sm:block">
-                          {m.lessons.length} lessons · {m.duration}
+                          {moduleLessons.length} {moduleLessons.length === 1 ? "lesson" : "lessons"}
                         </span>
                         <ChevronDown
                           size={17}
@@ -438,17 +414,16 @@ export default function CoursePreviewPage() {
                           style={{ transform: open ? "rotate(180deg)" : "none" }}
                         />
                       </button>
-                      {open && (
+                      {open && moduleLessons.length > 0 && (
                         <ul className="flex flex-col gap-1 border-t border-line px-3 pb-3 pt-2">
-                          {m.lessons.map((lesson, li) => (
+                          {moduleLessons.map((lesson, li) => (
                             <li
-                              key={lesson.title}
+                              key={lesson.id}
                               className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-mist"
                             >
                               <span className="w-5 text-center text-[12px] font-medium text-subtle/70">{li + 1}</span>
-                              <PlayCircle size={16} style={{ color: m.accent }} className="shrink-0" />
+                              <PlayCircle size={16} style={{ color: accent }} className="shrink-0" />
                               <span className="flex-1 text-[14px] text-ink">{lesson.title}</span>
-                              <span className="text-[12px] text-subtle">{lesson.length}</span>
                             </li>
                           ))}
                         </ul>
@@ -456,6 +431,11 @@ export default function CoursePreviewPage() {
                     </div>
                   )
                 })}
+                {modules.length === 0 && (
+                  <p className="rounded-2xl border border-line bg-paper px-5 py-8 text-center text-[15px] italic text-subtle/75">
+                    This course hasn&apos;t published a syllabus yet.
+                  </p>
+                )}
               </div>
             </div>
           )
@@ -464,51 +444,87 @@ export default function CoursePreviewPage() {
           id: "Instructor",
           label: "Instructor",
           content: (
-            <div className="mx-auto max-w-3xl rounded-3xl border border-line bg-paper p-8">
-              <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-                <Avatar name={INSTRUCTOR.name} accent={INSTRUCTOR.accent} size={72} />
-                <div className="flex-1">
-                  <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-purple/10 px-2.5 py-1 text-[12px] font-medium text-purple">
-                    <BadgeCheck size={13} /> {INSTRUCTOR.org}
+            <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+              {(course?.collaborators ?? []).map((person) => (
+                <div key={person.id} className="rounded-3xl border border-line bg-paper p-8">
+                  <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+                    <Avatar
+                      name={person.name || "Unknown"}
+                      imageUrl={person.avatarUrl}
+                      accent={INSTRUCTOR_ACCENT}
+                      size={72}
+                    />
+                    <div className="flex-1">
+                      {orgName && (
+                        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-purple/10 px-2.5 py-1 text-[12px] font-medium text-purple">
+                          <BadgeCheck size={13} /> {orgName}
+                        </div>
+                      )}
+                      <h3 className="font-serif text-2xl font-light text-ink">{person.name || "Unknown"}</h3>
+                      <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-subtle">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Briefcase size={13} /> {formatCollaboratorRole(person.role)}
+                        </span>
+                        {person.username && (
+                          <>
+                            <span className="text-subtle/40">·</span>
+                            <Link
+                              href={`/${person.username}`}
+                              className="inline-flex items-center gap-1.5 hover:underline"
+                            >
+                              <Radio size={13} className="text-blue" /> @{person.username}
+                            </Link>
+                          </>
+                        )}
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="font-serif text-2xl font-light text-ink">{INSTRUCTOR.name}</h3>
-                  <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-subtle">
-                    <span className="inline-flex items-center gap-1.5">
-                      <Briefcase size={13} /> {INSTRUCTOR.role}
-                    </span>
-                    <span className="text-subtle/40">·</span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Radio size={13} className="text-blue" /> {INSTRUCTOR.channel}
-                    </span>
-                  </p>
+
+                  {person.bio ? (
+                    <p className="mt-6 whitespace-pre-wrap text-[15px] leading-relaxed text-subtle">{person.bio}</p>
+                  ) : (
+                    <p className="mt-6 text-[15px] italic leading-relaxed text-subtle/75">
+                      {person.name} hasn&apos;t added a bio yet.
+                    </p>
+                  )}
+
+                  {(person.specialities?.length ?? 0) > 0 && (
+                    <div className="mt-6 flex flex-wrap gap-2">
+                      {person.specialities!.map((e) => (
+                        <span
+                          key={e}
+                          className="rounded-full border border-line bg-mist px-3 py-1.5 text-[12px] font-medium text-ink"
+                        >
+                          {e}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-7 grid grid-cols-2 gap-3 border-t border-line pt-6">
+                    <div>
+                      <BookOpen size={16} style={{ color: "var(--color-blue)" }} />
+                      <p className="mt-2 font-serif text-xl font-medium text-ink">{person.courseCount ?? 0}</p>
+                      <p className="text-[12px] text-subtle">
+                        {person.courseCount === 1 ? "course" : "courses"}
+                      </p>
+                    </div>
+                    <div>
+                      <GraduationCap size={16} style={{ color: "var(--color-purple)" }} />
+                      <p className="mt-2 font-serif text-xl font-medium text-ink">
+                        {person.experienceYears != null ? `${person.experienceYears} yrs` : "—"}
+                      </p>
+                      <p className="text-[12px] text-subtle">experience</p>
+                    </div>
+                  </div>
                 </div>
-                <button className="rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-paper transition-transform hover:-translate-y-0.5">
-                  Follow channel
-                </button>
-              </div>
+              ))}
 
-              <p className="mt-6 text-[15px] leading-relaxed text-subtle">{INSTRUCTOR.bio}</p>
-
-              <div className="mt-6 flex flex-wrap gap-2">
-                {INSTRUCTOR.expertise.map((e) => (
-                  <span
-                    key={e}
-                    className="rounded-full border border-line bg-mist px-3 py-1.5 text-[12px] font-medium text-ink"
-                  >
-                    {e}
-                  </span>
-                ))}
-              </div>
-
-              <div className="mt-7 grid grid-cols-2 gap-3 border-t border-line pt-6 sm:grid-cols-4">
-                {INSTRUCTOR.stats.map(({ k, label, c, icon: Icon }) => (
-                  <div key={label}>
-                    <Icon size={16} style={{ color: c }} />
-                    <p className="mt-2 font-serif text-xl font-medium text-ink">{k}</p>
-                    <p className="text-[12px] text-subtle">{label}</p>
-                  </div>
-                ))}
-              </div>
+              {(course?.collaborators?.length ?? 0) === 0 && (
+                <div className="rounded-3xl border border-line bg-paper p-8 text-center text-[15px] italic text-subtle/75">
+                  No instructor information available for this course.
+                </div>
+              )}
             </div>
           )
         },
@@ -557,9 +573,9 @@ export default function CoursePreviewPage() {
                 </span>
                 <h3 className="mt-3 font-serif text-2xl font-light text-ink">Earn a badge that&apos;s one of a kind</h3>
                 <p className="mt-3 max-w-md text-[15px] leading-relaxed text-subtle">
-                  This badge is unique to <span className="font-medium text-ink">{COURSE_TITLE}</span> — no other
-                  course carries it. Finish all four modules and your final case study to unlock it on your profile.
-                  You&apos;ll also receive a verified certificate of completion to share.
+                  This badge is unique to <span className="font-medium text-ink">{displayTitle}</span> — no other
+                  course carries it. Finish the course to unlock it on your profile, along with a verified
+                  certificate of completion to share.
                 </p>
               </div>
             </div>
@@ -569,12 +585,37 @@ export default function CoursePreviewPage() {
     />
   )
 
-  const reviewsContent = <LearningReviews reviews={REVIEWS} />
+  // The palette is design; the names, words and numbers are the learners' own.
+  const reviewsContent =
+    courseReviews.length > 0 ? (
+      <LearningReviews
+        headingText={
+          <>
+            What learners say about{" "}
+            <span className="italic text-blue">{displayTitle}</span>
+          </>
+        }
+        averageRating={reviewStats?.averageRating ?? 0}
+        totalRatings={reviewStats?.reviewsCount ?? courseReviews.length}
+        reviews={courseReviews.map((r, i) => ({
+          name: r.userName,
+          role: `${r.rating} out of 5`,
+          quote: r.reviewText ?? "",
+          dark: i === 0,
+          accent: REVIEW_ACCENTS[i % REVIEW_ACCENTS.length],
+          avatarUrl: r.userAvatarUrl,
+        }))}
+      />
+    ) : (
+      <div className="rounded-3xl border border-line bg-paper p-8 text-center text-[15px] italic text-subtle/75">
+        No reviews yet — be the first to rate this course when you finish it.
+      </div>
+    )
 
   const ctaContent = (
     <LearningCta
       title={<>Light the path to your next <span className="italic text-amber">design role.</span></>}
-      description="Join 12,480 builders learning to design interfaces people actually love — with feedback from working designers."
+      description="Learn at your own pace, with feedback from the people who built the course."
       primaryAction={
         isEnrolled && course?.id ? (
           <Link
@@ -589,7 +630,8 @@ export default function CoursePreviewPage() {
               <EnrollmentButton
                 resourceType="COURSE"
                 resourceId={course.id}
-                initialState="NOT_ENROLLED"
+                initialState={enrollButtonState}
+                pendingReason={pendingReason}
                 className="!bg-white !text-ink hover:!bg-white/90"
                 targetUrl={`/learn/${course.id}/learn${titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''}`}
                 onGoToResource={() => {

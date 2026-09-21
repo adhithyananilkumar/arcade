@@ -122,12 +122,11 @@ export interface ContentEditorRuntimeProps {
    * Executes the actual submit-for-review API call and returns the new status. The confirmation
    * dialog (ContentSubmitDialog) is shared; only what happens when its form is confirmed differs.
    */
-  onSubmit: (data: {
-    coverImageUrl?: string;
-    pricingModel: "FREE" | "PAID";
-    priceAmount?: number;
-    message?: string;
-  }) => Promise<{ status: string; updatedAt?: string | null }>;
+  /**
+   * Submits the content for review. Pricing and the cover image used to ride along here; they
+   * are now authored on the content's own page, so this carries only the reviewer message.
+   */
+  onSubmit: (data: { message?: string }) => Promise<{ status: string; updatedAt?: string | null }>;
   /**
    * Extra header actions rendered between the panel toggle and the Submit button, given the
    * runtime's own active-lesson state (Event's Day Settings icon needs to know which module is
@@ -1045,7 +1044,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
 
   const askSubmit = () => setSubmitDialogOpen(true);
 
-  const handleSubmit = async (data: { coverImageUrl?: string; pricingModel: "FREE" | "PAID"; priceAmount?: number; message?: string }) => {
+  const handleSubmit = async (data: { message?: string }) => {
     if (!contentId) return;
     if (editorRef.current) {
       try {

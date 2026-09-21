@@ -22,7 +22,7 @@ export const CATEGORY_DATA: Record<string, {
   colors: { primary: string; secondary: string };
 }> = {
   "All": {
-    coursesCount: 50,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
     colors: { primary: "#4F46E5", secondary: "rgba(79, 70, 229, 0.08)" },
     desc: "Explore all comprehensive learning paths, bootcamps, workshops, and verified research articles across all academic disciplines and engineering domains.",
@@ -31,16 +31,11 @@ export const CATEGORY_DATA: Record<string, {
     resources: []
   },
   "Computer Science": {
-    coursesCount: 12,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)",
     colors: { primary: "#8B5CF6", secondary: "rgba(139, 92, 246, 0.08)" },
     desc: "Gain foundational and advanced skills in software development, data structures, database design, and software engineering workflows.",
-    courses: [
-      { title: "Intro to Programming", duration: "6 Weeks", level: "Beginner", desc: "Learn programming logic and syntax fundamentals using modern languages." },
-      { title: "Data Structures & Algorithms", duration: "10 Weeks", level: "Advanced", desc: "Master complexity analysis, sorting algorithms, trees, and dynamic programming." },
-      { title: "Database Management Systems", duration: "8 Weeks", level: "Intermediate", desc: "Design relational databases, write queries, and optimize index schemas." },
-      { title: "Software Engineering Principles", duration: "12 Weeks", level: "Advanced", desc: "Study system architecture patterns, automated tests, and agile collaboration." }
-    ],
+    courses: [],
     bootcamps: [],
     resources: [
       { title: "Optimizing Next.js App Router Performance", type: "Article", readTime: "5 min read" },
@@ -49,16 +44,11 @@ export const CATEGORY_DATA: Record<string, {
     ]
   },
   "Artificial Intelligence": {
-    coursesCount: 8,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #EC4899 0%, #BE185D 100%)",
     colors: { primary: "#EC4899", secondary: "rgba(236, 72, 153, 0.08)" },
     desc: "Explore neural networks, machine learning models, training pipelines, fine-tuning large language models, and AI agent designs.",
-    courses: [
-      { title: "Intro to Machine Learning", duration: "8 Weeks", level: "Beginner", desc: "Understand supervised and unsupervised model training and evaluations." },
-      { title: "Neural Networks & Deep Learning", duration: "12 Weeks", level: "Advanced", desc: "Build multi-layer neural networks using PyTorch and TensorFlow." },
-      { title: "Natural Language Processing", duration: "10 Weeks", level: "Intermediate", desc: "Train model systems to parse and generate human texts." },
-      { title: "Computer Vision & CNNs", duration: "10 Weeks", level: "Intermediate", desc: "Process visual data, detect objects, and design image architectures." }
-    ],
+    courses: [],
     bootcamps: [],
     resources: [
       { title: "RAG Pipeline Architectures Explained", type: "Article", readTime: "6 min read" },
@@ -121,7 +111,7 @@ export const CATEGORY_DATA: Record<string, {
     resources: []
   },
   "Design & UI/UX": {
-    coursesCount: 8,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #EC4899 0%, #BE185D 100%)",
     colors: { primary: "#EC4899", secondary: "rgba(236, 72, 153, 0.08)" },
     desc: "Master user interface design, user experience research, wireframing, and interactive prototyping.",
@@ -130,7 +120,7 @@ export const CATEGORY_DATA: Record<string, {
     resources: []
   },
   "Data Science & AI": {
-    coursesCount: 15,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #F59E0B 0%, #B45309 100%)",
     colors: { primary: "#F59E0B", secondary: "rgba(245, 158, 11, 0.08)" },
     desc: "Dive into machine learning, deep neural networks, data analysis, and predictive modeling.",
@@ -139,7 +129,7 @@ export const CATEGORY_DATA: Record<string, {
     resources: []
   },
   "Productivity Tools": {
-    coursesCount: 4,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
     colors: { primary: "#3B82F6", secondary: "rgba(59, 130, 246, 0.08)" },
     desc: "Learn to streamline your workflow with modern productivity software, automation, and integrations.",

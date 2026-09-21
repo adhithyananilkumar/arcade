@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 /**
  * ------------------------------------------------------------------
  * Arcade Frontend Architecture
@@ -56,10 +58,7 @@ export function CourseWorkspace({ courseId }: { courseId: string }) {
   );
 
   const onSubmit = useCallback(
-    async (data: { coverImageUrl?: string; pricingModel: "FREE" | "PAID"; priceAmount?: number; message?: string }) => {
-      if (data.coverImageUrl !== undefined || data.pricingModel !== undefined || data.priceAmount !== undefined) {
-        await api.patch(`/api/courses/${courseId}`, data);
-      }
+    async (data: { message?: string }) => {
       const updated = await api.post<{ status: string; updatedAt: string; pricingModel: string }>(
         `/api/courses/${courseId}/submit`,
         { message: data.message }
@@ -82,24 +81,40 @@ export function CourseWorkspace({ courseId }: { courseId: string }) {
         canvasDescription: "Open the sidebar, add a module, then a lesson or badge to begin.",
       }}
       sidebarExtras={
-        <div className="flex flex-col gap-1 rounded-2xl border border-white/40 bg-white/70 px-3 py-2 shadow-sm backdrop-blur-md">
-          <label htmlFor="course-category-select" className="text-[10px] font-bold uppercase tracking-wide text-[#14142b]/50">
-            Category
-          </label>
-          <select
-            id="course-category-select"
-            value={categoryId ?? "OTHER"}
-            disabled={savingCategory}
-            onChange={(e) => updateCourseCategory(e.target.value === "OTHER" ? null : e.target.value)}
-            className="w-full rounded-lg border border-[#14142b]/10 bg-white px-2 py-1.5 text-xs font-semibold text-[#14142b] outline-none focus:border-indigo-300 focus:ring-1 focus:ring-indigo-200 disabled:opacity-60"
-          >
-            {courseCategories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-            <option value="OTHER">Other</option>
-          </select>
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1 rounded-2xl border border-white/40 bg-white/70 px-3 py-2 shadow-sm backdrop-blur-md">
+            <label htmlFor="course-category-select" className="text-[10px] font-bold uppercase tracking-wide text-[#14142b]/50">
+              Category
+            </label>
+            <select
+              id="course-category-select"
+              value={categoryId ?? "OTHER"}
+              disabled={savingCategory}
+              onChange={(e) => updateCourseCategory(e.target.value === "OTHER" ? null : e.target.value)}
+              className="w-full rounded-lg border border-[#14142b]/10 bg-white px-2 py-1.5 text-xs font-semibold text-[#14142b] outline-none focus:border-indigo-300 focus:ring-1 focus:ring-indigo-200 disabled:opacity-60"
+            >
+              {courseCategories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+
+          {/* Pricing and the public overview are edited on the course's own page rather than
+              duplicated here — one place to set them, one place they can drift from. */}
+          <div className="flex flex-col gap-1.5 rounded-2xl border border-white/40 bg-white/70 px-3 py-2 shadow-sm backdrop-blur-md">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-[#14142b]/50">
+              Pricing &amp; overview
+            </span>
+            <Link
+              href={`/studio/content/course/${courseId}`}
+              className="w-full rounded-lg bg-[#14142b] py-1.5 text-center text-xs font-semibold text-white transition hover:bg-[#232735]"
+            >
+              Configure
+            </Link>
+          </div>
         </div>
       }
     />

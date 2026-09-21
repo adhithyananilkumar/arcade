@@ -21,6 +21,8 @@ export { TiptapContentView } from './delivery/components/TiptapContentView';
 export { LessonReviewFeedback } from './delivery/components/LessonReviewFeedback';
 export { AssessmentReviewQuestions } from './delivery/components/AssessmentReviewQuestions';
 export { courseDeliveryService } from './delivery/api/courses';
+export { courseReviewService } from './delivery/api/reviews';
+export type { CourseReview, SubmitCourseReviewInput } from './delivery/api/reviews';
 export { courseProgressService } from './progress/api/courseProgress';
 export type { CourseProgress, EnrollmentStatus } from './progress/api/courseProgress';
 export { ActivityService } from './activity/api/activity.service';

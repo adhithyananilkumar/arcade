@@ -98,6 +98,31 @@ export class UserService {
     return data;
   }
 
+  /**
+   * Updates only the instructor-facing profile fields.
+   *
+   * <p>Separate from {@link updateProfile} on purpose: that one takes every field positionally,
+   * so calling it from a form that does not own the instructor fields sends whatever the form
+   * happens to hold for them — which silently wipes a user's specialities when they edit their
+   * address. The server applies each field only when present, but `firstName`/`lastName` are
+   * required and set unconditionally, so they travel with every partial update.
+   */
+  static async updateInstructorProfile(
+    firstName: string,
+    lastName: string,
+    fields: {
+      specialities?: string[];
+      experienceYears?: number;
+      staffOnboardingCompleted?: boolean;
+    }
+  ): Promise<User> {
+    return api.put<User>('/api/v1/users/me', {
+      firstName,
+      lastName,
+      ...fields,
+    });
+  }
+
   static async uploadAvatar(file: File): Promise<User> {
     const formData = new FormData();
     formData.append('file', file);

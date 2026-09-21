@@ -37,6 +37,31 @@ export interface CommentResponse {
   updatedAt: string;
 }
 
+/** The owning channel, as the public course surfaces attribute a course. */
+export interface CourseChannelSummary {
+  id: string;
+  name: string;
+  iconUrl: string | null;
+  isPersonal: boolean;
+}
+
+/**
+ * Someone credited on a course. `role` is `"Author"` for the primary author and the backend
+ * collaborator role name otherwise — which is how the UI credits the author separately from the
+ * collaborator list rather than guessing from the username.
+ */
+export interface CourseCollaboratorSummary {
+  id: string;
+  name: string;
+  username?: string | null;
+  avatarUrl?: string | null;
+  bio?: string | null;
+  role: string;
+  specialities?: string[];
+  experienceYears?: number | null;
+  courseCount?: number;
+}
+
 export interface CourseResponse {
   id: string;
   authorId: string;
@@ -45,11 +70,15 @@ export interface CourseResponse {
   authorAvatarUrl?: string | null;
   title: string;
   description?: string;
+  /** Newline-separated "what you'll walk away with" bullets. */
+  learningOutcomes?: string | null;
   coverImageUrl?: string;
   pricingModel: PricingModel;
   /** Minor currency units (e.g. cents/paise). */
   priceAmount?: number;
   currency?: string;
+  /** Author-declared total length, free text (e.g. "4h 30m"). */
+  duration?: string | null;
   examSchedule?: string;
   /** Super-user-managed category (Console -> Content Manage -> Categories), or null for "Other". */
   categoryId?: string | null;
@@ -57,6 +86,11 @@ export interface CourseResponse {
   status: ContentStatus;
   rejectionReason?: string;
   wasPublished?: boolean;
+  /** Live count of granted enrollments. */
+  enrollmentCount?: number;
+  channel?: CourseChannelSummary;
+  /** Author first, then accepted collaborators. */
+  collaborators?: CourseCollaboratorSummary[];
   modules: ModuleResponse[];
   badges: BadgeSummaryResponse[];
   /**
@@ -72,10 +106,12 @@ export interface CourseResponse {
 export interface CreateCourseRequest {
   title: string;
   description?: string;
+  learningOutcomes?: string;
   pricingModel?: PricingModel;
   /** Minor currency units (e.g. cents/paise). */
   priceAmount?: number;
   currency?: string;
+  duration?: string;
   examSchedule?: string;
   hasExam?: boolean;
 }
@@ -83,12 +119,20 @@ export interface CreateCourseRequest {
 export interface PatchCourseRequest {
   title?: string;
   description?: string;
+  learningOutcomes?: string;
   pricingModel?: PricingModel;
   /** Minor currency units (e.g. cents/paise). */
   priceAmount?: number;
   currency?: string;
+  duration?: string;
   examSchedule?: string;
   hasExam?: boolean;
+}
+
+/** Aggregate rating for one course — `GET /api/v1/public/reviews/stats`, keyed by course id. */
+export interface CourseReviewStats {
+  averageRating: number;
+  reviewsCount: number;
 }
 
 // ── Module ────────────────────────────────────────────────────────────────────

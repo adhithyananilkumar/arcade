@@ -17,6 +17,10 @@ export interface User {
   preferences?: string[];
   workingAt?: string;
   onboardingCompleted?: boolean;
+  /** Instructor profile — shown on the course pages of courses this user is credited on. */
+  staffOnboardingCompleted?: boolean;
+  specialities?: string[];
+  experienceYears?: number;
   provider?: string;
   createdAt?: string;
   avatarUrl?: string;

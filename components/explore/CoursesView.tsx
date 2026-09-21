@@ -5,6 +5,7 @@ import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
+import { getCourseAttribution, type AttributableCourse } from "./courseAttribution";
 function hexToRgbStr(hex: string): string {
   hex = hex.replace(/^#/, "");
   if (hex.length === 3) {
@@ -65,11 +66,11 @@ interface EnrichedCourse {
   };
 }
 
-function getEnrichedCourse(course: { title: string; duration: string; level: string; desc: string; category?: string }, index: number, categoryName: string): EnrichedCourse {
-  const ratings = [4.8, 4.9, 4.7, 4.6];
-  const reviews = [320, 240, 185, 95];
-  const rating = ratings[index % ratings.length];
-  const reviewsCount = reviews[index % reviews.length];
+function getEnrichedCourse(course: { title: string; duration: string; level: string; desc: string; category?: string } & AttributableCourse, index: number, categoryName: string): EnrichedCourse {
+  // Ratings come from the reviews API via `courseStats` at the call site; an unrated course
+  // reads as unrated rather than borrowing a plausible-looking number.
+  const rating = 0;
+  const reviewsCount = 0;
 
   const effectiveCategory = (course.category && course.category.toLowerCase() !== "all") ? course.category : categoryName;
   let categoryTag = effectiveCategory;
@@ -98,13 +99,7 @@ function getEnrichedCourse(course: { title: string; duration: string; level: str
     categoryTag = course.category || "General";
   }
 
-  const instructors = [
-    { name: "Dr. Sarah Jenkins", role: "Course Author", avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" },
-    { name: "Alex Rivera", role: "Instructor", avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" },
-    { name: "Prof. David Miller", role: "Course Author", avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" },
-    { name: "Elena Rostova", role: "Instructor", avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150" }
-  ];
-  const instructor = instructors[index % instructors.length];
+  const instructor = getCourseAttribution(course as AttributableCourse);
 
   return {
     ...course,
@@ -689,7 +684,11 @@ export const CourseCard: React.FC<CourseCardProps> = ({
                   </button>
                 )}
               </div>
+            </div>
 
+            {/* Attribution + CTA are pinned to the bottom of the card, so cards in a row line
+                their buttons up regardless of how long each description runs. */}
+            <div style={{ display: "flex", flexDirection: "column", marginTop: "auto" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
                 <img
                   src={enriched.instructor.avatarUrl}
@@ -825,10 +824,10 @@ export default function CoursesView({
   });
 
   const sortedCourses = [...filteredCourses].sort((a: any, b: any) => {
-    const slugA = slugify(a.title);
-    const slugB = slugify(b.title);
-    const ratingA = courseStats[slugA]?.averageRating || 4.8;
-    const ratingB = courseStats[slugB]?.averageRating || 4.8;
+    // Stats are keyed by course id, matching the reviews API. Unrated courses sort to the
+    // bottom of a rating sort rather than being handed a flattering default.
+    const ratingA = courseStats[a.id]?.averageRating ?? 0;
+    const ratingB = courseStats[b.id]?.averageRating ?? 0;
 
     if (sortBy === "rating") {
       return ratingB - ratingA;
@@ -1033,8 +1032,7 @@ export default function CoursesView({
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
           {sortedCourses.map((course: any, index: number) => {
-            const slug = slugify(course.title);
-            const stats = courseStats[slug] || { averageRating: 0.0, reviewsCount: 0 };
+            const stats = courseStats[course.id] || { averageRating: 0.0, reviewsCount: 0 };
             return (
               <CourseCard
                 key={course.id || `${course.title}-${index}`}

@@ -17,6 +17,8 @@ import EventsView from "./EventsView";
 import ArticlesView from "./ArticlesView";
 import WindmillAnimation from "./WindmillAnimation";
 
+import { getCourseAttribution, type AttributableCourse } from "./courseAttribution";
+import { courseReviewService } from "@/domains/learning";
 export { CourseCard };
 
 function hexToRgbStr(hex: string): string {
@@ -738,11 +740,11 @@ interface EnrichedCourse {
   };
 }
 
-function getEnrichedCourse(course: { title: string; duration: string; level: string; desc: string }, index: number, categoryName: string): EnrichedCourse {
-  const ratings = [4.8, 4.9, 4.7, 4.6];
-  const reviews = [320, 240, 185, 95];
-  const rating = ratings[index % ratings.length];
-  const reviewsCount = reviews[index % reviews.length];
+function getEnrichedCourse(course: { title: string; duration: string; level: string; desc: string } & AttributableCourse, index: number, categoryName: string): EnrichedCourse {
+  // Ratings come from the reviews API via `courseStats` at the call site; an unrated course
+  // reads as unrated rather than borrowing a plausible-looking number.
+  const rating = 0;
+  const reviewsCount = 0;
 
   let categoryTag = categoryName;
   if (categoryName === "Computer Science") {
@@ -768,13 +770,7 @@ function getEnrichedCourse(course: { title: string; duration: string; level: str
     categoryTag = tags[index % tags.length];
   }
 
-  const instructors = [
-    { name: "Dr. Sarah Jenkins", role: "Course Author", avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" },
-    { name: "Alex Rivera", role: "Instructor", avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" },
-    { name: "Prof. David Miller", role: "Course Author", avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" },
-    { name: "Elena Rostova", role: "Instructor", avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150" }
-  ];
-  const instructor = instructors[index % instructors.length];
+  const instructor = getCourseAttribution(course as AttributableCourse);
 
   return {
     ...course,
@@ -1484,10 +1480,14 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
         allCourses.unshift({
           id: c.id,
           title: c.title,
-          duration: "Self-Paced",
+          duration: c.duration || "Self-Paced",
           level: "All Levels",
           desc: c.description || "",
           category: "Courses",
+          channel: c.channel,
+          authorName: c.authorName,
+          authorAvatarUrl: c.authorAvatarUrl,
+          collaborators: c.collaborators,
         });
       });
 
@@ -1519,9 +1519,13 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
       .map((c) => ({
         id: c.id,
         title: c.title,
-        duration: "Self-Paced",
+        duration: c.duration || "Self-Paced",
         level: "All Levels",
         desc: c.description || "",
+        channel: c.channel,
+        authorName: c.authorName,
+        authorAvatarUrl: c.authorAvatarUrl,
+        collaborators: c.collaborators,
       }));
 
     if (base) {
@@ -1674,17 +1678,24 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
     };
   }, [mode, progressValue, journeyCompleted]);
 
+  // Ratings for the courses currently on screen. Keyed by course id, so a card with no reviews
+  // is simply missing from the map and renders as unrated rather than as a plausible default.
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const stats = await api.get<Record<string, { averageRating: number; reviewsCount: number }>>("/api/v1/reviews/stats");
-        setCourseStats(stats);
-      } catch (err: any) {
-        // Silently ignore dummy fetch errors
-      }
+    const ids = publicCourses.map((c) => c.id).filter(Boolean);
+    if (ids.length === 0) return;
+    let cancelled = false;
+    courseReviewService
+      .statsFor(ids)
+      .then((stats) => {
+        if (!cancelled) setCourseStats(stats);
+      })
+      .catch(() => {
+        // Ratings are decoration on a page that must still render without them.
+      });
+    return () => {
+      cancelled = true;
     };
-    fetchStats();
-  }, []);
+  }, [publicCourses]);
 
   useEffect(() => {
     if (initialCategory) {

@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Users, GraduationCap, Star, Award, CheckCircle2, Radio, FileText, Search, ExternalLink, MessageSquare, BookOpen, Download, FolderArchive, Clock, Code2, Trophy, Loader2 } from "lucide-react";
+import { Users, Star, Award, CheckCircle2, Radio, FileText, Search, MessageSquare, BookOpen, IndianRupee, Save, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { api } from "@/infrastructure/http/api";
+import type { CourseResponse } from "@/shared/types/api.types";
+import { formatMoney, fromMinorUnits, toMinorUnits } from "@/shared/utils/money";
 import {
   listAssessmentPlacementsForCourse,
   listExamPlans,
@@ -17,74 +21,37 @@ import {
 type AssessmentRow = { placement: AssessmentPlacementResponse; plan: ExamPlanResponse | null };
 import type { ContentTypeSegment } from "../../lib/contentTypeRouting";
 
-export interface LearnerRecord {
+/** A row of `GET /api/courses/{id}/pricing-history`. */
+export interface CoursePricingHistoryEntry {
   id: string;
-  name: string;
-  email: string;
-  enrolledAt: string;
-  progress: number;
-  isLive: boolean;
-  status: "Active" | "Completed" | "In Progress";
+  pricingModel: string;
+  priceAmount: number | null;
+  currency: string | null;
+  changedAt: string;
+  changedBy: string | null;
+  changedByName: string;
 }
 
+/** A row of `GET /api/courses/{id}/learners`. */
+export interface LearnerRecord {
+  userId: string;
+  name: string;
+  email: string | null;
+  status: string;
+  progressPercentage: number;
+  enrolledAt: string;
+}
+
+/** A row of `GET /api/courses/{id}/reviews`. */
 export interface FeedbackRecord {
   id: string;
-  studentName: string;
-  avatar: string;
+  userId: string;
+  userName: string;
+  userAvatarUrl?: string | null;
+  reviewText?: string | null;
   rating: number;
-  comment: string;
-  date: string;
+  createdAt: string;
 }
-
-export interface CertificateRecord {
-  id: string;
-  studentName: string;
-  certificateCode: string;
-  earnedAt: string;
-  score: number;
-}
-
-const MOCK_LEARNERS: LearnerRecord[] = [
-  { id: "1", name: "Alex Morgan", email: "alex.morgan@example.com", enrolledAt: "2026-08-12", progress: 85, isLive: true, status: "Active" },
-  { id: "2", name: "Sarah Jenkins", email: "sarah.j@example.com", enrolledAt: "2026-08-10", progress: 100, isLive: false, status: "Completed" },
-  { id: "3", name: "David Kumar", email: "david.k@example.com", enrolledAt: "2026-08-08", progress: 100, isLive: false, status: "Completed" },
-  { id: "4", name: "Elena Rostova", email: "elena.r@example.com", enrolledAt: "2026-08-14", progress: 42, isLive: true, status: "In Progress" },
-  { id: "5", name: "Marcus Vance", email: "marcus.vance@example.com", enrolledAt: "2026-08-05", progress: 92, isLive: true, status: "Active" },
-  { id: "6", name: "Amina Al-Mansoor", email: "amina.m@example.com", enrolledAt: "2026-08-03", progress: 100, isLive: false, status: "Completed" },
-];
-
-const MOCK_FEEDBACKS: FeedbackRecord[] = [
-  {
-    id: "f1",
-    studentName: "Elena Rostova",
-    avatar: "E",
-    rating: 5,
-    comment: "Exceptional course material! The practical examples and clear modular progression made complex topics effortless to grasp.",
-    date: "14 Aug 2026",
-  },
-  {
-    id: "f2",
-    studentName: "Marcus Vance",
-    avatar: "M",
-    rating: 5,
-    comment: "Super helpful assessment quizzes and prompt evaluation feedback. Highly recommended for anyone mastering this field!",
-    date: "12 Aug 2026",
-  },
-  {
-    id: "f3",
-    studentName: "Sarah Jenkins",
-    avatar: "S",
-    rating: 5,
-    comment: "Clear structure and instant certificate issuance upon passing the capstone exam. Truly professional experience.",
-    date: "10 Aug 2026",
-  },
-];
-
-const MOCK_CERTIFICATES: CertificateRecord[] = [
-  { id: "c1", studentName: "Sarah Jenkins", certificateCode: "CERT-2026-8941", earnedAt: "10 Aug 2026", score: 96 },
-  { id: "c2", studentName: "David Kumar", certificateCode: "CERT-2026-8930", earnedAt: "08 Aug 2026", score: 94 },
-  { id: "c3", studentName: "Amina Al-Mansoor", certificateCode: "CERT-2026-8912", earnedAt: "05 Aug 2026", score: 98 },
-];
 
 export function LearnersAnalyticsSection({
   contentId,
@@ -94,8 +61,50 @@ export function LearnersAnalyticsSection({
   segment?: ContentTypeSegment | null;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeSubTab, setActiveSubTab] = useState<"learners" | "exams" | "feedback" | "certificates" | "curriculum">("learners");
-  const [liveCount, setLiveCount] = useState(14);
+  const [activeSubTab, setActiveSubTab] = useState<
+    "learners" | "exams" | "feedback" | "certificates" | "overview" | "pricing"
+  >("learners");
+
+  // `null` means "still loading" throughout this component; `[]` means "loaded, and empty".
+  const [learners, setLearners] = useState<LearnerRecord[] | null>(null);
+  useEffect(() => {
+    if (!contentId || segment !== "course") {
+      setLearners(segment === "course" ? null : []);
+      return;
+    }
+    let cancelled = false;
+    api
+      .get<LearnerRecord[]>(`/api/courses/${contentId}/learners`)
+      .then((rows) => {
+        if (!cancelled) setLearners(rows);
+      })
+      .catch(() => {
+        if (!cancelled) setLearners([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [contentId, segment]);
+
+  const [reviews, setReviews] = useState<FeedbackRecord[] | null>(null);
+  useEffect(() => {
+    if (!contentId || segment !== "course") {
+      setReviews(segment === "course" ? null : []);
+      return;
+    }
+    let cancelled = false;
+    api
+      .get<FeedbackRecord[]>(`/api/courses/${contentId}/reviews`)
+      .then((rows) => {
+        if (!cancelled) setReviews(rows);
+      })
+      .catch(() => {
+        if (!cancelled) setReviews([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [contentId, segment]);
 
   const [exams, setExams] = useState<ExamResponse[] | null>(null);
   useEffect(() => {
@@ -146,19 +155,12 @@ export function LearnersAnalyticsSection({
     };
   }, [contentId, segment]);
 
-  // Dynamic real-time heartbeat ticker for live active learners
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const delta = Math.floor(Math.random() * 3) - 1; // -1, 0, +1
-      setLiveCount((prev) => Math.min(22, Math.max(11, prev + delta)));
-    }, 3200);
-    return () => clearInterval(interval);
-  }, []);
-
-  const filteredLearners = MOCK_LEARNERS.filter(
+  const query = searchQuery.trim().toLowerCase();
+  const filteredLearners = (learners ?? []).filter(
     (l) =>
-      l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.email.toLowerCase().includes(searchQuery.toLowerCase())
+      query.length === 0 ||
+      l.name?.toLowerCase().includes(query) ||
+      l.email?.toLowerCase().includes(query)
   );
 
   return (
@@ -175,7 +177,7 @@ export function LearnersAnalyticsSection({
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
-              <Users size={14} /> Enrolled Students {MOCK_LEARNERS.length}
+              <Users size={14} /> Enrolled Students {learners?.length ?? 0}
             </button>
             <button
               onClick={() => setActiveSubTab("exams")}
@@ -207,16 +209,30 @@ export function LearnersAnalyticsSection({
             >
               <Award size={14} /> Certificate Recipients
             </button>
-            <button
-              onClick={() => setActiveSubTab("curriculum")}
-              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition-all cursor-pointer ${
-                activeSubTab === "curriculum"
-                  ? "bg-purple-600 text-white shadow-md"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              <BookOpen size={14} /> Syllabus & Resources
-            </button>
+            {segment === "course" && (
+              <>
+                <button
+                  onClick={() => setActiveSubTab("overview")}
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition-all cursor-pointer ${
+                    activeSubTab === "overview"
+                      ? "bg-purple-600 text-white shadow-md"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  <BookOpen size={14} /> Overview & Outcomes
+                </button>
+                <button
+                  onClick={() => setActiveSubTab("pricing")}
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition-all cursor-pointer ${
+                    activeSubTab === "pricing"
+                      ? "bg-emerald-600 text-white shadow-md"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  <IndianRupee size={14} /> Pricing
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -254,7 +270,7 @@ export function LearnersAnalyticsSection({
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredLearners.map((learner) => (
-                    <tr key={learner.id} className="hover:bg-blue-50/50 transition-colors">
+                    <tr key={learner.userId} className="hover:bg-blue-50/50 transition-colors">
                       <td className="py-3.5 px-3">
                         <div className="flex items-center gap-3">
                           <div className="relative grid size-9 shrink-0 place-items-center rounded-full bg-slate-900 text-white font-black text-xs">
@@ -266,18 +282,20 @@ export function LearnersAnalyticsSection({
                           </div>
                         </div>
                       </td>
+                      {/* There is no presence signal on the platform, so there is no honest
+                          "live now" state to show — status is the learner's real progress. */}
                       <td className="py-3.5 px-3">
-                        {learner.isLive ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 text-[10px] font-black uppercase">
-                            <Radio size={10} className="text-emerald-600 animate-pulse" /> Live Now
-                          </span>
-                        ) : learner.status === "Completed" ? (
+                        {learner.status === "Completed" ? (
                           <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200 px-2.5 py-0.5 text-[10px] font-black uppercase">
                             <CheckCircle2 size={10} className="text-blue-600" /> Completed
                           </span>
+                        ) : learner.status === "Ongoing" ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 text-[10px] font-black uppercase">
+                            <Radio size={10} className="text-emerald-600" /> In Progress
+                          </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-0.5 text-[10px] font-black uppercase">
-                            In Progress
+                            Not started
                           </span>
                         )}
                       </td>
@@ -286,21 +304,35 @@ export function LearnersAnalyticsSection({
                           <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100 border border-slate-200">
                             <div
                               className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-300"
-                              style={{ width: `${learner.progress}%` }}
+                              style={{ width: `${learner.progressPercentage}%` }}
                             />
                           </div>
                           <span className="font-black text-slate-700 text-[11px] w-8 text-right">
-                            {learner.progress}%
+                            {learner.progressPercentage}%
                           </span>
                         </div>
                       </td>
                       <td className="py-3.5 px-3 text-right font-extrabold text-slate-500">
-                        {new Date(learner.enrolledAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                        {learner.enrolledAt
+                          ? new Date(learner.enrolledAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+                          : "—"}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              {learners === null && (
+                <div className="flex items-center justify-center py-10 text-slate-400">
+                  <Loader2 size={18} className="animate-spin" />
+                </div>
+              )}
+              {learners !== null && filteredLearners.length === 0 && (
+                <p className="rounded-2xl border border-dashed border-blue-200 bg-white px-4 py-8 text-center text-xs font-semibold text-slate-500">
+                  {query.length > 0
+                    ? "No learners match that search."
+                    : "No one has enrolled in this course yet."}
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -401,28 +433,51 @@ export function LearnersAnalyticsSection({
               <MessageSquare size={18} className="text-amber-600" />
               Student Reviews & Course Feedback
             </h3>
-            <div className="flex flex-col gap-3">
-              {MOCK_FEEDBACKS.map((review) => (
-                <div key={review.id} className="flex flex-col gap-2 p-4 rounded-2xl border border-amber-200/80 bg-white shadow-2xs">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="grid size-8 place-items-center rounded-full bg-amber-500 text-white font-black text-xs">
-                        {review.avatar}
+            {reviews === null ? (
+              <div className="flex items-center justify-center py-10 text-slate-400">
+                <Loader2 size={18} className="animate-spin" />
+              </div>
+            ) : reviews.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-amber-200 bg-white px-4 py-8 text-center text-xs font-semibold text-slate-500">
+                No reviews yet. Learners are asked to rate the course when they complete it.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {reviews.map((review) => (
+                  <div key={review.id} className="flex flex-col gap-2 p-4 rounded-2xl border border-amber-200/80 bg-white shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="grid size-8 place-items-center overflow-hidden rounded-full bg-amber-500 text-white font-black text-xs">
+                          {review.userAvatarUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={review.userAvatarUrl} alt={review.userName} className="size-full object-cover" />
+                          ) : (
+                            (review.userName || "?").charAt(0).toUpperCase()
+                          )}
+                        </div>
+                        <span className="text-xs font-black text-slate-900">{review.userName}</span>
                       </div>
-                      <span className="text-xs font-black text-slate-900">{review.studentName}</span>
+                      <div className="flex items-center gap-1 text-amber-500" aria-label={`${review.rating} out of 5`}>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            size={13}
+                            className={star <= review.rating ? "fill-amber-400 text-amber-400" : "fill-transparent text-slate-300"}
+                          />
+                        ))}
+                        <span className="ml-1 text-xs font-black text-slate-700">{review.rating}.0</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 text-amber-500">
-                      {Array.from({ length: review.rating }).map((_, i) => (
-                        <Star key={i} size={13} className="fill-amber-400 text-amber-400" />
-                      ))}
-                      <span className="ml-1 text-xs font-black text-slate-700">{review.rating}.0</span>
-                    </div>
+                    {review.reviewText && (
+                      <p className="pl-11 text-xs font-medium italic text-slate-600">&ldquo;{review.reviewText}&rdquo;</p>
+                    )}
+                    <span className="self-end text-[10px] font-bold text-slate-400">
+                      {new Date(review.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                    </span>
                   </div>
-                  <p className="text-xs font-medium text-slate-600 pl-11 italic">"{review.comment}"</p>
-                  <span className="text-[10px] font-bold text-slate-400 self-end">{review.date}</span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -433,121 +488,443 @@ export function LearnersAnalyticsSection({
               <Award size={18} className="text-emerald-600" />
               Verified Certificate Graduates
             </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-emerald-100 text-[10px] font-black uppercase tracking-wider text-emerald-700">
-                    <th className="py-3 px-3">Graduate</th>
-                    <th className="py-3 px-3">Certificate Code</th>
-                    <th className="py-3 px-3">Final Score</th>
-                    <th className="py-3 px-3 text-right">Date of Issue</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {MOCK_CERTIFICATES.map((cert) => (
-                    <tr key={cert.id} className="hover:bg-emerald-50/50 transition-colors">
-                      <td className="py-3.5 px-3 font-extrabold text-slate-900">{cert.studentName}</td>
-                      <td className="py-3.5 px-3">
-                        <span className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-200 rounded-lg px-2.5 py-0.5">
-                          {cert.certificateCode} <ExternalLink size={10} />
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-3 font-black text-slate-800">{cert.score}%</td>
-                      <td className="py-3.5 px-3 text-right font-extrabold text-slate-500">{cert.earnedAt}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {/* Certificate issuance has no backend yet — there is no endpoint to read graduates
+                from. An empty table or a "0 issued" figure would both read as a measurement;
+                this says plainly that the feature is not wired up. */}
+            <p className="rounded-2xl border border-dashed border-emerald-200 bg-white px-4 py-8 text-center text-xs font-semibold text-slate-500">
+              Certificate issuance isn&rsquo;t available yet. Once it ships, graduates of this
+              course will be listed here.
+            </p>
           </div>
         )}
 
-        {/* TAB 5: Course Syllabus & Downloadable Resources */}
-        {activeSubTab === "curriculum" && (
-          <div className="rounded-[24px] border-[1.5px] border-purple-400/80 bg-gradient-to-b from-purple-50/30 via-white to-white p-6 shadow-[4px_-4px_0px_0px_#E9D5FF] flex flex-col gap-6">
-            {/* Section 1: Curriculum & Structure Breakdown */}
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between border-b border-purple-100/80 pb-3">
-                <h3 className="text-base font-black tracking-tight text-slate-900 flex items-center gap-2">
-                  <BookOpen size={18} className="text-purple-600" />
-                  Curriculum & Structure Breakdown
-                </h3>
-                <span className="rounded-full border border-purple-200 bg-purple-100 text-purple-800 px-3 py-0.5 text-[10px] font-black uppercase tracking-wider">
-                  12 Modules
-                </span>
-              </div>
+        {/* TAB 5: Course overview and pricing — the authoring surfaces for what the public
+            course page shows. Courses only; events price through their own workspace. */}
+        {activeSubTab === "overview" && segment === "course" && contentId && (
+          <CourseOverviewEditor contentId={contentId} />
+        )}
 
-              {/* Quick Stats Line (No Inner Box Cards) */}
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 py-1">
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-purple-600">Lessons</span>
-                  <span className="text-2xl font-black text-slate-900">48</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-purple-600">Duration</span>
-                  <span className="text-2xl font-black text-slate-900">6h 30m</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-purple-600">Code Labs</span>
-                  <span className="text-2xl font-black text-slate-900">14</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-purple-600">Capstones</span>
-                  <span className="text-2xl font-black text-slate-900">3</span>
-                </div>
-              </div>
+        {activeSubTab === "pricing" && segment === "course" && contentId && (
+          <CoursePricingEditor contentId={contentId} />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Course overview editor                                            */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Authors the three fields the public course page reads for its Overview tab: the description,
+ * the "what you'll walk away with" outcomes, and the declared length.
+ *
+ * Outcomes are stored as one newline-separated string rather than a list, matching the
+ * `courses.learning_outcomes` column — the reader splits on newlines.
+ */
+function CourseOverviewEditor({ contentId }: { contentId: string }) {
+  const [description, setDescription] = useState("");
+  const [learningOutcomes, setLearningOutcomes] = useState("");
+  const [duration, setDuration] = useState("");
+  const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get<CourseResponse>(`/api/courses/${contentId}`)
+      .then((data) => {
+        if (cancelled) return;
+        setDescription(data.description ?? "");
+        setLearningOutcomes(data.learningOutcomes ?? "");
+        setDuration(data.duration ?? "");
+        setCoverImageUrl(data.coverImageUrl ?? "");
+        setIsLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLoadFailed(true);
+        setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [contentId]);
+
+  /**
+   * Three-step upload, matching the rest of the app: presign, PUT through the internal proxy
+   * (the storage origin does not allow browser CORS), then register the object's metadata.
+   * The URL is only held in form state — it is persisted by "Save overview" like every other
+   * field here.
+   */
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const { key, uploadUrl, publicUrl } = await api.post<{
+        key: string;
+        uploadUrl: string;
+        publicUrl: string;
+      }>("/api/media/presign", { fileName: file.name, contentType: file.type });
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("uploadUrl", uploadUrl);
+      const uploadRes = await fetch("/api/internal/media/upload", { method: "POST", body: formData });
+      if (!uploadRes.ok) throw new Error("Upload failed");
+
+      await api.post("/api/media/metadata", {
+        key,
+        fileName: file.name,
+        contentType: file.type,
+        sizeBytes: file.size,
+      });
+
+      setCoverImageUrl(publicUrl);
+      toast.success("Image uploaded. Save the overview to apply it.");
+    } catch {
+      toast.error("Could not upload that image");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      // PATCH only the fields this form owns. The server ignores absent fields, so nothing
+      // else on the course is touched.
+      await api.patch(`/api/courses/${contentId}`, {
+        description,
+        learningOutcomes,
+        duration,
+        coverImageUrl,
+      });
+      toast.success("Course overview saved");
+    } catch {
+      toast.error("Could not save the course overview");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center rounded-[24px] border-[1.5px] border-purple-400/80 bg-gradient-to-b from-purple-50/30 via-white to-white py-10 shadow-[4px_-4px_0px_0px_#E9D5FF]">
+        <Loader2 size={24} className="animate-spin text-purple-400" />
+      </div>
+    );
+  }
+
+  // Saving from a form that never loaded would write blanks over the real values.
+  if (loadFailed) {
+    return (
+      <div className="rounded-[24px] border-[1.5px] border-purple-400/80 bg-gradient-to-b from-purple-50/30 via-white to-white p-6 text-center text-xs font-semibold text-slate-500 shadow-[4px_-4px_0px_0px_#E9D5FF]">
+        Couldn&rsquo;t load this course&rsquo;s overview. Reload the page to try again.
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6 rounded-[24px] border-[1.5px] border-purple-400/80 bg-gradient-to-b from-purple-50/30 via-white to-white p-6 shadow-[4px_-4px_0px_0px_#E9D5FF]">
+      <h3 className="flex items-center gap-2 text-base font-black tracking-tight text-slate-900">
+        <BookOpen size={18} className="text-purple-600" />
+        Course Overview
+      </h3>
+      <p className="-mt-4 text-[11px] font-medium leading-relaxed text-slate-500">
+        This is what learners read on the course page before they enrol.
+      </p>
+
+      <div className="flex flex-col gap-2">
+        <label htmlFor="course-cover" className="text-sm font-bold text-slate-700">
+          Cover image
+        </label>
+        <div className="flex items-start gap-4">
+          <div className="flex-1">
+            <input
+              id="course-cover"
+              type="file"
+              accept="image/*"
+              onChange={handleCoverUpload}
+              disabled={isUploading}
+              className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-sm text-slate-800 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-slate-700 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10 disabled:opacity-60"
+            />
+            <span className="mt-1 block text-[11px] font-medium text-slate-400">
+              {isUploading ? "Uploading\u2026" : "Shown on the course card and the course page."}
+            </span>
+          </div>
+          {coverImageUrl && (
+            <div className="h-20 w-32 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={coverImageUrl} alt="Course cover preview" className="size-full object-cover" />
             </div>
+          )}
+        </div>
+      </div>
 
-            {/* Divider Line */}
-            <div className="border-t border-purple-200/70" />
+      <div className="flex flex-col gap-2">
+        <label htmlFor="course-duration" className="text-sm font-bold text-slate-700">
+          Course length
+        </label>
+        <input
+          id="course-duration"
+          type="text"
+          value={duration}
+          onChange={(e) => setDuration(e.target.value)}
+          placeholder="e.g. 4h 30m"
+          className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10"
+        />
+        <span className="text-[11px] font-medium text-slate-400">
+          Shown as-is on the course page. Leave blank to show &ldquo;Self-paced&rdquo;.
+        </span>
+      </div>
 
-            {/* Section 2: Downloadable Course Resources */}
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between border-b border-purple-100/80 pb-3">
-                <h3 className="text-base font-black tracking-tight text-slate-900 flex items-center gap-2">
-                  <Download size={18} className="text-emerald-600" />
-                  Downloadable Course Resources
-                </h3>
-                <span className="rounded-full border border-emerald-200 bg-emerald-100 text-emerald-800 px-3 py-0.5 text-[10px] font-black uppercase tracking-wider">
-                  3 Files
-                </span>
-              </div>
+      <div className="flex flex-col gap-2">
+        <label htmlFor="course-description" className="text-sm font-bold text-slate-700">
+          About this course
+        </label>
+        <textarea
+          id="course-description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Write a brief overview of what this course is about..."
+          className="min-h-[120px] w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10"
+        />
+      </div>
 
-              {/* Interactive Resource Rows with Hover Effects */}
-              <div className="flex flex-col gap-1 divide-y divide-purple-100/60">
-                {[
-                  { name: "Capstone-Project-Starter.zip", size: "14.2 MB", type: "Code Archive", downloads: "1.2k downloads", icon: FolderArchive },
-                  { name: "System-Architecture-Cheatsheet.pdf", size: "3.8 MB", type: "PDF Guide", downloads: "890 downloads", icon: FileText },
-                  { name: "API-Security-Best-Practices.pdf", size: "2.4 MB", type: "Reference Doc", downloads: "640 downloads", icon: FileText },
-                ].map((file) => {
-                  const IconComponent = file.icon;
-                  return (
-                    <div
-                      key={file.name}
-                      className="group flex items-center justify-between gap-3 py-3 px-3 transition-all duration-200 hover:bg-gradient-to-r hover:from-purple-100/70 hover:via-indigo-50/50 hover:to-purple-50/30 rounded-2xl border border-transparent hover:border-purple-200/90 hover:shadow-xs hover:translate-x-1 cursor-pointer"
-                    >
-                      <div className="flex items-center gap-3.5 min-w-0">
-                        <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-purple-100/60 text-purple-600 border border-purple-200/60 group-hover:bg-purple-600 group-hover:text-white group-hover:border-purple-600 group-hover:scale-110 transition-all duration-200 shadow-2xs">
-                          <IconComponent size={16} />
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-xs font-black text-slate-900 truncate group-hover:text-purple-950 transition-colors">{file.name}</span>
-                          <span className="text-[11px] font-semibold text-slate-400 group-hover:text-slate-600 transition-colors">{file.type} &nbsp;·&nbsp; {file.size}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-[10px] font-black text-purple-700 bg-purple-100/70 border border-purple-200 rounded-full px-3 py-1 group-hover:bg-purple-600 group-hover:text-white group-hover:border-purple-600 transition-all duration-200 shadow-2xs">
-                          {file.downloads}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+      <div className="flex flex-col gap-2">
+        <label htmlFor="course-outcomes" className="text-sm font-bold text-slate-700">
+          What learners will walk away with
+        </label>
+        <textarea
+          id="course-outcomes"
+          value={learningOutcomes}
+          onChange={(e) => setLearningOutcomes(e.target.value)}
+          placeholder={"One outcome per line, e.g.\nA working design system in Figma\nA recorded portfolio case study"}
+          className="min-h-[120px] w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10"
+        />
+        <span className="text-[11px] font-medium text-slate-400">
+          One per line. Each line becomes a ticked bullet on the course page.
+        </span>
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="flex items-center gap-2 rounded-xl bg-purple-600 px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-purple-700 hover:shadow-md disabled:opacity-50"
+        >
+          {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+          {isSaving ? "Saving..." : "Save overview"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Course pricing editor                                             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Sets the course's pricing model and amount, and shows the audit trail of past changes.
+ *
+ * Amounts are edited as a decimal and transported as integer minor units via the shared money
+ * helpers — the same conversion the rest of the app uses, so a price set here reads back
+ * identically on the public course page.
+ */
+function CoursePricingEditor({ contentId }: { contentId: string }) {
+  const [pricingModel, setPricingModel] = useState<"FREE" | "PAID">("FREE");
+  const [priceAmount, setPriceAmount] = useState<number | "">("");
+  const [currency, setCurrency] = useState("INR");
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [history, setHistory] = useState<CoursePricingHistoryEntry[] | null>(null);
+
+  const loadHistory = async (id: string) => {
+    try {
+      setHistory(await api.get<CoursePricingHistoryEntry[]>(`/api/courses/${id}/pricing-history`));
+    } catch {
+      setHistory([]);
+    }
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get<CourseResponse>(`/api/courses/${contentId}`)
+      .then((data) => {
+        if (cancelled) return;
+        setPricingModel(data.pricingModel === "PAID" ? "PAID" : "FREE");
+        setPriceAmount(data.priceAmount != null ? fromMinorUnits(data.priceAmount) : "");
+        setCurrency(data.currency || "INR");
+        setIsLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLoadFailed(true);
+        setIsLoading(false);
+      });
+    loadHistory(contentId);
+    return () => {
+      cancelled = true;
+    };
+  }, [contentId]);
+
+  const handleSave = async () => {
+    if (pricingModel === "PAID" && (priceAmount === "" || Number(priceAmount) <= 0)) {
+      toast.error("Enter a price greater than zero for a paid course.");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      // A FREE course sends no amount; the server clears any stale one, so the public page can
+      // never show a price next to a free course.
+      await api.patch(`/api/courses/${contentId}`, {
+        pricingModel,
+        priceAmount: pricingModel === "PAID" ? toMinorUnits(Number(priceAmount)) : 0,
+        currency,
+      });
+      toast.success("Pricing saved");
+      await loadHistory(contentId);
+    } catch {
+      toast.error("Could not save pricing");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center rounded-[24px] border-[1.5px] border-emerald-400/80 bg-gradient-to-b from-emerald-50/30 via-white to-white py-10 shadow-[4px_-4px_0px_0px_#A7F3D0]">
+        <Loader2 size={24} className="animate-spin text-emerald-400" />
+      </div>
+    );
+  }
+
+  // Saving from a form that never loaded would write blanks over the real values.
+  if (loadFailed) {
+    return (
+      <div className="rounded-[24px] border-[1.5px] border-emerald-400/80 bg-gradient-to-b from-emerald-50/30 via-white to-white p-6 text-center text-xs font-semibold text-slate-500 shadow-[4px_-4px_0px_0px_#A7F3D0]">
+        Couldn&rsquo;t load this course&rsquo;s pricing. Reload the page to try again.
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6 rounded-[24px] border-[1.5px] border-emerald-400/80 bg-gradient-to-b from-emerald-50/30 via-white to-white p-6 shadow-[4px_-4px_0px_0px_#A7F3D0]">
+      <h3 className="flex items-center gap-2 text-base font-black tracking-tight text-slate-900">
+        <IndianRupee size={18} className="text-emerald-600" />
+        Course Pricing
+      </h3>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-2">
+          <label htmlFor="pricing-model" className="text-sm font-bold text-slate-700">
+            Pricing model
+          </label>
+          <select
+            id="pricing-model"
+            value={pricingModel}
+            onChange={(e) => setPricingModel(e.target.value as "FREE" | "PAID")}
+            className="h-[46px] w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10"
+          >
+            <option value="FREE">Free</option>
+            <option value="PAID">Paid</option>
+          </select>
+        </div>
+
+        {pricingModel === "PAID" && (
+          <div className="flex flex-col gap-2">
+            <label htmlFor="price-amount" className="text-sm font-bold text-slate-700">
+              Price
+            </label>
+            <div className="relative">
+              <span className="absolute left-4 top-[13px] font-medium text-slate-500">
+                {currency === "INR" ? "₹" : currency}
+              </span>
+              <input
+                id="price-amount"
+                type="number"
+                min="0"
+                step="0.01"
+                value={priceAmount}
+                onChange={(e) => setPriceAmount(e.target.value ? parseFloat(e.target.value) : "")}
+                placeholder="e.g. 499.00"
+                className="h-[46px] w-full rounded-xl border border-slate-200 bg-white p-3 pl-10 text-sm text-slate-800 placeholder-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10"
+              />
             </div>
           </div>
         )}
       </div>
+
+      {pricingModel === "PAID" && (
+        <p className="flex items-start gap-1.5 rounded border border-slate-200 bg-slate-50 p-2 text-xs font-medium text-[#14142b]">
+          <span className="mt-[1px] text-[10px]">💡</span> A 20% platform fee applies to all
+          paid courses.
+        </p>
+      )}
+
+      <div className="flex justify-end">
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-emerald-700 hover:shadow-md disabled:opacity-50"
+        >
+          {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+          {isSaving ? "Saving..." : "Save pricing"}
+        </button>
+      </div>
+
+      {history && history.length > 0 && (
+        <div className="mt-2">
+          <h4 className="mb-3 border-b border-emerald-100 pb-2 text-sm font-bold text-slate-800">
+            Pricing history
+          </h4>
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <table className="w-full text-left text-sm text-slate-600">
+              <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <tr>
+                  <th className="px-4 py-2">Model</th>
+                  <th className="px-4 py-2">Price</th>
+                  <th className="px-4 py-2">Changed by</th>
+                  <th className="px-4 py-2 text-right">When</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {history.map((entry) => (
+                  <tr key={entry.id}>
+                    <td className="px-4 py-2 font-semibold text-slate-800">{entry.pricingModel}</td>
+                    <td className="px-4 py-2">
+                      {entry.pricingModel === "PAID" && entry.priceAmount != null
+                        ? formatMoney(entry.priceAmount, entry.currency || "INR")
+                        : "—"}
+                    </td>
+                    <td className="px-4 py-2">{entry.changedByName}</td>
+                    <td className="px-4 py-2 text-right">
+                      {new Date(entry.changedAt).toLocaleString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

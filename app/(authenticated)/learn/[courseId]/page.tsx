@@ -26,7 +26,8 @@ import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { api } from "@/infrastructure/http/api"
-import type { CourseResponse } from "@/shared/types/api.types"
+import type { CourseChannelSummary, CourseCollaboratorSummary, CourseResponse, CourseReviewStats } from "@/shared/types/api.types"
+import { courseReviewService, type CourseReview } from "@/domains/learning"
 import { formatMoney } from "@/shared/utils/money"
 import { useAuthStore } from "@/infrastructure/auth/auth.store"
 import {
@@ -56,100 +57,32 @@ import PartyPopper, { PartyPopperRef } from "@/components/ui/PartyPopper"
 /*  Data                                                               */
 /* ------------------------------------------------------------------ */
 
-type Module = {
-  title: string
-  duration: string
-  accent: string
-  lessons: { title: string; length: string }[]
-}
-
-type Review = {
-  name: string
-  role: string
-  quote: string
-  dark: boolean
-  accent: string
-}
 
 const COURSE_TITLE = "Design interfaces people actually love"
-const CATEGORY = "UI / UX & Product Design"
 
 const TABS = ["Overview", "Syllabus", "Instructor", "Certificate", "Exam"] as const
 type Tab = (typeof TABS)[number]
 
 const NAV_LINKS = ["Explore", "Forums", "For Colleges", "Docs"]
 
-const INSTRUCTOR = {
-  name: "Maya Okafor",
-  role: "Senior Product Designer",
-  channel: "Maya Okafor",
-  org: "Pixelcraft Studio",
-  accent: "var(--color-purple)",
-  bio: "Maya has spent twelve years designing products used by millions — leading design at two Series B startups and shipping systems at Meta and Notion. She teaches design as a craft you build in public, not a set of screens you decorate.",
-  expertise: ["Design systems", "Interaction & motion", "Figma", "Prototyping", "Design critique"],
-  stats: [
-    { k: "5", label: "courses", c: "var(--color-blue)", icon: BookOpen },
-    { k: "40,000", label: "students", c: "var(--color-amber)", icon: Users },
-    { k: "4.9", label: "avg rating", c: "var(--color-teal)", icon: Star },
-    { k: "12 yrs", label: "experience", c: "var(--color-purple)", icon: GraduationCap },
-  ],
+/** Accent from the original hero design — the only non-fabricated part of the old persona. */
+const INSTRUCTOR_ACCENT = "var(--color-purple)"
+
+/** Per-module accents, cycled. Modules carry no colour of their own in the domain. */
+const MODULE_ACCENTS = [
+  "var(--color-blue)",
+  "var(--color-purple)",
+  "var(--color-amber)",
+  "var(--color-teal)",
+]
+
+/** `AUTHOR`/`CO_AUTHOR` -> "Author"/"Co author" for display. */
+function formatCollaboratorRole(role?: string): string {
+  if (!role) return "Instructor"
+  const cleaned = role.replace(/_/g, " ").toLowerCase()
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1)
 }
 
-const META = [
-  { icon: Clock, label: "4h 30m", dot: "var(--color-blue)" },
-  { icon: BookOpen, label: "19 lessons", dot: "var(--color-amber)" },
-  { icon: Users, label: "12,480 enrolled", dot: "var(--color-teal)" },
-]
-
-const MODULES: Module[] = [
-  {
-    title: "Foundations of interface design",
-    duration: "1h 10m",
-    accent: "var(--color-blue)",
-    lessons: [
-      { title: "Visual hierarchy and grid systems", length: "14m" },
-      { title: "Color theory for products", length: "12m" },
-      { title: "Typography that scales", length: "16m" },
-      { title: "Building your first component set", length: "18m" },
-      { title: "Critique: heuristic review", length: "10m" },
-    ],
-  },
-  {
-    title: "Interaction and motion design",
-    duration: "58m",
-    accent: "var(--color-amber)",
-    lessons: [
-      { title: "Micro-interactions that feel right", length: "13m" },
-      { title: "Prototyping with real timing curves", length: "15m" },
-      { title: "State changes and feedback", length: "12m" },
-      { title: "Assignment: an animated onboarding flow", length: "18m" },
-    ],
-  },
-  {
-    title: "Design systems that scale",
-    duration: "1h 40m",
-    accent: "var(--color-purple)",
-    lessons: [
-      { title: "Tokens over hard-coded values", length: "15m" },
-      { title: "Component variants and props", length: "17m" },
-      { title: "Documentation your team will read", length: "16m" },
-      { title: "Versioning a design system", length: "18m" },
-      { title: "Handoff without the back-and-forth", length: "20m" },
-      { title: "Case study teardown", length: "14m" },
-    ],
-  },
-  {
-    title: "Portfolio and case studies",
-    duration: "1h 02m",
-    accent: "var(--color-teal)",
-    lessons: [
-      { title: "Choosing your strongest project", length: "13m" },
-      { title: "Writing a case study people finish", length: "16m" },
-      { title: "Presenting process, not just polish", length: "15m" },
-      { title: "Final review with a mentor", length: "18m" },
-    ],
-  },
-]
 
 const MODULE_LIGHT_GRADIENTS = [
   "linear-gradient(135deg, rgba(59, 130, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
@@ -173,59 +106,12 @@ const EXPERTISE_TAG_STYLES = [
   { bg: "rgba(236, 72, 153, 0.14)", border: "rgba(236, 72, 153, 0.3)", text: "#be185d" },
 ]
 
-const TOTAL_LESSONS = MODULES.reduce((sum, m) => sum + m.lessons.length, 0)
-
-const REVIEWS: Review[] = [
-  {
-    name: "Adam Wathan",
-    role: "Founder, Tailwind",
-    quote:
-      "I've been using this course as a refresher for nearly a semester and keep coming back to the systems module.",
-    dark: true,
-    accent: "var(--color-blue)",
-  },
-  {
-    name: "Ian Callahan",
-    role: "Harvard Art Museums",
-    quote: "Genuinely the clearest explanation of design systems I've seen taught anywhere.",
-    dark: false,
-    accent: "var(--color-amber)",
-  },
-  {
-    name: "Aaron Francis",
-    role: "Co-founder, Try Hard Studios",
-    quote: "Takes the pain out of learning motion design — the pacing is exactly right.",
-    dark: false,
-    accent: "var(--color-purple)",
-  },
-  {
-    name: "Chandresh Patel",
-    role: "CEO, Bacancy",
-    quote: "Elegance, pacing, and student experience are completely unmatched.",
-    dark: false,
-    accent: "var(--color-teal)",
-  },
-  {
-    name: "Fathom Analytics",
-    role: "Team account",
-    quote: "This course has been integral to how we onboard new hires into design.",
-    dark: true,
-    accent: "var(--color-coral)",
-  },
-  {
-    name: "Priya Menon",
-    role: "Design Lead, Freshworks",
-    quote: "The final case study review alone was worth the price. My portfolio has never been stronger.",
-    dark: false,
-    accent: "var(--color-blue)",
-  },
-]
-
-const HIGHLIGHTS = [
-  "A working design system in Figma",
-  "A recorded portfolio case study",
-  "Feedback from a working designer",
-  "A shareable, verified certificate",
+/** Card accents for the reviews grid, cycled. Design, not data. */
+const REVIEW_ACCENTS = [
+  "var(--color-blue)",
+  "var(--color-amber)",
+  "var(--color-purple)",
+  "var(--color-teal)",
 ]
 
 /* ------------------------------------------------------------------ */
@@ -436,24 +322,39 @@ function CourseHero({
   authorUsername, 
   authorAvatarUrl,
   lessonCount = 0,
+  duration,
+  enrollmentCount,
   onEnroll,
   isEnrolled = false,
+  initialState = "NOT_ENROLLED",
+  pendingReason,
   pricingModel,
   priceAmount,
   courseId,
-  onReportClick
+  onReportClick,
+  channel,
+  collaborators,
+  authorId
 }: {
   title: string
   authorName?: string
   authorUsername?: string
   authorAvatarUrl?: string | null
   lessonCount?: number
+  /** Author-declared total length; absent until they set one. */
+  duration?: string | null
+  enrollmentCount?: number
   onEnroll?: () => void
   isEnrolled?: boolean
+  initialState?: "ENROLLED" | "NOT_ENROLLED" | "PENDING" | "WAITLISTED"
+  pendingReason?: "PAYMENT" | "REQUIREMENTS"
   pricingModel?: string
   priceAmount?: number
   courseId?: string
   onReportClick?: () => void
+  channel?: CourseChannelSummary | null
+  collaborators?: CourseCollaboratorSummary[] | null
+  authorId?: string | null
 }) {
   const [saved, setSaved] = useState(false)
 
@@ -461,14 +362,21 @@ function CourseHero({
   const lastWord = words.pop() || ''
   const firstPart = words.join(' ')
   
-  const displayAuthor = authorName || INSTRUCTOR.name;
+  const displayAuthor = authorName || "Unknown author";
   const displayUsername = authorUsername || displayAuthor.toLowerCase().replace(/\s+/g, '');
   const authorInitials = displayAuthor.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
+  const isOrgChannel = Boolean(channel && !channel.isPersonal && channel.name);
+  // Filter by author id so an author without a profile username is not listed as their own
+  // collaborator; the backend's "Author" role is the fallback when no id is passed.
+  const coAuthors = (collaborators ?? []).filter(
+    (c) => (authorId ? c.id !== authorId : c.role !== "Author")
+  );
+
   const metaData = [
-    { icon: Clock, label: "4h 30m", dot: "var(--color-blue)" },
+    { icon: Clock, label: duration || "Self-paced", dot: "var(--color-blue)" },
     { icon: BookOpen, label: `${lessonCount} lesson${lessonCount !== 1 ? 's' : ''}`, dot: "var(--color-amber)" },
-    { icon: Users, label: "12,480 enrolled", dot: "var(--color-teal)" },
+    { icon: Users, label: `${(enrollmentCount ?? 0).toLocaleString()} enrolled`, dot: "var(--color-teal)" },
   ]
 
   return (
@@ -489,16 +397,41 @@ function CourseHero({
             </span>
           </h1>
 
-          {/* Instructor: name + channel */}
+          {/* Instructor: an organization channel publishes on the author's behalf, so it is
+              credited first; a personal channel is just the author. */}
           <div className="mt-5 flex items-center gap-2.5">
-            <Avatar name={displayAuthor} imageUrl={authorAvatarUrl} accent={INSTRUCTOR.accent} size={34} />
+            <Avatar
+              name={isOrgChannel ? channel!.name : displayAuthor}
+              imageUrl={isOrgChannel ? channel!.iconUrl : authorAvatarUrl}
+              accent={INSTRUCTOR_ACCENT}
+              size={34}
+            />
             <div>
-              <p className="text-sm font-semibold text-ink">{displayAuthor}</p>
+              <p className="text-sm font-semibold text-ink">
+                {isOrgChannel ? channel!.name : displayAuthor}
+              </p>
               <p className="flex items-center gap-1 text-[11.5px] font-medium text-subtle">
-                <Radio size={12} className="text-blue" /> @{displayUsername}
+                <Radio size={12} className="text-blue" />{" "}
+                {isOrgChannel ? `by @${displayUsername}` : `@${displayUsername}`}
               </p>
             </div>
           </div>
+
+          {/* Collaborators, excluding the author — a solo course shows nothing here. */}
+          {coAuthors.length > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium text-subtle">Collaborators:</span>
+              {coAuthors.map((collab) => (
+                <span
+                  key={collab.id}
+                  className="flex items-center gap-1.5 rounded-full border border-line bg-paper px-2 py-0.5"
+                >
+                  <Avatar name={collab.name} imageUrl={collab.avatarUrl} size={18} />
+                  <span className="text-xs text-ink">{collab.name}</span>
+                </span>
+              ))}
+            </div>
+          )}
 
           <div className="mt-7 flex flex-wrap gap-2.5">
             {metaData.map(({ icon: Icon, label }) => (
@@ -527,7 +460,8 @@ function CourseHero({
                 <EnrollmentButton
                   resourceType="COURSE"
                   resourceId={courseId}
-                  initialState={isEnrolled ? "ENROLLED" : "NOT_ENROLLED"}
+                  initialState={initialState}
+                  pendingReason={pendingReason}
                   onStateChange={(state) => {
                     if (state === "ENROLLED" && onEnroll) {
                       onEnroll();
@@ -576,9 +510,16 @@ function CourseHero({
 /*  Tabs                                                               */
 /* ------------------------------------------------------------------ */
 
-function CourseTabs({ courseTitle }: { courseTitle?: string }) {
+function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: CourseResponse | null }) {
   const [tab, setTab] = useState<Tab>("Overview")
   const [openMod, setOpenMod] = useState(0)
+  const modules = course?.modules ?? []
+  const lessonTotal = modules.reduce((sum, m) => sum + (m.lessons?.length ?? 0), 0)
+  const learningOutcomes = (course?.learningOutcomes ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+  const orgName = course?.channel && !course.channel.isPersonal ? course.channel.name : null
   const params = useParams<{ courseId?: string }>()
   const searchParams = useSearchParams()
   const titleFromQuery = searchParams?.get('title')
@@ -621,31 +562,38 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
           <div className="grid gap-12 md:grid-cols-2 md:gap-16">
             <AnimatedItem index={0} style={{ cursor: "default" }}>
               <h3 className="font-serif text-2xl font-light text-ink">About this course</h3>
-              <p className="mt-4 text-[15px] leading-relaxed text-subtle">
-                This course treats design as a craft you build in public — every module ends with a real
-                assignment, reviewed by working product designers. You&apos;ll leave with a portfolio-ready piece,
-                not just a certificate.
-              </p>
-              <p className="mt-3 text-[15px] leading-relaxed text-subtle">
-                Through interactive breakdowns and hands-on exercises, you&apos;ll master visual hierarchy, spatial grid systems, interactive prototyping, and design system governance. Every concept is grounded in production realities so you build interfaces that are scalable, accessible, and delightful to use.
-              </p>
+              {course?.description ? (
+                <p className="mt-4 whitespace-pre-wrap text-[15px] leading-relaxed text-subtle">
+                  {course.description}
+                </p>
+              ) : (
+                <p className="mt-4 text-[15px] italic leading-relaxed text-subtle/75">
+                  The author hasn&apos;t written an overview for this course yet.
+                </p>
+              )}
             </AnimatedItem>
             <div className="md:pl-16 lg:pl-28">
               <h3 className="font-serif text-2xl font-light text-ink">What you&apos;ll walk away with</h3>
               <div className="mt-4">
-                <AnimatedList
-                  items={HIGHLIGHTS}
-                  showGradients={false}
-                  displayScrollbar={false}
-                  renderItem={(h) => (
-                    <div className="flex items-center gap-3 text-[15px] text-ink py-0.5">
-                      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-teal/12">
-                        <Check size={13} className="text-teal" />
-                      </span>
-                      <span>{h}</span>
-                    </div>
-                  )}
-                />
+                {learningOutcomes.length > 0 ? (
+                  <AnimatedList
+                    items={learningOutcomes}
+                    showGradients={false}
+                    displayScrollbar={false}
+                    renderItem={(h) => (
+                      <div className="flex items-center gap-3 text-[15px] text-ink py-0.5">
+                        <span className="grid size-5 shrink-0 place-items-center rounded-full bg-teal/12">
+                          <Check size={13} className="text-teal" />
+                        </span>
+                        <span>{h}</span>
+                      </div>
+                    )}
+                  />
+                ) : (
+                  <p className="text-[15px] italic text-subtle/75">
+                    The author hasn&apos;t listed learning outcomes for this course yet.
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -656,9 +604,9 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
             {/* Structured summary of the course layout */}
             <div className="mb-6 flex flex-wrap items-center justify-center gap-2.5">
               {[
-                { icon: BookOpen, label: `${MODULES.length} modules`, c: "var(--color-blue)" },
-                { icon: PlayCircle, label: `${TOTAL_LESSONS} lessons`, c: "var(--color-amber)" },
-                { icon: Clock, label: "4h 30m total", c: "var(--color-teal)" },
+                { icon: BookOpen, label: `${modules.length} ${modules.length === 1 ? "module" : "modules"}`, c: "var(--color-blue)" },
+                { icon: PlayCircle, label: `${lessonTotal} ${lessonTotal === 1 ? "lesson" : "lessons"}`, c: "var(--color-amber)" },
+                ...(course?.duration ? [{ icon: Clock, label: `${course.duration} total`, c: "var(--color-teal)" }] : []),
               ].map(({ icon: Icon, label, c }) => (
                 <span
                   key={label}
@@ -670,13 +618,15 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
             </div>
 
             <div className="flex flex-col gap-3">
-              {MODULES.map((m, idx) => {
+              {modules.map((m, idx) => {
                 const open = openMod === idx
                 const bgGradient = MODULE_LIGHT_GRADIENTS[idx % MODULE_LIGHT_GRADIENTS.length]
                 const borderColor = MODULE_BORDER_COLORS[idx % MODULE_BORDER_COLORS.length]
+                const accent = MODULE_ACCENTS[idx % MODULE_ACCENTS.length]
+                const moduleLessons = m.lessons ?? []
                 return (
                   <div
-                    key={m.title}
+                    key={m.id}
                     className="overflow-hidden rounded-2xl border transition-all duration-200 hover:shadow-sm"
                     style={{
                       background: bgGradient,
@@ -690,7 +640,7 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
                     >
                       <span
                         className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-lg font-bold border"
-                        style={{ color: m.accent, borderColor: borderColor }}
+                        style={{ color: accent, borderColor: borderColor }}
                       >
                         {idx + 1}
                       </span>
@@ -701,7 +651,7 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
                         <span className="block text-[15px] font-semibold text-ink">{m.title}</span>
                       </span>
                       <span className="hidden text-xs text-subtle sm:block">
-                        {m.lessons.length} lessons · {m.duration}
+                        {moduleLessons.length} {moduleLessons.length === 1 ? "lesson" : "lessons"}
                       </span>
                       <ChevronDown
                         size={17}
@@ -709,20 +659,19 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
                         style={{ transform: open ? "rotate(180deg)" : "none" }}
                       />
                     </button>
-                    {open && (
+                    {open && moduleLessons.length > 0 && (
                       <ul
                         className="flex flex-col gap-1 border-t px-3 pb-3 pt-2"
                         style={{ borderColor: borderColor }}
                       >
-                        {m.lessons.map((lesson, li) => (
+                        {moduleLessons.map((lesson, li) => (
                           <li
-                            key={lesson.title}
+                            key={lesson.id}
                             className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-white/60 dark:hover:bg-black/20"
                           >
                             <span className="w-5 text-center text-[12px] font-medium text-subtle/70">{li + 1}</span>
-                            <PlayCircle size={16} style={{ color: m.accent }} className="shrink-0" />
+                            <PlayCircle size={16} style={{ color: accent }} className="shrink-0" />
                             <span className="flex-1 text-[14px] text-ink">{lesson.title}</span>
-                            <span className="text-[12px] text-subtle">{lesson.length}</span>
                           </li>
                         ))}
                       </ul>
@@ -730,69 +679,112 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
                   </div>
                 )
               })}
+              {modules.length === 0 && (
+                <p className="rounded-2xl border border-line bg-paper px-5 py-8 text-center text-[15px] italic text-subtle/75">
+                  This course hasn&apos;t published a syllabus yet.
+                </p>
+              )}
             </div>
           </div>
         )}
 
         {tab === "Instructor" && (
-          <div
-            className="w-full rounded-3xl border p-8 transition-all"
-            style={{
-              background: "linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
-              borderColor: "rgba(139, 92, 246, 0.28)",
-            }}
-          >
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-              <Avatar name={INSTRUCTOR.name} accent={INSTRUCTOR.accent} size={72} />
-              <div className="flex-1">
-                <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-purple/10 px-2.5 py-1 text-[12px] font-medium text-purple">
-                  <BadgeCheck size={13} /> {INSTRUCTOR.org}
+          <div className="flex w-full flex-col gap-8">
+            {(course?.collaborators ?? []).map((person) => (
+              <div
+                key={person.id}
+                className="w-full rounded-3xl border p-8 transition-all"
+                style={{
+                  background: "linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
+                  borderColor: "rgba(139, 92, 246, 0.28)",
+                }}
+              >
+                <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+                  <Avatar
+                    name={person.name || "Unknown"}
+                    imageUrl={person.avatarUrl}
+                    accent={INSTRUCTOR_ACCENT}
+                    size={72}
+                  />
+                  <div className="flex-1">
+                    {orgName && (
+                      <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-purple/10 px-2.5 py-1 text-[12px] font-medium text-purple">
+                        <BadgeCheck size={13} /> {orgName}
+                      </div>
+                    )}
+                    <h3 className="font-serif text-2xl font-light text-ink">{person.name || "Unknown"}</h3>
+                    <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-subtle">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Briefcase size={13} /> {formatCollaboratorRole(person.role)}
+                      </span>
+                      {person.username && (
+                        <>
+                          <span className="text-subtle/40">·</span>
+                          <span className="inline-flex items-center gap-1.5">
+                            <Radio size={13} className="text-blue" /> @{person.username}
+                          </span>
+                        </>
+                      )}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="font-serif text-2xl font-light text-ink">{INSTRUCTOR.name}</h3>
-                <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-subtle">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Briefcase size={13} /> {INSTRUCTOR.role}
-                  </span>
-                </p>
+
+                {person.bio ? (
+                  <p className="mt-6 whitespace-pre-wrap text-[15px] leading-relaxed text-subtle">{person.bio}</p>
+                ) : (
+                  <p className="mt-6 text-[15px] italic leading-relaxed text-subtle/75">
+                    {person.name} hasn&apos;t added a bio yet.
+                  </p>
+                )}
+
+                {(person.specialities?.length ?? 0) > 0 && (
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    {person.specialities!.map((e, idx) => {
+                      const style = EXPERTISE_TAG_STYLES[idx % EXPERTISE_TAG_STYLES.length]
+                      return (
+                        <span
+                          key={e}
+                          className="rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all hover:scale-105"
+                          style={{
+                            background: style.bg,
+                            borderColor: style.border,
+                            color: style.text,
+                          }}
+                        >
+                          {e}
+                        </span>
+                      )
+                    })}
+                  </div>
+                )}
+
+                <div
+                  className="mt-7 grid grid-cols-2 gap-6 border-t pt-6 text-center"
+                  style={{ borderColor: "rgba(139, 92, 246, 0.28)" }}
+                >
+                  <div className="flex flex-col items-center justify-center">
+                    <BookOpen size={18} style={{ color: "var(--color-blue)" }} />
+                    <p className="mt-2 font-serif text-xl font-medium text-ink">{person.courseCount ?? 0}</p>
+                    <p className="text-[12px] text-subtle">
+                      {person.courseCount === 1 ? "course" : "courses"}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-center justify-center">
+                    <GraduationCap size={18} style={{ color: "var(--color-purple)" }} />
+                    <p className="mt-2 font-serif text-xl font-medium text-ink">
+                      {person.experienceYears != null ? `${person.experienceYears} yrs` : "—"}
+                    </p>
+                    <p className="text-[12px] text-subtle">experience</p>
+                  </div>
+                </div>
               </div>
-              <button className="rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-paper transition-transform hover:-translate-y-0.5">
-                Follow channel
-              </button>
-            </div>
+            ))}
 
-            <p className="mt-6 text-[15px] leading-relaxed text-subtle">{INSTRUCTOR.bio}</p>
-
-            <div className="mt-6 flex flex-wrap gap-2">
-              {INSTRUCTOR.expertise.map((e, idx) => {
-                const style = EXPERTISE_TAG_STYLES[idx % EXPERTISE_TAG_STYLES.length]
-                return (
-                  <span
-                    key={e}
-                    className="rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all hover:scale-105"
-                    style={{
-                      background: style.bg,
-                      borderColor: style.border,
-                      color: style.text,
-                    }}
-                  >
-                    {e}
-                  </span>
-                )
-              })}
-            </div>
-
-            <div
-              className="mt-7 grid grid-cols-2 gap-6 border-t pt-6 text-center sm:grid-cols-4"
-              style={{ borderColor: "rgba(139, 92, 246, 0.28)" }}
-            >
-              {INSTRUCTOR.stats.map(({ k, label, c, icon: Icon }) => (
-                <div key={label} className="flex flex-col items-center justify-center">
-                  <Icon size={18} style={{ color: c }} />
-                  <p className="mt-2 font-serif text-xl font-medium text-ink">{k}</p>
-                  <p className="text-[12px] text-subtle">{label}</p>
-                </div>
-              ))}
-            </div>
+            {(course?.collaborators?.length ?? 0) === 0 && (
+              <div className="w-full rounded-3xl border border-line bg-paper p-8 text-center text-[15px] italic text-subtle/75">
+                No instructor information available for this course.
+              </div>
+            )}
           </div>
         )}
 
@@ -856,7 +848,63 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
 /*  Reviews (now its own block, out of the tab panel)                  */
 /* ------------------------------------------------------------------ */
 
-function ReviewsBlock() {
+/**
+ * Real learner reviews for this course, with the aggregate the heading shows.
+ *
+ * Reads the public endpoint rather than the author-facing one: this renders for learners, who
+ * have no course-read authority in Studio.
+ */
+function ReviewsBlock({ courseId }: { courseId?: string }) {
+  const [reviews, setReviews] = useState<CourseReview[] | null>(null)
+  const [stats, setStats] = useState<CourseReviewStats | null>(null)
+
+  useEffect(() => {
+    if (!courseId) return
+    let cancelled = false
+    courseReviewService
+      .listPublicForCourse(courseId)
+      .then((rows) => {
+        if (!cancelled) setReviews(rows)
+      })
+      .catch(() => {
+        if (!cancelled) setReviews([])
+      })
+    courseReviewService
+      .statsFor([courseId])
+      .then((byCourse) => {
+        if (!cancelled) setStats(byCourse[courseId] ?? null)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [courseId])
+
+  // Nothing to show while loading, and nothing to show for a course no one has rated — an
+  // empty reviews section is better than a heading over nothing.
+  if (reviews === null) return null
+
+  if (reviews.length === 0) {
+    return (
+      <section aria-labelledby="reviews-heading">
+        <div className="mb-8 flex flex-col items-center gap-3 text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-subtle">
+            <Star size={13} className="text-amber" fill="var(--color-amber)" strokeWidth={0} /> Reviews
+          </span>
+          <h2 id="reviews-heading" className="font-serif text-3xl font-light text-ink text-balance sm:text-4xl">
+            No reviews yet
+          </h2>
+          <p className="text-[15px] text-subtle">
+            Learners are asked to rate this course when they finish it.
+          </p>
+        </div>
+      </section>
+    )
+  }
+
+  const average = stats?.averageRating ?? 0
+  const totalRatings = stats?.reviewsCount ?? reviews.length
+
   return (
     <section aria-labelledby="reviews-heading">
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
@@ -864,43 +912,69 @@ function ReviewsBlock() {
           <Star size={13} className="text-amber" fill="var(--color-amber)" strokeWidth={0} /> Reviews
         </span>
         <h2 id="reviews-heading" className="font-serif text-3xl font-light text-ink text-balance sm:text-4xl">
-          Loved by <span className="italic text-blue">12,480</span> builders
+          What learners say
         </h2>
         <div className="flex items-center gap-3">
-          <span className="font-serif text-3xl font-light text-ink">4.9</span>
+          <span className="font-serif text-3xl font-light text-ink">{average.toFixed(1)}</span>
           <div className="text-left">
             <div className="flex gap-0.5">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <Star key={i} size={14} className="text-amber" fill="var(--color-amber)" strokeWidth={0} />
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Star
+                  key={i}
+                  size={14}
+                  className={i <= Math.round(average) ? "text-amber" : "text-subtle/30"}
+                  fill={i <= Math.round(average) ? "var(--color-amber)" : "none"}
+                  strokeWidth={i <= Math.round(average) ? 0 : 1.5}
+                />
               ))}
             </div>
-            <p className="mt-0.5 text-xs text-subtle">812 ratings</p>
+            <p className="mt-0.5 text-xs text-subtle">
+              {totalRatings.toLocaleString()} {totalRatings === 1 ? "rating" : "ratings"}
+            </p>
           </div>
         </div>
       </div>
 
       <div className="[column-gap:1rem] sm:columns-2 lg:columns-3">
-        {REVIEWS.map((r) => (
-          <div
-            key={r.name}
-            className={`mb-4 break-inside-avoid rounded-2xl p-6 ${r.dark ? "bg-ink" : "border border-line bg-paper"
-              }`}
-          >
-            <p className={`text-[15px] leading-relaxed ${r.dark ? "font-medium text-paper" : "text-ink"}`}>
-              &ldquo;{r.quote}&rdquo;
-            </p>
+        {reviews.map((r, i) => {
+          const dark = i === 0
+          const accent = REVIEW_ACCENTS[i % REVIEW_ACCENTS.length]
+          return (
             <div
-              className={`mt-5 flex items-center justify-between border-t pt-4 ${r.dark ? "border-white/10" : "border-line"
-                }`}
+              key={r.id}
+              className={`mb-4 break-inside-avoid rounded-2xl p-6 ${dark ? "bg-ink" : "border border-line bg-paper"}`}
             >
-              <div>
-                <p className={`text-[13px] font-semibold ${r.dark ? "text-paper" : "text-ink"}`}>{r.name}</p>
-                <p className={`text-[11px] ${r.dark ? "text-white/50" : "text-subtle"}`}>{r.role}</p>
+              {r.reviewText ? (
+                <p className={`text-[15px] leading-relaxed ${dark ? "font-medium text-paper" : "text-ink"}`}>
+                  &ldquo;{r.reviewText}&rdquo;
+                </p>
+              ) : (
+                <p className={`text-[15px] italic leading-relaxed ${dark ? "text-paper/70" : "text-subtle/75"}`}>
+                  Rated this course {r.rating} out of 5.
+                </p>
+              )}
+              <div
+                className={`mt-5 flex items-center justify-between border-t pt-4 ${dark ? "border-white/10" : "border-line"}`}
+              >
+                <div>
+                  <p className={`text-[13px] font-semibold ${dark ? "text-paper" : "text-ink"}`}>{r.userName}</p>
+                  <p className={`flex items-center gap-0.5 text-[11px] ${dark ? "text-white/50" : "text-subtle"}`}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        size={11}
+                        className={star <= r.rating ? "text-amber" : dark ? "text-white/25" : "text-subtle/30"}
+                        fill={star <= r.rating ? "var(--color-amber)" : "none"}
+                        strokeWidth={star <= r.rating ? 0 : 1.5}
+                      />
+                    ))}
+                  </p>
+                </div>
+                <Avatar name={r.userName} imageUrl={r.userAvatarUrl} accent={accent} size={32} onDark={dark} />
               </div>
-              <Avatar name={r.name} accent={r.accent} size={32} onDark={r.dark} />
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </section>
   )
@@ -910,7 +984,7 @@ function ReviewsBlock() {
 /*  Enroll CTA                                                         */
 /* ------------------------------------------------------------------ */
 
-function EnrollCta({ onEnroll, isEnrolled = false, pricingModel, priceAmount, courseId }: { onEnroll?: () => void; isEnrolled?: boolean; pricingModel?: string; priceAmount?: number; courseId?: string }) {
+function EnrollCta({ onEnroll, initialState = "NOT_ENROLLED", pendingReason, pricingModel, priceAmount, courseId }: { onEnroll?: () => void; initialState?: "ENROLLED" | "NOT_ENROLLED" | "PENDING" | "WAITLISTED"; pendingReason?: "PAYMENT" | "REQUIREMENTS"; pricingModel?: string; priceAmount?: number; courseId?: string }) {
   return (
     <section className="arcade-cta-wash relative overflow-hidden rounded-[2rem] px-8 py-14 text-center sm:px-16 sm:py-16">
       <FlowerMark
@@ -922,8 +996,7 @@ function EnrollCta({ onEnroll, isEnrolled = false, pricingModel, priceAmount, co
         Light the path to your next <span className="italic text-amber">design role.</span>
       </h2>
       <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-white/60">
-        Join 12,480 builders learning to design interfaces people actually love — with feedback from working
-        designers.
+        Learn at your own pace, with feedback from the people who built the course.
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
         {courseId && (
@@ -931,7 +1004,7 @@ function EnrollCta({ onEnroll, isEnrolled = false, pricingModel, priceAmount, co
             <EnrollmentButton
               resourceType="COURSE"
               resourceId={courseId}
-              initialState={isEnrolled ? "ENROLLED" : "NOT_ENROLLED"}
+              initialState={initialState}
               className="!bg-white !text-ink hover:!bg-white/90"
               onStateChange={(state) => {
                 if (state === "ENROLLED" && onEnroll) {
@@ -1050,6 +1123,15 @@ export default function CoursePage() {
   const authorAvatarUrl = course?.authorAvatarUrl;
   const lessonCount = course?.modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0;
 
+  // Survives a reload: a learner mid-checkout must not be offered "Enroll Now" a second time.
+  const enrollmentStatus = myEnrollment?.enrollment?.enrollmentStatus;
+  const enrollButtonState: "ENROLLED" | "NOT_ENROLLED" | "PENDING" | "WAITLISTED" = isEnrolled
+    ? "ENROLLED"
+    : enrollmentStatus === "PENDING" || enrollmentStatus === "REQUESTED"
+      ? "PENDING"
+      : "NOT_ENROLLED";
+  const pendingReason = myEnrollment?.enrollment?.requiresPayment ? "PAYMENT" : "REQUIREMENTS";
+
   return (
     <main className="min-h-screen bg-white text-ink">
       {/* Hero section with gradient background */}
@@ -1061,8 +1143,15 @@ export default function CoursePage() {
             authorUsername={authorUsername}
             authorAvatarUrl={authorAvatarUrl}
             lessonCount={lessonCount}
+            duration={course?.duration}
+            enrollmentCount={course?.enrollmentCount}
             onEnroll={handleEnrollSuccess}
             isEnrolled={isEnrolled}
+            initialState={enrollButtonState}
+            pendingReason={pendingReason}
+            channel={course?.channel}
+            collaborators={course?.collaborators}
+            authorId={course?.authorId}
             pricingModel={course?.pricingModel}
             priceAmount={course?.priceAmount}
             courseId={params?.courseId as string}
@@ -1074,12 +1163,12 @@ export default function CoursePage() {
       {/* Body below hero with pure white background */}
       <div className="w-full bg-white">
         <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
-          <CourseTabs courseTitle={displayTitle} />
+          <CourseTabs courseTitle={displayTitle} course={course} />
           <div className="mt-20">
-            <ReviewsBlock />
+            <ReviewsBlock courseId={params?.courseId as string} />
           </div>
           <div className="mt-16">
-            <EnrollCta onEnroll={handleEnrollSuccess} isEnrolled={isEnrolled} pricingModel={course?.pricingModel} priceAmount={course?.priceAmount} courseId={params?.courseId as string} />
+            <EnrollCta onEnroll={handleEnrollSuccess} initialState={enrollButtonState} pendingReason={pendingReason} pricingModel={course?.pricingModel} priceAmount={course?.priceAmount} courseId={params?.courseId as string} />
           </div>
         </div>
       </div>

@@ -28,6 +28,7 @@ function StatusBadge({ status }: { status: ReviewStatus }) {
   const map: Record<ReviewStatus, { badge: string; dot: string }> = {
     OPEN: { badge: "bg-amber-50 text-amber-700 border-amber-200/80", dot: "bg-amber-500 animate-pulse" },
     CHANGES_REQUESTED: { badge: "bg-orange-50 text-orange-700 border-orange-200/80", dot: "bg-orange-500" },
+    REJECTED: { badge: "bg-red-50 text-red-700 border-red-200/80", dot: "bg-red-500" },
     COMPLETED: { badge: "bg-emerald-50 text-emerald-700 border-emerald-200/80", dot: "bg-emerald-500" },
     CANCELLED: { badge: "bg-slate-100 text-slate-500 border-slate-200/80", dot: "bg-slate-400" },
   };
@@ -73,7 +74,7 @@ export default function PlatformReviewsPage() {
     items.forEach((i) => {
       if (i.status === "OPEN") {
         open++;
-        if (i.hasPreviousPublication) updations++;
+        if (i.submissionKind === "UPDATE") updations++;
         else toBeReviewed++;
       } else if (i.status === "CHANGES_REQUESTED") {
         changes++;
@@ -87,9 +88,9 @@ export default function PlatformReviewsPage() {
   const filtered = useMemo(() => {
     return items.filter((i) => {
       if (statusFilter === "OPEN" && i.status !== "OPEN") return false;
-      if (statusFilter === "TO_BE_REVIEWED" && (i.status !== "OPEN" || i.hasPreviousPublication))
+      if (statusFilter === "TO_BE_REVIEWED" && (i.status !== "OPEN" || i.submissionKind === "UPDATE"))
         return false;
-      if (statusFilter === "UPDATIONS" && (i.status !== "OPEN" || !i.hasPreviousPublication))
+      if (statusFilter === "UPDATIONS" && (i.status !== "OPEN" || i.submissionKind !== "UPDATE"))
         return false;
       if (statusFilter === "CHANGES" && i.status !== "CHANGES_REQUESTED") return false;
       if (statusFilter === "COMPLETED" && i.status !== "COMPLETED") return false;
@@ -287,7 +288,7 @@ export default function PlatformReviewsPage() {
                               {item.title}
                             </p>
                             <p className="truncate text-[11px] text-slate-400 font-normal mt-0.5">
-                              Round {item.reviewRound}
+                              Round {item.round}
                             </p>
                           </div>
                         </div>
@@ -299,7 +300,7 @@ export default function PlatformReviewsPage() {
                           <span className="inline-flex items-center rounded-full bg-slate-100 border border-slate-200/80 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
                             {item.contentType}
                           </span>
-                          {item.hasPreviousPublication && item.status === "OPEN" && (
+                          {item.submissionKind === "UPDATE" && item.status === "OPEN" && (
                             <span className="inline-flex items-center gap-1 rounded-md bg-orange-50 border border-orange-200 px-1.5 py-0.5 text-[10px] font-bold text-orange-700">
                               <Sparkles size={10} /> Update
                             </span>

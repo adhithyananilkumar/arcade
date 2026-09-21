@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { UserService } from '@/domains/identity';
+import { useIsContentStaff } from '../../components/useIsContentStaff';
+import { OPEN_STAFF_ONBOARDING_EVENT } from '../../components/StaffOnboardingModal';
 import { motion } from 'framer-motion';
 import {
   Mail,
@@ -14,6 +16,7 @@ import {
   Edit2,
   X,
   Loader2,
+  Briefcase,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -37,6 +40,10 @@ export default function PersonalInfoPage() {
   const [address, setAddress] = useState(user?.address || '');
 
   const userEmail = user?.email || '';
+
+  // Students have no instructor profile, so the section is hidden from them entirely rather
+  // than shown empty. `null` means the check is still running.
+  const isContentStaff = useIsContentStaff();
 
   const handleCopyEmail = () => {
     if (!userEmail) return;
@@ -271,6 +278,52 @@ export default function PersonalInfoPage() {
           )}
         </div>
       </div>
+
+      {/* Instructor profile — edited in the same dialog that greets new instructors, so there
+          is one form for it rather than two that can drift apart. */}
+      {isContentStaff && (
+        <div className="mt-6 rounded-2xl border border-slate-200 p-4 dark:border-neutral-800">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="mt-0.5 shrink-0 text-slate-400">
+                <Briefcase size={16} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-slate-900 dark:text-white">
+                  Instructor profile
+                </p>
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-neutral-400">
+                  Shown next to your name on the courses you publish.
+                </p>
+
+                <dl className="mt-3 flex flex-col gap-1.5 text-xs">
+                  <div className="flex gap-2">
+                    <dt className="shrink-0 text-slate-400 dark:text-neutral-500">Specialities</dt>
+                    <dd className="truncate text-slate-600 dark:text-neutral-300">
+                      {user?.specialities?.length ? user.specialities.join(', ') : 'Not set'}
+                    </dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="shrink-0 text-slate-400 dark:text-neutral-500">Experience</dt>
+                    <dd className="text-slate-600 dark:text-neutral-300">
+                      {user?.experienceYears != null
+                        ? `${user.experienceYears} ${user.experienceYears === 1 ? 'year' : 'years'}`
+                        : 'Not set'}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+
+            <button
+              onClick={() => window.dispatchEvent(new Event(OPEN_STAFF_ONBOARDING_EVENT))}
+              className="shrink-0 rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-sky-700"
+            >
+              Edit
+            </button>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }

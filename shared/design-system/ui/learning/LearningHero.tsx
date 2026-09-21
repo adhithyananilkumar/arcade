@@ -3,6 +3,7 @@ import Link from "next/link"
 import { ChevronRight, Clock, BookOpen, Users, Radio, Play, Volume2, Settings, Share2, Heart, Flag } from "lucide-react"
 import { FlowerMark, Avatar } from "./LearningDecorations"
 import { formatMoney } from "../../../utils/money"
+import type { CourseChannelSummary, CourseCollaboratorSummary } from "../../../types/api.types"
 
 export interface BreadcrumbItem {
   label: string
@@ -64,6 +65,12 @@ export interface LearningHeroProps {
   previewAuthorLabel?: string
   accentColor?: string
   breadcrumbs?: BreadcrumbItem[]
+  /** Owning channel. An organization channel is credited above the individual author. */
+  channel?: CourseChannelSummary | null
+  /** Everyone credited on the content, author included — the author is filtered out below. */
+  collaborators?: CourseCollaboratorSummary[] | null
+  /** The primary author's id, used to exclude them from the collaborator chips. */
+  authorId?: string | null
 }
 
 export function LearningHero({
@@ -88,6 +95,9 @@ export function LearningHero({
   previewAuthorLabel,
   accentColor = "#4c6fff",
   breadcrumbs = [],
+  channel,
+  collaborators,
+  authorId,
 }: LearningHeroProps) {
   const words = title.split(" ")
   const lastWord = words.pop() || ""
@@ -95,6 +105,16 @@ export function LearningHero({
 
   const displayUsername = authorUsername || authorName.toLowerCase().replace(/\s+/g, "")
   const displayPreviewAuthor = previewAuthorLabel || `@${displayUsername}`
+
+  const isOrgChannel = Boolean(channel && !channel.isPersonal && channel.name)
+  const authorProfileHref = authorUsername ? `/${authorUsername}` : null
+
+  // Filter by author id, not by username: a user with no profile username would otherwise fail
+  // the comparison and appear as a collaborator on their own course. The backend also tags the
+  // author's entry with role "Author", which covers the case where authorId is not supplied.
+  const coAuthors = (collaborators ?? []).filter(
+    (c) => (authorId ? c.id !== authorId : c.role !== "Author")
+  )
 
   return (
     <div className="arcade-fade">
@@ -132,17 +152,71 @@ export function LearningHero({
           .
         </h1>
 
-        {/* Instructor */}
-        <div className="mt-7 flex items-center gap-3">
-          <Avatar name={authorName} imageUrl={authorAvatarUrl} accent={authorAccent} size={46} />
-          <div>
-            <p className="font-semibold text-ink">{authorName}</p>
-            <p className="flex items-center gap-1.5 text-[13px] font-medium text-subtle">
-              <Radio size={14} className="opacity-70 text-blue" />
-              @{displayUsername}
-            </p>
+        {/* Instructor — an org channel is credited as the publisher, with the author beneath it;
+            a personal channel is simply the author. */}
+        {isOrgChannel ? (
+          <div className="mt-7 flex items-center gap-3">
+            <Link href={`/channels/${channel!.id}`} className="transition-opacity hover:opacity-80">
+              <Avatar name={channel!.name} imageUrl={channel!.iconUrl} accent={authorAccent} size={46} />
+            </Link>
+            <div>
+              <Link href={`/channels/${channel!.id}`} className="hover:underline">
+                <p className="font-semibold text-ink">{channel!.name}</p>
+              </Link>
+              <p className="flex items-center gap-1.5 text-[13px] font-medium text-subtle">
+                <Radio size={14} className="opacity-70 text-blue" />
+                by {authorProfileHref ? (
+                  <Link href={authorProfileHref} className="hover:underline">@{displayUsername}</Link>
+                ) : (
+                  authorName
+                )}
+              </p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="mt-7 flex items-center gap-3">
+            <Avatar name={authorName} imageUrl={authorAvatarUrl} accent={authorAccent} size={46} />
+            <div>
+              <p className="font-semibold text-ink">{authorName}</p>
+              <p className="flex items-center gap-1.5 text-[13px] font-medium text-subtle">
+                <Radio size={14} className="opacity-70 text-blue" />
+                @{displayUsername}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Collaborators — only the people who are not the author, so a solo course shows
+            nothing here rather than repeating the author's own name back at them. */}
+        {coAuthors.length > 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-medium text-subtle">Collaborators:</span>
+            {coAuthors.map((collab) => {
+              const chip = (
+                <>
+                  <Avatar name={collab.name} imageUrl={collab.avatarUrl} size={18} />
+                  <span className="text-xs text-ink">{collab.name}</span>
+                </>
+              )
+              return collab.username ? (
+                <Link
+                  key={collab.id}
+                  href={`/${collab.username}`}
+                  className="flex items-center gap-1.5 rounded-full border border-line bg-paper px-2 py-0.5 transition-opacity hover:opacity-80"
+                >
+                  {chip}
+                </Link>
+              ) : (
+                <span
+                  key={collab.id}
+                  className="flex items-center gap-1.5 rounded-full border border-line bg-paper px-2 py-0.5"
+                >
+                  {chip}
+                </span>
+              )
+            })}
+          </div>
+        )}
 
         {/* Meta Chips */}
         <div className="mt-7 flex flex-wrap gap-2.5">
