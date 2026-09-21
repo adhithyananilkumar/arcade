@@ -1,49 +1,33 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 // app/(authenticated)/studio/review/page.tsx
-// "Review Courses" page: lists courses the author has submitted for review.
-// A course lands here the moment its author presses "Submit for Review" in the
-// editor (which flips the course status to SUBMITTED via /api/courses/{id}/submit).
-// The actual review/approval pipeline is owned by a teammate — for now this page
-// is just the delivery destination that proves a course was handed off for review.
+// Review Queue: lists creations submitted for review and awaiting approval.
 "use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/infrastructure/http/api";
 import type { CourseResponse } from "@/shared/types/api.types";
-import { ArrowLeft, ClipboardCheck, Clock, Inbox } from "lucide-react";
+import SpotlightCard from "@/components/ui/SpotlightCard";
+import ShinyText from "@/components/ui/ShinyText";
+import {
+  ArrowRight,
+  BookOpen,
+  ClipboardCheck,
+  Clock,
+  Inbox,
+} from "lucide-react";
 
-// Statuses that count as "in the review queue". SUBMITTED is the one the Submit
-// button produces; APPROVED is kept visible so a reviewed course doesn't vanish
-// before the teammate's pipeline decides what happens next.
 const REVIEW_STATUSES: ReadonlyArray<CourseResponse["status"]> = [
   "SUBMITTED",
   "APPROVED",
 ];
 
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    DRAFT: "bg-yellow-50 text-yellow-700 border-yellow-200",
-    SUBMITTED: "bg-blue-50 text-blue-700 border-blue-200",
-    APPROVED: "bg-green-50 text-green-700 border-green-200",
-    PUBLISHED: "bg-green-50 text-green-700 border-green-200",
-    ARCHIVED: "bg-gray-100 text-gray-500 border-gray-200",
-  };
-  return (
-    <span
-      className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
-        map[status] ?? "bg-gray-100 text-gray-500 border-gray-200"
-      }`}
-    >
-      {status}
-    </span>
-  );
-}
-
 export default function ReviewCoursesPage() {
   const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchReviews = () => {
+    setLoading(true);
     api
       .get<CourseResponse[]>("/api/courses")
       .then((all) =>
@@ -51,99 +35,173 @@ export default function ReviewCoursesPage() {
       )
       .catch(() => setCourses([]))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchReviews();
   }, []);
 
   return (
-    <div className="flex-1 flex flex-col">
-      <header className="bg-white border-b border-gray-200 px-8 py-5">
-        <div className="max-w-6xl mx-auto">
-          <Link
-            href="/studio"
-            className="mb-2 inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700"
-          >
-            <ArrowLeft size={14} />
-            Content Studio
-          </Link>
-          <h1 className="text-xl font-bold text-gray-900">Review Courses</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Courses submitted for review land here, waiting to be approved.
-          </p>
-        </div>
-      </header>
+    <div
+      className="relative flex min-h-screen flex-1 flex-col"
+      style={{
+        background: "linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%)",
+      }}
+    >
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-28 pt-28 sm:px-8 sm:pt-32">
+        {/* ── Header Section ── */}
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1
+              className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#14142b] leading-tight select-none"
+              style={{ fontFamily: "'Dancing Script', 'Caveat', cursive" }}
+            >
+              <ShinyText text="Review Queue" speed={4.5} />
+            </h1>
+            <p className="mt-1 text-xs sm:text-sm font-medium text-slate-600">
+              Creations submitted for review, waiting to be approved and published.
+            </p>
+          </div>
 
-      <main className="flex-1 px-8 py-8 max-w-6xl mx-auto w-full">
-        <div className="flex items-center gap-2 mb-5">
-          <ClipboardCheck size={17} className="text-indigo-500" />
-          <h2 className="text-base font-semibold text-gray-800">Awaiting Review</h2>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-amber-900/10 bg-white/90 px-4 py-2 text-xs font-bold text-slate-700 shadow-3xs">
+              <ClipboardCheck size={14} className="text-amber-700" />
+              <span>{courses.length} {courses.length === 1 ? "creation" : "creations"} in queue</span>
+            </span>
+          </div>
         </div>
 
+        {/* ── Section Status Header ── */}
+        <div className="mb-6 flex items-center gap-6 pb-3">
+          <div className="relative flex items-center gap-2 text-[13px] sm:text-sm font-bold text-[#14142b]">
+            <Clock size={15} className="text-amber-700" />
+            <span>Awaiting Review</span>
+            <span className="rounded-full bg-[#14142b] px-2 py-0.5 text-[11px] font-semibold text-white">
+              {courses.length}
+            </span>
+            <div className="absolute -bottom-3 left-0 right-0 h-[2.5px] bg-[#14142b] rounded-full" />
+          </div>
+        </div>
+
+        {/* ── Main Content Area ── */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl border border-gray-200 p-5 animate-pulse">
-                <div className="h-4 bg-gray-100 rounded mb-3 w-2/3" />
-                <div className="h-3 bg-gray-50 rounded mb-2 w-full" />
-                <div className="h-3 bg-gray-50 rounded mb-4 w-3/4" />
-                <div className="flex justify-between items-center">
-                  <div className="h-5 w-14 bg-gray-100 rounded-full" />
-                  <div className="h-7 w-24 bg-gray-100 rounded-lg" />
+              <div
+                key={i}
+                className="animate-pulse rounded-2xl border border-amber-900/10 bg-white/90 p-5 shadow-[0_2px_12px_rgba(20,20,43,0.02)]"
+              >
+                <div className="mb-3 h-4 w-2/3 rounded bg-amber-100/50" />
+                <div className="mb-2 h-3 w-full rounded bg-slate-100" />
+                <div className="mb-4 h-3 w-3/4 rounded bg-slate-100" />
+                <div className="flex items-center justify-between">
+                  <div className="h-5 w-16 rounded-full bg-slate-100" />
+                  <div className="h-8 w-24 rounded-xl bg-slate-100" />
                 </div>
               </div>
             ))}
           </div>
         ) : courses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
-              <Inbox size={24} className="text-gray-400" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">No courses awaiting review</p>
-              <p className="text-xs text-gray-400 mt-1">
-                Open a course and press &quot;Submit for Review&quot; to send it here.
+          <div className="relative mx-auto max-w-2xl overflow-hidden rounded-tl-[2.5rem] rounded-br-[2.5rem] rounded-tr-2xl rounded-bl-2xl border border-amber-900/12 bg-[#FFFDF7]/90 p-8 sm:p-14 text-center backdrop-blur-md shadow-[0_10px_36px_rgba(78,41,17,0.04)]">
+            {/* Ambient Background Glow */}
+            <div
+              className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 h-56 w-72 rounded-full blur-3xl opacity-40"
+              style={{ background: "radial-gradient(circle, rgba(245, 158, 11, 0.35) 0%, rgba(253, 250, 240, 0) 70%)" }}
+            />
+
+            <div className="relative z-10 flex flex-col items-center">
+              {/* Emblem Icon */}
+              <div className="relative mb-5 flex items-center justify-center">
+                <div className="absolute h-20 w-20 rounded-3xl bg-amber-500/10 blur-md animate-pulse" />
+                <div className="relative flex h-18 w-18 items-center justify-center rounded-2xl border border-amber-900/15 bg-gradient-to-b from-[#FFFDF7] to-amber-50/80 text-amber-900 shadow-[0_6px_20px_rgba(217,119,6,0.12)]">
+                  <Inbox size={32} strokeWidth={2} className="text-amber-800" />
+                  <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#14142b] text-amber-400 border-2 border-[#FFFDF7] shadow-sm">
+                    <ClipboardCheck size={12} strokeWidth={2.5} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Status Pill */}
+              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-amber-900/5 border border-amber-900/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-amber-900/80">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                Queue is clear
+              </div>
+
+              {/* Title & Description */}
+              <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-[#14142b]">
+                No creations awaiting review
+              </h3>
+              <p className="mt-2 max-w-md text-xs sm:text-sm font-medium leading-relaxed text-slate-600">
+                When you submit content for review from the authoring editor in Arcade Studio, it will appear here waiting for publication.
               </p>
+
+              {/* CTA Action */}
+              <div className="mt-6">
+                <Link
+                  href="/studio"
+                  className="group inline-flex items-center gap-2 rounded-full bg-[#14142b] px-6 py-2.5 text-xs sm:text-sm font-bold text-white transition-all duration-200 hover:bg-[#232735] hover:shadow-md active:scale-98"
+                >
+                  <span>Go to Arcade Studio</span>
+                  <ArrowRight size={14} className="text-amber-300 transition-transform duration-200 group-hover:translate-x-1" />
+                </Link>
+              </div>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {courses.map((course) => (
-              <div
+              <SpotlightCard
                 key={course.id}
-                className="group bg-white rounded-2xl border border-gray-200 hover:border-indigo-200 hover:shadow-md transition-all p-5 flex flex-col gap-3"
+                spotlightColor="rgba(217, 119, 6, 0.06)"
+                spotlightSize={360}
+                className="group relative flex flex-col justify-between overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] rounded-tr-xl rounded-bl-xl border border-amber-900/12 bg-[#FFFDF7]/90 hover:bg-[#FFFDF7] p-5 shadow-[0_4px_20px_rgba(78,41,17,0.03)] hover:shadow-[0_8px_30px_rgba(78,41,17,0.06)] hover:border-amber-900/25 transition-all duration-200"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-sm font-semibold text-gray-800 leading-snug line-clamp-2">
-                    {course.title}
-                  </h3>
-                  <StatusBadge status={course.status} />
+                <div className="relative z-10 flex flex-1 flex-col justify-between gap-4">
+                  {/* Content Body: Channel, Title, & Description */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-900/70 truncate max-w-[260px]">
+                        {course.authorName || "Course Submission"}
+                      </span>
+                    </div>
+
+                    <h3 className="line-clamp-1 text-base sm:text-[17px] font-bold tracking-tight text-[#14142b] group-hover:text-amber-950 transition-colors leading-snug">
+                      {course.title}
+                    </h3>
+
+                    <p className="line-clamp-2 text-xs leading-relaxed text-slate-600 font-medium min-h-[32px]">
+                      {course.description || `${course.modules?.length ?? 0} modules · Self-paced learning`}
+                    </p>
+                  </div>
+
+                  {/* Standard Clean Footer: Date on Left, Compact Button on Right */}
+                  <div className="pt-3 border-t border-amber-900/10 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+                      <Clock size={12} className="text-amber-800/60" />
+                      <span>
+                        {new Date(course.updatedAt).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </div>
+
+                    <Link
+                      href={`/studio/published/${course.id}`}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-[#14142b] px-3.5 py-1.5 text-xs font-bold text-white transition-all shadow-3xs hover:bg-[#232735] hover:shadow-2xs cursor-pointer"
+                    >
+                      <BookOpen size={12} className="text-amber-400/90" />
+                      <span>Review</span>
+                      <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5 text-amber-200/80" />
+                    </Link>
+                  </div>
                 </div>
-                {course.description && (
-                  <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
-                    {course.description}
-                  </p>
-                )}
-                <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-auto">
-                  <Clock size={11} />
-                  Last edited:{" "}
-                  {new Date(course.updatedAt).toLocaleString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  })}
-                </div>
-                <Link
-                  href={`/studio/published/${course.id}`}
-                  className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors"
-                >
-                  Review Course →
-                </Link>
-              </div>
+              </SpotlightCard>
             ))}
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

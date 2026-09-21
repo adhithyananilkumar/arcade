@@ -32,7 +32,7 @@ export default function LearnerSidebar() {
   const dynamicNavItems = [
     ...baseNavItems,
     ...(showStudio ? [
-      { name: 'Content Studio', href: '/studio', icon: BookOpen },
+      { name: 'Arcade Studio', href: '/studio', icon: BookOpen },
       { name: 'Published Courses', href: '/studio/published', icon: Eye }
     ] : []),
     // Always visible: channels are the entry point for creating content, so a user with none yet

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
@@ -37,7 +38,7 @@ export interface ContactMessage {
 
 function ConsoleInboxContent() {
   const { user } = useAuthStore();
-  if (!AuthorizationService.canManageInbox(user)) {
+  if (!AuthorizationService.canManageSettings(user)) {
     notFound();
   }
 
@@ -67,15 +68,37 @@ function ConsoleInboxContent() {
           setSelectedMessage(updatedSelected);
         }
       }
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to fetch messages');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to fetch messages');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleSelectMessage = async (msg: ContactMessage) => {
+    setSelectedMessage(msg);
+    if (msg.status === 'UNREAD') {
+      const optimisticMsg: ContactMessage = { ...msg, status: 'READ' };
+      setMessages((prev) => prev.map((m) => (m.id === msg.id ? optimisticMsg : m)));
+      setSelectedMessage(optimisticMsg);
+      try {
+        const updated = await api.patch<ContactMessage>(`/api/v1/console/messages/${msg.id}/status`, {
+          status: 'READ',
+        });
+        if (updated && updated.status) {
+          setMessages((prev) => prev.map((m) => (m.id === msg.id ? updated : m)));
+          setSelectedMessage(updated);
+        }
+        window.dispatchEvent(new Event('inbox-updated'));
+      } catch (err) {
+        console.error('Failed to mark message as read:', err);
+      }
+    }
+  };
+
   useEffect(() => {
     fetchMessages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -108,27 +131,6 @@ function ConsoleInboxContent() {
     }
   }, [messages, idParam]);
 
-  const handleSelectMessage = async (msg: ContactMessage) => {
-    setSelectedMessage(msg);
-    if (msg.status === 'UNREAD') {
-      const optimisticMsg: ContactMessage = { ...msg, status: 'READ' };
-      setMessages((prev) => prev.map((m) => (m.id === msg.id ? optimisticMsg : m)));
-      setSelectedMessage(optimisticMsg);
-      try {
-        const updated = await api.patch<ContactMessage>(`/api/v1/console/messages/${msg.id}/status`, {
-          status: 'READ',
-        });
-        if (updated && updated.status) {
-          setMessages((prev) => prev.map((m) => (m.id === msg.id ? updated : m)));
-          setSelectedMessage(updated);
-        }
-        window.dispatchEvent(new Event('inbox-updated'));
-      } catch (err) {
-        console.error('Failed to mark message as read:', err);
-      }
-    }
-  };
-
   const handleStatusChange = async (id: string, newStatus: 'UNREAD' | 'READ' | 'ARCHIVED') => {
     try {
       const updated = await api.patch<ContactMessage>(`/api/v1/console/messages/${id}/status`, {
@@ -140,8 +142,8 @@ function ConsoleInboxContent() {
       }
       window.dispatchEvent(new Event('inbox-updated'));
       toast.success(`Message marked as ${newStatus.toLowerCase()}`);
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to update message status');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update message status');
     }
   };
 
@@ -155,8 +157,8 @@ function ConsoleInboxContent() {
       }
       window.dispatchEvent(new Event('inbox-updated'));
       toast.success('Message deleted successfully');
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to delete message');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete message');
     }
   };
 
@@ -200,101 +202,92 @@ function ConsoleInboxContent() {
   }, [messages, primaryTab]);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#14142b] sm:text-3xl">
-            Console Inbox
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            View reach-us contact submissions and user course/lesson reports.
-          </p>
+    <div className="flex w-full flex-col h-full space-y-4 pb-6">
+      {/* Top Filter and Search Toolbar */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* Primary Source Tabs: Reach Us | Reports */}
+        <div className="flex items-center gap-1 rounded-full border border-slate-200/80 bg-white/80 p-1 shadow-[0_2px_8px_rgba(20,20,43,0.04)] backdrop-blur-md">
+          <button
+            onClick={() => setPrimaryTab('REACH_US')}
+            className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+              primaryTab === 'REACH_US'
+                ? 'bg-[#14142b] text-white shadow-xs'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-[#14142b]'
+            }`}
+          >
+            <MessageSquare size={13} />
+            Reach Us
+            {counts.reachUsUnread > 0 && (
+              <span className={`ml-0.5 inline-flex items-center justify-center rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
+                primaryTab === 'REACH_US' ? 'bg-white/25 text-white' : 'bg-blue-600 text-white'
+              }`}>
+                {counts.reachUsUnread}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setPrimaryTab('REPORTS')}
+            className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+              primaryTab === 'REPORTS'
+                ? 'bg-[#14142b] text-white shadow-xs'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-[#14142b]'
+            }`}
+          >
+            <AlertTriangle size={13} className={primaryTab === 'REPORTS' ? 'text-amber-300' : 'text-amber-500'} />
+            Reports
+            {counts.reportsUnread > 0 && (
+              <span className={`ml-0.5 inline-flex items-center justify-center rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
+                primaryTab === 'REPORTS' ? 'bg-white/25 text-white' : 'bg-amber-500 text-white'
+              }`}>
+                {counts.reportsUnread}
+              </span>
+            )}
+          </button>
         </div>
-        <button
-          onClick={fetchMessages}
-          disabled={isLoading}
-          className="inline-flex items-center gap-2 self-start rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 disabled:opacity-50 sm:self-auto transition-colors"
-        >
-          <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
-          Refresh
-        </button>
-      </div>
 
-      {/* Filter Toolbar & Search */}
-      <div className="flex flex-col gap-3">
-        {/* Row 1: Primary Source Tabs & Search */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          {/* Primary Source Tabs: Reach Us | Reports */}
-          <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-100/80 p-1">
-            <button
-              onClick={() => setPrimaryTab('REACH_US')}
-              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all ${
-                primaryTab === 'REACH_US'
-                  ? 'bg-white text-[#14142b] shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <MessageSquare size={14} />
-              Reach Us
-              {counts.reachUsUnread > 0 && (
-                <span className="rounded-full bg-blue-500 px-1.5 py-0.2 text-[10px] font-extrabold text-white">
-                  {counts.reachUsUnread}
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={() => setPrimaryTab('REPORTS')}
-              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all ${
-                primaryTab === 'REPORTS'
-                  ? 'bg-white text-[#14142b] shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <AlertTriangle size={14} className="text-amber-500" />
-              Reports
-              {counts.reportsUnread > 0 && (
-                <span className="rounded-full bg-amber-500 px-1.5 py-0.2 text-[10px] font-extrabold text-white">
-                  {counts.reportsUnread}
-                </span>
-              )}
-            </button>
+        {/* Secondary Status Filter & Search */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1 rounded-full border border-slate-200/80 bg-white/80 p-1 shadow-2xs">
+            {(['ALL', 'UNREAD', 'READ', 'ARCHIVED'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setStatusFilter(tab)}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                  statusFilter === tab
+                    ? 'bg-[#14142b] text-white shadow-xs font-semibold'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-[#14142b]'
+                }`}
+              >
+                {tab.charAt(0) + tab.slice(1).toLowerCase()}
+                {tab === 'UNREAD' && counts.activeUnreadCount > 0 && (
+                  <span className="ml-1.5 rounded-full bg-blue-500 px-1.5 py-0.2 text-[10px] text-white font-bold">
+                    {counts.activeUnreadCount}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
 
-          {/* Search */}
-          <div className="relative w-full sm:w-64">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <div className="relative min-w-[200px] flex-1 sm:flex-initial">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search inbox..."
-              className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-xl border border-slate-200/90 bg-white py-1.5 pl-8 pr-3 text-xs text-slate-800 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100 shadow-2xs"
             />
           </div>
-        </div>
 
-        {/* Row 2: Secondary Status Filter */}
-        <div className="flex items-center gap-1 rounded-xl border border-slate-200/80 bg-white/70 p-1 w-fit backdrop-blur-md">
-          {(['ALL', 'UNREAD', 'READ', 'ARCHIVED'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setStatusFilter(tab)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
-                statusFilter === tab
-                  ? 'bg-[#14142b] text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-              }`}
-            >
-              {tab.charAt(0) + tab.slice(1).toLowerCase()}
-              {tab === 'UNREAD' && counts.activeUnreadCount > 0 && (
-                <span className="ml-1.5 rounded-full bg-blue-500 px-1.5 py-0.5 text-[10px] text-white font-extrabold">
-                  {counts.activeUnreadCount}
-                </span>
-              )}
-            </button>
-          ))}
+          <button
+            onClick={fetchMessages}
+            disabled={isLoading}
+            title="Refresh messages"
+            className="inline-flex size-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-2xs hover:bg-slate-50 disabled:opacity-50 transition-colors"
+          >
+            <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
+          </button>
         </div>
       </div>
 

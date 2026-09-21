@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -5,7 +6,7 @@ import { notFound, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 import { api } from '@/infrastructure/http/api';
-import { Play, Pause, Library, Search, Tag, Plus, Pencil } from 'lucide-react';
+import { Pause, Library, Search, Tag, Plus, Pencil } from 'lucide-react';
 import { cn } from '@/shared/utils/utils';
 import { toast } from 'sonner';
 
@@ -134,8 +135,8 @@ export default function ContentManagePage() {
       }
       resetCategoryForm();
       loadCategories();
-    } catch (e: any) {
-      toast.error(e.message || 'Failed to save category');
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Failed to save category');
     } finally {
       setSavingCategory(false);
     }
@@ -145,8 +146,8 @@ export default function ContentManagePage() {
     try {
       await api.patch(`/api/v1/console/categories/${category.id}`, { active: !category.active });
       loadCategories();
-    } catch (e: any) {
-      toast.error(e.message || 'Failed to update category');
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Failed to update category');
     }
   };
 
@@ -271,67 +272,143 @@ export default function ContentManagePage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <table className="min-w-full text-left text-sm whitespace-nowrap">
-              <thead className="tracking-wider border-b border-slate-200 bg-slate-50/50">
-                <tr>
-                  <th scope="col" className="px-6 py-4 font-semibold text-slate-500">Category</th>
-                  <th scope="col" className="px-6 py-4 font-semibold text-slate-500">Type</th>
-                  <th scope="col" className="px-6 py-4 font-semibold text-slate-500">Description</th>
-                  <th scope="col" className="px-6 py-4 font-semibold text-slate-500">Status</th>
-                  <th scope="col" className="px-6 py-4 font-semibold text-slate-500">Actions</th>
+          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[800px] text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200/80 bg-slate-50/75 backdrop-blur-xs text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    <th scope="col" className="py-3.5 px-6 font-semibold">Category</th>
+                    <th scope="col" className="py-3.5 px-4 font-semibold">Type</th>
+                    <th scope="col" className="py-3.5 px-4 font-semibold">Description</th>
+                    <th scope="col" className="py-3.5 px-4 font-semibold">Status</th>
+                    <th scope="col" className="py-3.5 px-6 font-semibold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {categoriesLoading ? (
+                    <tr>
+                      <td colSpan={5} className="py-14 text-center text-slate-400">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <div className="size-5 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
+                          <span className="text-xs font-medium text-slate-500">Loading categories...</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : categories.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-14 text-center text-slate-400">No categories yet.</td>
+                    </tr>
+                  ) : (
+                    categories.map((category) => (
+                      <tr key={category.id} className="hover:bg-slate-50/80 transition-all duration-150">
+                        <td className="py-4 px-6 font-bold text-xs text-slate-900">{category.name}</td>
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <span className="inline-flex items-center rounded-full bg-slate-100 border border-slate-200/80 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                            {CATEGORY_TYPE_LABELS[category.type] || category.type}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4 text-slate-600 max-w-[320px] truncate">
+                          {category.description || '—'}
+                        </td>
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <span className={cn(
+                            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold border",
+                            category.active ? "bg-emerald-50 text-emerald-700 border-emerald-200/80" : "bg-slate-100 text-slate-600 border-slate-200/80"
+                          )}>
+                            <span className={cn("size-1.5 rounded-full", category.active ? "bg-emerald-500" : "bg-slate-400")} />
+                            {category.active ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-right whitespace-nowrap">
+                          <div className="inline-flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => startEditCategory(category)}
+                              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
+                            >
+                              <Pencil size={12} />
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => toggleCategoryActive(category)}
+                              className={cn(
+                                "rounded-xl px-3 py-1.5 text-xs font-semibold transition-all border shadow-2xs",
+                                category.active 
+                                  ? "border-rose-200 bg-white text-rose-600 hover:bg-rose-50" 
+                                  : "border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50"
+                              )}
+                            >
+                              {category.active ? 'Deactivate' : 'Activate'}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      ) : (
+      <div className="flex-1 min-h-0 overflow-y-auto pr-2 relative">
+        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
+          {error && (
+            <div className="p-4 text-sm font-medium text-red-600 bg-red-50 border-b border-red-100">
+              {error}
+            </div>
+          )}
+          
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px] text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200/80 bg-slate-50/75 backdrop-blur-xs text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <th scope="col" className="py-3.5 px-6 font-semibold">Course</th>
+                  <th scope="col" className="py-3.5 px-4 font-semibold">Author</th>
+                  <th scope="col" className="py-3.5 px-4 font-semibold">Enrollments</th>
+                  <th scope="col" className="py-3.5 px-6 font-semibold text-right">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200/80 bg-white">
-                {categoriesLoading ? (
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {loading ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-slate-400">Loading categories...</td>
+                    <td colSpan={4} className="py-14 text-center text-slate-400">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <div className="size-5 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
+                        <span className="text-xs font-medium text-slate-500">Loading courses...</span>
+                      </div>
+                    </td>
                   </tr>
-                ) : categories.length === 0 ? (
+                ) : filteredCourses.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-slate-400">No categories yet.</td>
+                    <td colSpan={4} className="py-14 text-center text-slate-400">No courses found.</td>
                   </tr>
                 ) : (
-                  categories.map((category) => (
-                    <tr key={category.id} className="hover:bg-slate-50/50">
-                      <td className="px-6 py-4 font-medium text-slate-900">{category.name}</td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
-                          {CATEGORY_TYPE_LABELS[category.type] || category.type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-slate-600 max-w-[320px] truncate whitespace-normal">
-                        {category.description || '—'}
-                      </td>
-                      <td className="px-6 py-4">
+                  filteredCourses.map((course) => (
+                    <tr 
+                      key={course.id} 
+                      className="transition-all duration-150 hover:bg-slate-50/80 cursor-pointer"
+                      onClick={() => router.push(`/console/content-manage/${course.id}`)}
+                    >
+                      <td className="py-4 px-6 font-bold text-xs text-slate-900">{course.title}</td>
+                      <td className="py-4 px-4 text-slate-600 font-medium">{course.authorName}</td>
+                      <td className="py-4 px-4 text-slate-600 font-semibold">{course.enrollments.toLocaleString()}</td>
+                      <td className="py-4 px-6 text-right whitespace-nowrap">
                         <span className={cn(
-                          "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
-                          category.active ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"
+                          "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold border",
+                          course.status === 'PUBLISHED' ? "bg-emerald-50 text-emerald-700 border-emerald-200/80" :
+                          course.status === 'SUSPENDED' ? "bg-rose-50 text-rose-700 border-rose-200/80" :
+                          "bg-slate-100 text-slate-700 border-slate-200/80"
                         )}>
-                          {category.active ? 'Active' : 'Inactive'}
+                          <span className={cn(
+                            "size-1.5 rounded-full",
+                            course.status === 'PUBLISHED' ? "bg-emerald-500" :
+                            course.status === 'SUSPENDED' ? "bg-rose-500" :
+                            "bg-slate-400"
+                          )} />
+                          {course.status}
                         </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => startEditCategory(category)}
-                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100"
-                          >
-                            <Pencil size={12} />
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => toggleCategoryActive(category)}
-                            className={cn(
-                              "rounded-lg px-2.5 py-1.5 text-xs font-semibold",
-                              category.active ? "text-rose-600 hover:bg-rose-50" : "text-emerald-600 hover:bg-emerald-50"
-                            )}
-                          >
-                            {category.active ? 'Deactivate' : 'Activate'}
-                          </button>
-                        </div>
                       </td>
                     </tr>
                   ))
@@ -339,61 +416,6 @@ export default function ContentManagePage() {
               </tbody>
             </table>
           </div>
-        </div>
-      ) : (
-      <div className="flex-1 min-h-0 overflow-y-auto pr-2 relative">
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          {error && (
-            <div className="p-4 text-sm font-medium text-red-600 bg-red-50 border-b border-red-100 rounded-t-2xl">
-              {error}
-            </div>
-          )}
-          
-          <table className="min-w-full text-left text-sm whitespace-nowrap">
-            <thead className="tracking-wider border-b border-slate-200 bg-slate-50/50">
-              <tr>
-                <th scope="col" className="px-6 py-4 font-semibold text-slate-500">Course</th>
-                <th scope="col" className="px-6 py-4 font-semibold text-slate-500">Author</th>
-                <th scope="col" className="px-6 py-4 font-semibold text-slate-500">Enrollments</th>
-                <th scope="col" className="px-6 py-4 font-semibold text-slate-500">Status</th>
-
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200/80 bg-white">
-              {loading ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400">Loading courses...</td>
-                </tr>
-              ) : filteredCourses.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400">No courses found.</td>
-                </tr>
-              ) : (
-                filteredCourses.map((course) => (
-                  <tr 
-                    key={course.id} 
-                    className="transition-colors hover:bg-slate-50/50 cursor-pointer"
-                    onClick={() => router.push(`/console/content-manage/${course.id}`)}
-                  >
-                    <td className="px-6 py-4 font-medium text-slate-900">{course.title}</td>
-                    <td className="px-6 py-4 text-slate-600">{course.authorName}</td>
-                    <td className="px-6 py-4 text-slate-600 font-medium">{course.enrollments.toLocaleString()}</td>
-                    <td className="px-6 py-4">
-                      <span className={cn(
-                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
-                        course.status === 'PUBLISHED' ? "bg-emerald-100 text-emerald-700" :
-                        course.status === 'SUSPENDED' ? "bg-rose-100 text-rose-700" :
-                        "bg-slate-100 text-slate-700"
-                      )}>
-                        {course.status}
-                      </span>
-                    </td>
-
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
         </div>
       </div>
       )}
