@@ -13,10 +13,10 @@ import {
   Sparkles,
   Rocket,
   Palette,
-  GraduationCap,
   ChevronRight,
 } from 'lucide-react';
 import type { CourseResponse } from '@/shared/types/api.types';
+import { RubiksCube3D } from './RubiksCube3D';
 
 export type EventCard = {
   id: string;
@@ -393,35 +393,53 @@ export function ResumeAndEventsSection({
   const featuredRecommended = recommendedCourses[0] || null;
 
   return (
-    <section className="grid items-stretch gap-6 lg:grid-cols-[1fr_1.15fr] lg:gap-8">
-      {/* Left Column: Resume Learning OR Recommended for you */}
-      <div className="flex h-full flex-col gap-3.5">
-        <div className="flex min-h-[28px] items-center justify-between gap-3">
-          <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
-            {resumeCourse ? 'Resume learning' : 'Recommended for you'}
-          </h2>
-          {!resumeCourse && (
-            <Link
-              href="/search"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-all hover:gap-1.5 hover:text-[#3a5ae6]"
-            >
-              View all <ChevronRight size={15} />
-            </Link>
-          )}
+    <div className="space-y-8">
+      {/* 2-Column Split: Resume Learning on Left, Rubik on Right */}
+      <section className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
+        {/* Left Column: Resume Learning OR Recommended for you */}
+        <div className="flex h-full flex-col gap-3.5">
+          <div className="flex min-h-[28px] items-center justify-between gap-3">
+            <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
+              {resumeCourse ? 'Resume learning' : 'Recommended for you'}
+            </h2>
+            {!resumeCourse && (
+              <Link
+                href="/search"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-all hover:gap-1.5 hover:text-[#3a5ae6]"
+              >
+                View all <ChevronRight size={15} />
+              </Link>
+            )}
+          </div>
+          <div className="min-h-0 flex-1 flex flex-col">
+            {resumeCourse ? (
+              <ResumeLearningCard course={resumeCourse} />
+            ) : featuredRecommended ? (
+              <RecommendedFeaturedCard course={featuredRecommended} />
+            ) : (
+              <ResumeLearningCard course={null} />
+            )}
+          </div>
         </div>
-        <div className="min-h-0 flex-1">
-          {resumeCourse ? (
-            <ResumeLearningCard course={resumeCourse} />
-          ) : featuredRecommended ? (
-            <RecommendedFeaturedCard course={featuredRecommended} />
-          ) : (
-            <ResumeLearningCard course={null} />
-          )}
-        </div>
-      </div>
 
-      {/* Right Column: Upcoming Events */}
-      <div className="flex h-full flex-col gap-3.5">
+        {/* Right Column: Daily Rubik */}
+        <div className="flex h-full flex-col gap-3.5">
+          <div className="flex min-h-[28px] items-center justify-between gap-3">
+            <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
+              Daily puzzle
+            </h2>
+            <span className="text-xs font-mono font-medium text-slate-400">
+              Interactive 3D
+            </span>
+          </div>
+          <div className="min-h-0 flex-1 flex flex-col justify-center">
+            <RubiksCube3D />
+          </div>
+        </div>
+      </section>
+
+      {/* Full-Width Section Below: Upcoming Events */}
+      <section className="space-y-3.5">
         <div className="flex min-h-[28px] items-center justify-between gap-3">
           <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
             Upcoming events
@@ -436,18 +454,18 @@ export function ResumeAndEventsSection({
 
         <div className="min-h-0 flex-1">
           {displayedEvents.length === 0 ? (
-            <div className="flex h-full min-h-[240px] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white/70 px-4 py-8 text-center text-sm font-medium text-slate-500">
+            <div className="flex h-full min-h-[140px] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white/70 px-4 py-8 text-center text-sm font-medium text-slate-500">
               No upcoming events right now. Check back soon.
             </div>
           ) : (
-            <div className="space-y-3.5 sm:space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
               {displayedEvents.map((event, i) => (
                 <EventRowItem key={event.id} event={event} index={i} />
               ))}
             </div>
           )}
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
