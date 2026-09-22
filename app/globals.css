@@ -127,7 +127,23 @@
 /* Moved these resets to @layer base to prevent overriding Tailwind utility classes */
 
 
+/*
+ * Declare the colour scheme the app actually renders in.
+ *
+ * Without this, `color-scheme` computes to `normal`, which tells Chromium and Edge that the page
+ * has no opinion — and on a machine whose OS or browser is set to dark, their **auto dark mode**
+ * then force-inverts the page's backgrounds for us. The result is the black bleed reported on
+ * 2026-09-22: page backgrounds turned black while explicit text colours like `text-slate-900` were
+ * left alone, so headings became near-invisible on the very surfaces that looked fine in a
+ * light-mode browser. Nothing in this codebase painted that black; the browser did.
+ *
+ * Arcade's own dark mode is class-based (`.dark`, driven by `theme.store`), never
+ * `prefers-color-scheme`, so the declaration follows the class rather than the media query.
+ * It also makes UA-rendered surfaces — scrollbars, form controls, spellcheck underlines — match
+ * the theme instead of the OS.
+ */
 :root {
+  color-scheme: light;
   --background: oklch(0.97 0.02 245);
   --foreground: oklch(0.145 0.02 245);
   --card: oklch(0.99 0.01 245);
@@ -163,6 +179,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: oklch(0.16 0.04 250);
   --foreground: oklch(0.985 0.01 245);
   --card: oklch(0.20 0.04 250);

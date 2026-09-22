@@ -58,11 +58,17 @@ export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) 
   const flatItems = model.sections.flatMap((section) => section.items);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
-      <OverviewHero model={model} />
+    <main className="min-h-screen bg-background pb-28">
+      {/* `LearnerShell` is deliberately transparent so page backgrounds run under the floating
+          navbar, which means every page must paint its own — without one, whatever sits behind
+          shows through. `bg-background` rather than a hardcoded colour so the `.dark` theme
+          applies. The top padding clears the fixed navbar and the bottom padding clears the dock;
+          the shell must not supply either (see its comment). */}
+      <div className="mx-auto w-full max-w-6xl px-4 pt-28 sm:px-6 md:px-8 md:pt-32">
+        <OverviewHero model={model} />
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <main className="min-w-0 space-y-6">
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="min-w-0 space-y-6">
           {(model.description || model.outcomes.length > 0) && (
             <section className="rounded-2xl border border-slate-200/80 bg-white/70 p-6 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/60">
               <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">About</h2>
@@ -109,22 +115,23 @@ export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) 
               }
             />
           </section>
-        </main>
+          </div>
 
-        {/* Sticky on desktop so the resume-adjacent context — progress, notes, who made this —
+          {/* Sticky on desktop so the resume-adjacent context — progress, notes, who made this —
             stays reachable while scrolling a long syllabus. */}
-        <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+          <aside className="space-y-4 lg:sticky lg:top-32 lg:self-start">
           <OverviewNotesPanel
             contentType={model.noteContentType}
             contentId={model.contentId}
             notesHref={model.notesHref}
             items={flatItems}
           />
-          <OverviewFacts facts={model.facts} />
-          <OverviewPeople people={model.people} />
-        </aside>
+            <OverviewFacts facts={model.facts} />
+            <OverviewPeople people={model.people} />
+          </aside>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -140,7 +147,7 @@ function OverviewMessage({
   action: { href: string; label: string };
 }) {
   return (
-    <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col items-center justify-center px-4 text-center">
+    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center bg-background px-4 text-center">
       {icon}
       <h1 className="mt-4 text-lg font-bold text-slate-900 dark:text-white">{title}</h1>
       <p className="mt-2 text-[14px] leading-relaxed text-slate-500 dark:text-slate-400">{body}</p>
@@ -150,24 +157,26 @@ function OverviewMessage({
       >
         {action.label}
       </Link>
-    </div>
+    </main>
   );
 }
 
 function OverviewSkeleton() {
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6" aria-busy>
-      <div className="h-44 animate-pulse rounded-3xl bg-slate-100 dark:bg-slate-800/60" />
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="space-y-4">
-          <div className="h-40 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
-          <div className="h-64 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
-        </div>
-        <div className="space-y-4">
-          <div className="h-48 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
-          <div className="h-36 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
+    <main className="min-h-screen bg-background pb-28" aria-busy>
+      <div className="mx-auto w-full max-w-6xl px-4 pt-28 sm:px-6 md:px-8 md:pt-32">
+        <div className="h-44 animate-pulse rounded-3xl bg-slate-100 dark:bg-slate-800/60" />
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="space-y-4">
+            <div className="h-40 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
+            <div className="h-64 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
+          </div>
+          <div className="space-y-4">
+            <div className="h-48 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
+            <div className="h-36 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
+          </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

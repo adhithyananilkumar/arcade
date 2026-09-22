@@ -44,7 +44,13 @@ export function NotesWorkspacePage({ model }: { model: ContentOverviewModel }) {
   }, [data, query]);
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
+    <main className="min-h-screen bg-background pb-28">
+      {/* `LearnerShell` is deliberately transparent so page backgrounds run under the floating
+          navbar, which means every page must paint its own — without one, whatever sits behind
+          shows through. `bg-background` rather than a hardcoded colour so the `.dark` theme
+          applies. The top padding clears the fixed navbar and the bottom padding clears the dock;
+          the shell must not supply either (see its comment). */}
+      <div className="mx-auto w-full max-w-3xl px-4 pt-28 sm:px-6 md:pt-32">
       <Link
         href={model.overviewHref}
         className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
@@ -156,7 +162,8 @@ export function NotesWorkspacePage({ model }: { model: ContentOverviewModel }) {
             </li>
           );
         })}
-      </ul>
-    </div>
+        </ul>
+      </div>
+    </main>
   );
 }
