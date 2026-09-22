@@ -46,7 +46,7 @@ export function ViewerShell({ children }: { children: React.ReactNode }) {
   useEffect(() => setMounted(true), []);
 
   if (!mounted || status === 'loading') {
-    return <div className="flex min-h-screen w-full flex-col">{children}</div>;
+    return <div className="flex min-h-screen w-full flex-col bg-background text-foreground">{children}</div>;
   }
 
   if (status === 'authenticated') {
@@ -54,7 +54,7 @@ export function ViewerShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-white dark:bg-black">
+    <div className="flex min-h-screen w-full flex-col bg-background text-foreground">
       <HeroNav />
       <main className="flex-1">{children}</main>
       <Footer />

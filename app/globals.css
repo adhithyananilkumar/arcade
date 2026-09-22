@@ -122,6 +122,16 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-mist: var(--mist);
+  --color-blue: var(--blue);
+  --color-teal: var(--teal);
+  --color-purple: var(--purple);
+  --color-amber: var(--amber);
+  --color-coral: var(--coral);
+  --color-line: var(--line);
+  --color-subtle: var(--subtle);
 }
 
 /* Moved these resets to @layer base to prevent overriding Tailwind utility classes */
@@ -176,6 +186,18 @@
   --sidebar-accent-foreground: oklch(0.205 0.02 245);
   --sidebar-border: oklch(0.91 0.02 245);
   --sidebar-ring: oklch(0.708 0.02 245);
+
+  /* Arcade Brand Palette Tokens */
+  --ink: #14161c;
+  --paper: #eef5fc;
+  --mist: #e2eefc;
+  --blue: #3457e8;
+  --teal: #0fa676;
+  --purple: #6d5ef0;
+  --amber: #f2b23c;
+  --coral: #f5654f;
+  --line: #d8e6f7;
+  --subtle: #6a6d7c;
 }
 
 .dark {
@@ -211,6 +233,12 @@
   --sidebar-accent-foreground: oklch(0.985 0.01 245);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0.02 245);
+
+  --ink: #eef5fc;
+  --paper: #14161c;
+  --mist: #1a1e26;
+  --line: rgba(255, 255, 255, 0.1);
+  --subtle: #94a3b8;
 }
 
 @layer base {
@@ -227,6 +255,8 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: var(--background);
+    color: var(--foreground);
     @apply font-sans;
   }
 
@@ -516,4 +546,46 @@
       100% 100%,
       50% calc(100% - 14px),
       0 100%);
+}
+
+/* Arcade Wash & Animation Tokens */
+.arcade-wash {
+  background:
+    radial-gradient(70% 45% at 15% 0%, color-mix(in oklab, var(--blue) 18%, transparent) 0%, transparent 65%),
+    radial-gradient(65% 45% at 95% 5%, color-mix(in oklab, var(--teal) 18%, transparent) 0%, transparent 60%),
+    radial-gradient(60% 50% at 5% 40%, color-mix(in oklab, var(--teal) 14%, transparent) 0%, transparent 55%),
+    radial-gradient(65% 50% at 95% 75%, color-mix(in oklab, var(--blue) 15%, transparent) 0%, transparent 60%),
+    linear-gradient(180deg, #eef1fb 0%, #f4f7f6 30%, #f1f5f7 65%, #f4f7f6 100%);
+}
+
+.arcade-cta-wash {
+  background:
+    radial-gradient(70% 120% at 0% 0%, color-mix(in oklab, var(--blue) 26%, transparent) 0%, transparent 55%),
+    radial-gradient(80% 120% at 100% 100%, color-mix(in oklab, var(--teal) 24%, transparent) 0%, transparent 55%),
+    var(--ink);
+}
+
+@keyframes arcade-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.arcade-fade {
+  animation: arcade-fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes arcade-spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.arcade-spin {
+  animation: arcade-spin-slow 18s linear infinite;
 }

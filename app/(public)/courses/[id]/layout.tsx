@@ -1,7 +1,6 @@
 import { Analytics } from '@vercel/analytics/react'
 import type { Metadata, Viewport } from 'next'
 import { Fraunces, Inter } from 'next/font/google'
-import './globals.css'
 import { API_ORIGIN } from '@/infrastructure/config/env'
 import ViewerShell from '@/apps/public/layout/ViewerShell'
 
@@ -76,13 +75,7 @@ export async function generateMetadata({
     }
 }
 
-export const viewport: Viewport = {
-    colorScheme: 'light dark',
-    themeColor: [
-        { media: '(prefers-color-scheme: light)', color: 'white' },
-        { media: '(prefers-color-scheme: dark)', color: 'black' },
-    ],
-}
+
 
 export default function CourseLayout({
     children,
