@@ -52,6 +52,8 @@ export interface ContentSummaryLite {
   channelName: string;
   authorId?: string | null;
   authorName?: string | null;
+  courseId?: string | null;
+  eventId?: string | null;
 }
 
 export interface StatusHistoryEntry {
@@ -118,6 +120,8 @@ async function findExamSummary(contentId: string): Promise<ContentSummaryLite | 
     status: string;
     createdAt: string;
     updatedAt: string;
+    courseId?: string | null;
+    eventId?: string | null;
   }>(`/api/exams/${contentId}`);
   if (!exam) return null;
   // channelName/authorName aren't on ExamResponse; the header renders its own fallbacks.
@@ -132,6 +136,8 @@ async function findExamSummary(contentId: string): Promise<ContentSummaryLite | 
     updatedAt: exam.updatedAt,
     channelId: "",
     channelName: "",
+    courseId: exam.courseId ?? null,
+    eventId: exam.eventId ?? null,
   };
 }
 

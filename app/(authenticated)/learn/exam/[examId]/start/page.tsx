@@ -15,6 +15,7 @@ import {
   recordProctorEvent,
   completeProctorSession,
   type AttemptQuestionResponse,
+  HonorCodeModal,
 } from '@/domains/assessments';
 import { TiptapContentView } from '@/domains/learning';
 
@@ -88,9 +89,18 @@ export default function ExamEnginePage() {
       });
   }, [examId, planId]);
 
+  const [honorCodeAccepted, setHonorCodeAccepted] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('arcade_honor_code_accepted') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
   useEffect(() => {
+    if (!honorCodeAccepted) return;
     beginAttempt();
-  }, [beginAttempt]);
+  }, [beginAttempt, honorCodeAccepted]);
 
   // The countdown is decremented locally, so a backgrounded tab drifts (browsers throttle timers
   // in hidden tabs). Re-read the server's own `secondsRemaining` whenever the tab comes back —
@@ -373,6 +383,32 @@ export default function ExamEnginePage() {
             Start proctoring session
           </button>
         </div>
+      </div>
+    );
+  }
+
+  if (!honorCodeAccepted) {
+    return (
+      <div
+        className="flex min-h-screen items-center justify-center text-[13px] font-medium text-slate-500"
+        style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
+      >
+        <HonorCodeModal
+          isOpen={true}
+          onClose={() => {
+            if (returnTo) {
+              router.push(returnTo);
+            } else {
+              router.back();
+            }
+          }}
+          onContinue={() => {
+            try {
+              sessionStorage.setItem('arcade_honor_code_accepted', 'true');
+            } catch {}
+            setHonorCodeAccepted(true);
+          }}
+        />
       </div>
     );
   }

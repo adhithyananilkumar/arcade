@@ -23,6 +23,8 @@ export { QuestionTagEditor } from "./components/QuestionTagEditor";
 // standalone exam route, so an assessment presents identically wherever it is met.
 export { AssessmentLanding } from "./components/AssessmentLanding";
 export type { AssessmentLandingProps } from "./components/AssessmentLanding";
+export { HonorCodeModal } from "./components/HonorCodeModal";
+export type { HonorCodeModalProps } from "./components/HonorCodeModal";
 // The headless question-authoring engine. Rendering a question is deliberately NOT here: it needs
 // Arcade's rich-text editor, which composes infrastructure and other domains and therefore lives
 // at the apps layer (apps/creator/editor). The domain owns the state machine; the Studio owns the

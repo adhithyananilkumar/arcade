@@ -26,9 +26,10 @@ import {
   ShieldCheck,
   Target,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { TiptapContentView } from "@/domains/learning";
 import type { AssessmentLandingResponse } from "../types";
+import { HonorCodeModal } from "./HonorCodeModal";
 
 export interface AssessmentLandingProps {
   landing: AssessmentLandingResponse;
@@ -61,6 +62,19 @@ export function AssessmentLanding({
 
   const resuming = landing.openAttemptId !== null;
   const retaking = !resuming && landing.attemptsUsed > 0;
+  const [showHonorCode, setShowHonorCode] = useState(false);
+
+  const handleStartClick = () => {
+    setShowHonorCode(true);
+  };
+
+  const handleHonorCodeContinue = () => {
+    setShowHonorCode(false);
+    try {
+      sessionStorage.setItem("arcade_honor_code_accepted", "true");
+    } catch {}
+    onStart?.();
+  };
 
   return (
     <article className="mx-auto w-full max-w-3xl">
@@ -184,9 +198,9 @@ export function AssessmentLanding({
         ) : landing.startable ? (
           <button
             type="button"
-            onClick={onStart}
+            onClick={handleStartClick}
             disabled={starting}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-[#14142b] px-7 py-3.5 text-[14px] font-semibold text-white transition-colors hover:bg-[#232735] disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-[#14142b] px-7 py-3.5 text-[14px] font-semibold text-white transition-colors hover:bg-[#232735] disabled:opacity-60 cursor-pointer"
           >
             {resuming ? "Resume assessment" : retaking ? "Retake assessment" : "Start assessment"}
           </button>
@@ -253,6 +267,12 @@ export function AssessmentLanding({
           </ul>
         </section>
       )}
+
+      <HonorCodeModal
+        isOpen={showHonorCode}
+        onClose={() => setShowHonorCode(false)}
+        onContinue={handleHonorCodeContinue}
+      />
     </article>
   );
 }

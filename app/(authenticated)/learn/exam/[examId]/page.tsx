@@ -12,7 +12,7 @@ import {
   Clock,
   ListOrdered,
 } from 'lucide-react';
-import { getExam, type ExamResponse } from '@/domains/assessments';
+import { getExam, type ExamResponse, HonorCodeModal } from '@/domains/assessments';
 
 const pageBg = {
   background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 32%, #FFFFFF 70%)',
@@ -73,7 +73,17 @@ export default function ExamAcknowledgementPage() {
 
   const canStart = agreed && !isTerminated;
 
-  const handleStartExam = async () => {
+  const [showHonorCode, setShowHonorCode] = useState(false);
+
+  const handleStartExam = () => {
+    setShowHonorCode(true);
+  };
+
+  const handleHonorCodeContinue = async () => {
+    setShowHonorCode(false);
+    try {
+      sessionStorage.setItem('arcade_honor_code_accepted', 'true');
+    } catch {}
     try {
       if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
         await document.documentElement.requestFullscreen();
@@ -177,6 +187,12 @@ export default function ExamAcknowledgementPage() {
             ← Back to today&apos;s exams
           </Link>
         </div>
+
+        <HonorCodeModal
+          isOpen={showHonorCode}
+          onClose={() => setShowHonorCode(false)}
+          onContinue={handleHonorCodeContinue}
+        />
       </div>
     </div>
   );

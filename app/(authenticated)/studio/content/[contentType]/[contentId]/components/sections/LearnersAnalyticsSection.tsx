@@ -364,63 +364,81 @@ export function LearnersAnalyticsSection({
               </p>
             ) : (assessments?.length ?? 0) > 0 ? (
               <div className="flex flex-col gap-2">
-                {assessments!.map(({ placement, plan }) => (
-                  <Link
-                    key={placement.id}
-                    href={`/studio/content/exam/${placement.examId}`}
-                    className="flex items-center justify-between gap-3 rounded-2xl border border-indigo-200/70 bg-white px-4 py-3 transition-colors hover:bg-indigo-50/50"
-                  >
-                    <div className="min-w-0">
-                      <span className="block truncate text-xs font-black text-slate-900">
-                        {placement.titleOverride ?? plan?.name ?? "Assessment"}
-                      </span>
-                      <span className="text-[11px] font-medium text-slate-400">
-                        {placement.hostType === "COURSE_MODULE" ? "In a module" : "Course level"}
-                        {plan
-                          ? ` · ${plan.totalQuestions} question${plan.totalQuestions === 1 ? "" : "s"} · ${plan.durationMinutes} min · pass ${plan.passPercentage}%`
-                          : " · uses the default plan"}
-                      </span>
-                    </div>
-                    <div className="flex flex-shrink-0 items-center gap-1.5">
-                      {placement.requiredForCompletion && (
-                        <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-amber-700">
-                          Required
+                {assessments!.map(({ placement, plan }) => {
+                  const parentQuery = contentId
+                    ? segment === "course"
+                      ? `?courseId=${contentId}`
+                      : segment === "event"
+                        ? `?eventId=${contentId}`
+                        : ""
+                    : "";
+                  return (
+                    <Link
+                      key={placement.id}
+                      href={`/studio/content/exam/${placement.examId}${parentQuery}`}
+                      className="flex items-center justify-between gap-3 rounded-2xl border border-indigo-200/70 bg-white px-4 py-3 transition-colors hover:bg-indigo-50/50"
+                    >
+                      <div className="min-w-0">
+                        <span className="block truncate text-xs font-black text-slate-900">
+                          {placement.titleOverride ?? plan?.name ?? "Assessment"}
                         </span>
-                      )}
-                      {plan && plan.outcome !== "NONE" && (
-                        <span className="rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-violet-700">
-                          {plan.outcome === "CERTIFICATE"
-                            ? "Certification"
-                            : plan.outcome === "GRADE_CARD"
-                              ? "Grade card"
-                              : "Completion"}
+                        <span className="text-[11px] font-medium text-slate-400">
+                          {placement.hostType === "COURSE_MODULE" ? "In a module" : "Course level"}
+                          {plan
+                            ? ` · ${plan.totalQuestions} question${plan.totalQuestions === 1 ? "" : "s"} · ${plan.durationMinutes} min · pass ${plan.passPercentage}%`
+                            : " · uses the default plan"}
                         </span>
-                      )}
-                    </div>
-                  </Link>
-                ))}
+                      </div>
+                      <div className="flex flex-shrink-0 items-center gap-1.5">
+                        {placement.requiredForCompletion && (
+                          <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-amber-700">
+                            Required
+                          </span>
+                        )}
+                        {plan && plan.outcome !== "NONE" && (
+                          <span className="rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-violet-700">
+                            {plan.outcome === "CERTIFICATE"
+                              ? "Certification"
+                              : plan.outcome === "GRADE_CARD"
+                                ? "Grade card"
+                                : "Completion"}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             ) : (
               // Events still list exams directly — assessments inside event days aren't supported
               // yet, so there is no placement list to show there.
               <div className="flex flex-col gap-2">
-                {exams!.map((exam) => (
-                  <Link
-                    key={exam.id}
-                    href={`/studio/content/exam/${exam.id}`}
-                    className="flex items-center justify-between gap-3 rounded-2xl border border-indigo-200/70 bg-white px-4 py-3 transition-colors hover:bg-indigo-50/50"
-                  >
-                    <div className="min-w-0">
-                      <span className="block truncate text-xs font-black text-slate-900">{exam.title}</span>
-                      <span className="text-[11px] font-medium text-slate-400">
-                        {exam.purpose ?? "Assessment"}
+                {exams!.map((exam) => {
+                  const parentQuery = contentId
+                    ? segment === "course"
+                      ? `?courseId=${contentId}`
+                      : segment === "event"
+                        ? `?eventId=${contentId}`
+                        : ""
+                    : "";
+                  return (
+                    <Link
+                      key={exam.id}
+                      href={`/studio/content/exam/${exam.id}${parentQuery}`}
+                      className="flex items-center justify-between gap-3 rounded-2xl border border-indigo-200/70 bg-white px-4 py-3 transition-colors hover:bg-indigo-50/50"
+                    >
+                      <div className="min-w-0">
+                        <span className="block truncate text-xs font-black text-slate-900">{exam.title}</span>
+                        <span className="text-[11px] font-medium text-slate-400">
+                          {exam.purpose ?? "Assessment"}
+                        </span>
+                      </div>
+                      <span className="flex-shrink-0 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-700">
+                        {exam.wasPublished ? "Published" : "Draft"}
                       </span>
-                    </div>
-                    <span className="flex-shrink-0 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-700">
-                      {exam.wasPublished ? "Published" : "Draft"}
-                    </span>
-                  </Link>
-                ))}
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>

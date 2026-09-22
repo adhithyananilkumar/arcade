@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { ShieldAlert, FileQuestion, AlertTriangle, ArrowRight, Clock, Users, CheckCircle2, FileText } from "lucide-react";
+import { ShieldAlert, FileQuestion, AlertTriangle, ArrowRight, ArrowLeft, Clock, Users, CheckCircle2, FileText } from "lucide-react";
 import { Skeleton } from "@/shared/design-system/ui/skeleton";
 import { ApiError } from "@/infrastructure/http/api";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
@@ -82,8 +82,9 @@ function OverviewSkeleton() {
   );
 }
 
-export default function ContentOverviewPage() {
+function ContentOverviewPageContent() {
   const params = useParams<{ contentType: string; contentId: string }>();
+  const searchParams = useSearchParams();
   const rawSegment = params.contentType;
   const contentId = params.contentId;
   const segment = VALID_SEGMENTS.includes(rawSegment as ContentTypeSegment)
@@ -228,6 +229,28 @@ export default function ContentOverviewPage() {
       ? data.statusHistory.data.slice(0, 3).map((e, i) => ({ id: `${e.createdAt}-${i}`, title: cleanActivityTitle(e.label), actorName: e.actorName, createdAt: e.createdAt }))
       : [];
 
+  const queryCourseId = searchParams?.get("courseId") || searchParams?.get("fromCourse");
+  const queryEventId = searchParams?.get("eventId") || searchParams?.get("fromEvent");
+  const parentCourseId = queryCourseId || content.courseId || exam?.courseId;
+  const parentEventId = queryEventId || content.eventId || exam?.eventId;
+
+  let backNav: { href: string; label: string; dockLabel: string } | null = null;
+  if (segment === "exam") {
+    if (parentCourseId) {
+      backNav = {
+        href: `/studio/content/course/${parentCourseId}`,
+        label: "Back to Course Dashboard",
+        dockLabel: "Course Dashboard",
+      };
+    } else if (parentEventId) {
+      backNav = {
+        href: `/studio/content/event/${parentEventId}`,
+        label: "Back to Event Dashboard",
+        dockLabel: "Event Dashboard",
+      };
+    }
+  }
+
   return (
     <div className="relative flex min-h-screen flex-1 flex-col overflow-hidden w-full bg-gradient-to-b from-blue-50/50 via-slate-50 to-indigo-50/40">
       {/* Decorative ambient light glows */}
@@ -235,6 +258,18 @@ export default function ContentOverviewPage() {
       <div className="absolute top-1/3 right-1/4 h-96 w-96 rounded-full bg-indigo-400/15 blur-3xl pointer-events-none" />
 
       <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pt-10 pb-28 sm:px-6 sm:pt-12 lg:pt-14">
+        {backNav && (
+          <div className="-mb-4">
+            <Link
+              href={backNav.href}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white/90 px-3.5 py-2 text-xs font-extrabold text-slate-700 shadow-2xs backdrop-blur-md transition-all duration-200 hover:bg-white hover:text-blue-600 hover:border-blue-200 hover:shadow-xs active:scale-[0.98] cursor-pointer group"
+            >
+              <ArrowLeft size={15} className="transition-transform duration-200 group-hover:-translate-x-1 text-slate-500 group-hover:text-blue-600" />
+              <span>{backNav.label}</span>
+            </Link>
+          </div>
+        )}
+
         <ContentOverviewHeader
           segment={segment!}
           contentId={contentId}
@@ -291,9 +326,23 @@ export default function ContentOverviewPage() {
           />
         )}
 
-        <ContentWorkspaceDock groups={groups} activeTab={activeTab} onChange={setActiveTab} />
+        <ContentWorkspaceDock
+          groups={groups}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+          backHref={backNav ? backNav.href : "/studio"}
+          backLabel={backNav ? backNav.dockLabel : "Content Studio"}
+        />
       </div>
     </div>
+  );
+}
+
+export default function ContentOverviewPage() {
+  return (
+    <Suspense fallback={<OverviewSkeleton />}>
+      <ContentOverviewPageContent />
+    </Suspense>
   );
 }
 

@@ -35,9 +35,9 @@ export function ExamOverviewSections({
         </div>
         <Link
           href={editorHref("exam", exam.id)}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-extrabold text-white transition-colors hover:bg-black"
+          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-extrabold text-white shadow-xs transition-all duration-200 hover:bg-blue-700 active:scale-[0.98] cursor-pointer"
         >
-          <Pencil size={14} /> Open in Studio
+          <Pencil size={15} /> Edit Question Bank
         </Link>
       </div>
 

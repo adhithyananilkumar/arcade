@@ -186,9 +186,13 @@ export function ContentOverviewHeader({
   } else if (statusKey === "ARCHIVED") {
     // Preview only
   } else if (statusKey === "PUBLISHED") {
-    primaryActions.push({ key: "edit", label: "Edit Content", icon: Pencil, href: editorHref(segment, contentId), variant: "primary" });
+    if (segment !== "exam") {
+      primaryActions.push({ key: "edit", label: "Edit Content", icon: Pencil, href: editorHref(segment, contentId), variant: "primary" });
+    }
   } else {
-    primaryActions.push({ key: "edit", label: "Edit Content", icon: Pencil, href: editorHref(segment, contentId), variant: "primary" });
+    if (segment !== "exam") {
+      primaryActions.push({ key: "edit", label: "Edit Content", icon: Pencil, href: editorHref(segment, contentId), variant: "primary" });
+    }
     // Exams self-publish an immutable version instead of entering a review round — publishing
     // lives on the Publishing tab, so there is nothing to submit here.
     if (supportsReviewSubmission(segment)) {
