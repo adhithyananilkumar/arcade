@@ -42,6 +42,7 @@ import { toast } from 'sonner';
 import { ReportModal } from '@/shared/design-system/ui/ReportModal';
 import { courseReviewService } from '@/domains/learning';
 import { AssessmentLandingPane } from './AssessmentLandingPane';
+import { NotesEditor } from './NotesEditor';
 
 /**
  * A node in the course's running order. Until assessments existed every node was a lesson and this
@@ -675,14 +676,9 @@ export default function CourseLearnPage() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto rounded-3xl border border-white/40 bg-white/30 p-4 shadow-lg backdrop-blur-xl arcade-scrollbar-mini">
+            <div className="flex h-full flex-1 flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/30 p-4 shadow-lg backdrop-blur-xl">
               {rightPanelTab === 'notes' ? (
-                <textarea
-                  value={notesDraft}
-                  onChange={(e) => setNotesDraft(e.target.value)}
-                  placeholder="Jot notes for this lesson…"
-                  className="h-full min-h-[50vh] w-full resize-none bg-transparent text-[13px] text-slate-700 placeholder:text-slate-400 focus:outline-none arcade-scrollbar-mini"
-                />
+                <NotesEditor content={notesDraft} onChange={setNotesDraft} />
               ) : (
                 <div className="flex h-full min-h-[50vh] flex-col items-center justify-center text-center">
                   <Sparkles size={28} className="mb-3 text-slate-300" />

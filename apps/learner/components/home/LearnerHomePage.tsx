@@ -30,6 +30,7 @@ import type { EventDto } from '@/app/(public)/events/types/event.types';
 import { DeliveryMode } from '@/app/(authenticated)/studio/events/types';
 import { getDynamicGreeting, HOME_SEEN_KEY } from './greeting';
 import { StreakCalendar } from './StreakCalendar';
+import { SuperSearchModal } from './SuperSearchModal';
 import {
   FALLBACK_EVENTS,
   pickDailyEvents,
@@ -136,6 +137,20 @@ export default function LearnerHomePage() {
   const [query, setQuery] = useState('');
   const [hasSeenHomeBefore, setHasSeenHomeBefore] = useState(true);
   const [upcomingEvents, setUpcomingEvents] = useState<EventCard[]>([]);
+  const [superSearchOpen, setSuperSearchOpen] = useState(false);
+
+  // ⌘K / Ctrl+K opens the super search from anywhere on the dashboard home, not just by clicking
+  // the search bar — the shortcut a command palette is expected to answer to.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSuperSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   useEffect(() => {
     const seen = typeof window !== 'undefined' && localStorage.getItem(HOME_SEEN_KEY);
@@ -279,8 +294,7 @@ export default function LearnerHomePage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const q = query.trim();
-    router.push(q ? `/search?q=${encodeURIComponent(q)}` : '/search');
+    setSuperSearchOpen(true);
   };
 
   if (status === 'loading' || !user) return <DashboardLoading />;
@@ -358,14 +372,28 @@ export default function LearnerHomePage() {
                   <Search size={20} strokeWidth={2.2} />
                 </div>
 
-                {/* Input Field */}
+                {/* Input Field — opens the super search modal rather than typing inline.
+                    Opening on `onClick` (not `onFocus`/mousedown) matters: the dialog it opens
+                    dismisses itself on an outside press, and if it mounted mid-click the paired
+                    mouseup of that same click would land on the new backdrop and close it again
+                    instantly. `onMouseDown` prevents the input from ever taking focus, and
+                    `onClick` only fires once the browser has fully finished dispatching this
+                    click on the original target — after which the dialog can safely mount. */}
                 <input
                   type="search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => setSuperSearchOpen(true)}
+                  readOnly
                   placeholder="Search courses, skills, mentors…"
-                  className="block w-full bg-transparent py-2 text-[14px] sm:text-[15px] font-medium text-[#14142b] outline-none placeholder:text-slate-400"
+                  className="block w-full cursor-pointer bg-transparent py-2 text-[14px] sm:text-[15px] font-medium text-[#14142b] outline-none placeholder:text-slate-400"
                 />
+
+                {/* Keyboard shortcut hint */}
+                <kbd className="hidden shrink-0 items-center gap-0.5 rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 sm:flex">
+                  <span>⌘</span>K
+                </kbd>
 
                 {/* Right Circular Blue-Violet Gradient Search Button */}
                 <button
@@ -491,6 +519,12 @@ export default function LearnerHomePage() {
           </section>
         )}
       </div>
+
+      <SuperSearchModal
+        open={superSearchOpen}
+        onOpenChange={setSuperSearchOpen}
+        initialQuery={query}
+      />
     </div>
   );
 }

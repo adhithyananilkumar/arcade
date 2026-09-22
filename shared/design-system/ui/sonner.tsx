@@ -99,9 +99,9 @@ const TOAST_CLASSNAME = [
 // `toast("…")` call (no type). `.toast-icon-pop` (globals.css) gives it a
 // snappy scale-and-settle entrance instead of just appearing flat.
 const ICON_CLASSNAME = [
-  "!m-0 flex !h-8 !w-8 shrink-0 items-center justify-center !rounded-full toast-icon-pop",
+  "!m-0 !flex !h-8 !w-8 shrink-0 !items-center !justify-center !rounded-full toast-icon-pop",
   "!bg-slate-100 !text-slate-600 dark:!bg-white/10 dark:!text-neutral-300",
-  "[&>svg]:!h-4 [&>svg]:!w-4",
+  "[&>svg]:!m-0 [&>svg]:!h-4 [&>svg]:!w-4",
   "[[data-type=success]_&]:!bg-emerald-500/15 [[data-type=success]_&]:!text-emerald-600 dark:[[data-type=success]_&]:!bg-emerald-500/20 dark:[[data-type=success]_&]:!text-emerald-400",
   "[[data-type=error]_&]:!bg-rose-500/15 [[data-type=error]_&]:!text-rose-600 dark:[[data-type=error]_&]:!bg-rose-500/20 dark:[[data-type=error]_&]:!text-rose-400",
   "[[data-type=warning]_&]:!bg-amber-500/15 [[data-type=warning]_&]:!text-amber-600 dark:[[data-type=warning]_&]:!bg-amber-500/20 dark:[[data-type=warning]_&]:!text-amber-400",
