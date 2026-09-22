@@ -491,7 +491,7 @@ export default function LearnerNavbar() {
                 icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
                 onClick={() => router.push('/studio')}
               >
-                Arcade Studio
+                Studio
               </MenuItem>
             )}
             {collaboratedEventId && (
@@ -520,7 +520,7 @@ export default function LearnerNavbar() {
               icon={<Compass className="text-slate-600" strokeWidth={2} />} 
               onClick={() => router.push('/?public=true')} 
             >
-              Go to website
+              Website
             </MenuItem>
             <MenuItem 
               icon={<LogOut className="text-rose-500" strokeWidth={2} />} 
