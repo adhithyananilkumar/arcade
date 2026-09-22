@@ -17,7 +17,7 @@
 
 import { useMemo, useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   BookOpen,
   Calendar,
@@ -36,7 +36,6 @@ import {
   useMyEventsQuery,
   type MyEnrollmentsQueryParams,
 } from '@/domains/enrollment';
-import TextType from '@/shared/design-system/ui/TextType/TextType';
 import { LibraryCard } from './LibraryCard';
 import { EventRegistrationCard } from './EventRegistrationCard';
 import { LearningActivityPanel } from './LearningActivityPanel';
@@ -44,6 +43,13 @@ import { LearningActivityPanel } from './LearningActivityPanel';
 const PAGE_SIZE = 12;
 
 type Tab = 'courses' | 'events';
+
+const LEARNING_MESSAGES = [
+  'Track active course progress',
+  'Resume your latest modules',
+  'See your registered events',
+  'Keep up the great work!',
+];
 
 const SORT_OPTIONS = [
   { id: 'recent-activity', label: 'Recent Activity', sort: 'updatedAt', direction: 'desc' },
@@ -58,6 +64,16 @@ const SORT_OPTIONS = [
 export default function MyLearningPage() {
   const { user } = useAuthStore();
   const isAuthenticated = Boolean(user);
+
+  const shouldReduceMotion = useReducedMotion();
+  const [msgIndex, setMsgIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMsgIndex((prev) => (prev + 1) % LEARNING_MESSAGES.length);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, []);
 
   const [tab, setTab] = useState<Tab>('courses');
   const [sortId, setSortId] = useState<(typeof SORT_OPTIONS)[number]['id']>('recent-activity');
@@ -230,100 +246,28 @@ export default function MyLearningPage() {
             </div>
           </h1>
 
-          <div className="mt-1 min-h-[30px] flex items-center justify-center">
-            <TextType
-              as="p"
-              className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold leading-relaxed max-w-lg mx-auto"
-              text={[
-                'Track active course progress',
-                'Resume your latest modules',
-                'See your registered events',
-                'Keep up the great work!',
-              ]}
-              typingSpeed={50}
-              deletingSpeed={25}
-              pauseDuration={2200}
-              showCursor
-              cursorCharacter="|"
-              loop
-            />
+          <div className="mt-1 relative h-[30px] flex items-center justify-center w-full max-w-lg mx-auto overflow-hidden">
+            <AnimatePresence>
+              <motion.p
+                key={msgIndex}
+                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
+                transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold leading-relaxed text-center w-full px-4"
+              >
+                {LEARNING_MESSAGES[msgIndex]}
+              </motion.p>
+            </AnimatePresence>
           </div>
         </motion.div>
 
-        {/* ── TOOLBAR: LEFT SEARCH | CENTER CAPSULE TABS | RIGHT SORT ── */}
-        <div className="relative flex flex-col md:flex-row items-center justify-between gap-4 pt-2">
-          {/* LEFT: Search Icon Button (expands on click) */}
-          <div className="w-full md:w-72 flex items-center justify-start shrink-0">
-            <AnimatePresence initial={false}>
-              {isSearchOpen || searchQuery ? (
-                <motion.div
-                  key="search-input-field"
-                  initial={{ opacity: 0, width: '40px' }}
-                  animate={{ opacity: 1, width: '100%' }}
-                  exit={{ opacity: 0, width: '40px' }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
-                  className="relative w-full flex items-center"
-                >
-                  <Search
-                    size={16}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none"
-                  />
-                  <input
-                    ref={(el) => {
-                      searchInputRef.current = el;
-                      if (el) {
-                        el.focus();
-                      }
-                    }}
-                    autoFocus
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Escape') {
-                        setSearchQuery('');
-                        setIsSearchOpen(false);
-                      }
-                    }}
-                    placeholder={tab === 'courses' ? 'Search courses...' : 'Search events...'}
-                    className="w-full pl-9 pr-8 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm bg-transparent border border-slate-200/80 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-300 dark:focus:ring-slate-700 transition-all font-medium"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearchQuery('');
-                      setIsSearchOpen(false);
-                    }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                    aria-label="Close search"
-                    title="Close search"
-                  >
-                    <X size={15} />
-                  </button>
-                </motion.div>
-              ) : (
-                <motion.button
-                  key="search-icon-toggle"
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.85 }}
-                  transition={{ duration: 0.15 }}
-                  type="button"
-                  onClick={() => setIsSearchOpen(true)}
-                  className="p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors flex items-center justify-center cursor-pointer"
-                  aria-label="Open search"
-                  title="Search"
-                >
-                  <Search size={21} className="stroke-[2.2]" />
-                </motion.button>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* CENTER: Arcade Signature Geometric Asymmetric Tabs */}
+        {/* ── TOOLBAR: LEFT TABS | RIGHT SEARCH & SORT ── */}
+        <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pt-2">
+          {/* LEFT: Arcade Signature Geometric Asymmetric Tabs */}
           <div
             id="learning-items-section"
-            className="scroll-mt-24 flex items-center justify-center gap-2.5 sm:gap-3"
+            className="scroll-mt-24 flex flex-wrap items-center justify-start gap-2.5 sm:gap-3 w-full md:w-auto shrink-0"
             role="tablist"
             aria-label="My Learning sections"
           >
@@ -345,16 +289,87 @@ export default function MyLearningPage() {
             />
           </div>
 
-          {/* RIGHT: Sort Dropdown */}
-          <div className="w-full md:w-72 flex items-center justify-end shrink-0">
-            <SortDropdown
-              selectedId={sortId}
-              onChange={(id) => {
-                setSortId(id);
-                if (tab === 'courses') setCoursePage(0);
-                else setEventPage(0);
-              }}
-            />
+          {/* RIGHT: Search & Sort Dropdown */}
+          <div className="w-full md:w-auto flex flex-col sm:flex-row items-start sm:items-center justify-start md:justify-end gap-3 sm:gap-4 shrink-0">
+            {/* Search Field */}
+            <div className="w-full sm:w-64 flex items-center justify-start sm:justify-end shrink-0">
+              <AnimatePresence initial={false}>
+                {isSearchOpen || searchQuery ? (
+                  <motion.div
+                    key="search-input-field"
+                    initial={{ opacity: 0, width: '40px' }}
+                    animate={{ opacity: 1, width: '100%' }}
+                    exit={{ opacity: 0, width: '40px' }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                    className="relative w-full flex items-center"
+                  >
+                    <Search
+                      size={16}
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none"
+                    />
+                    <input
+                      ref={(el) => {
+                        searchInputRef.current = el;
+                        if (el) {
+                          el.focus();
+                        }
+                      }}
+                      autoFocus
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                          setSearchQuery('');
+                          setIsSearchOpen(false);
+                        }
+                      }}
+                      placeholder={tab === 'courses' ? 'Search courses...' : 'Search events...'}
+                      className="w-full pl-9 pr-8 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm bg-transparent border border-slate-200/80 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-300 dark:focus:ring-slate-700 transition-all font-medium"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setIsSearchOpen(false);
+                      }}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                      aria-label="Close search"
+                      title="Close search"
+                    >
+                      <X size={15} />
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.button
+                    key="search-icon-toggle"
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.85 }}
+                    transition={{ duration: 0.15 }}
+                    type="button"
+                    onClick={() => setIsSearchOpen(true)}
+                    className="p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors flex items-center justify-center cursor-pointer"
+                    aria-label="Open search"
+                    title="Search"
+                  >
+                    <Search size={21} className="stroke-[2.2]" />
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="w-full sm:w-auto flex items-center justify-start sm:justify-end shrink-0">
+              <SortDropdown
+                selectedId={sortId}
+                onChange={(id) => {
+                  setSortId(id);
+                  if (tab === 'courses') setCoursePage(0);
+                  else setEventPage(0);
+                }}
+              />
+            </div>
           </div>
         </div>
 

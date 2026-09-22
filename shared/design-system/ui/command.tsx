@@ -10,7 +10,10 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogPortal,
+  DialogOverlay,
 } from "@/shared/design-system/ui/dialog"
+import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import {
   InputGroup,
   InputGroupAddon,
@@ -53,15 +56,20 @@ function CommandDialog({
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
-      <DialogContent
-        className={cn(
-          "top-1/3 translate-y-0 overflow-hidden rounded-xl! p-0",
-          className
-        )}
-        showCloseButton={showCloseButton}
-      >
-        {children}
-      </DialogContent>
+      <DialogPortal>
+        <DialogOverlay 
+          className="bg-white/55 dark:bg-black/55" 
+          style={{ backdropFilter: 'blur(14px) saturate(110%)', WebkitBackdropFilter: 'blur(14px) saturate(110%)' }}
+        />
+        <DialogPrimitive.Popup
+          className={cn(
+            "fixed left-1/2 z-[100] grid w-full -translate-x-1/2 overflow-hidden outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+            className
+          )}
+        >
+          {children}
+        </DialogPrimitive.Popup>
+      </DialogPortal>
     </Dialog>
   )
 }
@@ -171,7 +179,7 @@ function CommandItem({
     <CommandPrimitive.Item
       data-slot="command-item"
       className={cn(
-        "group/command-item relative flex cursor-default items-center gap-3 rounded-xl px-3 py-2.5 text-sm outline-hidden select-none transition-colors duration-100 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-selected:bg-slate-50 data-selected:text-foreground dark:data-selected:bg-neutral-800 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 data-selected:*:[svg]:text-foreground",
+        "group/command-item relative flex cursor-default items-center gap-3 rounded-xl px-3 py-2.5 text-sm outline-hidden select-none transition-all duration-150 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-selected:bg-gradient-to-br data-selected:from-pink-500/10 data-selected:to-violet-500/15 data-selected:shadow-[0_2px_12px_-2px_rgba(139,92,246,0.15)] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
