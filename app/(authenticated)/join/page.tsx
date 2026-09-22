@@ -3,9 +3,10 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { OrganizationService } from "@/domains/organizations";
-import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { PebbleLoader } from '@/domains/identity/components/PebbleLoader';
 
 function JoinOrganizationContent() {
   const searchParams = useSearchParams();
@@ -48,8 +49,8 @@ function JoinOrganizationContent() {
       >
         {status === 'loading' && (
           <div className="flex flex-col items-center">
-            <div className="mb-4 rounded-full bg-indigo-50 p-4 text-indigo-600">
-              <Loader2 className="animate-spin" size={32} />
+            <div className="mb-6">
+              <PebbleLoader />
             </div>
             <h2 className="text-xl font-bold text-gray-900">Accepting Invitation...</h2>
             <p className="text-sm text-gray-500 mt-2">Please wait while we add you to the organization.</p>
@@ -88,7 +89,7 @@ function JoinOrganizationContent() {
 }
 export default function JoinOrganizationPage() {
   return (
-    <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin text-indigo-500" size={40} /></div>}>
+    <Suspense fallback={<div className="flex h-screen items-center justify-center"><PebbleLoader label="Loading" /></div>}>
       <JoinOrganizationContent />
     </Suspense>
   );

@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { AlertTriangle, Check } from 'lucide-react';
+import { AlertTriangle, Check, Sparkles } from 'lucide-react';
 import { OverviewHero } from './sections/OverviewHero';
 import { OverviewSyllabus } from './sections/OverviewSyllabus';
 import { OverviewNotesPanel } from './sections/OverviewNotesPanel';
@@ -20,24 +18,12 @@ import type { ContentOverviewModel } from './contentOverview.types';
  * <p>One component for every content type. Courses and events supply the same {@link
  * ContentOverviewModel} through their own adapter; nothing below branches on which one it is.
  *
- * <p>This hub belongs to enrolled learners only, and its URL is inert for everyone else. Someone
- * who reaches it without an entitlement — a typed URL or an old bookmark, since nothing links here
- * for them — is sent to the content's own landing page, which is where the details and the enrol
- * button live. A holding card was tried first and replaced: it was a dead end that made the reader
- * click again to reach the only page that could actually help them.
+ * <p>This page never navigates on its own. Someone who reaches it without an entitlement — a typed
+ * URL or an old bookmark, since nothing links here for them — is told so and given a link. An
+ * automatic bounce to the course page was tried and removed: it reads as the app jerking you
+ * around, and it fires before you can read why, which is exactly when you most need to.
  */
 export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) {
-  const router = useRouter();
-
-  // `replace`, not `push`: the hub was never a place this learner could be, so it must not sit in
-  // history for Back to return to. Gated on `isLoading`/`error` because entitlement is unknown
-  // until the model resolves, and an in-flight read must not read as "not entitled".
-  const shouldRedirect = !model.isLoading && !model.error && !model.isEntitled;
-  const landingHref = model.landingHref;
-  useEffect(() => {
-    if (shouldRedirect) router.replace(landingHref);
-  }, [shouldRedirect, landingHref, router]);
-
   if (model.isLoading) return <OverviewSkeleton />;
 
   if (model.error) {
@@ -51,24 +37,25 @@ export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) 
     );
   }
 
-  // The redirect above is already in flight; render the skeleton rather than a message the reader
-  // would only see flash past.
-  if (!model.isEntitled) return <OverviewSkeleton />;
+  if (!model.isEntitled) {
+    return (
+      <OverviewMessage
+        icon={<Sparkles className="text-indigo-500" size={28} />}
+        title="This hub opens once you enrol"
+        body="Your progress, your notes and everything in this course live here. The course page has the details and the enrol button."
+        action={{ href: model.landingHref, label: 'View the course' }}
+      />
+    );
+  }
 
   const flatItems = model.sections.flatMap((section) => section.items);
 
   return (
-    <main className="min-h-screen bg-background pb-28">
-      {/* `LearnerShell` is deliberately transparent so page backgrounds run under the floating
-          navbar, which means every page must paint its own — without one, whatever sits behind
-          shows through. `bg-background` rather than a hardcoded colour so the `.dark` theme
-          applies. The top padding clears the fixed navbar and the bottom padding clears the dock;
-          the shell must not supply either (see its comment). */}
-      <div className="mx-auto w-full max-w-6xl px-4 pt-28 sm:px-6 md:px-8 md:pt-32">
-        <OverviewHero model={model} />
+    <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+      <OverviewHero model={model} />
 
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-          <div className="min-w-0 space-y-6">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <main className="min-w-0 space-y-6">
           {(model.description || model.outcomes.length > 0) && (
             <section className="rounded-2xl border border-slate-200/80 bg-white/70 p-6 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/60">
               <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">About</h2>
@@ -115,23 +102,22 @@ export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) 
               }
             />
           </section>
-          </div>
+        </main>
 
-          {/* Sticky on desktop so the resume-adjacent context — progress, notes, who made this —
+        {/* Sticky on desktop so the resume-adjacent context — progress, notes, who made this —
             stays reachable while scrolling a long syllabus. */}
-          <aside className="space-y-4 lg:sticky lg:top-32 lg:self-start">
+        <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
           <OverviewNotesPanel
             contentType={model.noteContentType}
             contentId={model.contentId}
             notesHref={model.notesHref}
             items={flatItems}
           />
-            <OverviewFacts facts={model.facts} />
-            <OverviewPeople people={model.people} />
-          </aside>
-        </div>
+          <OverviewFacts facts={model.facts} />
+          <OverviewPeople people={model.people} />
+        </aside>
       </div>
-    </main>
+    </div>
   );
 }
 
@@ -147,7 +133,7 @@ function OverviewMessage({
   action: { href: string; label: string };
 }) {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center bg-background px-4 text-center">
+    <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col items-center justify-center px-4 text-center">
       {icon}
       <h1 className="mt-4 text-lg font-bold text-slate-900 dark:text-white">{title}</h1>
       <p className="mt-2 text-[14px] leading-relaxed text-slate-500 dark:text-slate-400">{body}</p>
@@ -157,26 +143,24 @@ function OverviewMessage({
       >
         {action.label}
       </Link>
-    </main>
+    </div>
   );
 }
 
 function OverviewSkeleton() {
   return (
-    <main className="min-h-screen bg-background pb-28" aria-busy>
-      <div className="mx-auto w-full max-w-6xl px-4 pt-28 sm:px-6 md:px-8 md:pt-32">
-        <div className="h-44 animate-pulse rounded-3xl bg-slate-100 dark:bg-slate-800/60" />
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-          <div className="space-y-4">
-            <div className="h-40 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
-            <div className="h-64 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
-          </div>
-          <div className="space-y-4">
-            <div className="h-48 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
-            <div className="h-36 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
-          </div>
+    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6" aria-busy>
+      <div className="h-44 animate-pulse rounded-3xl bg-slate-100 dark:bg-slate-800/60" />
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="space-y-4">
+          <div className="h-40 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
+          <div className="h-64 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
+        </div>
+        <div className="space-y-4">
+          <div className="h-48 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
+          <div className="h-36 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
         </div>
       </div>
-    </main>
+    </div>
   );
 }

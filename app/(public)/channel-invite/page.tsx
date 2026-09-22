@@ -11,28 +11,47 @@
  *    - Already authenticated -> skip straight to the channel-type/form page.
  *    - Not authenticated -> bounce through /sign with `redirect` + `email` so they land back
  *      here (well, on the create step) once signed in.
- *
- * Styling matches /reach-us and the creation step: same pastel backdrop, serif editorial
- * headings, and the internal PebbleLoader while we work.
  */
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowUpRight, XCircle, MailWarning } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
-import '@/apps/public/landing.css';
 import { channelService } from '@/domains/channels';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { PebbleLoader } from '@/domains/identity';
-import { AtmosphericBackground, fadeInUp } from './invite-chrome';
+import { PebbleLoader } from '@/domains/identity/components/PebbleLoader';
+import '@/apps/public/landing.css';
+
+/** Same pastel atmospheric backdrop used across the public editorial pages (see /reach-us). */
+function EditorialBackdrop() {
+  return (
+    <div
+      className="fixed inset-0 pointer-events-none -z-10"
+      style={{
+        backgroundColor: '#FAFBFD',
+        backgroundImage: `
+          radial-gradient(ellipse 70% 40% at 50% 0%, rgba(224, 236, 255, 0.25) 0%, transparent 70%),
+          radial-gradient(ellipse 60% 40% at 10% 25%, rgba(233, 225, 254, 0.20) 0%, transparent 65%),
+          radial-gradient(ellipse 60% 40% at 90% 75%, rgba(253, 232, 240, 0.18) 0%, transparent 65%),
+          linear-gradient(
+            180deg,
+            #FAFBFD 0%,
+            #F6F8FD 35%,
+            #F8F6FD 70%,
+            #FAF9FB 100%
+          )
+        `,
+      }}
+    />
+  );
+}
 
 function ChannelInviteContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get('token');
   const { status } = useAuthStore();
-  const shouldReduceMotion = useReducedMotion();
 
   const [state, setState] = useState<'validating' | 'redirecting' | 'error'>('validating');
   const [errorMessage, setErrorMessage] = useState('');
@@ -88,66 +107,61 @@ function ChannelInviteContent() {
 
   const effectiveState = !token ? 'error' : state;
   const effectiveErrorMessage = !token ? 'No invitation token was provided in the URL.' : errorMessage;
-  const expired = effectiveErrorMessage.includes('expired');
 
   return (
-    <div className="landing-root min-h-[calc(100vh-140px)] flex items-center justify-center relative text-[#0f172a] font-sans px-6 sm:px-12 lg:px-20 py-24 selection:bg-blue-100 selection:text-blue-900">
-      <AtmosphericBackground />
+    <div className="landing-root min-h-[calc(100vh-140px)] flex flex-col justify-center relative text-[#0f172a] font-sans pt-28 sm:pt-32 lg:pt-36 pb-16 lg:pb-20 px-6 sm:px-12 lg:px-20 selection:bg-blue-100 selection:text-blue-900">
+      <EditorialBackdrop />
 
-      <div className="w-full max-w-lg">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.215, 0.61, 0.355, 1] }}
+        className="w-full max-w-[520px] mx-auto my-auto text-center"
+      >
         {(effectiveState === 'validating' || effectiveState === 'redirecting') && (
-          <motion.div
-            initial={shouldReduceMotion ? {} : 'hidden'}
-            animate="visible"
-            custom={0}
-            variants={fadeInUp}
-            className="space-y-6"
-          >
-            <h1 className="text-4xl sm:text-5xl tracking-tight text-[#0B132B] leading-[1.08] font-serif">
-              <span className="font-bold text-[#0B132B]">One</span>{' '}
-              <span className="italic font-normal text-[#205ca8]">moment.</span>
-            </h1>
-            <span className="block h-0.5 w-10 bg-[#205ca8]/60 rounded-full" />
-            <p className="text-base text-slate-600 leading-relaxed max-w-[420px]">
-              {effectiveState === 'validating'
-                ? 'We are checking your invitation link.'
-                : 'Your invitation checks out — taking you onward.'}
-            </p>
-            <div className="pt-4 flex justify-start">
-              <PebbleLoader size="sm" />
+          <div className="flex flex-col items-center">
+            <div className="mb-8">
+              <PebbleLoader />
             </div>
-          </motion.div>
+            <h1 className="text-3xl sm:text-4xl font-normal font-serif italic text-[#0B132B] tracking-tight leading-snug">
+              {effectiveState === 'validating' ? 'Checking your invitation.' : 'Taking you onward.'}
+            </h1>
+            <span className="block h-0.5 w-10 bg-[#205ca8]/60 rounded-full mx-auto mt-4" />
+            <p className="text-sm text-slate-500 leading-relaxed mt-5">
+              This will just take a moment.
+            </p>
+          </div>
         )}
 
         {effectiveState === 'error' && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-5"
-          >
-            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center border border-rose-100">
-              {expired ? <MailWarning className="w-6 h-6" /> : <XCircle className="w-6 h-6" />}
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center border border-rose-100 mb-6">
+              {effectiveErrorMessage.includes('expired') ? (
+                <MailWarning className="w-6 h-6" />
+              ) : (
+                <XCircle className="w-6 h-6" />
+              )}
             </div>
             <h1 className="text-3xl sm:text-4xl font-normal font-serif italic text-[#0B132B] tracking-tight leading-snug">
-              Invitation Unavailable.
+              Invitation unavailable.
             </h1>
-            <span className="block h-0.5 w-10 bg-[#205ca8]/60 rounded-full" />
-            <p className="text-sm text-slate-600 max-w-md leading-relaxed">{effectiveErrorMessage}</p>
+            <span className="block h-0.5 w-10 bg-[#205ca8]/60 rounded-full mx-auto mt-4" />
+            <p className="text-sm text-slate-500 leading-relaxed mt-5 max-w-sm">
+              {effectiveErrorMessage}
+            </p>
 
-            <div className="pt-4">
-              <Link
-                href="/"
-                className="relative inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-[#0B132B] hover:bg-[#205ca8] text-white font-medium text-sm tracking-wide shadow-sm hover:shadow-md transition-all duration-300 ease-out group"
-              >
-                <span>Go to Homepage</span>
-                <span className="w-5 h-5 rounded-full bg-white/10 group-hover:bg-white/20 flex items-center justify-center transition-colors">
-                  <ArrowUpRight className="w-3.5 h-3.5 text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                </span>
-              </Link>
-            </div>
-          </motion.div>
+            <Link
+              href="/"
+              className="mt-9 relative inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-[#0B132B] hover:bg-[#205ca8] text-white font-medium text-sm tracking-wide shadow-sm hover:shadow-md transition-all duration-300 ease-out group"
+            >
+              <span>Go to Homepage</span>
+              <span className="w-5 h-5 rounded-full bg-white/10 group-hover:bg-white/20 flex items-center justify-center transition-colors">
+                <ArrowUpRight className="w-3.5 h-3.5 text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </span>
+            </Link>
+          </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -156,8 +170,8 @@ export default function ChannelInvitePage() {
   return (
     <Suspense
       fallback={
-        <div className="landing-root min-h-[calc(100vh-140px)] flex items-center justify-center px-6">
-          <AtmosphericBackground />
+        <div className="landing-root relative flex min-h-[calc(100vh-140px)] items-center justify-center">
+          <EditorialBackdrop />
           <PebbleLoader label="Loading" />
         </div>
       }

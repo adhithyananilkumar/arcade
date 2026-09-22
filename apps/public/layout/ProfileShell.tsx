@@ -18,7 +18,11 @@
  * ------------------------------------------------------------------
  */
 
-import ViewerShell from './ViewerShell';
+import { useEffect, useState } from 'react';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import LearnerShell from '@/apps/learner/layout/LearnerShell';
+import HeroNav from '@/apps/public/components/landing/HeroNav';
+import Footer from '@/apps/public/components/landing/Footer';
 
 /**
  * A profile is reachable from inside the app (tapping an instructor's name) and from outside it
@@ -26,12 +30,37 @@ import ViewerShell from './ViewerShell';
  * who clicked through to a colleague's profile lost their app navigation and was shown the
  * public site's header — with its sign-up call to action — until they navigated away.
  *
- * The nav follows the viewer, not the route. That rule is not specific to profiles, so it lives
- * in {@link ViewerShell}; the course page needs exactly the same treatment for exactly the same
- * reason. This name is kept because profile routes read better for it.
+ * The nav follows the viewer, not the route.
  */
 export function ProfileShell({ children }: { children: React.ReactNode }) {
-  return <ViewerShell>{children}</ViewerShell>;
+  const status = useAuthStore((s) => s.status);
+
+  // The shell is chosen from client state, so the server render cannot know it. Committing to
+  // either shell before mount would guarantee a wrong first paint for half the audience and a
+  // hydration mismatch; the content renders immediately either way and the chrome settles a
+  // frame later.
+  const [mounted, setMounted] = useState(false);
+  // Mount detection. "Has this hydrated yet" is knowable only after mount, and the one extra
+  // render is the point: it is what keeps the server and client markup identical. Same pattern
+  // as LearnerShell.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted || status === 'loading') {
+    return <div className="flex min-h-screen w-full flex-col">{children}</div>;
+  }
+
+  if (status === 'authenticated') {
+    return <LearnerShell>{children}</LearnerShell>;
+  }
+
+  return (
+    <div className="flex min-h-screen w-full flex-col bg-white dark:bg-black">
+      <HeroNav />
+      <main className="flex-1">{children}</main>
+      <Footer />
+    </div>
+  );
 }
 
 export default ProfileShell;

@@ -325,25 +325,16 @@ export default function LearnerHomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
-            <h1 className="w-full max-w-2xl sm:max-w-3xl lg:max-w-4xl text-left flex flex-col items-start select-none">
+            <h1 className="max-w-xl text-left flex flex-col items-start select-none">
               {/* Line 1: Script font, dark color with sparkle accent */}
               {parsedGreeting.line1 && (
-                <div className="relative flex items-center gap-1.5 w-full max-w-full overflow-hidden">
-                  <span 
-                    className="font-script font-semibold tracking-wide text-[#14142b] dark:text-slate-100 leading-tight whitespace-nowrap shrink-0"
-                    style={{
-                      fontSize: (parsedGreeting.line1?.length || 0) > 30 
-                        ? 'clamp(1.5rem, 3.5vw, 2.5rem)' 
-                        : (parsedGreeting.line1?.length || 0) > 20 
-                        ? 'clamp(1.75rem, 4vw, 2.85rem)' 
-                        : 'clamp(1.85rem, 4.5vw, 3.25rem)'
-                    }}
-                  >
+                <div className="relative inline-flex items-center gap-1.5">
+                  <span className="font-script text-3xl sm:text-4xl md:text-5xl font-bold tracking-wide text-[#14142b] dark:text-slate-100 leading-tight">
                     {parsedGreeting.line1}
                   </span>
                   {/* 3 Sparkle lines accent (matching top-right accent in Image 2) */}
                   <svg
-                    className="ml-1 -mt-2.5 size-5 sm:size-6 text-[#4C6FFF] shrink-0"
+                    className="ml-1 -mt-3 size-5 sm:size-6 text-[#4C6FFF] shrink-0"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -356,39 +347,19 @@ export default function LearnerHomePage() {
               )}
 
               {/* Line 2: Sans-serif keyword in dark/black + Script font name with gradient */}
-              <div className="relative flex items-baseline flex-nowrap whitespace-nowrap gap-x-2 sm:gap-x-2.5 my-0.5 w-full max-w-full overflow-hidden">
+              <div className="relative inline-flex items-baseline flex-wrap gap-x-2.5 gap-y-1 my-0.5">
                 {parsedGreeting.line2 && (
-                  <span 
-                    className="font-semibold tracking-tight leading-none text-[#14142b] cursor-default shrink-0"
-                    style={{
-                      fontSize: ((parsedGreeting.line2?.length || 0) + parsedGreeting.line3.length) > 22
-                        ? 'clamp(1.75rem, 4vw, 3rem)'
-                        : ((parsedGreeting.line2?.length || 0) + parsedGreeting.line3.length) > 15
-                        ? 'clamp(2rem, 5vw, 3.75rem)'
-                        : 'clamp(2.25rem, 6.5vw, 4.5rem)'
-                    }}
-                  >
+                  <span className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-none text-[#14142b] cursor-default">
                     {parsedGreeting.line2}
                   </span>
                 )}
-                <div
-                  className="font-script !cursor-default !font-semibold !leading-none shrink-0 inline-flex items-baseline"
-                  style={{
-                    fontSize: ((parsedGreeting.line2?.length || 0) + parsedGreeting.line3.length) > 22
-                      ? 'clamp(1.75rem, 4vw, 3rem)'
-                      : ((parsedGreeting.line2?.length || 0) + parsedGreeting.line3.length) > 15
-                      ? 'clamp(2rem, 5vw, 3.75rem)'
-                      : 'clamp(2.25rem, 6.5vw, 4.5rem)'
-                  }}
+                <GradientText
+                  colors={NAME_GRADIENT}
+                  animationSpeed={4.5}
+                  className="font-script !cursor-default !text-4xl sm:!text-5xl md:!text-6xl lg:!text-7xl !font-bold !leading-none"
                 >
-                  <GradientText
-                    colors={NAME_GRADIENT}
-                    animationSpeed={4.5}
-                    className="font-script !cursor-default !font-semibold !leading-none"
-                  >
-                    {parsedGreeting.line3}
-                  </GradientText>
-                </div>
+                  {parsedGreeting.line3}
+                </GradientText>
               </div>
             </h1>
             <p className="mt-2 max-w-md text-[14px] font-medium leading-relaxed text-slate-500">
@@ -419,6 +390,11 @@ export default function LearnerHomePage() {
                   placeholder="Search courses, skills, mentors…"
                   className="block w-full cursor-pointer bg-transparent py-2 text-[14px] sm:text-[15px] font-medium text-[#14142b] outline-none placeholder:text-slate-400"
                 />
+
+                {/* Keyboard shortcut hint */}
+                <kbd className="hidden shrink-0 items-center gap-0.5 rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 sm:flex">
+                  <span>⌘</span>K
+                </kbd>
 
                 {/* Right Circular Blue-Violet Gradient Search Button */}
                 <button
@@ -501,11 +477,8 @@ export default function LearnerHomePage() {
                       ease: [0.22, 1, 0.36, 1],
                     }}
                   >
-                    {/* Recommendations are courses this learner is *not* enrolled in, so they
-                        link to the course page — the details and the enrol button — never the
-                        enrolled-only hub. */}
                     <Link
-                      href={courseRoutes.landing(course.id)}
+                      href={courseRoutes.overview(course.id)}
                       className={`group flex items-center overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/80 bg-white/95 p-3.5 sm:p-4 shadow-[0_4px_18px_rgba(20,20,43,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(20,20,43,0.07)] ${RECOMMEND_HOVER_BORDERS[i % RECOMMEND_HOVER_BORDERS.length]}`}
                     >
                       <div className="relative h-[80px] w-[96px] shrink-0 overflow-hidden rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-xs rounded-bl-xs bg-slate-100 sm:h-[88px] sm:w-[110px]">
