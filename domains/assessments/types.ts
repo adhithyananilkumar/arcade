@@ -618,4 +618,12 @@ export interface AssessmentLandingResponse {
   startable: boolean;
   blockedReason: AssessmentBlockedReason | null;
   blockedMessage: string | null;
+
+  assessmentType: "GRADED_ASSESSMENT" | "BADGE_EXAM";
+  badgeName?: string | null;
+  gradingPolicy: "HIGHEST_SCORE" | "LATEST_ATTEMPT";
+  latestAttempt: AttemptHistoryItem | null;
+  bestAttempt: AttemptHistoryItem | null;
+  passed: boolean | null;
+  score: number | null;
 }

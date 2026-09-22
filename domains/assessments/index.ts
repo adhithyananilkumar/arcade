@@ -23,6 +23,8 @@ export { QuestionTagEditor } from "./components/QuestionTagEditor";
 // standalone exam route, so an assessment presents identically wherever it is met.
 export { AssessmentLanding } from "./components/AssessmentLanding";
 export type { AssessmentLandingProps } from "./components/AssessmentLanding";
+export { AssessmentResultCard } from "./components/AssessmentResultCard";
+export type { AssessmentResultCardProps } from "./components/AssessmentResultCard";
 export { HonorCodeModal } from "./components/HonorCodeModal";
 export type { HonorCodeModalProps } from "./components/HonorCodeModal";
 // The headless question-authoring engine. Rendering a question is deliberately NOT here: it needs

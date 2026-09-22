@@ -20,12 +20,18 @@ interface AssessmentLandingPaneProps {
   courseId?: string;
   /** Called when a previously-unpassed assessment now shows a pass, so the progress bar catches up. */
   onPassed?: () => void;
+  /** Navigate to next item in course curriculum. */
+  onNextItem?: () => void;
+  /** Open feedback / report issue modal. */
+  onReportIssue?: () => void;
 }
 
 export function AssessmentLandingPane({
   assessment,
   courseId,
   onPassed,
+  onNextItem,
+  onReportIssue,
 }: AssessmentLandingPaneProps) {
   const router = useRouter();
   const [landing, setLanding] = useState<AssessmentLandingResponse | null>(null);
@@ -95,6 +101,8 @@ export function AssessmentLandingPane({
         landing={landing}
         onStart={handleStart}
         onViewGradeCard={(gradeCardId) => router.push(`/learn/grade-card/${gradeCardId}`)}
+        onNextItem={onNextItem}
+        onReportIssue={onReportIssue}
       />
     </div>
   );

@@ -553,6 +553,8 @@ export default function CourseLearnPage() {
                 assessment={selectedItem.assessment}
                 courseId={courseId}
                 onPassed={refreshProgress}
+                onNextItem={nextItem ? handleNext : undefined}
+                onReportIssue={() => setReportModalOpen(true)}
               />
             ) : selectedLesson ? (
               <>

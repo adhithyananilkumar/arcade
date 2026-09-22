@@ -31,12 +31,18 @@ import { TiptapContentView } from "@/domains/learning";
 import type { AssessmentLandingResponse } from "../types";
 import { HonorCodeModal } from "./HonorCodeModal";
 
+import { AssessmentResultCard } from "./AssessmentResultCard";
+
 export interface AssessmentLandingProps {
   landing: AssessmentLandingResponse;
   /** Begin or resume. Omitted in preview, where a reviewer must not consume a real attempt. */
   onStart?: () => void;
   /** Opens a past sitting's grade card. */
   onViewGradeCard?: (gradeCardId: string) => void;
+  /** Navigates to the next item when accessed from within a course player. */
+  onNextItem?: () => void;
+  /** Opens report issue modal or feedback form. */
+  onReportIssue?: () => void;
   /**
    * Rendered in place of the Start button when the blocker is registration or payment — the host
    * passes the shared EnrollmentButton, so exam registration reuses the enrolment/checkout flow
@@ -52,6 +58,8 @@ export function AssessmentLanding({
   landing,
   onStart,
   onViewGradeCard,
+  onNextItem,
+  onReportIssue,
   registrationSlot,
   readOnly = false,
   starting = false,
@@ -76,13 +84,46 @@ export function AssessmentLanding({
     onStart?.();
   };
 
+  const isBadgeExam = landing.assessmentType === "BADGE_EXAM";
+
+  // STATE B — ATTEMPTED AT LEAST ONCE:
+  // Render the post-attempt status and result card instead of the untouched landing view.
+  if (landing.history && landing.history.length > 0) {
+    return (
+      <>
+        <AssessmentResultCard
+          landing={landing}
+          onStart={handleStartClick}
+          onViewGradeCard={onViewGradeCard}
+          onNextItem={onNextItem}
+          onReportIssue={onReportIssue}
+          registrationSlot={registrationSlot}
+          readOnly={readOnly}
+          starting={starting}
+        />
+        <HonorCodeModal
+          isOpen={showHonorCode}
+          onClose={() => setShowHonorCode(false)}
+          onContinue={handleHonorCodeContinue}
+        />
+      </>
+    );
+  }
+
+  // STATE A — NEVER ATTEMPTED:
   return (
     <article className="mx-auto w-full max-w-3xl">
       <header className="mb-7">
         <div className="mb-2.5 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b]/[0.06] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-[#14142b]">
-            <FileText size={12} />
-            Assessment
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${
+              isBadgeExam
+                ? "bg-violet-100/80 text-violet-800"
+                : "bg-[#14142b]/[0.06] text-[#14142b]"
+            }`}
+          >
+            {isBadgeExam ? <Award size={12} /> : <FileText size={12} />}
+            {isBadgeExam ? "Badge Exam" : "Graded Assessment"}
           </span>
           {landing.requiredForCompletion && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-800">
