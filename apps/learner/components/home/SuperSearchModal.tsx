@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { courseRoutes } from '@/shared/routes/content.routes';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -279,7 +280,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                 <CommandItem
                   key={course.id}
                   value={`course-${course.id}`}
-                  onSelect={() => go(`/learn/${course.id}`)}
+                  onSelect={() => go(courseRoutes.overview(course.id))}
                 >
                   <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-slate-100">
                     {course.coverImageUrl ? (

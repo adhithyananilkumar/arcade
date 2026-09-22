@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
+import { courseRoutes } from '@/shared/routes/content.routes';
 import Link from 'next/link';
 import { useSearchParams, notFound } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -465,8 +466,8 @@ function ConsoleInboxContent() {
 
                         if (isLessonReport) {
                           const lessonHref = targetLessonId
-                            ? `/learn/${selectedMessage.contentId}/learn?lesson=${targetLessonId}`
-                            : `/learn/${selectedMessage.contentId}/learn`;
+                            ? courseRoutes.lesson(selectedMessage.contentId, targetLessonId)
+                            : courseRoutes.overview(selectedMessage.contentId);
 
                           return (
                             <div>

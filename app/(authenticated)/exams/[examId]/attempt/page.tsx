@@ -130,7 +130,7 @@ export default function ExamEnginePage() {
 
   useEffect(() => {
     if (sessionStorage.getItem(`exam_terminated_${examId}`)) {
-      router.replace(`/learn/exam/${examId}/terminated`);
+      router.replace(`/exams/${examId}/terminated`);
     }
   }, [examId, router]);
 
@@ -147,7 +147,7 @@ export default function ExamEnginePage() {
       // Carry `returnTo` through to the results page so an assessment sat from inside a course
       // can offer a way back into that course rather than dead-ending on the exams hub.
       const back = returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : '';
-      const go = () => router.push(`/learn/exam/${examId}/results?attemptId=${attemptId}${back}`);
+      const go = () => router.push(`/exams/${examId}/results?attemptId=${attemptId}${back}`);
       if (document.fullscreenElement) {
         document.exitFullscreen().then(go).catch(go);
       } else {
@@ -164,7 +164,7 @@ export default function ExamEnginePage() {
     if (strikes >= 3) {
       sessionStorage.setItem(`exam_terminated_${examId}`, 'true');
       if (attemptId) submitExamAttempt(attemptId).catch(() => {});
-      router.replace(`/learn/exam/${examId}/terminated`);
+      router.replace(`/exams/${examId}/terminated`);
     } else if (strikes > 0) {
       setShowWarning(true);
     }

@@ -28,12 +28,24 @@ const BASE_URL = API_ORIGIN;
 
 // Thrown instead of a plain Error so callers that need to branch on HTTP
 // status (e.g. distinguishing 404 from 403) don't have to string-match messages.
+/**
+ * `ApiError.status` when the request never reached the server at all. Not a real HTTP status —
+ * there was no response to take one from — so it is a sentinel outside the 1xx-5xx range that
+ * callers can branch on without colliding with anything the backend can return.
+ */
+export const NETWORK_ERROR_STATUS = 0;
+
 export class ApiError extends Error {
   status: number;
-  constructor(status: number, message: string) {
-    super(message);
+  constructor(status: number, message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = "ApiError";
     this.status = status;
+  }
+
+  /** True when the API could not be reached, as opposed to reached and refused. */
+  get isNetworkError(): boolean {
+    return this.status === NETWORK_ERROR_STATUS;
   }
 }
 
@@ -93,10 +105,25 @@ async function request<T>(
     delete headers["Content-Type"];
   }
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      ...options,
+      headers,
+    });
+  } catch (cause) {
+    // fetch only rejects when the request never got an HTTP answer at all — the API process is
+    // down, DNS/CORS refused it, or the network dropped. Previously this escaped as a bare
+    // `TypeError: Failed to fetch`, which is not an ApiError, so every call site's `catch` fell
+    // through to its generic "please try again" branch and told the user to retry something that
+    // cannot succeed until the server is back up. Normalising it here means callers can tell
+    // "the server said no" apart from "there was no server", and say so.
+    throw new ApiError(
+      NETWORK_ERROR_STATUS,
+      `Cannot reach the Arcade API at ${BASE_URL}. The server may not be running.`,
+      { cause },
+    );
+  }
 
   // Access token expired/invalid — try to refresh once, then replay the request.
   if (res.status === 401 && !isRetry) {
@@ -149,7 +176,15 @@ async function request<T>(
     // safe to show a user must be replaced here rather than at each of
     // those call sites individually.
     if (res.status >= 500) {
-      message = 'Something went wrong on our end. Please try again in a moment.';
+      // The backend's catch-all handler ends its message with "Reference: <correlation id>" — an
+      // id minted specifically to be quoted back, and the only way to find the matching server log
+      // line. Keeping it is the difference between a user reporting "it broke" and reporting
+      // something the server log can be grepped for, so it survives the redaction of everything
+      // else in the body.
+      const reference = /Reference:\s*([0-9a-fA-F-]{8,})/.exec(message)?.[1];
+      message = reference
+        ? `Something went wrong on our end (reference ${reference}). Please try again in a moment.`
+        : 'Something went wrong on our end. Please try again in a moment.';
     }
 
     throw new ApiError(res.status, message);

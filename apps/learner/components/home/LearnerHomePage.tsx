@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { courseRoutes } from '@/shared/routes/content.routes';
 import { motion } from 'framer-motion';
 import {
   Search,
@@ -477,7 +478,7 @@ export default function LearnerHomePage() {
                     }}
                   >
                     <Link
-                      href={`/learn/${course.id}`}
+                      href={courseRoutes.overview(course.id)}
                       className={`group flex items-center overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/80 bg-white/95 p-3.5 sm:p-4 shadow-[0_4px_18px_rgba(20,20,43,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(20,20,43,0.07)] ${RECOMMEND_HOVER_BORDERS[i % RECOMMEND_HOVER_BORDERS.length]}`}
                     >
                       <div className="relative h-[80px] w-[96px] shrink-0 overflow-hidden rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-xs rounded-bl-xs bg-slate-100 sm:h-[88px] sm:w-[110px]">

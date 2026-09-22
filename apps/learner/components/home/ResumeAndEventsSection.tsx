@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { courseRoutes } from '@/shared/routes/content.routes';
 import { motion } from 'framer-motion';
 import {
   CalendarDays,
@@ -210,7 +211,7 @@ function RecommendedFeaturedCard({ course }: { course: CourseSummaryResponse }) 
         {/* CTA Button */}
         <div className="pt-1">
           <Link
-            href={`/learn/${course.id}`}
+            href={courseRoutes.overview(course.id)}
             className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#4C6FFF] px-5 py-3 text-[13px] font-semibold text-white transition-all shadow-sm hover:bg-[#3a5ae6] hover:shadow-md"
           >
             <BookOpen size={16} /> Start Learning
@@ -318,7 +319,7 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
         {/* Bottom CTA Action Button */}
         <div className="pt-1">
           <Link
-            href={`/learn/${course.id}`}
+            href={courseRoutes.overview(course.id)}
             className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] px-5 py-3 text-[13px] font-semibold text-white transition-all shadow-sm hover:bg-[#232735] hover:shadow-md"
           >
             <Play size={15} className="fill-current" /> Continue Learning

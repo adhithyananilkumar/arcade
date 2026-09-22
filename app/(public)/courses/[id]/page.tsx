@@ -15,6 +15,7 @@ import {
   Users,
 } from "lucide-react"
 import Link from "next/link"
+import { courseRoutes, examRoutes } from "@/shared/routes/content.routes";
 import { useState, useEffect } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { api } from "@/infrastructure/http/api"
@@ -284,7 +285,7 @@ export default function CoursePreviewPage() {
       accentColor="#1db876"
       actionButton={
         isEnrolled && course?.id ? (
-          <Link href={`/learn/${course.id}/learn`} className="animated-button">
+          <Link href={courseRoutes.overview(course.id)} className="animated-button">
             <span className="text">Go to course →</span>
           </Link>
         ) : (
@@ -295,16 +296,14 @@ export default function CoursePreviewPage() {
                 resourceId={course.id}
                 initialState={enrollButtonState}
                 pendingReason={pendingReason}
-                targetUrl={`/learn/${course.id}/learn${titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''}`}
+                targetUrl={courseRoutes.overview(course.id)}
                 onGoToResource={() => {
-                  const queryStr = titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''
-                  router.push(`/learn/${course.id}/learn${queryStr}`)
+                  router.push(courseRoutes.overview(course.id))
                 }}
                 onStateChange={(state) => {
                   if (state === "ENROLLED") {
-                    const queryStr = titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''
-                    router.push(`/learn/${course.id}/learn${queryStr}`)
-                  }
+                  router.push(courseRoutes.overview(course.id))
+                }
                 }}
               />
             </div>
@@ -549,7 +548,7 @@ export default function CoursePreviewPage() {
                           </p>
                         </div>
                         <Link
-                          href={`/learn/exam/${exam.id}`}
+                          href={examRoutes.landing(exam.id)}
                           className="flex-shrink-0 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-paper transition-transform hover:-translate-y-0.5"
                         >
                           View
@@ -619,7 +618,7 @@ export default function CoursePreviewPage() {
       primaryAction={
         isEnrolled && course?.id ? (
           <Link
-            href={`/learn/${course.id}/learn`}
+            href={courseRoutes.overview(course.id)}
             className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink transition-colors hover:bg-white/90"
           >
             Go to course →
@@ -633,16 +632,14 @@ export default function CoursePreviewPage() {
                 initialState={enrollButtonState}
                 pendingReason={pendingReason}
                 className="!bg-white !text-ink hover:!bg-white/90"
-                targetUrl={`/learn/${course.id}/learn${titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''}`}
+                targetUrl={courseRoutes.overview(course.id)}
                 onGoToResource={() => {
-                  const queryStr = titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''
-                  router.push(`/learn/${course.id}/learn${queryStr}`)
+                  router.push(courseRoutes.overview(course.id))
                 }}
                 onStateChange={(state) => {
                   if (state === "ENROLLED") {
-                    const queryStr = titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''
-                    router.push(`/learn/${course.id}/learn${queryStr}`)
-                  }
+                  router.push(courseRoutes.overview(course.id))
+                }
                 }}
               />
             </div>

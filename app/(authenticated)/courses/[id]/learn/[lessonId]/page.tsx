@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/infrastructure/http/api';
 import type {
   AssessmentNodeResponse,
@@ -36,13 +36,16 @@ import {
   TiptapContentView,
   courseProgressService,
   useLessonEngagementTracker,
+  NotesEditor,
+  useNoteAutosave,
   type CourseProgress,
 } from '@/domains/learning';
+import { courseRoutes, examRoutes } from '@/shared/routes/content.routes';
 import { toast } from 'sonner';
 import { ReportModal } from '@/shared/design-system/ui/ReportModal';
 import { courseReviewService } from '@/domains/learning';
 import { AssessmentLandingPane } from './AssessmentLandingPane';
-import { NotesEditor } from './NotesEditor';
+
 
 /**
  * A node in the course's running order. Until assessments existed every node was a lesson and this
@@ -86,8 +89,8 @@ function itemsForModule(mod: ModuleResponse): PlayerItem[] {
 export default function CourseLearnPage() {
   const params = useParams();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const lessonParam = searchParams?.get('lesson');
+  // The lesson is the address now, not a query parameter — see shared/routes/content.routes.ts.
+  const lessonParam = params?.lessonId as string | undefined;
   const [course, setCourse] = useState<CourseResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<PlayerItem | null>(null);
@@ -101,7 +104,6 @@ export default function CourseLearnPage() {
   const toggleModule = (moduleId: string) =>
     setCollapsedModules((prev) => ({ ...prev, [moduleId]: !prev[moduleId] }));
   const [rightPanelTab, setRightPanelTab] = useState<'notes' | 'ai'>('notes');
-  const [notesDraft, setNotesDraft] = useState('');
   const [rightPanelWidth, setRightPanelWidth] = useState(380);
   const [isDesktopViewport, setIsDesktopViewport] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches,
@@ -144,7 +146,7 @@ export default function CourseLearnPage() {
   const [feedbackRating, setFeedbackRating] = useState(0);
   const [submittingFeedback, setSubmittingFeedback] = useState(false);
 
-  const courseId = params?.courseId as string | undefined;
+  const courseId = params?.id as string | undefined;
 
   /**
    * The rating is the point of this form, so a learner who picks stars and writes nothing still
@@ -204,11 +206,10 @@ export default function CourseLearnPage() {
           setCourse(data);
           if (data.modules && data.modules.length > 0) {
             const items = data.modules.flatMap(itemsForModule);
-            // ?lesson= still addresses a lesson specifically — it predates assessments and is
-            // linked to from elsewhere, so it keeps meaning exactly what it always did.
-            const target = lessonParam
-              ? items.find((i) => i.kind === 'lesson' && i.id === lessonParam)
-              : null;
+            // The path segment addresses any item, lesson or assessment alike — unlike the
+            // ?lesson= parameter it replaces, which predated assessments and could only name a
+            // lesson. Falls back to the first item when the id names nothing in this course.
+            const target = lessonParam ? items.find((i) => i.id === lessonParam) : null;
             setSelectedItem(target ?? items[0] ?? null);
           }
         })
@@ -222,11 +223,26 @@ export default function CourseLearnPage() {
     } else {
       setLoading(false);
     }
-  }, [courseId]);
+  }, [courseId, lessonParam]);
 
   // Null while an assessment is on screen: engagement time is measured against lesson content, and
   // time spent reading an assessment's instructions is not lesson study time.
   const selectedLesson = selectedItem?.kind === 'lesson' ? selectedItem.lesson : null;
+
+  // Notes live on the server now (V311 learner_notes), not in localStorage: the overview hub and
+  // the notes workspace both read them, and a note only visible on the device that typed it could
+  // not appear on either. `useNoteAutosave` owns the debounce and flushes on lesson change, so
+  // clicking to the next lesson mid-keystroke no longer drops what was typed.
+  const noteAnchor = useMemo(
+    () => ({
+      id: selectedLesson?.id ?? null,
+      label: selectedLesson?.title ?? null,
+      order: selectedItem?.position ?? null,
+    }),
+    [selectedLesson?.id, selectedLesson?.title, selectedItem?.position],
+  );
+
+  const notes = useNoteAutosave('courses', courseId, noteAnchor);
 
   /**
    * Records real engaged time against the lesson currently on screen — the only source of
@@ -271,9 +287,15 @@ export default function CourseLearnPage() {
     return updated;
   };
 
+  /**
+   * Navigates rather than only swapping state, so every item in the course is a real address:
+   * shareable, bookmarkable, and a browser Back away from where you were. The optimistic
+   * `setSelectedItem` keeps the swap instant instead of waiting on the route change.
+   */
   const goTo = (item: PlayerItem | null) => {
-    if (!item) return;
+    if (!item || !courseId) return;
     setSelectedItem(item);
+    router.push(courseRoutes.lesson(courseId, item.id));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -557,7 +579,7 @@ export default function CourseLearnPage() {
             ) : selectedLesson ? (
               <>
                 <div className="min-h-[42vh] flex-1 rounded-3xl border border-white/40 bg-white/30 px-5 py-7 shadow-lg backdrop-blur-xl sm:px-8 sm:py-9 md:px-12 md:py-11">
-                  <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-[#14142b] prose-a:text-[#FF6B4A] hover:prose-a:text-[#D94F32] prose-p:text-slate-700">
+                  <div className="arcade-rich-text max-w-none">
                     {selectedLesson.body ? (
                       <TiptapContentView body={selectedLesson.body} />
                     ) : (
@@ -678,7 +700,15 @@ export default function CourseLearnPage() {
 
             <div className="flex h-full flex-1 flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/30 p-4 shadow-lg backdrop-blur-xl">
               {rightPanelTab === 'notes' ? (
-                <NotesEditor content={notesDraft} onChange={setNotesDraft} />
+                <NotesEditor
+                  key={notes.editorKey}
+                  content={notes.initialBody}
+                  onChange={notes.save}
+                  saveStatus={notes.saveStatus === 'error' ? 'idle' : notes.saveStatus}
+                  placeholder={
+                    selectedLesson ? `Jot notes for “${selectedLesson.title}”…` : undefined
+                  }
+                />
               ) : (
                 <div className="flex h-full min-h-[50vh] flex-col items-center justify-center text-center">
                   <Sparkles size={28} className="mb-3 text-slate-300" />

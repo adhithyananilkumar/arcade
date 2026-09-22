@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { courseRoutes } from '@/shared/routes/content.routes';
 import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -522,9 +523,9 @@ export const CourseCard: React.FC<CourseCardProps> = ({
 
   const handleCourseClick = () => {
     if (status === 'authenticated') {
-      router.push(course.id ? `/learn/${course.id}` : `/learn/${courseSlug}?title=${encodeURIComponent(course.title)}`);
+      router.push(courseRoutes.overview(course.id || courseSlug));
     } else {
-      router.push(`/sign?redirect=/learn/${course.id || courseSlug}`);
+      router.push(`/sign?redirect=${encodeURIComponent(courseRoutes.overview(course.id || courseSlug))}`);
     }
   };
 
