@@ -68,8 +68,23 @@ function CommandDialog({
 
 function CommandInput({
   className,
+  /** Skip the built-in wrapper/icon chrome — for callers building their own input header. */
+  bare = false,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Input>) {
+}: React.ComponentProps<typeof CommandPrimitive.Input> & { bare?: boolean }) {
+  if (bare) {
+    return (
+      <CommandPrimitive.Input
+        data-slot="command-input"
+        className={cn(
+          "w-full text-[15px] outline-hidden placeholder:text-muted-foreground/70 disabled:cursor-not-allowed disabled:opacity-50",
+          className
+        )}
+        {...props}
+      />
+    )
+  }
+
   return (
     <div data-slot="command-input-wrapper" className="border-b border-border/60 p-3">
       <InputGroup className="h-12! rounded-xl! border-transparent bg-muted/50 shadow-none! *:data-[slot=input-group-addon]:pl-3.5!">
@@ -126,7 +141,7 @@ function CommandGroup({
     <CommandPrimitive.Group
       data-slot="command-group"
       className={cn(
-        "overflow-hidden px-2 py-2 text-foreground **:[[cmdk-group-heading]]:px-1.5 **:[[cmdk-group-heading]]:pb-2 **:[[cmdk-group-heading]]:pt-1 **:[[cmdk-group-heading]]:text-[11px] **:[[cmdk-group-heading]]:font-bold **:[[cmdk-group-heading]]:uppercase **:[[cmdk-group-heading]]:tracking-wider **:[[cmdk-group-heading]]:text-muted-foreground/70",
+        "overflow-hidden px-1.5 py-2 text-foreground **:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:pb-2 **:[[cmdk-group-heading]]:pt-1 **:[[cmdk-group-heading]]:text-[11px] **:[[cmdk-group-heading]]:font-bold **:[[cmdk-group-heading]]:uppercase **:[[cmdk-group-heading]]:tracking-wider **:[[cmdk-group-heading]]:text-muted-foreground/70 **:[[cmdk-group-items]]:flex **:[[cmdk-group-items]]:flex-col **:[[cmdk-group-items]]:gap-0.5",
         className
       )}
       {...props}
@@ -156,7 +171,7 @@ function CommandItem({
     <CommandPrimitive.Item
       data-slot="command-item"
       className={cn(
-        "group/command-item relative mb-1.5 flex cursor-default items-center gap-3 rounded-xl! border border-border/60 bg-background px-3! py-2.5! text-sm outline-hidden select-none last:mb-0 in-data-[slot=dialog-content]:rounded-xl! data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-selected:border-indigo-200 data-selected:bg-indigo-50/70 data-selected:text-foreground data-selected:shadow-[0_2px_10px_rgba(79,70,229,0.08)] dark:data-selected:border-indigo-900 dark:data-selected:bg-indigo-950/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 data-selected:*:[svg]:text-foreground",
+        "group/command-item relative flex cursor-default items-center gap-3 rounded-xl px-3 py-2.5 text-sm outline-hidden select-none transition-colors duration-100 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-selected:bg-slate-50 data-selected:text-foreground dark:data-selected:bg-neutral-800 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 data-selected:*:[svg]:text-foreground",
         className
       )}
       {...props}

@@ -30,6 +30,9 @@ import {
   ArrowRight,
   Loader2,
   SearchX,
+  CornerDownLeft,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
@@ -47,22 +50,6 @@ import {
   CommandList,
 } from '@/shared/design-system/ui/command';
 
-/** Visual accent per section — a colored icon chip so groups read apart at a glance. */
-interface Accent {
-  chip: string;
-}
-
-const ACCENTS = {
-  navigate: { chip: 'bg-[#4C6FFF]/10 text-[#4C6FFF] border-[#4C6FFF]/15' },
-  channel: { chip: 'bg-[#FF6B4A]/10 text-[#FF6B4A] border-[#FF6B4A]/15' },
-  creator: { chip: 'bg-[#9B5DE5]/10 text-[#9B5DE5] border-[#9B5DE5]/15' },
-  console: { chip: 'bg-[#F43F5E]/10 text-[#F43F5E] border-[#F43F5E]/15' },
-  settings: { chip: 'bg-slate-500/10 text-slate-500 border-slate-500/15' },
-  event: { chip: 'bg-[#1DB876]/10 text-[#1DB876] border-[#1DB876]/15' },
-} as const satisfies Record<string, Accent>;
-
-type AccentKey = keyof typeof ACCENTS;
-
 interface NavEntry {
   id: string;
   label: string;
@@ -76,7 +63,6 @@ interface NavEntry {
 
 interface NavSection {
   heading: string;
-  accent: AccentKey;
   items: NavEntry[];
 }
 
@@ -84,14 +70,6 @@ function matches(entry: NavEntry, query: string) {
   if (!query) return true;
   const haystack = `${entry.label} ${entry.subtitle ?? ''} ${(entry.keywords ?? []).join(' ')}`.toLowerCase();
   return haystack.includes(query.toLowerCase());
-}
-
-function IconChip({ icon: Icon, accent, size = 18 }: { icon: React.ElementType; accent: AccentKey; size?: number }) {
-  return (
-    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${ACCENTS[accent].chip}`}>
-      <Icon size={size} strokeWidth={2.1} />
-    </span>
-  );
 }
 
 export interface SuperSearchModalProps {
@@ -105,9 +83,13 @@ export interface SuperSearchModalProps {
  * courses and events (live search), the learner's own pages, and — only when the account actually
  * holds the capability — Content Studio and the relevant Console sections.
  *
- * <p>Role-awareness here is presentational only, exactly like the navbar it mirrors
- * (`LearnerNavbar`): every entry links to a route that independently re-checks access. Hiding an
- * entry from a learner is a convenience, not the security boundary.
+ * <p>Styled to match the rest of the app's own idiom rather than inventing a new one: flat rows
+ * with a single restrained accent (`LearnerNavbar`'s profile menu), and a thumbnail + title +
+ * subtitle row for courses (the home page's own "Recommended for you" list).
+ *
+ * <p>Role-awareness here is presentational only, exactly like the navbar it mirrors: every entry
+ * links to a route that independently re-checks access. Hiding an entry from a learner is a
+ * convenience, not the security boundary.
  */
 export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: SuperSearchModalProps) {
   const router = useRouter();
@@ -147,7 +129,6 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
     const sections: NavSection[] = [
       {
         heading: 'Navigate',
-        accent: 'navigate',
         items: [
           { id: 'home', label: 'Home', href: '/', icon: Home, suggested: true },
           { id: 'my-learning', label: 'My Learning', subtitle: 'Continue your enrolled courses', href: '/learning', icon: GraduationCap, suggested: true },
@@ -162,7 +143,6 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
     if (hasChannels) {
       sections.push({
         heading: 'Your Channel',
-        accent: 'channel',
         items: [
           { id: 'my-channel', label: 'My Channel', subtitle: 'Manage your channel', href: '/manage-channels', icon: Tv, suggested: true },
         ],
@@ -182,7 +162,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
       if (showConsole) {
         items.push({ id: 'console', label: 'Console', subtitle: 'Platform administration', href: '/console', icon: ShieldCheck, suggested: true, keywords: ['admin'] });
       }
-      sections.push({ heading: 'Creator & Admin', accent: 'creator', items });
+      sections.push({ heading: 'Creator & Admin', items });
     }
 
     if (showConsole) {
@@ -214,12 +194,11 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
       if (AuthorizationService.canAccessIamConsole(user)) {
         items.push({ id: 'console-iam', label: 'IAM & Access', href: '/console/iam', icon: Users, keywords: ['console', 'users', 'roles', 'permissions'] });
       }
-      if (items.length > 0) sections.push({ heading: 'Console', accent: 'console', items });
+      if (items.length > 0) sections.push({ heading: 'Console', items });
     }
 
     sections.push({
       heading: 'Account & Settings',
-      accent: 'settings',
       items: [
         { id: 'settings', label: 'Settings', href: '/settings', icon: Settings, suggested: true },
         { id: 'settings-appearance', label: 'Appearance', href: '/settings/appearance', icon: Palette, keywords: ['theme', 'dark mode'] },
@@ -237,7 +216,6 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
       learnerSections
         .map((section) => ({
           heading: section.heading,
-          accent: section.accent,
           items: section.items.filter((item) => (hasQuery ? matches(item, debouncedQuery) : item.suggested)),
         }))
         .filter((section) => section.items.length > 0),
@@ -254,32 +232,44 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
       onOpenChange={onOpenChange}
       title="Search Arcade"
       description="Search courses, events and pages"
-      className="top-[10%] w-[94vw] gap-0 overflow-hidden rounded-2xl! border border-slate-200/80 bg-white! p-0! shadow-2xl! sm:max-w-2xl dark:border-slate-800"
-      showCloseButton
+      className="top-[10%] w-[94vw] max-w-2xl gap-0 overflow-hidden rounded-2xl border border-black/[0.06] bg-white p-0 shadow-[0_24px_70px_-12px_rgba(20,20,43,0.28)]"
+      showCloseButton={false}
     >
-      <Command shouldFilter={false} className="bg-white! dark:bg-neutral-900!">
-        <CommandInput
-          value={query}
-          onValueChange={setQuery}
-          placeholder="Search courses, skills, events, settings…"
-          autoFocus
-        />
-        <CommandList className="max-h-[64vh] min-h-[320px] px-3 py-2.5">
+      <Command shouldFilter={false} style={{ backgroundColor: '#ffffff' }}>
+        <div className="relative flex items-center gap-3 border-b border-slate-100 px-5 py-4">
+          <Search size={18} strokeWidth={2.2} className="shrink-0 text-slate-400" />
+          <CommandInput
+            bare
+            value={query}
+            onValueChange={setQuery}
+            placeholder="Search courses, events, settings…"
+            autoFocus
+            className="h-auto flex-1 border-0 bg-transparent p-0 text-[15px] font-medium text-[#14142b] shadow-none outline-none placeholder:text-slate-400 placeholder:font-normal focus-visible:ring-0"
+          />
+          <kbd className="hidden shrink-0 rounded-md border border-slate-200 bg-slate-50 px-1.5 py-1 text-[10px] font-semibold text-slate-400 sm:block">
+            ESC
+          </kbd>
+        </div>
+
+        <CommandList
+          style={{ backgroundColor: '#ffffff' }}
+          className="max-h-[60vh] min-h-[280px] overflow-x-hidden px-2.5 py-2"
+        >
           {isSearching && (
-            <div className="flex items-center gap-2 px-2 py-2.5 text-xs font-medium text-muted-foreground">
+            <div className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-slate-400">
               <Loader2 size={13} className="animate-spin" /> Searching…
             </div>
           )}
 
           {!isSearching && !hasAnyResults && (
-            <CommandEmpty className="flex flex-col items-center gap-2 py-14 text-center">
-              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-neutral-800">
+            <CommandEmpty className="flex flex-col items-center gap-2.5 py-16 text-center">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-50 text-slate-300">
                 <SearchX size={20} />
               </span>
-              <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">
-                No results for “{debouncedQuery}”
+              <span className="text-sm font-bold text-slate-700">No results for “{debouncedQuery}”</span>
+              <span className="text-xs font-medium text-slate-400">
+                Try a different course, event or page name.
               </span>
-              <span className="text-xs text-slate-400">Try a different course, event or page name.</span>
             </CommandEmpty>
           )}
 
@@ -291,32 +281,35 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                   value={`course-${course.id}`}
                   onSelect={() => go(`/learn/${course.id}`)}
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#4C6FFF]/15 bg-[#4C6FFF]/10">
+                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-slate-100">
                     {course.coverImageUrl ? (
                       <img src={course.coverImageUrl} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      <BookOpen size={16} className="text-[#4C6FFF]" />
+                      <div className="flex h-full w-full items-center justify-center text-slate-300">
+                        <BookOpen size={16} />
+                      </div>
                     )}
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate text-[13.5px] font-semibold text-slate-800 dark:text-slate-100">
-                      {course.title}
-                    </span>
-                    <span className="truncate text-xs text-slate-400">
+                    <span className="truncate text-[13.5px] font-bold text-[#14142b]">{course.title}</span>
+                    <span className="truncate text-xs font-medium text-slate-400">
                       {course.authorName || 'Course'}
                     </span>
                   </div>
+                  <ArrowRight
+                    size={14}
+                    className="shrink-0 text-slate-300 opacity-0 transition-opacity group-data-selected/command-item:opacity-100"
+                  />
                 </CommandItem>
               ))}
               <CommandItem
                 value="course-view-all"
                 onSelect={() => go(`/search?q=${encodeURIComponent(debouncedQuery)}`)}
-                className="border-dashed! bg-transparent! text-indigo-600 dark:text-indigo-400"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-dashed border-indigo-200 text-indigo-500 dark:border-indigo-800">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-[#4C6FFF]">
                   <ArrowRight size={15} />
-                </span>
-                <span className="text-[13.5px] font-semibold">View all course results</span>
+                </div>
+                <span className="text-[13.5px] font-bold text-[#4C6FFF]">View all course results</span>
               </CommandItem>
             </CommandGroup>
           )}
@@ -329,10 +322,10 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                   value={`event-${event.id}`}
                   onSelect={() => go(`/events/${event.slug || event.id}`)}
                 >
-                  <IconChip icon={CalendarDays} accent="event" size={16} />
-                  <span className="truncate text-[13.5px] font-semibold text-slate-800 dark:text-slate-100">
-                    {event.title}
-                  </span>
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500">
+                    <CalendarDays size={16} />
+                  </div>
+                  <span className="truncate text-[13.5px] font-bold text-[#14142b]">{event.title}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -342,13 +335,13 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
             <CommandGroup key={section.heading} heading={section.heading}>
               {section.items.map((item) => (
                 <CommandItem key={item.id} value={item.id} onSelect={() => go(item.href)}>
-                  <IconChip icon={item.icon} accent={section.accent} />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500">
+                    <item.icon size={17} strokeWidth={2} />
+                  </div>
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate text-[13.5px] font-semibold text-slate-800 dark:text-slate-100">
-                      {item.label}
-                    </span>
+                    <span className="truncate text-[13.5px] font-bold text-[#14142b]">{item.label}</span>
                     {item.subtitle && (
-                      <span className="truncate text-xs text-slate-400">{item.subtitle}</span>
+                      <span className="truncate text-xs font-medium text-slate-400">{item.subtitle}</span>
                     )}
                   </div>
                 </CommandItem>
@@ -362,16 +355,28 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                 value="search-everything"
                 onSelect={() => go(`/search?q=${encodeURIComponent(debouncedQuery)}`)}
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-neutral-800">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500">
                   <Search size={15} />
-                </span>
-                <span className="truncate text-[13.5px] font-medium text-slate-600 dark:text-slate-300">
-                  Search everything for <span className="font-bold text-slate-800 dark:text-slate-100">“{debouncedQuery}”</span>
+                </div>
+                <span className="truncate text-[13.5px] font-medium text-slate-500">
+                  Search everything for <span className="font-bold text-[#14142b]">“{debouncedQuery}”</span>
                 </span>
               </CommandItem>
             </CommandGroup>
           )}
         </CommandList>
+
+        <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-[11px] font-semibold text-slate-400">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1">
+              <ArrowUp size={11} /> <ArrowDown size={11} /> Navigate
+            </span>
+            <span className="flex items-center gap-1">
+              <CornerDownLeft size={11} /> Select
+            </span>
+          </div>
+          <span className="text-[#4C6FFF]">Arcade Search</span>
+        </div>
       </Command>
     </CommandDialog>
   );
