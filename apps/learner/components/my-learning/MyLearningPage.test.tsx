@@ -219,7 +219,7 @@ describe('MyLearningPage — course rendering', () => {
     );
     renderPage();
     expect((await screen.findAllByText('Completed')).length).toBeGreaterThan(0);
-    expect(screen.getByRole('link', { name: 'Completed' })).toHaveAttribute('href', '/learn/course-1');
+    expect(screen.getByRole('link', { name: 'Completed' })).toHaveAttribute('href', '/courses/course-1/learn');
   });
 });
 

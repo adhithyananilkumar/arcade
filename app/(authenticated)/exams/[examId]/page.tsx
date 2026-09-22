@@ -81,7 +81,7 @@ export default function ExamAcknowledgementPage() {
     } catch (err) {
       console.warn('Failed to enter fullscreen', err);
     }
-    router.push(`/learn/exam/${params.examId}/start`);
+    router.push(`/exams/${params.examId}/attempt`);
   };
 
   return (
@@ -171,7 +171,7 @@ export default function ExamAcknowledgementPage() {
 
         <div className="mt-6 text-center">
           <Link
-            href="/exam"
+            href="/exams"
             className="text-[12px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
           >
             ← Back to today&apos;s exams

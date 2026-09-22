@@ -1,15 +1,44 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { courseRoutes, eventRoutes } from '@/shared/routes/content.routes';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { ApiError } from '@/infrastructure/http/api';
 import { EnrollmentService } from '../api/enrollment.service';
 import { myEnrollmentKeys } from '../api/myEnrollments.queries';
 import { ResourceType, UIEnrollmentState } from '../types/enrollment.types';
 import { toast } from 'sonner';
 import { ArrowRight, Loader2, LogOut } from 'lucide-react';
 import { launchRazorpayCheckout } from '@/domains/payment';
+
+/**
+ * Turns a thrown enrollment failure into something worth reading.
+ *
+ * <p>Every failure here used to collapse into "Failed to enroll. Please try again." — advice that
+ * is actively wrong for most of the cases it covered. A learner whose API server is down, whose
+ * session expired, or who hit a server fault can retry forever without anything changing; what
+ * they need is to know which of those it was. Server faults carry the backend's incident
+ * reference through, so a bug report names the log line that explains it.
+ */
+function describeEnrollmentFailure(err: unknown, verb: 'enrol' | 'unenrol' = 'enrol'): string {
+  const action = verb === 'enrol' ? 'enrol' : 'unenrol';
+
+  if (err instanceof ApiError) {
+    if (err.isNetworkError) return `Could not ${action}: ${err.message}`;
+    if (err.status === 401) return 'Please log in first.';
+    if (err.status === 403) return `You are not allowed to ${action} here.`;
+    if (err.status === 404) return 'This resource no longer exists.';
+    if (err.status === 409) return err.message;
+    if (err.status === 429) return 'Too many attempts — please wait a moment and try again.';
+    // 4xx below carry a backend-authored, user-safe message; 5xx were rewritten by the API client
+    // to a generic line that already includes the incident reference.
+    return err.message;
+  }
+
+  return `Could not ${action}. Please try again.`;
+}
 
 export interface EnrollmentButtonProps {
   resourceType: ResourceType;
@@ -179,13 +208,9 @@ export function EnrollmentButton({
           resetIdempotencyKey();
           break;
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Enrollment error:', err);
-      if (err?.message?.includes('401')) {
-        toast.error('Please log in to enroll.');
-      } else {
-        toast.error('Failed to enroll. Please try again.');
-      }
+      toast.error(describeEnrollmentFailure(err));
     } finally {
       setIsProcessing(false);
     }
@@ -204,9 +229,9 @@ export function EnrollmentButton({
       notifyStateChange('NOT_ENROLLED');
       toast.success('Successfully unenrolled');
       resetIdempotencyKey();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Revoke error:', err);
-      toast.error('Failed to revoke enrollment. Please try again.');
+      toast.error(describeEnrollmentFailure(err, 'unenrol'));
     } finally {
       setIsProcessing(false);
     }
@@ -222,11 +247,11 @@ export function EnrollmentButton({
       return;
     }
     if (resourceType === 'COURSE') {
-      router.push(`/learn/${resourceId}/learn`);
+      router.push(courseRoutes.overview(resourceId));
     } else if (resourceType === 'EVENT') {
       // EVENT is canonical for all event-like content (workshop, webinar, bootcamp). The former
       // 'WORKSHOP' branch was dead: the backend enum has no such member and rejected the request.
-      router.push(`/events/${resourceId}`);
+      router.push(eventRoutes.overview(resourceId));
     }
   };
 

@@ -7,6 +7,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { courseRoutes, examRoutes } from '@/shared/routes/content.routes';
 import { Loader2 } from 'lucide-react';
 import {
   AssessmentLanding,
@@ -68,9 +69,11 @@ export function AssessmentLandingPane({
     // it the player falls back to the exam's first active plan, which may be a different sitting
     // entirely from the one this course intends.
     if (landing?.planId) params.set('planId', landing.planId);
-    if (courseId) params.set('returnTo', `/learn/${courseId}/learn`);
+    // Return to this assessment's own place in the course, not the course's first lesson — the
+    // learner came from here, and after an attempt this is where the result is shown.
+    if (courseId) params.set('returnTo', courseRoutes.lesson(courseId, assessment.placementId));
     const query = params.toString();
-    router.push(`/learn/exam/${assessment.examId}/start${query ? `?${query}` : ''}`);
+    router.push(`${examRoutes.attempt(assessment.examId)}${query ? `?${query}` : ''}`);
   };
 
   if (error) {
@@ -94,7 +97,7 @@ export function AssessmentLandingPane({
       <AssessmentLanding
         landing={landing}
         onStart={handleStart}
-        onViewGradeCard={(gradeCardId) => router.push(`/learn/grade-card/${gradeCardId}`)}
+        onViewGradeCard={(gradeCardId) => router.push(examRoutes.gradeCard(gradeCardId))}
       />
     </div>
   );
