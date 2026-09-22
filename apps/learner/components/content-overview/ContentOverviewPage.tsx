@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, Check, Sparkles } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { AlertTriangle, Check } from 'lucide-react';
 import { OverviewHero } from './sections/OverviewHero';
 import { OverviewSyllabus } from './sections/OverviewSyllabus';
 import { OverviewNotesPanel } from './sections/OverviewNotesPanel';
@@ -9,7 +11,7 @@ import { OverviewFacts, OverviewPeople } from './sections/OverviewAside';
 import type { ContentOverviewModel } from './contentOverview.types';
 
 /**
- * The page a learner lands on after enrolling, and every time they come back.
+ * The page a learner opens after enrolling, and every time they come back.
  *
  * <p>It exists because "Go to course" used to drop straight into the player, which answers "what is
  * the next video" and nothing else. Between enrolling and studying there is a real question —
@@ -17,8 +19,25 @@ import type { ContentOverviewModel } from './contentOverview.types';
  *
  * <p>One component for every content type. Courses and events supply the same {@link
  * ContentOverviewModel} through their own adapter; nothing below branches on which one it is.
+ *
+ * <p>This hub belongs to enrolled learners only, and its URL is inert for everyone else. Someone
+ * who reaches it without an entitlement — a typed URL or an old bookmark, since nothing links here
+ * for them — is sent to the content's own landing page, which is where the details and the enrol
+ * button live. A holding card was tried first and replaced: it was a dead end that made the reader
+ * click again to reach the only page that could actually help them.
  */
 export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) {
+  const router = useRouter();
+
+  // `replace`, not `push`: the hub was never a place this learner could be, so it must not sit in
+  // history for Back to return to. Gated on `isLoading`/`error` because entitlement is unknown
+  // until the model resolves, and an in-flight read must not read as "not entitled".
+  const shouldRedirect = !model.isLoading && !model.error && !model.isEntitled;
+  const landingHref = model.landingHref;
+  useEffect(() => {
+    if (shouldRedirect) router.replace(landingHref);
+  }, [shouldRedirect, landingHref, router]);
+
   if (model.isLoading) return <OverviewSkeleton />;
 
   if (model.error) {
@@ -32,16 +51,9 @@ export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) 
     );
   }
 
-  if (!model.isEntitled) {
-    return (
-      <OverviewMessage
-        icon={<Sparkles className="text-indigo-500" size={28} />}
-        title="You're not enrolled in this yet"
-        body="Enrol from the content page and this hub — your progress, your notes and everything in it — opens up."
-        action={{ href: model.landingHref, label: 'Go to the content page' }}
-      />
-    );
-  }
+  // The redirect above is already in flight; render the skeleton rather than a message the reader
+  // would only see flash past.
+  if (!model.isEntitled) return <OverviewSkeleton />;
 
   const flatItems = model.sections.flatMap((section) => section.items);
 

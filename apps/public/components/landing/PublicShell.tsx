@@ -48,8 +48,13 @@ function ShellOuter({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isProfile = useIsProfileRoute();
   const isExplore = pathname === "/explore";
+  // A single course (`/courses/<id>`), not the listing at `/courses`: it supplies its own chrome
+  // through ViewerShell, which picks the signed-in app nav or the marketing nav depending on who
+  // is looking. Rendering HeroNav and Footer here too would stack a second header and footer
+  // around it.
+  const isCourse = pathname?.startsWith("/courses/") ?? false;
 
-  if (isProfile) {
+  if (isProfile || isCourse) {
     return <>{children}</>;
   }
 

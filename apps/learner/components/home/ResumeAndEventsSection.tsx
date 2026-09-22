@@ -208,13 +208,14 @@ function RecommendedFeaturedCard({ course }: { course: CourseSummaryResponse }) 
           </p>
         </div>
 
-        {/* CTA Button */}
+        {/* CTA Button — this is the featured *recommendation*, a course the learner has not
+            enrolled in, so it goes to the course page rather than the enrolled-only hub. */}
         <div className="pt-1">
           <Link
-            href={courseRoutes.overview(course.id)}
+            href={courseRoutes.landing(course.id)}
             className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#4C6FFF] px-5 py-3 text-[13px] font-semibold text-white transition-all shadow-sm hover:bg-[#3a5ae6] hover:shadow-md"
           >
-            <BookOpen size={16} /> Start Learning
+            <BookOpen size={16} /> View Course
           </Link>
         </div>
       </div>

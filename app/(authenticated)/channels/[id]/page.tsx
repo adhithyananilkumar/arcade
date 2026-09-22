@@ -36,7 +36,7 @@ function typeLabel(type: string) {
 function contentHref(item: ChannelContentItem) {
   const t = item.type?.toUpperCase();
   if (t === 'COURSE') return `/courses/${item.id}`;
-  if (t === 'WORKSHOP' || t === 'WEBINAR') return courseRoutes.overview(item.id);
+  if (t === 'WORKSHOP' || t === 'WEBINAR') return courseRoutes.landing(item.id);
   return null;
 }
 

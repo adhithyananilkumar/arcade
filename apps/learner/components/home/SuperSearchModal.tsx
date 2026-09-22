@@ -280,7 +280,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                 <CommandItem
                   key={course.id}
                   value={`course-${course.id}`}
-                  onSelect={() => go(courseRoutes.overview(course.id))}
+                  onSelect={() => go(courseRoutes.landing(course.id))}
                 >
                   <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-slate-100">
                     {course.coverImageUrl ? (

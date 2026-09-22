@@ -132,7 +132,11 @@ export function useEventOverviewModel(slugOrId: string): ContentOverviewModel {
 
     isLoading: eventQuery.isLoading || (Boolean(event?.id) && sessionsQuery.isLoading),
     error: describeLoadFailure(eventQuery.error),
-    isEntitled: enrollmentQuery.data ? enrollmentQuery.data.enrolled : true,
+    // Never judged from a read that is still in flight. Registering invalidates the enrollment
+    // cache and navigates here in the same tick, so a naive read of `enrolled` returns the answer
+    // from before the learner registered and tells them they have not — see the course adapter.
+    isEntitled:
+      enrollmentQuery.data && !enrollmentQuery.isFetching ? enrollmentQuery.data.enrolled : true,
   };
 }
 

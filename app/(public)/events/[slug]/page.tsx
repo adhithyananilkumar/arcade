@@ -1,16 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Calendar, MapPin, Users, Clock, ArrowRight } from "lucide-react";
+import { useParams } from "next/navigation";
+import { Users, Clock } from "lucide-react";
 import { getEventById } from "../api/event.service";
 import type { EventDto } from "../types/event.types";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import { formatMoney } from "@/shared/utils/money";
+import {
+  EnrollmentButton,
+  useMyEnrollmentForResourceQuery,
+  type UIEnrollmentState,
+} from "@/domains/enrollment";
 
 export default function EventDetailPage() {
   const params = useParams<{ slug: string }>();
-  const router = useRouter();
   const { user } = useAuthStore();
   const [event, setEvent] = useState<EventDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,16 +26,25 @@ export default function EventDetailPage() {
       .finally(() => setLoading(false));
   }, [params.slug]);
 
+  // Server-owned, same read model the course page uses. ACCESSIBLE is the only state that counts
+  // as enrolled — a PENDING (unpaid / awaiting approval) registration must not present itself as
+  // access to the event hub.
+  const { data: myEnrollment } = useMyEnrollmentForResourceQuery(
+    "EVENT",
+    event?.id || undefined,
+    Boolean(user) && Boolean(event?.id),
+  );
+
   if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-500">Loading...</div>;
   if (!event) return <div className="min-h-screen flex items-center justify-center text-gray-500">Event not found.</div>;
 
-  const handleEnroll = () => {
-    if (!user) {
-      router.push(`/login?redirect=/events/${event.slug || event.id}`);
-      return;
-    }
-    router.push(`/events/${event.slug || event.id}/learn`);
-  };
+  const enrollmentStatus = myEnrollment?.enrollment?.enrollmentStatus;
+  const enrollButtonState: UIEnrollmentState =
+    myEnrollment?.enrollment?.accessState === "ACCESSIBLE"
+      ? "ENROLLED"
+      : enrollmentStatus === "PENDING" || enrollmentStatus === "REQUESTED"
+        ? "PENDING"
+        : "NOT_ENROLLED";
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
@@ -59,14 +72,21 @@ export default function EventDetailPage() {
           )}
         </div>
 
-        <div className="mt-10 flex flex-wrap gap-4">
-          <button
-            onClick={handleEnroll}
-            className="bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 px-8 rounded-xl shadow-md transition-all flex items-center gap-2"
-          >
-            {event.priceAmount > 0 ? `Enroll — ${formatMoney(event.priceAmount, event.currency)}` : "Enroll for Free"}
-            <ArrowRight className="w-5 h-5" />
-          </button>
+        {/* The real enrolment control, not a link to the hub: this button used to navigate
+            straight to /events/{slug}/learn without enrolling anyone, which the hub — now that it
+            redirects the unentitled back here — would bounce straight back. */}
+        <div className="mt-10 flex flex-wrap items-center gap-4">
+          <span className="text-2xl font-bold text-gray-900 dark:text-white">
+            {event.priceAmount > 0 ? formatMoney(event.priceAmount, event.currency) : "Free"}
+          </span>
+          <div className="min-w-[220px]">
+            <EnrollmentButton
+              resourceType="EVENT"
+              resourceId={event.id}
+              initialState={enrollButtonState}
+              pendingReason={myEnrollment?.enrollment?.requiresPayment ? "PAYMENT" : "REQUIREMENTS"}
+            />
+          </div>
         </div>
       </div>
     </div>

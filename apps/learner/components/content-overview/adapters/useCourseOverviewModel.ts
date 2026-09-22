@@ -22,10 +22,10 @@ import type {
 /**
  * Builds the overview model for a course.
  *
- * <p>Reads only what already exists: the published course from the public read model, lesson
- * progress from the learning domain, and entitlement from the enrollment read model. Nothing here
- * decides access — {@link useMyEnrollmentForResourceQuery} reports the server's answer, and the
- * backend refuses the content regardless of what this renders.
+ * <p>Reads only what already exists: the published course from the public read model, and lesson
+ * progress from the learning domain. Nothing here decides access — it reports the server's answer,
+ * and the backend refuses the content regardless of what this renders. See `isEntitled` below for
+ * which of the two reads is authoritative and why.
  */
 export function useCourseOverviewModel(courseId: string): ContentOverviewModel {
   const courseQuery = useQuery({
@@ -36,10 +36,10 @@ export function useCourseOverviewModel(courseId: string): ContentOverviewModel {
 
   const progressQuery = useQuery({
     queryKey: ['learning', 'progress', 'course', courseId],
-    queryFn: () => courseProgressService.getCourseProgress(courseId),
+    // The 403 is expected, not a fault: this query doubles as the entitlement probe below, so a
+    // refusal is one of the two answers it exists to get. Hence no retry, and no console error.
+    queryFn: () => courseProgressService.getCourseProgress(courseId, true),
     enabled: Boolean(courseId),
-    // A learner without an entitlement gets a 403 here; that is the enrollment query's answer to
-    // report, not an error worth retrying.
     retry: false,
   });
 
@@ -76,6 +76,33 @@ export function useCourseOverviewModel(courseId: string): ContentOverviewModel {
 
   const isLoading =
     courseQuery.isLoading || progressQuery.isLoading || enrollmentQuery.isLoading;
+
+  /**
+   * Is this learner entitled to the content?
+   *
+   * <p>The obvious implementation — read `enrolled` off the enrollment query — is wrong on the one
+   * path that matters most. Enrolling invalidates the enrollment cache and navigates here in the
+   * same tick, so this page mounts while that read is still in flight and React Query serves the
+   * *previous* answer: `enrolled: false`, captured before they enrolled. The learner clicks "Enrol"
+   * and is told they are not enrolled.
+   *
+   * <p>So: prefer the progress endpoint, which the backend gates on entitlement itself
+   * ({@code CourseEntitlementService}). A 200 there is proof of entitlement and a 403 is proof of
+   * its absence — both authoritative, neither guessable from a stale cache. The enrollment read is
+   * only consulted when progress has not answered, and only once it has settled; anything still
+   * fetching means "don't know yet", which the hub renders as its skeleton rather than as a denial.
+   */
+  const progressForbidden =
+    progressQuery.error instanceof ApiError && progressQuery.error.status === 403;
+  const entitlementSettled = !enrollmentQuery.isFetching && !progressQuery.isFetching;
+
+  const isEntitled = progressQuery.isSuccess
+    ? true
+    : progressForbidden
+      ? false
+      : enrollmentQuery.data && entitlementSettled
+        ? enrollmentQuery.data.enrolled
+        : true;
 
   return {
     contentType: 'COURSE',
@@ -123,9 +150,7 @@ export function useCourseOverviewModel(courseId: string): ContentOverviewModel {
 
     isLoading,
     error: describeLoadFailure(courseQuery.error),
-    // Absent data is not a denial — while the query is still settling the hub shows its skeleton,
-    // so defaulting to entitled here avoids flashing "you're not enrolled" at someone who is.
-    isEntitled: enrollmentQuery.data ? enrollmentQuery.data.enrolled : true,
+    isEntitled,
   };
 }
 

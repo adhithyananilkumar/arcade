@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Fraunces, Inter } from 'next/font/google'
 import './globals.css'
 import { API_ORIGIN } from '@/infrastructure/config/env'
+import ViewerShell from '@/apps/public/layout/ViewerShell'
 
 const inter = Inter({
     subsets: ['latin'],
@@ -88,9 +89,14 @@ export default function CourseLayout({
 }: Readonly<{
     children: React.ReactNode
 }>) {
+    // A course page is reached from inside the app as often as from outside it, so the chrome
+    // follows the viewer: `LearnerShell` for a signed-in learner, the marketing nav and footer for
+    // a visitor. This page used to live under `(authenticated)`, where it simply inherited the
+    // signed-in shell; moving it into `(public)` handed every learner the public site's header —
+    // with its sign-up call to action — in place of their own navigation.
     return (
         <div className={`${inter.variable} ${fraunces.variable} bg-paper antialiased min-h-screen`} style={{ fontFamily: "var(--font-inter), sans-serif" }}>
-            {children}
+            <ViewerShell>{children}</ViewerShell>
             {process.env.NODE_ENV === 'production' && <Analytics />}
         </div>
     )

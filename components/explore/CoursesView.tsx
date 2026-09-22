@@ -523,9 +523,9 @@ export const CourseCard: React.FC<CourseCardProps> = ({
 
   const handleCourseClick = () => {
     if (status === 'authenticated') {
-      router.push(courseRoutes.overview(course.id || courseSlug));
+      router.push(courseRoutes.landing(course.id || courseSlug));
     } else {
-      router.push(`/sign?redirect=${encodeURIComponent(courseRoutes.overview(course.id || courseSlug))}`);
+      router.push(`/sign?redirect=${encodeURIComponent(courseRoutes.landing(course.id || courseSlug))}`);
     }
   };
 

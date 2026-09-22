@@ -86,9 +86,25 @@ function getAccessToken(): string | null {
   return null;
 }
 
+/**
+ * Request options, plus Arcade's own additions to `RequestInit`.
+ */
+export interface ApiRequestOptions extends RequestInit {
+  /**
+   * HTTP statuses this caller treats as a normal answer rather than a fault, so they are not
+   * logged to the console as errors.
+   *
+   * <p>Some endpoints answer a *question*, and "no" is a valid reply. Probing an entitlement-gated
+   * endpoint to find out whether a learner holds the content is the motivating case: its 403 is
+   * the information being asked for, and logging it shouts about a failure that did not happen.
+   * The call still rejects with an {@link ApiError} — this only governs console noise.
+   */
+  expectedStatuses?: number[];
+}
+
 async function request<T>(
   path: string,
-  options?: RequestInit,
+  options?: ApiRequestOptions,
   isRetry = false
 ): Promise<T> {
   const token = getAccessToken();
@@ -156,7 +172,9 @@ async function request<T>(
   if (!res.ok) {
     let message = `API error ${res.status}`;
     if (text) {
-      console.error(`[API ERROR ${res.status}] Path: ${path}`, text);
+      if (!options?.expectedStatuses?.includes(res.status)) {
+        console.error(`[API ERROR ${res.status}] Path: ${path}`, text);
+      }
       try {
         const err = JSON.parse(text);
         message = err.message ?? message;
@@ -196,14 +214,14 @@ async function request<T>(
 // ── Exports ────────────────────────────────────────────────────────────────────
 
 export const api = {
-  get: <T>(path: string, options?: RequestInit) => request<T>(path, { method: "GET", cache: "no-store", ...options }),
-  post: <T>(path: string, body?: unknown, options?: RequestInit) =>
+  get: <T>(path: string, options?: ApiRequestOptions) => request<T>(path, { method: "GET", cache: "no-store", ...options }),
+  post: <T>(path: string, body?: unknown, options?: ApiRequestOptions) =>
     request<T>(path, { method: "POST", body: body instanceof FormData ? body : JSON.stringify(body), ...options }),
-  patch: <T>(path: string, body?: unknown, options?: RequestInit) =>
+  patch: <T>(path: string, body?: unknown, options?: ApiRequestOptions) =>
     request<T>(path, { method: "PATCH", body: body instanceof FormData ? body : JSON.stringify(body), ...options }),
-  put: <T>(path: string, body?: unknown, options?: RequestInit) =>
+  put: <T>(path: string, body?: unknown, options?: ApiRequestOptions) =>
     request<T>(path, { method: "PUT", body: body instanceof FormData ? body : JSON.stringify(body), ...options }),
-  delete: <T>(path: string, body?: unknown, options?: RequestInit) =>
+  delete: <T>(path: string, body?: unknown, options?: ApiRequestOptions) =>
     request<T>(path, {
       method: "DELETE",
       ...(body !== undefined ? { body: body instanceof FormData ? body : JSON.stringify(body) } : {}),
