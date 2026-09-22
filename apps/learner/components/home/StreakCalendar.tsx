@@ -6,6 +6,8 @@ import { ChevronLeft, ChevronRight, Flame } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+import { useCalendarEvents } from '@/app/(authenticated)/calendar/api/calendar';
+
 type Props = {
   /** ISO date keys (YYYY-MM-DD) mapped to backend-computed qualifying-activity count for that day */
   activityByDate: Record<string, number>;
@@ -50,6 +52,22 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
   }, []);
   const [cursor, setCursor] = useState(() => startOfMonth(today));
   const [direction, setDirection] = useState(1); // 1 = next, -1 = prev
+
+  const offset = sundayIndex(startOfMonth(cursor));
+  const startDate = new Date(cursor.getFullYear(), cursor.getMonth(), 1 - offset);
+  const endDate = new Date(cursor.getFullYear(), cursor.getMonth(), 1 - offset + 42); // 42 days grid
+  const { data: events = [] } = useCalendarEvents(startDate, endDate);
+
+  const eventsByDate = useMemo(() => {
+    const map: Record<string, typeof events> = {};
+    events.forEach(e => {
+      if (!e.startTime) return;
+      const iso = e.startTime.split('T')[0];
+      if (!map[iso]) map[iso] = [];
+      map[iso].push(e);
+    });
+    return map;
+  }, [events]);
 
   const handlePrevMonth = () => {
     setDirection(-1);
@@ -215,16 +233,25 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
                         }
                         const active = isActiveDay(cell.iso, activityByDate);
                         const isToday = cell.iso === todayIso;
+                        const dayEvents = cell.iso ? eventsByDate[cell.iso] : undefined;
 
                         return (
                           <Link
                             href={`/calendar?date=${cell.iso}`}
                             key={cell.iso}
-                            className="relative z-[1] flex h-8 items-center justify-center cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors"
+                            className="group relative z-[1] flex h-8 flex-col items-center justify-center cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors"
                           >
                             {isToday ? (
                               <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full bg-[#4C6FFF] text-sm font-bold text-white shadow-md shadow-[#4C6FFF]/30 pointer-events-none">
                                 {cell.day}
+                              </span>
+                            ) : dayEvents && dayEvents.length > 0 ? (
+                              <span 
+                                className="relative flex h-7.5 w-7.5 items-center justify-center rounded-full text-sm font-extrabold pointer-events-none"
+                                style={{ color: dayEvents[0].category?.color || '#4C6FFF' }}
+                              >
+                                <div className="absolute inset-0 rounded-full opacity-15" style={{ backgroundColor: dayEvents[0].category?.color || '#4C6FFF' }} />
+                                <span className="relative z-10">{cell.day}</span>
                               </span>
                             ) : active ? (
                               <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full bg-[#4C6FFF]/20 text-sm font-extrabold text-[#4C6FFF] dark:bg-[#4C6FFF]/30 dark:text-[#7C98FF] pointer-events-none">
@@ -234,6 +261,23 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
                               <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full text-sm font-semibold text-stone-500 dark:text-slate-400 hover:text-black dark:hover:text-white transition-colors pointer-events-none">
                                 {cell.day}
                               </span>
+                            )}
+                            
+                            {dayEvents && dayEvents.length > 0 && (
+                               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-max max-w-[200px] hidden group-hover:block z-50 rounded-lg bg-[#14142b] p-2 text-xs shadow-xl text-white pointer-events-none">
+                                 {dayEvents.map((e, i) => (
+                                   <div key={i} className="mb-1 flex items-start gap-1.5 last:mb-0 text-left">
+                                     <div className="w-1.5 h-1.5 mt-1 shrink-0 rounded-full" style={{ backgroundColor: e.category?.color || '#4C6FFF' }} />
+                                     <div className="flex flex-col min-w-0">
+                                       <span className="font-bold truncate text-slate-100">{e.title}</span>
+                                       <span className="text-[10px] text-slate-400">
+                                         {new Date(e.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                       </span>
+                                     </div>
+                                   </div>
+                                 ))}
+                                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-[#14142b]" />
+                               </div>
                             )}
                           </Link>
                         );
