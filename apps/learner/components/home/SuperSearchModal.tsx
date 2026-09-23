@@ -40,7 +40,7 @@ import { AuthorizationService } from '@/infrastructure/auth/authorization.servic
 import { useHasAnyChannel, useStudioAccess } from '@/domains/channels';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 import { usePublicCoursesPage } from '@/shared/hooks/usePublicCourses';
-import { getPublishedEvents } from '@/app/(public)/events/api/event.service';
+import { getPublishedEvents } from '@/domains/events';
 import {
   Command,
   CommandDialog,

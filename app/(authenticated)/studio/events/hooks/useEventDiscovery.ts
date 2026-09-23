@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { getPublishedEvents, EventSearchParams } from '../api/discoveryApi';
+import { getPublishedEvents, EventSearchParams } from '@/domains/events/api/discoveryApi';
 import { Event } from '../types';
 
 export function useEventDiscovery(options?: { types?: string[] }) {

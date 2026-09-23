@@ -40,7 +40,7 @@ export function EventWorkspace({ eventId }: { eventId: string }) {
   const [sessionSettingsSessionId, setSessionSettingsSessionId] = useState<string | null>(null);
 
   const onSubmit = useCallback(async (data: { message?: string }) => {
-    const { submitEvent } = await import("@/app/(authenticated)/studio/events/api/publish");
+    const { submitEvent } = await import("@/domains/events/api/publish");
     const updated = await submitEvent(eventId, { message: data.message });
     return { status: updated.status, updatedAt: updated.updatedAt ?? null };
   }, [eventId]);

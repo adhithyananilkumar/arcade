@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getPublishedEvents } from "./api/event.service";
-import type { EventDto } from "./types/event.types";
+import { getPublishedEvents } from "@/domains/events";
+import type { EventDto } from "@/domains/events";
 
 export function EventDiscoveryPage() {
   const [events, setEvents] = useState<EventDto[]>([]);

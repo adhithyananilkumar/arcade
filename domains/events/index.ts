@@ -39,6 +39,12 @@ export {
   archiveEvent,
 } from './api/publish';
 
+export {
+  EventDiscoveryService,
+  getPublishedEvents,
+  getEventById,
+} from './api/eventDiscovery.service';
+
 export { EventRegistrationService } from './api/eventRegistration.service';
 export { EventTicketService, MyEventTicketService } from './api/eventTicket.service';
 export {
@@ -66,6 +72,16 @@ export { TicketCheckInPanel } from './components/TicketCheckInPanel';
 export { EventInvitationManager } from './components/EventInvitationManager';
 
 export type * from './types/event.types';
+export type {
+  EventDto,
+  PagedEvents,
+  PublishedEventsQuery,
+  EventStatus,
+  EventTypeName,
+  EventDeliveryMode,
+  EventDifficulty,
+  EventVisibility,
+} from './types/eventDiscovery.types';
 
 export type {
   ResourceType,

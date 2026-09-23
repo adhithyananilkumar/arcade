@@ -5,8 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { CalendarDays, Globe, Layers, Signal, Users, Video } from 'lucide-react';
 import { api, ApiError } from '@/infrastructure/http/api';
 import { useMyEnrollmentForResourceQuery } from '@/domains/enrollment';
-import { getEventById } from '@/app/(public)/events/api/event.service';
-import type { EventDto } from '@/app/(public)/events/types/event.types';
+import { getEventById } from '@/domains/events';
+import type { EventDto } from '@/domains/events';
 import { eventRoutes } from '@/shared/routes/content.routes';
 import type {
   ContentOverviewModel,
@@ -143,10 +143,16 @@ export function useEventOverviewModel(slugOrId: string): ContentOverviewModel {
 function buildFacts(event: EventDto | undefined, sessionCount: number): OverviewFact[] {
   if (!event) return [];
 
-  const facts: OverviewFact[] = [
-    { icon: Layers, label: 'Format', value: toTitleCase(event.eventType) },
-    { icon: Video, label: 'Delivery', value: toTitleCase(event.deliveryMode) },
-  ];
+  // Both can genuinely be absent on a draft-shaped event. Omitting the row is better than
+  // rendering an empty one, and toTitleCase would previously have thrown on null -- the old type
+  // claimed these were always present, so nothing caught it.
+  const facts: OverviewFact[] = [];
+  if (event.eventType) {
+    facts.push({ icon: Layers, label: 'Format', value: toTitleCase(event.eventType) });
+  }
+  if (event.deliveryMode) {
+    facts.push({ icon: Video, label: 'Delivery', value: toTitleCase(event.deliveryMode) });
+  }
 
   if (sessionCount > 0) {
     facts.push({ icon: CalendarDays, label: 'Sessions', value: String(sessionCount) });

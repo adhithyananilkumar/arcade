@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getEventSummary, EventSummary, deleteEvent } from '../api/dashboardApi';
-import { updateEvent } from '../api/event';
+import { getEventSummary, EventSummary, deleteEvent } from '@/domains/events/api/dashboardApi';
+import { updateEvent } from '@/domains/events/api/event';
 import { toast } from 'sonner';
 import { EventWizard } from '../components/wizard/EventWizard';
 import RegisteredMembersPage from './participants/page';
