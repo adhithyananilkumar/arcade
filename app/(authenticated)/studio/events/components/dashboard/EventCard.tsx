@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { EventListDto } from '@/app/(authenticated)/studio/events/api/dashboardApi';
+import { EventListDto } from '@/domains/events/api/dashboardApi';
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return '';

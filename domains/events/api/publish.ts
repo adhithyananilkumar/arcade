@@ -1,5 +1,5 @@
 import { api } from '@/infrastructure/http/api';
-import { PublishValidationResponse, EventPreviewDto, Event } from '@/app/(authenticated)/studio/events/types';
+import { PublishValidationResponse, EventPreviewDto, Event } from '../types/event.types';
 
 const API_BASE_PATH = '/api/v1/events';
 

@@ -60,13 +60,16 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
 export function CategoryEventsView({ category }: { category: string }) {
   const router = useRouter();
   
-  // Filter webinars by category, and fallback to all if none exactly match (just for demo purposes)
-  let categoryWebinars = WEBINARS_DATA.filter(w => w.category.toLowerCase() === category.toLowerCase());
-  
-  // If no matching webinars for this dummy category, we just use a fallback copy so it doesn't look empty for the client.
-  if (categoryWebinars.length === 0) {
-    categoryWebinars = WEBINARS_DATA.map(w => ({ ...w, category: category }));
-  }
+  // An empty category renders as empty.
+  //
+  // This used to relabel every event with whatever category was asked for whenever the filter
+  // matched nothing -- by its own comment, "so it doesn't look empty for the client". The result
+  // was a page that could never be empty and could never be trusted: a visitor browsing "Data
+  // Science" saw design events retitled as data science, and clicking one took them somewhere
+  // unrelated to what they were shown.
+  const categoryWebinars = WEBINARS_DATA.filter(
+    w => w.category.toLowerCase() === category.toLowerCase()
+  );
 
   return (
     <div className="min-h-screen" style={{ background: "#F9FAFB", padding: "40px 20px" }}>
@@ -88,6 +91,40 @@ export function CategoryEventsView({ category }: { category: string }) {
         <p style={{ fontSize: "1.1rem", color: "#6B7280", marginBottom: "40px" }}>
           Live learning, bootcamps, and webinars for {category}.
         </p>
+
+        {categoryWebinars.length === 0 && (
+          <div
+            style={{
+              background: "#FFFFFF",
+              border: "1px dashed #D1D5DB",
+              borderRadius: "20px",
+              padding: "48px 24px",
+              textAlign: "center",
+            }}
+          >
+            <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#111827", marginBottom: "8px" }}>
+              No {category} events yet
+            </h2>
+            <p style={{ color: "#6B7280" }}>
+              Nothing is scheduled in this category right now. Browse everything on offer instead.
+            </p>
+            <button
+              onClick={() => router.push("/events")}
+              style={{
+                marginTop: "20px",
+                background: "#0A1931",
+                color: "#FFFFFF",
+                border: "none",
+                borderRadius: "999px",
+                padding: "12px 24px",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Explore all events
+            </button>
+          </div>
+        )}
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
           {categoryWebinars.map((w, i) => {

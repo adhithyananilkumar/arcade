@@ -1,5 +1,5 @@
 import { api } from '@/infrastructure/http/api';
-import { Event } from '@/app/(authenticated)/studio/events/types';
+import { Event } from '../types/event.types';
 
 export interface PublishedEventPage {
   content: Event[];

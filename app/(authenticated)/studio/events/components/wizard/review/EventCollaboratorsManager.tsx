@@ -9,7 +9,7 @@ import {
   updateCollaboratorRole,
   removeCollaborator,
   Collaborator,
-} from '@/app/(authenticated)/studio/events/api/collaboration';
+} from '@/domains/events/api/collaboration';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/shared/design-system/ui/table';
 import { Badge } from '@/shared/design-system/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/design-system/ui/avatar';

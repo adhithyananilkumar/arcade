@@ -1,5 +1,5 @@
 import { api, ApiError } from "@/infrastructure/http/api";
-import { getEventStatusHistory, validateEvent } from "@/app/(authenticated)/studio/events/api/publish";
+import { getEventStatusHistory, validateEvent } from "@/domains/events/api/publish";
 import type { ReviewPathPreview } from "@/domains/publishing";
 import {
   platformReviewApi,

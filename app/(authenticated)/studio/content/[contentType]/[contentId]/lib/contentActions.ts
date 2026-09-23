@@ -1,6 +1,6 @@
 import { api } from "@/infrastructure/http/api";
-import { submitEvent, duplicateEvent, archiveEvent } from "@/app/(authenticated)/studio/events/api/publish";
-import { deleteEvent } from "@/app/(authenticated)/studio/events/api/dashboardApi";
+import { submitEvent, duplicateEvent, archiveEvent } from "@/domains/events/api/publish";
+import { deleteEvent } from "@/domains/events/api/dashboardApi";
 import type { ContentTypeSegment } from "./contentTypeRouting";
 
 // Every action here calls an existing, already-working endpoint — see the

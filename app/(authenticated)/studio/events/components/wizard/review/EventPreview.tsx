@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   BadgeCheck,
   BookOpen,
@@ -21,7 +21,7 @@ import { EventCollaboratorsManager } from './EventCollaboratorsManager';
 import { EnrollmentButton } from '@/domains/enrollment';
 import { toast } from 'sonner';
 import { EventPreviewDto, PricingModel } from '@/app/(authenticated)/studio/events/types';
-import { getMyRegistrationStatus, registerForEvent } from '@/app/(public)/workshop/api/registration';
+import { EventRegistrationService } from '@/domains/events';
 import {
   Dialog,
   DialogContent,
@@ -35,7 +35,6 @@ import {
   LearningLayout,
   LearningHero,
   LearningTabs,
-  LearningReviews,
   LearningCta,
   LearningBadge,
   Avatar
@@ -46,72 +45,24 @@ interface Props {
   onRegister?: () => Promise<void>;
 }
 
-const INSTRUCTOR = {
-  name: 'Maya Okafor',
-  role: 'Senior Product Designer',
-  channel: 'Maya Okafor',
-  org: 'Pixelcraft Studio',
-  accent: 'var(--color-purple)',
-  bio: 'Maya has spent twelve years designing products used by millions — leading design at two Series B startups and shipping systems at Meta and Notion. She teaches design as a craft you build in public, not a set of screens you decorate.',
-  expertise: ['Design systems', 'Interaction & motion', 'Figma', 'Prototyping', 'Design critique'],
-  stats: [
-    { k: '8', label: 'workshops', c: 'var(--color-blue)', icon: BookOpen },
-    { k: '12,500', label: 'students', c: 'var(--color-amber)', icon: Users },
-    { k: '4.9', label: 'avg rating', c: 'var(--color-teal)', icon: Star },
-    { k: '12 yrs', label: 'experience', c: 'var(--color-purple)', icon: GraduationCap },
-  ],
-};
-
-const REVIEWS = [
-  {
-    name: 'Adam Wathan',
-    role: 'Founder, Tailwind',
-    quote: "I've been using this developer series to get my team aligned on rapid component workflows.",
-    dark: true,
-    accent: 'var(--color-blue)',
-  },
-  {
-    name: 'Ian Callahan',
-    role: 'Harvard Art Museums',
-    quote: 'Genuinely the clearest explanation of real-world collaborative sessions I have seen.',
-    dark: false,
-    accent: 'var(--color-amber)',
-  },
-  {
-    name: 'Aaron Francis',
-    role: 'Co-founder, Try Hard Studios',
-    quote: 'Takes the pain out of learning complex delivery models — the pacing is spot on.',
-    dark: false,
-    accent: 'var(--color-purple)',
-  },
-  {
-    name: 'Chandresh Patel',
-    role: 'CEO, Bacancy',
-    quote: 'pacing, organization, and visual design components are completely top tier.',
-    dark: false,
-    accent: 'var(--color-teal)',
-  },
-  {
-    name: 'Fathom Analytics',
-    role: 'Team account',
-    quote: 'This session has been integral to how we think about product strategy onboarding.',
-    dark: true,
-    accent: 'var(--color-coral)',
-  },
-  {
-    name: 'Priya Menon',
-    role: 'Design Lead, Freshworks',
-    quote: 'Highly interactive. The direct Q&A session with the host alone was worth it.',
-    dark: false,
-    accent: 'var(--color-blue)',
-  },
-];
+/*
+ * Removed: a hardcoded INSTRUCTOR ("Maya Okafor", with invented student and rating counts) and six
+ * REVIEWS attributed by name and job title to real, identifiable people at real companies — Adam
+ * Wathan of Tailwind, Aaron Francis, a named Harvard Art Museums staffer, the CEO of Bacancy —
+ * none of whom said any of it, rendered on top of every event any creator previewed.
+ *
+ * Not replaced with different placeholder data. Made-up testimonials do not become acceptable by
+ * being attributed to made-up people, and an instructor panel showing somebody else's name and
+ * credentials on a creator's own event is worse than no panel. The author comes from the event;
+ * reviews wait until there is a review model to read them from.
+ */
 
 export function EventPreview({ data, onRegister, showActions = true }: { data: EventPreviewDto, onRegister?: () => void, showActions?: boolean }) {
   const { basicInfo, schedule, settings, pricing } = data;
   const [registration, setRegistration] = useState<any>(null);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
+  const registrationKeyRef = useRef<string | null>(null);
   const [openMod, setOpenMod] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
@@ -121,7 +72,7 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: E
       return;
     }
     try {
-      const data = await getMyRegistrationStatus(basicInfo.id);
+      const data = await EventRegistrationService.getMine(basicInfo.id);
       setRegistration(data);
     } catch (err) {
       console.error('Failed to fetch registration status:', err);
@@ -173,8 +124,12 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: E
       if (onRegister) {
         await onRegister();
       } else {
-        await registerForEvent(basicInfo.id!);
-        toast.success('Successfully registered for workshop!');
+        // One stable key per attempt, reused if the user retries after a transient failure, so
+        // the server's replay path can actually match it. A key minted per call never matches.
+        registrationKeyRef.current ??= crypto.randomUUID();
+        await EventRegistrationService.register(basicInfo.id!, registrationKeyRef.current);
+        registrationKeyRef.current = null;
+        toast.success('You are registered for this event.');
       }
       await loadRegistration();
     } catch (err: any) {
@@ -270,9 +225,9 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: E
       ]}
       category={basicInfo.category || 'Event'}
       title={title}
-      authorName={INSTRUCTOR.name}
-      authorUsername={INSTRUCTOR.channel}
-      authorAccent={INSTRUCTOR.accent}
+      authorName={basicInfo.channelName || 'Arcade'}
+      authorUsername={basicInfo.channelName ?? undefined}
+      authorAccent="var(--color-blue)"
       metaChips={[
         { icon: MapPin, label: basicInfo.deliveryMode === 'ONLINE' ? 'Online Event' : 'In-Person', dotColor: "var(--color-blue)" },
         { icon: Users, label: `${basicInfo.difficulty?.charAt(0) + basicInfo.difficulty?.slice(1).toLowerCase()} Level`, dotColor: "var(--color-amber)" },
@@ -410,58 +365,6 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: E
             </div>
           )
         },
-        {
-          id: "Instructor",
-          label: "Instructor",
-          content: (
-            <div className="mx-auto max-w-3xl rounded-3xl border border-line bg-paper p-8">
-              <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-                <Avatar name={INSTRUCTOR.name} accent={INSTRUCTOR.accent} size={72} />
-                <div className="flex-1">
-                  <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-purple/10 px-2.5 py-1 text-[12px] font-medium text-purple">
-                    <BadgeCheck size={13} /> {INSTRUCTOR.org}
-                  </div>
-                  <h3 className="font-serif text-2xl font-light text-ink">{INSTRUCTOR.name}</h3>
-                  <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-subtle">
-                    <span className="inline-flex items-center gap-1.5">
-                      <Briefcase size={13} /> {INSTRUCTOR.role}
-                    </span>
-                    <span className="text-subtle/40">·</span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Radio size={13} className="text-blue" /> {INSTRUCTOR.channel}
-                    </span>
-                  </p>
-                </div>
-                <button className="rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-paper transition-transform hover:-translate-y-0.5">
-                  Follow channel
-                </button>
-              </div>
-  
-              <p className="mt-6 text-[15px] leading-relaxed text-subtle">{INSTRUCTOR.bio}</p>
-  
-              <div className="mt-6 flex flex-wrap gap-2">
-                {INSTRUCTOR.expertise.map((e) => (
-                  <span
-                    key={e}
-                    className="rounded-full border border-line bg-mist px-3 py-1.5 text-[12px] font-medium text-ink"
-                  >
-                    {e}
-                  </span>
-                ))}
-              </div>
-  
-              <div className="mt-7 grid grid-cols-2 gap-3 border-t border-line pt-6 sm:grid-cols-4">
-                {INSTRUCTOR.stats.map(({ k, label, c, icon: Icon }) => (
-                  <div key={label}>
-                    <Icon size={16} style={{ color: c }} />
-                    <p className="mt-2 font-serif text-xl font-medium text-ink">{k}</p>
-                    <p className="text-[12px] text-subtle">{label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )
-        },
         ...(settings?.certificateEnabled ? [{
           id: "Certificate",
           label: "Certificate",
@@ -484,8 +387,6 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: E
       ]}
     />
   )
-
-  const reviewsContent = <LearningReviews reviews={REVIEWS} headingText="Loved by builders globally" />
 
   const ctaContent = (
     <LearningCta
@@ -540,7 +441,6 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: E
     <LearningLayout
       hero={heroContent}
       tabs={tabsContent}
-      reviews={reviewsContent}
       cta={ctaContent}
       modals={modals}
     />

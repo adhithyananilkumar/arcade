@@ -1,5 +1,5 @@
 import { api } from '@/infrastructure/http/api';
-import { CreateEventRequest, Event, EventFormData, CreateEventSessionRequest, UpdateEventSessionRequest, EventSession } from '@/app/(authenticated)/studio/events/types';
+import { CreateEventRequest, Event, EventFormData, CreateEventSessionRequest, UpdateEventSessionRequest, EventSession } from '../types/event.types';
 
 const API_BASE_PATH = '/api/v1/events';
 
