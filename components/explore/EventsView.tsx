@@ -110,58 +110,38 @@ export default function EventsView({
 
   const isAllCategory = activeCategoryName.toLowerCase() === "all";
 
-  // Real published events, filtered server-side by category.
+  // Everything below comes from the server.
   //
-  // The relabelling fallback that used to sit here — "if nothing matched, show all five with this
-  // category's name stuck on them" — is gone. It meant a visitor browsing one category was shown
-  // events from another, retitled, and clicking one took them somewhere unrelated.
-  const { data: publishedEvents, isLoading: eventsLoading } = usePublishedEventCardsQuery({
+  // Three separate fabrications used to live here. `activeData.bootcamps` was a fixed list of
+  // three invented bootcamps; for any category other than "All" this *additionally* invented two
+  // more named after whatever the visitor had clicked ("{category} Advanced Masterclass
+  // Bootcamp"); and the webinar list was five invented webinars relabelled the same way. None of
+  // it corresponded to anything a creator had published.
+  //
+  // Search is server-side now. It used to filter whichever page happened to be loaded, so a
+  // learner searching for an event on page 3 of the catalogue was told it did not exist.
+  const {
+    data: eventsPage,
+    isLoading: eventsLoading,
+    isError: eventsFailed,
+  } = usePublishedEventCardsQuery({
     category: isAllCategory ? undefined : activeCategoryName,
-    size: 24,
-  });
-  const categoryWebinars = publishedEvents?.content ?? [];
-
-  const allBootcamps = isAllCategory
-    ? activeData.bootcamps
-    : [
-        ...activeData.bootcamps,
-        {
-          title: `${activeCategoryName} Advanced Masterclass Bootcamp`,
-          duration: "10 Weeks",
-          type: "Bootcamp",
-          date: "Starts next Monday",
-          desc: "Deep dive into industry-level practices, live coding labs, and professional certification prep."
-        },
-        {
-          title: `${activeCategoryName} Career Acceleration Program`,
-          duration: "14 Weeks",
-          type: "Bootcamp",
-          date: "Open for Admission",
-          desc: "Guaranteed project portfolio building, mock technical interviews, and resume mentorship sessions."
-        }
-      ];
-
-  // Search filtering
-  const query = courseSearchQuery.trim().toLowerCase();
-  let filteredBootcamps = allBootcamps.filter((b: any) => {
-    if (!query) return true;
-    return (
-      (b.title && b.title.toLowerCase().includes(query)) ||
-      (b.desc && b.desc.toLowerCase().includes(query)) ||
-      (b.category && b.category.toLowerCase().includes(query))
-    );
+    search: courseSearchQuery.trim() || undefined,
+    size: 60,
   });
 
-  let filteredWebinars = categoryWebinars.filter((w: any) => {
-    if (!query) return true;
-    return (
-      (w.title && w.title.toLowerCase().includes(query)) ||
-      (w.host && w.host.toLowerCase().includes(query)) ||
-      (w.category && w.category.toLowerCase().includes(query))
-    );
-  });
+  const allEvents = eventsPage?.content ?? [];
 
-  // Sorting
+  // One list from the server, split by the event's own type rather than by two separate sources
+  // that could disagree about what exists.
+  const allBootcamps = allEvents.filter((e) => e.eventType === 'BOOTCAMP');
+  const categoryWebinars = allEvents.filter((e) => e.eventType !== 'BOOTCAMP');
+
+  let filteredBootcamps = allBootcamps;
+  let filteredWebinars = categoryWebinars;
+
+  // Sorting stays client-side: it reorders what is already on screen and does not change which
+  // events match.
   if (sortBy === "duration") {
     filteredBootcamps = [...filteredBootcamps].sort((a, b) => (a.duration || "").localeCompare(b.duration || ""));
     filteredWebinars = [...filteredWebinars].sort((a, b) => (a.duration || "").localeCompare(b.duration || ""));
@@ -170,7 +150,8 @@ export default function EventsView({
   const showBootcamps = eventType === "all" || eventType === "bootcamps";
   const showWebinars = eventType === "all" || eventType === "webinars";
   const totalCount = (showBootcamps ? filteredBootcamps.length : 0) + (showWebinars ? filteredWebinars.length : 0);
-  const totalAvailable = (showBootcamps ? allBootcamps.length : 0) + (showWebinars ? categoryWebinars.length : 0);
+  // The catalogue total for this filter, from the server -- not the size of the page in hand.
+  const totalAvailable = eventsPage?.totalElements ?? 0;
 
   const renderBootcampsSection = (title: string = "Practical Bootcamps") => {
     const CARDS_PER_PAGE = 3;
@@ -617,7 +598,23 @@ export default function EventsView({
         </div>
       </div>
 
-      {totalCount === 0 ? (
+      {eventsLoading ? (
+        <div style={{ padding: "48px 24px", textAlign: "center", color: "#6B7280" }}>
+          Loading events…
+        </div>
+      ) : eventsFailed ? (
+        /* Distinct from "no events": one means the catalogue is empty, the other means we could
+           not read it. Showing an empty state for a failed request tells the learner something
+           false about the platform. */
+        <div style={{ padding: "48px 24px", textAlign: "center" }}>
+          <h4 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--l-ink)", margin: "0 0 6px" }}>
+            Could not load events
+          </h4>
+          <p style={{ color: "#6B7280", fontSize: "0.86rem" }}>
+            Something went wrong reaching the server. Refresh to try again.
+          </p>
+        </div>
+      ) : totalCount === 0 ? (
         <div
           style={{
             textAlign: "center",
@@ -653,7 +650,7 @@ export default function EventsView({
             No events found
           </h4>
           <p style={{ color: "#6B7280", fontSize: "0.86rem", margin: "0 0 16px", lineHeight: "1.5" }}>
-            {query ? `No events match "${courseSearchQuery}".` : "Try choosing a different event type or clearing the search."}
+            {courseSearchQuery.trim() ? `No events match "${courseSearchQuery}".` : "Try choosing a different event type or clearing the search."}
           </p>
           <button
             type="button"

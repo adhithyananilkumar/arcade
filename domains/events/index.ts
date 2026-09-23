@@ -43,6 +43,7 @@ export {
   EventDiscoveryService,
   getPublishedEvents,
   getPublishedEventCards,
+  getPublishedFacets,
   getEventById,
   getEventBySlug,
   getEventBySlugOrId,
@@ -58,6 +59,7 @@ export {
 export {
   eventKeys,
   usePublishedEventCardsQuery,
+  usePublishedEventFacetsQuery,
   useMyEventRegistrationQuery,
   useMyTicketsQuery,
   useMyTicketQuery,
@@ -81,6 +83,8 @@ export { toEventCardView } from './lib/toEventCardView';
 export type {
   EventDto,
   PublishedEventCard,
+  EventFacets,
+  EventFacet,
   EventCardView,
   PagedEvents,
   PublishedEventsQuery,

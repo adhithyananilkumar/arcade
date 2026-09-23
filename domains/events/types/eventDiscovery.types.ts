@@ -102,9 +102,32 @@ export interface EventCardView {
   slug: string;
   title: string;
   category: string;
+  /** Lets a view split bootcamps from webinars without a second request. */
+  eventType: EventTypeName | null;
+  /** The event's own blurb. Empty when the author wrote none — never invented copy. */
+  desc: string;
   host: string;
   date: string;
   status: 'Live Today' | 'Upcoming' | 'Recorded Video' | 'Past';
   duration: string;
   coverImageUrl: string | null;
+}
+
+/** One filter option and how many published events it actually has. */
+export interface EventFacet {
+  value: string;
+  count: number;
+}
+
+/**
+ * What is genuinely on the platform, for building a discovery filter bar.
+ *
+ * Counts are database totals, not the size of whatever page the client holds — the explore page
+ * used to derive its numbers from its own capped page, so they moved with the page size.
+ */
+export interface EventFacets {
+  total: number;
+  /** Only categories that have at least one published event, busiest first. */
+  categories: EventFacet[];
+  types: EventFacet[];
 }

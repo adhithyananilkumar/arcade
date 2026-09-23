@@ -1,6 +1,7 @@
 import { api } from '@/infrastructure/http/api';
 import type {
   EventDto,
+  EventFacets,
   PagedEvents,
   PublishedEventCard,
   PublishedEventsQuery,
@@ -30,6 +31,11 @@ export class EventDiscoveryService {
     params?: PublishedEventsQuery
   ): Promise<{ content: PublishedEventCard[]; totalPages: number; totalElements: number }> {
     return api.get(`${EventDiscoveryService.BASE}/published/cards${buildQuery(params)}`);
+  }
+
+  /** Category and type counts across everything published. */
+  static async getPublishedFacets(): Promise<EventFacets> {
+    return api.get<EventFacets>(`${EventDiscoveryService.BASE}/published/facets`);
   }
 
   static async getEventById(id: string): Promise<EventDto> {
@@ -81,6 +87,7 @@ const UUID_PATTERN =
  */
 export const getPublishedEvents = EventDiscoveryService.getPublishedEvents;
 export const getPublishedEventCards = EventDiscoveryService.getPublishedEventCards;
+export const getPublishedFacets = EventDiscoveryService.getPublishedFacets;
 export const getEventById = EventDiscoveryService.getEventById;
 export const getEventBySlug = EventDiscoveryService.getEventBySlug;
 export const getEventBySlugOrId = EventDiscoveryService.getEventBySlugOrId;

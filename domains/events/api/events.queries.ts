@@ -23,7 +23,23 @@ export const eventKeys = {
   invitations: (eventId: string) => ['events', 'invitations', eventId] as const,
   publishedCards: (params: PublishedEventsQuery) =>
     ['events', 'published', 'cards', params] as const,
+  publishedFacets: () => ['events', 'published', 'facets'] as const,
 };
+
+/**
+ * The real filter bar: which categories and types actually have published events, and how many.
+ *
+ * Replaces a hardcoded taxonomy that matched nothing on the platform, so every pill but one read
+ * zero. Stale-tolerant — the set of categories changes when somebody publishes, not per keystroke.
+ */
+export function usePublishedEventFacetsQuery(enabled = true) {
+  return useQuery({
+    queryKey: eventKeys.publishedFacets(),
+    queryFn: () => EventDiscoveryService.getPublishedFacets(),
+    staleTime: 5 * 60 * 1000,
+    enabled,
+  });
+}
 
 /**
  * Published events, already mapped to the shape the explore grids render.

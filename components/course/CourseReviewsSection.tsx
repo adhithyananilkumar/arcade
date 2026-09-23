@@ -18,140 +18,79 @@ export type ReviewItem = {
   accentBg?: string
 }
 
-const DEFAULT_REVIEWS: ReviewItem[] = [
-  {
-    id: "seed-1",
-    name: "Adam Wathan",
-    role: "Founder, Tailwind",
-    quote: "I've been using this course as a refresher for nearly a semester and keep coming back to the systems module.",
-    dark: false,
-    initials: "AW",
-    accentBg: "bg-[#2563eb]"
-  },
-  {
-    id: "seed-2",
-    name: "Aaron Francis",
-    role: "Co-founder, Try Hard Studios",
-    quote: "Takes the pain out of learning motion design — the pacing is exactly right.",
-    dark: false,
-    initials: "AF",
-    accentBg: "bg-[#6366f1]"
-  },
-  {
-    id: "seed-3",
-    name: "Fathom Analytics",
-    role: "Team account",
-    quote: "This course has been integral to how we onboard new hires into design.",
-    dark: false,
-    initials: "FA",
-    accentBg: "bg-[#f97316]"
-  },
-  {
-    id: "seed-4",
-    name: "Ian Callahan",
-    role: "Harvard Art Museums",
-    quote: "Genuinely the clearest explanation of design systems I've seen taught anywhere.",
-    dark: false,
-    initials: "IC",
-    accentBg: "bg-[#eab308]"
-  },
-  {
-    id: "seed-5",
-    name: "Chandresh Patel",
-    role: "CEO, Bacancy",
-    quote: "Elegance, pacing, and student experience are completely unmatched.",
-    dark: false,
-    initials: "CP",
-    accentBg: "bg-[#10b981]"
-  },
-  {
-    id: "seed-6",
-    name: "Priya Menon",
-    role: "Design Lead, Freshworks",
-    quote: "The final case study review alone was worth the price. My portfolio has never been stronger.",
-    dark: false,
-    initials: "PM",
-    accentBg: "bg-[#2563eb]"
-  }
-]
+/*
+ * DEFAULT_REVIEWS removed. It was five invented reviews attributed by name and job title to real,
+ * identifiable people -- Adam Wathan of Tailwind, Aaron Francis -- saying specific things about a
+ * course they have never seen.
+ *
+ * They were not merely a placeholder: the loader below *merged* them into whatever real reviews
+ * came back, so a course with two genuine reviews displayed those plus five fabricated ones, with
+ * nothing to tell a visitor which was which. On an API failure it showed all five as though they
+ * were real.
+ *
+ * A course with no reviews now says so.
+ */
 
+/** Up to two initials from a display name, for the avatar chip. */
 function getInitials(name: string): string {
-  const parts = name.trim().split(" ")
-  if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
-  }
-  return name.slice(0, 2).toUpperCase()
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("") || "VS"
 }
 
-const PASTEL_THEMES = [
-  {
-    // Module 1 style: Soft Blue
-    cardBg: "bg-[#edf5ff]",
-    borderColor: "border-[#bfdbfe]",
-    textColor: "text-[#0f172a]",
-    roleColor: "text-[#2563eb]",
-    borderTopColor: "border-[#dbeabe]",
-    badgeBg: "bg-[#2563eb]"
-  },
-  {
-    // Module 2 style: Warm Amber/Yellow
-    cardBg: "bg-[#fffbeb]",
-    borderColor: "border-[#fde68a]",
-    textColor: "text-[#0f172a]",
-    roleColor: "text-[#d97706]",
-    borderTopColor: "border-[#fef08a]",
-    badgeBg: "bg-[#eab308]"
-  },
-  {
-    // Module 3 style: Soft Lavender/Purple
-    cardBg: "bg-[#f3e8ff]/80",
-    borderColor: "border-[#ddd6fe]",
-    textColor: "text-[#0f172a]",
-    roleColor: "text-[#7c3aed]",
-    borderTopColor: "border-[#e9d5ff]",
-    badgeBg: "bg-[#8b5cf6]"
-  },
-  {
-    // Module 4 style: Soft Mint/Teal
-    cardBg: "bg-[#e6fffa]",
-    borderColor: "border-[#99f6e4]",
-    textColor: "text-[#0f172a]",
-    roleColor: "text-[#059669]",
-    borderTopColor: "border-[#ccfbf1]",
-    badgeBg: "bg-[#10b981]"
-  },
-  {
-    // Soft Rose/Coral
-    cardBg: "bg-[#fff1f2]",
-    borderColor: "border-[#fecdd3]",
-    textColor: "text-[#0f172a]",
-    roleColor: "text-[#e11d48]",
-    borderTopColor: "border-[#ffe4e6]",
-    badgeBg: "bg-[#f43f5e]"
-  },
-  {
-    // Soft Periwinkle/Indigo
-    cardBg: "bg-[#e0e7ff]/60",
-    borderColor: "border-[#c7d2fe]",
-    textColor: "text-[#0f172a]",
-    roleColor: "text-[#4f46e5]",
-    borderTopColor: "border-[#e0e7ff]",
-    badgeBg: "bg-[#6366f1]"
-  }
-]
-
+/** Avatar chip backgrounds, cycled so adjacent cards differ. */
 const BADGE_COLORS = [
   "bg-[#2563eb]",
   "bg-[#6366f1]",
-  "bg-[#f97316]",
-  "bg-[#eab308]",
-  "bg-[#10b981]",
-  "bg-[#ec4899]"
+  "bg-[#0891b2]",
+  "bg-[#d97706]",
+  "bg-[#059669]",
+  "bg-[#db2777]",
+]
+
+/** Card palettes, cycled by position. Presentation only — nothing here is content. */
+const PASTEL_THEMES = [
+  {
+    cardBg: "bg-[#EFF6FF]",
+    borderColor: "border-[#DBEAFE]",
+    borderTopColor: "border-[#DBEAFE]",
+    textColor: "text-[#1E3A8A]",
+    roleColor: "text-[#3B82F6]",
+    badgeBg: "bg-[#2563eb]",
+  },
+  {
+    cardBg: "bg-[#F5F3FF]",
+    borderColor: "border-[#EDE9FE]",
+    borderTopColor: "border-[#EDE9FE]",
+    textColor: "text-[#4C1D95]",
+    roleColor: "text-[#8B5CF6]",
+    badgeBg: "bg-[#6366f1]",
+  },
+  {
+    cardBg: "bg-[#ECFDF5]",
+    borderColor: "border-[#D1FAE5]",
+    borderTopColor: "border-[#D1FAE5]",
+    textColor: "text-[#065F46]",
+    roleColor: "text-[#10B981]",
+    badgeBg: "bg-[#059669]",
+  },
+  {
+    cardBg: "bg-[#FFF7ED]",
+    borderColor: "border-[#FFEDD5]",
+    borderTopColor: "border-[#FFEDD5]",
+    textColor: "text-[#7C2D12]",
+    roleColor: "text-[#F59E0B]",
+    badgeBg: "bg-[#d97706]",
+  },
 ]
 
 export default function CourseReviewsSection({ courseId = "intro-to-programming" }: { courseId?: string }) {
   const { user } = useAuthStore()
-  const [reviews, setReviews] = useState<ReviewItem[]>(DEFAULT_REVIEWS)
+  const [reviews, setReviews] = useState<ReviewItem[]>([])
+  const [reviewsFailed, setReviewsFailed] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newRating, setNewRating] = useState(5)
   const [newComment, setNewComment] = useState("")
@@ -161,25 +100,29 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
   useEffect(() => {
     if (!courseId) return
 
+    setReviewsFailed(false)
     api.get<any[]>(`/api/v1/reviews/courses/${courseId}`)
       .then((data) => {
-        if (data && Array.isArray(data) && data.length > 0) {
-          const mapped: ReviewItem[] = data.map((r, i) => ({
+        const rows = Array.isArray(data) ? data : []
+        setReviews(
+          rows.map((r, i) => ({
             id: r.id || `api-${i}`,
             name: r.userName || r.authorName || "Verified Student",
             role: r.userRole || r.authorRole || "Student",
-            quote: r.comment || r.content || "Great course!",
+            // No "Great course!" fallback: a review with no text is shown as having none rather
+            // than being given praise its author did not write.
+            quote: r.comment || r.content || "",
             rating: r.rating || 5,
             dark: false,
             initials: getInitials(r.userName || r.authorName || "VS"),
             accentBg: BADGE_COLORS[i % BADGE_COLORS.length]
           }))
-          const combined = [...mapped, ...DEFAULT_REVIEWS.filter((d) => !mapped.some((m) => m.name === d.name))]
-          setReviews(combined)
-        }
+        )
       })
       .catch((err) => {
-        console.warn("Using default reviews preview:", err)
+        // Distinct from "no reviews yet" -- one is a fact about the course, the other about us.
+        console.warn("Could not load course reviews:", err)
+        setReviewsFailed(true)
       })
   }, [courseId])
 
@@ -240,6 +183,18 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
             <Plus size={13} className="text-blue-600" /> Add Review
           </button>
         </div>
+
+        {reviewsFailed && (
+          <p className="text-sm text-gray-500">
+            Reviews could not be loaded right now.
+          </p>
+        )}
+
+        {!reviewsFailed && reviews.length === 0 && (
+          <p className="text-sm text-gray-500">
+            No reviews yet — be the first to review this course.
+          </p>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
           {reviews.slice(0, 6).map((r, idx) => {

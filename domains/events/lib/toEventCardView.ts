@@ -17,6 +17,8 @@ export function toEventCardView(event: PublishedEventCard): EventCardView {
     slug: event.slug,
     title: event.title,
     category: event.category,
+    eventType: event.eventType,
+    desc: event.subtitle ?? '',
     host: event.host ?? 'Arcade',
     date: formatSchedule(event),
     status: deriveStatus(event),

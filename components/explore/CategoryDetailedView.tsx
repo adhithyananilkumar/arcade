@@ -1,6 +1,6 @@
 "use client";
 
-import { usePublishedEventCardsQuery } from '@/domains/events';
+import { usePublishedEventFacetsQuery } from '@/domains/events';
 import React, { useState, useEffect, Suspense, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -1451,9 +1451,16 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [courseSearchQuery, setCourseSearchQuery] = useState("");
 
-  // Real published events, so the category pill counts reflect what is actually on the platform.
-  const { data: publishedEventPage } = usePublishedEventCardsQuery({ size: 50 });
-  const publishedEvents = publishedEventPage?.content ?? [];
+  // Real category and type counts, straight from the database.
+  //
+  // The pills used to offer a hardcoded taxonomy -- "Computer Science", "Information Technology",
+  // "Business & Management", "Civil & Mechanical" -- that matched nothing any creator had
+  // published, so every one of them read zero except the one counting three fabricated bootcamps.
+  // Counts were also measured from a capped client page, so they moved with the page size.
+  const { data: eventFacets } = usePublishedEventFacetsQuery(mode === "events");
+  const eventCategoryCounts = new Map(
+    (eventFacets?.categories ?? []).map((facet) => [facet.value.toLowerCase(), facet.count])
+  );
 
   // Categories created via Console -> Content Manage -> Categories (super-user only),
   // merged additively on top of the hardcoded dummy categories — never removes them.
@@ -1498,11 +1505,18 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
     onLoadMore: loadMoreCourses,
   });
 
-  const mergedCategoriesList = [
-    "All",
-    ...categoriesList.filter((c) => c !== "All"),
-    ...adminCategories.filter((c) => c.name !== "All" && !categoriesList.includes(c.name)).map((c) => c.name),
-  ];
+  // In events mode the filter bar lists the categories that actually have published events, so a
+  // pill never leads to an empty page. Courses keep their own admin-curated taxonomy.
+  const mergedCategoriesList =
+    mode === "events"
+      ? ["All", ...(eventFacets?.categories ?? []).map((facet) => facet.value)]
+      : [
+          "All",
+          ...categoriesList.filter((c) => c !== "All"),
+          ...adminCategories
+            .filter((c) => c.name !== "All" && !categoriesList.includes(c.name))
+            .map((c) => c.name),
+        ];
   const getCategoryData = (cat: string) => {
     if (cat.toLowerCase() === "all") {
       const allCourses: any[] = [];
@@ -2729,10 +2743,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                 ? data.coursesCount 
                 : mode === "events" 
                   ? (catName === "All"
-                      ? publishedEvents.length + data.bootcamps.length
-                      : publishedEvents.filter(
-                          e => e.category?.toLowerCase() === catName.toLowerCase()
-                        ).length + data.bootcamps.length)
+                      ? (eventFacets?.total ?? 0)
+                      : (eventCategoryCounts.get(catName.toLowerCase()) ?? 0))
                   : data.resources.length;
 
               return (
