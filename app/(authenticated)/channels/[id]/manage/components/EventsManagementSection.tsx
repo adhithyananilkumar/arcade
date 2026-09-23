@@ -36,14 +36,22 @@ export interface ChannelEvent {
   tags: string[];
 }
 
-const mockEvents: ChannelEvent[] = [];
+/**
+ * This section is not wired to the backend yet, so it renders its empty state.
+ *
+ * Deliberately empty rather than seeded with examples: a channel manager seeing invented events on
+ * their own channel cannot tell them from real ones. Wiring it needs a channel-scoped event
+ * listing endpoint (the repository has `findByChannelIdInAndStatusNot`, but nothing exposes it)
+ * plus the channel id passed down from the page.
+ */
+const NO_EVENTS_YET: ChannelEvent[] = [];
 
 interface EventsManagementSectionProps {
   onScheduleEvent?: () => void;
 }
 
 export function EventsManagementSection({ onScheduleEvent }: EventsManagementSectionProps) {
-  const [events, setEvents] = useState<ChannelEvent[]>(mockEvents);
+  const [events, setEvents] = useState<ChannelEvent[]>(NO_EVENTS_YET);
   const [activeSubTab, setActiveSubTab] = useState<'ALL' | 'WEBINARS' | 'WORKSHOPS'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 

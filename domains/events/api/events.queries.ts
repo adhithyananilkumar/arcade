@@ -1,8 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { EventDiscoveryService } from './eventDiscovery.service';
 import { EventInvitationService } from './eventInvitation.service';
 import { EventRegistrationService } from './eventRegistration.service';
 import { EventTicketService, MyEventTicketService } from './eventTicket.service';
 import type { CheckInRequest, IssueGuestTicketRequest } from '../types/events.types';
+import type { PublishedEventsQuery } from '../types/eventDiscovery.types';
+import { toEventCardView } from '../lib/toEventCardView';
 
 /**
  * Query keys for the Events domain.
@@ -18,7 +21,32 @@ export const eventKeys = {
   myTicket: (ticketId: string) => ['events', 'me', 'tickets', ticketId] as const,
   tickets: (eventId: string) => ['events', 'tickets', eventId] as const,
   invitations: (eventId: string) => ['events', 'invitations', eventId] as const,
+  publishedCards: (params: PublishedEventsQuery) =>
+    ['events', 'published', 'cards', params] as const,
 };
+
+/**
+ * Published events, already mapped to the shape the explore grids render.
+ *
+ * Mapping here rather than in each view means every grid derives its host, date and duration the
+ * same way, from the same event — which is what the six copies of `WEBINARS_DATA` did not.
+ */
+export function usePublishedEventCardsQuery(
+  params: PublishedEventsQuery = {},
+  enabled = true
+) {
+  return useQuery({
+    queryKey: eventKeys.publishedCards(params),
+    queryFn: async () => {
+      const page = await EventDiscoveryService.getPublishedEventCards(params);
+      return {
+        ...page,
+        content: page.content.map(toEventCardView),
+      };
+    },
+    enabled,
+  });
+}
 
 /** The caller's own registration for one event. Null means "not registered", not an error. */
 export function useMyEventRegistrationQuery(eventId: string | undefined, enabled = true) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { usePublishedEventCardsQuery } from '@/domains/events';
 import React, { useState, useEffect, Suspense, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -36,13 +37,11 @@ function hexToRgbStr(hex: string): string {
 
 
 // Dummy data and header for live learning events
-const WEBINARS_DATA = [
-  { title: "Scaling React & Next.js App Router Performance", category: "Computer Science", host: "Next.js Core Team", date: "Friday, 10:00 AM", status: "Upcoming", duration: "90 mins" },
-  { title: "Building Secure & Resilient APIs", category: "Information Technology", host: "Security DevOps Lead", date: "Thursday, 2:00 PM", status: "Upcoming", duration: "75 mins" },
-  { title: "Cloud Computing & Serverless AWS Architectures", category: "Information Technology", host: "AWS Solution Architect", date: "Recorded", status: "Recorded Video", duration: "120 mins" },
-  { title: "Strategic Product Management Sprints", category: "Business & Management", host: "VP of Product", date: "Recorded", status: "Recorded Video", duration: "45 mins" },
-  { title: "Structural Analysis & Materials Mechanics", category: "Civil & Mechanical", host: "Senior Civil Engineer", date: "Recorded", status: "Recorded Video", duration: "80 mins" }
-];
+/*
+ * WEBINARS_DATA removed — five invented webinars. Here it only ever contributed its length to a
+ * category pill's count, so the "All" pill claimed five events that did not exist.
+ */
+
 
 export function WebinarCardHeader({ title, status, duration, category }: any) {
   const isLive = status === "Live Today";
@@ -1452,6 +1451,10 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [courseSearchQuery, setCourseSearchQuery] = useState("");
 
+  // Real published events, so the category pill counts reflect what is actually on the platform.
+  const { data: publishedEventPage } = usePublishedEventCardsQuery({ size: 50 });
+  const publishedEvents = publishedEventPage?.content ?? [];
+
   // Categories created via Console -> Content Manage -> Categories (super-user only),
   // merged additively on top of the hardcoded dummy categories — never removes them.
   // Each admin category is scoped to one section (courses/events/articles) via its `type`.
@@ -2725,7 +2728,11 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
               const count = mode === "courses" 
                 ? data.coursesCount 
                 : mode === "events" 
-                  ? (catName === "All" ? WEBINARS_DATA.length + data.bootcamps.length : data.bootcamps.length)
+                  ? (catName === "All"
+                      ? publishedEvents.length + data.bootcamps.length
+                      : publishedEvents.filter(
+                          e => e.category?.toLowerCase() === catName.toLowerCase()
+                        ).length + data.bootcamps.length)
                   : data.resources.length;
 
               return (

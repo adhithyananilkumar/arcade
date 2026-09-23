@@ -2,6 +2,7 @@ import { api } from '@/infrastructure/http/api';
 import type {
   EventDto,
   PagedEvents,
+  PublishedEventCard,
   PublishedEventsQuery,
 } from '../types/eventDiscovery.types';
 
@@ -21,20 +22,57 @@ export class EventDiscoveryService {
    * blanket `new URLSearchParams(params)` does.
    */
   static async getPublishedEvents(params?: PublishedEventsQuery): Promise<PagedEvents> {
-    const query = new URLSearchParams();
-    Object.entries(params ?? {}).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        query.set(key, String(value));
-      }
-    });
-    const suffix = query.toString() ? `?${query.toString()}` : '';
-    return api.get<PagedEvents>(`${EventDiscoveryService.BASE}/published${suffix}`);
+    return api.get<PagedEvents>(`${EventDiscoveryService.BASE}/published${buildQuery(params)}`);
+  }
+
+  /** Published events shaped for a discovery card — carries the schedule the grid needs. */
+  static async getPublishedEventCards(
+    params?: PublishedEventsQuery
+  ): Promise<{ content: PublishedEventCard[]; totalPages: number; totalElements: number }> {
+    return api.get(`${EventDiscoveryService.BASE}/published/cards${buildQuery(params)}`);
   }
 
   static async getEventById(id: string): Promise<EventDto> {
     return api.get<EventDto>(`${EventDiscoveryService.BASE}/${id}`);
   }
+
+  static async getEventBySlug(slug: string): Promise<EventDto> {
+    return api.get<EventDto>(`${EventDiscoveryService.BASE}/slug/${encodeURIComponent(slug)}`);
+  }
+
+  /**
+   * Resolves whatever the route handed us.
+   *
+   * The public event route is `/events/[slug]`, but the same component is reachable with an id
+   * from the studio preview. Sending a slug to the by-id endpoint is what produced
+   * `Invalid parameter 'id'` on every event page — the server parses that path segment as a UUID.
+   */
+  static async getEventBySlugOrId(slugOrId: string): Promise<EventDto> {
+    return UUID_PATTERN.test(slugOrId)
+      ? EventDiscoveryService.getEventById(slugOrId)
+      : EventDiscoveryService.getEventBySlug(slugOrId);
+  }
 }
+
+/**
+ * Serialises only the params that were actually set.
+ *
+ * A blanket `new URLSearchParams(params)` turns an absent filter into the literal string
+ * "undefined", which the server then tries to match.
+ */
+function buildQuery(params?: PublishedEventsQuery): string {
+  const query = new URLSearchParams();
+  Object.entries(params ?? {}).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      query.set(key, String(value));
+    }
+  });
+  return query.toString() ? `?${query.toString()}` : '';
+}
+
+/** Canonical 8-4-4-4-12 hex form, which is what Spring will accept for a UUID path variable. */
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Function-shaped aliases, kept because the existing call sites import them by these names.
@@ -42,4 +80,7 @@ export class EventDiscoveryService {
  * inside a refactor.
  */
 export const getPublishedEvents = EventDiscoveryService.getPublishedEvents;
+export const getPublishedEventCards = EventDiscoveryService.getPublishedEventCards;
 export const getEventById = EventDiscoveryService.getEventById;
+export const getEventBySlug = EventDiscoveryService.getEventBySlug;
+export const getEventBySlugOrId = EventDiscoveryService.getEventBySlugOrId;

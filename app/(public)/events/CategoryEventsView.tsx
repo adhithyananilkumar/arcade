@@ -3,15 +3,12 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { usePublishedEventCardsQuery } from "@/domains/events";
 
-// Copied from ExploreHub dummy data
-const WEBINARS_DATA = [
-  { title: "Scaling React & Next.js App Router Performance", category: "Computer Science", host: "Next.js Core Team", date: "Friday, 10:00 AM", status: "Upcoming", duration: "90 mins" },
-  { title: "Building Secure & Resilient APIs", category: "Information Technology", host: "Security DevOps Lead", date: "Thursday, 2:00 PM", status: "Upcoming", duration: "75 mins" },
-  { title: "Cloud Computing & Serverless AWS Architectures", category: "Information Technology", host: "AWS Solution Architect", date: "Recorded", status: "Recorded Video", duration: "120 mins" },
-  { title: "Strategic Product Management Sprints", category: "Business & Management", host: "VP of Product", date: "Recorded", status: "Recorded Video", duration: "45 mins" },
-  { title: "Structural Analysis & Materials Mechanics", category: "Civil & Mechanical", host: "Senior Civil Engineer", date: "Recorded", status: "Recorded Video", duration: "80 mins" }
-];
+/*
+ * The copied dummy array is gone. Real published events come from the server, filtered by category
+ * there rather than in the browser.
+ */
 
 export function WebinarCardHeader({ title, status, duration, category }: any) {
   const isLive = status === "Live Today";
@@ -62,14 +59,12 @@ export function CategoryEventsView({ category }: { category: string }) {
   
   // An empty category renders as empty.
   //
-  // This used to relabel every event with whatever category was asked for whenever the filter
-  // matched nothing -- by its own comment, "so it doesn't look empty for the client". The result
-  // was a page that could never be empty and could never be trusted: a visitor browsing "Data
-  // Science" saw design events retitled as data science, and clicking one took them somewhere
-  // unrelated to what they were shown.
-  const categoryWebinars = WEBINARS_DATA.filter(
-    w => w.category.toLowerCase() === category.toLowerCase()
-  );
+  // This used to relabel every dummy event with whatever category was asked for whenever the
+  // filter matched nothing -- by its own comment, "so it doesn't look empty for the client". A
+  // visitor browsing "Data Science" saw design events retitled as data science, and clicking one
+  // took them somewhere unrelated to what they were shown.
+  const { data, isLoading } = usePublishedEventCardsQuery({ category, size: 24 });
+  const categoryWebinars = data?.content ?? [];
 
   return (
     <div className="min-h-screen" style={{ background: "#F9FAFB", padding: "40px 20px" }}>
@@ -92,7 +87,11 @@ export function CategoryEventsView({ category }: { category: string }) {
           Live learning, bootcamps, and webinars for {category}.
         </p>
 
-        {categoryWebinars.length === 0 && (
+        {isLoading && (
+          <p style={{ color: "#6B7280" }}>Loading {category} events…</p>
+        )}
+
+        {!isLoading && categoryWebinars.length === 0 && (
           <div
             style={{
               background: "#FFFFFF",

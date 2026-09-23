@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Calendar, MapPin, Users, Clock, ArrowRight } from "lucide-react";
-import { getEventById } from "@/domains/events";
+import { getEventBySlugOrId } from "@/domains/events";
 import type { EventDto } from "@/domains/events";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import { formatMoney } from "@/shared/utils/money";
@@ -17,7 +17,7 @@ export default function EventDetailPage() {
 
   useEffect(() => {
     const slug = params.slug as string;
-    getEventById(slug)
+    getEventBySlugOrId(slug)
       .then(setEvent)
       .finally(() => setLoading(false));
   }, [params.slug]);

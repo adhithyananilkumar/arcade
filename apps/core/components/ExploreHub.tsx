@@ -1,5 +1,6 @@
 "use client";
 
+import { usePublishedEventCardsQuery } from '@/domains/events';
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -150,14 +151,14 @@ export const CATEGORY_DATA: Record<string, {
 export const categoriesList = Object.keys(CATEGORY_DATA);
 
 // Static Webinar Content
-const WEBINARS_DATA = [
-  { title: "Future of Generative AI in Production", category: "Artificial Intelligence", host: "Dr. Emily Stone", date: "Tomorrow, 3:00 PM", status: "Live Today", duration: "60 mins" },
-  { title: "Scaling React & Next.js App Router Performance", category: "Computer Science", host: "Next.js Core Team", date: "Friday, 10:00 AM", status: "Upcoming", duration: "90 mins" },
-  { title: "Building Secure & Resilient APIs", category: "Information Technology", host: "Security DevOps Lead", date: "Thursday, 2:00 PM", status: "Upcoming", duration: "75 mins" },
-  { title: "Cloud Computing & Serverless AWS Architectures", category: "Information Technology", host: "AWS Solution Architect", date: "Recorded", status: "Recorded Video", duration: "120 mins" },
-  { title: "Strategic Product Management Sprints", category: "Business & Management", host: "VP of Product", date: "Recorded", status: "Recorded Video", duration: "45 mins" },
-  { title: "Structural Analysis & Materials Mechanics", category: "Civil & Mechanical", host: "Senior Civil Engineer", date: "Recorded", status: "Recorded Video", duration: "80 mins" }
-];
+/*
+ * WEBINARS_DATA removed — five invented webinars with invented hosts and times. They were fed into
+ * the search index, so searching returned events that did not exist while real published events
+ * were never searchable at all.
+ *
+ * Real events come from usePublishedEventCardsQuery below.
+ */
+
 
 const ILLUSTRATION_BGS: Record<string, string> = {
   "All": "#4F46E5", // Solid vibrant indigo
@@ -1107,6 +1108,10 @@ function ExploreCatalog() {
   // Tab State
   const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "articles">("courses");
   const [searchQuery, setSearchQuery] = useState("");
+  // Real published events, for the search index below. Fetched once for the page rather than per
+  // keystroke — the query is client-side filtering over an already-loaded page, exactly as it was.
+  const { data: publishedEventPage } = usePublishedEventCardsQuery({ size: 50 });
+  const publishedEvents = publishedEventPage?.content ?? [];
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -1639,9 +1644,9 @@ function ExploreCatalog() {
               });
 
               if (activeTab === "bootcamps") {
-                WEBINARS_DATA.forEach(webinar => {
-                  if (webinar.title.toLowerCase().includes(query)) {
-                    searchResults.push({ ...webinar, type: 'Webinar' });
+                publishedEvents.forEach(event => {
+                  if (event.title.toLowerCase().includes(query)) {
+                    searchResults.push({ ...event, type: 'Webinar' });
                   }
                 });
               }

@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { CalendarDays, Globe, Layers, Signal, Users, Video } from 'lucide-react';
 import { api, ApiError } from '@/infrastructure/http/api';
 import { useMyEnrollmentForResourceQuery } from '@/domains/enrollment';
-import { getEventById } from '@/domains/events';
+import { getEventBySlugOrId } from '@/domains/events';
 import type { EventDto } from '@/domains/events';
 import { eventRoutes } from '@/shared/routes/content.routes';
 import type {
@@ -48,7 +48,7 @@ interface EventSession {
 export function useEventOverviewModel(slugOrId: string): ContentOverviewModel {
   const eventQuery = useQuery({
     queryKey: ['events', 'detail', slugOrId],
-    queryFn: () => getEventById(slugOrId),
+    queryFn: () => getEventBySlugOrId(slugOrId),
     enabled: Boolean(slugOrId),
   });
 

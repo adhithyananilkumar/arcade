@@ -64,3 +64,47 @@ export interface PublishedEventsQuery {
   page?: number;
   size?: number;
 }
+
+/** Mirrors the backend `PublishedEventCardDto` — a published event shaped for a discovery card. */
+export interface PublishedEventCard {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  slug: string;
+  category: string;
+  /** The owning channel. Never an invented person. */
+  host: string | null;
+  coverImageUrl: string | null;
+  thumbnailUrl: string | null;
+  eventType: EventTypeName | null;
+  deliveryMode: EventDeliveryMode | null;
+  difficulty: EventDifficulty | null;
+  priceAmount: number | null;
+  currency: string | null;
+  capacity: number | null;
+  /** ISO date of the earliest session, or null when nothing is scheduled yet. */
+  startDate: string | null;
+  /** ISO local time of that session. */
+  startTime: string | null;
+  sessionCount: number;
+  /** Total scheduled minutes, or null when no session carries both a start and an end. */
+  durationMinutes: number | null;
+}
+
+/**
+ * The display shape the explore grids render.
+ *
+ * Derived entirely from a real event. Every field the mock data invented — host, date, status,
+ * duration — now comes from the event and its schedule, and says so honestly when it is unknown.
+ */
+export interface EventCardView {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  host: string;
+  date: string;
+  status: 'Live Today' | 'Upcoming' | 'Recorded Video' | 'Past';
+  duration: string;
+  coverImageUrl: string | null;
+}

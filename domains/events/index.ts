@@ -42,7 +42,10 @@ export {
 export {
   EventDiscoveryService,
   getPublishedEvents,
+  getPublishedEventCards,
   getEventById,
+  getEventBySlug,
+  getEventBySlugOrId,
 } from './api/eventDiscovery.service';
 
 export { EventRegistrationService } from './api/eventRegistration.service';
@@ -54,6 +57,7 @@ export {
 
 export {
   eventKeys,
+  usePublishedEventCardsQuery,
   useMyEventRegistrationQuery,
   useMyTicketsQuery,
   useMyTicketQuery,
@@ -72,8 +76,12 @@ export { TicketCheckInPanel } from './components/TicketCheckInPanel';
 export { EventInvitationManager } from './components/EventInvitationManager';
 
 export type * from './types/event.types';
+export { toEventCardView } from './lib/toEventCardView';
+
 export type {
   EventDto,
+  PublishedEventCard,
+  EventCardView,
   PagedEvents,
   PublishedEventsQuery,
   EventStatus,

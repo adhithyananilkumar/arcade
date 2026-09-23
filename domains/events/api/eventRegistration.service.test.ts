@@ -65,3 +65,38 @@ describe('EventRegistrationService', () => {
     await expect(EventRegistrationService.getMine('event-1')).rejects.toBe(serverError);
   });
 });
+
+describe('slug vs id resolution', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('sends a UUID to the by-id endpoint', async () => {
+    const { EventDiscoveryService } = await import('./eventDiscovery.service');
+    (api.get as any).mockResolvedValue({});
+
+    await EventDiscoveryService.getEventBySlugOrId('1b666079-3add-4c6e-8b61-50c2e23e90d6');
+
+    expect(api.get).toHaveBeenCalledWith('/api/v1/events/1b666079-3add-4c6e-8b61-50c2e23e90d6');
+  });
+
+  it('sends a slug to the by-slug endpoint', async () => {
+    // The public route is /events/[slug]. Sending a slug into the by-id path is what produced
+    // "Invalid parameter 'id'" on every event page -- the server parses that segment as a UUID.
+    const { EventDiscoveryService } = await import('./eventDiscovery.service');
+    (api.get as any).mockResolvedValue({});
+
+    await EventDiscoveryService.getEventBySlugOrId('capacity-test-workshop-1b666079-3add');
+
+    expect(api.get).toHaveBeenCalledWith(
+      '/api/v1/events/slug/capacity-test-workshop-1b666079-3add'
+    );
+  });
+
+  it('drops unset filters instead of serialising them as "undefined"', async () => {
+    const { EventDiscoveryService } = await import('./eventDiscovery.service');
+    (api.get as any).mockResolvedValue({ content: [] });
+
+    await EventDiscoveryService.getPublishedEventCards({ category: 'Design', type: undefined });
+
+    expect(api.get).toHaveBeenCalledWith('/api/v1/events/published/cards?category=Design');
+  });
+});

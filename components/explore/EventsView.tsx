@@ -1,14 +1,15 @@
 "use client";
 
+import { usePublishedEventCardsQuery } from '@/domains/events';
 import React from "react";
 
-const WEBINARS_DATA = [
-  { title: "Scaling React & Next.js App Router Performance", category: "Computer Science", host: "Next.js Core Team", date: "Friday, 10:00 AM", status: "Upcoming", duration: "90 mins" },
-  { title: "Building Secure & Resilient APIs", category: "Information Technology", host: "Security DevOps Lead", date: "Thursday, 2:00 PM", status: "Upcoming", duration: "75 mins" },
-  { title: "Cloud Computing & Serverless AWS Architectures", category: "Information Technology", host: "AWS Solution Architect", date: "Recorded", status: "Recorded Video", duration: "120 mins" },
-  { title: "Strategic Product Management Sprints", category: "Business & Management", host: "VP of Product", date: "Recorded", status: "Recorded Video", duration: "45 mins" },
-  { title: "Structural Analysis & Materials Mechanics", category: "Civil & Mechanical", host: "Senior Civil Engineer", date: "Recorded", status: "Recorded Video", duration: "80 mins" }
-];
+/*
+ * WEBINARS_DATA removed. It was five invented webinars with invented hosts ("Next.js Core Team",
+ * "AWS Solution Architect") and invented times, rendered here instead of whatever channels had
+ * actually published — so no real event ever appeared on this page.
+ *
+ * Real events now come from usePublishedEventCardsQuery.
+ */
 
 export function WebinarCardHeader({ title, status, duration, category }: any) {
   const isLive = status === "Live Today";
@@ -109,12 +110,16 @@ export default function EventsView({
 
   const isAllCategory = activeCategoryName.toLowerCase() === "all";
 
-  let categoryWebinars = isAllCategory
-    ? WEBINARS_DATA
-    : WEBINARS_DATA.filter(w => w.category.toLowerCase() === activeCategoryName.toLowerCase());
-  if (categoryWebinars.length === 0) {
-    categoryWebinars = WEBINARS_DATA.map(w => ({ ...w, category: activeCategoryName }));
-  }
+  // Real published events, filtered server-side by category.
+  //
+  // The relabelling fallback that used to sit here — "if nothing matched, show all five with this
+  // category's name stuck on them" — is gone. It meant a visitor browsing one category was shown
+  // events from another, retitled, and clicking one took them somewhere unrelated.
+  const { data: publishedEvents, isLoading: eventsLoading } = usePublishedEventCardsQuery({
+    category: isAllCategory ? undefined : activeCategoryName,
+    size: 24,
+  });
+  const categoryWebinars = publishedEvents?.content ?? [];
 
   const allBootcamps = isAllCategory
     ? activeData.bootcamps
