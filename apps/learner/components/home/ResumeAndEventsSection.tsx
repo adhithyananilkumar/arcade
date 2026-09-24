@@ -94,69 +94,6 @@ const TONE_CONFIG: Record<
   },
 };
 
-/** Fallback pool when no published workshops — rotated daily. */
-export const FALLBACK_EVENTS: EventCard[] = [
-  {
-    id: 'fb-1',
-    title: 'Arcade Build Sprint',
-    tagline: '48 hours. One product. Ship it live.',
-    when: 'This weekend',
-    where: 'Campus + Online',
-    seats: 'Limited seats',
-    tone: 'coral',
-    href: '/search',
-  },
-  {
-    id: 'fb-2',
-    title: 'AI for Good Challenge',
-    tagline: 'Solve a real campus problem with ML.',
-    when: 'Coming soon',
-    where: 'Innovation Lab',
-    seats: 'Open registration',
-    tone: 'blue',
-    href: '/search',
-  },
-  {
-    id: 'fb-3',
-    title: 'Design Systems Lab',
-    tagline: 'Tokens, components, and critique in one evening.',
-    when: 'Next week',
-    where: 'Online',
-    seats: '30 seats left',
-    tone: 'violet',
-    href: '/search',
-  },
-  {
-    id: 'fb-4',
-    title: 'Cloud Deploy Night',
-    tagline: 'CI/CD, containers, and a live rollout.',
-    when: 'Fri 6–9 PM',
-    where: 'Hybrid',
-    seats: 'Open registration',
-    tone: 'emerald',
-    href: '/search',
-  },
-  {
-    id: 'fb-5',
-    title: 'Frontend Performance Clinic',
-    tagline: 'Core Web Vitals, profiling, and quick wins.',
-    when: 'Thu evening',
-    where: 'Online',
-    seats: '24 seats left',
-    tone: 'blue',
-    href: '/search',
-  },
-  {
-    id: 'fb-6',
-    title: 'Startup Pitch Arena',
-    tagline: 'Three minutes. One idea. Real feedback.',
-    when: 'Sat afternoon',
-    where: 'Campus hall',
-    seats: 'Registration open',
-    tone: 'coral',
-    href: '/search',
-  },
-];
 
 /** Pick events that change each calendar day. */
 export function pickDailyEvents(pool: EventCard[], count = 3): EventCard[] {
@@ -439,34 +376,30 @@ export function ResumeAndEventsSection({
         </div>
       </section>
 
-      {/* Full-Width Section Below: Upcoming Events */}
-      <section className="space-y-3.5">
-        <div className="flex min-h-[28px] items-center justify-between gap-3">
-          <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
-            Upcoming events
-          </h2>
-          <Link
-            href="/search"
-            className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-all hover:gap-1.5 hover:text-[#3a5ae6]"
-          >
-            Browse all <ArrowUpRight size={15} />
-          </Link>
-        </div>
+      {/* Full-Width Section Below: Upcoming Events — only rendered if actual events exist */}
+      {displayedEvents.length > 0 && (
+        <section className="space-y-3.5">
+          <div className="flex min-h-[28px] items-center justify-between gap-3">
+            <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
+              Upcoming events
+            </h2>
+            <Link
+              href="/search"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-all hover:gap-1.5 hover:text-[#3a5ae6]"
+            >
+              Browse all <ArrowUpRight size={15} />
+            </Link>
+          </div>
 
-        <div className="min-h-0 flex-1">
-          {displayedEvents.length === 0 ? (
-            <div className="flex h-full min-h-[140px] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white/70 px-4 py-8 text-center text-sm font-medium text-slate-500">
-              No upcoming events right now. Check back soon.
-            </div>
-          ) : (
+          <div className="min-h-0 flex-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
               {displayedEvents.map((event, i) => (
                 <EventRowItem key={event.id} event={event} index={i} />
               ))}
             </div>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

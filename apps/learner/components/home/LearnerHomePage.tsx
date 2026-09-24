@@ -33,7 +33,6 @@ import { getDynamicGreeting, HOME_SEEN_KEY } from './greeting';
 import { StreakCalendar } from './StreakCalendar';
 import { SuperSearchModal } from './SuperSearchModal';
 import {
-  FALLBACK_EVENTS,
   pickDailyEvents,
   ResumeAndEventsSection,
   type EventCard,
@@ -181,11 +180,11 @@ export default function LearnerHomePage() {
           const mapped = list.map(eventToCard);
           setUpcomingEvents(pickDailyEvents(mapped, 3));
         } else {
-          setUpcomingEvents(pickDailyEvents(FALLBACK_EVENTS, 3));
+          setUpcomingEvents([]);
         }
       })
       .catch(() => {
-        setUpcomingEvents(pickDailyEvents(FALLBACK_EVENTS, 3));
+        setUpcomingEvents([]);
       });
   }, []);
 
