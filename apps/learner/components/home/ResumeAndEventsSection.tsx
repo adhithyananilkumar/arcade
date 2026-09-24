@@ -512,20 +512,8 @@ export function ResumeAndEventsSection({
           </div>
         </div>
 
-        {/* Right Column: Daily Rubik */}
-        <div className="flex h-full flex-col gap-3.5">
-          <div className="flex min-h-[28px] items-center justify-between gap-3">
-            <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
-              Daily puzzle
-            </h2>
-            <span className="text-xs font-mono font-medium text-slate-400">
-              Interactive 3D
-            </span>
-          </div>
-          <div className="min-h-0 flex-1 flex flex-col justify-center">
-            <RubiksCube3D />
-          </div>
-        </div>
+        {/* Right Column: Rubiks */}
+        <RubiksCube3D />
       </section>
 
       {/* Full-Width Section Below: Upcoming Events — only rendered if actual events exist */}
