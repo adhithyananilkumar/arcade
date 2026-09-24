@@ -522,11 +522,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   const courseSlug = slugify(course.title);
 
   const handleCourseClick = () => {
-    if (status === 'authenticated') {
-      router.push(courseRoutes.landing(course.id || courseSlug));
-    } else {
-      router.push(`/sign?redirect=${encodeURIComponent(courseRoutes.landing(course.id || courseSlug))}`);
-    }
+    router.push(courseRoutes.landing(course.id || courseSlug));
   };
 
   useEffect(() => {

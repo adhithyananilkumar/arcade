@@ -1163,7 +1163,7 @@ export default function CoursePage() {
 
       {/* Body below hero with pure white background */}
       <div className="w-full bg-white">
-        <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
+        <div className="mx-auto max-w-6xl px-5 pt-16 pb-28 sm:px-8 sm:pt-20 sm:pb-36">
           <CourseTabs courseTitle={displayTitle} course={course} />
           <div className="mt-20">
             <ReviewsBlock courseId={params?.id as string} />

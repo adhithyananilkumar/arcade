@@ -27,7 +27,7 @@ export interface ReportModalProps {
   onSubmit: (note: string) => Promise<void>;
   title?: string;
   description?: string;
-  contentType?: 'COURSE' | 'LESSON';
+  contentType?: 'COURSE' | 'LESSON' | 'EVENT';
 }
 
 export function ReportModal({

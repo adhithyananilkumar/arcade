@@ -139,6 +139,7 @@ export function CategoryEventsView({ category }: { category: string }) {
             return (
               <div
                 key={i}
+                onClick={() => router.push(`/events/${w.slug || w.id}`)}
                 style={{
                   background: "#FFFFFF",
                   border: "1px solid #E5E7EB",
@@ -147,7 +148,8 @@ export function CategoryEventsView({ category }: { category: string }) {
                   flexDirection: "column",
                   position: "relative",
                   overflow: "hidden",
-                  boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.05)"
+                  boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.05)",
+                  cursor: "pointer"
                 }}
               >
                 <WebinarCardHeader title={w.title} status={w.status} duration={w.duration} category={w.category} />
@@ -201,7 +203,8 @@ export function CategoryEventsView({ category }: { category: string }) {
                         </span>
                       </div>
                       <Link
-                        href="/sign"
+                        href={`/events/${w.slug || w.id}`}
+                        onClick={(e) => e.stopPropagation()}
                         style={{
                           padding: "8px 16px",
                           borderRadius: "8px",

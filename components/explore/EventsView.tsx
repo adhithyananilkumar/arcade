@@ -2,6 +2,7 @@
 
 import { usePublishedEventCardsQuery } from '@/domains/events';
 import React from "react";
+import { useRouter } from "next/navigation";
 
 /*
  * WEBINARS_DATA removed. It was five invented webinars with invented hosts ("Next.js Core Team",
@@ -98,6 +99,7 @@ export default function EventsView({
   courseSearchQuery = "",
   setCourseSearchQuery
 }: EventsViewProps) {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = React.useState(0);
   const [webinarsPage, setWebinarsPage] = React.useState(0);
   const [eventType, setEventType] = React.useState<"all" | "bootcamps" | "webinars">("all");
@@ -185,6 +187,7 @@ export default function EventsView({
             return (
               <div
                 key={i}
+                onClick={() => router.push(`/events/${bootcamp.slug || bootcamp.id}`)}
                 style={{
                   background: "#FFFFFF",
                   border: "1px solid rgba(20, 23, 31, 0.08)",
@@ -193,7 +196,8 @@ export default function EventsView({
                   flexDirection: "column",
                   position: "relative",
                   overflow: "hidden",
-                  boxShadow: "0 8px 24px -6px rgba(0, 0, 0, 0.04)"
+                  boxShadow: "0 8px 24px -6px rgba(0, 0, 0, 0.04)",
+                  cursor: "pointer"
                 }}
                 className="hover-card-y"
               >
@@ -337,6 +341,7 @@ export default function EventsView({
             return (
               <div
                 key={i}
+                onClick={() => router.push(`/events/${w.slug || w.id}`)}
                 style={{
                   background: "#FFFFFF",
                   border: "1px solid rgba(20, 23, 31, 0.08)",
@@ -345,7 +350,8 @@ export default function EventsView({
                   flexDirection: "column",
                   position: "relative",
                   overflow: "hidden",
-                  boxShadow: "0 8px 24px -6px rgba(0, 0, 0, 0.04)"
+                  boxShadow: "0 8px 24px -6px rgba(0, 0, 0, 0.04)",
+                  cursor: "pointer"
                 }}
               >
                 <WebinarCardHeader title={w.title} status={w.status} duration={w.duration} category={w.category} />

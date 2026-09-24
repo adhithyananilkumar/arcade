@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Tag,
@@ -119,8 +119,32 @@ function EditPricingForm({
     e.preventDefault();
     setSaving(true);
     try {
-      const updated = await api.put<EventPricing>(`/api/v1/events/${eventId}/pricing`, form);
-      toast.success("Pricing saved");
+      const priceAmount = form.pricingModel === PricingModel.FREE ? 0 : Math.round((form.price || 0) * 100);
+      const capacity = form.seatType === SeatType.LIMITED ? (form.seatLimit ?? null) : null;
+
+      // Update canonical Event aggregate root (events table stores price_amount, currency, capacity)
+      await api.patch(`/api/v1/events/${eventId}`, {
+        priceAmount,
+        currency: form.currency || "INR",
+        capacity,
+      });
+
+      // Best effort update on dedicated pricing table if endpoint exists
+      let updated: EventPricing;
+      try {
+        updated = await api.put<EventPricing>(`/api/v1/events/${eventId}/pricing`, form);
+      } catch {
+        updated = {
+          ...initial,
+          ...form,
+          id: initial.id || eventId,
+          eventId,
+          createdAt: initial.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as EventPricing;
+      }
+
+      toast.success("Pricing saved successfully");
       onSaved(updated);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not save pricing");
@@ -374,27 +398,92 @@ function EditPricingForm({
   );
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
+import type { Event as EventDto } from "@/domains/events/types/event.types";
 
 export function EventPricingSection({
   eventId,
   pricingResult,
+  eventDetails,
   participantCount,
   onChanged,
 }: {
   eventId: string;
   pricingResult?: FetchResult<EventPricing>;
+  eventDetails?: FetchResult<EventDto>;
   participantCount: number;
   onChanged: () => void;
 }) {
   const [editing, setEditing] = useState(false);
-  const [localPricing, setLocalPricing] = useState<EventPricing | null>(
-    pricingResult?.status === "ok" ? pricingResult.data : null
-  );
 
-  const pricing = localPricing;
+  const defaultPricing: EventPricing = useMemo(() => {
+    if (eventDetails?.status === "ok") {
+      const isPaid = (eventDetails.data.priceAmount || 0) > 0;
+      return {
+        id: "",
+        eventId,
+        pricingModel: isPaid ? PricingModel.PAID : PricingModel.FREE,
+        price: (eventDetails.data.priceAmount || 0) / 100,
+        currency: eventDetails.data.currency || "INR",
+        registrationType: RegistrationType.OPEN,
+        seatType: eventDetails.data.capacity ? SeatType.LIMITED : SeatType.UNLIMITED,
+        seatLimit: eventDetails.data.capacity,
+        waitlistEnabled: false,
+        earlyBirdEnabled: false,
+        couponEnabled: false,
+        allowCancellation: true,
+        createdAt: "",
+        updatedAt: "",
+      };
+    }
+    return {
+      id: "",
+      eventId,
+      pricingModel: PricingModel.FREE,
+      price: 0,
+      currency: "INR",
+      registrationType: RegistrationType.OPEN,
+      seatType: SeatType.UNLIMITED,
+      waitlistEnabled: false,
+      earlyBirdEnabled: false,
+      couponEnabled: false,
+      allowCancellation: true,
+      createdAt: "",
+      updatedAt: "",
+    };
+  }, [eventDetails, eventId]);
 
-  if (pricingResult?.status === "error") {
+  const [localPricing, setLocalPricing] = useState<EventPricing | null>(() => {
+    if (pricingResult?.status === "ok") return pricingResult.data;
+    return defaultPricing;
+  });
+
+  useEffect(() => {
+    if (pricingResult?.status === "ok") {
+      setLocalPricing(pricingResult.data);
+    } else if (eventDetails?.status === "ok") {
+      const isPaid = (eventDetails.data.priceAmount || 0) > 0;
+      setLocalPricing((prev) => prev ?? {
+        id: "",
+        eventId,
+        pricingModel: isPaid ? PricingModel.PAID : PricingModel.FREE,
+        price: (eventDetails.data.priceAmount || 0) / 100,
+        currency: eventDetails.data.currency || "INR",
+        registrationType: RegistrationType.OPEN,
+        seatType: eventDetails.data.capacity ? SeatType.LIMITED : SeatType.UNLIMITED,
+        seatLimit: eventDetails.data.capacity,
+        waitlistEnabled: false,
+        earlyBirdEnabled: false,
+        couponEnabled: false,
+        allowCancellation: true,
+        createdAt: "",
+        updatedAt: "",
+      });
+    }
+  }, [pricingResult, eventDetails, eventId]);
+
+  const pricing = localPricing ?? defaultPricing;
+
+  if (pricingResult?.status === "error" && eventDetails?.status !== "ok") {
     return (
       <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700">
         <AlertTriangle size={14} />
@@ -405,22 +494,6 @@ export function EventPricingSection({
 
   const isFree = !pricing || pricing.pricingModel === PricingModel.FREE;
   const revenue = pricing && !isFree ? pricing.price * participantCount : 0;
-
-  const defaultPricing: EventPricing = {
-    id: "",
-    eventId,
-    pricingModel: PricingModel.FREE,
-    price: 0,
-    currency: "INR",
-    registrationType: RegistrationType.OPEN,
-    seatType: SeatType.UNLIMITED,
-    waitlistEnabled: false,
-    earlyBirdEnabled: false,
-    couponEnabled: false,
-    allowCancellation: true,
-    createdAt: "",
-    updatedAt: "",
-  };
 
   return (
     <div className="flex flex-col gap-6">

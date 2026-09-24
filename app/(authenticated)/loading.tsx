@@ -2,7 +2,7 @@ import { Skeleton } from "@/shared/design-system/ui/skeleton";
 
 export default function DashboardLoading() {
   return (
-    <div className="min-h-screen w-full bg-background">
+    <div className="min-h-screen w-full bg-slate-50/50 dark:bg-slate-950">
       <div className="mx-auto max-w-7xl w-full px-4 md:px-8 py-8 space-y-12 animate-in fade-in duration-500 transition-colors">
         {/* Header Section / Search Hero */}
         <div className="flex flex-col items-center justify-center pt-8 pb-12 text-center transition-colors">

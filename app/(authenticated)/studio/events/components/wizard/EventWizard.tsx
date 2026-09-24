@@ -148,7 +148,7 @@ export const EventWizard: React.FC<EventWizardProps> = ({ eventId: propEventId, 
     } else {
       const id = (form.formData as any).id || eventId;
       if (id) {
-        router.push(`/studio/events/${id}`);
+        router.push(`/studio/content/event/${id}`);
       } else {
         router.push('/studio');
       }

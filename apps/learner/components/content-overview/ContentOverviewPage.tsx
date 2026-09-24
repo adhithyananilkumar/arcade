@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AlertTriangle, Check, Sparkles } from 'lucide-react';
 import { OverviewHero } from './sections/OverviewHero';
@@ -11,19 +13,21 @@ import type { ContentOverviewModel } from './contentOverview.types';
 /**
  * The page a learner opens after enrolling, and every time they come back.
  *
- * <p>It exists because "Go to course" used to drop straight into the player, which answers "what is
- * the next video" and nothing else. Between enrolling and studying there is a real question —
- * what is this, where am I, what did I conclude last time — and no surface was answering it.
+ * One component for every content type. Courses and events supply the same ContentOverviewModel
+ * through their own adapter.
  *
- * <p>One component for every content type. Courses and events supply the same {@link
- * ContentOverviewModel} through their own adapter; nothing below branches on which one it is.
- *
- * <p>This page never navigates on its own. Someone who reaches it without an entitlement — a typed
- * URL or an old bookmark, since nothing links here for them — is told so and given a link. An
- * automatic bounce to the course page was tried and removed: it reads as the app jerking you
- * around, and it fires before you can read why, which is exactly when you most need to.
+ * If a learner arrives without an active enrollment (e.g. following a direct link), they are
+ * immediately redirected to the content overview / landing page where details and enrollment live.
  */
 export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!model.isLoading && !model.isEntitled && model.landingHref) {
+      router.replace(model.landingHref);
+    }
+  }, [model.isLoading, model.isEntitled, model.landingHref, router]);
+
   if (model.isLoading) return <OverviewSkeleton />;
 
   if (model.error) {
@@ -38,14 +42,7 @@ export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) 
   }
 
   if (!model.isEntitled) {
-    return (
-      <OverviewMessage
-        icon={<Sparkles className="text-indigo-500" size={28} />}
-        title="This hub opens once you enrol"
-        body="Your progress, your notes and everything in this course live here. The course page has the details and the enrol button."
-        action={{ href: model.landingHref, label: 'View the course' }}
-      />
-    );
+    return <OverviewSkeleton />;
   }
 
   const flatItems = model.sections.flatMap((section) => section.items);

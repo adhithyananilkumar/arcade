@@ -5,6 +5,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Sparkles, Shuffle, RotateCcw, Lightbulb, Maximize2, Minimize2, Plus, Minus } from 'lucide-react';
 import { HARDCODED_ASCII_TILES } from './rubiksFaceTiles';
+import { RubiksCubeService, type RubiksCubeStatePayload } from '@/domains/rubiks-cube';
 
 /**
  * Arcade 3D Rubik's Cube
@@ -342,47 +343,83 @@ export function RubiksCube3D({
     };
   }, [isMaximized]);
 
-  // Restore session state on mount
+  // Restore cube state on mount: localStorage first for an instant paint (no flash of the solved
+  // cube while the request is in flight), then reconciled against the account-level save, which is
+  // the cross-device source of truth and wins when present.
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(RUBIKS_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved) as SavedRubiksState;
-        if (Array.isArray(parsed.cubies) && parsed.cubies.length === 27) {
-          setCubies(parsed.cubies);
-          if (typeof parsed.rotX === 'number') setRotX(parsed.rotX);
-          if (typeof parsed.rotY === 'number') setRotY(parsed.rotY);
-          if (parsed.solveStatus === 'scrambled' || parsed.solveStatus === 'solved') {
-            setSolveStatus(parsed.solveStatus);
-          }
-          if (Array.isArray(parsed.moveHistory)) {
-            moveHistoryRef.current = parsed.moveHistory;
-            setMoveCount(parsed.moveHistory.length);
-          }
+    let cancelled = false;
+
+    const applyState = (parsed: SavedRubiksState) => {
+      if (Array.isArray(parsed.cubies) && parsed.cubies.length === 27) {
+        setCubies(parsed.cubies);
+        if (typeof parsed.rotX === 'number') setRotX(parsed.rotX);
+        if (typeof parsed.rotY === 'number') setRotY(parsed.rotY);
+        if (parsed.solveStatus === 'scrambled' || parsed.solveStatus === 'solved') {
+          setSolveStatus(parsed.solveStatus);
+        }
+        if (Array.isArray(parsed.moveHistory)) {
+          moveHistoryRef.current = parsed.moveHistory;
+          setMoveCount(parsed.moveHistory.length);
         }
       }
+    };
+
+    try {
+      const saved = localStorage.getItem(RUBIKS_STORAGE_KEY);
+      if (saved) applyState(JSON.parse(saved) as SavedRubiksState);
     } catch {
       // ignore
-    } finally {
-      isHydratedRef.current = true;
     }
+
+    RubiksCubeService.getState()
+      .then((record) => {
+        if (cancelled || !record.state) return;
+        applyState(record.state as unknown as SavedRubiksState);
+      })
+      .catch(() => {
+        // Offline, or the backend has nothing saved yet — the localStorage snapshot already
+        // applied above is enough to render from.
+      })
+      .finally(() => {
+        if (!cancelled) isHydratedRef.current = true;
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Persist session state on every change
+  // Persist state on every change: instantly to localStorage for this device, and debounced to the
+  // account so a burst of twists doesn't fire a save request per frame.
+  const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!isHydratedRef.current || typeof window === 'undefined') return;
+
+    const payload: SavedRubiksState = {
+      cubies,
+      rotX,
+      rotY,
+      solveStatus: solveStatus === 'solving' ? 'scrambled' : solveStatus,
+      moveHistory: moveHistoryRef.current,
+    };
+
     try {
-      const payload: SavedRubiksState = {
-        cubies,
-        rotX,
-        rotY,
-        solveStatus: solveStatus === 'solving' ? 'scrambled' : solveStatus,
-        moveHistory: moveHistoryRef.current,
-      };
       localStorage.setItem(RUBIKS_STORAGE_KEY, JSON.stringify(payload));
     } catch {
       // ignore
     }
+
+    if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
+    persistTimerRef.current = setTimeout(() => {
+      RubiksCubeService.saveState(payload as unknown as RubiksCubeStatePayload).catch(() => {
+        // Best-effort: the localStorage snapshot keeps this device consistent either way, and the
+        // next successful save carries the current state to the account.
+      });
+    }, 800);
+
+    return () => {
+      if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
+    };
   }, [cubies, rotX, rotY, solveStatus]);
 
   // Track touch/drag start for differentiating slice turn vs 3D orbit
