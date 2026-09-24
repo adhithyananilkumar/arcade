@@ -1175,239 +1175,32 @@ const CategoryPillButton: React.FC<CategoryPillButtonProps> = ({
   onClick,
   children
 }) => {
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const particlesRef = useRef<HTMLDivElement[]>([]);
-  const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
-  const isHoveredRef = useRef(false);
-  const magnetismAnimationRef = useRef<gsap.core.Tween | null>(null);
-
-  const glowColor = hexToRgbStr(itemData.colors.primary);
-
-  const clearAllParticles = useCallback(() => {
-    timeoutsRef.current.forEach(clearTimeout);
-    timeoutsRef.current = [];
-    magnetismAnimationRef.current?.kill();
-
-    particlesRef.current.forEach(particle => {
-      gsap.to(particle, {
-        scale: 0,
-        opacity: 0,
-        duration: 0.3,
-        ease: "back.in(1.7)",
-        onComplete: () => {
-          particle.parentNode?.removeChild(particle);
-        }
-      });
-    });
-    particlesRef.current = [];
-  }, []);
-
-  const animateParticles = useCallback(() => {
-    if (!buttonRef.current || !isHoveredRef.current) return;
-
-    const { width, height } = buttonRef.current.getBoundingClientRect();
-
-    // Subtle star particles tailored for smaller button sizes
-    for (let i = 0; i < 6; i++) {
-      const px = Math.random() * width;
-      const py = Math.random() * height;
-
-      const particle = document.createElement("div");
-      particle.className = "category-particle";
-      particle.style.cssText = `
-        position: absolute;
-        width: 3px;
-        height: 3px;
-        border-radius: 50%;
-        background: rgba(${glowColor}, 1);
-        box-shadow: 0 0 4px rgba(${glowColor}, 0.6);
-        pointer-events: none;
-        z-index: 10;
-        left: ${px}px;
-        top: ${py}px;
-      `;
-
-      const timeoutId = setTimeout(() => {
-        if (!isHoveredRef.current || !buttonRef.current) return;
-        buttonRef.current.appendChild(particle);
-        particlesRef.current.push(particle);
-
-        gsap.fromTo(particle, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" });
-
-        gsap.to(particle, {
-          x: (Math.random() - 0.5) * 50,
-          y: (Math.random() - 0.5) * 50,
-          rotation: Math.random() * 360,
-          duration: 1.5 + Math.random() * 1.5,
-          ease: "none",
-          repeat: -1,
-          yoyo: true
-        });
-
-        gsap.to(particle, {
-          opacity: 0.3,
-          duration: 1.2,
-          ease: "power2.inOut",
-          repeat: -1,
-          yoyo: true
-        });
-      }, i * 120);
-
-      timeoutsRef.current.push(timeoutId);
-    }
-  }, [glowColor]);
-
-  useEffect(() => {
-    const element = buttonRef.current;
-    if (!element) return;
-
-    const handleMouseEnter = () => {
-      isHoveredRef.current = true;
-      animateParticles();
-
-      // Subtle 3D tilt on hover
-      gsap.to(element, {
-        rotateX: 4,
-        rotateY: 4,
-        duration: 0.3,
-        ease: "power2.out",
-        transformPerspective: 600
-      });
-    };
-
-    const handleMouseLeave = () => {
-      isHoveredRef.current = false;
-      clearAllParticles();
-
-      gsap.to(element, {
-        rotateX: 0,
-        rotateY: 0,
-        duration: 0.3,
-        ease: "power2.out"
-      });
-
-      gsap.to(element, {
-        x: 0,
-        y: 0,
-        duration: 0.3,
-        ease: "power2.out"
-      });
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = element.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-
-      const rotateX = ((y - centerY) / centerY) * -6;
-      const rotateY = ((x - centerX) / centerX) * 6;
-      gsap.to(element, {
-        rotateX,
-        rotateY,
-        duration: 0.1,
-        ease: "power2.out",
-        transformPerspective: 600
-      });
-
-      // Magnetism: subtle attraction to cursor
-      const magnetX = (x - centerX) * 0.08;
-      const magnetY = (y - centerY) * 0.08;
-      magnetismAnimationRef.current = gsap.to(element, {
-        x: magnetX,
-        y: magnetY,
-        duration: 0.3,
-        ease: "power2.out"
-      });
-    };
-
-    const handleClick = (e: MouseEvent) => {
-      const rect = element.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const maxDistance = Math.max(
-        Math.hypot(x, y),
-        Math.hypot(x - rect.width, y),
-        Math.hypot(x, y - rect.height),
-        Math.hypot(x - rect.width, y - rect.height)
-      );
-
-      const ripple = document.createElement("div");
-      ripple.style.cssText = `
-        position: absolute;
-        width: ${maxDistance * 2}px;
-        height: ${maxDistance * 2}px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(${glowColor}, 0.3) 0%, rgba(${glowColor}, 0.1) 40%, transparent 70%);
-        left: ${x - maxDistance}px;
-        top: ${y - maxDistance}px;
-        pointer-events: none;
-        z-index: 10;
-      `;
-
-      element.appendChild(ripple);
-
-      gsap.fromTo(
-        ripple,
-        { scale: 0, opacity: 1 },
-        {
-          scale: 1,
-          opacity: 0,
-          duration: 0.7,
-          ease: "power2.out",
-          onComplete: () => ripple.remove()
-        }
-      );
-    };
-
-    element.addEventListener("mouseenter", handleMouseEnter);
-    element.addEventListener("mouseleave", handleMouseLeave);
-    element.addEventListener("mousemove", handleMouseMove);
-    element.addEventListener("click", handleClick);
-
-    return () => {
-      isHoveredRef.current = false;
-      element.removeEventListener("mouseenter", handleMouseEnter);
-      element.removeEventListener("mouseleave", handleMouseLeave);
-      element.removeEventListener("mousemove", handleMouseMove);
-      element.removeEventListener("click", handleClick);
-      clearAllParticles();
-    };
-  }, [animateParticles, clearAllParticles, glowColor]);
-
   return (
     <button
-      ref={buttonRef}
+      type="button"
       onClick={onClick}
       data-active={isActive}
-      className="category-pill-btn"
+      className={`google-category-pill ${isActive ? "active" : ""}`}
       style={{
         flexShrink: 0,
         display: "inline-flex",
         flexDirection: "row",
         alignItems: "center",
         whiteSpace: "nowrap",
-        width: "auto",
-        height: "auto",
-        gap: "8px",
-        padding: "10px 18px",
-        borderRadius: "12px",
-        border: isActive ? `1.5px solid ${itemData.colors.primary}` : "1.5px solid rgba(20, 23, 31, 0.08)",
-        background: isActive ? itemData.colors.secondary : "rgba(255, 255, 255, 0.75)",
+        gap: "6px",
+        padding: "8px 16px",
+        borderRadius: "20px",
+        background: isActive ? "#EEF4FE" : "rgba(255, 255, 255, 0.85)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
-        color: isActive ? itemData.colors.primary : "#4B5563",
-        fontSize: "0.86rem",
-        fontWeight: "700",
+        color: isActive ? "#1A73E8" : "#3C4043",
+        fontSize: "0.85rem",
+        fontWeight: isActive ? "700" : "500",
         cursor: "pointer",
-        boxShadow: isActive
-          ? `0 6px 16px -4px ${itemData.colors.primary}40`
-          : "0 2px 6px rgba(0,0,0,0.02)",
-        transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
-        "--glow-color": glowColor
-      } as React.CSSProperties}
+        position: "relative",
+        boxShadow: isActive ? "0 1px 3px rgba(26,115,232,0.18)" : "0 1px 2px rgba(0,0,0,0.03)",
+        transition: "all 0.2s cubic-bezier(0.2, 0, 0, 1)"
+      }}
     >
       {children}
     </button>
@@ -1450,6 +1243,19 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
   const initialCategory = searchParams.get("category");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [courseSearchQuery, setCourseSearchQuery] = useState("");
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // Real category and type counts, straight from the database.
   //
@@ -1860,8 +1666,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
         background: mode === "events" ? "linear-gradient(135deg, #FDF4FF 0%, #F5F3FF 50%, #E0F2FE 100%)" : // Pastel lavender-violet-blue sunset mix
           mode === "articles" ? articlesBackground : // Dynamic per-category gradient
             "#f8fafc",
-        minHeight: "100%",
-        paddingBottom: "24px",
+        minHeight: "100vh",
+        paddingBottom: "110px",
         color: "inherit"
       }}
     >
@@ -2119,6 +1925,45 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
           border-radius: 50%;
           z-index: -1;
         }
+
+        .google-category-pill {
+          border: 1.5px solid rgba(60, 64, 67, 0.16);
+          position: relative;
+          transition: all 0.25s ease;
+        }
+
+        .google-category-pill:hover:not(.active) {
+          color: #1a73e8 !important;
+          background: #ffffff !important;
+          animation: googleBorderCycle 3s linear infinite;
+        }
+
+        .google-category-pill.active {
+          border-color: #1a73e8 !important;
+        }
+
+        @keyframes googleBorderCycle {
+          0% {
+            border-color: #4285F4;
+            box-shadow: 0 0 0 1.5px rgba(66, 133, 244, 0.35), 0 2px 6px rgba(66, 133, 244, 0.15);
+          }
+          25% {
+            border-color: #EA4335;
+            box-shadow: 0 0 0 1.5px rgba(234, 67, 53, 0.35), 0 2px 6px rgba(234, 67, 53, 0.15);
+          }
+          50% {
+            border-color: #FBBC05;
+            box-shadow: 0 0 0 1.5px rgba(251, 188, 5, 0.35), 0 2px 6px rgba(251, 188, 5, 0.15);
+          }
+          75% {
+            border-color: #34A853;
+            box-shadow: 0 0 0 1.5px rgba(52, 168, 83, 0.35), 0 2px 6px rgba(52, 168, 83, 0.15);
+          }
+          100% {
+            border-color: #4285F4;
+            box-shadow: 0 0 0 1.5px rgba(66, 133, 244, 0.35), 0 2px 6px rgba(66, 133, 244, 0.15);
+          }
+        }
       `}</style>
 
       {/* Main Container — embedded hub needs clearance under fixed learner navbar (top-6 + h-12) */}
@@ -2142,13 +1987,13 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
               fontSize: "0.85rem",
               fontWeight: "600",
               color: "rgba(20, 20, 43, 0.55)",
-              background: "rgba(255, 255, 255, 0.65)",
+              background: "rgba(255, 255, 255, 0.75)",
               backdropFilter: "blur(8px)",
               WebkitBackdropFilter: "blur(8px)",
-              border: "1px solid rgba(20, 23, 31, 0.06)",
-              padding: "10px 18px",
-              borderRadius: "12px",
-              boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)"
+              border: "1px solid rgba(20, 23, 31, 0.08)",
+              padding: "9px 16px",
+              borderRadius: "20px",
+              boxShadow: "0 2px 8px -2px rgba(0, 0, 0, 0.03)"
             }}
           >
             <span
@@ -2161,29 +2006,29 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
             </span>
             <span>/</span>
             <span
-              onClick={goToExploreHome}
+              onClick={() => handleCategorySwitch("All")}
               style={{ cursor: "pointer", transition: "color 0.2s" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = activeData.colors.primary; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "inherit"; }}
             >
-              Departments
+              {mode === "courses" ? "Courses" : mode === "events" ? "Events & Bootcamps" : "Articles & Research"}
             </span>
             <span>/</span>
             <span style={{ color: activeData.colors.primary, fontWeight: "700" }}>{activeCategoryName}</span>
           </div>
 
-          {/* Redesigned Premium Content Type Switcher */}
+          {/* Redesigned MNC Content Type Switcher */}
           <div
             style={{
               display: "inline-flex",
               alignItems: "center",
-              background: "rgba(255, 255, 255, 0.85)",
-              backdropFilter: "blur(14px)",
-              WebkitBackdropFilter: "blur(14px)",
-              border: "1px solid rgba(20, 23, 31, 0.08)",
-              borderRadius: "14px",
+              background: "rgba(255, 255, 255, 0.9)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              border: "1px solid rgba(60, 64, 67, 0.12)",
+              borderRadius: "24px",
               padding: "4px",
-              boxShadow: "0 4px 16px -2px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9)",
+              boxShadow: "0 1px 3px rgba(60, 64, 67, 0.08)",
               gap: "4px"
             }}
           >
@@ -2202,8 +2047,11 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                 id: "events",
                 label: "Events & Bootcamps",
                 icon: (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
                   </svg>
                 )
               },
@@ -2211,7 +2059,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                 id: "articles",
                 label: "Articles & Research",
                 icon: (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
                     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
                   </svg>
@@ -2229,31 +2077,31 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                     alignItems: "center",
                     gap: "7px",
                     background: isSelected ? activeData.colors.primary : "transparent",
-                    color: isSelected ? "#FFFFFF" : "#4B5563",
+                    color: isSelected ? "#FFFFFF" : "#5F6368",
                     border: "none",
-                    borderRadius: "10px",
-                    padding: "8px 16px",
-                    fontSize: "0.84rem",
-                    fontWeight: isSelected ? "700" : "600",
+                    borderRadius: "20px",
+                    padding: "7px 15px",
+                    fontSize: "0.83rem",
+                    fontWeight: isSelected ? "700" : "500",
                     cursor: "pointer",
-                    boxShadow: isSelected ? `0 4px 14px -2px ${activeData.colors.primary}50` : "none",
-                    transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                    boxShadow: isSelected ? `0 2px 8px -1px ${activeData.colors.primary}45` : "none",
+                    transition: "all 0.2s cubic-bezier(0.2, 0, 0, 1)",
                     whiteSpace: "nowrap"
                   }}
                   onMouseEnter={(e) => {
                     if (!isSelected) {
-                      e.currentTarget.style.background = "rgba(20, 23, 31, 0.04)";
-                      e.currentTarget.style.color = "var(--l-ink)";
+                      e.currentTarget.style.background = "rgba(60, 64, 67, 0.08)";
+                      e.currentTarget.style.color = "#202124";
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isSelected) {
                       e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.color = "#4B5563";
+                      e.currentTarget.style.color = "#5F6368";
                     }
                   }}
                 >
-                  <span style={{ display: "inline-flex", opacity: isSelected ? 1 : 0.75 }}>
+                  <span style={{ display: "inline-flex", opacity: isSelected ? 1 : 0.8 }}>
                     {tab.icon}
                   </span>
                   <span>{tab.label}</span>
@@ -2409,10 +2257,10 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                 ))}
               </div>
 
-              {/* 6. SEARCH */}
-              <div style={{ position: "relative", maxWidth: "480px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
-                <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF", pointerEvents: "none" }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              {/* 6. MNC Google-Style Search Bar */}
+              <div style={{ position: "relative", maxWidth: "520px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
+                <div style={{ position: "absolute", left: "18px", top: "50%", transform: "translateY(-50%)", color: "#4285F4", pointerEvents: "none", display: "flex", alignItems: "center" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                   </svg>
@@ -2424,26 +2272,25 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                   onChange={(e) => setCourseSearchQuery(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: courseSearchQuery ? "14px 44px 14px 48px" : "14px 20px 14px 48px",
-                    borderRadius: "14px",
-                    border: "1px solid rgba(20, 23, 31, 0.08)",
-                    background: "rgba(255, 255, 255, 0.85)",
-                    backdropFilter: "blur(8px)",
-                    WebkitBackdropFilter: "blur(8px)",
-                    color: "var(--l-ink)",
-                    fontSize: "0.95rem",
-                    fontWeight: "600",
+                    height: "48px",
+                    padding: courseSearchQuery ? "0 46px 0 52px" : "0 22px 0 52px",
+                    borderRadius: "24px",
+                    border: "1.5px solid rgba(60, 64, 67, 0.18)",
+                    background: "#FFFFFF",
+                    color: "#202124",
+                    fontSize: "0.94rem",
+                    fontWeight: "500",
                     outline: "none",
-                    boxShadow: "0 4px 14px -2px rgba(0, 0, 0, 0.03)",
-                    transition: "all 0.25s ease"
+                    boxShadow: "0 1px 6px rgba(32, 33, 36, 0.08)",
+                    transition: "all 0.2s cubic-bezier(0.2, 0, 0, 1)"
                   }}
                   onFocus={(e) => {
-                    e.currentTarget.style.borderColor = activeData.colors.primary;
-                    e.currentTarget.style.boxShadow = `0 0 0 4px ${activeData.colors.primary}1A`;
+                    e.currentTarget.style.borderColor = "#1A73E8";
+                    e.currentTarget.style.boxShadow = "0 1px 6px rgba(26, 115, 232, 0.25), 0 0 0 3px rgba(26, 115, 232, 0.12)";
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.08)";
-                    e.currentTarget.style.boxShadow = "0 4px 14px -2px rgba(0, 0, 0, 0.03)";
+                    e.currentTarget.style.borderColor = "rgba(60, 64, 67, 0.18)";
+                    e.currentTarget.style.boxShadow = "0 1px 6px rgba(32, 33, 36, 0.08)";
                   }}
                 />
                 {courseSearchQuery && (
@@ -2456,12 +2303,12 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                       right: "14px",
                       top: "50%",
                       transform: "translateY(-50%)",
-                      width: "22px",
-                      height: "22px",
+                      width: "24px",
+                      height: "24px",
                       borderRadius: "50%",
                       border: "none",
-                      background: "rgba(20, 23, 31, 0.08)",
-                      color: "#6B7280",
+                      background: "rgba(60, 64, 67, 0.08)",
+                      color: "#5F6368",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -2471,8 +2318,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                       lineHeight: "1",
                       transition: "all 0.15s ease"
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(20, 23, 31, 0.16)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(20, 23, 31, 0.08)"; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(60, 64, 67, 0.16)"; e.currentTarget.style.color = "#202124"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(60, 64, 67, 0.08)"; e.currentTarget.style.color = "#5F6368"; }}
                   >
                     ×
                   </button>
@@ -2555,10 +2402,10 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                 {activeData.desc} Browse the courses, practical bootcamps, and resources curated to level up your career.
               </p>
 
-              {/* Banner Inner Search */}
-              <div style={{ position: "relative", maxWidth: "480px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
-                <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF", pointerEvents: "none" }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              {/* Banner Inner MNC Google-Style Search */}
+              <div style={{ position: "relative", maxWidth: "520px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
+                <div style={{ position: "absolute", left: "18px", top: "50%", transform: "translateY(-50%)", color: "#4285F4", pointerEvents: "none", display: "flex", alignItems: "center" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                   </svg>
@@ -2567,33 +2414,32 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                   type="text"
                   placeholder={
                     mode === "courses"
-                      ? (activeCategoryName === "All" ? "Search all courses..." : `Search ${activeCategoryName} courses...`)
-                      : (activeCategoryName === "All" ? "Search all articles & research..." : `Search ${activeCategoryName} articles...`)
+                      ? (activeCategoryName === "All" ? "Search courses, topics, or skills..." : `Search ${activeCategoryName} courses...`)
+                      : (activeCategoryName === "All" ? "Search articles, research papers & guides..." : `Search ${activeCategoryName} articles...`)
                   }
                   value={courseSearchQuery}
                   onChange={(e) => setCourseSearchQuery(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: courseSearchQuery ? "14px 44px 14px 48px" : "14px 20px 14px 48px",
-                    borderRadius: "14px",
-                    border: "1px solid rgba(20, 23, 31, 0.08)",
-                    background: "rgba(255, 255, 255, 0.85)",
-                    backdropFilter: "blur(8px)",
-                    WebkitBackdropFilter: "blur(8px)",
-                    color: "var(--l-ink)",
-                    fontSize: "0.95rem",
-                    fontWeight: "600",
+                    height: "48px",
+                    padding: courseSearchQuery ? "0 46px 0 52px" : "0 22px 0 52px",
+                    borderRadius: "24px",
+                    border: "1.5px solid rgba(60, 64, 67, 0.18)",
+                    background: "#FFFFFF",
+                    color: "#202124",
+                    fontSize: "0.94rem",
+                    fontWeight: "500",
                     outline: "none",
-                    boxShadow: "0 4px 14px -2px rgba(0, 0, 0, 0.03)",
-                    transition: "all 0.25s ease"
+                    boxShadow: "0 1px 6px rgba(32, 33, 36, 0.08)",
+                    transition: "all 0.2s cubic-bezier(0.2, 0, 0, 1)"
                   }}
                   onFocus={(e) => {
-                    e.currentTarget.style.borderColor = activeData.colors.primary;
-                    e.currentTarget.style.boxShadow = `0 0 0 4px ${activeData.colors.primary}1A`;
+                    e.currentTarget.style.borderColor = "#1A73E8";
+                    e.currentTarget.style.boxShadow = "0 1px 6px rgba(26, 115, 232, 0.25), 0 0 0 3px rgba(26, 115, 232, 0.12)";
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.08)";
-                    e.currentTarget.style.boxShadow = "0 4px 14px -2px rgba(0, 0, 0, 0.03)";
+                    e.currentTarget.style.borderColor = "rgba(60, 64, 67, 0.18)";
+                    e.currentTarget.style.boxShadow = "0 1px 6px rgba(32, 33, 36, 0.08)";
                   }}
                 />
                 {courseSearchQuery && (
@@ -2606,12 +2452,12 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                       right: "14px",
                       top: "50%",
                       transform: "translateY(-50%)",
-                      width: "22px",
-                      height: "22px",
+                      width: "24px",
+                      height: "24px",
                       borderRadius: "50%",
                       border: "none",
-                      background: "rgba(20, 23, 31, 0.08)",
-                      color: "#6B7280",
+                      background: "rgba(60, 64, 67, 0.08)",
+                      color: "#5F6368",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -2621,8 +2467,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                       lineHeight: "1",
                       transition: "all 0.15s ease"
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(20, 23, 31, 0.16)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(20, 23, 31, 0.08)"; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(60, 64, 67, 0.16)"; e.currentTarget.style.color = "#202124"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(60, 64, 67, 0.08)"; e.currentTarget.style.color = "#5F6368"; }}
                   >
                     ×
                   </button>
@@ -2740,13 +2586,6 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
               const data = getCategoryData(catName);
               if (!data) return null;
               const count = mode === "courses" 
-                ? data.coursesCount 
-                : mode === "events" 
-                  ? (catName === "All"
-                      ? (eventFacets?.total ?? 0)
-                      : (eventCategoryCounts.get(catName.toLowerCase()) ?? 0))
-                  : data.resources.length;
-
               return (
                 <CategoryPillButton
                   key={catName}
@@ -2755,29 +2594,15 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                   itemData={data}
                   onClick={() => handleCategorySwitch(catName)}
                 >
-                  {catName === "All" ? (
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  {catName === "All" && (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: isActive ? 1 : 0.7 }}>
                       <rect x="3" y="3" width="7" height="7" rx="1.5" />
                       <rect x="14" y="3" width="7" height="7" rx="1.5" />
                       <rect x="14" y="14" width="7" height="7" rx="1.5" />
                       <rect x="3" y="14" width="7" height="7" rx="1.5" />
                     </svg>
-                  ) : (
-                    <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: data.colors.primary }} />
                   )}
                   <span>{catName}</span>
-                  <span
-                    style={{
-                      fontSize: "0.72rem",
-                      fontWeight: "800",
-                      padding: "2px 7px",
-                      borderRadius: "10px",
-                      background: isActive ? `${data.colors.primary}20` : "#F3F4F6",
-                      color: isActive ? data.colors.primary : "#6B7280"
-                    }}
-                  >
-                    {count}
-                  </span>
                 </CategoryPillButton>
               );
             })}
@@ -2830,6 +2655,47 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
             setCourseSearchQuery={setCourseSearchQuery}
           />
         )}
+
+        {/* Fast Up Arrow on Side (Scroll to Top) */}
+        <button
+          type="button"
+          onClick={scrollToTop}
+          aria-label="Scroll to top"
+          style={{
+            position: "fixed",
+            right: "28px",
+            bottom: "92px",
+            zIndex: 48,
+            width: "44px",
+            height: "44px",
+            borderRadius: "50%",
+            background: "#FFFFFF",
+            border: "1px solid rgba(60, 64, 67, 0.16)",
+            color: "#1A73E8",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08)",
+            opacity: showScrollTop ? 1 : 0,
+            transform: showScrollTop ? "scale(1) translateY(0)" : "scale(0.8) translateY(12px)",
+            pointerEvents: showScrollTop ? "auto" : "none",
+            transition: "opacity 0.25s ease, transform 0.25s ease, box-shadow 0.2s ease"
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.08) translateY(-2px)";
+            e.currentTarget.style.boxShadow = "0 4px 14px rgba(26, 115, 232, 0.28)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1) translateY(0)";
+            e.currentTarget.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08)";
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="19" x2="12" y2="5" />
+            <polyline points="5 12 12 5 19 12" />
+          </svg>
+        </button>
 
       </main>
     </div>

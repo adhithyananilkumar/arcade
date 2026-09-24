@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import ExploreEmptyState from "./ExploreEmptyState";
 
 interface ArticlesViewProps {
   activeData: any;
@@ -55,6 +56,13 @@ export default function ArticlesView({
   const endIndex = Math.min(startIndex + CARDS_PER_PAGE, sortedResources.length);
   const currentCards = sortedResources.slice(startIndex, endIndex);
 
+  const headingTitle = React.useMemo(() => {
+    const q = courseSearchQuery.trim();
+    if (q) return `Results for "${q}"`;
+    if (selectedType !== "All Types") return `${selectedType} Articles`;
+    return "Articles & Research";
+  }, [courseSearchQuery, selectedType]);
+
   return (
     <section style={{ marginBottom: "20px" }}>
       {/* Section Header */}
@@ -62,12 +70,14 @@ export default function ArticlesView({
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
           <h2 style={{ fontSize: "1.45rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-            Articles & Research
+            {headingTitle}
           </h2>
         </div>
-        <span style={{ fontSize: "0.84rem", fontWeight: "700", color: activeData.colors.primary, background: `${activeData.colors.primary}12`, padding: "4px 12px", borderRadius: "20px" }}>
-          Showing {sortedResources.length} of {resources.length} articles
-        </span>
+        {sortedResources.length > 0 && (
+          <span style={{ fontSize: "0.82rem", fontWeight: "600", color: "#6B7280" }}>
+            {sortedResources.length} {sortedResources.length === 1 ? "article available" : "articles available"}
+          </span>
+        )}
       </div>
 
       {/* Uniform Horizontal Filter & Sort Toolbar */}
@@ -188,64 +198,22 @@ export default function ArticlesView({
       </div>
 
       {sortedResources.length === 0 ? (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "36px 20px",
-            background: "rgba(255, 255, 255, 0.65)",
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
-            borderRadius: "16px",
-            border: "1px dashed rgba(20, 23, 31, 0.15)",
-            maxWidth: "460px",
-            margin: "24px auto"
+        <ExploreEmptyState
+          title={query ? "No matching articles found" : "No articles found"}
+          description={
+            query
+              ? `We couldn't find any articles matching "${courseSearchQuery}". Try checking for spelling errors or searching with broader keywords.`
+              : selectedType !== "All Types"
+                ? `There are currently no ${selectedType.toLowerCase()} articles in this section. Try selecting "All Types" to view other articles.`
+                : "No articles or research documents are currently published in this section."
+          }
+          actionLabel="Reset Filters"
+          onAction={() => {
+            if (setCourseSearchQuery) setCourseSearchQuery("");
+            setSelectedType("All Types");
           }}
-        >
-          <div
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              background: `${activeData.colors.primary}12`,
-              color: activeData.colors.primary,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 12px"
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-          </div>
-          <h4 style={{ fontSize: "1rem", fontWeight: "700", color: "var(--l-ink)", margin: "0 0 6px" }}>
-            No articles found
-          </h4>
-          <p style={{ color: "#6B7280", fontSize: "0.86rem", margin: "0 0 16px", lineHeight: "1.5" }}>
-            {query ? `No articles match "${courseSearchQuery}".` : "Try choosing a different type or clearing the search."}
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              if (setCourseSearchQuery) setCourseSearchQuery("");
-              setSelectedType("All Types");
-            }}
-            style={{
-              background: activeData.colors.primary,
-              color: "#FFFFFF",
-              border: "none",
-              padding: "8px 18px",
-              borderRadius: "10px",
-              fontSize: "0.84rem",
-              fontWeight: "700",
-              cursor: "pointer",
-              boxShadow: `0 4px 12px ${activeData.colors.primary}30`
-            }}
-          >
-            Reset Filters
-          </button>
-        </div>
+          accentColor={activeData.colors.primary}
+        />
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
           {currentCards.map((doc: any) => (

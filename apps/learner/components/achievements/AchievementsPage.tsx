@@ -403,19 +403,20 @@ export default function AchievementsPage() {
 
   return (
     <div className="relative min-h-screen w-full text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/40">
-      {/* Background — identical to My Learning page */}
+      {/* Background — celebratory ambient gradient matching Home and Explore pages */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 dark:hidden -z-10"
         style={{
           background: `
-            radial-gradient(ellipse 65% 45% at 8% 12%, rgba(59, 130, 246, 0.05) 0%, transparent 60%),
-            radial-gradient(ellipse 55% 40% at 92% 24%, rgba(16, 185, 129, 0.04) 0%, transparent 60%),
-            radial-gradient(ellipse 50% 40% at 5% 52%, rgba(155, 93, 229, 0.03) 0%, transparent 60%),
-            radial-gradient(ellipse 55% 40% at 6% 76%, rgba(14, 165, 233, 0.04) 0%, transparent 60%),
-            radial-gradient(ellipse 55% 40% at 94% 76%, rgba(14, 165, 233, 0.04) 0%, transparent 60%),
-            radial-gradient(ellipse 45% 35% at 48% 94%, rgba(249, 200, 70, 0.03) 0%, transparent 60%),
-            linear-gradient(to bottom, #F8FAFC 0%, #FAFCFF 30%, #FFFFFF 60%, #F8FAFC 100%)
+            radial-gradient(ellipse 55% 40% at 8% 12%, rgba(76, 111, 255, 0.16) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 35% at 92% 20%, rgba(245, 158, 11, 0.16) 0%, transparent 60%),
+            radial-gradient(ellipse 45% 35% at 5% 50%, rgba(147, 51, 234, 0.11) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 35% at 95% 52%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 35% at 6% 78%, rgba(14, 165, 233, 0.11) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 35% at 94% 80%, rgba(251, 191, 36, 0.13) 0%, transparent 60%),
+            radial-gradient(ellipse 40% 30% at 50% 95%, rgba(244, 63, 94, 0.08) 0%, transparent 60%),
+            linear-gradient(to bottom, #E9EEFB 0%, #FAF7FE 25%, #FFFFFF 50%, #FFFFFF 75%, #FEF5E7 100%)
           `,
         }}
       />
@@ -424,12 +425,12 @@ export default function AchievementsPage() {
         className="pointer-events-none fixed inset-0 hidden dark:block -z-10 bg-slate-950"
         style={{
           background: `
-            radial-gradient(ellipse 65% 45% at 8% 12%, rgba(59, 130, 246, 0.14) 0%, transparent 60%),
-            radial-gradient(ellipse 55% 40% at 92% 24%, rgba(16, 185, 129, 0.10) 0%, transparent 60%),
-            radial-gradient(ellipse 50% 40% at 5% 52%, rgba(155, 93, 229, 0.08) 0%, transparent 60%),
-            radial-gradient(ellipse 55% 40% at 6% 76%, rgba(14, 165, 233, 0.08) 0%, transparent 60%),
-            radial-gradient(ellipse 55% 40% at 94% 76%, rgba(14, 165, 233, 0.08) 0%, transparent 60%),
-            linear-gradient(to bottom, #020617 0%, #0F172A 50%, #020617 100%)
+            radial-gradient(ellipse 65% 45% at 8% 12%, rgba(76, 111, 255, 0.20) 0%, transparent 60%),
+            radial-gradient(ellipse 55% 40% at 92% 24%, rgba(245, 158, 11, 0.18) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 40% at 5% 52%, rgba(147, 51, 234, 0.14) 0%, transparent 60%),
+            radial-gradient(ellipse 55% 40% at 6% 76%, rgba(14, 165, 233, 0.12) 0%, transparent 60%),
+            radial-gradient(ellipse 55% 40% at 94% 76%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
+            linear-gradient(to bottom, #030712 0%, #0E0F26 35%, #16102B 70%, #030712 100%)
           `,
         }}
       />

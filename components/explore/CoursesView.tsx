@@ -7,6 +7,7 @@ import { gsap } from "gsap";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
 import { getCourseAttribution, type AttributableCourse } from "./courseAttribution";
+import ExploreEmptyState from "./ExploreEmptyState";
 function hexToRgbStr(hex: string): string {
   hex = hex.replace(/^#/, "");
   if (hex.length === 3) {
@@ -835,18 +836,38 @@ export default function CoursesView({
     return 0;
   });
 
+  const headingTitle = React.useMemo(() => {
+    const q = courseSearchQuery.trim();
+    if (q) {
+      return `Results for "${q}"`;
+    }
+    const isAll = !activeCategoryName || activeCategoryName.toLowerCase() === "all";
+    if (!isAll) {
+      if (selectedDifficulty !== "All Levels") {
+        return `${selectedDifficulty} ${activeCategoryName} Courses`;
+      }
+      return `${activeCategoryName} Courses`;
+    }
+    if (selectedDifficulty !== "All Levels") {
+      return `${selectedDifficulty} Courses`;
+    }
+    return "Popular Courses";
+  }, [courseSearchQuery, activeCategoryName, selectedDifficulty]);
+
   return (
     <section ref={coursesSectionRef} style={{ marginBottom: "20px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
           <h2 style={{ fontSize: "1.45rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-            Popular Courses
+            {headingTitle}
           </h2>
         </div>
-        <span style={{ fontSize: "0.84rem", fontWeight: "700", color: activeData.colors.primary, background: `${activeData.colors.primary}12`, padding: "4px 12px", borderRadius: "20px" }}>
-          Showing {sortedCourses.length} of {activeData.courses.length} courses
-        </span>
+        {sortedCourses.length > 0 && (
+          <span style={{ fontSize: "0.82rem", fontWeight: "600", color: "#6B7280" }}>
+            {sortedCourses.length} {sortedCourses.length === 1 ? "course available" : "courses available"}
+          </span>
+        )}
       </div>
 
       {/* Uniform Horizontal Filter & Sort Toolbar */}
@@ -968,64 +989,23 @@ export default function CoursesView({
       </div>
 
       {sortedCourses.length === 0 ? (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "36px 20px",
-            background: "rgba(255, 255, 255, 0.65)",
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
-            borderRadius: "16px",
-            border: "1px dashed rgba(20, 23, 31, 0.15)",
-            maxWidth: "460px",
-            margin: "24px auto"
+        <ExploreEmptyState
+          title={courseSearchQuery.trim() ? "No matching courses found" : "No courses found"}
+          description={
+            courseSearchQuery.trim()
+              ? `We couldn't find any courses matching "${courseSearchQuery}". Try checking for spelling errors or searching with broader keywords.`
+              : selectedDifficulty !== "All Levels"
+                ? `There are currently no ${selectedDifficulty.toLowerCase()} courses in ${activeCategoryName}. Try selecting "All Levels" to view other courses.`
+                : "No courses are currently available in this category. Try choosing a different category or clearing filters."
+          }
+          actionLabel="Reset Filters"
+          onAction={() => {
+            setCourseSearchQuery("");
+            setSelectedDifficulty("All Levels");
+            setSelectedTopic("All Topics");
           }}
-        >
-          <div
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              background: `${activeData.colors.primary}12`,
-              color: activeData.colors.primary,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 12px"
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-          </div>
-          <h4 style={{ fontSize: "1rem", fontWeight: "700", color: "var(--l-ink)", margin: "0 0 6px" }}>
-            No courses found
-          </h4>
-          <p style={{ color: "#6B7280", fontSize: "0.86rem", margin: "0 0 16px", lineHeight: "1.5" }}>
-            {courseSearchQuery ? `No courses match "${courseSearchQuery}".` : "Try choosing a different level or clearing the search."}
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setCourseSearchQuery("");
-              setSelectedDifficulty("All Levels");
-            }}
-            style={{
-              background: activeData.colors.primary,
-              color: "#FFFFFF",
-              border: "none",
-              padding: "8px 18px",
-              borderRadius: "10px",
-              fontSize: "0.84rem",
-              fontWeight: "700",
-              cursor: "pointer",
-              boxShadow: `0 4px 12px ${activeData.colors.primary}30`
-            }}
-          >
-            Reset Filters
-          </button>
-        </div>
+          accentColor={activeData.colors.primary}
+        />
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
           {sortedCourses.map((course: any, index: number) => {

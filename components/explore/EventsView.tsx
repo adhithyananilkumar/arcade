@@ -3,6 +3,7 @@
 import { usePublishedEventCardsQuery } from '@/domains/events';
 import React from "react";
 import { useRouter } from "next/navigation";
+import ExploreEmptyState from "./ExploreEmptyState";
 
 /*
  * WEBINARS_DATA removed. It was five invented webinars with invented hosts ("Next.js Core Team",
@@ -468,6 +469,20 @@ export default function EventsView({
     );
   };
 
+  const headingTitle = React.useMemo(() => {
+    const q = courseSearchQuery.trim();
+    if (q) return `Results for "${q}"`;
+    const isAll = !activeCategoryName || activeCategoryName.toLowerCase() === "all";
+    if (!isAll) {
+      if (eventType === "bootcamps") return `${activeCategoryName} Bootcamps`;
+      if (eventType === "webinars") return `${activeCategoryName} Live Webinars`;
+      return `${activeCategoryName} Events & Bootcamps`;
+    }
+    if (eventType === "bootcamps") return "Bootcamps";
+    if (eventType === "webinars") return "Live Webinars";
+    return "Events & Bootcamps";
+  }, [courseSearchQuery, activeCategoryName, eventType]);
+
   return (
     <section style={{ marginBottom: "20px" }}>
       {/* Section Header */}
@@ -475,12 +490,14 @@ export default function EventsView({
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
           <h2 style={{ fontSize: "1.45rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-            Events & Bootcamps
+            {headingTitle}
           </h2>
         </div>
-        <span style={{ fontSize: "0.84rem", fontWeight: "700", color: activeData.colors.primary, background: `${activeData.colors.primary}12`, padding: "4px 12px", borderRadius: "20px" }}>
-          Showing {totalCount} of {totalAvailable} events
-        </span>
+        {totalCount > 0 && (
+          <span style={{ fontSize: "0.82rem", fontWeight: "600", color: "#6B7280" }}>
+            {totalCount} {totalCount === 1 ? "event available" : "events available"}
+          </span>
+        )}
       </div>
 
       {/* Uniform Horizontal Filter & Sort Toolbar */}
@@ -621,64 +638,22 @@ export default function EventsView({
           </p>
         </div>
       ) : totalCount === 0 ? (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "36px 20px",
-            background: "rgba(255, 255, 255, 0.65)",
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
-            borderRadius: "16px",
-            border: "1px dashed rgba(20, 23, 31, 0.15)",
-            maxWidth: "460px",
-            margin: "24px auto"
+        <ExploreEmptyState
+          title={courseSearchQuery.trim() ? "No matching events found" : "No events found"}
+          description={
+            courseSearchQuery.trim()
+              ? `We couldn't find any events or bootcamps matching "${courseSearchQuery}". Try checking for spelling errors or searching with broader keywords.`
+              : eventType !== "all"
+                ? `There are currently no ${eventType} in ${activeCategoryName}. Try selecting "All Events" to view other sessions.`
+                : "No events or bootcamps are currently scheduled for this category. Check back soon for new sessions."
+          }
+          actionLabel="Reset Filters"
+          onAction={() => {
+            if (setCourseSearchQuery) setCourseSearchQuery("");
+            setEventType("all");
           }}
-        >
-          <div
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              background: `${activeData.colors.primary}12`,
-              color: activeData.colors.primary,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 12px"
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-          </div>
-          <h4 style={{ fontSize: "1rem", fontWeight: "700", color: "var(--l-ink)", margin: "0 0 6px" }}>
-            No events found
-          </h4>
-          <p style={{ color: "#6B7280", fontSize: "0.86rem", margin: "0 0 16px", lineHeight: "1.5" }}>
-            {courseSearchQuery.trim() ? `No events match "${courseSearchQuery}".` : "Try choosing a different event type or clearing the search."}
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              if (setCourseSearchQuery) setCourseSearchQuery("");
-              setEventType("all");
-            }}
-            style={{
-              background: activeData.colors.primary,
-              color: "#FFFFFF",
-              border: "none",
-              padding: "8px 18px",
-              borderRadius: "10px",
-              fontSize: "0.84rem",
-              fontWeight: "700",
-              cursor: "pointer",
-              boxShadow: `0 4px 12px ${activeData.colors.primary}30`
-            }}
-          >
-            Reset Filters
-          </button>
-        </div>
+          accentColor={activeData.colors.primary}
+        />
       ) : (
         <>
           {showBootcamps && renderBootcampsSection("Practical Bootcamps")}

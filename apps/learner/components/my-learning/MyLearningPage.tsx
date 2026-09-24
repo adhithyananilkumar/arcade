@@ -156,19 +156,20 @@ export default function MyLearningPage() {
 
   return (
     <div className="relative min-h-screen w-full text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/40">
-      {/* Background — unchanged Arcade visual language */}
+      {/* Background — vibrant ambient gradient matching Home and Explore pages */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 dark:hidden -z-10"
         style={{
           background: `
-            radial-gradient(ellipse 65% 45% at 8% 12%, rgba(59, 130, 246, 0.05) 0%, transparent 60%),
-            radial-gradient(ellipse 55% 40% at 92% 24%, rgba(16, 185, 129, 0.04) 0%, transparent 60%),
-            radial-gradient(ellipse 50% 40% at 5% 52%, rgba(155, 93, 229, 0.03) 0%, transparent 60%),
-            radial-gradient(ellipse 55% 40% at 6% 76%, rgba(14, 165, 233, 0.04) 0%, transparent 60%),
-            radial-gradient(ellipse 55% 40% at 94% 76%, rgba(14, 165, 233, 0.04) 0%, transparent 60%),
-            radial-gradient(ellipse 45% 35% at 48% 94%, rgba(249, 200, 70, 0.03) 0%, transparent 60%),
-            linear-gradient(to bottom, #F8FAFC 0%, #FAFCFF 30%, #FFFFFF 60%, #F8FAFC 100%)
+            radial-gradient(ellipse 55% 40% at 8% 12%, rgba(41, 98, 214, 0.16) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 35% at 92% 20%, rgba(39, 197, 216, 0.14) 0%, transparent 60%),
+            radial-gradient(ellipse 45% 35% at 5% 50%, rgba(99, 102, 241, 0.09) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 35% at 95% 52%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 35% at 6% 78%, rgba(14, 165, 233, 0.12) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 35% at 94% 80%, rgba(20, 184, 166, 0.11) 0%, transparent 60%),
+            radial-gradient(ellipse 40% 30% at 50% 95%, rgba(44, 131, 245, 0.08) 0%, transparent 60%),
+            linear-gradient(to bottom, #E9EEFB 0%, #F5F9FD 25%, #FFFFFF 50%, #FFFFFF 75%, #E8F7F8 100%)
           `,
         }}
       />
@@ -177,12 +178,12 @@ export default function MyLearningPage() {
         className="pointer-events-none fixed inset-0 hidden dark:block -z-10 bg-slate-950"
         style={{
           background: `
-            radial-gradient(ellipse 65% 45% at 8% 12%, rgba(59, 130, 246, 0.14) 0%, transparent 60%),
-            radial-gradient(ellipse 55% 40% at 92% 24%, rgba(16, 185, 129, 0.10) 0%, transparent 60%),
-            radial-gradient(ellipse 50% 40% at 5% 52%, rgba(155, 93, 229, 0.08) 0%, transparent 60%),
-            radial-gradient(ellipse 55% 40% at 6% 76%, rgba(14, 165, 233, 0.08) 0%, transparent 60%),
-            radial-gradient(ellipse 55% 40% at 94% 76%, rgba(14, 165, 233, 0.08) 0%, transparent 60%),
-            linear-gradient(to bottom, #020617 0%, #0F172A 50%, #020617 100%)
+            radial-gradient(ellipse 65% 45% at 8% 12%, rgba(41, 98, 214, 0.22) 0%, transparent 60%),
+            radial-gradient(ellipse 55% 40% at 92% 24%, rgba(39, 197, 216, 0.16) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 40% at 5% 52%, rgba(99, 102, 241, 0.12) 0%, transparent 60%),
+            radial-gradient(ellipse 55% 40% at 6% 76%, rgba(14, 165, 233, 0.12) 0%, transparent 60%),
+            radial-gradient(ellipse 55% 40% at 94% 76%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
+            linear-gradient(to bottom, #020617 0%, #081126 35%, #0B1528 70%, #020617 100%)
           `,
         }}
       />
