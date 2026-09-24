@@ -31,9 +31,8 @@ import {
   ArrowRight,
   Loader2,
   SearchX,
-  CornerDownLeft,
-  ArrowUp,
-  ArrowDown,
+  X,
+  Sparkles,
 } from 'lucide-react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
@@ -233,39 +232,85 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
       onOpenChange={onOpenChange}
       title="Search Arcade"
       description="Search courses, events and pages"
-      className="top-[10%] w-[94vw] max-w-2xl gap-0 overflow-hidden rounded-2xl border border-black/[0.06] bg-white p-0 shadow-[0_24px_70px_-12px_rgba(20,20,43,0.28)]"
+      className="top-[8%] sm:top-[12%] translate-y-0 w-[95vw] sm:max-w-2xl! md:max-w-3xl! gap-0 overflow-hidden rounded-2xl! sm:rounded-3xl! border border-slate-200/90 bg-white p-0 shadow-[0_30px_90px_-15px_rgba(20,20,43,0.22)]"
       showCloseButton={false}
     >
       <Command shouldFilter={false} style={{ backgroundColor: '#ffffff' }}>
-        <div className="relative flex items-center gap-3 border-b border-slate-100 px-5 py-4">
-          <Search size={18} strokeWidth={2.2} className="shrink-0 text-slate-400" />
+        <div className="relative flex items-center gap-3.5 border-b border-slate-100/90 px-5 sm:px-6 py-4">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#4C6FFF]/10 text-[#4C6FFF]">
+            <Search size={18} strokeWidth={2.2} />
+          </div>
           <CommandInput
             bare
             value={query}
             onValueChange={setQuery}
             placeholder="Search courses, events, settings…"
             autoFocus
-            className="h-auto flex-1 border-0 bg-transparent p-0 text-[15px] font-medium text-[#14142b] shadow-none outline-none placeholder:text-slate-400 placeholder:font-normal focus-visible:ring-0"
+            className="h-auto flex-1 border-0 bg-transparent p-0 text-[15px] sm:text-[16px] font-medium text-[#14142b] shadow-none outline-none placeholder:text-slate-400 placeholder:font-normal focus-visible:ring-0"
           />
-          <kbd className="hidden shrink-0 rounded-md border border-slate-200 bg-slate-50 px-1.5 py-1 text-[10px] font-semibold text-slate-400 sm:block">
-            ESC
-          </kbd>
+          {query.trim().length > 0 && (
+            <button
+              type="button"
+              onClick={() => setQuery('')}
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
+              aria-label="Clear search"
+            >
+              <X size={15} />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            aria-label="Close search"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50/90 text-slate-400 hover:border-slate-300 hover:bg-slate-100 hover:text-slate-700 transition-all cursor-pointer ml-1"
+          >
+            <X size={17} strokeWidth={2.2} />
+          </button>
         </div>
 
         <CommandList
           style={{ backgroundColor: '#ffffff' }}
-          className="max-h-[60vh] min-h-[280px] overflow-x-hidden px-2.5 py-2"
+          className="max-h-[65vh] min-h-[300px] overflow-x-hidden px-3 sm:px-4 py-3"
         >
           {isSearching && (
-            <div className="flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-slate-400">
-              <Loader2 size={13} className="animate-spin" /> Searching…
+            <div className="flex items-center gap-2 px-3 py-3 text-xs font-medium text-slate-400">
+              <Loader2 size={14} className="animate-spin text-[#4C6FFF]" /> Searching…
+            </div>
+          )}
+
+          {!hasQuery && (
+            <div className="mb-2 px-1 pt-1">
+              <p className="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <Sparkles size={12} className="text-[#4C6FFF]" />
+                <span>Popular topics</span>
+              </p>
+              <div className="flex flex-wrap gap-1.5 pb-2">
+                {[
+                  'Web Development',
+                  'Machine Learning',
+                  'UI/UX Design',
+                  'Cloud & DevOps',
+                  'System Design',
+                  'Python',
+                  'Cybersecurity',
+                ].map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => setQuery(tag)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200/70 bg-slate-50/90 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:border-[#4C6FFF]/40 hover:bg-[#4C6FFF]/5 hover:text-[#4C6FFF] transition-all cursor-pointer"
+                  >
+                    <span>{tag}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
           {!isSearching && !hasAnyResults && (
             <CommandEmpty className="flex flex-col items-center gap-2.5 py-16 text-center">
-              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-50 text-slate-300">
-                <SearchX size={20} />
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-300 border border-slate-100">
+                <SearchX size={22} />
               </span>
               <span className="text-sm font-bold text-slate-700">No results for “{debouncedQuery}”</span>
               <span className="text-xs font-medium text-slate-400">
@@ -281,12 +326,13 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                   key={course.id}
                   value={`course-${course.id}`}
                   onSelect={() => go(courseRoutes.landing(course.id))}
+                  className="py-2.5"
                 >
-                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                  <div className="h-10 w-11 shrink-0 overflow-hidden rounded-lg bg-slate-100 border border-slate-200/60">
                     {course.coverImageUrl ? (
                       <img src={course.coverImageUrl} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center text-slate-300">
+                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 text-[#4C6FFF]">
                         <BookOpen size={16} />
                       </div>
                     )}
@@ -294,9 +340,12 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-[13.5px] font-bold text-[#14142b]">{course.title}</span>
                     <span className="truncate text-xs font-medium text-slate-400">
-                      {course.authorName || 'Course'}
+                      {course.authorName || 'Instructor'} · {course.moduleCount || 0} modules
                     </span>
                   </div>
+                  <span className="hidden sm:inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">
+                    Course
+                  </span>
                   <ArrowRight
                     size={14}
                     className="shrink-0 text-slate-300 opacity-0 transition-opacity group-data-selected/command-item:opacity-100"
@@ -306,8 +355,9 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
               <CommandItem
                 value="course-view-all"
                 onSelect={() => go(`/search?q=${encodeURIComponent(debouncedQuery)}`)}
+                className="py-2"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-[#4C6FFF]">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-[#4C6FFF]">
                   <ArrowRight size={15} />
                 </div>
                 <span className="text-[13.5px] font-bold text-[#4C6FFF]">View all course results</span>
@@ -322,11 +372,24 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                   key={event.id}
                   value={`event-${event.id}`}
                   onSelect={() => go(`/events/${event.slug || event.id}`)}
+                  className="py-2.5"
                 >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500">
-                    <CalendarDays size={16} />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600 border border-violet-100/80">
+                    <CalendarDays size={18} />
                   </div>
-                  <span className="truncate text-[13.5px] font-bold text-[#14142b]">{event.title}</span>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate text-[13.5px] font-bold text-[#14142b]">{event.title}</span>
+                    <span className="truncate text-xs font-medium text-slate-400">
+                      {event.eventType || 'Event'} {event.deliveryMode ? `· ${event.deliveryMode}` : ''}
+                    </span>
+                  </div>
+                  <span className="hidden sm:inline-flex items-center gap-1 rounded-md bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700">
+                    Event
+                  </span>
+                  <ArrowRight
+                    size={14}
+                    className="shrink-0 text-slate-300 opacity-0 transition-opacity group-data-selected/command-item:opacity-100"
+                  />
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -335,8 +398,8 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
           {visibleSections.map((section) => (
             <CommandGroup key={section.heading} heading={section.heading}>
               {section.items.map((item) => (
-                <CommandItem key={item.id} value={item.id} onSelect={() => go(item.href)}>
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500">
+                <CommandItem key={item.id} value={item.id} onSelect={() => go(item.href)} className="py-2.5">
+                  <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100/70 text-slate-600 transition-colors group-data-selected/command-item:bg-[#4C6FFF]/15 group-data-selected/command-item:text-[#4C6FFF]">
                     <item.icon size={17} strokeWidth={2} />
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col">
@@ -345,6 +408,10 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                       <span className="truncate text-xs font-medium text-slate-400">{item.subtitle}</span>
                     )}
                   </div>
+                  <ArrowRight
+                    size={14}
+                    className="shrink-0 text-slate-300 opacity-0 transition-opacity group-data-selected/command-item:opacity-100"
+                  />
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -355,29 +422,22 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
               <CommandItem
                 value="search-everything"
                 onSelect={() => go(`/search?q=${encodeURIComponent(debouncedQuery)}`)}
+                className="py-2.5"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
                   <Search size={15} />
                 </div>
                 <span className="truncate text-[13.5px] font-medium text-slate-500">
                   Search everything for <span className="font-bold text-[#14142b]">“{debouncedQuery}”</span>
                 </span>
+                <ArrowRight
+                  size={14}
+                  className="ml-auto shrink-0 text-slate-300 opacity-0 transition-opacity group-data-selected/command-item:opacity-100"
+                />
               </CommandItem>
             </CommandGroup>
           )}
         </CommandList>
-
-        <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-[11px] font-semibold text-slate-400">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1">
-              <ArrowUp size={11} /> <ArrowDown size={11} /> Navigate
-            </span>
-            <span className="flex items-center gap-1">
-              <CornerDownLeft size={11} /> Select
-            </span>
-          </div>
-          <span className="text-[#4C6FFF]">Arcade Search</span>
-        </div>
       </Command>
     </CommandDialog>
   );

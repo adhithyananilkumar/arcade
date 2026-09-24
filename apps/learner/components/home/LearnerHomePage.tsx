@@ -15,6 +15,8 @@ import {
   Cloud,
   Zap,
   Terminal,
+  TrendingUp,
+  Sparkles,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/infrastructure/http/api';
@@ -76,6 +78,16 @@ const COURSE_ICON_CONFIG = [
 ];
 
 const EVENT_TONES: EventCard['tone'][] = ['coral', 'blue', 'emerald', 'violet'];
+
+const TRENDING_TOPICS = [
+  'Full-Stack Web',
+  'Machine Learning',
+  'UI/UX Design',
+  'Cloud & DevOps',
+  'System Design',
+  'Cybersecurity',
+  'Python',
+];
 
 function deliveryLabel(mode?: DeliveryMode | string) {
   switch (mode) {
@@ -405,6 +417,29 @@ export default function LearnerHomePage() {
                 </button>
               </div>
             </form>
+
+            {/* Trending course topics pill cloud to fill the gap below search */}
+            <div className="mt-5 w-full max-w-lg space-y-2.5">
+              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <TrendingUp size={13} className="text-[#4C6FFF]" />
+                <span>Trending topics</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {TRENDING_TOPICS.map((topic) => (
+                  <button
+                    key={topic}
+                    type="button"
+                    onClick={() => {
+                      setQuery(topic);
+                      setSuperSearchOpen(true);
+                    }}
+                    className="inline-flex items-center rounded-full border border-slate-200/80 bg-white/80 px-3.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
+                  >
+                    <span>{topic}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </motion.div>
 
           {/* Floating elevation wrapper for Streak Calendar - Fixed Height Container */}
