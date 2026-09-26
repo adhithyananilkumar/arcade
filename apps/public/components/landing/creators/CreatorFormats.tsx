@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useRef } from "react";
-import { BookOpen, Terminal, Play, Layers } from "lucide-react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 
 // Helper Component for Desktop Scroll-Driven Progress & Hover Micro Interactions
@@ -123,53 +122,6 @@ export default function CreatorFormats() {
     restDelta: 0.001,
   });
 
-  const steps = [
-    {
-      step: "01",
-      title: "Course",
-      desc: "Structured paths with video lessons, reading modules, and exams.",
-      badge: "Step-by-step skills",
-      icon: BookOpen,
-      color: "#7A5AF8",
-      lightBg: "#F5F6FE",
-      ringColor: "#7A5AF8",
-      glowColor: "rgba(122, 90, 248, 0.12)",
-    },
-    {
-      step: "02",
-      title: "Event",
-      desc: "Focused interactive sandbox sessions built around practical outcomes.",
-      badge: "One skill, fast",
-      icon: Terminal,
-      color: "#2451D6",
-      lightBg: "#EFF6FF",
-      ringColor: "#2451D6",
-      glowColor: "rgba(36, 81, 214, 0.12)",
-    },
-    {
-      step: "03",
-      title: "Webinar",
-      desc: "Live stream classes and broadcast recordings to massive student groups.",
-      badge: "Broadcasting at scale",
-      icon: Play,
-      color: "#20B8CF",
-      lightBg: "#E3F9F5",
-      ringColor: "#20B8CF",
-      glowColor: "rgba(32, 184, 207, 0.12)",
-    },
-    {
-      step: "04",
-      title: "Article",
-      desc: "Self-paced written documentation guides and research reference logs.",
-      badge: "Reference manuals",
-      icon: Layers,
-      color: "#F5A623",
-      lightBg: "#FEF3C7",
-      ringColor: "#F5A623",
-      glowColor: "rgba(245, 166, 35, 0.12)",
-    },
-  ];
-
   const freePoints = [
     {
       text: "Reach the widest possible audience",
@@ -204,149 +156,8 @@ export default function CreatorFormats() {
   const headingWords = headingText.split(" ");
 
   return (
-    <section className="format-sec py-16 lg:py-24 relative overflow-hidden bg-transparent" id="formats">
+    <section className="format-sec pt-0 pb-0 sm:pb-2 relative overflow-hidden bg-transparent" id="formats">
       <div className="wrap max-w-7xl mx-auto px-4 sm:px-6">
-
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="sec-head text-center max-w-2xl mx-auto mb-14 space-y-3"
-        >
-
-          <motion.h2
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.65, delay: 0.1, ease: "easeOut" }}
-            className="text-3xl sm:text-4xl md:text-5xl font-semibold text-[#1C1C2E] tracking-tight font-serif"
-          >
-            Flexible layouts, straightforward pricing
-          </motion.h2>
-
-          <p className="text-sm sm:text-base text-zinc-500 font-medium max-w-xl mx-auto">
-            Pick the media structure that fits what you teach, and select your enrollment tier.
-          </p>
-        </motion.div>
-
-        {/* 4 Connected Refined Circular Nodes (Horizontal Flow - Re-triggers on scroll sequentially) */}
-        <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 justify-items-center relative z-10 mb-20"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: {
-                staggerChildren: 0.25,
-                delayChildren: 0.1,
-              },
-            },
-          }}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: false, amount: 0.2 }}
-        >
-          {steps.map((item, idx) => {
-            const Icon = item.icon;
-            const isLast = idx === steps.length - 1;
-
-            return (
-              <motion.div
-                key={idx}
-                variants={{
-                  hidden: { opacity: 0, scale: 0.7, y: 35 },
-                  visible: {
-                    opacity: 1,
-                    scale: 1,
-                    y: 0,
-                    transition: {
-                      type: "spring",
-                      stiffness: 95,
-                      damping: 14,
-                    },
-                  },
-                }}
-                className="relative flex flex-col items-center group w-full max-w-[240px]"
-              >
-                {/* Connector Arrow Pointer to next circle (Visible on desktop) */}
-                {!isLast && (
-                  <motion.div 
-                    variants={{
-                      hidden: { opacity: 0, scale: 0.5, x: -5 },
-                      visible: { 
-                        opacity: 1, 
-                        scale: 1, 
-                        x: 0,
-                        transition: { duration: 0.3, delay: 0.15 } 
-                      }
-                    }}
-                    className="hidden lg:flex absolute -right-4 top-1/2 -translate-y-1/2 z-30 items-center justify-center pointer-events-none"
-                  >
-                    <svg width="18" height="22" viewBox="0 0 18 22" fill="none">
-                      <path
-                        d="M 2 2 L 15 11 L 2 20 Z"
-                        fill={item.ringColor}
-                        stroke="#ffffff"
-                        strokeWidth="2"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </motion.div>
-                )}
-
-                {/* Outer Refined Circular Ring Container */}
-                <div
-                  className="w-[210px] h-[210px] sm:w-[220px] sm:h-[220px] rounded-full p-2.5 relative flex items-center justify-center text-center shadow-md transition-all duration-400 group-hover:scale-105 group-hover:shadow-xl"
-                  style={{
-                    border: `2.5px solid ${item.ringColor}`,
-                    boxShadow: `0 8px 25px ${item.glowColor}`,
-                    background: `linear-gradient(135deg, ${item.lightBg} 0%, #ffffff 100%)`,
-                  }}
-                >
-                  {/* Inner Circular Card Body */}
-                  <div className="bg-white/95 backdrop-blur-md rounded-full w-full h-full p-4 flex flex-col items-center justify-center text-center border border-white/80 shadow-inner">
-
-                    {/* Icon Container */}
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-white mb-2 shadow-sm transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110"
-                      style={{ background: item.color }}
-                    >
-                      <Icon className="w-4 h-4" />
-                    </div>
-
-                    {/* Step Title */}
-                    <h3
-                      className="text-sm font-extrabold text-[#1C1C2E] leading-tight mb-1"
-                      style={{ fontFamily: '"Space Grotesk", sans-serif' }}
-                    >
-                      {item.title}
-                    </h3>
-
-                    {/* Description */}
-                    <p className="text-[10.5px] text-slate-500 leading-snug font-medium max-w-[155px] mb-2">
-                      {item.desc}
-                    </p>
-
-                    {/* Category Pill Tag */}
-                    <span
-                      className="text-[8.5px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full border"
-                      style={{
-                        background: item.lightBg,
-                        color: item.color,
-                        borderColor: `${item.color}30`,
-                      }}
-                    >
-                      {item.badge}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
-
 
         {/* ── Pricing Options — Luxury Editorial Vertical Timeline Comparison ── */}
         <motion.div
@@ -355,7 +166,7 @@ export default function CreatorFormats() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="relative w-full pt-10 pb-20 mt-8 bg-transparent overflow-hidden"
+          className="relative w-full pt-2 pb-2 mt-0 bg-transparent overflow-hidden"
         >
           {/* Soft Drifting Radial Ambient Glow (< 4% Opacity) */}
           <motion.div
@@ -723,25 +534,6 @@ export default function CreatorFormats() {
             </div>
 
           </div>
-
-          {/* Handwritten closing sentence */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-20px" }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: 0.28 }}
-            className="flex flex-col items-center mt-20 gap-2 relative z-10"
-          >
-            <span
-              className="text-[1.35rem] sm:text-[1.55rem] text-[#5B21B6] italic"
-              style={{ fontFamily: '"Caveat", cursive' }}
-            >
-              Choose the path that fits your goals.
-            </span>
-            <div aria-hidden="true" className="w-52 h-[1.5px] rounded-full"
-              style={{ background: "linear-gradient(90deg, transparent, #A78BFA 30%, #A78BFA 70%, transparent)", opacity: 0.5 }}
-            />
-          </motion.div>
 
         </motion.div>
 

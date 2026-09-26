@@ -174,123 +174,145 @@ export default function CreatorPublishingInfographic() {
           <div className="inline-flex p-1 bg-slate-100/90 backdrop-blur-md border border-slate-200/80 rounded-xl shadow-xs">
             <button
               onClick={() => handleTabChange("solo")}
-              className={`relative flex items-center gap-2 px-4 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors duration-150 cursor-pointer select-none z-10 ${
+              className={`relative flex items-center gap-2 px-4 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors duration-200 cursor-pointer select-none z-10 ${
                 activeTab === "solo" ? "text-slate-900 font-semibold" : "text-slate-500 hover:text-slate-800"
               }`}
             >
               {activeTab === "solo" && (
                 <motion.div
                   layoutId="activeModelPill"
-                  transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 350,
+                    damping: 28,
+                    mass: 0.6,
+                  }}
                   className="absolute inset-0 bg-white rounded-lg shadow-xs border border-slate-200/80 z-[-1]"
                 />
               )}
-              <User className={`w-3.5 h-3.5 transition-colors duration-150 ${activeTab === "solo" ? "text-blue-600" : "text-slate-400"}`} />
+              <User className={`w-3.5 h-3.5 transition-colors duration-200 ${activeTab === "solo" ? "text-blue-600" : "text-slate-400"}`} />
               <span>Independent Creator</span>
             </button>
             <button
               onClick={() => handleTabChange("enterprise")}
-              className={`relative flex items-center gap-2 px-4 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors duration-150 cursor-pointer select-none z-10 ${
+              className={`relative flex items-center gap-2 px-4 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors duration-200 cursor-pointer select-none z-10 ${
                 activeTab === "enterprise" ? "text-slate-900 font-semibold" : "text-slate-500 hover:text-slate-800"
               }`}
             >
               {activeTab === "enterprise" && (
                 <motion.div
                   layoutId="activeModelPill"
-                  transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 350,
+                    damping: 28,
+                    mass: 0.6,
+                  }}
                   className="absolute inset-0 bg-white rounded-lg shadow-xs border border-slate-200/80 z-[-1]"
                 />
               )}
-              <Building2 className={`w-3.5 h-3.5 transition-colors duration-150 ${activeTab === "enterprise" ? "text-sky-600" : "text-slate-400"}`} />
+              <Building2 className={`w-3.5 h-3.5 transition-colors duration-200 ${activeTab === "enterprise" ? "text-sky-600" : "text-slate-400"}`} />
               <span>Organization & Teams</span>
             </button>
           </div>
         </div>
 
-        {/* Active Model Content Container */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.22 }}
-            className="w-full"
-          >
-            {/* Model Subheading Banner */}
-            <div className={`border rounded-xl px-5 py-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors duration-300 ${currentModel.bannerBg}`}>
-              <div>
-                <h3 className="text-base sm:text-lg font-semibold text-zinc-900 tracking-tight">
-                  {currentModel.label}
-                </h3>
-                <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">
-                  {currentModel.tagline}
-                </p>
+        {/* Active Model Content Container with smooth transitions and stable height */}
+        <div className="relative min-h-[360px]">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 8, filter: "blur(3px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -8, filter: "blur(3px)" }}
+              transition={{
+                duration: 0.28,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              className="w-full"
+            >
+              {/* Model Subheading Banner */}
+              <div className={`border rounded-xl px-5 py-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors duration-300 ${currentModel.bannerBg}`}>
+                <div>
+                  <h3 className="text-base sm:text-lg font-semibold text-zinc-900 tracking-tight">
+                    {currentModel.label}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">
+                    {currentModel.tagline}
+                  </p>
+                </div>
+                <span className={`self-start sm:self-center text-xs font-medium shrink-0 ${currentModel.badgeStyle}`}>
+                  {currentModel.badge}
+                </span>
               </div>
-              <span className={`self-start sm:self-center text-xs font-medium shrink-0 ${currentModel.badgeStyle}`}>
-                {currentModel.badge}
-              </span>
-            </div>
 
-            {/* 3 Step Sleek Cards with Light Shades */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {currentModel.steps.map((step, idx) => {
-                const StepIcon = step.icon;
-                return (
-                  <div
-                    key={step.num}
-                    className={`relative border rounded-xl p-5 sm:p-6 transition-all duration-200 flex flex-col justify-between ${step.cardBg} ${step.borderStyle}`}
-                  >
-                    <div>
-                      {/* Top Bar: Step + Icon + Highlight */}
-                      <div className="flex items-center justify-between gap-2 mb-4">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-8 h-8 rounded-lg border shadow-2xs flex items-center justify-center ${step.iconBg} ${step.iconColor}`}>
-                            <StepIcon className="w-3.5 h-3.5" />
+              {/* 3 Step Sleek Cards with Light Shades */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {currentModel.steps.map((step, idx) => {
+                  const StepIcon = step.icon;
+                  return (
+                    <motion.div
+                      key={step.num}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.3,
+                        delay: idx * 0.04,
+                        ease: [0.16, 1, 0.3, 1],
+                      }}
+                      className={`relative border rounded-xl p-5 sm:p-6 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 flex flex-col justify-between ${step.cardBg} ${step.borderStyle}`}
+                    >
+                      <div>
+                        {/* Top Bar: Step + Icon + Highlight */}
+                        <div className="flex items-center justify-between gap-2 mb-4">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-8 h-8 rounded-lg border shadow-2xs flex items-center justify-center transition-colors duration-200 ${step.iconBg} ${step.iconColor}`}>
+                              <StepIcon className="w-3.5 h-3.5" />
+                            </div>
+                            <span className="text-[11px] font-mono font-medium text-zinc-400">
+                              STEP {step.num}
+                            </span>
                           </div>
-                          <span className="text-[11px] font-mono font-medium text-zinc-400">
-                            STEP {step.num}
+
+                          <span className={`text-[11px] font-medium ${step.tagColor}`}>
+                            {step.highlight}
                           </span>
                         </div>
 
-                        <span className={`text-[11px] font-medium ${step.tagColor}`}>
-                          {step.highlight}
-                        </span>
+                        {/* Step Title */}
+                        <h4 className="text-sm sm:text-base font-semibold text-zinc-900 mb-1.5">
+                          {step.title}
+                        </h4>
+
+                        {/* Step Description */}
+                        <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed">
+                          {step.desc}
+                        </p>
                       </div>
 
-                      {/* Step Title */}
-                      <h4 className="text-sm sm:text-base font-semibold text-zinc-900 mb-1.5">
-                        {step.title}
-                      </h4>
-
-                      {/* Step Description */}
-                      <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed">
-                        {step.desc}
-                      </p>
-                    </div>
-
-                    {/* Bottom Progress Tag */}
-                    <div className="mt-5 pt-3.5 border-t border-black/[0.06] flex items-center justify-between text-[11px] text-zinc-400">
-                      <span>Stage {idx + 1} of 3</span>
-                      <div className="flex items-center gap-1">
-                        {[0, 1, 2].map((dotIdx) => (
-                          <span
-                            key={dotIdx}
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              dotIdx === idx
-                                ? step.accentBar
-                                : "bg-zinc-300/80"
-                            }`}
-                          />
-                        ))}
+                      {/* Bottom Progress Tag */}
+                      <div className="mt-5 pt-3.5 border-t border-black/[0.06] flex items-center justify-between text-[11px] text-zinc-400">
+                        <span>Stage {idx + 1} of 3</span>
+                        <div className="flex items-center gap-1">
+                          {[0, 1, 2].map((dotIdx) => (
+                            <span
+                              key={dotIdx}
+                              className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
+                                dotIdx === idx
+                                  ? step.accentBar
+                                  : "bg-zinc-300/80"
+                              }`}
+                            />
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </motion.div>
-        </AnimatePresence>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </section>
   );

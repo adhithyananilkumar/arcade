@@ -48,7 +48,7 @@ export default function CreatorEverythingInOnePlace() {
   ];
 
   return (
-    <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 pt-12 md:pt-16 pb-16 space-y-10 relative z-10">
+    <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 pt-12 md:pt-16 pb-0 space-y-6 relative z-10">
 
       {/* Section Header */}
       <div ref={section2HeaderRef} className="text-center space-y-4 max-w-xl mx-auto" style={{ position: 'relative' }}>
@@ -69,7 +69,7 @@ export default function CreatorEverythingInOnePlace() {
       </div>
 
       {/* Workflow Wave Timeline */}
-      <div ref={timelineScrollRef} className="w-screen relative left-1/2 right-1/2 -translate-x-1/2 overflow-x-auto pb-12 scrollbar-hide select-none my-8">
+      <div ref={timelineScrollRef} className="w-screen relative left-1/2 right-1/2 -translate-x-1/2 overflow-x-auto pb-0 scrollbar-hide select-none mt-6 mb-0">
         <div key={animKey} className="relative min-w-[1200px] h-[360px] w-full">
 
           {/* Background blobs */}

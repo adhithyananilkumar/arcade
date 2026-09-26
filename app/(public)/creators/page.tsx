@@ -21,8 +21,8 @@ export default function CreatorsPage() {
       <CreatorHero />
       <CreatorJourney />
       <JourneyToWorkflowTransition />
-      <CreatorEverythingInOnePlace />
       <CreatorPublishingInfographic />
+      <CreatorEverythingInOnePlace />
       <CreatorFormats />
       <CreatorEnquiry />
       <CreatorFAQ />
