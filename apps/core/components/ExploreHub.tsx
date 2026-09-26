@@ -1,5 +1,6 @@
 "use client";
 
+import { usePublishedEventCardsQuery } from '@/domains/events';
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -12,6 +13,17 @@ import "@/apps/public/landing.css";
 import { CourseCard } from "@/components/explore/CategoryDetailedView";
 import { usePublicCategories, type PublicCategory } from "@/shared/hooks/usePublicCategories";
 
+/*
+ * `bootcamps` and `resources` held invented content -- three fabricated bootcamps under Computer
+ * Science and eight fabricated articles with invented read times -- rendered as though a creator
+ * had published them.
+ *
+ * They are empty now. Real bootcamps are events with eventType BOOTCAMP and come from the server
+ * (see EventsView). There is no articles backend yet, so that section renders its empty state
+ * rather than being filled with plausible-looking copy.
+ *
+ * `desc`, `gradient` and `colors` are presentation, not content, and stay.
+ */
 export const CATEGORY_DATA: Record<string, {
   desc: string;
   coursesCount: number;
@@ -37,11 +49,7 @@ export const CATEGORY_DATA: Record<string, {
     desc: "Gain foundational and advanced skills in software development, data structures, database design, and software engineering workflows.",
     courses: [],
     bootcamps: [],
-    resources: [
-      { title: "Optimizing Next.js App Router Performance", type: "Article", readTime: "5 min read" },
-      { title: "State Management in React in 2026", type: "Guide", readTime: "8 min read" },
-      { title: "Understanding Postgres Indexing & Querying", type: "Docs", readTime: "12 min read" }
-    ]
+    resources: []
   },
   "Artificial Intelligence": {
     coursesCount: 0,
@@ -50,11 +58,7 @@ export const CATEGORY_DATA: Record<string, {
     desc: "Explore neural networks, machine learning models, training pipelines, fine-tuning large language models, and AI agent designs.",
     courses: [],
     bootcamps: [],
-    resources: [
-      { title: "RAG Pipeline Architectures Explained", type: "Article", readTime: "6 min read" },
-      { title: "Understanding Transformer Attention Mechanisms", type: "Guide", readTime: "10 min read" },
-      { title: "Training Neural Nets from Absolute Scratch", type: "Docs", readTime: "15 min read" }
-    ]
+    resources: []
   },
   "Information Technology": {
     coursesCount: 0,
@@ -150,14 +154,14 @@ export const CATEGORY_DATA: Record<string, {
 export const categoriesList = Object.keys(CATEGORY_DATA);
 
 // Static Webinar Content
-const WEBINARS_DATA = [
-  { title: "Future of Generative AI in Production", category: "Artificial Intelligence", host: "Dr. Emily Stone", date: "Tomorrow, 3:00 PM", status: "Live Today", duration: "60 mins" },
-  { title: "Scaling React & Next.js App Router Performance", category: "Computer Science", host: "Next.js Core Team", date: "Friday, 10:00 AM", status: "Upcoming", duration: "90 mins" },
-  { title: "Building Secure & Resilient APIs", category: "Information Technology", host: "Security DevOps Lead", date: "Thursday, 2:00 PM", status: "Upcoming", duration: "75 mins" },
-  { title: "Cloud Computing & Serverless AWS Architectures", category: "Information Technology", host: "AWS Solution Architect", date: "Recorded", status: "Recorded Video", duration: "120 mins" },
-  { title: "Strategic Product Management Sprints", category: "Business & Management", host: "VP of Product", date: "Recorded", status: "Recorded Video", duration: "45 mins" },
-  { title: "Structural Analysis & Materials Mechanics", category: "Civil & Mechanical", host: "Senior Civil Engineer", date: "Recorded", status: "Recorded Video", duration: "80 mins" }
-];
+/*
+ * WEBINARS_DATA removed — five invented webinars with invented hosts and times. They were fed into
+ * the search index, so searching returned events that did not exist while real published events
+ * were never searchable at all.
+ *
+ * Real events come from usePublishedEventCardsQuery below.
+ */
+
 
 const ILLUSTRATION_BGS: Record<string, string> = {
   "All": "#4F46E5", // Solid vibrant indigo
@@ -1107,6 +1111,16 @@ function ExploreCatalog() {
   // Tab State
   const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "articles">("courses");
   const [searchQuery, setSearchQuery] = useState("");
+  // Real published events for the search results below, matched by the server.
+  //
+  // Searching client-side over a capped page meant an event outside that page simply did not
+  // exist as far as search was concerned — and before this the index held five invented webinars,
+  // so search returned things that were not real while real events were unfindable.
+  const { data: publishedEventPage } = usePublishedEventCardsQuery({
+    search: searchQuery.trim() || undefined,
+    size: 50,
+  });
+  const publishedEvents = publishedEventPage?.content ?? [];
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -1639,10 +1653,10 @@ function ExploreCatalog() {
               });
 
               if (activeTab === "bootcamps") {
-                WEBINARS_DATA.forEach(webinar => {
-                  if (webinar.title.toLowerCase().includes(query)) {
-                    searchResults.push({ ...webinar, type: 'Webinar' });
-                  }
+                // Already matched server-side; pushed straight through so a result is never
+                // dropped for matching on a field the client cannot see.
+                publishedEvents.forEach(event => {
+                  searchResults.push({ ...event, type: 'Webinar' });
                 });
               }
             }

@@ -12,7 +12,7 @@ import { PricingStep } from '@/app/(authenticated)/studio/events/components/wiza
 import { SettingsStep } from '@/app/(authenticated)/studio/events/components/wizard/settings/SettingsStep';
 import { ReviewStep } from '@/app/(authenticated)/studio/events/components/wizard/review/ReviewStep';
 import { useEventForm } from '@/app/(authenticated)/studio/events/hooks/useEventForm';
-import { createEvent, updateEvent, getEvent } from '@/app/(authenticated)/studio/events/api/event';
+import { createEvent, updateEvent, getEvent } from '@/domains/events/api/event';
 
 interface EventWizardProps {
   eventId?: string;
@@ -148,7 +148,7 @@ export const EventWizard: React.FC<EventWizardProps> = ({ eventId: propEventId, 
     } else {
       const id = (form.formData as any).id || eventId;
       if (id) {
-        router.push(`/studio/events/${id}`);
+        router.push(`/studio/content/event/${id}`);
       } else {
         router.push('/studio');
       }

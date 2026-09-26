@@ -3,8 +3,9 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Sparkles, Shuffle, RotateCcw, Lightbulb, Maximize2, Minimize2, Plus, Minus } from 'lucide-react';
+import { Wand2, Dices, Undo2, Lightbulb, Maximize2, Minimize2, Plus, Minus } from 'lucide-react';
 import { HARDCODED_ASCII_TILES } from './rubiksFaceTiles';
+import { RubiksCubeService, type RubiksCubeStatePayload } from '@/domains/rubiks-cube';
 
 /**
  * Arcade 3D Rubik's Cube
@@ -342,47 +343,83 @@ export function RubiksCube3D({
     };
   }, [isMaximized]);
 
-  // Restore session state on mount
+  // Restore cube state on mount: localStorage first for an instant paint (no flash of the solved
+  // cube while the request is in flight), then reconciled against the account-level save, which is
+  // the cross-device source of truth and wins when present.
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(RUBIKS_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved) as SavedRubiksState;
-        if (Array.isArray(parsed.cubies) && parsed.cubies.length === 27) {
-          setCubies(parsed.cubies);
-          if (typeof parsed.rotX === 'number') setRotX(parsed.rotX);
-          if (typeof parsed.rotY === 'number') setRotY(parsed.rotY);
-          if (parsed.solveStatus === 'scrambled' || parsed.solveStatus === 'solved') {
-            setSolveStatus(parsed.solveStatus);
-          }
-          if (Array.isArray(parsed.moveHistory)) {
-            moveHistoryRef.current = parsed.moveHistory;
-            setMoveCount(parsed.moveHistory.length);
-          }
+    let cancelled = false;
+
+    const applyState = (parsed: SavedRubiksState) => {
+      if (Array.isArray(parsed.cubies) && parsed.cubies.length === 27) {
+        setCubies(parsed.cubies);
+        if (typeof parsed.rotX === 'number') setRotX(parsed.rotX);
+        if (typeof parsed.rotY === 'number') setRotY(parsed.rotY);
+        if (parsed.solveStatus === 'scrambled' || parsed.solveStatus === 'solved') {
+          setSolveStatus(parsed.solveStatus);
+        }
+        if (Array.isArray(parsed.moveHistory)) {
+          moveHistoryRef.current = parsed.moveHistory;
+          setMoveCount(parsed.moveHistory.length);
         }
       }
+    };
+
+    try {
+      const saved = localStorage.getItem(RUBIKS_STORAGE_KEY);
+      if (saved) applyState(JSON.parse(saved) as SavedRubiksState);
     } catch {
       // ignore
-    } finally {
-      isHydratedRef.current = true;
     }
+
+    RubiksCubeService.getState()
+      .then((record) => {
+        if (cancelled || !record.state) return;
+        applyState(record.state as unknown as SavedRubiksState);
+      })
+      .catch(() => {
+        // Offline, or the backend has nothing saved yet — the localStorage snapshot already
+        // applied above is enough to render from.
+      })
+      .finally(() => {
+        if (!cancelled) isHydratedRef.current = true;
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Persist session state on every change
+  // Persist state on every change: instantly to localStorage for this device, and debounced to the
+  // account so a burst of twists doesn't fire a save request per frame.
+  const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!isHydratedRef.current || typeof window === 'undefined') return;
+
+    const payload: SavedRubiksState = {
+      cubies,
+      rotX,
+      rotY,
+      solveStatus: solveStatus === 'solving' ? 'scrambled' : solveStatus,
+      moveHistory: moveHistoryRef.current,
+    };
+
     try {
-      const payload: SavedRubiksState = {
-        cubies,
-        rotX,
-        rotY,
-        solveStatus: solveStatus === 'solving' ? 'scrambled' : solveStatus,
-        moveHistory: moveHistoryRef.current,
-      };
       localStorage.setItem(RUBIKS_STORAGE_KEY, JSON.stringify(payload));
     } catch {
       // ignore
     }
+
+    if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
+    persistTimerRef.current = setTimeout(() => {
+      RubiksCubeService.saveState(payload as unknown as RubiksCubeStatePayload).catch(() => {
+        // Best-effort: the localStorage snapshot keeps this device consistent either way, and the
+        // next successful save carries the current state to the account.
+      });
+    }, 800);
+
+    return () => {
+      if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
+    };
   }, [cubies, rotX, rotY, solveStatus]);
 
   // Track touch/drag start for differentiating slice turn vs 3D orbit
@@ -895,91 +932,106 @@ function getCameraAwareMove(
     );
   };
 
+  const renderControls = () => {
+    return (
+      <div className="flex items-center gap-1.5">
+        {/* Undo Button */}
+        <button
+          type="button"
+          onClick={handleUndo}
+          disabled={isTwisting || solveStatus === 'solving' || moveCount === 0}
+          className="relative inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-white/95 dark:bg-slate-800/95 hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200/90 dark:border-slate-700/80 shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all active:scale-95 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+          title={moveCount > 0 ? `Undo last move (${moveCount} left)` : 'Undo'}
+          aria-label="Undo"
+        >
+          <Undo2 size={13} strokeWidth={2.2} />
+          {moveCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-[#4C6FFF] px-0.5 text-[8px] font-bold text-white shadow-xs">
+              {moveCount > 99 ? '99+' : moveCount}
+            </span>
+          )}
+        </button>
+
+        {/* Hint Button */}
+        <button
+          type="button"
+          onClick={handleHint}
+          disabled={isTwisting || solveStatus === 'solving' || isSolved}
+          className="inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-amber-50/95 hover:bg-amber-100 dark:bg-amber-950/50 dark:hover:bg-amber-900/60 text-amber-600 dark:text-amber-400 border border-amber-200/90 dark:border-amber-700/60 shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all active:scale-95 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+          title="Get hint"
+          aria-label="Hint"
+        >
+          <Lightbulb size={13} strokeWidth={2.2} />
+        </button>
+
+        {/* Scramble Button */}
+        <button
+          type="button"
+          onClick={handleScramble}
+          disabled={isTwisting || solveStatus === 'solving'}
+          className="inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-orange-50/95 hover:bg-orange-100 dark:bg-orange-950/50 dark:hover:bg-orange-900/60 text-orange-600 dark:text-orange-400 border border-orange-200/90 dark:border-orange-700/60 shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all active:scale-95 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+          title="Scramble cube"
+          aria-label="Scramble"
+        >
+          <Dices size={13} strokeWidth={2.2} />
+        </button>
+
+        {/* Solve Button */}
+        <button
+          type="button"
+          onClick={handleSolve}
+          disabled={isTwisting || solveStatus === 'solving' || isSolved}
+          className="inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-gradient-to-r from-[#4C6FFF] to-[#2563EB] hover:from-[#3a5de6] hover:to-[#1d4ed8] text-white shadow-[0_2px_8px_rgba(37,99,235,0.25)] transition-all active:scale-95 disabled:opacity-35 disabled:pointer-events-none disabled:bg-slate-400 dark:disabled:bg-slate-700 cursor-pointer"
+          title={isSolved ? 'Cube is already solved' : 'Magic solve'}
+          aria-label="Magic solve"
+        >
+          <Wand2 size={13} strokeWidth={2.2} className={solveStatus === 'solving' ? 'animate-spin' : ''} />
+        </button>
+
+        {/* Maximize / Minimize Fullscreen Button */}
+        <button
+          type="button"
+          onClick={() => setIsMaximized((prev) => !prev)}
+          className="inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-indigo-50/95 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/90 dark:border-indigo-700/60 shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all active:scale-95 cursor-pointer"
+          title={isMaximized ? 'Exit Fullscreen (Esc)' : 'Expand to Fullscreen'}
+          aria-label={isMaximized ? 'Exit Fullscreen' : 'Expand to Fullscreen'}
+        >
+          {isMaximized ? <Minimize2 size={13} strokeWidth={2.2} /> : <Maximize2 size={13} strokeWidth={2.2} />}
+        </button>
+      </div>
+    );
+  };
+
   const renderCubeUI = (inModal: boolean) => {
     return (
-      <div className={inModal ? "relative w-full max-w-4xl h-full flex flex-col items-center justify-between" : "relative w-full flex flex-col items-center"}>
-        {/* Box Header: Title on Left, Action Buttons on Right */}
-        <div
-          className={
-            inModal
-              ? "w-full flex items-center justify-between px-5 py-3 rounded-tl-[2rem] rounded-br-[2rem] rounded-tr-xl rounded-bl-xl bg-white/95 dark:bg-slate-800/95 border border-slate-200/90 dark:border-slate-700/80 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md"
-              : "w-full flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800/60"
-          }
-        >
-          <div className="flex items-center shrink-0">
-            <span className="text-xs font-mono font-bold tracking-wider uppercase text-slate-700 dark:text-slate-200 whitespace-nowrap">
-              Rubik {inModal && <span className="text-slate-400 dark:text-slate-500 font-normal">· Fullscreen</span>}
-            </span>
+      <div
+        className={
+          inModal
+            ? 'relative w-full max-w-4xl h-full flex flex-col items-center justify-between'
+            : 'relative w-full h-full flex flex-col items-center justify-center'
+        }
+      >
+        {/* Fullscreen Header (only in Modal) */}
+        {inModal && (
+          <div className="w-full flex items-center justify-between px-5 py-3 rounded-2xl bg-white/95 dark:bg-slate-800/95 border border-slate-200/90 dark:border-slate-700/80 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md">
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-sm font-bold tracking-tight text-slate-800 dark:text-slate-100">
+                Rubiks
+              </span>
+              <span className="text-xs text-slate-400 dark:text-slate-500 font-normal">
+                · Fullscreen
+              </span>
+            </div>
+            {renderControls()}
           </div>
-
-          <div className="flex items-center gap-1 sm:gap-1.5">
-            {/* Undo Button */}
-            <button
-              type="button"
-              onClick={handleUndo}
-              disabled={isTwisting || solveStatus === 'solving' || moveCount === 0}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-200/90 dark:border-slate-700/80 shadow-xs hover:shadow-md transition-all active:scale-95 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-              title="Undo last move"
-              aria-label="Undo"
-            >
-              <RotateCcw size={14} className="text-slate-700 dark:text-slate-300" />
-            </button>
-
-            {/* Hint Button */}
-            <button
-              type="button"
-              onClick={handleHint}
-              disabled={isTwisting || solveStatus === 'solving' || isSolved}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs bg-amber-50/90 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-700/50 shadow-xs hover:shadow-md transition-all active:scale-95 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-              title="Get next step hint"
-              aria-label="Hint"
-            >
-              <Lightbulb size={14} className="text-amber-500" />
-            </button>
-
-            {/* Scramble Button */}
-            <button
-              type="button"
-              onClick={handleScramble}
-              disabled={isTwisting || solveStatus === 'solving'}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-200/90 dark:border-slate-700/80 shadow-xs hover:shadow-md transition-all active:scale-95 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-              title="Scramble the cube"
-              aria-label="Scramble"
-            >
-              <Shuffle size={14} className="text-[#EA580C]" />
-            </button>
-
-            {/* Solve Button */}
-            <button
-              type="button"
-              onClick={handleSolve}
-              disabled={isTwisting || solveStatus === 'solving' || isSolved}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs bg-[#2563EB] hover:bg-[#1d4ed8] text-white shadow-xs hover:shadow-md transition-all active:scale-95 disabled:opacity-40 disabled:pointer-events-none disabled:bg-slate-400 dark:disabled:bg-slate-700 cursor-pointer"
-              title={isSolved ? "Cube is already solved" : "Solve cube automatically"}
-              aria-label="Solve"
-            >
-              <Sparkles size={14} />
-            </button>
-
-            {/* Maximize / Minimize Fullscreen Button */}
-            <button
-              type="button"
-              onClick={() => setIsMaximized((prev) => !prev)}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/90 dark:border-indigo-700/60 shadow-xs hover:shadow-md transition-all active:scale-95 cursor-pointer ml-0.5"
-              title={inModal ? 'Exit Fullscreen (Esc)' : 'Expand to Fullscreen'}
-              aria-label={inModal ? 'Exit Fullscreen' : 'Expand to Fullscreen'}
-            >
-              {inModal ? (
-                <Minimize2 size={14} className="text-indigo-600 dark:text-indigo-400" />
-              ) : (
-                <Maximize2 size={14} className="text-indigo-600 dark:text-indigo-400" />
-              )}
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* 3D Scene Viewport Area (Zoom slider rendered exclusively in Fullscreen modal) */}
-        <div className={`relative w-full flex items-center justify-center ${inModal ? "my-auto py-6 flex-1 min-h-[460px]" : "mt-2"}`}>
+        <div
+          className={`relative w-full flex items-center justify-center ${
+            inModal ? 'my-auto py-6 flex-1 min-h-[460px]' : 'w-full h-full'
+          }`}
+        >
           {/* Vertical Size Slider Widget (Fullscreen Only) */}
           {inModal && renderScaleControl()}
 
@@ -1000,20 +1052,20 @@ function getCameraAwareMove(
             className="relative w-full flex items-center justify-center cursor-grab active:cursor-grabbing touch-none select-none"
             style={{
               height: inModal ? 'calc(100vh - 200px)' : '375px',
-              minHeight: inModal ? '460px' : '360px',
+              minHeight: inModal ? '460px' : '350px',
               perspective: '1300px',
             }}
           >
             {/* Ambient Floor Glow */}
             <div
               aria-hidden
-              className={`pointer-events-none absolute ${inModal ? 'bottom-2 h-20 w-96' : 'bottom-3 h-16 w-72'} rounded-full blur-2xl opacity-65`}
+              className={`pointer-events-none absolute ${inModal ? 'bottom-2 h-20 w-96' : 'bottom-6 h-16 w-72'} rounded-full blur-2xl opacity-65`}
               style={{
                 background: 'radial-gradient(ellipse at center, rgba(37,99,235,0.45) 0%, rgba(99,102,241,0.25) 50%, transparent 80%)',
               }}
             />
 
-            {/* 3D Pivot Root with Scale Transformation (Default 1.0x for normal screen, custom scale for fullscreen) */}
+            {/* 3D Pivot Root with Scale Transformation (Standard 1.0x Scale) */}
             <div
               style={{
                 width: '0px',
@@ -1081,13 +1133,15 @@ function getCameraAwareMove(
           </div>
         </div>
 
-        {/* Modal-Only Footer for Hint/Status messages */}
-        {inModal && hintMessage && (
-          <div className="w-full flex items-center justify-center py-2 px-4 rounded-tl-[1.5rem] rounded-br-[1.5rem] rounded-tr-lg rounded-bl-lg bg-white/95 dark:bg-slate-800/95 border border-slate-200/90 dark:border-slate-700/80 shadow-[0_4px_20px_rgba(0,0,0,0.06)] min-h-[30px] text-xs font-mono font-medium text-slate-600 dark:text-slate-300 backdrop-blur-md">
-            <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
-              <Lightbulb size={12} className="text-amber-500" />
-              {hintMessage}
-            </span>
+        {/* Hint Toast (displayed if active) */}
+        {hintMessage && (
+          <div
+            className={`z-30 px-3 py-1 rounded-full bg-white/95 dark:bg-slate-900/95 border border-amber-200/80 dark:border-amber-700/60 text-amber-700 dark:text-amber-300 text-[11px] font-medium shadow-[0_4px_12px_rgba(20,20,43,0.08)] backdrop-blur-md flex items-center gap-1.5 whitespace-nowrap pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200 ${
+              inModal ? 'mb-2' : 'absolute bottom-4 left-1/2 -translate-x-1/2'
+            }`}
+          >
+            <Lightbulb size={12} className="text-amber-500 shrink-0" />
+            <span>{hintMessage}</span>
           </div>
         )}
       </div>
@@ -1098,8 +1152,16 @@ function getCameraAwareMove(
     return (
       <>
         {/* Inline Card Placeholder */}
-        <div className="relative w-full max-w-[540px] mx-auto rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-dashed border-slate-300 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 p-8 flex items-center justify-center text-xs font-mono text-slate-500">
-          Rubik (Fullscreen mode active · Press Esc or click Minimize to return)
+        <div className="flex h-full flex-col gap-3.5">
+          <div className="flex min-h-[28px] items-center justify-between gap-3">
+            <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
+              Rubiks
+            </h2>
+            {renderControls()}
+          </div>
+          <div className="relative w-full h-[380px] rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-dashed border-slate-300 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 p-8 flex items-center justify-center text-xs font-mono text-slate-500">
+            Rubiks (Fullscreen mode active · Press Esc or click Minimize to return)
+          </div>
         </div>
 
         {/* High-priority Portal with Clean White Theme Background (z-[99999]) */}
@@ -1114,14 +1176,27 @@ function getCameraAwareMove(
   }
 
   return (
-    <div className="relative w-full h-full min-h-[380px] overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white/95 p-4 sm:p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] backdrop-blur-sm select-none flex flex-col justify-between items-center">
-      {/* Decorative background ambient glow matching Resume Learning */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-12 -bottom-12 h-44 w-44 rounded-full bg-gradient-to-br from-[#4C6FFF]/10 via-[#1DB876]/8 to-transparent blur-2xl"
-      />
-      <div className="relative z-10 w-full h-full flex flex-col justify-between items-center">
-        {renderCubeUI(false)}
+    <div className="flex h-full flex-col gap-3.5">
+      {/* Outer Section Header: Title on Left, Controls on Right */}
+      <div className="flex min-h-[28px] items-center justify-between gap-3">
+        <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
+          Rubiks
+        </h2>
+        {renderControls()}
+      </div>
+
+      {/* 3D Cube Card */}
+      <div className="min-h-0 flex-1 flex flex-col justify-center">
+        <div className="relative w-full h-full min-h-[380px] overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white/95 p-4 sm:p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] backdrop-blur-sm select-none flex flex-col justify-between items-center">
+          {/* Decorative background ambient glow matching Resume Learning */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-12 -bottom-12 h-44 w-44 rounded-full bg-gradient-to-br from-[#4C6FFF]/10 via-[#1DB876]/8 to-transparent blur-2xl"
+          />
+          <div className="relative z-10 w-full h-full flex flex-col justify-between items-center">
+            {renderCubeUI(false)}
+          </div>
+        </div>
       </div>
     </div>
   );

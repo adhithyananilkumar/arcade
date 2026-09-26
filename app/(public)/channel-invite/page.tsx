@@ -15,11 +15,37 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, XCircle, MailWarning } from 'lucide-react';
+import { ArrowUpRight, XCircle, MailWarning } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { channelService } from '@/domains/channels';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { PebbleLoader } from '@/domains/identity/components/PebbleLoader';
+import '@/apps/public/landing.css';
+
+/** Same pastel atmospheric backdrop used across the public editorial pages (see /reach-us). */
+function EditorialBackdrop() {
+  return (
+    <div
+      className="fixed inset-0 pointer-events-none -z-10"
+      style={{
+        backgroundColor: '#FAFBFD',
+        backgroundImage: `
+          radial-gradient(ellipse 70% 40% at 50% 0%, rgba(224, 236, 255, 0.25) 0%, transparent 70%),
+          radial-gradient(ellipse 60% 40% at 10% 25%, rgba(233, 225, 254, 0.20) 0%, transparent 65%),
+          radial-gradient(ellipse 60% 40% at 90% 75%, rgba(253, 232, 240, 0.18) 0%, transparent 65%),
+          linear-gradient(
+            180deg,
+            #FAFBFD 0%,
+            #F6F8FD 35%,
+            #F8F6FD 70%,
+            #FAF9FB 100%
+          )
+        `,
+      }}
+    />
+  );
+}
 
 function ChannelInviteContent() {
   const searchParams = useSearchParams();
@@ -83,37 +109,55 @@ function ChannelInviteContent() {
   const effectiveErrorMessage = !token ? 'No invitation token was provided in the URL.' : errorMessage;
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center px-4">
+    <div className="landing-root min-h-[calc(100vh-140px)] flex flex-col justify-center relative text-[#0f172a] font-sans pt-28 sm:pt-32 lg:pt-36 pb-16 lg:pb-20 px-6 sm:px-12 lg:px-20 selection:bg-blue-100 selection:text-blue-900">
+      <EditorialBackdrop />
+
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md rounded-3xl border border-gray-200 bg-white p-8 text-center shadow-xl shadow-indigo-100/50"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.215, 0.61, 0.355, 1] }}
+        className="w-full max-w-[520px] mx-auto my-auto text-center"
       >
         {(effectiveState === 'validating' || effectiveState === 'redirecting') && (
           <div className="flex flex-col items-center">
-            <div className="mb-4 rounded-full bg-indigo-50 p-4 text-indigo-600">
-              <Loader2 className="animate-spin" size={32} />
+            <div className="mb-8">
+              <PebbleLoader />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">
-              {effectiveState === 'validating' ? 'Checking your invitation...' : 'Taking you onward...'}
-            </h2>
-            <p className="text-sm text-gray-500 mt-2">This will just take a moment.</p>
+            <h1 className="text-3xl sm:text-4xl font-normal font-serif italic text-[#0B132B] tracking-tight leading-snug">
+              {effectiveState === 'validating' ? 'Checking your invitation.' : 'Taking you onward.'}
+            </h1>
+            <span className="block h-0.5 w-10 bg-[#205ca8]/60 rounded-full mx-auto mt-4" />
+            <p className="text-sm text-slate-500 leading-relaxed mt-5">
+              This will just take a moment.
+            </p>
           </div>
         )}
 
         {effectiveState === 'error' && (
           <div className="flex flex-col items-center">
-            <div className="mb-4 rounded-full bg-red-50 p-4 text-red-500">
-              {effectiveErrorMessage.includes('expired') ? <MailWarning size={48} /> : <XCircle size={48} />}
+            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center border border-rose-100 mb-6">
+              {effectiveErrorMessage.includes('expired') ? (
+                <MailWarning className="w-6 h-6" />
+              ) : (
+                <XCircle className="w-6 h-6" />
+              )}
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Invitation Unavailable</h2>
-            <p className="text-sm text-gray-500 mt-2">{effectiveErrorMessage}</p>
+            <h1 className="text-3xl sm:text-4xl font-normal font-serif italic text-[#0B132B] tracking-tight leading-snug">
+              Invitation unavailable.
+            </h1>
+            <span className="block h-0.5 w-10 bg-[#205ca8]/60 rounded-full mx-auto mt-4" />
+            <p className="text-sm text-slate-500 leading-relaxed mt-5 max-w-sm">
+              {effectiveErrorMessage}
+            </p>
 
             <Link
               href="/"
-              className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
+              className="mt-9 relative inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-[#0B132B] hover:bg-[#205ca8] text-white font-medium text-sm tracking-wide shadow-sm hover:shadow-md transition-all duration-300 ease-out group"
             >
-              Go to Homepage
+              <span>Go to Homepage</span>
+              <span className="w-5 h-5 rounded-full bg-white/10 group-hover:bg-white/20 flex items-center justify-center transition-colors">
+                <ArrowUpRight className="w-3.5 h-3.5 text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </span>
             </Link>
           </div>
         )}
@@ -126,8 +170,9 @@ export default function ChannelInvitePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex h-screen items-center justify-center">
-          <Loader2 className="animate-spin text-indigo-500" size={40} />
+        <div className="landing-root relative flex min-h-[calc(100vh-140px)] items-center justify-center">
+          <EditorialBackdrop />
+          <PebbleLoader label="Loading" />
         </div>
       }
     >

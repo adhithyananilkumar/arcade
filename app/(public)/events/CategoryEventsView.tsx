@@ -3,15 +3,12 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { usePublishedEventCardsQuery } from "@/domains/events";
 
-// Copied from ExploreHub dummy data
-const WEBINARS_DATA = [
-  { title: "Scaling React & Next.js App Router Performance", category: "Computer Science", host: "Next.js Core Team", date: "Friday, 10:00 AM", status: "Upcoming", duration: "90 mins" },
-  { title: "Building Secure & Resilient APIs", category: "Information Technology", host: "Security DevOps Lead", date: "Thursday, 2:00 PM", status: "Upcoming", duration: "75 mins" },
-  { title: "Cloud Computing & Serverless AWS Architectures", category: "Information Technology", host: "AWS Solution Architect", date: "Recorded", status: "Recorded Video", duration: "120 mins" },
-  { title: "Strategic Product Management Sprints", category: "Business & Management", host: "VP of Product", date: "Recorded", status: "Recorded Video", duration: "45 mins" },
-  { title: "Structural Analysis & Materials Mechanics", category: "Civil & Mechanical", host: "Senior Civil Engineer", date: "Recorded", status: "Recorded Video", duration: "80 mins" }
-];
+/*
+ * The copied dummy array is gone. Real published events come from the server, filtered by category
+ * there rather than in the browser.
+ */
 
 export function WebinarCardHeader({ title, status, duration, category }: any) {
   const isLive = status === "Live Today";
@@ -60,13 +57,14 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
 export function CategoryEventsView({ category }: { category: string }) {
   const router = useRouter();
   
-  // Filter webinars by category, and fallback to all if none exactly match (just for demo purposes)
-  let categoryWebinars = WEBINARS_DATA.filter(w => w.category.toLowerCase() === category.toLowerCase());
-  
-  // If no matching webinars for this dummy category, we just use a fallback copy so it doesn't look empty for the client.
-  if (categoryWebinars.length === 0) {
-    categoryWebinars = WEBINARS_DATA.map(w => ({ ...w, category: category }));
-  }
+  // An empty category renders as empty.
+  //
+  // This used to relabel every dummy event with whatever category was asked for whenever the
+  // filter matched nothing -- by its own comment, "so it doesn't look empty for the client". A
+  // visitor browsing "Data Science" saw design events retitled as data science, and clicking one
+  // took them somewhere unrelated to what they were shown.
+  const { data, isLoading } = usePublishedEventCardsQuery({ category, size: 24 });
+  const categoryWebinars = data?.content ?? [];
 
   return (
     <div className="min-h-screen" style={{ background: "#F9FAFB", padding: "40px 20px" }}>
@@ -89,6 +87,44 @@ export function CategoryEventsView({ category }: { category: string }) {
           Live learning, bootcamps, and webinars for {category}.
         </p>
 
+        {isLoading && (
+          <p style={{ color: "#6B7280" }}>Loading {category} events…</p>
+        )}
+
+        {!isLoading && categoryWebinars.length === 0 && (
+          <div
+            style={{
+              background: "#FFFFFF",
+              border: "1px dashed #D1D5DB",
+              borderRadius: "20px",
+              padding: "48px 24px",
+              textAlign: "center",
+            }}
+          >
+            <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#111827", marginBottom: "8px" }}>
+              No {category} events yet
+            </h2>
+            <p style={{ color: "#6B7280" }}>
+              Nothing is scheduled in this category right now. Browse everything on offer instead.
+            </p>
+            <button
+              onClick={() => router.push("/events")}
+              style={{
+                marginTop: "20px",
+                background: "#0A1931",
+                color: "#FFFFFF",
+                border: "none",
+                borderRadius: "999px",
+                padding: "12px 24px",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Explore all events
+            </button>
+          </div>
+        )}
+
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
           {categoryWebinars.map((w, i) => {
             const isLive = w.status === "Live Today";
@@ -103,6 +139,7 @@ export function CategoryEventsView({ category }: { category: string }) {
             return (
               <div
                 key={i}
+                onClick={() => router.push(`/events/${w.slug || w.id}`)}
                 style={{
                   background: "#FFFFFF",
                   border: "1px solid #E5E7EB",
@@ -111,7 +148,8 @@ export function CategoryEventsView({ category }: { category: string }) {
                   flexDirection: "column",
                   position: "relative",
                   overflow: "hidden",
-                  boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.05)"
+                  boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.05)",
+                  cursor: "pointer"
                 }}
               >
                 <WebinarCardHeader title={w.title} status={w.status} duration={w.duration} category={w.category} />
@@ -165,7 +203,8 @@ export function CategoryEventsView({ category }: { category: string }) {
                         </span>
                       </div>
                       <Link
-                        href="/sign"
+                        href={`/events/${w.slug || w.id}`}
+                        onClick={(e) => e.stopPropagation()}
                         style={{
                           padding: "8px 16px",
                           borderRadius: "8px",

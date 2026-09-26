@@ -4,14 +4,6 @@ import type { ContentTypeSegment } from "./contentTypeRouting";
 // page are never hardcoded per content type in JSX ("if course, hide
 // analytics"). Instead each type declares which capabilities it has, and
 // the shell just iterates whatever the registry says.
-//
-// `availability` distinguishes a capability that's conceptually real for
-// this content type from one that's actually backed by a working endpoint
-// today. "planned" entries exist so a future backend endpoint can be turned
-// on with a one-line availability flip — but the UI only ever renders
-// "available" entries. A planned capability must never appear as a tab, a
-// disabled button, or an empty screen; it's pure registry metadata until a
-// real fetcher exists for it in fetchOverviewData.ts.
 export type Capability =
   | "ANALYTICS"
   | "REGISTRATIONS"
@@ -20,9 +12,11 @@ export type Capability =
   | "LEARNERS"
   | "DISCUSSION"
   | "LEARNER_REVIEWS"
-  | "PUBLISHING";
+  | "PUBLISHING"
+  | "PRICING"
+  | "SETTINGS";
 
-export type CapabilityGroup = "analytics" | "people" | "publishing" | "more";
+export type CapabilityGroup = "pricing" | "settings" | "people" | "analytics" | "publishing" | "more";
 
 export interface CapabilityDef {
   id: Capability;
@@ -32,13 +26,15 @@ export interface CapabilityDef {
 }
 
 export const GROUP_LABEL: Record<CapabilityGroup, string> = {
-  analytics: "Analytics",
+  pricing: "Pricing",
+  settings: "Settings",
   people: "People",
+  analytics: "Analytics",
   publishing: "Publishing",
   more: "More",
 };
 
-export const GROUP_ORDER: CapabilityGroup[] = ["analytics", "people", "publishing", "more"];
+export const GROUP_ORDER: CapabilityGroup[] = ["pricing", "settings", "people", "analytics", "publishing", "more"];
 
 export const CONTENT_CAPABILITIES: Record<ContentTypeSegment, CapabilityDef[]> = {
   course: [
@@ -51,9 +47,11 @@ export const CONTENT_CAPABILITIES: Record<ContentTypeSegment, CapabilityDef[]> =
     { id: "LEARNER_REVIEWS", label: "Learner reviews", group: "more", availability: "planned" },
   ],
   event: [
-    { id: "ANALYTICS", label: "Analytics", group: "analytics", availability: "available" },
+    { id: "PRICING", label: "Pricing", group: "pricing", availability: "available" },
+    { id: "SETTINGS", label: "Settings", group: "settings", availability: "available" },
     { id: "REGISTRATIONS", label: "Registrations", group: "people", availability: "available" },
     { id: "COLLABORATORS", label: "Collaborators", group: "people", availability: "available" },
+    { id: "ANALYTICS", label: "Analytics", group: "analytics", availability: "available" },
     { id: "PUBLISHING", label: "Publishing", group: "publishing", availability: "available" },
     // Planned — event_attendance/event_certificates tables are orphaned, no API.
     { id: "ATTENDANCE", label: "Attendance", group: "people", availability: "planned" },

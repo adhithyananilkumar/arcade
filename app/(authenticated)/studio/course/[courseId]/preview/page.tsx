@@ -3,7 +3,7 @@
 // In this mode, creators can experience the course exactly as an enrolled student does (including lesson
 // progression and assessment landing/result states), but progress and marks are temporary and are never stored in the database.
 import type { Metadata } from "next";
-import { CoursePlayer } from "@/app/(authenticated)/learn/[courseId]/learn/CoursePlayer";
+import { CoursePlayer } from "@/app/(authenticated)/courses/[id]/learn/[lessonId]/CoursePlayer";
 
 export const metadata: Metadata = {
   title: "Preview — Arcade",

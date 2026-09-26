@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { courseRoutes } from '@/shared/routes/content.routes';
 import { motion } from 'framer-motion';
 import {
   Search,
@@ -14,6 +15,8 @@ import {
   Cloud,
   Zap,
   Terminal,
+  TrendingUp,
+  Sparkles,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/infrastructure/http/api';
@@ -25,14 +28,13 @@ import DashboardLoading from '@/app/(authenticated)/loading';
 import { useActivitySummaryQuery, useDailyActivityQuery } from '@/domains/learning';
 import { useMyEnrollmentsQuery } from '@/domains/enrollment';
 import GradientText from '@/apps/public/components/landing/GradientText';
-import { getPublishedEvents } from '@/app/(public)/events/api/event.service';
-import type { EventDto } from '@/app/(public)/events/types/event.types';
+import { getPublishedEvents } from '@/domains/events';
+import type { EventDto } from '@/domains/events';
 import { DeliveryMode } from '@/app/(authenticated)/studio/events/types';
 import { getDynamicGreeting, HOME_SEEN_KEY } from './greeting';
 import { StreakCalendar } from './StreakCalendar';
 import { SuperSearchModal } from './SuperSearchModal';
 import {
-  FALLBACK_EVENTS,
   pickDailyEvents,
   ResumeAndEventsSection,
   type EventCard,
@@ -76,6 +78,16 @@ const COURSE_ICON_CONFIG = [
 ];
 
 const EVENT_TONES: EventCard['tone'][] = ['coral', 'blue', 'emerald', 'violet'];
+
+const TRENDING_TOPICS = [
+  'Full-Stack Web',
+  'Machine Learning',
+  'UI/UX Design',
+  'Cloud & DevOps',
+  'System Design',
+  'Cybersecurity',
+  'Python',
+];
 
 function deliveryLabel(mode?: DeliveryMode | string) {
   switch (mode) {
@@ -180,11 +192,11 @@ export default function LearnerHomePage() {
           const mapped = list.map(eventToCard);
           setUpcomingEvents(pickDailyEvents(mapped, 3));
         } else {
-          setUpcomingEvents(pickDailyEvents(FALLBACK_EVENTS, 3));
+          setUpcomingEvents([]);
         }
       })
       .catch(() => {
-        setUpcomingEvents(pickDailyEvents(FALLBACK_EVENTS, 3));
+        setUpcomingEvents([]);
       });
   }, []);
 
@@ -405,6 +417,29 @@ export default function LearnerHomePage() {
                 </button>
               </div>
             </form>
+
+            {/* Trending course topics pill cloud to fill the gap below search */}
+            <div className="mt-5 w-full max-w-lg space-y-2.5">
+              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <TrendingUp size={13} className="text-[#4C6FFF]" />
+                <span>Trending topics</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {TRENDING_TOPICS.map((topic) => (
+                  <button
+                    key={topic}
+                    type="button"
+                    onClick={() => {
+                      setQuery(topic);
+                      setSuperSearchOpen(true);
+                    }}
+                    className="inline-flex items-center rounded-full border border-slate-200/80 bg-white/80 px-3.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
+                  >
+                    <span>{topic}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </motion.div>
 
           {/* Floating elevation wrapper for Streak Calendar - Fixed Height Container */}
@@ -477,7 +512,7 @@ export default function LearnerHomePage() {
                     }}
                   >
                     <Link
-                      href={`/learn/${course.id}`}
+                      href={courseRoutes.landing(course.id)}
                       className={`group flex items-center overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/80 bg-white/95 p-3.5 sm:p-4 shadow-[0_4px_18px_rgba(20,20,43,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(20,20,43,0.07)] ${RECOMMEND_HOVER_BORDERS[i % RECOMMEND_HOVER_BORDERS.length]}`}
                     >
                       <div className="relative h-[80px] w-[96px] shrink-0 overflow-hidden rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-xs rounded-bl-xs bg-slate-100 sm:h-[88px] sm:w-[110px]">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { courseRoutes } from '@/shared/routes/content.routes';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Channel, ChannelContentItem, channelService } from '@/domains/channels';
@@ -35,7 +36,7 @@ function typeLabel(type: string) {
 function contentHref(item: ChannelContentItem) {
   const t = item.type?.toUpperCase();
   if (t === 'COURSE') return `/courses/${item.id}`;
-  if (t === 'WORKSHOP' || t === 'WEBINAR') return `/learn/${item.id}`;
+  if (t === 'WORKSHOP' || t === 'WEBINAR') return courseRoutes.landing(item.id);
   return null;
 }
 

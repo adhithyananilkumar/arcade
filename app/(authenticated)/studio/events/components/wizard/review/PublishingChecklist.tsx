@@ -19,13 +19,16 @@ export const PublishingChecklist: React.FC<Props> = ({ validation, onNavigateToS
     'Settings': 4
   };
 
-  // Only consider critical issues (Title or Category missing) as blocking issues
-  const filteredIssues = (validation.issues || []).filter(i => 
-    i.issue?.toLowerCase().includes('title') || i.issue?.toLowerCase().includes('category')
-  );
-
-  const isReady = filteredIssues.length === 0;
-  const percentage = isReady ? 100 : validation.completionPercentage;
+  // The server decides what is ready and how complete it is; this renders the answer.
+  //
+  // It used to discard the server's verdict entirely: issues were filtered down to the two
+  // mentioning "title" or "category", everything else was dropped on the floor, and the
+  // percentage was overwritten with a literal 100 whenever those two passed. An event with no
+  // sessions and no price showed a green "Ready to publish" at 100% and was then refused by the
+  // submit gate -- the frontend simulating backend behaviour, and simulating it wrongly.
+  const issues = validation.issues || [];
+  const isReady = validation.isReady;
+  const percentage = validation.completionPercentage;
 
   return (
     <div className="space-y-6">
@@ -53,14 +56,14 @@ export const PublishingChecklist: React.FC<Props> = ({ validation, onNavigateToS
         </div>
       </div>
 
-      {filteredIssues.length > 0 && (
+      {issues.length > 0 && (
         <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
           <h4 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-yellow-500" />
             Issues to Resolve
           </h4>
           <ul className="space-y-3">
-            {filteredIssues.map((issue, idx) => (
+            {issues.map((issue, idx) => (
               <li key={idx} className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/50 rounded-lg p-3">
                 <div className="flex justify-between items-start">
                   <div>

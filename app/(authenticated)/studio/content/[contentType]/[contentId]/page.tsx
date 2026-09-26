@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { ShieldAlert, FileQuestion, AlertTriangle, ArrowRight, ArrowLeft, Clock, Users, CheckCircle2, FileText } from "lucide-react";
+import { ShieldAlert, FileQuestion, AlertTriangle, ArrowRight, ArrowLeft, Clock, Users, CheckCircle2, FileText, LayoutGrid, Tag, Settings as SettingsIcon, UserCog, Send } from "lucide-react";
 import { Skeleton } from "@/shared/design-system/ui/skeleton";
 import { ApiError } from "@/infrastructure/http/api";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
@@ -152,15 +152,21 @@ function ContentOverviewPageContent() {
     const label =
       activeTab === "OVERVIEW"
         ? "Content Overview"
-        : activeTab === "people"
-          ? "People"
-          : activeTab === "publishing"
-            ? "Publishing"
-            : activeTab === "analytics"
-              ? "Analytics"
-              : activeTab === "more"
-                ? "More"
-                : activeTab;
+        : activeTab === "people" || activeTab === "participants"
+          ? "Manage Members"
+          : activeTab === "collaborators"
+            ? "Collaborators"
+            : activeTab === "pricing"
+              ? "Pricing"
+              : activeTab === "settings"
+                ? "Settings"
+                : activeTab === "publishing"
+                  ? "Publishing"
+                  : activeTab === "analytics"
+                    ? "Analytics"
+                    : activeTab === "more"
+                      ? "More"
+                      : activeTab;
     window.dispatchEvent(new CustomEvent("studio-crumb-changed", { detail: label }));
     return () => {
       window.dispatchEvent(new CustomEvent("studio-crumb-changed", { detail: null }));
@@ -286,26 +292,43 @@ function ContentOverviewPageContent() {
           onJumpToPublishing={() => setActiveTab("publishing")}
         />
 
-        {activeTab === "OVERVIEW" && segment === "exam" ? (
-          exam ? (
-            <ExamOverviewSections exam={exam} onExamChange={setExam} />
-          ) : (
-            <Skeleton className="h-64 w-full rounded-3xl" />
-          )
-        ) : activeTab === "OVERVIEW" ? (
-          <div className="flex flex-col gap-6">
-            {segment === "event" && data.eventReadiness?.status === "ok" && (
-              <ReadinessCard readiness={data.eventReadiness.data} continueHref={editorHref("event", contentId)} />
-            )}
-
-            <LearnersAnalyticsSection contentId={contentId} segment={segment} />
+        {segment === "event" && (
+          <div className="flex justify-center -mt-2">
+            <div className="inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-white/95 p-1.5 shadow-[0_4px_20px_rgba(20,20,43,0.04)] backdrop-blur-md">
+              {[
+                { id: "OVERVIEW", label: "Overview", icon: LayoutGrid },
+                { id: "pricing", label: "Pricing", icon: Tag },
+                { id: "settings", label: "Settings", icon: SettingsIcon },
+                { id: "participants", label: "Manage Members", icon: Users },
+                { id: "collaborators", label: "Collaborators", icon: UserCog },
+                { id: "publishing", label: "Publishing", icon: Send },
+              ].map((item) => {
+                const active =
+                  activeTab === item.id ||
+                  (item.id === "participants" && activeTab === "people");
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setActiveTab(item.id as OverviewTab)}
+                    className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                      active
+                        ? "bg-blue-600 text-white shadow-sm"
+                        : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
+                    }`}
+                  >
+                    <Icon size={14} className={active ? "text-white" : "text-slate-400"} />
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        ) : segment === "exam" ? (
-          <ExamOverviewTab tab={activeTab} contentId={contentId} />
-        ) : activeTab === "analytics" ? (
-          <LearnersAnalyticsSection contentId={contentId} segment={segment} />
-        ) : segment === "course" ? (
-          <CourseOverviewTab
+        )}
+
+        {segment === "event" ? (
+          <EventOverviewTab
             tab={activeTab}
             data={data}
             contentId={contentId}
@@ -313,9 +336,24 @@ function ContentOverviewPageContent() {
             onChanged={reload}
             onSubmit={handleSubmit}
             submitting={submitting}
+            onSelectTab={setActiveTab}
           />
+        ) : activeTab === "OVERVIEW" && segment === "exam" ? (
+          exam ? (
+            <ExamOverviewSections exam={exam} onExamChange={setExam} />
+          ) : (
+            <Skeleton className="h-64 w-full rounded-3xl" />
+          )
+        ) : activeTab === "OVERVIEW" ? (
+          <div className="flex flex-col gap-6">
+            <LearnersAnalyticsSection contentId={contentId} segment={segment} />
+          </div>
+        ) : segment === "exam" ? (
+          <ExamOverviewTab tab={activeTab} contentId={contentId} />
+        ) : activeTab === "analytics" ? (
+          <LearnersAnalyticsSection contentId={contentId} segment={segment} />
         ) : (
-          <EventOverviewTab
+          <CourseOverviewTab
             tab={activeTab}
             data={data}
             contentId={contentId}

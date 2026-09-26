@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { useEventForm } from '@/app/(authenticated)/studio/events/hooks/useEventForm';
 import { PublishingChecklist } from './PublishingChecklist';
 import { EventPreview } from './EventPreview';
-import { validateEvent, submitEvent, archiveEvent, duplicateEvent, getEventPreview } from '@/app/(authenticated)/studio/events/api/publish';
+import { validateEvent, submitEvent, archiveEvent, duplicateEvent, getEventPreview } from '@/domains/events/api/publish';
 import { ContentSubmitDialog } from '@/apps/creator/studio/workspaces/content/dialogs/ContentSubmitDialog';
 import { PublishValidationResponse, EventPreviewDto } from '@/app/(authenticated)/studio/events/types';
 import { useRouter } from 'next/navigation';

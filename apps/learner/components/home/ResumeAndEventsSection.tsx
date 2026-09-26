@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { courseRoutes } from '@/shared/routes/content.routes';
 import { motion } from 'framer-motion';
 import {
   CalendarDays,
@@ -14,6 +15,7 @@ import {
   Rocket,
   Palette,
   ChevronRight,
+  Compass,
 } from 'lucide-react';
 import type { CourseSummaryResponse } from '@/shared/types/api.types';
 import { RubiksCube3D } from './RubiksCube3D';
@@ -93,69 +95,6 @@ const TONE_CONFIG: Record<
   },
 };
 
-/** Fallback pool when no published workshops — rotated daily. */
-export const FALLBACK_EVENTS: EventCard[] = [
-  {
-    id: 'fb-1',
-    title: 'Arcade Build Sprint',
-    tagline: '48 hours. One product. Ship it live.',
-    when: 'This weekend',
-    where: 'Campus + Online',
-    seats: 'Limited seats',
-    tone: 'coral',
-    href: '/search',
-  },
-  {
-    id: 'fb-2',
-    title: 'AI for Good Challenge',
-    tagline: 'Solve a real campus problem with ML.',
-    when: 'Coming soon',
-    where: 'Innovation Lab',
-    seats: 'Open registration',
-    tone: 'blue',
-    href: '/search',
-  },
-  {
-    id: 'fb-3',
-    title: 'Design Systems Lab',
-    tagline: 'Tokens, components, and critique in one evening.',
-    when: 'Next week',
-    where: 'Online',
-    seats: '30 seats left',
-    tone: 'violet',
-    href: '/search',
-  },
-  {
-    id: 'fb-4',
-    title: 'Cloud Deploy Night',
-    tagline: 'CI/CD, containers, and a live rollout.',
-    when: 'Fri 6–9 PM',
-    where: 'Hybrid',
-    seats: 'Open registration',
-    tone: 'emerald',
-    href: '/search',
-  },
-  {
-    id: 'fb-5',
-    title: 'Frontend Performance Clinic',
-    tagline: 'Core Web Vitals, profiling, and quick wins.',
-    when: 'Thu evening',
-    where: 'Online',
-    seats: '24 seats left',
-    tone: 'blue',
-    href: '/search',
-  },
-  {
-    id: 'fb-6',
-    title: 'Startup Pitch Arena',
-    tagline: 'Three minutes. One idea. Real feedback.',
-    when: 'Sat afternoon',
-    where: 'Campus hall',
-    seats: 'Registration open',
-    tone: 'coral',
-    href: '/search',
-  },
-];
 
 /** Pick events that change each calendar day. */
 export function pickDailyEvents(pool: EventCard[], count = 3): EventCard[] {
@@ -170,6 +109,158 @@ export function pickDailyEvents(pool: EventCard[], count = 3): EventCard[] {
   return picked;
 }
 
+function EmptyRecommendationsIllustration() {
+  return (
+    <svg
+      width="170"
+      height="130"
+      viewBox="0 0 170 130"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="mx-auto select-none"
+      aria-hidden="true"
+    >
+      <defs>
+        <radialGradient id="recGlowGrad" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#4C6FFF" stopOpacity="0.2" />
+          <stop offset="60%" stopColor="#9B5DE5" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="#4C6FFF" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="recPrimaryGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#4C6FFF" />
+          <stop offset="100%" stopColor="#9B5DE5" />
+        </linearGradient>
+        <linearGradient id="recCardGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#FFFFFF" />
+          <stop offset="100%" stopColor="#F1F5F9" />
+        </linearGradient>
+      </defs>
+
+      {/* Ambient background glow circle */}
+      <circle cx="85" cy="65" r="58" fill="url(#recGlowGrad)" />
+
+      {/* Orbit ring */}
+      <ellipse
+        cx="85"
+        cy="68"
+        rx="64"
+        ry="26"
+        stroke="#E2E8F0"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+        strokeOpacity="0.8"
+      />
+
+      {/* Floating orbital dots */}
+      <circle cx="28" cy="60" r="3.5" fill="#4C6FFF" fillOpacity="0.75" />
+      <circle cx="142" cy="74" r="4" fill="#9B5DE5" fillOpacity="0.65" />
+      <circle cx="118" cy="38" r="2.5" fill="#0EA5E9" fillOpacity="0.8" />
+
+      {/* Shadow under book */}
+      <ellipse cx="85" cy="100" rx="38" ry="6" fill="#14142B" fillOpacity="0.06" />
+
+      {/* Stylized Open Learning Hub / Book */}
+      {/* Left page */}
+      <path
+        d="M46 62 C46 56 62 50 83 54 L83 90 C62 86 46 92 46 92 Z"
+        fill="url(#recCardGrad)"
+        stroke="#CBD5E1"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+      {/* Right page */}
+      <path
+        d="M124 62 C124 56 108 50 87 54 L87 90 C108 86 124 92 124 92 Z"
+        fill="#FFFFFF"
+        stroke="#CBD5E1"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+      {/* Spine & Center Line */}
+      <path
+        d="M85 54 L85 90"
+        stroke="#94A3B8"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+
+      {/* Page detail lines */}
+      <line x1="55" y1="65" x2="74" y2="67" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+      <line x1="55" y1="71" x2="71" y2="73" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+      <line x1="55" y1="77" x2="76" y2="79" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+
+      <line x1="96" y1="67" x2="115" y2="65" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+      <line x1="96" y1="73" x2="112" y2="71" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+      <line x1="96" y1="79" x2="117" y2="77" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+
+      {/* Floating Center Compass / Star Badge above the book */}
+      <g transform="translate(85, 42)">
+        <circle cx="0" cy="0" r="14" fill="white" stroke="#E2E8F0" strokeWidth="1" />
+        <path
+          d="M0 -8 C0.5 -2.5 2.5 -0.5 8 0 C2.5 0.5 0.5 2.5 0 8 C-0.5 2.5 -2.5 0.5 -8 0 C-2.5 -0.5 -0.5 -2.5 0 -8 Z"
+          fill="url(#recPrimaryGrad)"
+        />
+      </g>
+
+      {/* Sparkle accents */}
+      <path
+        d="M130 32 L131.5 35.5 L135 37 L131.5 38.5 L130 42 L128.5 38.5 L125 37 L128.5 35.5 Z"
+        fill="#FF6B4A"
+        opacity="0.85"
+      />
+      <path
+        d="M40 44 L41 46.5 L43.5 47.5 L41 48.5 L40 51 L39 48.5 L36.5 47.5 L39 46.5 Z"
+        fill="#0EA5E9"
+        opacity="0.8"
+      />
+    </svg>
+  );
+}
+
+function EmptyRecommendedCard() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="relative flex h-full min-h-[340px] flex-col items-center justify-center overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white/95 p-6 sm:p-7 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm text-center"
+    >
+      {/* Decorative ambient background glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#4C6FFF]/8 via-[#9B5DE5]/4 to-transparent opacity-80"
+      />
+
+      <div className="relative z-10 flex flex-col items-center max-w-sm">
+        {/* SVG Illustration */}
+        <div className="mb-3">
+          <EmptyRecommendationsIllustration />
+        </div>
+
+        {/* Headline */}
+        <h3 className="text-base sm:text-lg font-bold tracking-tight text-[#14142b]">
+          No recommendations yet
+        </h3>
+
+        {/* Descriptive Copy */}
+        <p className="mt-1 text-xs sm:text-[13px] font-medium leading-relaxed text-slate-500">
+          Discover courses in the catalog to kickstart your journey. We&apos;ll tailor recommendations as you explore.
+        </p>
+
+        {/* CTA Button */}
+        <div className="mt-5 w-full">
+          <Link
+            href="/search"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] px-5 py-3 text-[13px] font-semibold text-white transition-all shadow-sm hover:bg-[#232735] hover:shadow-md cursor-pointer"
+          >
+            <Compass size={16} /> Explore courses
+          </Link>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 function RecommendedFeaturedCard({ course }: { course: CourseSummaryResponse }) {
   return (
     <motion.div
@@ -181,14 +272,22 @@ function RecommendedFeaturedCard({ course }: { course: CourseSummaryResponse }) 
       <div className="relative z-10 flex flex-1 flex-col justify-between gap-4">
         {/* Large Cover Image Banner */}
         <div className="relative h-44 sm:h-48 w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 bg-slate-100 shadow-sm">
-          <img
-            src={
-              course.coverImageUrl ||
-              'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=80'
-            }
-            alt={course.title}
-            className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-          />
+          {course.coverImageUrl ? (
+            <img
+              src={course.coverImageUrl}
+              alt={course.title}
+              className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+            />
+          ) : (
+            <div
+              aria-hidden
+              className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#4C6FFF]/15 via-slate-100 to-[#9B5DE5]/10"
+            >
+              <span className="text-4xl font-black text-slate-400 select-none">
+                {(course.title || '?').trim().charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
           <span className="absolute top-3 left-3 rounded-full bg-[#12141C]/80 backdrop-blur-md px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
             Recommended
           </span>
@@ -210,10 +309,10 @@ function RecommendedFeaturedCard({ course }: { course: CourseSummaryResponse }) 
         {/* CTA Button */}
         <div className="pt-1">
           <Link
-            href={`/learn/${course.id}`}
+            href={courseRoutes.landing(course.id)}
             className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#4C6FFF] px-5 py-3 text-[13px] font-semibold text-white transition-all shadow-sm hover:bg-[#3a5ae6] hover:shadow-md"
           >
-            <BookOpen size={16} /> Start Learning
+            <BookOpen size={16} /> View Course
           </Link>
         </div>
       </div>
@@ -223,22 +322,7 @@ function RecommendedFeaturedCard({ course }: { course: CourseSummaryResponse }) 
 
 function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
   if (!course) {
-    return (
-      <div className="relative flex h-full min-h-[260px] flex-col justify-between overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-dashed border-slate-200 bg-white/80 p-6 shadow-[0_4px_20px_rgba(20,20,43,0.03)] backdrop-blur-sm">
-        <div>
-          <h3 className="text-base font-bold text-[#14142b]">Nothing in progress</h3>
-          <p className="mt-1 text-[13px] font-medium leading-relaxed text-slate-500">
-            Enroll in a course and pick up right where you left off.
-          </p>
-        </div>
-        <Link
-          href="/search"
-          className="mt-6 inline-flex items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] px-5 py-3 text-[13px] font-semibold text-white transition-all shadow-sm hover:bg-[#232735] hover:shadow-md"
-        >
-          <BookOpen size={16} /> Find a course
-        </Link>
-      </div>
-    );
+    return <EmptyRecommendedCard />;
   }
 
   const pct =
@@ -261,10 +345,6 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
 
       <div className="relative z-10 flex flex-1 flex-col justify-between gap-4">
         {/* Prominent Large Course Cover Image Banner */}
-        {/*
-          No image => a neutral placeholder, never a stock photo. The previous hardcoded Unsplash
-          URL presented an unrelated stock classroom shot as if it were this course's own cover.
-        */}
         <div className="relative h-44 sm:h-48 w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 bg-slate-100 shadow-sm">
           {course.coverImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -283,6 +363,9 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
               </span>
             </div>
           )}
+          <span className="absolute top-3 left-3 rounded-full bg-[#12141C]/80 backdrop-blur-md px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
+            In progress
+          </span>
         </div>
 
         {/* Title and Author details */}
@@ -291,7 +374,7 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
             {course.title}
           </h3>
           <p className="mt-0.5 truncate text-xs sm:text-[13px] font-medium text-slate-500">
-            {course.authorName || 'Continue where you left off'}
+            {course.authorName || (pct && pct > 0 ? 'Pick up right where you left off' : 'Continue where you left off')}
           </p>
         </div>
 
@@ -318,10 +401,10 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
         {/* Bottom CTA Action Button */}
         <div className="pt-1">
           <Link
-            href={`/learn/${course.id}`}
+            href={courseRoutes.overview(course.id)}
             className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] px-5 py-3 text-[13px] font-semibold text-white transition-all shadow-sm hover:bg-[#232735] hover:shadow-md"
           >
-            <Play size={15} className="fill-current" /> Continue Learning
+            <Play size={15} className="fill-current" /> {pct && pct > 0 ? 'Continue Learning' : 'Start Learning'}
           </Link>
         </div>
       </div>
@@ -402,14 +485,21 @@ export function ResumeAndEventsSection({
             <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
               {resumeCourse ? 'Resume learning' : 'Recommended for you'}
             </h2>
-            {!resumeCourse && (
+            {resumeCourse ? (
+              <Link
+                href="/my-learning"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-all hover:gap-1.5 hover:text-[#3a5ae6]"
+              >
+                My learning <ChevronRight size={15} />
+              </Link>
+            ) : featuredRecommended ? (
               <Link
                 href="/search"
                 className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-all hover:gap-1.5 hover:text-[#3a5ae6]"
               >
                 View all <ChevronRight size={15} />
               </Link>
-            )}
+            ) : null}
           </div>
           <div className="min-h-0 flex-1 flex flex-col">
             {resumeCourse ? (
@@ -417,55 +507,39 @@ export function ResumeAndEventsSection({
             ) : featuredRecommended ? (
               <RecommendedFeaturedCard course={featuredRecommended} />
             ) : (
-              <ResumeLearningCard course={null} />
+              <EmptyRecommendedCard />
             )}
           </div>
         </div>
 
-        {/* Right Column: Daily Rubik */}
-        <div className="flex h-full flex-col gap-3.5">
-          <div className="flex min-h-[28px] items-center justify-between gap-3">
-            <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
-              Daily puzzle
-            </h2>
-            <span className="text-xs font-mono font-medium text-slate-400">
-              Interactive 3D
-            </span>
-          </div>
-          <div className="min-h-0 flex-1 flex flex-col justify-center">
-            <RubiksCube3D />
-          </div>
-        </div>
+        {/* Right Column: Rubiks */}
+        <RubiksCube3D />
       </section>
 
-      {/* Full-Width Section Below: Upcoming Events */}
-      <section className="space-y-3.5">
-        <div className="flex min-h-[28px] items-center justify-between gap-3">
-          <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
-            Upcoming events
-          </h2>
-          <Link
-            href="/search"
-            className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-all hover:gap-1.5 hover:text-[#3a5ae6]"
-          >
-            Browse all <ArrowUpRight size={15} />
-          </Link>
-        </div>
+      {/* Full-Width Section Below: Upcoming Events — only rendered if actual events exist */}
+      {displayedEvents.length > 0 && (
+        <section className="space-y-3.5">
+          <div className="flex min-h-[28px] items-center justify-between gap-3">
+            <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
+              Upcoming events
+            </h2>
+            <Link
+              href="/search"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-all hover:gap-1.5 hover:text-[#3a5ae6]"
+            >
+              Browse all <ArrowUpRight size={15} />
+            </Link>
+          </div>
 
-        <div className="min-h-0 flex-1">
-          {displayedEvents.length === 0 ? (
-            <div className="flex h-full min-h-[140px] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white/70 px-4 py-8 text-center text-sm font-medium text-slate-500">
-              No upcoming events right now. Check back soon.
-            </div>
-          ) : (
+          <div className="min-h-0 flex-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
               {displayedEvents.map((event, i) => (
                 <EventRowItem key={event.id} event={event} index={i} />
               ))}
             </div>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

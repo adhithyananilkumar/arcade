@@ -1,5 +1,7 @@
 import { api, ApiError } from "@/infrastructure/http/api";
-import { getEventStatusHistory, validateEvent } from "@/app/(authenticated)/studio/events/api/publish";
+import { getEventStatusHistory, validateEvent } from "@/domains/events/api/publish";
+import { getEventSummary, type EventSummary } from "@/domains/events/api/dashboardApi";
+import type { Event as EventDto } from "@/domains/events/types/event.types";
 import type { ReviewPathPreview } from "@/domains/publishing";
 import {
   platformReviewApi,
@@ -99,6 +101,8 @@ export interface OverviewData {
   eventParticipants?: FetchResult<EventParticipant[]>;
   eventAnalytics?: FetchResult<Record<string, unknown>>;
   eventReadiness?: FetchResult<PublishValidationResponse>;
+  eventSummary?: FetchResult<EventSummary>;
+  eventDetails?: FetchResult<EventDto>;
 }
 
 async function findContentSummary(contentId: string): Promise<ContentSummaryLite | null> {
@@ -205,6 +209,8 @@ export async function fetchOverviewData(
     eventParticipants,
     eventAnalytics,
     eventReadiness,
+    eventSummary,
+    eventDetails,
     review,
     reviewPath,
   ] =
@@ -216,6 +222,8 @@ export async function fetchOverviewData(
         isEmpty: (data) => !data || Object.keys(data).length === 0,
       }),
       settle(validateEvent(contentId)),
+      settle(getEventSummary(contentId)),
+      settle(api.get<EventDto>(`/api/v1/events/${contentId}`)),
       reviewPromise,
       reviewPathPromise,
     ]);
@@ -226,6 +234,8 @@ export async function fetchOverviewData(
     eventParticipants,
     eventAnalytics,
     eventReadiness,
+    eventSummary,
+    eventDetails,
     review,
     reviewPath,
   };

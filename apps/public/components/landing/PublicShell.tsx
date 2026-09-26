@@ -14,12 +14,13 @@
  * own app navigation.
  */
 
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { IntroProvider, useIntroContext } from "@/apps/public/components/intro/IntroProvider";
 import HeroNav from "./HeroNav";
 import Footer from "./Footer";
-
-import { useParams } from "next/navigation";
+import { useAuthStore } from "@/infrastructure/auth/auth.store";
+import LearnerShell from "@/apps/learner/layout/LearnerShell";
 
 /** True when this render is for the catch-all profile route. */
 function useIsProfileRoute(): boolean {
@@ -31,10 +32,6 @@ function useIsProfileRoute(): boolean {
 function ShellInner({ children }: { children: React.ReactNode }) {
   const { introActive } = useIntroContext();
 
-  // HeroNav renders correctly for both auth states on its own (it swaps "Get Started" for
-  // "Open Arcade"), and public routes never render any other nav — hiding it here for
-  // authenticated users used to leave them with no top nav at all on every public page.
-  // Only the landing-page intro animation is a legitimate reason to hide it.
   return (
     <>
       {!introActive && <HeroNav />}
@@ -48,9 +45,23 @@ function ShellOuter({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isProfile = useIsProfileRoute();
   const isExplore = pathname === "/explore";
+  const { status } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   if (isProfile) {
     return <>{children}</>;
+  }
+
+  // Before hydration settles, render clean shell to prevent layout flicker
+  if (!mounted || status === 'loading') {
+    return <div className="flex min-h-screen w-full flex-col">{children}</div>;
+  }
+
+  // When a signed-in user views content/explore pages, keep them in their authenticated dashboard view with dock and navbar
+  if (status === 'authenticated') {
+    return <LearnerShell>{children}</LearnerShell>;
   }
 
   return (

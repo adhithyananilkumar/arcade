@@ -23,13 +23,16 @@ const IMMERSIVE_ROUTES = [
   // top bar, so the app navbar sitting above it produced two overlapping rows of pills.
   /^\/studio\/exam\/[^/]+\/edit\/?$/,
   /^\/studio\/published\/[^/]+\/?$/,
-  /^\/learn\/[^/]+\/exam\/(start|terminated)\/?$/,
+  // Exam sitting and its termination screen — full viewport, own chrome.
+  /^\/exams\/[^/]+\/(attempt|terminated)\/?$/,
 ];
 
 /** Full-focus surfaces — hide the bottom dock so content can breathe. */
 const HIDE_DOCK_ROUTES = [
-  /^\/learn\/[^/]+\/learn\/?$/,
-  /^\/learn\/[^/]+\/exam\/(start|terminated)\/?$/,
+  // The lesson player. Deliberately only the player: the course overview hub at
+  // /courses/{id}/learn is an ordinary browsing surface and keeps the dock.
+  /^\/courses\/[^/]+\/learn\/[^/]+\/?$/,
+  /^\/exams\/[^/]+\/(attempt|terminated)\/?$/,
   /^\/studio(\/|$)/,
   /^\/settings(\/|$)/,
   /^\/console(\/|$)/,

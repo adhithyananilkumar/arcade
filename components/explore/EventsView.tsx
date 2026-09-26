@@ -1,14 +1,17 @@
 "use client";
 
+import { usePublishedEventCardsQuery } from '@/domains/events';
 import React from "react";
+import { useRouter } from "next/navigation";
+import ExploreEmptyState from "./ExploreEmptyState";
 
-const WEBINARS_DATA = [
-  { title: "Scaling React & Next.js App Router Performance", category: "Computer Science", host: "Next.js Core Team", date: "Friday, 10:00 AM", status: "Upcoming", duration: "90 mins" },
-  { title: "Building Secure & Resilient APIs", category: "Information Technology", host: "Security DevOps Lead", date: "Thursday, 2:00 PM", status: "Upcoming", duration: "75 mins" },
-  { title: "Cloud Computing & Serverless AWS Architectures", category: "Information Technology", host: "AWS Solution Architect", date: "Recorded", status: "Recorded Video", duration: "120 mins" },
-  { title: "Strategic Product Management Sprints", category: "Business & Management", host: "VP of Product", date: "Recorded", status: "Recorded Video", duration: "45 mins" },
-  { title: "Structural Analysis & Materials Mechanics", category: "Civil & Mechanical", host: "Senior Civil Engineer", date: "Recorded", status: "Recorded Video", duration: "80 mins" }
-];
+/*
+ * WEBINARS_DATA removed. It was five invented webinars with invented hosts ("Next.js Core Team",
+ * "AWS Solution Architect") and invented times, rendered here instead of whatever channels had
+ * actually published — so no real event ever appeared on this page.
+ *
+ * Real events now come from usePublishedEventCardsQuery.
+ */
 
 export function WebinarCardHeader({ title, status, duration, category }: any) {
   const isLive = status === "Live Today";
@@ -97,6 +100,7 @@ export default function EventsView({
   courseSearchQuery = "",
   setCourseSearchQuery
 }: EventsViewProps) {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = React.useState(0);
   const [webinarsPage, setWebinarsPage] = React.useState(0);
   const [eventType, setEventType] = React.useState<"all" | "bootcamps" | "webinars">("all");
@@ -109,54 +113,38 @@ export default function EventsView({
 
   const isAllCategory = activeCategoryName.toLowerCase() === "all";
 
-  let categoryWebinars = isAllCategory
-    ? WEBINARS_DATA
-    : WEBINARS_DATA.filter(w => w.category.toLowerCase() === activeCategoryName.toLowerCase());
-  if (categoryWebinars.length === 0) {
-    categoryWebinars = WEBINARS_DATA.map(w => ({ ...w, category: activeCategoryName }));
-  }
-
-  const allBootcamps = isAllCategory
-    ? activeData.bootcamps
-    : [
-        ...activeData.bootcamps,
-        {
-          title: `${activeCategoryName} Advanced Masterclass Bootcamp`,
-          duration: "10 Weeks",
-          type: "Bootcamp",
-          date: "Starts next Monday",
-          desc: "Deep dive into industry-level practices, live coding labs, and professional certification prep."
-        },
-        {
-          title: `${activeCategoryName} Career Acceleration Program`,
-          duration: "14 Weeks",
-          type: "Bootcamp",
-          date: "Open for Admission",
-          desc: "Guaranteed project portfolio building, mock technical interviews, and resume mentorship sessions."
-        }
-      ];
-
-  // Search filtering
-  const query = courseSearchQuery.trim().toLowerCase();
-  let filteredBootcamps = allBootcamps.filter((b: any) => {
-    if (!query) return true;
-    return (
-      (b.title && b.title.toLowerCase().includes(query)) ||
-      (b.desc && b.desc.toLowerCase().includes(query)) ||
-      (b.category && b.category.toLowerCase().includes(query))
-    );
+  // Everything below comes from the server.
+  //
+  // Three separate fabrications used to live here. `activeData.bootcamps` was a fixed list of
+  // three invented bootcamps; for any category other than "All" this *additionally* invented two
+  // more named after whatever the visitor had clicked ("{category} Advanced Masterclass
+  // Bootcamp"); and the webinar list was five invented webinars relabelled the same way. None of
+  // it corresponded to anything a creator had published.
+  //
+  // Search is server-side now. It used to filter whichever page happened to be loaded, so a
+  // learner searching for an event on page 3 of the catalogue was told it did not exist.
+  const {
+    data: eventsPage,
+    isLoading: eventsLoading,
+    isError: eventsFailed,
+  } = usePublishedEventCardsQuery({
+    category: isAllCategory ? undefined : activeCategoryName,
+    search: courseSearchQuery.trim() || undefined,
+    size: 60,
   });
 
-  let filteredWebinars = categoryWebinars.filter((w: any) => {
-    if (!query) return true;
-    return (
-      (w.title && w.title.toLowerCase().includes(query)) ||
-      (w.host && w.host.toLowerCase().includes(query)) ||
-      (w.category && w.category.toLowerCase().includes(query))
-    );
-  });
+  const allEvents = eventsPage?.content ?? [];
 
-  // Sorting
+  // One list from the server, split by the event's own type rather than by two separate sources
+  // that could disagree about what exists.
+  const allBootcamps = allEvents.filter((e) => e.eventType === 'BOOTCAMP');
+  const categoryWebinars = allEvents.filter((e) => e.eventType !== 'BOOTCAMP');
+
+  let filteredBootcamps = allBootcamps;
+  let filteredWebinars = categoryWebinars;
+
+  // Sorting stays client-side: it reorders what is already on screen and does not change which
+  // events match.
   if (sortBy === "duration") {
     filteredBootcamps = [...filteredBootcamps].sort((a, b) => (a.duration || "").localeCompare(b.duration || ""));
     filteredWebinars = [...filteredWebinars].sort((a, b) => (a.duration || "").localeCompare(b.duration || ""));
@@ -165,7 +153,8 @@ export default function EventsView({
   const showBootcamps = eventType === "all" || eventType === "bootcamps";
   const showWebinars = eventType === "all" || eventType === "webinars";
   const totalCount = (showBootcamps ? filteredBootcamps.length : 0) + (showWebinars ? filteredWebinars.length : 0);
-  const totalAvailable = (showBootcamps ? allBootcamps.length : 0) + (showWebinars ? categoryWebinars.length : 0);
+  // The catalogue total for this filter, from the server -- not the size of the page in hand.
+  const totalAvailable = eventsPage?.totalElements ?? 0;
 
   const renderBootcampsSection = (title: string = "Practical Bootcamps") => {
     const CARDS_PER_PAGE = 3;
@@ -199,6 +188,7 @@ export default function EventsView({
             return (
               <div
                 key={i}
+                onClick={() => router.push(`/events/${bootcamp.slug || bootcamp.id}`)}
                 style={{
                   background: "#FFFFFF",
                   border: "1px solid rgba(20, 23, 31, 0.08)",
@@ -207,7 +197,8 @@ export default function EventsView({
                   flexDirection: "column",
                   position: "relative",
                   overflow: "hidden",
-                  boxShadow: "0 8px 24px -6px rgba(0, 0, 0, 0.04)"
+                  boxShadow: "0 8px 24px -6px rgba(0, 0, 0, 0.04)",
+                  cursor: "pointer"
                 }}
                 className="hover-card-y"
               >
@@ -351,6 +342,7 @@ export default function EventsView({
             return (
               <div
                 key={i}
+                onClick={() => router.push(`/events/${w.slug || w.id}`)}
                 style={{
                   background: "#FFFFFF",
                   border: "1px solid rgba(20, 23, 31, 0.08)",
@@ -359,7 +351,8 @@ export default function EventsView({
                   flexDirection: "column",
                   position: "relative",
                   overflow: "hidden",
-                  boxShadow: "0 8px 24px -6px rgba(0, 0, 0, 0.04)"
+                  boxShadow: "0 8px 24px -6px rgba(0, 0, 0, 0.04)",
+                  cursor: "pointer"
                 }}
               >
                 <WebinarCardHeader title={w.title} status={w.status} duration={w.duration} category={w.category} />
@@ -476,6 +469,20 @@ export default function EventsView({
     );
   };
 
+  const headingTitle = React.useMemo(() => {
+    const q = courseSearchQuery.trim();
+    if (q) return `Results for "${q}"`;
+    const isAll = !activeCategoryName || activeCategoryName.toLowerCase() === "all";
+    if (!isAll) {
+      if (eventType === "bootcamps") return `${activeCategoryName} Bootcamps`;
+      if (eventType === "webinars") return `${activeCategoryName} Live Webinars`;
+      return `${activeCategoryName} Events & Bootcamps`;
+    }
+    if (eventType === "bootcamps") return "Bootcamps";
+    if (eventType === "webinars") return "Live Webinars";
+    return "Events & Bootcamps";
+  }, [courseSearchQuery, activeCategoryName, eventType]);
+
   return (
     <section style={{ marginBottom: "20px" }}>
       {/* Section Header */}
@@ -483,12 +490,14 @@ export default function EventsView({
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
           <h2 style={{ fontSize: "1.45rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-            Events & Bootcamps
+            {headingTitle}
           </h2>
         </div>
-        <span style={{ fontSize: "0.84rem", fontWeight: "700", color: activeData.colors.primary, background: `${activeData.colors.primary}12`, padding: "4px 12px", borderRadius: "20px" }}>
-          Showing {totalCount} of {totalAvailable} events
-        </span>
+        {totalCount > 0 && (
+          <span style={{ fontSize: "0.82rem", fontWeight: "600", color: "#6B7280" }}>
+            {totalCount} {totalCount === 1 ? "event available" : "events available"}
+          </span>
+        )}
       </div>
 
       {/* Uniform Horizontal Filter & Sort Toolbar */}
@@ -612,65 +621,39 @@ export default function EventsView({
         </div>
       </div>
 
-      {totalCount === 0 ? (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "36px 20px",
-            background: "rgba(255, 255, 255, 0.65)",
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
-            borderRadius: "16px",
-            border: "1px dashed rgba(20, 23, 31, 0.15)",
-            maxWidth: "460px",
-            margin: "24px auto"
-          }}
-        >
-          <div
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              background: `${activeData.colors.primary}12`,
-              color: activeData.colors.primary,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 12px"
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-          </div>
-          <h4 style={{ fontSize: "1rem", fontWeight: "700", color: "var(--l-ink)", margin: "0 0 6px" }}>
-            No events found
-          </h4>
-          <p style={{ color: "#6B7280", fontSize: "0.86rem", margin: "0 0 16px", lineHeight: "1.5" }}>
-            {query ? `No events match "${courseSearchQuery}".` : "Try choosing a different event type or clearing the search."}
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              if (setCourseSearchQuery) setCourseSearchQuery("");
-              setEventType("all");
-            }}
-            style={{
-              background: activeData.colors.primary,
-              color: "#FFFFFF",
-              border: "none",
-              padding: "8px 18px",
-              borderRadius: "10px",
-              fontSize: "0.84rem",
-              fontWeight: "700",
-              cursor: "pointer",
-              boxShadow: `0 4px 12px ${activeData.colors.primary}30`
-            }}
-          >
-            Reset Filters
-          </button>
+      {eventsLoading ? (
+        <div style={{ padding: "48px 24px", textAlign: "center", color: "#6B7280" }}>
+          Loading events…
         </div>
+      ) : eventsFailed ? (
+        /* Distinct from "no events": one means the catalogue is empty, the other means we could
+           not read it. Showing an empty state for a failed request tells the learner something
+           false about the platform. */
+        <div style={{ padding: "48px 24px", textAlign: "center" }}>
+          <h4 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--l-ink)", margin: "0 0 6px" }}>
+            Could not load events
+          </h4>
+          <p style={{ color: "#6B7280", fontSize: "0.86rem" }}>
+            Something went wrong reaching the server. Refresh to try again.
+          </p>
+        </div>
+      ) : totalCount === 0 ? (
+        <ExploreEmptyState
+          title={courseSearchQuery.trim() ? "No matching events found" : "No events found"}
+          description={
+            courseSearchQuery.trim()
+              ? `We couldn't find any events or bootcamps matching "${courseSearchQuery}". Try checking for spelling errors or searching with broader keywords.`
+              : eventType !== "all"
+                ? `There are currently no ${eventType} in ${activeCategoryName}. Try selecting "All Events" to view other sessions.`
+                : "No events or bootcamps are currently scheduled for this category. Check back soon for new sessions."
+          }
+          actionLabel="Reset Filters"
+          onAction={() => {
+            if (setCourseSearchQuery) setCourseSearchQuery("");
+            setEventType("all");
+          }}
+          accentColor={activeData.colors.primary}
+        />
       ) : (
         <>
           {showBootcamps && renderBootcampsSection("Practical Bootcamps")}

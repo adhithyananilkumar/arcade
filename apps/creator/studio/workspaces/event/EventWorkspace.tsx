@@ -14,7 +14,6 @@
  */
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Settings } from "lucide-react";
 import { StudioIconAction } from "@/apps/creator/studio/core/StudioHeader";
 import { ContentEditorRuntime, type ContentEditorRuntimeHandle } from "@/apps/creator/studio/workspaces/content/ContentEditorRuntime";
@@ -33,14 +32,13 @@ import { SessionSettingsDialog } from "./SessionSettingsDialog";
  * update a container's cached title afterwards (`ContentEditorRuntimeHandle`).
  */
 export function EventWorkspace({ eventId }: { eventId: string }) {
-  const router = useRouter();
   const adapter = useMemo(() => new EventAdapter(eventId), [eventId]);
   const runtimeRef = useRef<ContentEditorRuntimeHandle>(null);
 
   const [sessionSettingsSessionId, setSessionSettingsSessionId] = useState<string | null>(null);
 
   const onSubmit = useCallback(async (data: { message?: string }) => {
-    const { submitEvent } = await import("@/app/(authenticated)/studio/events/api/publish");
+    const { submitEvent } = await import("@/domains/events/api/publish");
     const updated = await submitEvent(eventId, { message: data.message });
     return { status: updated.status, updatedAt: updated.updatedAt ?? null };
   }, [eventId]);
@@ -50,10 +48,7 @@ export function EventWorkspace({ eventId }: { eventId: string }) {
       ref={runtimeRef}
       adapter={adapter}
       contentId={eventId}
-      // Preserves the exact pre-existing behaviour: Event's back button returns to the Studio
-      // root rather than an event content-overview page. Not something this migration changes —
-      // see the workspace's own class docs if that ever needs revisiting.
-      backHref="/studio"
+      backHref={`/studio/content/event/${eventId}`}
       onSubmit={onSubmit}
       copy={{
         noContainers: "Create your first workshop day.",
@@ -70,15 +65,6 @@ export function EventWorkspace({ eventId }: { eventId: string }) {
           <StudioIconAction onClick={() => setSessionSettingsSessionId(activeModuleId)} title="Day Schedule & Settings">
             <Settings size={16} />
           </StudioIconAction>
-        ),
-        afterSubmit: (
-          <button
-            type="button"
-            onClick={() => router.push(`/studio/events/${eventId}`)}
-            className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
-          >
-            <span className="hidden sm:inline">Manage</span>
-          </button>
         ),
       })}
       extraDialogs={

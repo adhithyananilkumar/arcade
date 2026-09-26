@@ -2,15 +2,17 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, LayoutGrid, BarChart3, Users, Send, Activity } from "lucide-react";
+import { ArrowLeft, LayoutGrid, BarChart3, Users, Send, Activity, Tag, Settings } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/shared/design-system/ui/tooltip";
 import type { CapabilityGroup } from "../lib/capabilities";
 import { GROUP_LABEL } from "../lib/capabilities";
 import type { OverviewTab } from "./ContentOverviewNav";
 
 const GROUP_ICON: Record<CapabilityGroup, typeof BarChart3> = {
-  analytics: BarChart3,
+  pricing: Tag,
+  settings: Settings,
   people: Users,
+  analytics: BarChart3,
   publishing: Send,
   more: Activity,
 };

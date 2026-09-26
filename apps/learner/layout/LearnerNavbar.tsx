@@ -214,7 +214,9 @@ export default function LearnerNavbar() {
   const isConsole = pathname.startsWith('/console');
   const isChannelManage = pathname.includes('/channels/') && pathname.includes('/manage');
   const isChannelPage = pathname.startsWith('/channels/') && !pathname.includes('/manage');
-  const courseLearnMatch = pathname.match(/^\/learn\/([^/]+)\/learn\/?$/);
+  // The lesson player, which shows the course title as a breadcrumb. The lesson id is now a
+  // path segment rather than `?lesson=`, so the match has a trailing segment to allow for.
+  const courseLearnMatch = pathname.match(/^\/courses\/([^/]+)\/learn\/[^/]+\/?$/);
   const courseLearnId = courseLearnMatch?.[1];
 
   // Just the title, so this stays a light island fetch rather than the full course payload the
@@ -249,7 +251,8 @@ export default function LearnerNavbar() {
     return null;
   })();
 
-  if (/\/learn\/[^/]+\/exam\/(start|terminated)\/?$/.test(pathname)) {
+  // Exam surfaces draw their own chrome; the app navbar would sit on top of it.
+  if (/^\/exams\/[^/]+\/(attempt|terminated)\/?$/.test(pathname)) {
     return null;
   }
 
@@ -488,7 +491,7 @@ export default function LearnerNavbar() {
                 icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
                 onClick={() => router.push('/studio')}
               >
-                Arcade Studio
+                Studio
               </MenuItem>
             )}
             {collaboratedEventId && (
@@ -517,7 +520,7 @@ export default function LearnerNavbar() {
               icon={<Compass className="text-slate-600" strokeWidth={2} />} 
               onClick={() => router.push('/?public=true')} 
             >
-              Go to website
+              Website
             </MenuItem>
             <MenuItem 
               icon={<LogOut className="text-rose-500" strokeWidth={2} />} 

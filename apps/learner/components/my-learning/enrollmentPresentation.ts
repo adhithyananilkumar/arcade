@@ -12,6 +12,8 @@
  * ------------------------------------------------------------------
  */
 
+import { courseRoutes, eventRoutes } from '@/shared/routes/content.routes';
+
 import type {
   LearnerEnrollmentSummary,
   LearnerEventRegistration,
@@ -121,8 +123,10 @@ export function progressDisplayFor(
 /** Where the "open" action goes. Null when the item must not be opened. */
 export function resourceHrefFor(item: LearnerEnrollmentSummary): string | null {
   if (!isOpenable(item)) return null;
-  if (item.resourceType === 'COURSE') return `/learn/${item.resourceId}`;
-  return `/events/${item.slug || item.resourceId}`;
+  if (item.resourceType === 'COURSE') return courseRoutes.overview(item.resourceId);
+  // The overview hub, not the public landing: this row only renders for someone who holds
+  // an entitlement, and the hub is what an entitlement buys.
+  return eventRoutes.overview(item.slug || item.resourceId);
 }
 
 /** Label for the primary action, driven by progress rather than guessed from a percentage. */

@@ -3,7 +3,7 @@
 import React, { useEffect, useState, use } from 'react';
 import { notFound } from 'next/navigation';
 import { EventPreview } from '@/app/(authenticated)/studio/events/components/wizard/review/EventPreview';
-import { getEventPreview } from '@/app/(authenticated)/studio/events/api/publish';
+import { getEventPreview } from '@/domains/events/api/publish';
 import { EventPreviewDto } from '@/app/(authenticated)/studio/events/types';
 
 interface Props {

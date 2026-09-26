@@ -76,11 +76,8 @@ export async function generateMetadata({
 }
 
 export const viewport: Viewport = {
-    colorScheme: 'light dark',
-    themeColor: [
-        { media: '(prefers-color-scheme: light)', color: 'white' },
-        { media: '(prefers-color-scheme: dark)', color: 'black' },
-    ],
+    colorScheme: 'light',
+    themeColor: '#ffffff',
 }
 
 export default function CourseLayout({

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { MapPin, Users, Award, PlayCircle, CheckCircle, Clock } from 'lucide-react';
 import { EventPreviewDto, PricingModel } from '@/app/(authenticated)/studio/events/types';
 import { EnrollmentButton, type UIEnrollmentState } from '@/domains/enrollment';
-import { getMyRegistrationStatus } from '@/app/(public)/workshop/api/registration';
+import { EventRegistrationService } from '@/domains/events';
 import { toast } from 'sonner';
 
 interface Props {
@@ -23,7 +23,7 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
       return;
     }
     
-    getMyRegistrationStatus(basicInfo.id)
+    EventRegistrationService.getMine(basicInfo.id)
       .then((data: any) => {
         setRegistration(data);
       })
@@ -121,7 +121,7 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
               if (onRegister) {
                 onRegister();
               } else {
-                getMyRegistrationStatus(basicInfo.id!)
+                EventRegistrationService.getMine(basicInfo.id!)
                   .then(setRegistration)
                   .catch(console.error);
               }
@@ -155,7 +155,7 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
             if (onRegister) {
               onRegister();
             } else {
-              getMyRegistrationStatus(basicInfo.id!)
+              EventRegistrationService.getMine(basicInfo.id!)
                 .then(setRegistration)
                 .catch(console.error);
             }

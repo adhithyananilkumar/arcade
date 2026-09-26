@@ -168,16 +168,16 @@ describe('isOpenable / resourceHrefFor — inaccessible enrollments must not be 
   );
 
   it('links an accessible course by id', () => {
-    expect(resourceHrefFor(course())).toBe('/learn/course-1');
+    expect(resourceHrefFor(course())).toBe('/courses/course-1/learn');
   });
 
   it('links an accessible event by slug, falling back to its id', () => {
     expect(
       resourceHrefFor(course({ resourceType: 'EVENT', slug: 'my-event', resourceId: 'e1' }))
-    ).toBe('/events/my-event');
+    ).toBe('/events/my-event/learn');
     expect(
       resourceHrefFor(course({ resourceType: 'EVENT', slug: null, resourceId: 'e1' }))
-    ).toBe('/events/e1');
+    ).toBe('/events/e1/learn');
   });
 });
 
