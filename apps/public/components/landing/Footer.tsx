@@ -5,7 +5,7 @@ import "./Footer.css";
 
 export default function Footer() {
   return (
-    <footer className="arc-footer">
+    <footer className="arc-footer relative overflow-hidden bg-transparent">
       {/* Blueprint grid background overlay */}
       <div className="arc-footer__grid-overlay"></div>
 
