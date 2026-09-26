@@ -15,6 +15,9 @@ import {
 } from '@/domains/assessments';
 import type { AssessmentNodeResponse } from '@/shared/types/api.types';
 
+import { PreviewExamModal } from './PreviewExamModal';
+import { toast } from 'sonner';
+
 interface AssessmentLandingPaneProps {
   assessment: AssessmentNodeResponse;
   courseId?: string;
@@ -24,6 +27,8 @@ interface AssessmentLandingPaneProps {
   onNextItem?: () => void;
   /** Open feedback / report issue modal. */
   onReportIssue?: () => void;
+  /** When true, runs in author preview mode with ephemeral session attempts and zero DB writes. */
+  isPreview?: boolean;
 }
 
 export function AssessmentLandingPane({
@@ -32,10 +37,14 @@ export function AssessmentLandingPane({
   onPassed,
   onNextItem,
   onReportIssue,
+  isPreview = false,
 }: AssessmentLandingPaneProps) {
   const router = useRouter();
   const [landing, setLanding] = useState<AssessmentLandingResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showSimulateModal, setShowSimulateModal] = useState(false);
+
+  const previewStorageKey = `preview_attempts_${assessment.examId}`;
 
   const load = useCallback(() => {
     getAssessmentLanding(assessment.examId, {
@@ -43,16 +52,52 @@ export function AssessmentLandingPane({
       placementId: assessment.placementId,
     })
       .then((data) => {
-        setLanding(data);
+        let finalData = data;
+        if (isPreview && typeof window !== 'undefined') {
+          const raw = sessionStorage.getItem(previewStorageKey);
+          if (raw) {
+            try {
+              const previewAttempts = JSON.parse(raw);
+              if (Array.isArray(previewAttempts) && previewAttempts.length > 0) {
+                const latest = previewAttempts[0];
+                const best =
+                  [...previewAttempts]
+                    .filter((h) => h.percentage !== null)
+                    .sort((a, b) => (b.percentage ?? 0) - (a.percentage ?? 0))[0] ?? null;
+                const passed = best ? Boolean(best.passed) : Boolean(latest.passed);
+                const score = best?.percentage ?? latest.percentage ?? null;
+
+                finalData = {
+                  ...data,
+                  history: previewAttempts,
+                  attemptsUsed: previewAttempts.length,
+                  attemptsRemaining: Math.max(0, data.maxAttempts - previewAttempts.length),
+                  latestAttempt: latest,
+                  bestAttempt: best,
+                  passed,
+                  score,
+                  startable: previewAttempts.length < data.maxAttempts,
+                  blockedReason:
+                    previewAttempts.length >= data.maxAttempts ? 'ATTEMPTS_EXHAUSTED' : null,
+                  blockedMessage:
+                    previewAttempts.length >= data.maxAttempts
+                      ? "You've used all attempts."
+                      : null,
+                };
+              }
+            } catch {}
+          }
+        }
+        setLanding(finalData);
         setError(null);
-        if (data.history.some((h) => h.passed)) {
+        if (finalData.history.some((h) => h.passed)) {
           onPassed?.();
         }
       })
       .catch((err) => setError(err?.message ?? 'Could not load this assessment.'));
     // onPassed is a fresh closure each render; depending on it would refetch on every parent render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assessment.examId, assessment.planId, assessment.placementId]);
+  }, [assessment.examId, assessment.planId, assessment.placementId, isPreview, previewStorageKey]);
 
   useEffect(() => {
     load();
@@ -70,13 +115,63 @@ export function AssessmentLandingPane({
 
   const handleStart = () => {
     const params = new URLSearchParams();
-    // The placement's plan decides duration, attempts, pass mark and paper construction. Without
-    // it the player falls back to the exam's first active plan, which may be a different sitting
-    // entirely from the one this course intends.
     if (landing?.planId) params.set('planId', landing.planId);
     if (courseId) params.set('returnTo', `/learn/${courseId}/learn`);
+    if (isPreview) params.set('preview', 'true');
     const query = params.toString();
     router.push(`/learn/exam/${assessment.examId}/start${query ? `?${query}` : ''}`);
+  };
+
+  const handleSimulateAttempt = (simulatedScore: number) => {
+    setShowSimulateModal(false);
+    if (!landing) return;
+
+    const passThreshold = landing.passPercentage ?? 70;
+    const isPassing = simulatedScore >= passThreshold;
+
+    const raw = sessionStorage.getItem(previewStorageKey);
+    const existing = raw ? JSON.parse(raw) : [];
+    const attemptNumber = existing.length + 1;
+
+    const newAttempt = {
+      attemptId: `preview-att-${Date.now()}`,
+      attemptNumber,
+      status: 'SUBMITTED',
+      submittedAt: new Date().toISOString(),
+      percentage: simulatedScore,
+      passed: isPassing,
+      awaitingReview: false,
+      gradeCardId: null,
+    };
+
+    const updatedHistory = [newAttempt, ...existing];
+    sessionStorage.setItem(previewStorageKey, JSON.stringify(updatedHistory));
+
+    const best =
+      [...updatedHistory]
+        .filter((h) => h.percentage !== null)
+        .sort((a, b) => (b.percentage ?? 0) - (a.percentage ?? 0))[0] ?? null;
+
+    setLanding({
+      ...landing,
+      history: updatedHistory,
+      attemptsUsed: updatedHistory.length,
+      attemptsRemaining: Math.max(0, landing.maxAttempts - updatedHistory.length),
+      latestAttempt: newAttempt,
+      bestAttempt: best,
+      passed: best ? Boolean(best.passed) : false,
+      score: best?.percentage ?? newAttempt.percentage,
+      startable: updatedHistory.length < landing.maxAttempts,
+      blockedReason:
+        updatedHistory.length >= landing.maxAttempts ? 'ATTEMPTS_EXHAUSTED' : null,
+      blockedMessage:
+        updatedHistory.length >= landing.maxAttempts ? "You've used all attempts." : null,
+    });
+
+    if (isPassing) {
+      onPassed?.();
+    }
+    toast.success(`Simulated attempt recorded (${simulatedScore}%). Session only.`);
   };
 
   if (error) {
@@ -104,6 +199,16 @@ export function AssessmentLandingPane({
         onNextItem={onNextItem}
         onReportIssue={onReportIssue}
       />
+
+      {isPreview && (
+        <PreviewExamModal
+          isOpen={showSimulateModal}
+          onClose={() => setShowSimulateModal(false)}
+          title={landing.title}
+          passPercentage={landing.passPercentage ?? 70}
+          onSimulate={handleSimulateAttempt}
+        />
+      )}
     </div>
   );
 }

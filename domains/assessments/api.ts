@@ -22,6 +22,7 @@ import type {
   ExamSelectionRuleResponse,
   QuestionBankQuestionsRequest,
   QuestionBankSummary,
+  AttemptQuestionResponse,
   QuestionPoolDetail,
   QuestionPoolFilterRequest,
   QuestionPoolMembersRequest,
@@ -304,8 +305,16 @@ export function detachExamFromEvent(eventId: string, examId: string) {
  * exam's plans to sit; omitted, the server uses the exam's first active plan.
  */
 export function startExamAttempt(examId: string, planId?: string | null) {
-  const query = planId ? `?planId=${encodeURIComponent(planId)}` : "";
-  return api.post<AttemptResponse>(`/api/exam-attempts/exams/${examId}/start${query}`, {});
+  const params = new URLSearchParams();
+  if (planId) params.set("planId", planId);
+  return api.post<AttemptResponse>(
+    `/api/exam-attempts/exams/${examId}/start${params.toString() ? `?${params.toString()}` : ""}`,
+    {}
+  );
+}
+
+export function gradePreviewPaper(examId: string, payload: { planId?: string | null; answers: Record<string, { selectedOptionIds?: string[]; textAnswer?: string | null }> }) {
+  return api.post<ExamResultResponse>(`/api/exams/${examId}/preview-paper/grade`, payload);
 }
 
 export function getExamAttempt(attemptId: string) {
@@ -458,6 +467,16 @@ export async function previewExamPaper(
     `/api/exams/${examId}/preview-paper${query}`
   );
   return wire.map((q) => ({ ...q, question: parsePrompt(q.question) }));
+}
+
+/**
+ * Creator-facing preview paper shaped like a real attempt — real option ids, no correctness — so an
+ * author can sit their own exam end to end and have it graded. Distinct from {@link previewExamPaper},
+ * which strips option ids down to plain text for the read-only question list view.
+ */
+export function previewAttemptPaper(examId: string, planId?: string | null) {
+  const query = planId ? `?planId=${encodeURIComponent(planId)}` : "";
+  return api.get<AttemptQuestionResponse[]>(`/api/exams/${examId}/preview-paper/attempt${query}`);
 }
 
 // ── Assessment placement & landing ────────────────────────────────────────────

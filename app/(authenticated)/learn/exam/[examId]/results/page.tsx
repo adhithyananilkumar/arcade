@@ -20,6 +20,20 @@ export default function ExamResultsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const isPreview = searchParams.get('preview') === 'true';
+    if (isPreview) {
+      const mockStr = sessionStorage.getItem(`preview_result_${examId}`);
+      if (mockStr) {
+        try {
+          setResult(JSON.parse(mockStr));
+          return;
+        } catch (e) {
+          setError('We could not load your preview result.');
+          return;
+        }
+      }
+    }
+
     const attemptId = searchParams.get('attemptId') ?? sessionStorage.getItem(`exam_attempt_${examId}`);
     if (!attemptId) {
       router.push(`/exam`);

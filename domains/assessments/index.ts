@@ -115,6 +115,8 @@ export {
   getExamQuestions,
   listExamVersions,
   publishExam,
+  gradePreviewPaper,
+  previewAttemptPaper,
 } from "./api";
 export type {
   AssessmentHostType,

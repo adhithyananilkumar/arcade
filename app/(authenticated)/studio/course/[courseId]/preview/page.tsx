@@ -1,9 +1,9 @@
 // app/(authenticated)/studio/course/[courseId]/preview/page.tsx
-// Author preview: renders the learner-facing CourseRenderer against the live working copy
-// (mode="preview") rather than a published snapshot. Composed here at the app layer so the
-// content-domain editor never imports the learning-domain renderer directly.
+// Author preview: renders the exact learner-facing CoursePlayer against the course in ephemeral preview mode.
+// In this mode, creators can experience the course exactly as an enrolled student does (including lesson
+// progression and assessment landing/result states), but progress and marks are temporary and are never stored in the database.
 import type { Metadata } from "next";
-import { CoursePlayerOrchestrator } from "@/apps/learner/orchestrators/CoursePlayerOrchestrator";
+import { CoursePlayer } from "@/app/(authenticated)/learn/[courseId]/learn/CoursePlayer";
 
 export const metadata: Metadata = {
   title: "Preview — Arcade",
@@ -16,6 +16,5 @@ export default async function CoursePreviewPage({ params }: { params: Promise<{ 
     return <div className="p-8 text-gray-500">Course ID is missing</div>;
   }
 
-  // Uses "preview" mode to bypass published gate checks (if any)
-  return <CoursePlayerOrchestrator courseId={courseId} mode="preview" />;
+  return <CoursePlayer courseId={courseId} isPreview={true} />;
 }

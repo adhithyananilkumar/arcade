@@ -14,6 +14,8 @@ import {
   verifyProctorIdentity,
   recordProctorEvent,
   completeProctorSession,
+  previewAttemptPaper,
+  gradePreviewPaper,
   type AttemptQuestionResponse,
   HonorCodeModal,
 } from '@/domains/assessments';
@@ -28,12 +30,9 @@ export default function ExamEnginePage() {
   const searchParams = useSearchParams();
   const examId = params.examId as string;
 
-  // Which of the exam's plans is being sat, and where to return afterwards. A plan carries the
-  // duration, attempt limit, pass mark, paper construction and delivery window, so omitting it
-  // silently falls back to the exam's first active plan — which is why an assessment reached from
-  // inside a course always passes the placement's plan explicitly.
   const planId = searchParams.get('planId');
   const returnTo = searchParams.get('returnTo');
+  const isPreview = searchParams.get('preview') === 'true';
 
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [questions, setQuestions] = useState<AttemptQuestionResponse[]>([]);
@@ -58,6 +57,22 @@ export default function ExamEnginePage() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const beginAttempt = useCallback(() => {
+    if (isPreview) {
+      previewAttemptPaper(examId, planId)
+        .then((previewQuestions) => {
+          setAttemptId(`preview-${examId}`);
+          setAwaitingProctorGate(false);
+          setTimeLeft(3600); // 1 hour mock
+          setQuestions(previewQuestions);
+          setAnswers({});
+          setTextAnswers({});
+        })
+        .catch((err) => {
+          setLoadError(err?.message ?? 'Failed to start this exam.');
+        });
+      return;
+    }
+
     startExamAttempt(examId, planId)
       .then((attempt) => {
         setAttemptId(attempt.id);
@@ -68,12 +83,10 @@ export default function ExamEnginePage() {
       .then((withQuestions) => {
         if (!withQuestions) return;
         setQuestions(withQuestions.questions);
-        // Resuming an in-progress attempt rehydrates whatever was already saved, for both the
-        // option-based types and written answers.
         const initialAnswers: Record<string, string[]> = {};
         const initialText: Record<string, string> = {};
         withQuestions.questions.forEach((q) => {
-          if (q.selectedOptionIds.length > 0) initialAnswers[q.id] = q.selectedOptionIds;
+          if (q.selectedOptionIds && q.selectedOptionIds.length > 0) initialAnswers[q.id] = q.selectedOptionIds;
           if (q.textAnswer) initialText[q.id] = q.textAnswer;
         });
         setAnswers(initialAnswers);
@@ -87,7 +100,7 @@ export default function ExamEnginePage() {
           setLoadError(err?.message ?? 'Failed to start this exam.');
         }
       });
-  }, [examId, planId]);
+  }, [examId, planId, isPreview]);
 
   const [honorCodeAccepted, setHonorCodeAccepted] = useState<boolean>(() => {
     try {
@@ -149,6 +162,29 @@ export default function ExamEnginePage() {
     isSubmittingRef.current = true;
     setIsSubmitting(true);
     try {
+      if (isPreview) {
+        const payloadAnswers: Record<string, { selectedOptionIds?: string[]; textAnswer?: string | null }> = {};
+        questions.forEach((q) => {
+          payloadAnswers[q.id] = {
+            selectedOptionIds: answers[q.id] || [],
+            textAnswer: textAnswers[q.id] || null,
+          };
+        });
+        const result = await gradePreviewPaper(examId, { planId, answers: payloadAnswers });
+        // The results page loads the result via getExamAttemptResult, which fetches from /api/exam-attempts/{attemptId}/result
+        // Since we don't have a real attempt, we can pass the result data via sessionStorage so the results page can read it.
+        sessionStorage.setItem(`preview_result_${examId}`, JSON.stringify(result));
+        sessionStorage.setItem(`exam_attempt_${examId}`, attemptId);
+        const back = returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : '';
+        const go = () => router.push(`/learn/exam/${examId}/results?preview=true&attemptId=${attemptId}${back}`);
+        if (document.fullscreenElement) {
+          document.exitFullscreen().then(go).catch(go);
+        } else {
+          go();
+        }
+        return;
+      }
+
       await submitExamAttempt(attemptId);
       if (isProctored) {
         await completeProctorSession(examId).catch(() => {});
@@ -168,7 +204,7 @@ export default function ExamEnginePage() {
       isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
-  }, [attemptId, examId, isProctored, returnTo, router]);
+  }, [attemptId, examId, isProctored, returnTo, router, isPreview, planId, questions, answers, textAnswers]);
 
   useEffect(() => {
     if (strikes >= 3) {
@@ -308,9 +344,11 @@ export default function ExamEnginePage() {
         : [optionId];
 
     setAnswers((prev) => ({ ...prev, [current.id]: nextSelection }));
-    saveExamAnswer(attemptId, current.id, { selectedOptionIds: nextSelection }).catch(() => {
-      console.error('Failed to save answer — it may not be recorded.');
-    });
+    if (!isPreview) {
+      saveExamAnswer(attemptId, current.id, { selectedOptionIds: nextSelection }).catch(() => {
+        console.error('Failed to save answer — it may not be recorded.');
+      });
+    }
   };
 
   // One timer per question id, so typing in one written answer never cancels another's pending save.
@@ -326,6 +364,8 @@ export default function ExamEnginePage() {
     if (!current || !attemptId) return;
     const questionId = current.id;
     setTextAnswers((prev) => ({ ...prev, [questionId]: value }));
+
+    if (isPreview) return;
 
     clearTimeout(textSaveTimers.current[questionId]);
     textSaveTimers.current[questionId] = setTimeout(() => {
