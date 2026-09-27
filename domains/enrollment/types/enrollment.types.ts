@@ -6,7 +6,8 @@
  * bootcamp). Sending `WORKSHOP` produced a 400, so the extra member was never a working option —
  * only a way for the type system to bless a request the server rejects.
  */
-export type ResourceType = 'COURSE' | 'EVENT';
+/** EXAM is a registration for a main exam (certification or standalone) from the Exams hub. */
+export type ResourceType = 'COURSE' | 'EVENT' | 'EXAM';
 
 export type EnrollmentResultStatus = 'GRANTED' | 'PENDING_ACTION' | 'DENIED';
 

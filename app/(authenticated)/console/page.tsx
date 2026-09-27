@@ -41,7 +41,7 @@ export default function ArcConsoleIndex() {
     } else if (showContentManage) {
       router.replace('/console/content-manage');
     } else if (showExams) {
-      router.replace('/console/exam-schedules');
+      router.replace('/console/exam-standards');
     } else if (showPayments) {
       router.replace('/console/payments');
     } else if (showInbox) {

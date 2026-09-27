@@ -139,6 +139,8 @@ export function AssessmentLandingPane({
       passed: isPassing,
       awaitingReview: false,
       gradeCardId: null,
+      terminationReason: null,
+      certificateIssued: false,
     };
 
     const updatedHistory = [newAttempt, ...existing];

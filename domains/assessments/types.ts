@@ -195,9 +195,12 @@ export interface QuizStatsResponse {
 }
 
 // ── Central Exam capability ───────────────────────────────────────────────────
-// An exam is a first-class capability: standalone, or placed under a Course/Event (never both).
-// Placement is a location, not a type — `purpose` is a free-form, creator-set label, never an
-// enum the UI branches on. Mirrors arcade-backend exam/dto/{ExamRequest,ExamResponse}.java.
+// An exam is Arcade's assessment and grading unit. It is either standalone (found in the learner
+// Exams hub) or tied to exactly one course or event, whose assessments are then plans on it.
+// Mirrors arcade-backend exam/dto/{ExamRequest,ExamResponse}.java.
+
+/** The content an exam is tied to. Null when the exam is standalone. */
+export type ExamTieType = "COURSE" | "EVENT";
 
 export interface ExamResponse {
   id: string;
@@ -208,59 +211,42 @@ export interface ExamResponse {
   title: string;
   description: string | null;
   coverImageUrl: string | null;
-  pricingModel: string;
-  priceAmount: number | null;
-  examSchedule: string | null;
-  rejectionReason: string | null;
+  purpose: string | null;
+  /** Tiptap JSON, serialized. */
+  instructions: string | null;
   status: string;
-  wasPublished: boolean;
-  hasDraftChanges: boolean;
+  rejectionReason: string | null;
+  published: boolean;
+  /** Edited since the version learners are served — they keep the frozen one until it is republished. */
+  hasUnpublishedChanges: boolean;
+  publishedVersionId: string | null;
+  publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string | null;
-  courseId: string | null;
-  eventId: string | null;
   channelId: string | null;
-  purpose: string | null;
-  requiredForCompletion: boolean;
-  questionCount: number;
-  easyPercent: number;
-  mediumPercent: number;
-  hardPercent: number;
-  examType: "BADGED" | "CERTIFIED";
-  durationMinutes: number;
-  passPercentage: number;
-  maxAttempts: number;
-  proctoringRequired: boolean;
-  identityVerificationRequired: boolean;
-  fullscreenRequired: boolean;
-  sameQuestionsForAllStudents: boolean;
+  tieType: ExamTieType | null;
+  tiedContentId: string | null;
+  tiedContentTitle: string | null;
+  /** The exam's own price (standalone exams), in minor currency units. */
+  priceAmountMinor: number | null;
+  currency: string | null;
+  /** What a learner actually pays to register: the price, or the platform's certification fee. */
+  registrationFeeMinor: number;
+  planCount: number;
+  canManage: boolean;
 }
 
 export interface ExamRequest {
-  title: string;
+  title?: string;
   description?: string;
   coverImageUrl?: string;
-  pricingModel?: string;
-  priceAmount?: number;
-  examSchedule?: string;
   channelId?: string;
   courseId?: string;
   eventId?: string;
   purpose?: string;
-  requiredForCompletion?: boolean;
-  questionCount?: number;
-  easyPercent?: number;
-  mediumPercent?: number;
-  hardPercent?: number;
-  examType?: "BADGED" | "CERTIFIED";
-  durationMinutes?: number;
-  passPercentage?: number;
-  maxAttempts?: number;
-  proctoringRequired?: boolean;
-  identityVerificationRequired?: boolean;
-  fullscreenRequired?: boolean;
-  sameQuestionsForAllStudents?: boolean;
+  instructions?: string;
+  priceAmountMinor?: number | null;
+  currency?: string;
 }
 
 // ── Exam attempts (learner-facing, server-authoritative) ─────────────────────
@@ -281,19 +267,33 @@ export interface AttemptQuestionResponse {
   options: AttemptQuestionOptionView[];
   selectedOptionIds: string[];
   textAnswer: string | null;
+  sectionTitle?: string | null;
 }
+
+export type AttemptStatus = "IN_PROGRESS" | "SUBMITTED" | "AUTO_SUBMITTED" | "EXPIRED" | "CANCELLED";
 
 export interface AttemptResponse {
   id: string;
   examId: string;
+  planId: string;
+  planType: ExamPlanType | null;
+  planName: string | null;
   examVersionId: string;
   attemptNumber: number;
-  status: string;
+  status: AttemptStatus | string;
+  /** Why an attempt was ended by someone other than the candidate. */
+  terminationReason: string | null;
   startedAt: string;
   expiresAt: string;
+  extraMinutes: number;
   submittedAt: string | null;
   serverTime: string;
   secondsRemaining: number;
+  proctoringRequired: boolean;
+  fullscreenRequired: boolean;
+  /** Recorded violations that end the attempt. 0 means unlimited. */
+  maxViolations: number;
+  violationCount: number;
   questions: AttemptQuestionResponse[];
 }
 
@@ -302,24 +302,34 @@ export interface SaveAnswerRequest {
   textAnswer?: string | null;
 }
 
-/** Creator-facing: one learner's attempt row in an exam's Attempts & Results tab. */
+/** Creator-facing: one learner's attempt row in an exam's Attempts tab. */
 export interface ExamAttemptSummaryResponse {
   attemptId: string;
   userId: string;
   userName: string;
+  planId: string;
+  planName: string | null;
   attemptNumber: number;
   status: string;
+  terminationReason: string | null;
   startedAt: string;
+  expiresAt: string;
   submittedAt: string | null;
+  extraMinutes: number;
   marksObtained: number | null;
   maximumMarks: number | null;
   percentage: number | null;
   passed: boolean | null;
+  awaitingMarking: boolean;
+  identityStatus: IdentityStatus | null;
+  identityEvidenceUrl: string | null;
+  violationCount: number;
 }
 
 export interface ExamResultResponse {
   attemptId: string;
   examId: string;
+  planId: string | null;
   examVersionId: string;
   totalQuestions: number;
   correctAnswers: number;
@@ -329,19 +339,26 @@ export interface ExamResultResponse {
   maximumMarks: number;
   percentage: number;
   passPercentage: number;
+  /** Always false for an ungraded assessment — it records a score, not a pass. */
   passed: boolean;
+  graded: boolean;
+  /** FINAL, or PENDING_REVIEW while written answers await marking. */
+  status: string;
   scoringVersion: number;
   calculatedAt: string;
 }
 
 // ── Exam Plans ────────────────────────────────────────────────────────────────
-// An Exam Content is the examination itself. An Exam Plan is one way of offering it — its own
-// question selection, timing, attempt allowance, scoring, delivery, security and completion
-// behaviour. One exam may carry several ("Course Completion", "Certification", "Practice").
-// `name` is free text the creator authors; nothing in the platform branches on it, so a new kind
-// of examination never needs a code change. Mirrors exam/dto/ExamPlan{Request,Response}.java.
+// A plan is one sitting an exam offers. Its type is platform-defined and decides what passing it
+// does; its settings are governed by the platform's exam standards (locked, or a default the
+// creator may change within limits). Mirrors exam/dto/ExamPlan{Request,Response}.java.
 
-export type DeliveryMode = "ON_DEMAND" | "SCHEDULED";
+/**
+ * CERTIFICATION — issues a certificate; listed in the Exams hub; at most one per exam.
+ * COMPLETION — passing it completes the tied course/event; at most one per exam; tied exams only.
+ * ASSESSMENT — a graded or ungraded check inside content, or a standalone exam in the hub.
+ */
+export type ExamPlanType = "CERTIFICATION" | "COMPLETION" | "ASSESSMENT";
 
 export type SelectionMode = "RULE_BASED" | "MANUAL";
 
@@ -384,9 +401,57 @@ export interface ExamPlanSectionResponse {
   rules: ExamSelectionRuleResponse[];
 }
 
+export type ExamSettingKey =
+  | "DURATION_MINUTES"
+  | "MAX_ATTEMPTS"
+  | "PASS_PERCENTAGE"
+  | "MIN_QUESTIONS"
+  | "GRADED"
+  | "SHUFFLE_QUESTIONS"
+  | "SHUFFLE_OPTIONS"
+  | "FIXED_PAPER"
+  | "PROCTORING_REQUIRED"
+  | "IDENTITY_VERIFICATION_REQUIRED"
+  | "FULLSCREEN_REQUIRED"
+  | "MAX_VIOLATIONS"
+  | "FEE_AMOUNT_MINOR";
+
+export type ExamSettingKind = "BOOLEAN" | "INTEGER" | "DECIMAL";
+
+/** LOCKED forces the platform's value; DEFAULT pre-fills it and lets the creator change it within min/max. */
+export type ExamSettingMode = "LOCKED" | "DEFAULT";
+
+/**
+ * One plan setting as the server resolved it against the platform standard. `editable` is the only
+ * thing the UI uses to enable a control — never re-derive it from `mode`.
+ */
+export interface ExamPlanSettingView {
+  key: ExamSettingKey;
+  label: string;
+  kind: ExamSettingKind;
+  /** Booleans come as 0/1. */
+  value: number | null;
+  platformValue: number | null;
+  mode: ExamSettingMode;
+  min: number | null;
+  max: number | null;
+  /** Whether the standard binds this plan at all (tied exam, or enforced on standalone ones). */
+  binds: boolean;
+  editable: boolean;
+}
+
+export interface ExamPlanPlacement {
+  placementId: string;
+  hostType: AssessmentHostType;
+  hostId: string;
+  instructions: string | null;
+  titleOverride: string | null;
+}
+
 export interface ExamPlanResponse {
   id: string;
   examId: string;
+  planType: ExamPlanType;
   name: string;
   description: string | null;
   position: number;
@@ -394,55 +459,52 @@ export interface ExamPlanResponse {
   durationMinutes: number;
   maxAttempts: number;
   passPercentage: number;
-  deliveryMode: DeliveryMode;
-  opensAt: string | null;
-  closesAt: string | null;
+  /** ASSESSMENT only: whether the sitting has a pass mark and counts towards the transcript. */
+  graded: boolean;
   fixedPaper: boolean;
   shuffleQuestions: boolean;
   shuffleOptions: boolean;
-  registrationRequired: boolean;
   proctoringRequired: boolean;
   identityVerificationRequired: boolean;
   fullscreenRequired: boolean;
-  /**
-   * What sitting this plan produces. Replaces the former `grantsCompletion`/`grantsCertificate`
-   * pair, which the authoring UI wrote and nothing ever read.
-   */
-  outcome: AssessmentOutcome;
-  /** Candidates must have completed the course this plan's placement sits under before sitting it. */
-  requiresHostCompletion: boolean;
+  maxViolations: number;
+  /** Shown in the learner Exams hub (certifications, and every plan of a standalone exam). */
+  hubListed: boolean;
+  /** Where inside the tied content this plan sits. Null for hub-listed plans. */
+  placement: ExamPlanPlacement | null;
+  /** The platform's minimum paper size for this type; publishing is refused below it. */
+  minQuestions: number;
   /** Sum of every rule's count — the size of the paper this plan builds. */
   totalQuestions: number;
   totalMarks: number;
+  settings: ExamPlanSettingView[];
   sections: ExamPlanSectionResponse[];
 }
 
-/** Every field optional: a null/absent field leaves that part of the plan unchanged. */
+/** Every field optional: an absent field leaves that part of the plan unchanged. `planType` is create-only. */
 export type ExamPlanRequest = Partial<{
+  planType: ExamPlanType;
   name: string;
   description: string;
   active: boolean;
   durationMinutes: number;
   maxAttempts: number;
   passPercentage: number;
-  deliveryMode: DeliveryMode;
-  opensAt: string | null;
-  closesAt: string | null;
+  graded: boolean;
   fixedPaper: boolean;
   shuffleQuestions: boolean;
   shuffleOptions: boolean;
-  registrationRequired: boolean;
   proctoringRequired: boolean;
   identityVerificationRequired: boolean;
   fullscreenRequired: boolean;
-  outcome: AssessmentOutcome;
-  requiresHostCompletion: boolean;
+  maxViolations: number;
 }>;
 
 export interface ExamPlanValidationResponse {
   ok: boolean;
   planId: string;
   totalRequired: number;
+  minQuestions: number;
   rules: Array<{
     ruleId: string;
     sectionId: string;
@@ -452,6 +514,82 @@ export interface ExamPlanValidationResponse {
     available: number;
     ok: boolean;
   }>;
+}
+
+// ── Exam standards (Platform Console) ─────────────────────────────────────────
+
+export interface ExamStandardSetting {
+  key: ExamSettingKey;
+  label: string;
+  kind: ExamSettingKind;
+  value: number | null;
+  mode: ExamSettingMode;
+  min: number | null;
+  max: number | null;
+}
+
+export interface ExamStandard {
+  planType: ExamPlanType;
+  displayName: string;
+  description: string | null;
+  /** Extend this type's locks to standalone exams too. Off: standalone exams only get the defaults. */
+  enforceOnUntied: boolean;
+  updatedAt: string | null;
+  settings: ExamStandardSetting[];
+}
+
+export interface ExamStandardUpdate {
+  displayName?: string;
+  description?: string;
+  enforceOnUntied?: boolean;
+  settings?: Array<{
+    key: ExamSettingKey;
+    value: number | null;
+    mode: ExamSettingMode;
+    min: number | null;
+    max: number | null;
+  }>;
+}
+
+// ── Marking ───────────────────────────────────────────────────────────────────
+
+export interface MarkingQuestion {
+  attemptQuestionId: string;
+  position: number;
+  prompt: unknown;
+  sampleAnswer: string | null;
+  textAnswer: string | null;
+  points: number;
+  awardedMarks: number | null;
+  note: string | null;
+}
+
+export interface MarkingItem {
+  attemptId: string;
+  planId: string;
+  userId: string;
+  learnerName: string;
+  attemptNumber: number;
+  submittedAt: string | null;
+  questions: MarkingQuestion[];
+}
+
+// ── Proctoring ────────────────────────────────────────────────────────────────
+
+/** SUBMITTED lets the candidate start; an administrator then approves or rejects the evidence. */
+export type IdentityStatus = "NOT_SUBMITTED" | "SUBMITTED" | "APPROVED" | "REJECTED";
+
+export interface ProctorSessionResponse {
+  id: string | null;
+  examId: string;
+  planId: string;
+  attemptId: string | null;
+  status: string;
+  identityStatus: IdentityStatus;
+  identitySubmittedAt: string | null;
+  violationCount: number;
+  startedAt: string | null;
+  endedAt: string | null;
 }
 
 // ── Question pools, dynamic ───────────────────────────────────────────────────
@@ -511,26 +649,20 @@ export interface QuestionSearchResponse {
 }
 
 // ── Assessment placement & landing ────────────────────────────────────────────
-// An assessment is an exam placed somewhere in other content. Placement is a location, not a kind:
-// a practice drill in module 2 and a proctored certification at course level are the same exam
-// machinery with a different host and a different plan.
+// A COMPLETION or ASSESSMENT plan of a tied exam sits somewhere inside the tied content — the
+// course root, a module, or the event. Every such plan has exactly one placement.
 
-/** Where an assessment can sit. EVENT_SESSION is declared but not yet supported by the server. */
-export type AssessmentHostType = "COURSE" | "COURSE_MODULE" | "EVENT" | "EVENT_SESSION";
+/** Where an assessment can sit. */
+export type AssessmentHostType = "COURSE" | "COURSE_MODULE" | "EVENT";
 
-/** What passing an assessment produces — the one enum in the exam model that branches behaviour. */
-export type AssessmentOutcome = "NONE" | "COMPLETION" | "GRADE_CARD" | "CERTIFICATE";
-
-/** One appearance of an exam inside other content, as the authoring UI sees it. */
 export interface AssessmentPlacementResponse {
   id: string;
   examId: string;
   hostType: AssessmentHostType;
   hostId: string;
-  planId: string | null;
+  planId: string;
   /** Shares one ordering space with the host's lessons, so it can sit between two of them. */
   position: number;
-  requiredForCompletion: boolean;
   /** Tiptap JSON, serialized. Overrides the exam's own instructions for this appearance. */
   instructions: string | null;
   titleOverride: string | null;
@@ -543,8 +675,11 @@ export interface AssessmentNode {
   planId: string | null;
   title: string;
   position: number;
+  /** COMPLETION | ASSESSMENT. Null on snapshots published before exam types existed. */
+  planType: ExamPlanType | null;
+  graded: boolean;
+  /** Derived server-side: a COMPLETION plan gates the content's completion. */
   requiredForCompletion: boolean;
-  outcome: AssessmentOutcome;
 }
 
 /**
@@ -553,60 +688,97 @@ export interface AssessmentNode {
  */
 export type AssessmentBlockedReason =
   | "NOT_PUBLISHED"
-  | "NOT_STARTED_YET"
-  | "WINDOW_CLOSED"
-  | "ATTEMPTS_EXHAUSTED"
+  | "NOT_AVAILABLE"
+  | "NOT_ENROLLED"
   | "REGISTRATION_REQUIRED"
   | "PAYMENT_REQUIRED"
   | "PREREQUISITE_NOT_MET"
-  | "AWAITING_MARKING";
+  | "NOT_STARTED_YET"
+  | "WINDOW_CLOSED"
+  | "ATTEMPTS_EXHAUSTED"
+  | "IDENTITY_REQUIRED";
 
 /** One past sitting. A pending-review entry reports no pass/fail yet, rather than a provisional one. */
 export interface AttemptHistoryItem {
   attemptId: string;
   attemptNumber: number;
   status: string;
+  terminationReason: string | null;
   submittedAt: string | null;
   percentage: number | null;
   passed: boolean | null;
   awaitingReview: boolean;
   gradeCardId: string | null;
+  certificateIssued: boolean;
+}
+
+export interface LandingPlanOption {
+  planId: string;
+  name: string;
+  planType: ExamPlanType;
+}
+
+export interface LandingPrerequisite {
+  contentType: ExamTieType;
+  contentId: string;
+  title: string;
+  met: boolean;
+  message: string | null;
+}
+
+/** `state` is OPEN, NOT_YET_OPEN, CLOSED or NEVER. Null bounds are unbounded. */
+export interface LandingWindow {
+  opensAt: string | null;
+  closesAt: string | null;
+  state: string;
 }
 
 /**
- * Everything the assessment landing page shows before a candidate starts — the page that replaces
- * a bare "Start exam" button.
+ * Everything the assessment landing page shows before a candidate starts. `startable` and
+ * `blockedReason` are server-decided — render them, never recompute them.
  */
 export interface AssessmentLandingResponse {
   examId: string;
   title: string;
+  description: string | null;
+  coverImageUrl: string | null;
   purpose: string | null;
   /** Tiptap document. */
   instructions: unknown | null;
 
-  placementId: string | null;
-  requiredForCompletion: boolean;
+  tieType: ExamTieType | null;
+  tiedContentId: string | null;
+  tiedContentTitle: string | null;
 
+  placementId: string | null;
   planId: string | null;
   planName: string | null;
   planDescription: string | null;
+  planType: ExamPlanType | null;
+  graded: boolean;
+  /** Reached from the Exams hub (registration-based) rather than from inside content. */
+  hubListed: boolean;
+  /** Other plans the candidate could sit on this exam from the same entry point. */
+  plans: LandingPlanOption[];
+
   durationMinutes: number;
   maxAttempts: number;
   passPercentage: number;
   questionCount: number;
 
-  deliveryMode: DeliveryMode;
-  opensAt: string | null;
-  closesAt: string | null;
-  openNow: boolean;
-
   proctoringRequired: boolean;
   identityVerificationRequired: boolean;
   fullscreenRequired: boolean;
+  maxViolations: number;
+
   registrationRequired: boolean;
   registered: boolean;
-
-  outcome: AssessmentOutcome;
+  feeMinor: number;
+  currency: string | null;
+  prerequisite: LandingPrerequisite | null;
+  enrollmentWindow: LandingWindow | null;
+  accessWindow: LandingWindow | null;
+  identityStatus: IdentityStatus | null;
 
   attemptsUsed: number;
   attemptsRemaining: number;
@@ -614,16 +786,125 @@ export interface AssessmentLandingResponse {
   openAttemptId: string | null;
 
   history: AttemptHistoryItem[];
-
-  startable: boolean;
-  blockedReason: AssessmentBlockedReason | null;
-  blockedMessage: string | null;
-
-  assessmentType: "GRADED_ASSESSMENT" | "BADGE_EXAM";
-  badgeName?: string | null;
-  gradingPolicy: "HIGHEST_SCORE" | "LATEST_ATTEMPT";
   latestAttempt: AttemptHistoryItem | null;
   bestAttempt: AttemptHistoryItem | null;
   passed: boolean | null;
   score: number | null;
+
+  startable: boolean;
+  blockedReason: AssessmentBlockedReason | null;
+  blockedMessage: string | null;
+  canManage: boolean;
+}
+
+// ── Exams hub (learner dock > Exams) ──────────────────────────────────────────
+
+export interface ExamHubPlan {
+  planId: string;
+  name: string;
+  planType: ExamPlanType;
+  durationMinutes: number;
+  questionCount: number;
+}
+
+/**
+ * Where a learner stands with a main exam. Not registered: registration state (OPEN, NOT_YET_OPEN,
+ * CLOSED). Registered: READY, UPCOMING, IN_PROGRESS, ATTEMPTED, PASSED or CLOSED.
+ */
+export type ExamHubStatus =
+  | "OPEN"
+  | "NOT_YET_OPEN"
+  | "CLOSED"
+  | "READY"
+  | "UPCOMING"
+  | "IN_PROGRESS"
+  | "ATTEMPTED"
+  | "PASSED";
+
+/** A main exam as the hub lists it. Everything a card shows is server-computed. */
+export interface ExamHubCard {
+  examId: string;
+  title: string;
+  description: string | null;
+  coverImageUrl: string | null;
+  purpose: string | null;
+  channelName: string | null;
+  certification: boolean;
+  plans: ExamHubPlan[];
+  tieType: ExamTieType | null;
+  tiedContentId: string | null;
+  tiedContentTitle: string | null;
+  /** Null when there is no prerequisite (standalone exam). */
+  prerequisiteMet: boolean | null;
+  feeMinor: number;
+  currency: string | null;
+  registered: boolean;
+  status: ExamHubStatus;
+  enrollmentOpensAt: string | null;
+  enrollmentClosesAt: string | null;
+  accessStartsAt: string | null;
+  accessEndsAt: string | null;
+  bestPercentage: number | null;
+}
+
+/** The certification a course or event leads to — the info card on the content's page. */
+export interface ContentCertificationView {
+  examId: string;
+  planId: string;
+  title: string;
+  feeMinor: number;
+  currency: string | null;
+  published: boolean;
+}
+
+// ── Grade cards ───────────────────────────────────────────────────────────────
+
+export interface GradeCardSection {
+  sectionId: string | null;
+  sectionTitle: string;
+  questions: number;
+  attempted: number;
+  correct: number;
+  marksObtained: number;
+  maximumMarks: number;
+}
+
+export interface GradeCardLineItem {
+  planId: string;
+  planName: string;
+  planType: ExamPlanType;
+  attemptId: string | null;
+  percentage: number | null;
+  passed: boolean;
+  marksObtained: number;
+  maximumMarks: number;
+}
+
+/**
+ * A certification sitting's card (ATTEMPT) or a course/event's assessment transcript
+ * (CONTENT_TRANSCRIPT). Frozen at issue; `sections` and `lineItems` are the server's JSON as issued.
+ */
+export interface GradeCardResponse {
+  id: string;
+  kind: "ATTEMPT" | "CONTENT_TRANSCRIPT";
+  examId: string;
+  planId: string | null;
+  attemptId: string | null;
+  contentType: string | null;
+  contentId: string | null;
+  candidateName: string;
+  examTitle: string;
+  planName: string | null;
+  marksObtained: number;
+  maximumMarks: number;
+  percentage: number;
+  passPercentage: number;
+  passed: boolean;
+  verificationCode: string;
+  issuedAt: string;
+  certificateIssued: boolean;
+  revoked: boolean;
+  revokedReason: string | null;
+  sections: GradeCardSection[];
+  lineItems: GradeCardLineItem[];
 }

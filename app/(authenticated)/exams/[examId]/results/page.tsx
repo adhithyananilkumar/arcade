@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Trophy, Award, Loader2, ChevronLeft } from 'lucide-react';
+import { Trophy, Award, Loader2, ChevronLeft, Hourglass, FileText } from 'lucide-react';
+import { examRoutes } from '@/shared/routes/content.routes';
 import { getExamResult, type ExamResultResponse } from '@/domains/assessments';
 
 const pageBg = {
@@ -34,14 +35,14 @@ export default function ExamResultsPage() {
       }
     }
 
-    const attemptId = searchParams.get('attemptId') ?? sessionStorage.getItem(`exam_attempt_${examId}`);
+    const attemptId = searchParams.get('attemptId');
     if (!attemptId) {
-      router.push(`/exams`);
+      router.push(examRoutes.landing(examId));
       return;
     }
     getExamResult(attemptId)
       .then(setResult)
-      .catch(() => setError('We could not load your result. Try again from Today\'s exams.'));
+      .catch(() => setError('We could not load your result.'));
   }, [examId, router, searchParams]);
 
   if (error) {
@@ -63,7 +64,11 @@ export default function ExamResultsPage() {
     );
   }
 
-  const isPassed = result.passed;
+  const awaiting = result.status === 'PENDING_REVIEW';
+  const isPassed = result.graded && result.passed && !awaiting;
+  // Back to wherever the sitting was started — the course it sits in, or the exam's own page.
+  const back = searchParams.get('returnTo') ?? examRoutes.landing(examId);
+  const backLabel = back.startsWith('/courses') ? 'Back to course' : back.startsWith('/events') ? 'Back to event' : 'Back to exam';
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 pb-28 pt-28" style={pageBg}>
@@ -74,20 +79,26 @@ export default function ExamResultsPage() {
               isPassed ? 'bg-white text-amber-500 shadow-sm' : 'bg-white text-slate-400 shadow-sm'
             }`}
           >
-            {isPassed ? <Trophy size={28} /> : <Award size={28} />}
+            {awaiting ? <Hourglass size={28} /> : isPassed ? <Trophy size={28} /> : result.graded ? <Award size={28} /> : <FileText size={28} />}
           </div>
           <h1 className="mt-5 text-[1.5rem] font-bold tracking-tight text-[#14142b]">
-            {isPassed ? 'Congratulations' : 'Exam completed'}
+            {awaiting ? 'Submitted' : isPassed ? 'Congratulations' : 'Exam completed'}
           </h1>
           <p className="mx-auto mt-2 max-w-sm text-[13px] font-medium leading-relaxed text-slate-500">
-            {isPassed
+            {awaiting
+              ? 'Some answers are written and need marking. Your result appears here, and you are notified, once they are marked.'
+              : !result.graded
+              ? 'This practice assessment is not graded. Your score is for your own reference.'
+              : isPassed
               ? 'You passed this exam.'
               : `You did not meet the passing score of ${result.passPercentage}%. Review the material and try again when available.`}
           </p>
         </div>
 
         <div className="px-8 py-8">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Final score</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            {awaiting ? 'Provisional score (before marking)' : 'Final score'}
+          </p>
           <p className="mt-2 text-5xl font-bold tabular-nums tracking-tight text-[#14142b]">
             {result.marksObtained}
             <span className="text-2xl font-semibold text-slate-300"> / {result.maximumMarks}</span>
@@ -113,11 +124,11 @@ export default function ExamResultsPage() {
 
           <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center">
             <Link
-              href="/exams"
+              href={back}
               className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-[#232735]"
             >
               <ChevronLeft size={16} />
-              Today&apos;s exams
+              {backLabel}
             </Link>
           </div>
         </div>

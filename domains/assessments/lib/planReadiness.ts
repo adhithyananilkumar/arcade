@@ -11,13 +11,21 @@ import type { ExamPlanValidationResponse } from "../types";
 export type PlanReadiness =
   | { state: "ready"; message: string }
   | { state: "empty"; message: string }
-  | { state: "short"; message: string; shortRules: number };
+  | { state: "short"; message: string; shortRules: number }
+  | { state: "belowMinimum"; message: string };
 
 export function planReadiness(validation: ExamPlanValidationResponse): PlanReadiness {
   if (validation.totalRequired === 0) {
     return {
       state: "empty",
       message: "This plan doesn't select any questions yet.",
+    };
+  }
+
+  if (validation.minQuestions > 0 && validation.totalRequired < validation.minQuestions) {
+    return {
+      state: "belowMinimum",
+      message: `The platform standard for this exam type needs at least ${validation.minQuestions} questions; this plan asks for ${validation.totalRequired}.`,
     };
   }
 

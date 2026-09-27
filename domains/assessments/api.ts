@@ -5,6 +5,15 @@ import { api } from "@/infrastructure/http/api";
 import type { TiptapDocument } from "@/shared/types/editor.types";
 import type {
   AssessmentHostType,
+  ContentCertificationView,
+  ExamHubCard,
+  ExamPlanType,
+  ExamStandard,
+  ExamStandardUpdate,
+  ExamTieType,
+  GradeCardResponse,
+  MarkingItem,
+  ProctorSessionResponse,
   AssessmentLandingResponse,
   AssessmentPlacementResponse,
   AttemptResponse,
@@ -245,7 +254,7 @@ export function setPoolMembers(poolId: string, req: QuestionPoolMembersRequest) 
   return api.put<QuestionPoolResponse>(`/api/question-banks/pools/${poolId}/members`, req);
 }
 
-// ── Central Exam capability: authoring, placement ─────────────────────────────
+// ── Central Exam capability: authoring & tie ─────────────────────────────────
 
 export function createExam(req: ExamRequest) {
   return api.post<ExamResponse>(`/api/exams`, req);
@@ -259,41 +268,86 @@ export function updateExam(examId: string, req: Partial<ExamRequest>) {
   return api.patch<ExamResponse>(`/api/exams/${examId}`, req);
 }
 
-/** Every exam a channel has authored (standalone or placed), for the Studio "Exams" listing. */
+/** Every exam a channel has authored, for the Studio "Exams" listing. */
 export function listMyExams() {
   return api.get<Array<{ id: string; type: string; title: string; status: string; updatedAt: string | null }>>(
     `/api/content?type=EXAM`
   );
 }
 
-export function listExamsForCourse(courseId: string) {
-  return api.get<ExamResponse[]>(`/api/courses/${courseId}/exams`);
+/**
+ * Ties a standalone exam to one course or event. Refused when either side already has a tie. The
+ * platform's locked settings then apply to every plan on it.
+ */
+export function tieExam(examId: string, target: { courseId: string } | { eventId: string }) {
+  return api.post<ExamResponse>(`/api/exams/${examId}/tie`, target);
 }
 
-/** Learner-facing: published exams an enrolled learner is eligible to see — for a course preview's "Assessments" section. */
-export function listAvailableExamsForCourse(courseId: string) {
-  return api.get<ExamResponse[]>(`/api/courses/${courseId}/exams/available`);
+/** Makes a tied exam standalone again. Its in-content placements are removed. */
+export function untieExam(examId: string) {
+  return api.delete<ExamResponse>(`/api/exams/${examId}/tie`);
 }
 
-/** Attaches an existing standalone exam the caller owns to this course. */
-export function attachExamToCourse(courseId: string, examId: string) {
-  return api.post<ExamResponse>(`/api/courses/${courseId}/exams`, { examId });
+/** Submits a standalone exam to review. A tied exam is reviewed and published with its content. */
+export function submitExamForReview(examId: string, note?: string) {
+  return api.post<void>(`/api/exams/${examId}/submit`, note ? { note } : {});
 }
 
-export function detachExamFromCourse(courseId: string, examId: string) {
-  return api.delete<ExamResponse>(`/api/courses/${courseId}/exams/${examId}`);
+/** Immutable published versions of this exam, newest first. */
+export function listExamVersions(examId: string) {
+  return api.get<Array<{ id: string; versionNumber: number; label: string | null; publishedAt: string }>>(
+    `/api/exams/${examId}/versions`
+  );
 }
 
-export function listExamsForEvent(eventId: string) {
-  return api.get<ExamResponse[]>(`/api/events/${eventId}/exams`);
+/**
+ * The exam tied to a course. Null (204) when the course has none yet — a normal state, so the
+ * caller can offer to set one up rather than creating it as a side effect of asking.
+ */
+export function getCourseExam(courseId: string) {
+  return api.get<ExamResponse | null>(`/api/courses/${courseId}/exam`);
 }
 
-export function attachExamToEvent(eventId: string, examId: string) {
-  return api.post<ExamResponse>(`/api/events/${eventId}/exams`, { examId });
+/** Creates the course's tied exam. Idempotent — returns the existing one if there already is one. */
+export function createCourseExam(courseId: string) {
+  return api.post<ExamResponse>(`/api/courses/${courseId}/exam`, {});
 }
 
-export function detachExamFromEvent(eventId: string, examId: string) {
-  return api.delete<ExamResponse>(`/api/events/${eventId}/exams/${examId}`);
+export function getEventExam(eventId: string) {
+  return api.get<ExamResponse | null>(`/api/events/${eventId}/exam`);
+}
+
+export function createEventExam(eventId: string) {
+  return api.post<ExamResponse>(`/api/events/${eventId}/exam`, {});
+}
+
+/** Learner-facing: the certification a course or event leads to. Null when there is none. */
+export function getContentCertification(tieType: ExamTieType, contentId: string) {
+  const base = tieType === "COURSE" ? "courses" : "events";
+  return api.get<ContentCertificationView | null>(`/api/${base}/${contentId}/exam/certification`);
+}
+
+// ── Exams hub (learner) ───────────────────────────────────────────────────────
+
+/** Exams the caller registered for, with where they stand. */
+export function getMyHubExams() {
+  return api.get<ExamHubCard[]>(`/api/exams/hub/mine`);
+}
+
+/** Every published main exam — certifications and standalone exams. */
+export function getAvailableHubExams(query?: string) {
+  const q = query?.trim();
+  return api.get<ExamHubCard[]>(`/api/exams/hub/available${q ? `?q=${encodeURIComponent(q)}` : ""}`);
+}
+
+// ── Exam standards (Platform Console) ─────────────────────────────────────────
+
+export function listExamStandards() {
+  return api.get<ExamStandard[]>(`/api/platform/exam-standards`);
+}
+
+export function updateExamStandard(planType: ExamPlanType, body: ExamStandardUpdate) {
+  return api.put<ExamStandard>(`/api/platform/exam-standards/${planType}`, body);
 }
 
 // ── Exam attempts (learner-facing) ────────────────────────────────────────────
@@ -301,8 +355,8 @@ export function detachExamFromEvent(eventId: string, examId: string) {
 // question correctness are never computed or trusted from the client.
 
 /**
- * Starts a new attempt, or resumes the caller's already-open one. `planId` picks which of the
- * exam's plans to sit; omitted, the server uses the exam's first active plan.
+ * Starts a new attempt at one plan, or resumes the caller's open attempt at it. Omitting `planId`
+ * lets the server pick the exam's hub plan.
  */
 export function startExamAttempt(examId: string, planId?: string | null) {
   const params = new URLSearchParams();
@@ -311,10 +365,6 @@ export function startExamAttempt(examId: string, planId?: string | null) {
     `/api/exam-attempts/exams/${examId}/start${params.toString() ? `?${params.toString()}` : ""}`,
     {}
   );
-}
-
-export function gradePreviewPaper(examId: string, payload: { planId?: string | null; answers: Record<string, { selectedOptionIds?: string[]; textAnswer?: string | null }> }) {
-  return api.post<ExamResultResponse>(`/api/exams/${examId}/preview-paper/grade`, payload);
 }
 
 export function getExamAttempt(attemptId: string) {
@@ -341,31 +391,67 @@ export function getExamResult(attemptId: string) {
 }
 
 // ── Proctoring ───────────────────────────────────────────────────────────────────────────────
-// The delivery surface (app/) must not reach the proctoring endpoints directly — these calls
-// previously lived inline in the exam player page, which put HTTP in the app layer. A proctored
-// exam refuses paper generation until its session is ACTIVE (see backend ProctoringService
-// .requireReadyForDelivery), so the player's 403-on-start path routes through these.
+// The server counts violations and ends the attempt at the plan's limit; the client only reports.
 
-export function startProctorSession(examId: string) {
-  return api.post<void>(`/api/exams/${examId}/proctoring/session/start`, {});
+/** The candidate's proctoring session for a plan — identity status before starting. */
+export function getProctorSession(examId: string, planId: string) {
+  return api.get<ProctorSessionResponse>(`/api/exams/${examId}/plans/${planId}/proctoring/session`);
 }
 
-export function verifyProctorIdentity(examId: string) {
-  return api.post<void>(`/api/exams/${examId}/proctoring/session/verify-identity`, {});
+/** Submits identity evidence: a photo already uploaded through the media endpoint. */
+export function submitIdentityEvidence(examId: string, planId: string, evidenceUrl: string) {
+  return api.post<ProctorSessionResponse>(`/api/exams/${examId}/plans/${planId}/proctoring/identity`, {
+    evidenceUrl,
+  });
 }
 
-/** Best-effort telemetry: a recorded event must never interrupt an in-flight attempt. */
-export function recordProctorEvent(examId: string, eventType: string, detail: string) {
-  return api.post<void>(`/api/exams/${examId}/proctoring/session/events`, { eventType, detail });
+/**
+ * Reports a proctoring event (tab switch, fullscreen exit…). Returns the attempt as the server now
+ * sees it — which may be CANCELLED if this report reached the plan's violation limit.
+ */
+export function recordProctorEvent(attemptId: string, eventType: string, detail?: string) {
+  return api.post<AttemptResponse>(`/api/exam-attempts/${attemptId}/proctoring/events`, { eventType, detail });
 }
 
-export function completeProctorSession(examId: string) {
-  return api.post<void>(`/api/exams/${examId}/proctoring/session/complete`, {});
-}
+// ── Exam administration (creator-facing) ─────────────────────────────────────
 
-/** Creator-facing: every learner's attempts at this exam. */
+/** Every learner's attempts at this exam. */
 export function listAttemptsForExam(examId: string) {
   return api.get<ExamAttemptSummaryResponse[]>(`/api/exam-attempts/exams/${examId}/all`);
+}
+
+export function cancelExamAttempt(attemptId: string) {
+  return api.post<void>(`/api/exam-attempts/${attemptId}/cancel`, {});
+}
+
+/** Gives an in-progress attempt extra time (an accommodation). */
+export function extendExamAttempt(attemptId: string, minutes: number) {
+  return api.post<AttemptResponse>(`/api/exam-attempts/${attemptId}/extend`, { minutes });
+}
+
+/** Grants one learner extra attempts at one plan. */
+export function grantExtraAttempts(planId: string, learnerId: string, extraAttempts: number, reason?: string) {
+  return api.post<void>(`/api/exam-attempts/plans/${planId}/learners/${learnerId}/allowance`, {
+    extraAttempts,
+    reason: reason ?? null,
+  });
+}
+
+export function reviewAttemptIdentity(attemptId: string, approved: boolean, note?: string) {
+  return api.post<void>(`/api/exam-attempts/${attemptId}/identity-review`, { approved, note: note ?? null });
+}
+
+/** Attempts with written answers awaiting marking. */
+export function getMarkingQueue(examId: string) {
+  return api.get<MarkingItem[]>(`/api/exams/${examId}/marking`);
+}
+
+/** Marks one written answer. Returns the result's status — FINAL once every answer is marked. */
+export function markAnswer(attemptId: string, attemptQuestionId: string, marks: number, note?: string) {
+  return api.put<{ resultStatus: string }>(
+    `/api/exam-attempts/${attemptId}/questions/${attemptQuestionId}/mark`,
+    { marks, note: note ?? null }
+  );
 }
 
 /** Get-or-create the question bank this exam draws from (its course's, or its own if standalone). */
@@ -375,44 +461,19 @@ export function getExamQuestionBank(examId: string) {
 
 /** All questions configured for this exam's question bank. */
 export async function getExamQuestions(examId: string): Promise<BankQuestionResponse[]> {
-  try {
-    const wire = await api.get<WireBankQuestionResponse[]>(`/api/exams/${examId}/question-bank/questions`);
-    return wire.map(fromWire);
-  } catch {
-    try {
-      const bank = await getExamQuestionBank(examId);
-      if (!bank?.id) return [];
-      return await getAllBankQuestions(bank.id);
-    } catch {
-      return [];
-    }
-  }
-}
-
-/** Immutable published versions of this exam, newest first. */
-export function listExamVersions(examId: string) {
-  return api.get<Array<{ id: string; versionNumber: number; label: string | null; publishedAt: string }>>(
-    `/api/exams/${examId}/versions`
-  );
-}
-
-/** Cuts a new immutable published version from the exam's current draft configuration. */
-export function publishExam(examId: string, label?: string) {
-  return api.post<{ versionId: string; versionNumber: number; publishedAt: string }>(
-    `/api/exams/${examId}/publish`,
-    label ? { label } : {}
-  );
+  const wire = await api.get<WireBankQuestionResponse[]>(`/api/exams/${examId}/question-bank/questions`);
+  return wire.map(fromWire);
 }
 
 // ── Exam plans ────────────────────────────────────────────────────────────────
-// A plan is one way of offering an exam. Sections and selection rules belong to a plan, because
-// the same examination can be run several different ways over the same questions.
+// A plan is one sitting an exam offers. Sections and selection rules belong to a plan.
 
 export function listExamPlans(examId: string) {
   return api.get<ExamPlanResponse[]>(`/api/exams/${examId}/plans`);
 }
 
-export function createExamPlan(examId: string, req: ExamPlanRequest = {}) {
+/** `planType` is required; the server applies the platform's standard for that type. */
+export function createExamPlan(examId: string, req: ExamPlanRequest & { planType: ExamPlanType }) {
   return api.post<ExamPlanResponse>(`/api/exams/${examId}/plans`, req);
 }
 
@@ -432,7 +493,7 @@ export function deleteExamPlan(planId: string) {
   return api.delete<void>(`/api/exam-plans/${planId}`);
 }
 
-/** Per-rule "asked for N, N available" check. Run before publishing, and live while editing. */
+/** Per-rule "asked for N, N available" check, plus the platform minimum. */
 export function validateExamPlan(planId: string) {
   return api.get<ExamPlanValidationResponse>(`/api/exam-plans/${planId}/validate`);
 }
@@ -454,10 +515,7 @@ export function savePlanSectionRules(sectionId: string, rules: ExamSelectionRule
   return api.put<ExamSelectionRuleResponse[]>(`/api/exams/sections/${sectionId}/rules`, { rules });
 }
 
-/**
- * Creator-facing preview of the paper a plan would produce. Distinct from the learner endpoint,
- * which generates and keeps the caller's own paper — previewing must never consume that.
- */
+/** Creator-facing preview of the paper a plan's current draft would produce. Persists nothing. */
 export async function previewExamPaper(
   examId: string,
   planId?: string | null
@@ -471,12 +529,26 @@ export async function previewExamPaper(
 
 /**
  * Creator-facing preview paper shaped like a real attempt — real option ids, no correctness — so an
- * author can sit their own exam end to end and have it graded. Distinct from {@link previewExamPaper},
- * which strips option ids down to plain text for the read-only question list view.
+ * author can sit their own exam end to end and have it graded.
  */
 export function previewAttemptPaper(examId: string, planId?: string | null) {
   const query = planId ? `?planId=${encodeURIComponent(planId)}` : "";
   return api.get<AttemptQuestionResponse[]>(`/api/exams/${examId}/preview-paper/attempt${query}`);
+}
+
+/**
+ * Grades an author's preview sitting. The whole paper is sent (question id + the marks it carried)
+ * so skipped questions count as unanswered and rule marks are honoured.
+ */
+export function gradePreviewPaper(
+  examId: string,
+  payload: {
+    planId?: string | null;
+    questions: Array<{ questionId: string; points: number }>;
+    answers: Record<string, { selectedOptionIds?: string[]; textAnswer?: string | null }>;
+  }
+) {
+  return api.post<ExamResultResponse>(`/api/exams/${examId}/preview-paper/grade`, payload);
 }
 
 // ── Assessment placement & landing ────────────────────────────────────────────
@@ -493,34 +565,24 @@ export function listAssessmentPlacementsForCourse(courseId: string) {
   return api.get<AssessmentPlacementResponse[]>(`/api/assessments/placements/course/${courseId}`);
 }
 
-/** Places an existing exam into a host. Requires authoring rights on both the exam and the host. */
+/**
+ * Places a plan in a host inside its exam's tied content, or moves it there. Only COMPLETION and
+ * ASSESSMENT plans of a tied exam can be placed; each has exactly one placement.
+ */
 export function placeAssessment(payload: {
   examId: string;
+  planId: string;
   hostType: AssessmentHostType;
   hostId: string;
-  planId?: string | null;
 }) {
   return api.post<AssessmentPlacementResponse>("/api/assessments/placements", payload);
 }
 
 export function updateAssessmentPlacement(
   placementId: string,
-  patch: {
-    planId?: string | null;
-    requiredForCompletion?: boolean;
-    instructions?: string;
-    titleOverride?: string;
-  }
+  patch: { instructions?: string; titleOverride?: string }
 ) {
-  return api.patch<AssessmentPlacementResponse>(
-    `/api/assessments/placements/${placementId}`,
-    patch
-  );
-}
-
-/** Removes the assessment from this host. The exam itself is never deleted — it may live elsewhere. */
-export function removeAssessmentPlacement(placementId: string) {
-  return api.delete<void>(`/api/assessments/placements/${placementId}`);
+  return api.patch<AssessmentPlacementResponse>(`/api/assessments/placements/${placementId}`, patch);
 }
 
 /**
@@ -536,26 +598,19 @@ export function getAssessmentLanding(
   if (opts.planId) params.set("planId", opts.planId);
   if (opts.placementId) params.set("placementId", opts.placementId);
   const query = params.toString();
-  return api.get<AssessmentLandingResponse>(
-    `/api/assessments/landing/${examId}${query ? `?${query}` : ""}`
-  );
+  return api.get<AssessmentLandingResponse>(`/api/assessments/landing/${examId}${query ? `?${query}` : ""}`);
 }
 
-/**
- * The single exam content item backing a course's assessments, created on first use.
- *
- * A course has one exam, not one per assessment: the exam owns the question bank, and each
- * assessment is a plan on it. See ExamPlan's own contract — one exam carries many plans, each with
- * its own selection, timing, attempts, scoring, security and outcome, all drawing on the same
- * questions.
- */
-export function getCourseExam(courseId: string) {
-  // 204 when the course has no exam yet — a normal state, not an error, so the caller can offer to
-  // set one up rather than creating it as a side effect of asking.
-  return api.get<ExamResponse | null>(`/api/courses/${courseId}/exams/primary`);
+// ── Grade cards ───────────────────────────────────────────────────────────────
+
+export function getGradeCard(cardId: string) {
+  return api.get<GradeCardResponse>(`/api/exams/grade-cards/${cardId}`);
 }
 
-/** Creates the course's exam. Idempotent — returns the existing one if there already is one. */
-export function createCourseExam(courseId: string) {
-  return api.post<ExamResponse>(`/api/courses/${courseId}/exams/primary`, {});
+export function getMyGradeCards() {
+  return api.get<GradeCardResponse[]>(`/api/exams/grade-cards/mine`);
+}
+
+export function verifyGradeCard(code: string) {
+  return api.get<GradeCardResponse>(`/api/exams/grade-cards/verify/${encodeURIComponent(code.trim())}`);
 }

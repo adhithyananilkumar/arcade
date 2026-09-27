@@ -8,21 +8,17 @@ import type { ContentTypeSegment } from "./contentTypeRouting";
 
 export function submitForReview(segment: ContentTypeSegment, contentId: string): Promise<unknown> {
   if (segment === "course") return api.post(`/api/courses/${contentId}/submit`);
-  if (segment === "exam") {
-    // Exams are not review-gated — they self-publish an immutable ExamVersion. Nothing should
-    // offer "submit for review" for one; see supportsReviewSubmission.
-    return Promise.reject(new Error("Exams are published directly, not submitted for review."));
-  }
+  // A standalone exam is reviewed like any other content. The server refuses a tied one.
+  if (segment === "exam") return api.post(`/api/exams/${contentId}/submit`, {});
   return submitEvent(contentId);
 }
 
-/** Whether this content type goes through the Platform Review round before publishing. */
-export function supportsReviewSubmission(segment: ContentTypeSegment): boolean {
-  return segment !== "exam";
-}
-
-export function publishExam(contentId: string): Promise<unknown> {
-  return api.post(`/api/exams/${contentId}/publish`, {});
+/**
+ * Whether this content goes through the Platform Review round itself. Every type does, except an
+ * exam tied to a course or event — that one is reviewed and published with its parent.
+ */
+export function supportsReviewSubmission(segment: ContentTypeSegment, tiedExam = false): boolean {
+  return !(segment === "exam" && tiedExam);
 }
 
 export interface DuplicateAction {

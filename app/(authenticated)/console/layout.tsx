@@ -2,7 +2,7 @@
 
 import { usePathname, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Tv, ClipboardCheck, Shield, Calendar, Inbox, Receipt, Library, AtSign, BadgeCheck } from 'lucide-react';
+import { Tv, ClipboardCheck, Shield, SlidersHorizontal, Inbox, Receipt, Library, AtSign, BadgeCheck } from 'lucide-react';
 import { cn } from '@/shared/utils/utils';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
@@ -35,7 +35,7 @@ export default function ArcConsoleLayout({
       ? [{ name: 'Content manage', href: '/console/content-manage', icon: Library, iconBg: 'bg-[#fbcfe8] text-[#831843]' }]
       : []),
     ...(showExams
-      ? [{ name: 'Exams', href: '/console/exam-schedules', icon: Calendar, iconBg: 'bg-[#bbf7d0] text-[#14532d]' }]
+      ? [{ name: 'Exam standards', href: '/console/exam-standards', icon: SlidersHorizontal, iconBg: 'bg-[#bbf7d0] text-[#14532d]' }]
       : []),
     ...(showPayments
       ? [{ name: 'Payments', href: '/console/payments', icon: Receipt, iconBg: 'bg-[#e9d5ff] text-[#4c1d95]' }]

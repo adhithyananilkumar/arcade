@@ -177,7 +177,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
         items.push({ id: 'console-content', label: 'Content Manage', href: '/console/content-manage', icon: FolderKanban, keywords: ['console', 'categories', 'suspend'] });
       }
       if (AuthorizationService.canManageExams(user)) {
-        items.push({ id: 'console-exams', label: 'Exam Schedules', href: '/console/exam-schedules', icon: ClipboardCheck, keywords: ['console'] });
+        items.push({ id: 'console-exams', label: 'Exam standards', href: '/console/exam-standards', icon: ClipboardCheck, keywords: ['console'] });
       }
       if (AuthorizationService.canViewPayments(user)) {
         items.push({ id: 'console-payments', label: 'Payments', href: '/console/payments', icon: Wallet, keywords: ['console', 'billing'] });

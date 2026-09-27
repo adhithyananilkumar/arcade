@@ -81,11 +81,12 @@ export interface EventParticipant {
   registrationDate?: string;
 }
 
-// Exam is absent on purpose: exams never enter a Platform Review round (they self-publish an
-// immutable ExamVersion), so there is no review to fetch for one.
+// A standalone exam goes through Platform Review like a course or event. A tied exam never has a
+// review of its own — it is reviewed and published with its course or event.
 const REVIEW_CONTENT_TYPE: Partial<Record<ContentTypeSegment, ReviewContentType>> = {
   course: "COURSE",
   event: "EVENT",
+  exam: "EXAM",
 };
 
 export interface OverviewData {
@@ -124,8 +125,8 @@ async function findExamSummary(contentId: string): Promise<ContentSummaryLite | 
     status: string;
     createdAt: string;
     updatedAt: string;
-    courseId?: string | null;
-    eventId?: string | null;
+    tieType?: "COURSE" | "EVENT" | null;
+    tiedContentId?: string | null;
   }>(`/api/exams/${contentId}`);
   if (!exam) return null;
   // channelName/authorName aren't on ExamResponse; the header renders its own fallbacks.
@@ -140,8 +141,8 @@ async function findExamSummary(contentId: string): Promise<ContentSummaryLite | 
     updatedAt: exam.updatedAt,
     channelId: "",
     channelName: "",
-    courseId: exam.courseId ?? null,
-    eventId: exam.eventId ?? null,
+    courseId: exam.tieType === "COURSE" ? exam.tiedContentId ?? null : null,
+    eventId: exam.tieType === "EVENT" ? exam.tiedContentId ?? null : null,
   };
 }
 
@@ -162,21 +163,19 @@ export async function fetchOverviewData(
   }
 
   if (segment === "exam") {
-    // Everything else an exam needs (plans, attempts) is loaded by the tab that shows it — there
-    // is no cross-capability fan-out to do here. statusHistory stays empty: exams self-publish
-    // rather than passing through platform review, so there is genuinely none to show. Team is
-    // real, though — Exam shares the one ContentCollaborationController every owner type uses.
-    const collaborators = await settle(
-      api.get<CollaboratorLite[]>(collaboratorsPath(segment, contentId)),
-      { isEmpty: isEmptyArray }
-    );
-    return {
-      content,
-      statusHistory: { status: "empty" },
-      collaborators,
-      review: { status: "empty" },
-      reviewPath: { status: "empty" },
-    };
+    // Plans, attempts and marking are loaded by the tabs that show them. A tied exam has no review
+    // of its own (it rides with its course or event), so only a standalone one fetches review state.
+    const tied = !!(content.courseId || content.eventId);
+    const [collaborators, review, reviewPath] = await Promise.all([
+      settle(api.get<CollaboratorLite[]>(collaboratorsPath(segment, contentId)), { isEmpty: isEmptyArray }),
+      tied
+        ? Promise.resolve<FetchResult<ReviewResponse>>({ status: "empty" })
+        : settle(platformReviewApi.byContent("EXAM", contentId), { emptyStatuses: [403, 404] }),
+      tied
+        ? Promise.resolve<FetchResult<ReviewPathPreview>>({ status: "empty" })
+        : settle(platformReviewApi.reviewPath("EXAM", contentId), { emptyStatuses: [403, 404, 422] }),
+    ]);
+    return { content, statusHistory: { status: "empty" }, collaborators, review, reviewPath };
   }
 
   const reviewContentType = REVIEW_CONTENT_TYPE[segment];

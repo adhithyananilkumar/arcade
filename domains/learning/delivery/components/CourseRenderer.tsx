@@ -78,6 +78,13 @@ function statusTone(status: string) {
   }
 }
 
+/** What a placed assessment is, in words — derived only from the server's plan type and grading. */
+function assessmentKindLabel(a: AssessmentNodeResponse): string {
+  if (a.planType === "COMPLETION") return "Completion";
+  if (a.planType === "ASSESSMENT") return a.graded ? "Graded" : "Practice";
+  return "Assessment";
+}
+
 export function CourseRenderer({
   course,
   loading,
@@ -350,7 +357,7 @@ export function CourseRenderer({
                               }`}
                             />
                             <span className="line-clamp-1 flex-1">{item.item.title}</span>
-                            {item.item.outcome && (
+                            {item.item.planType && (
                               <span
                                 className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
                                   selectedItem?.kind === "assessment" &&
@@ -359,7 +366,7 @@ export function CourseRenderer({
                                     : "bg-amber-50 text-amber-700 border border-amber-200"
                                 }`}
                               >
-                                {item.item.outcome}
+                                {assessmentKindLabel(item.item)}
                               </span>
                             )}
                           </button>
@@ -400,7 +407,7 @@ export function CourseRenderer({
                       }`}
                     />
                     <span className="line-clamp-1 flex-1">{a.title}</span>
-                    {a.outcome && (
+                    {a.planType && (
                       <span
                         className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
                           selectedItem?.kind === "assessment" &&
@@ -409,7 +416,7 @@ export function CourseRenderer({
                             : "bg-amber-50 text-amber-700 border border-amber-200"
                         }`}
                       >
-                        {a.outcome}
+                        {assessmentKindLabel(a)}
                       </span>
                     )}
                   </button>
@@ -528,7 +535,7 @@ export function CourseRenderer({
                         {selectedAssessment.title}
                       </h2>
                       <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-800">
-                        {selectedAssessment.outcome || "ASSESSMENT"}
+                        {assessmentKindLabel(selectedAssessment)}
                       </span>
                     </div>
                     <p className="font-mono text-[11px] text-slate-400">
@@ -550,10 +557,10 @@ export function CourseRenderer({
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5">
                     <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
-                      <Award size={13} className="text-slate-400" /> Assessment Outcome
+                      <Award size={13} className="text-slate-400" /> Type
                     </div>
                     <div className="text-[15px] font-bold text-[#14142b] mt-1">
-                      {selectedAssessment.outcome || "COMPLETION"}
+                      {assessmentKindLabel(selectedAssessment)}
                     </div>
                   </div>
                   <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5">
@@ -618,11 +625,6 @@ export function CourseRenderer({
                       ? formatMoney(course.priceAmount ?? 0, course.currency ?? "USD")
                       : "Free"}
                   </span>
-                  {course.examSchedule && (
-                    <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5">
-                      Exam scheduled
-                    </span>
-                  )}
                   {canPublish && (
                     <span className="rounded-full border border-[#14142b]/15 bg-[#14142b] px-3 py-1.5 text-white">
                       Review mode

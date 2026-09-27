@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { courseRoutes, eventRoutes } from '@/shared/routes/content.routes';
+import { courseRoutes, eventRoutes, examRoutes } from '@/shared/routes/content.routes';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -252,6 +252,8 @@ export function EnrollmentButton({
       // EVENT is canonical for all event-like content (workshop, webinar, bootcamp). The former
       // 'WORKSHOP' branch was dead: the backend enum has no such member and rejected the request.
       router.push(eventRoutes.overview(resourceId));
+    } else if (resourceType === 'EXAM') {
+      router.push(examRoutes.landing(resourceId));
     }
   };
 
@@ -276,7 +278,7 @@ export function EnrollmentButton({
 
   // Render logic based on explicit UI state
   if (currentState === 'ENROLLED') {
-    const resourceLabel = resourceType === 'COURSE' ? 'Course' : 'Event';
+    const resourceLabel = resourceType === 'COURSE' ? 'Course' : resourceType === 'EXAM' ? 'Exam' : 'Event';
     return (
       <div className="flex items-center gap-2.5 w-full">
         <button
@@ -368,7 +370,7 @@ export function EnrollmentButton({
         </>
       ) : (
         <>
-          <span>Enroll Now</span>
+          <span>{resourceType === 'EXAM' ? 'Register' : 'Enroll Now'}</span>
           <ArrowRight className="w-4 h-4 shrink-0" />
         </>
       )}

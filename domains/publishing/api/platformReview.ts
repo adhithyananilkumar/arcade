@@ -9,7 +9,8 @@ export type ContentType =
   | "BOOTCAMP"
   | "LEARNING_PATH"
   | "RESOURCE"
-  | "ASSESSMENT";
+  | "ASSESSMENT"
+  | "EXAM";
 
 /**
  * A position in the review state machine.
@@ -397,43 +398,34 @@ export type CourseExamPlacementSummary = {
   hostTitle: string;
   title: string;
   position: number;
-  requiredForCompletion: boolean;
   planId?: string | null;
 };
 
 export type CourseExamPlanSummary = {
   planId: string;
   name: string;
-  type: string;
+  /** CERTIFICATION | COMPLETION | ASSESSMENT */
+  planType: string;
   durationMinutes: number;
   passPercentage: number;
   maxAttempts: number;
   active: boolean;
+  graded: boolean;
   proctoringRequired: boolean;
+  identityVerificationRequired: boolean;
   sectionsCount: number;
   totalQuestionsAsked: number;
   valid: boolean;
   validationErrors: string[];
 };
 
+/** Mirrors ExamApi.CourseExamReviewDetailView. Settings live on plans; the exam has none of its own. */
 export type CourseExamReviewDetail = {
   examId: string;
   title: string;
   description?: string | null;
   purpose?: string | null;
-  examType: string;
   status: string;
-  durationMinutes: number;
-  passPercentage: number;
-  maxAttempts: number;
-  questionCount: number;
-  easyPercent: number;
-  mediumPercent: number;
-  hardPercent: number;
-  proctoringRequired: boolean;
-  identityVerificationRequired: boolean;
-  fullscreenRequired: boolean;
-  sameQuestionsForAllStudents: boolean;
   rejectionReason?: string | null;
   publishedVersionId?: string | null;
   channelId?: string | null;

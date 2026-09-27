@@ -237,8 +237,8 @@ function ContentOverviewPageContent() {
 
   const queryCourseId = searchParams?.get("courseId") || searchParams?.get("fromCourse");
   const queryEventId = searchParams?.get("eventId") || searchParams?.get("fromEvent");
-  const parentCourseId = queryCourseId || content.courseId || exam?.courseId;
-  const parentEventId = queryEventId || content.eventId || exam?.eventId;
+  const parentCourseId = queryCourseId || content.courseId || (exam?.tieType === "COURSE" ? exam.tiedContentId : null);
+  const parentEventId = queryEventId || content.eventId || (exam?.tieType === "EVENT" ? exam.tiedContentId : null);
 
   let backNav: { href: string; label: string; dockLabel: string } | null = null;
   if (segment === "exam") {
@@ -290,6 +290,7 @@ function ContentOverviewPageContent() {
           showMetadataRail={activeTab === "OVERVIEW"}
           showStatusSubtext={activeTab === "publishing"}
           onJumpToPublishing={() => setActiveTab("publishing")}
+          tiedExam={segment === "exam" && !!(content.courseId || content.eventId)}
         />
 
         {segment === "event" && (
@@ -349,7 +350,13 @@ function ContentOverviewPageContent() {
             <LearnersAnalyticsSection contentId={contentId} segment={segment} />
           </div>
         ) : segment === "exam" ? (
-          <ExamOverviewTab tab={activeTab} contentId={contentId} />
+          <ExamOverviewTab
+            tab={activeTab}
+            contentId={contentId}
+            data={data}
+            onSubmit={handleSubmit}
+            submitting={submitting}
+          />
         ) : activeTab === "analytics" ? (
           <LearnersAnalyticsSection contentId={contentId} segment={segment} />
         ) : (

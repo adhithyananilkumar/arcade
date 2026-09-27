@@ -79,9 +79,9 @@ export interface CourseResponse {
   currency?: string;
   /** Author-declared total length, free text (e.g. "4h 30m"). */
   duration?: string | null;
-  examSchedule?: string;
   /** Super-user-managed category (Console -> Content Manage -> Categories), or null for "Other". */
   categoryId?: string | null;
+  /** Derived: whether an exam is tied to this course. */
   hasExam?: boolean;
   status: ContentStatus;
   rejectionReason?: string;
@@ -112,8 +112,6 @@ export interface CreateCourseRequest {
   priceAmount?: number;
   currency?: string;
   duration?: string;
-  examSchedule?: string;
-  hasExam?: boolean;
 }
 
 export interface PatchCourseRequest {
@@ -125,32 +123,12 @@ export interface PatchCourseRequest {
   priceAmount?: number;
   currency?: string;
   duration?: string;
-  examSchedule?: string;
-  hasExam?: boolean;
 }
 
 /** Aggregate rating for one course — `GET /api/v1/public/reviews/stats`, keyed by course id. */
 export interface CourseReviewStats {
   averageRating: number;
   reviewsCount: number;
-}
-
-/**
- * One row of the console's exam-scheduling table — mirrors `ExamScheduleCourseResponse`.
- *
- * <p>Deliberately not `CourseResponse`. That screen used to read the review-queue endpoint, which
- * returns full course aggregates — 3.1 MB for 2,431 courses — to render these seven fields.
- *
- * <p>`examSchedule` is the stored schedule text, parsed into slots by the editor that writes it.
- */
-export interface ExamScheduleCourse {
-  id: string;
-  title: string;
-  authorName?: string;
-  authorAvatarUrl?: string;
-  coverImageUrl?: string;
-  examSchedule?: string;
-  status: string;
 }
 
 /**
@@ -173,13 +151,6 @@ export interface AuthoredCourseSummary {
   status: ContentStatus;
   moduleCount: number;
   updatedAt: string;
-}
-
-/** Tab counts for the exam-scheduling table. */
-export interface ExamScheduleCounts {
-  all: number;
-  scheduled: number;
-  unscheduled: number;
 }
 
 /**
@@ -260,9 +231,12 @@ export interface AssessmentNodeResponse {
   planId: string | null;
   title: string;
   position: number;
+  /** True for the content's completion assessment: passing it completes the course. */
   requiredForCompletion: boolean;
-  /** NONE | COMPLETION | GRADE_CARD | CERTIFICATE — what passing this produces. */
-  outcome: string;
+  /** COMPLETION | ASSESSMENT. Null on snapshots published before exam types existed. */
+  planType: string | null;
+  /** False for an ungraded (practice) assessment. */
+  graded: boolean;
 }
 
 // ── Badge (a course-level content item — sibling of Module; owned by the badges domain) ─
@@ -350,7 +324,6 @@ export interface CourseRenderResponse {
   /** Minor currency units (e.g. cents/paise). */
   priceAmount?: number;
   currency?: string;
-  examSchedule?: string;
   hasExam?: boolean;
   modules: ModuleRenderResponse[];
   assessments?: AssessmentNodeResponse[];

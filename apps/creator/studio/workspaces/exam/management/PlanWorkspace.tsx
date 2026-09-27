@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import {
   AlertTriangle,
   Check,
@@ -8,6 +8,8 @@ import {
   Copy,
   Layers,
   Loader2,
+  Lock,
+  MapPin,
   Plus,
   Trash2,
 } from "lucide-react";
@@ -17,74 +19,47 @@ import {
   deleteExamPlan,
   deletePlanSection,
   duplicateExamPlan,
+  planKindLabel,
   planReadiness,
+  planTypeMeta,
   renamePlanSection,
   savePlanSectionRules,
   updateExamPlan,
   validateExamPlan,
-  type AssessmentOutcome,
   type Difficulty,
   type ExamPlanResponse,
+  type ExamPlanSettingView,
   type ExamPlanValidationResponse,
   type ExamSelectionRuleRequest,
   type ExamSelectionRuleResponse,
+  type ExamSettingKey,
   type QuestionPoolDetail,
   type SectionResponse,
 } from "@/domains/assessments";
 import { StudioCanvasEmpty } from "@/apps/creator/studio/core/StudioShell";
 
 /**
- * The Exam Plan workspace — where a creator says how one way of running this examination works.
+ * The Exam Plan workspace — one sitting this exam offers.
  *
- * <p>A plan is two things, and the layout says so: what paper it builds (Question selection) and
- * how it is conducted (Attempt, Delivery, Scoring, Security, Completion). Both are configuration,
- * never code: naming a plan "Recruitment Screening" and switching on proctoring is the entire act
- * of creating that kind of examination.
+ * <p>A plan's type (Certification, Completion, Assessment) is platform-defined and fixed at
+ * creation; it decides what passing does and which platform standard governs the settings. Every
+ * setting is rendered from the server's resolved view of that standard: a locked setting shows the
+ * platform's value and cannot be changed, a default one can be changed within the platform's
+ * limits. The server enforces both — the controls only reflect what it reported.
  *
- * <p>Question selection is deliberately sentence-shaped — "take N from X, difficulty Y" — with the
- * available/required check rendered next to each line. That check is server-computed against the
- * live bank, so a plan cannot be published asking for ten hard questions when seven exist.
+ * <p>When the plan runs (its window) is not a plan setting: it follows the schedule of the exam, or
+ * of the course or event it is tied to.
  */
 
 const DIFFICULTIES: Difficulty[] = ["EASY", "MEDIUM", "HARD"];
 
-type PanelId = "selection" | "attempt" | "delivery" | "security" | "completion";
+type PanelId = "selection" | "attempt" | "security" | "availability";
 
 const PANELS: { id: PanelId; label: string }[] = [
   { id: "selection", label: "Questions" },
   { id: "attempt", label: "Attempt & scoring" },
-  { id: "delivery", label: "Delivery" },
   { id: "security", label: "Security" },
-  { id: "completion", label: "Outcome" },
-];
-
-/**
- * The four things sitting a plan can produce. This is the one enum in the exam model, because it
- * genuinely branches behaviour — a "certification exam" is this value plus the security settings
- * above, not a separate kind of exam with its own code path.
- */
-const OUTCOME_OPTIONS: { value: AssessmentOutcome; label: string; description: string }[] = [
-  {
-    value: "NONE",
-    label: "Score only",
-    description: "A result the candidate can see. Practice drills and formative checks.",
-  },
-  {
-    value: "COMPLETION",
-    label: "Counts towards completion",
-    description: "Passing satisfies the course or event this assessment is placed in.",
-  },
-  {
-    value: "GRADE_CARD",
-    label: "Issues a grade card",
-    description:
-      "A durable, verifiable transcript with a per-section breakdown — issued on a fail as well as a pass.",
-  },
-  {
-    value: "CERTIFICATE",
-    label: "Certification",
-    description: "A grade card, plus eligibility for a certificate.",
-  },
+  { id: "availability", label: "Availability" },
 ];
 
 export function PlanWorkspace({
@@ -92,14 +67,15 @@ export function PlanWorkspace({
   pools,
   bankSections,
   onChanged,
-  onCreate,
+  createSlot,
   readOnly,
 }: {
   plan: ExamPlanResponse | null;
   pools: QuestionPoolDetail[];
   bankSections: SectionResponse[];
   onChanged: () => void;
-  onCreate: () => void;
+  /** The "New plan" type picker, shown when there is no plan yet. */
+  createSlot?: ReactNode;
   readOnly?: boolean;
 }) {
   const [panel, setPanel] = useState<PanelId>("selection");
@@ -141,28 +117,28 @@ export function PlanWorkspace({
     return (
       <StudioCanvasEmpty
         icon={ClipboardList}
-        title="Create an exam plan to define how this examination will be conducted"
-        description="A plan decides which questions go on the paper, how long candidates get, how many attempts they have, what counts as a pass, and whether it is proctored. One exam can have several — a practice run and a certification, say."
-        action={
-          !readOnly && (
-            <button
-              type="button"
-              onClick={onCreate}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-black"
-            >
-              <Plus size={14} /> New plan
-            </button>
-          )
-        }
+        title="Add a plan to decide how this exam is sat"
+        description="Each plan is one sitting of a platform-defined type: a Certification (listed in the Exams hub, issues a certificate), a Completion assessment (completes the tied course or event), or an Assessment (graded or practice). Its settings follow the platform's standard for that type."
+        action={!readOnly && createSlot}
       />
     );
   }
+
+  const setting = (key: ExamSettingKey) => plan.settings.find((s) => s.key === key) ?? null;
+  const locked = (key: ExamSettingKey) => {
+    const s = setting(key);
+    return s ? !s.editable : false;
+  };
+  const meta = planTypeMeta(plan.planType);
 
   return (
     <div className="flex flex-col gap-4">
       {/* ── Plan header ─────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
+          <span className={`ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${meta.chip}`}>
+            {planKindLabel(plan.planType, plan.graded)}
+          </span>
           {/* Uncontrolled and committed on blur: the plan list re-renders on every save, and a
               controlled value would fight the author's cursor mid-word. */}
           <input
@@ -178,34 +154,39 @@ export function PlanWorkspace({
           />
           <p className="mt-0.5 px-2 text-xs font-medium text-[#14142b]/50">
             {plan.totalQuestions} question{plan.totalQuestions === 1 ? "" : "s"} · {plan.durationMinutes} min
-            · pass at {plan.passPercentage}%
+            {plan.planType !== "ASSESSMENT" || plan.graded ? ` · pass at ${plan.passPercentage}%` : " · not graded"}
+            {plan.minQuestions > 0 && ` · platform minimum ${plan.minQuestions} questions`}
           </p>
+          <p className="mt-1 px-2 text-[11px] font-medium text-slate-500">{meta.effect}</p>
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
           <PlanStatusBadge validation={validation} validating={validating} />
           {!readOnly && (
             <>
-              <button
-                type="button"
-                title="Duplicate this plan"
-                onClick={async () => {
-                  try {
-                    await duplicateExamPlan(plan.id);
-                    toast.success("Plan duplicated");
-                    onChanged();
-                  } catch (err) {
-                    toast.error(err instanceof Error ? err.message : "Couldn't duplicate this plan");
-                  }
-                }}
-                className="rounded-xl border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-[#14142b]"
-              >
-                <Copy size={14} />
-              </button>
+              {plan.planType === "ASSESSMENT" && (
+                <button
+                  type="button"
+                  title="Duplicate this plan"
+                  onClick={async () => {
+                    try {
+                      await duplicateExamPlan(plan.id);
+                      toast.success("Plan duplicated");
+                      onChanged();
+                    } catch (err) {
+                      toast.error(err instanceof Error ? err.message : "Couldn't duplicate this plan");
+                    }
+                  }}
+                  className="rounded-xl border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-[#14142b]"
+                >
+                  <Copy size={14} />
+                </button>
+              )}
               <button
                 type="button"
                 title="Delete this plan"
                 onClick={async () => {
+                  if (!window.confirm(`Delete "${plan.name}"? Learners' past results on it are kept.`)) return;
                   try {
                     await deleteExamPlan(plan.id);
                     toast.success("Plan deleted");
@@ -260,112 +241,66 @@ export function PlanWorkspace({
 
         {panel === "attempt" && (
           <SettingsCard title="Attempt & scoring" description="How long candidates get, how many tries, and what counts as a pass.">
+            {plan.planType === "ASSESSMENT" && (
+              <ToggleField
+                label="Graded"
+                description="A graded assessment has a pass mark and appears on the learner's transcript. A practice one only shows the learner their score."
+                value={plan.graded}
+                setting={setting("GRADED")}
+                disabled={readOnly || busy || locked("GRADED")}
+                onChange={(v) => patchPlan({ graded: v })}
+              />
+            )}
             <NumberField
               key={`duration:${plan.durationMinutes}`}
               label="Duration"
               suffix="minutes"
               value={plan.durationMinutes}
-              disabled={readOnly || busy}
+              setting={setting("DURATION_MINUTES")}
+              disabled={readOnly || busy || locked("DURATION_MINUTES")}
               onCommit={(v) => patchPlan({ durationMinutes: v })}
             />
             <NumberField
               key={`attempts:${plan.maxAttempts}`}
               label="Attempts allowed"
               value={plan.maxAttempts}
-              disabled={readOnly || busy}
+              setting={setting("MAX_ATTEMPTS")}
+              disabled={readOnly || busy || locked("MAX_ATTEMPTS")}
               onCommit={(v) => patchPlan({ maxAttempts: v })}
             />
-            <NumberField
-              key={`pass:${plan.passPercentage}`}
-              label="Pass mark"
-              suffix="%"
-              value={plan.passPercentage}
-              disabled={readOnly || busy}
-              onCommit={(v) => patchPlan({ passPercentage: v })}
-            />
+            {(plan.planType !== "ASSESSMENT" || plan.graded) && (
+              <NumberField
+                key={`pass:${plan.passPercentage}`}
+                label="Pass mark"
+                suffix="%"
+                value={plan.passPercentage}
+                setting={setting("PASS_PERCENTAGE")}
+                disabled={readOnly || busy || locked("PASS_PERCENTAGE")}
+                onCommit={(v) => patchPlan({ passPercentage: v })}
+              />
+            )}
             <ToggleField
               label="Everyone sits the same paper"
-              description="Off means each candidate gets their own selection drawn from the same rules."
+              description="Off means each attempt draws a fresh paper from the rules, avoiding questions the learner has already seen where the bank allows."
               value={plan.fixedPaper}
-              disabled={readOnly || busy}
+              setting={setting("FIXED_PAPER")}
+              disabled={readOnly || busy || locked("FIXED_PAPER")}
               onChange={(v) => patchPlan({ fixedPaper: v })}
             />
             <ToggleField
               label="Shuffle question order"
               value={plan.shuffleQuestions}
-              disabled={readOnly || busy}
+              setting={setting("SHUFFLE_QUESTIONS")}
+              disabled={readOnly || busy || locked("SHUFFLE_QUESTIONS")}
               onChange={(v) => patchPlan({ shuffleQuestions: v })}
             />
             <ToggleField
               label="Shuffle answer options"
               description="Fixed once per attempt, so a candidate's options never move under them."
               value={plan.shuffleOptions}
-              disabled={readOnly || busy}
+              setting={setting("SHUFFLE_OPTIONS")}
+              disabled={readOnly || busy || locked("SHUFFLE_OPTIONS")}
               onChange={(v) => patchPlan({ shuffleOptions: v })}
-            />
-          </SettingsCard>
-        )}
-
-        {panel === "delivery" && (
-          <SettingsCard title="Delivery" description="When candidates may sit this exam.">
-            <div className="flex flex-col gap-2 py-3">
-              <span className="text-xs font-bold text-[#14142b]">Availability</span>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {(["ON_DEMAND", "SCHEDULED"] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    type="button"
-                    disabled={readOnly || busy}
-                    onClick={() => patchPlan({ deliveryMode: mode })}
-                    className={`rounded-xl border p-3 text-left transition-all ${
-                      plan.deliveryMode === mode
-                        ? "border-indigo-300 bg-indigo-50/60 ring-1 ring-indigo-200"
-                        : "border-slate-200 bg-white hover:border-slate-300"
-                    }`}
-                  >
-                    <span className="text-xs font-bold text-[#14142b]">
-                      {mode === "ON_DEMAND" ? "Any time" : "Scheduled window"}
-                    </span>
-                    <span className="mt-1 block text-[11px] leading-relaxed text-slate-500">
-                      {mode === "ON_DEMAND"
-                        ? "Eligible candidates start whenever they are ready."
-                        : "Only startable between the dates below."}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {plan.deliveryMode === "SCHEDULED" && (
-              <>
-                <DateField
-                  label="Opens"
-                  value={plan.opensAt}
-                  disabled={readOnly || busy}
-                  onCommit={(v) => patchPlan({ opensAt: v })}
-                />
-                <DateField
-                  label="Closes"
-                  value={plan.closesAt}
-                  disabled={readOnly || busy}
-                  onCommit={(v) => patchPlan({ closesAt: v })}
-                />
-              </>
-            )}
-
-            <ToggleField
-              label="Require registration"
-              description="Candidates must register before they can start."
-              value={plan.registrationRequired}
-              disabled={readOnly || busy}
-              onChange={(v) => patchPlan({ registrationRequired: v })}
-            />
-            <ToggleField
-              label="Available to candidates"
-              description="Turn off to keep this plan hidden while you work on it, even after the exam is published."
-              value={plan.active}
-              disabled={readOnly || busy}
-              onChange={(v) => patchPlan({ active: v })}
             />
           </SettingsCard>
         )}
@@ -373,65 +308,62 @@ export function PlanWorkspace({
         {panel === "security" && (
           <SettingsCard
             title="Security"
-            description="Higher-stakes plans can require identity checks and monitoring. These are settings on this plan, so the same exam can be practised freely and sat under supervision."
+            description="Proctoring records tab switches, focus loss and leaving fullscreen on the server; reaching the violation limit ends the attempt. Identity verification asks for a photo that you approve in Attempts."
           >
             <ToggleField
               label="Proctoring"
-              description="Candidates are monitored during the attempt."
               value={plan.proctoringRequired}
-              disabled={readOnly || busy}
+              setting={setting("PROCTORING_REQUIRED")}
+              disabled={readOnly || busy || locked("PROCTORING_REQUIRED")}
               onChange={(v) => patchPlan({ proctoringRequired: v })}
             />
             <ToggleField
               label="Identity verification"
               value={plan.identityVerificationRequired}
-              disabled={readOnly || busy}
+              setting={setting("IDENTITY_VERIFICATION_REQUIRED")}
+              disabled={readOnly || busy || locked("IDENTITY_VERIFICATION_REQUIRED")}
               onChange={(v) => patchPlan({ identityVerificationRequired: v })}
             />
             <ToggleField
               label="Full screen required"
               value={plan.fullscreenRequired}
-              disabled={readOnly || busy}
+              setting={setting("FULLSCREEN_REQUIRED")}
+              disabled={readOnly || busy || locked("FULLSCREEN_REQUIRED")}
               onChange={(v) => patchPlan({ fullscreenRequired: v })}
             />
+            {plan.proctoringRequired && (
+              <NumberField
+                key={`violations:${plan.maxViolations}`}
+                label="Violations before the attempt ends"
+                value={plan.maxViolations}
+                allowZero
+                hint="0 records violations without ending the attempt."
+                setting={setting("MAX_VIOLATIONS")}
+                disabled={readOnly || busy || locked("MAX_VIOLATIONS")}
+                onCommit={(v) => patchPlan({ maxViolations: v })}
+              />
+            )}
           </SettingsCard>
         )}
 
-        {panel === "completion" && (
-          <SettingsCard
-            title="Outcome"
-            description="What sitting this plan produces."
-          >
-            {/* One outcome replaces the two toggles that used to live here. Each step includes
-                everything below it, so they read as increasing weight rather than as independent
-                switches that could be combined into states nothing implemented. */}
-            <div className="space-y-2">
-              {OUTCOME_OPTIONS.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  disabled={readOnly || busy}
-                  onClick={() => patchPlan({ outcome: option.value })}
-                  className={`flex w-full flex-col items-start gap-0.5 rounded-xl border px-4 py-3 text-left transition-colors disabled:opacity-60 ${
-                    plan.outcome === option.value
-                      ? "border-[#14142b] bg-[#14142b]/[0.04]"
-                      : "border-slate-200 bg-white hover:border-slate-300"
-                  }`}
-                >
-                  <span className="text-[13px] font-semibold text-[#14142b]">{option.label}</span>
-                  <span className="text-[12px] font-medium text-slate-500">
-                    {option.description}
-                  </span>
-                </button>
-              ))}
+        {panel === "availability" && (
+          <SettingsCard title="Availability" description="Where learners meet this plan, and whether it is offered.">
+            <div className="flex items-start gap-3 py-3">
+              <MapPin size={15} className="mt-0.5 shrink-0 text-slate-400" />
+              <p className="text-xs leading-relaxed text-slate-600">
+                {plan.hubListed
+                  ? "Listed in learners' Exams hub. Learners register for this exam to sit it; its registration and sitting windows follow the exam's schedule."
+                  : plan.placement
+                  ? `Placed inside the tied ${plan.placement.hostType === "COURSE_MODULE" ? "course module" : plan.placement.hostType.toLowerCase()}. Learners enrolled there sit it from the course or event; move it from the course editor.`
+                  : "Not placed yet. It is placed at the root of the tied course or event automatically."}
+              </p>
             </div>
-
             <ToggleField
-              label="Require course completion first"
-              description="Candidates must finish the course this assessment is placed in before they can sit it."
-              value={plan.requiresHostCompletion}
+              label="Available to candidates"
+              description="Turn off to keep this plan hidden while you work on it, even after the exam is published."
+              value={plan.active}
               disabled={readOnly || busy}
-              onChange={(v) => patchPlan({ requiresHostCompletion: v })}
+              onChange={(v) => patchPlan({ active: v })}
             />
           </SettingsCard>
         )}
@@ -469,15 +401,19 @@ function PlanStatusBadge({
       </span>
     );
   }
+  const label =
+    readiness.state === "empty"
+      ? "No questions selected"
+      : readiness.state === "belowMinimum"
+      ? `Needs ${validation.minQuestions}+ questions`
+      : `${readiness.shortRules} line${readiness.shortRules === 1 ? "" : "s"} short`;
   return (
     <span
       title={readiness.message}
       className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-[11px] font-bold text-amber-700"
     >
       <AlertTriangle size={12} />
-      {readiness.state === "empty"
-        ? "No questions selected"
-        : `${readiness.shortRules} line${readiness.shortRules === 1 ? "" : "s"} short`}
+      {label}
     </span>
   );
 }
@@ -801,71 +737,72 @@ function SettingsCard({
   );
 }
 
+/** "Set by the platform" or the creator's allowed range, from the server's resolved standard. */
+function SettingHint({ setting, hint }: { setting?: ExamPlanSettingView | null; hint?: string }) {
+  if (setting && !setting.editable && setting.binds) {
+    return (
+      <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400">
+        <Lock size={10} /> Set by the platform standard
+      </span>
+    );
+  }
+  const range =
+    setting && setting.binds && (setting.min !== null || setting.max !== null)
+      ? `Allowed ${setting.min ?? "any"}–${setting.max ?? "any"}`
+      : null;
+  if (!range && !hint) return null;
+  return (
+    <span className="mt-0.5 block text-[10px] font-medium text-slate-400">
+      {[range, hint].filter(Boolean).join(" · ")}
+    </span>
+  );
+}
+
 function NumberField({
   label,
   suffix,
   value,
+  setting,
+  hint,
+  allowZero,
   disabled,
   onCommit,
 }: {
   label: string;
   suffix?: string;
   value: number;
+  setting?: ExamPlanSettingView | null;
+  hint?: string;
+  allowZero?: boolean;
   disabled?: boolean;
   onCommit: (value: number) => void;
 }) {
   const [draft, setDraft] = useState(String(value));
+  const floor = allowZero ? 0 : 1;
 
   return (
     <div className="flex items-center justify-between gap-4 py-3">
-      <label className="text-xs font-bold text-[#14142b]">{label}</label>
+      <div className="min-w-0">
+        <label className="text-xs font-bold text-[#14142b]">{label}</label>
+        <SettingHint setting={setting} hint={hint} />
+      </div>
       <div className="flex shrink-0 items-center gap-1.5">
         <input
           type="number"
-          min={1}
+          min={setting?.min ?? floor}
+          max={setting?.max ?? undefined}
           value={draft}
           disabled={disabled}
           onChange={(e) => setDraft(e.target.value)}
           onBlur={() => {
             const next = Number(draft);
-            if (Number.isFinite(next) && next > 0 && next !== value) onCommit(next);
+            if (Number.isFinite(next) && next >= floor && next !== value) onCommit(next);
             else setDraft(String(value));
           }}
-          className="w-20 rounded-lg border border-slate-200 px-2 py-1.5 text-center text-xs font-bold text-[#14142b] outline-none focus:border-indigo-300 focus:ring-1 focus:ring-indigo-200 disabled:bg-slate-50"
+          className="w-20 rounded-lg border border-slate-200 px-2 py-1.5 text-center text-xs font-bold text-[#14142b] outline-none focus:border-indigo-300 focus:ring-1 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-500"
         />
         {suffix && <span className="text-[11px] font-semibold text-slate-400">{suffix}</span>}
       </div>
-    </div>
-  );
-}
-
-function DateField({
-  label,
-  value,
-  disabled,
-  onCommit,
-}: {
-  label: string;
-  value: string | null;
-  disabled?: boolean;
-  onCommit: (value: string | null) => void;
-}) {
-  // <input type="datetime-local"> speaks local time without an offset; the API wants an ISO
-  // instant, so the conversion happens here rather than being pushed onto the server.
-  const local = value ? new Date(value).toISOString().slice(0, 16) : "";
-  return (
-    <div className="flex items-center justify-between gap-4 py-3">
-      <label className="text-xs font-bold text-[#14142b]">{label}</label>
-      <input
-        type="datetime-local"
-        defaultValue={local}
-        disabled={disabled}
-        onBlur={(e) => {
-          const raw = e.target.value;
-          onCommit(raw ? new Date(raw).toISOString() : null);
-        }}
-        className="rounded-lg border border-slate-200 px-2 py-1.5 text-xs font-semibold text-[#14142b] outline-none focus:border-indigo-300 disabled:bg-slate-50"
-      />
     </div>
   );
 }
@@ -874,12 +811,14 @@ function ToggleField({
   label,
   description,
   value,
+  setting,
   disabled,
   onChange,
 }: {
   label: string;
   description?: string;
   value: boolean;
+  setting?: ExamPlanSettingView | null;
   disabled?: boolean;
   onChange: (value: boolean) => void;
 }) {
@@ -888,6 +827,7 @@ function ToggleField({
       <div className="min-w-0">
         <span className="text-xs font-bold text-[#14142b]">{label}</span>
         {description && <p className="mt-0.5 text-[11px] leading-relaxed text-slate-500">{description}</p>}
+        <SettingHint setting={setting} />
       </div>
       <button
         type="button"

@@ -66,14 +66,7 @@ export const examRoutes = {
   attempt: (examId: string) => `/exams/${examId}/attempt`,
   results: (examId: string, attemptId: string) => `/exams/${examId}/results?attemptId=${attemptId}`,
   terminated: (examId: string) => `/exams/${examId}/terminated`,
-  /**
-   * A grade card issued by an attempt.
-   *
-   * <p>Note: no page serves this path yet. The link predates this route module — the old code
-   * pointed at `/learn/grade-card/{id}`, which had no page either — so this preserves the existing
-   * (broken) behaviour in the new URL space rather than silently dropping the link. Building the
-   * page is tracked separately.
-   */
+  /** A grade card: a certification sitting, or a course/event assessment transcript. */
   gradeCard: (gradeCardId: string) => `/exams/grade-cards/${gradeCardId}`,
 } as const;
 

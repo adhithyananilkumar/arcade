@@ -18,7 +18,9 @@ import {
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { TiptapContentView } from "@/domains/learning";
-import type { AssessmentLandingResponse, AttemptHistoryItem } from "../types";
+import type { AssessmentLandingResponse } from "../types";
+import { planKindLabel, planTypeMeta } from "../lib/planTypeMeta";
+import { PrerequisiteNotice, attemptStatusLabel } from "./LandingParts";
 
 export interface AssessmentResultCardProps {
   landing: AssessmentLandingResponse;
@@ -27,6 +29,8 @@ export interface AssessmentResultCardProps {
   onNextItem?: () => void;
   onReportIssue?: () => void;
   registrationSlot?: ReactNode;
+  identitySlot?: ReactNode;
+  onOpenPrerequisite?: () => void;
   readOnly?: boolean;
   starting?: boolean;
 }
@@ -38,19 +42,22 @@ export function AssessmentResultCard({
   onNextItem,
   onReportIssue,
   registrationSlot,
+  identitySlot,
+  onOpenPrerequisite,
   readOnly = false,
   starting = false,
 }: AssessmentResultCardProps) {
   const [showInstructions, setShowInstructions] = useState(false);
 
-  const isBadgeExam = landing.assessmentType === "BADGE_EXAM";
-  const categoryLabel = isBadgeExam ? "Badge Exam" : "Graded Assessment";
+  const meta = planTypeMeta(landing.planType);
+  const graded = landing.graded;
 
   const latestAttempt = landing.latestAttempt ?? landing.history[0] ?? null;
   const bestAttempt = landing.bestAttempt ?? null;
 
   const isAwaitingReview = latestAttempt?.awaitingReview ?? false;
-  const hasPassed = landing.passed ?? bestAttempt?.passed ?? latestAttempt?.passed ?? false;
+  // An ungraded assessment records a score, never a pass.
+  const hasPassed = graded && (landing.passed ?? bestAttempt?.passed ?? latestAttempt?.passed ?? false);
 
   // Determine which score to display prominently
   const displayScore =
@@ -59,10 +66,7 @@ export function AssessmentResultCard({
     latestAttempt?.percentage ??
     null;
 
-  const scoreLabel =
-    landing.gradingPolicy === "HIGHEST_SCORE" && bestAttempt
-      ? "Best score"
-      : "Latest attempt";
+  const scoreLabel = bestAttempt ? "Best score" : "Latest attempt";
 
   const feedbackGradeCardId =
     bestAttempt?.gradeCardId ?? latestAttempt?.gradeCardId ?? null;
@@ -73,6 +77,8 @@ export function AssessmentResultCard({
   const needsRegistration =
     landing.blockedReason === "REGISTRATION_REQUIRED" ||
     landing.blockedReason === "PAYMENT_REQUIRED";
+  const needsIdentity = landing.blockedReason === "IDENTITY_REQUIRED";
+  const certificateIssued = landing.history.some((h) => h.certificateIssued);
 
   return (
     <article className="mx-auto w-full max-w-3xl">
@@ -80,26 +86,22 @@ export function AssessmentResultCard({
       <header className="mb-7">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${
-              isBadgeExam
-                ? "bg-violet-100/80 text-violet-800"
-                : "bg-[#14142b]/[0.06] text-[#14142b]"
-            }`}
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${meta.chip}`}
           >
-            {isBadgeExam ? <Award size={13} /> : <FileText size={13} />}
-            {categoryLabel}
+            {landing.planType === "ASSESSMENT" ? <FileText size={13} /> : <Award size={13} />}
+            {planKindLabel(landing.planType, graded)}
           </span>
 
-          {landing.requiredForCompletion && (
+          {landing.planType === "COMPLETION" && landing.tiedContentTitle && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-800">
-              Required to complete
+              Completes {landing.tiedContentTitle}
             </span>
           )}
 
-          {isBadgeExam && landing.badgeName && (
+          {certificateIssued && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-emerald-800">
               <Award size={12} />
-              {landing.badgeName}
+              Certificate issued
             </span>
           )}
         </div>
@@ -128,6 +130,8 @@ export function AssessmentResultCard({
             </span>
           ) : needsRegistration && registrationSlot ? (
             <div>{registrationSlot}</div>
+          ) : needsIdentity && identitySlot ? (
+            <div>{identitySlot}</div>
           ) : (
             <>
               {/* Primary "Go to next item" when passed and next item is available */}
@@ -168,7 +172,7 @@ export function AssessmentResultCard({
                   }`}
                 >
                   <RotateCcw size={15} />
-                  <span>{hasPassed ? "Retake assessment" : "Try again"}</span>
+                  <span>{hasPassed || !graded ? "Retake assessment" : "Try again"}</span>
                 </button>
               )}
 
@@ -185,6 +189,10 @@ export function AssessmentResultCard({
           )}
         </div>
       </header>
+
+      {landing.prerequisite && !landing.prerequisite.met && (
+        <PrerequisiteNotice prerequisite={landing.prerequisite} onOpen={onOpenPrerequisite} />
+      )}
 
       {/* ── Two Summary Panels (Result Card + What to Expect) ──────── */}
       <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-12">
@@ -214,6 +222,11 @@ export function AssessmentResultCard({
                     Awaiting marking
                   </span>
                 </>
+              ) : !graded ? (
+                <>
+                  <FileText className="text-slate-500" size={19} />
+                  <span className="text-[15px] font-bold text-slate-800">Practice result</span>
+                </>
               ) : (
                 <>
                   <XCircle className="text-slate-400" size={19} />
@@ -225,7 +238,9 @@ export function AssessmentResultCard({
             </div>
 
             <p className="text-[13px] font-medium text-slate-600">
-              To pass you need a grade of at least {landing.passPercentage}%.
+              {graded
+                ? `To pass you need a grade of at least ${landing.passPercentage}%.`
+                : "This practice assessment is not graded. Your score is for your own reference."}
             </p>
 
             <div className="mt-4 flex flex-wrap items-baseline gap-3">
@@ -279,19 +294,17 @@ export function AssessmentResultCard({
             </h2>
 
             <ul className="space-y-3.5">
-              {/* Deadline */}
+              {/* Access window */}
               <li className="flex items-start gap-3">
                 <Calendar size={16} className="mt-0.5 text-slate-400 shrink-0" />
                 <div>
                   <p className="text-[13px] font-semibold text-[#14142b]">
-                    {landing.closesAt
-                      ? `Due ${formatWhen(landing.closesAt)}`
+                    {landing.accessWindow?.closesAt
+                      ? `Closes ${formatWhen(landing.accessWindow.closesAt)}`
                       : "Self-paced"}
                   </p>
                   <p className="text-[11px] text-slate-500">
-                    {landing.deliveryMode === "SCHEDULED"
-                      ? "Strict delivery window"
-                      : "No fixed deadline"}
+                    {landing.accessWindow?.closesAt ? "Set by the creator" : "No fixed deadline"}
                   </p>
                 </div>
               </li>
@@ -398,7 +411,7 @@ export function AssessmentResultCard({
                         {attempt.percentage}%
                       </span>
                     ) : (
-                      <span className="text-[12px] text-slate-400">—</span>
+                      <span className="text-[12px] text-slate-400">{attemptStatusLabel(attempt)}</span>
                     )}
 
                     {attempt.gradeCardId && onViewGradeCard && (

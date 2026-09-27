@@ -30,6 +30,8 @@ import { useState, type ReactNode } from "react";
 import { TiptapContentView } from "@/domains/learning";
 import type { AssessmentLandingResponse } from "../types";
 import { HonorCodeModal } from "./HonorCodeModal";
+import { planKindLabel, planTypeMeta } from "../lib/planTypeMeta";
+import { PrerequisiteNotice, attemptStatusLabel } from "./LandingParts";
 
 import { AssessmentResultCard } from "./AssessmentResultCard";
 
@@ -49,6 +51,13 @@ export interface AssessmentLandingProps {
    * rather than growing a second one.
    */
   registrationSlot?: ReactNode;
+  /**
+   * Rendered in place of the Start button when the candidate must verify their identity first —
+   * the host owns the capture/upload flow (it needs the media endpoint).
+   */
+  identitySlot?: ReactNode;
+  /** Opens the tied content a certification requires, when its prerequisite is unmet. */
+  onOpenPrerequisite?: () => void;
   /** Preview mode: describes the assessment but never lets the viewer start it. */
   readOnly?: boolean;
   starting?: boolean;
@@ -61,6 +70,8 @@ export function AssessmentLanding({
   onNextItem,
   onReportIssue,
   registrationSlot,
+  identitySlot,
+  onOpenPrerequisite,
   readOnly = false,
   starting = false,
 }: AssessmentLandingProps) {
@@ -84,7 +95,8 @@ export function AssessmentLanding({
     onStart?.();
   };
 
-  const isBadgeExam = landing.assessmentType === "BADGE_EXAM";
+  const meta = planTypeMeta(landing.planType);
+  const needsIdentity = landing.blockedReason === "IDENTITY_REQUIRED";
 
   // STATE B — ATTEMPTED AT LEAST ONCE:
   // Render the post-attempt status and result card instead of the untouched landing view.
@@ -98,6 +110,7 @@ export function AssessmentLanding({
           onNextItem={onNextItem}
           onReportIssue={onReportIssue}
           registrationSlot={registrationSlot}
+          identitySlot={identitySlot}
           readOnly={readOnly}
           starting={starting}
         />
@@ -116,30 +129,14 @@ export function AssessmentLanding({
       <header className="mb-7">
         <div className="mb-2.5 flex flex-wrap items-center gap-2">
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${
-              isBadgeExam
-                ? "bg-violet-100/80 text-violet-800"
-                : "bg-[#14142b]/[0.06] text-[#14142b]"
-            }`}
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${meta.chip}`}
           >
-            {isBadgeExam ? <Award size={12} /> : <FileText size={12} />}
-            {isBadgeExam ? "Badge Exam" : "Graded Assessment"}
+            {landing.planType === "ASSESSMENT" ? <FileText size={12} /> : <Award size={12} />}
+            {planKindLabel(landing.planType, landing.graded)}
           </span>
-          {landing.requiredForCompletion && (
+          {landing.planType === "COMPLETION" && landing.tiedContentTitle && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-800">
-              Required to complete
-            </span>
-          )}
-          {landing.outcome === "CERTIFICATE" && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-violet-800">
-              <Award size={12} />
-              Certification
-            </span>
-          )}
-          {landing.outcome === "GRADE_CARD" && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-sky-800">
-              <Award size={12} />
-              Issues a grade card
+              Completes {landing.tiedContentTitle}
             </span>
           )}
         </div>
@@ -160,7 +157,11 @@ export function AssessmentLanding({
           label="Questions"
           value={landing.questionCount > 0 ? String(landing.questionCount) : "—"}
         />
-        <Fact icon={<Target size={15} />} label="Pass mark" value={`${landing.passPercentage}%`} />
+        <Fact
+          icon={<Target size={15} />}
+          label="Pass mark"
+          value={landing.graded ? `${landing.passPercentage}%` : "Not graded"}
+        />
         <Fact
           icon={<RotateCcw size={15} />}
           label="Attempts"
@@ -195,13 +196,17 @@ export function AssessmentLanding({
             {landing.proctoringRequired && (
               <Requirement
                 icon={<ShieldCheck size={15} />}
-                text="This assessment is proctored. You'll start a proctoring session first."
+                text={
+                  landing.maxViolations > 0
+                    ? `This assessment is proctored. Switching tabs or leaving the window is recorded; ${landing.maxViolations} recorded violation${landing.maxViolations === 1 ? "" : "s"} end the attempt.`
+                    : "This assessment is proctored. Switching tabs or leaving the window is recorded."
+                }
               />
             )}
             {landing.identityVerificationRequired && (
               <Requirement
                 icon={<ShieldCheck size={15} />}
-                text="You'll confirm your identity before the paper is released."
+                text="You'll submit a photo of yourself before starting. An administrator reviews it."
               />
             )}
             {landing.fullscreenRequired && (
@@ -214,11 +219,15 @@ export function AssessmentLanding({
         </section>
       )}
 
-      {landing.deliveryMode === "SCHEDULED" && (landing.opensAt || landing.closesAt) && (
+      {landing.prerequisite && (
+        <PrerequisiteNotice prerequisite={landing.prerequisite} onOpen={onOpenPrerequisite} />
+      )}
+
+      {landing.accessWindow && (landing.accessWindow.opensAt || landing.accessWindow.closesAt) && (
         <section className="mb-7 rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
           <p className="text-[13px] font-medium text-slate-600">
-            {landing.opensAt && <>Opens {formatWhen(landing.opensAt)}. </>}
-            {landing.closesAt && <>Closes {formatWhen(landing.closesAt)}.</>}
+            {landing.accessWindow.opensAt && <>Opens {formatWhen(landing.accessWindow.opensAt)}. </>}
+            {landing.accessWindow.closesAt && <>Closes {formatWhen(landing.accessWindow.closesAt)}.</>}
           </p>
         </section>
       )}
@@ -236,6 +245,8 @@ export function AssessmentLanding({
             )}
             {registrationSlot}
           </div>
+        ) : needsIdentity && identitySlot ? (
+          <div>{identitySlot}</div>
         ) : landing.startable ? (
           <button
             type="button"
@@ -291,7 +302,9 @@ export function AssessmentLanding({
                       {attempt.passed && <CheckCircle2 size={13} />}
                       {attempt.percentage}%
                     </span>
-                  ) : null}
+                  ) : (
+                    <span className="text-[12px] font-medium text-slate-400">{attemptStatusLabel(attempt)}</span>
+                  )}
 
                   {attempt.gradeCardId && onViewGradeCard && (
                     <button
@@ -347,8 +360,8 @@ function blockedIcon(reason: AssessmentLandingResponse["blockedReason"]) {
     case "ATTEMPTS_EXHAUSTED":
     case "PREREQUISITE_NOT_MET":
       return <Lock size={16} />;
-    case "AWAITING_MARKING":
-      return <Hourglass size={16} />;
+    case "IDENTITY_REQUIRED":
+      return <ShieldCheck size={16} />;
     default:
       return <AlertCircle size={16} />;
   }

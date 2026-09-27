@@ -1,9 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { ShieldAlert, ChevronLeft } from 'lucide-react';
+import { examRoutes } from '@/shared/routes/content.routes';
 
 export default function ExamTerminatedPage() {
+  const params = useParams();
+  const examId = params.examId as string;
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4"
@@ -15,25 +19,25 @@ export default function ExamTerminatedPage() {
             <ShieldAlert size={28} />
           </div>
           <h1 className="mt-5 text-[1.5rem] font-bold tracking-tight text-[#14142b]">
-            Exam terminated
+            Attempt ended
           </h1>
           <p className="mt-2 text-[13px] font-semibold text-rose-700">
-            You are no longer allowed to continue this session.
+            This attempt reached the proctoring violation limit.
           </p>
         </div>
 
         <div className="px-8 py-7">
           <p className="text-[13px] font-medium leading-relaxed text-slate-500">
-            The session ended after repeated fullscreen anti-cheat violations. Progress from this
-            attempt has been voided.
+            Leaving the exam window was recorded each time. Your answers were submitted, but an attempt
+            ended this way cannot pass. If you have attempts left you can sit the exam again.
           </p>
 
           <Link
-            href="/"
+            href={examRoutes.landing(examId)}
             className="mt-7 inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-[#232735]"
           >
             <ChevronLeft size={16} />
-            Back to home
+            Back to exam
           </Link>
         </div>
       </div>

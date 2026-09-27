@@ -79,7 +79,7 @@ export default function ReviewDetailPage() {
         setTimeline(t);
         setVersions(v);
         setLifecycle(l);
-        if (r.contentType === "COURSE") {
+        if (r.contentType === "COURSE" || r.contentType === "EVENT" || r.contentType === "EXAM") {
           setLoadingExams(true);
           platformReviewApi
             .getExams(reviewId)
@@ -160,7 +160,7 @@ export default function ReviewDetailPage() {
       setTimeline(t);
       setVersions(v);
       setLifecycle(l);
-      if (review.contentType === "COURSE") {
+      if (review.contentType === "COURSE" || review.contentType === "EVENT" || review.contentType === "EXAM") {
         setExams(await platformReviewApi.getExams(review.id));
       }
       toast.success(
@@ -339,7 +339,7 @@ export default function ReviewDetailPage() {
       />
 
       {/* Associated Assessments & Exams Section */}
-      {review.contentType === "COURSE" && (
+      {(review.contentType === "COURSE" || review.contentType === "EVENT" || review.contentType === "EXAM") && (
         <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_24px_rgba(20,20,43,0.05)]">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div>
@@ -383,26 +383,20 @@ export default function ReviewDetailPage() {
                       >
                         {ex.status}
                       </span>
-                      {ex.proctoringRequired && (
+                      {ex.plans.some((pl) => pl.proctoringRequired) && (
                         <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
                           <Shield size={11} /> Proctored
                         </span>
                       )}
-                      <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-600">
-                        {ex.examType}
-                      </span>
+                      {Array.from(new Set(ex.plans.map((pl) => pl.planType))).map((t) => (
+                        <span key={t} className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                          {t}
+                        </span>
+                      ))}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-4 text-[12px] text-slate-500">
-                      <span className="inline-flex items-center gap-1">
-                        <Clock size={13} className="text-slate-400" />
-                        {ex.durationMinutes} mins
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <CheckCircle2 size={13} className="text-slate-400" />
-                        Pass: {ex.passPercentage}%
-                      </span>
-                      <span>{ex.questionCount} Questions</span>
+                      <span>{ex.bankQuestionCount} Questions in bank</span>
                       <span>
                         {ex.placements.length} Placement{ex.placements.length !== 1 ? "s" : ""}
                       </span>
@@ -736,126 +730,50 @@ export default function ReviewDetailPage() {
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {examTab === "overview" && (
                 <div className="space-y-6">
-                  {/* Basic specifications */}
+                  {/* One card per plan: the exam has no settings of its own, each sitting carries them. */}
                   <div>
                     <h3 className="text-[12px] font-bold uppercase tracking-wider text-slate-400 mb-3">
-                      Assessment Specifications
+                      Sittings ({inspectingExam.plans.length}) · {inspectingExam.bankQuestionCount} questions in bank
                     </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-3">
-                        <div className="text-[11px] font-medium text-slate-500">Duration</div>
-                        <div className="text-[15px] font-bold text-[#14142b] mt-0.5">
-                          {inspectingExam.durationMinutes} mins
-                        </div>
+                    {inspectingExam.plans.length === 0 ? (
+                      <div className="rounded-xl border border-dashed border-slate-200 py-8 text-center text-[13px] text-slate-400">
+                        This exam has no plans yet.
                       </div>
-                      <div className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-3">
-                        <div className="text-[11px] font-medium text-slate-500">Pass Percentage</div>
-                        <div className="text-[15px] font-bold text-[#14142b] mt-0.5">
-                          {inspectingExam.passPercentage}%
-                        </div>
-                      </div>
-                      <div className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-3">
-                        <div className="text-[11px] font-medium text-slate-500">Max Attempts</div>
-                        <div className="text-[15px] font-bold text-[#14142b] mt-0.5">
-                          {inspectingExam.maxAttempts}
-                        </div>
-                      </div>
-                      <div className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-3">
-                        <div className="text-[11px] font-medium text-slate-500">Blueprint Questions</div>
-                        <div className="text-[15px] font-bold text-[#14142b] mt-0.5">
-                          {inspectingExam.questionCount}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Security & Integrity */}
-                  <div>
-                    <h3 className="text-[12px] font-bold uppercase tracking-wider text-slate-400 mb-3">
-                      Integrity & Proctoring Controls
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm">
-                        <Shield
-                          size={18}
-                          className={inspectingExam.proctoringRequired ? "text-indigo-600" : "text-slate-300"}
-                        />
-                        <div>
-                          <div className="text-[13px] font-semibold text-[#14142b]">Proctored Session</div>
-                          <div className="text-[11px] text-slate-400">
-                            {inspectingExam.proctoringRequired ? "Enforced" : "Disabled"}
+                    ) : (
+                      <div className="grid grid-cols-1 gap-3">
+                        {inspectingExam.plans.map((pl) => (
+                          <div key={pl.planId} className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-[14px] font-bold text-[#14142b]">{pl.name}</span>
+                              <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                                {pl.planType}
+                              </span>
+                              {pl.planType === "ASSESSMENT" && (
+                                <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                                  {pl.graded ? "Graded" : "Ungraded"}
+                                </span>
+                              )}
+                            </div>
+                            <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[12px] text-slate-600">
+                              <span>Duration <b>{pl.durationMinutes} min</b></span>
+                              <span>Pass <b>{pl.passPercentage}%</b></span>
+                              <span>Attempts <b>{pl.maxAttempts}</b></span>
+                              <span>Questions <b>{pl.totalQuestionsAsked}</b></span>
+                            </div>
+                            <div className="mt-2 flex flex-wrap gap-3 text-[11px]">
+                              <span className="inline-flex items-center gap-1">
+                                <Shield size={12} className={pl.proctoringRequired ? "text-indigo-600" : "text-slate-300"} />
+                                Proctoring {pl.proctoringRequired ? "on" : "off"}
+                              </span>
+                              <span className="inline-flex items-center gap-1">
+                                <FileCheck size={12} className={pl.identityVerificationRequired ? "text-indigo-600" : "text-slate-300"} />
+                                Identity check {pl.identityVerificationRequired ? "on" : "off"}
+                              </span>
+                            </div>
                           </div>
-                        </div>
+                        ))}
                       </div>
-                      <div className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm">
-                        <Layers
-                          size={18}
-                          className={inspectingExam.fullscreenRequired ? "text-indigo-600" : "text-slate-300"}
-                        />
-                        <div>
-                          <div className="text-[13px] font-semibold text-[#14142b]">Fullscreen Mode</div>
-                          <div className="text-[11px] text-slate-400">
-                            {inspectingExam.fullscreenRequired ? "Enforced" : "Optional"}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm">
-                        <FileCheck
-                          size={18}
-                          className={inspectingExam.identityVerificationRequired ? "text-indigo-600" : "text-slate-300"}
-                        />
-                        <div>
-                          <div className="text-[13px] font-semibold text-[#14142b]">Identity Verification</div>
-                          <div className="text-[11px] text-slate-400">
-                            {inspectingExam.identityVerificationRequired ? "Required" : "Not Required"}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Difficulty Breakdown */}
-                  <div>
-                    <h3 className="text-[12px] font-bold uppercase tracking-wider text-slate-400 mb-3">
-                      Question Bank & Difficulty Breakdown
-                    </h3>
-                    <div className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 space-y-3">
-                      <div className="flex justify-between text-[12px] font-medium text-slate-600">
-                        <span>Total Bank Pool: <b>{inspectingExam.bankQuestionCount} items</b></span>
-                        <span>Randomization: <b>{inspectingExam.sameQuestionsForAllStudents ? "Fixed for all" : "Randomized per candidate"}</b></span>
-                      </div>
-                      <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200 flex">
-                        <div
-                          style={{ width: `${inspectingExam.easyPercent}%` }}
-                          className="bg-emerald-500"
-                          title={`Easy: ${inspectingExam.easyPercent}%`}
-                        />
-                        <div
-                          style={{ width: `${inspectingExam.mediumPercent}%` }}
-                          className="bg-amber-500"
-                          title={`Medium: ${inspectingExam.mediumPercent}%`}
-                        />
-                        <div
-                          style={{ width: `${inspectingExam.hardPercent}%` }}
-                          className="bg-rose-500"
-                          title={`Hard: ${inspectingExam.hardPercent}%`}
-                        />
-                      </div>
-                      <div className="flex items-center gap-4 text-[11px] text-slate-500">
-                        <span className="flex items-center gap-1.5">
-                          <span className="size-2.5 rounded-full bg-emerald-500" />
-                          Easy: {inspectingExam.easyPercent}%
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="size-2.5 rounded-full bg-amber-500" />
-                          Medium: {inspectingExam.mediumPercent}%
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="size-2.5 rounded-full bg-rose-500" />
-                          Hard: {inspectingExam.hardPercent}%
-                        </span>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -885,7 +803,7 @@ export default function ReviewDetailPage() {
                           <div className="flex items-center gap-2">
                             <span className="text-[14px] font-bold text-[#14142b]">{pl.name}</span>
                             <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-600">
-                              {pl.type}
+                              {pl.planType}
                             </span>
                             {pl.valid ? (
                               <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
@@ -952,13 +870,13 @@ export default function ReviewDetailPage() {
                         </div>
 
                         <div>
-                          {plc.requiredForCompletion ? (
+                          {inspectingExam.plans.find((pl) => pl.planId === plc.planId)?.planType === "COMPLETION" ? (
                             <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
-                              Required for Course Pass
+                              Completes the content
                             </span>
                           ) : (
                             <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-500">
-                              Optional / Ungraded
+                              Assessment
                             </span>
                           )}
                         </div>

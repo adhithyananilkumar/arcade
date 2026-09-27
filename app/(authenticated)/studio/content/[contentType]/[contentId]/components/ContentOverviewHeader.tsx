@@ -103,6 +103,7 @@ export function ContentOverviewHeader({
   onJumpToPublishing,
   showMetadataRail = true,
   showStatusSubtext = false,
+  tiedExam = false,
 }: {
   segment: ContentTypeSegment;
   contentId: string;
@@ -118,6 +119,8 @@ export function ContentOverviewHeader({
   onJumpToPublishing: () => void;
   showMetadataRail?: boolean;
   showStatusSubtext?: boolean;
+  /** An exam tied to a course or event: reviewed with its parent, so it offers no submit of its own. */
+  tiedExam?: boolean;
 }) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -188,14 +191,15 @@ export function ContentOverviewHeader({
   } else if (statusKey === "PUBLISHED") {
     if (segment !== "exam") {
       primaryActions.push({ key: "edit", label: "Edit Content", icon: Pencil, href: editorHref(segment, contentId), variant: "primary" });
+    } else if (supportsReviewSubmission(segment, tiedExam)) {
+      // Learners keep the published version; edits since then reach them only through review.
+      primaryActions.push({ key: "submit", label: "Submit changes for Review", icon: Send, onClick: handleSubmit, variant: "secondary" });
     }
   } else {
     if (segment !== "exam") {
       primaryActions.push({ key: "edit", label: "Edit Content", icon: Pencil, href: editorHref(segment, contentId), variant: "primary" });
     }
-    // Exams self-publish an immutable version instead of entering a review round — publishing
-    // lives on the Publishing tab, so there is nothing to submit here.
-    if (supportsReviewSubmission(segment)) {
+    if (supportsReviewSubmission(segment, tiedExam)) {
       primaryActions.push({ key: "submit", label: "Submit for Review", icon: Send, onClick: handleSubmit, variant: "secondary" });
     }
   }

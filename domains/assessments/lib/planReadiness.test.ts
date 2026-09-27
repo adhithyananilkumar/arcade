@@ -10,6 +10,7 @@ function validation(
     ok: true,
     planId: "plan-1",
     totalRequired: 10,
+    minQuestions: 0,
     rules: [
       {
         ruleId: "rule-1",
@@ -119,5 +120,13 @@ describe("buildQuestionSearchParams", () => {
   it("omits a blank search instead of sending an empty filter", () => {
     expect(buildQuestionSearchParams({ search: "   " }).has("q")).toBe(false);
     expect(buildQuestionSearchParams({ search: "  inheritance " }).get("q")).toBe("inheritance");
+  });
+});
+
+describe("planReadiness platform minimum", () => {
+  it("reports a plan below the platform minimum as not publishable", () => {
+    const v = validation({ totalRequired: 10, minQuestions: 20 });
+    expect(planReadiness(v).state).toBe("belowMinimum");
+    expect(isPlanPublishable(v)).toBe(false);
   });
 });

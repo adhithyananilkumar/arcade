@@ -1,199 +1,167 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+// A main exam's page, reached from the Exams hub (or a course's certification card). Composes the
+// shared AssessmentLanding with the three things only this page supplies: registration/payment
+// (the shared enrolment checkout, on an EXAM resource), the identity-verification step, and a way
+// to the tied content when its completion is still a prerequisite.
+//
+// Every decision — may they register, may they start, why not — comes from the landing response.
+
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import {
-  ChevronRight,
-  AlertTriangle,
-  ShieldCheck,
-  Monitor,
-  Eye,
-  Clock,
-  ListOrdered,
-} from 'lucide-react';
-import { getExam, type ExamResponse, HonorCodeModal } from '@/domains/assessments';
+  AssessmentLanding,
+  getAssessmentLanding,
+  planKindLabel,
+  type AssessmentLandingResponse,
+} from '@/domains/assessments';
+import { EnrollmentButton } from '@/domains/enrollment';
+import { courseRoutes, eventRoutes, examRoutes } from '@/shared/routes/content.routes';
+import { formatMoney } from '@/shared/utils/money';
+import { IdentityCapture } from '@/apps/learner/components/exams/IdentityCapture';
 
 const pageBg = {
   background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 32%, #FFFFFF 70%)',
 };
 
-function buildRules(exam: ExamResponse | null) {
-  const questionCountLabel = exam
-    ? `${exam.questionCount} question${exam.questionCount === 1 ? '' : 's'}`
-    : 'Loading…';
-  return [
-    {
-      icon: Monitor,
-      title: 'Fullscreen required',
-      body: 'The exam runs in fullscreen. Starting will enter fullscreen mode automatically.',
-    },
-    {
-      icon: Eye,
-      title: 'Anti-cheat monitoring',
-      body: 'Window focus and fullscreen are monitored. Leaving fullscreen registers a strike.',
-    },
-    {
-      icon: AlertTriangle,
-      title: 'Three strikes',
-      body: 'Two warnings are allowed. A third violation terminates the exam and marks it failed.',
-    },
-    {
-      icon: Clock,
-      title: questionCountLabel,
-      body: 'The timer starts when you begin. Progress auto-submits if time runs out.',
-    },
-    {
-      icon: ListOrdered,
-      title: 'Navigation',
-      body: 'Mark questions for review and jump via the progress panel. Answer everything before submit.',
-    },
-  ];
-}
-
-export default function ExamAcknowledgementPage() {
+export default function ExamPage() {
   const router = useRouter();
   const params = useParams();
+  const search = useSearchParams();
   const examId = params.examId as string;
-  const [agreed, setAgreed] = useState(false);
-  const [isTerminated, setIsTerminated] = useState(false);
-  const [exam, setExam] = useState<ExamResponse | null>(null);
+  const planId = search.get('planId');
+
+  const [landing, setLanding] = useState<AssessmentLandingResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(() => {
+    getAssessmentLanding(examId, { planId })
+      .then((data) => {
+        setLanding(data);
+        setError(null);
+      })
+      .catch((err) => setError(err?.message ?? 'Could not load this exam.'));
+  }, [examId, planId]);
 
   useEffect(() => {
-    if (sessionStorage.getItem(`exam_terminated_${examId}`)) {
-      setIsTerminated(true);
-    }
-  }, [examId]);
+    load();
+  }, [load]);
 
+  // Returning from checkout or an attempt lands back here; re-read so the state is current.
   useEffect(() => {
-    getExam(examId).then(setExam).catch(() => {});
-  }, [examId]);
+    const onVisible = () => document.visibilityState === 'visible' && load();
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [load]);
 
-  const RULES = buildRules(exam);
+  if (error) {
+    return (
+      <Shell>
+        <p className="py-24 text-center text-[14px] font-semibold text-rose-600">{error}</p>
+      </Shell>
+    );
+  }
+  if (!landing) {
+    return (
+      <Shell>
+        <div className="flex justify-center py-24">
+          <Loader2 className="animate-spin text-slate-400" size={26} />
+        </div>
+      </Shell>
+    );
+  }
 
-  const canStart = agreed && !isTerminated;
-
-  const [showHonorCode, setShowHonorCode] = useState(false);
-
-  const handleStartExam = () => {
-    setShowHonorCode(true);
+  const start = () => {
+    const q = new URLSearchParams();
+    if (landing.planId) q.set('planId', landing.planId);
+    q.set('returnTo', `${examRoutes.landing(examId)}${landing.planId ? `?planId=${landing.planId}` : ''}`);
+    router.push(`${examRoutes.attempt(examId)}?${q.toString()}`);
   };
 
-  const handleHonorCodeContinue = async () => {
-    setShowHonorCode(false);
-    try {
-      sessionStorage.setItem('arcade_honor_code_accepted', 'true');
-    } catch {}
-    try {
-      if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
-        await document.documentElement.requestFullscreen();
-      }
-    } catch (err) {
-      console.warn('Failed to enter fullscreen', err);
-    }
-    router.push(`/exams/${params.examId}/attempt`);
-  };
+  const openPrerequisite = landing.prerequisite
+    ? () =>
+        router.push(
+          landing.prerequisite!.contentType === 'EVENT'
+            ? eventRoutes.landing(landing.prerequisite!.contentId)
+            : courseRoutes.landing(landing.prerequisite!.contentId)
+        )
+    : undefined;
+
+  const registration = (
+    <div className="max-w-sm space-y-2">
+      {landing.feeMinor > 0 && (
+        <p className="text-[13px] font-semibold text-[#14142b]">
+          Registration fee {formatMoney(landing.feeMinor, landing.currency ?? 'INR')}
+        </p>
+      )}
+      <EnrollmentButton
+        resourceType="EXAM"
+        resourceId={examId}
+        initialState={landing.registered ? 'ENROLLED' : 'NOT_ENROLLED'}
+        onStateChange={(state) => state === 'ENROLLED' && load()}
+        onGoToResource={load}
+      />
+    </div>
+  );
+
+  const identity =
+    landing.planId && landing.blockedReason === 'IDENTITY_REQUIRED' ? (
+      <IdentityCapture
+        examId={examId}
+        planId={landing.planId}
+        rejected={landing.identityStatus === 'REJECTED'}
+        onSubmitted={load}
+      />
+    ) : undefined;
 
   return (
-    <div className="min-h-screen pb-28" style={pageBg}>
-      <div className="mx-auto max-w-3xl px-4 pt-28 sm:px-6 md:pt-32">
-        <div className="mb-8 text-center">
-          <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#14142b]">
-            <ShieldCheck size={13} />
-            Secure exam
-          </span>
-          <h1 className="text-[1.75rem] font-bold tracking-tight text-[#14142b] sm:text-[2rem]">
-            Before you begin
-          </h1>
-          <p className="mx-auto mt-2 max-w-lg text-[13px] font-medium text-slate-500">
-            Read the conditions carefully. Starting locks you into a monitored fullscreen session.
-          </p>
-        </div>
-
-        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_8px_28px_rgba(20,20,43,0.06)]">
-          <div className="divide-y divide-slate-100">
-            {RULES.map((rule) => {
-              const Icon = rule.icon;
-              return (
-                <div key={rule.title} className="flex gap-4 px-5 py-4 sm:px-6">
-                  <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-xl bg-slate-50 text-[#14142b]">
-                    <Icon size={16} />
-                  </span>
-                  <div>
-                    <h2 className="text-[13px] font-bold text-[#14142b]">{rule.title}</h2>
-                    <p className="mt-0.5 text-[12px] leading-relaxed text-slate-500">{rule.body}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {isTerminated && (
-            <div className="mx-5 mb-4 flex flex-col gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 sm:mx-6 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-2.5 text-rose-700">
-                <AlertTriangle size={18} className="mt-0.5 shrink-0" />
-                <span className="text-[12px] font-medium leading-relaxed">
-                  You cannot take this exam — a previous session was terminated for anti-cheat
-                  violations.
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  sessionStorage.removeItem(`exam_terminated_${params.examId}`);
-                  setIsTerminated(false);
-                }}
-                className="shrink-0 rounded-full bg-rose-100 px-3 py-1.5 text-[11px] font-bold text-rose-800 hover:bg-rose-200"
-              >
-                Reset (dev)
-              </button>
-            </div>
-          )}
-
-          <div className="flex flex-col gap-4 border-t border-slate-100 bg-slate-50/80 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <label className="flex cursor-pointer items-start gap-3">
-              <input
-                type="checkbox"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-                className="mt-0.5 size-4 rounded border-slate-300 text-[#14142b] focus:ring-[#14142b]/30"
-              />
-              <span className="max-w-md text-[12px] font-medium leading-relaxed text-slate-600">
-                I have read and agree to these conditions. I understand that violations may terminate
-                the exam.
-              </span>
-            </label>
-
+    <Shell>
+      {landing.plans.length > 1 && (
+        <nav className="mx-auto mb-6 flex w-full max-w-3xl flex-wrap gap-2">
+          {landing.plans.map((p) => (
             <button
+              key={p.planId}
               type="button"
-              disabled={!canStart}
-              onClick={handleStartExam}
-              className={`inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full px-6 py-2.5 text-[13px] font-semibold transition-all ${
-                canStart
-                  ? 'bg-[#14142b] text-white shadow-[0_8px_16px_rgba(20,20,43,0.16)] hover:bg-[#232735]'
-                  : 'cursor-not-allowed bg-slate-200 text-slate-400'
+              onClick={() => router.replace(`${examRoutes.landing(examId)}?planId=${p.planId}`)}
+              className={`cursor-pointer rounded-full border px-4 py-1.5 text-[12px] font-semibold transition-colors ${
+                p.planId === landing.planId
+                  ? 'border-[#14142b] bg-[#14142b] text-white'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
               }`}
             >
-              Start exam <ChevronRight size={16} />
+              {p.name}
+              <span className="ml-1.5 opacity-60">{planKindLabel(p.planType, true)}</span>
             </button>
-          </div>
-        </div>
+          ))}
+        </nav>
+      )}
 
-        <div className="mt-6 text-center">
-          <Link
-            href="/exams"
-            className="text-[12px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
-          >
-            ← Back to today&apos;s exams
-          </Link>
-        </div>
+      <AssessmentLanding
+        landing={landing}
+        onStart={start}
+        registrationSlot={registration}
+        identitySlot={identity}
+        onOpenPrerequisite={openPrerequisite}
+        onViewGradeCard={(id) => router.push(examRoutes.gradeCard(id))}
+      />
+    </Shell>
+  );
+}
 
-        <HonorCodeModal
-          isOpen={showHonorCode}
-          onClose={() => setShowHonorCode(false)}
-          onContinue={handleHonorCodeContinue}
-        />
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="min-h-screen pb-32" style={pageBg}>
+      <div className="mx-auto w-full max-w-4xl px-4 pt-28 sm:px-6 md:pt-32">
+        <Link
+          href="/exams"
+          className="mb-6 inline-flex items-center gap-1.5 text-[12px] font-semibold text-slate-500 transition-colors hover:text-[#14142b]"
+        >
+          <ArrowLeft size={14} /> Exams
+        </Link>
+        {children}
       </div>
-    </div>
+    </main>
   );
 }

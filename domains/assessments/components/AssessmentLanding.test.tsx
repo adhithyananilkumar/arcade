@@ -14,41 +14,49 @@ function mockLanding(
   return {
     examId: "exam-1",
     title: "Introduction to Microservices Quiz",
+    description: null,
+    coverImageUrl: null,
     purpose: "Module assessment",
     instructions: null,
+    tieType: "COURSE",
+    tiedContentId: "course-1",
+    tiedContentTitle: "Microservices",
     placementId: "placement-1",
-    requiredForCompletion: true,
     planId: "plan-1",
     planName: "Standard Plan",
     planDescription: "Standard 30-min quiz.",
+    planType: "ASSESSMENT",
+    graded: true,
+    hubListed: false,
+    plans: [],
     durationMinutes: 30,
     maxAttempts: 3,
     passPercentage: 70,
     questionCount: 10,
-    deliveryMode: "ON_DEMAND",
-    opensAt: null,
-    closesAt: null,
-    openNow: true,
     proctoringRequired: false,
     identityVerificationRequired: false,
     fullscreenRequired: false,
+    maxViolations: 0,
     registrationRequired: false,
     registered: true,
-    outcome: "GRADE_CARD",
+    feeMinor: 0,
+    currency: null,
+    prerequisite: null,
+    enrollmentWindow: null,
+    accessWindow: null,
+    identityStatus: null,
     attemptsUsed: 0,
     attemptsRemaining: 3,
     openAttemptId: null,
     history: [],
-    startable: true,
-    blockedReason: null,
-    blockedMessage: null,
-    assessmentType: "GRADED_ASSESSMENT",
-    badgeName: null,
-    gradingPolicy: "HIGHEST_SCORE",
     latestAttempt: null,
     bestAttempt: null,
     passed: null,
     score: null,
+    startable: true,
+    blockedReason: null,
+    blockedMessage: null,
+    canManage: false,
     ...overrides,
   };
 }
@@ -87,6 +95,8 @@ describe("AssessmentLanding", () => {
         passed: true,
         awaitingReview: false,
         gradeCardId: "card-1",
+        terminationReason: null,
+        certificateIssued: false,
       },
       bestAttempt: {
         attemptId: "att-1",
@@ -97,6 +107,8 @@ describe("AssessmentLanding", () => {
         passed: true,
         awaitingReview: false,
         gradeCardId: "card-1",
+        terminationReason: null,
+        certificateIssued: false,
       },
       history: [
         {
@@ -108,6 +120,8 @@ describe("AssessmentLanding", () => {
           passed: true,
           awaitingReview: false,
           gradeCardId: "card-1",
+          terminationReason: null,
+          certificateIssued: false,
         },
       ],
     });
@@ -122,7 +136,7 @@ describe("AssessmentLanding", () => {
     );
 
     // Header & Badge
-    expect(screen.getByText("Graded Assessment")).toBeDefined();
+    expect(screen.getByText("Graded assessment")).toBeDefined();
     expect(screen.getByText("Introduction to Microservices Quiz")).toBeDefined();
 
     // Result Card
@@ -166,6 +180,8 @@ describe("AssessmentLanding", () => {
         passed: false,
         awaitingReview: false,
         gradeCardId: null,
+        terminationReason: null,
+        certificateIssued: false,
       },
       bestAttempt: {
         attemptId: "att-1",
@@ -176,6 +192,8 @@ describe("AssessmentLanding", () => {
         passed: false,
         awaitingReview: false,
         gradeCardId: null,
+        terminationReason: null,
+        certificateIssued: false,
       },
       history: [
         {
@@ -187,6 +205,8 @@ describe("AssessmentLanding", () => {
           passed: false,
           awaitingReview: false,
           gradeCardId: null,
+          terminationReason: null,
+          certificateIssued: false,
         },
       ],
     });
@@ -217,6 +237,8 @@ describe("AssessmentLanding", () => {
           passed: false,
           awaitingReview: false,
           gradeCardId: null,
+          terminationReason: null,
+          certificateIssued: false,
         },
       ],
     });
@@ -229,10 +251,10 @@ describe("AssessmentLanding", () => {
     expect(screen.getByText("All attempts used")).toBeDefined();
   });
 
-  it("renders Badge Exam styling when assessmentType is BADGE_EXAM", () => {
+  it("labels a certification sitting and shows the issued certificate", () => {
     const landing = mockLanding({
-      assessmentType: "BADGE_EXAM",
-      badgeName: "Cloud Specialist Badge",
+      planType: "CERTIFICATION",
+      hubListed: true,
       history: [
         {
           attemptId: "att-1",
@@ -243,13 +265,63 @@ describe("AssessmentLanding", () => {
           passed: true,
           awaitingReview: false,
           gradeCardId: "card-1",
+          terminationReason: null,
+          certificateIssued: true,
         },
       ],
     });
 
     render(<AssessmentLanding landing={landing} />);
 
-    expect(screen.getByText("Badge Exam")).toBeDefined();
-    expect(screen.getByText("Cloud Specialist Badge")).toBeDefined();
+    expect(screen.getByText("Certification")).toBeDefined();
+    expect(screen.getByText("Certificate issued")).toBeDefined();
+  });
+
+  it("never reports pass or fail for an ungraded practice assessment", () => {
+    const landing = mockLanding({
+      graded: false,
+      history: [
+        {
+          attemptId: "att-1",
+          attemptNumber: 1,
+          status: "SUBMITTED",
+          submittedAt: "2026-09-22T10:00:00Z",
+          percentage: 40,
+          passed: false,
+          awaitingReview: false,
+          gradeCardId: null,
+          terminationReason: null,
+          certificateIssued: false,
+        },
+      ],
+    });
+
+    render(<AssessmentLanding landing={landing} />);
+
+    expect(screen.getByText("Practice result")).toBeDefined();
+    expect(screen.queryByText("Not passed yet")).toBeNull();
+  });
+
+  it("shows an unmet prerequisite with a way to open the tied content", () => {
+    const onOpen = vi.fn();
+    const landing = mockLanding({
+      planType: "CERTIFICATION",
+      startable: false,
+      blockedReason: "PREREQUISITE_NOT_MET",
+      blockedMessage: "Complete Microservices first.",
+      prerequisite: {
+        contentType: "COURSE",
+        contentId: "course-1",
+        title: "Microservices",
+        met: false,
+        message: "Complete Microservices first.",
+      },
+    });
+
+    render(<AssessmentLanding landing={landing} onOpenPrerequisite={onOpen} />);
+
+    expect(screen.getByText("Complete the course first")).toBeDefined();
+    fireEvent.click(screen.getByText("Open Microservices"));
+    expect(onOpen).toHaveBeenCalled();
   });
 });

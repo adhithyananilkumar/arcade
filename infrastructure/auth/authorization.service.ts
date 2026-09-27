@@ -88,10 +88,10 @@ export const AuthorizationService = {
   canReviewCourses: (user: User | null | undefined) => AuthorizationService.canReviewContent(user),
 
   /**
-   * Console → Exams: editing exam schedule slots is its own capability, gated on
-   * platform.exams.manage alone. Deliberately does NOT fall back to content-review authority —
-   * holding "Reviewer" must never implicitly unlock Exams (the matching backend endpoint,
-   * CourseController#patchCourseExamSchedule, enforces the same rule).
+   * Console → Exam standards: setting the platform's per-type exam standards (locked settings,
+   * defaults, limits, certification fee) is its own capability, gated on platform.exams.manage
+   * alone. Deliberately does NOT fall back to content-review authority — holding "Reviewer" must
+   * never implicitly unlock it (ExamStandardsController enforces the same rule).
    */
   canManageExams: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.exams.manage'),
 

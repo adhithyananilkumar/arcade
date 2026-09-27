@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Boxes, ClipboardList, Eye, Loader2, Plus, SlidersHorizontal, Users } from "lucide-react";
+import { Boxes, ClipboardList, Eye, Loader2, PenLine, Plus, SlidersHorizontal, Users } from "lucide-react";
 import { toast } from "sonner";
 import {
   createExamPlan,
@@ -10,7 +10,9 @@ import {
   listExamPlans,
   listPoolDetails,
   listSections,
+  planKindLabel,
   type ExamPlanResponse,
+  type ExamPlanType,
   type ExamResponse,
   type QuestionPoolDetail,
   type SectionResponse,
@@ -20,6 +22,8 @@ import { PlanWorkspace } from "./PlanWorkspace";
 import { ExamPreviewWorkspace } from "./ExamPreviewWorkspace";
 import { ExamSettingsWorkspace } from "./ExamSettingsWorkspace";
 import { ExamAttemptsWorkspace } from "./ExamAttemptsWorkspace";
+import { ExamMarkingWorkspace } from "./ExamMarkingWorkspace";
+import { NewPlanMenu } from "./NewPlanMenu";
 
 /**
  * Everything about an exam that is <em>not</em> writing questions: its plans, its pools, its
@@ -35,7 +39,7 @@ import { ExamAttemptsWorkspace } from "./ExamAttemptsWorkspace";
  * right. On narrow screens the two stack.
  */
 
-type TabId = "plans" | "pools" | "preview" | "settings" | "attempts";
+type TabId = "plans" | "pools" | "preview" | "settings" | "attempts" | "marking";
 
 const TABS: { id: TabId; label: string; icon: typeof ClipboardList }[] = [
   { id: "plans", label: "Exam plans", icon: ClipboardList },
@@ -43,7 +47,14 @@ const TABS: { id: TabId; label: string; icon: typeof ClipboardList }[] = [
   { id: "preview", label: "Preview", icon: Eye },
   { id: "settings", label: "Settings", icon: SlidersHorizontal },
   { id: "attempts", label: "Attempts & results", icon: Users },
+  { id: "marking", label: "Marking", icon: PenLine },
 ];
+
+const DEFAULT_PLAN_NAME: Record<ExamPlanType, string> = {
+  CERTIFICATION: "Certification",
+  COMPLETION: "Completion assessment",
+  ASSESSMENT: "Assessment",
+};
 
 export function ExamManagementSections({
   exam,
@@ -128,18 +139,24 @@ export function ExamManagementSections({
     }
   };
 
-  const addPlan = async () => {
+  const addPlan = async (planType: ExamPlanType) => {
     setCreatingPlan(true);
     try {
-      const plan = await createExamPlan(exam.id, { name: `Plan ${plans.length + 1}` });
+      const sameType = plans.filter((p) => p.planType === planType).length;
+      const name = sameType > 0 ? `${DEFAULT_PLAN_NAME[planType]} ${sameType + 1}` : DEFAULT_PLAN_NAME[planType];
+      const plan = await createExamPlan(exam.id, { planType, name });
       await loadPlans();
       setActivePlanId(plan.id);
-    } catch {
-      toast.error("Couldn't create the plan");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't create the plan");
     } finally {
       setCreatingPlan(false);
     }
   };
+
+  const newPlanMenu = (variant: "list" | "primary") => (
+    <NewPlanMenu exam={exam} plans={plans} creating={creatingPlan} onCreate={addPlan} variant={variant} />
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -169,13 +186,12 @@ export function ExamManagementSections({
             items={plans.map((plan) => ({
               id: plan.id,
               title: plan.name,
-              subtitle: `${plan.totalQuestions} question${plan.totalQuestions === 1 ? "" : "s"} · ${plan.durationMinutes} min`,
+              subtitle: `${planKindLabel(plan.planType, plan.graded)} · ${plan.totalQuestions} q · ${plan.durationMinutes} min`,
               badge: plan.active ? undefined : "Hidden",
             }))}
             activeId={activePlanId}
             onSelect={setActivePlanId}
-            onCreate={readOnly ? undefined : addPlan}
-            creating={creatingPlan}
+            createSlot={readOnly ? undefined : newPlanMenu("list")}
             createLabel="New plan"
             emptyLabel="No plans yet"
           >
@@ -184,7 +200,7 @@ export function ExamManagementSections({
               pools={pools}
               bankSections={sections}
               readOnly={readOnly}
-              onCreate={addPlan}
+              createSlot={newPlanMenu("primary")}
               onChanged={async () => {
                 const list = await loadPlans();
                 if (activePlanId && !list.some((p) => p.id === activePlanId)) {
@@ -244,8 +260,10 @@ export function ExamManagementSections({
           </div>
         ) : tab === "settings" ? (
           <ExamSettingsWorkspace key={exam.id} exam={exam} onChange={onExamChange} readOnly={readOnly} />
+        ) : tab === "marking" ? (
+          <ExamMarkingWorkspace examId={exam.id} />
         ) : (
-          <ExamAttemptsWorkspace examId={exam.id} />
+          <ExamAttemptsWorkspace examId={exam.id} plans={plans} />
         )}
       </div>
     </div>
@@ -263,6 +281,7 @@ function ListDetail({
   activeId,
   onSelect,
   onCreate,
+  createSlot,
   creating,
   createLabel,
   emptyLabel,
@@ -272,6 +291,8 @@ function ListDetail({
   activeId: string | null;
   onSelect: (id: string) => void;
   onCreate?: () => void;
+  /** Replaces the plain create button — e.g. a menu that asks what kind to create. */
+  createSlot?: React.ReactNode;
   creating?: boolean;
   createLabel: string;
   emptyLabel: string;
@@ -323,7 +344,8 @@ function ListDetail({
           ))
         )}
 
-        {onCreate && (
+        {createSlot}
+        {!createSlot && onCreate && (
           <button
             type="button"
             onClick={onCreate}

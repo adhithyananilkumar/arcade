@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { Clock, AlertTriangle, ChevronLeft, ChevronRight, Flag, CheckCircle2, ShieldCheck, Loader2 } from 'lucide-react';
+import { Clock, AlertTriangle, ChevronLeft, ChevronRight, Flag, CheckCircle2, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   startExamAttempt,
@@ -10,19 +10,27 @@ import {
   getExamAttemptQuestions,
   saveExamAnswer,
   submitExamAttempt,
-  startProctorSession,
-  verifyProctorIdentity,
   recordProctorEvent,
-  completeProctorSession,
   previewAttemptPaper,
   gradePreviewPaper,
   type AttemptQuestionResponse,
+  type AttemptResponse,
   HonorCodeModal,
 } from '@/domains/assessments';
 import { TiptapContentView } from '@/domains/learning';
+import { examRoutes } from '@/shared/routes/content.routes';
 
 /** How long after the last keystroke a written answer is persisted. */
 const TEXT_ANSWER_DEBOUNCE_MS = 600;
+
+/** What the plan asks of the sitting. Preview sittings are never monitored. */
+interface SittingRules {
+  proctored: boolean;
+  fullscreen: boolean;
+  maxViolations: number;
+}
+
+const UNMONITORED: SittingRules = { proctored: false, fullscreen: false, maxViolations: 0 };
 
 export default function ExamEnginePage() {
   const router = useRouter();
@@ -46,42 +54,47 @@ export default function ExamEnginePage() {
   // a submit, but the server independently rejects/auto-submits anything past its own deadline
   // regardless of what the client's clock says.
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  const [strikes, setStrikes] = useState(0);
+  const [rules, setRules] = useState<SittingRules>(UNMONITORED);
+  // Violations are counted by the server; this mirrors the count it last reported.
+  const [violations, setViolations] = useState(0);
   const [showWarning, setShowWarning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
-
-  const [isProctored, setIsProctored] = useState(false);
-  const [awaitingProctorGate, setAwaitingProctorGate] = useState(false);
-  const [startingSession, setStartingSession] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  const leaveTo = returnTo ?? examRoutes.landing(examId);
+
+  const adoptAttempt = useCallback((attempt: AttemptResponse) => {
+    setAttemptId(attempt.id);
+    setTimeLeft(attempt.secondsRemaining);
+    setViolations(attempt.violationCount);
+    setRules({
+      proctored: attempt.proctoringRequired,
+      fullscreen: attempt.fullscreenRequired || attempt.proctoringRequired,
+      maxViolations: attempt.maxViolations,
+    });
+  }, []);
 
   const beginAttempt = useCallback(() => {
     if (isPreview) {
       previewAttemptPaper(examId, planId)
         .then((previewQuestions) => {
           setAttemptId(`preview-${examId}`);
-          setAwaitingProctorGate(false);
-          setTimeLeft(3600); // 1 hour mock
+          setTimeLeft(3600); // An author's preview sitting is untimed in practice.
           setQuestions(previewQuestions);
           setAnswers({});
           setTextAnswers({});
         })
-        .catch((err) => {
-          setLoadError(err?.message ?? 'Failed to start this exam.');
-        });
+        .catch((err) => setLoadError(err?.message ?? 'Failed to start this exam.'));
       return;
     }
 
     startExamAttempt(examId, planId)
       .then((attempt) => {
-        setAttemptId(attempt.id);
-        setAwaitingProctorGate(false);
-        setTimeLeft(attempt.secondsRemaining);
+        adoptAttempt(attempt);
         return getExamAttemptQuestions(attempt.id);
       })
       .then((withQuestions) => {
-        if (!withQuestions) return;
         setQuestions(withQuestions.questions);
         const initialAnswers: Record<string, string[]> = {};
         const initialText: Record<string, string> = {};
@@ -92,15 +105,10 @@ export default function ExamEnginePage() {
         setAnswers(initialAnswers);
         setTextAnswers(initialText);
       })
-      .catch((err) => {
-        if (err?.status === 403) {
-          setIsProctored(true);
-          setAwaitingProctorGate(true);
-        } else {
-          setLoadError(err?.message ?? 'Failed to start this exam.');
-        }
-      });
-  }, [examId, planId, isPreview]);
+      // The start path re-checks everything the landing page showed (registration, prerequisite,
+      // window, identity, attempts). If any of it no longer holds, say so and send them back.
+      .catch((err) => setLoadError(err?.message ?? 'Failed to start this exam.'));
+  }, [examId, planId, isPreview, adoptAttempt]);
 
   const [honorCodeAccepted, setHonorCodeAccepted] = useState<boolean>(() => {
     try {
@@ -119,48 +127,39 @@ export default function ExamEnginePage() {
   // in hidden tabs). Re-read the server's own `secondsRemaining` whenever the tab comes back —
   // the server remains the only authority on the deadline either way.
   useEffect(() => {
-    if (!attemptId) return;
+    if (!attemptId || isPreview) return;
     const resync = () => {
       if (document.visibilityState !== 'visible') return;
       getExamAttempt(attemptId)
-        .then((attempt) => setTimeLeft(attempt.secondsRemaining))
+        .then((attempt) => {
+          if (attempt.status !== 'IN_PROGRESS') {
+            router.replace(examRoutes.results(examId, attempt.id));
+            return;
+          }
+          setTimeLeft(attempt.secondsRemaining);
+          setViolations(attempt.violationCount);
+        })
         .catch(() => {
           // Transient failure — keep counting down locally; the server still enforces expiry.
         });
     };
     document.addEventListener('visibilitychange', resync);
     return () => document.removeEventListener('visibilitychange', resync);
-  }, [attemptId]);
+  }, [attemptId, isPreview, examId, router]);
 
-  const handleStartProctoring = async () => {
-    setStartingSession(true);
-    try {
-      await startProctorSession(examId);
-      await verifyProctorIdentity(examId);
-      beginAttempt();
-    } catch (err) {
-      console.error('Failed to start proctoring session', err);
-    } finally {
-      setStartingSession(false);
+  const exitFullscreenThen = (go: () => void) => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().then(go).catch(go);
+    } else {
+      go();
     }
   };
-
-  const reportProctorEvent = (eventType: string, detail: string) => {
-    recordProctorEvent(examId, eventType, detail).catch(() => {
-      // Best-effort telemetry — never interrupt an in-flight attempt over a logging failure.
-    });
-  };
-
-  useEffect(() => {
-    if (sessionStorage.getItem(`exam_terminated_${examId}`)) {
-      router.replace(`/exams/${examId}/terminated`);
-    }
-  }, [examId, router]);
 
   const handleSubmit = useCallback(async () => {
     if (!attemptId || isSubmittingRef.current) return;
     isSubmittingRef.current = true;
     setIsSubmitting(true);
+    const back = returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : '';
     try {
       if (isPreview) {
         const payloadAnswers: Record<string, { selectedOptionIds?: string[]; textAnswer?: string | null }> = {};
@@ -170,133 +169,113 @@ export default function ExamEnginePage() {
             textAnswer: textAnswers[q.id] || null,
           };
         });
-        const result = await gradePreviewPaper(examId, { planId, answers: payloadAnswers });
-        // The results page loads the result via getExamAttemptResult, which fetches from /api/exam-attempts/{attemptId}/result
-        // Since we don't have a real attempt, we can pass the result data via sessionStorage so the results page can read it.
+        // The whole paper goes with the answers, so skipped questions still count towards the total.
+        const result = await gradePreviewPaper(examId, {
+          planId,
+          questions: questions.map((q) => ({ questionId: q.id, points: q.points })),
+          answers: payloadAnswers,
+        });
         sessionStorage.setItem(`preview_result_${examId}`, JSON.stringify(result));
-        sessionStorage.setItem(`exam_attempt_${examId}`, attemptId);
-        const back = returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : '';
-        const go = () => router.push(`/exams/${examId}/results?preview=true&attemptId=${attemptId}${back}`);
-        if (document.fullscreenElement) {
-          document.exitFullscreen().then(go).catch(go);
-        } else {
-          go();
-        }
+        exitFullscreenThen(() =>
+          router.push(`/exams/${examId}/results?preview=true&attemptId=${attemptId}${back}`)
+        );
         return;
       }
 
       await submitExamAttempt(attemptId);
-      if (isProctored) {
-        await completeProctorSession(examId).catch(() => {});
-      }
-      sessionStorage.setItem(`exam_attempt_${examId}`, attemptId);
-      // Carry `returnTo` through to the results page so an assessment sat from inside a course
-      // can offer a way back into that course rather than dead-ending on the exams hub.
-      const back = returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : '';
-      const go = () => router.push(`/exams/${examId}/results?attemptId=${attemptId}${back}`);
-      if (document.fullscreenElement) {
-        document.exitFullscreen().then(go).catch(go);
-      } else {
-        go();
-      }
+      exitFullscreenThen(() => router.push(`${examRoutes.results(examId, attemptId)}${back}`));
     } catch (err) {
       console.error('Failed to submit exam', err);
       isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
-  }, [attemptId, examId, isProctored, returnTo, router, isPreview, planId, questions, answers, textAnswers]);
+  }, [attemptId, examId, returnTo, router, isPreview, planId, questions, answers, textAnswers]);
 
+  // Integrity monitoring. Only switched on when the plan asks for it, and only ever reports: the
+  // server counts violations and ends the attempt at the plan's limit.
   useEffect(() => {
-    if (strikes >= 3) {
-      sessionStorage.setItem(`exam_terminated_${examId}`, 'true');
-      if (attemptId) submitExamAttempt(attemptId).catch(() => {});
-      router.replace(`/exams/${examId}/terminated`);
-    } else if (strikes > 0) {
-      setShowWarning(true);
-    }
-  }, [strikes, attemptId, examId, router]);
+    if (!attemptId || isPreview || (!rules.fullscreen && !rules.proctored)) return;
 
-  useEffect(() => {
     const enterFullscreen = async () => {
       try {
-        if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+        if (rules.fullscreen && document.documentElement.requestFullscreen && !document.fullscreenElement) {
           await document.documentElement.requestFullscreen();
         }
       } catch {
-        // Ignored
+        // The browser may refuse without a user gesture; the warning dialog offers a button.
       }
     };
-    enterFullscreen();
+    void enterFullscreen();
 
-    const handleStrike = (reason: string) => {
+    let lastReport = 0;
+    const report = (eventType: string, detail: string) => {
       if (isSubmittingRef.current) return;
-      console.warn('Anti-Cheat Strike:', reason);
-      reportProctorEvent('INTEGRITY_STRIKE', reason);
-      setStrikes((prev) => prev + 1);
+      // blur and visibilitychange usually fire together for one tab switch; count it once.
+      const now = Date.now();
+      if (now - lastReport < 1500) return;
+      lastReport = now;
+      setShowWarning(true);
+      if (!rules.proctored) return;
+      recordProctorEvent(attemptId, eventType, detail)
+        .then((attempt) => {
+          setViolations(attempt.violationCount);
+          if (attempt.status !== 'IN_PROGRESS') {
+            isSubmittingRef.current = true;
+            exitFullscreenThen(() => router.replace(examRoutes.terminated(examId)));
+          }
+        })
+        .catch(() => {
+          // Best-effort: a lost report must never interrupt the candidate's sitting.
+        });
     };
 
-    const handleFullscreenChange = () => {
-      if (!document.fullscreenElement) handleStrike('Exited Fullscreen');
+    const onFullscreenChange = () => {
+      if (rules.fullscreen && !document.fullscreenElement) report('FULLSCREEN_EXIT', 'Exited fullscreen');
     };
-    const handleVisibilityChange = () => {
-      if (document.hidden) handleStrike('Switched Tabs or Minimized');
+    const onVisibility = () => {
+      if (document.hidden) report('TAB_HIDDEN', 'Switched tabs or minimised');
     };
-    const handleBlur = () => handleStrike('Window Lost Focus');
-    const handlePreventDefault = (e: Event) => e.preventDefault();
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) ||
-        (e.ctrlKey && ['U', 'u', 'C', 'c', 'V', 'v', 'X', 'x', 'A', 'a'].includes(e.key)) ||
-        e.altKey
-      ) {
+    const onBlur = () => report('WINDOW_BLUR', 'Window lost focus');
+    const onClipboard = (e: Event) => {
+      e.preventDefault();
+      report('COPY_PASTE', `Blocked ${e.type}`);
+    };
+    const onPreventDefault = (e: Event) => e.preventDefault();
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key))) {
         e.preventDefault();
-        handleStrike('Prohibited Keyboard Shortcut');
+        report('DEVTOOLS_OPEN', 'Developer tools shortcut');
       }
     };
-
-    const handleResize = () => {
-      const widthDiff = window.outerWidth - window.innerWidth;
-      const heightDiff = window.outerHeight - window.innerHeight;
-      if (widthDiff > 200 || heightDiff > 200) {
-        handleStrike('Developer Tools Detected');
-      }
-    };
-
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = '';
     };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('blur', handleBlur);
-    document.addEventListener('contextmenu', handlePreventDefault);
-    document.addEventListener('selectstart', handlePreventDefault);
-    document.addEventListener('dragstart', handlePreventDefault);
-    document.addEventListener('copy', handlePreventDefault);
-    document.addEventListener('cut', handlePreventDefault);
-    document.addEventListener('paste', handlePreventDefault);
-    document.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('blur', onBlur);
+    document.addEventListener('copy', onClipboard);
+    document.addEventListener('cut', onClipboard);
+    document.addEventListener('paste', onClipboard);
+    document.addEventListener('contextmenu', onPreventDefault);
+    document.addEventListener('keydown', onKeyDown);
+    window.addEventListener('beforeunload', onBeforeUnload);
 
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('blur', handleBlur);
-      document.removeEventListener('contextmenu', handlePreventDefault);
-      document.removeEventListener('selectstart', handlePreventDefault);
-      document.removeEventListener('dragstart', handlePreventDefault);
-      document.removeEventListener('copy', handlePreventDefault);
-      document.removeEventListener('cut', handlePreventDefault);
-      document.removeEventListener('paste', handlePreventDefault);
-      document.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('fullscreenchange', onFullscreenChange);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('blur', onBlur);
+      document.removeEventListener('copy', onClipboard);
+      document.removeEventListener('cut', onClipboard);
+      document.removeEventListener('paste', onClipboard);
+      document.removeEventListener('contextmenu', onPreventDefault);
+      document.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('beforeunload', onBeforeUnload);
     };
-  }, []);
+    // exitFullscreenThen is a stable helper in behaviour; re-subscribing on its identity is pointless.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attemptId, isPreview, rules, examId, router]);
 
   useEffect(() => {
     if (timeLeft === null) return;
@@ -316,6 +295,7 @@ export default function ExamEnginePage() {
 
   const handleReturnToFullscreen = async () => {
     setShowWarning(false);
+    if (!rules.fullscreen) return;
     try {
       if (document.documentElement.requestFullscreen) {
         await document.documentElement.requestFullscreen();
@@ -395,38 +375,6 @@ export default function ExamEnginePage() {
     });
   };
 
-  if (awaitingProctorGate) {
-    return (
-      <div
-        className="flex min-h-screen items-center justify-center p-4"
-        style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
-      >
-        <div className="w-full max-w-md rounded-2xl border border-slate-200/80 bg-white p-7 text-center shadow-[0_24px_60px_rgba(20,20,43,0.12)]">
-          <div className="mx-auto mb-5 grid size-14 place-items-center rounded-2xl bg-[#14142b]/[0.06]">
-            <ShieldCheck className="text-[#14142b]" size={26} />
-          </div>
-          <h2 className="text-[1.25rem] font-bold tracking-tight text-[#14142b]">
-            This is a proctored exam
-          </h2>
-          <p className="mt-2 text-[13px] font-medium leading-relaxed text-slate-500">
-            Stay in fullscreen and don&apos;t switch tabs once you begin — leaving the exam
-            environment is logged. Starting confirms you&apos;re the enrolled candidate and ready
-            to proceed.
-          </p>
-          <button
-            type="button"
-            onClick={handleStartProctoring}
-            disabled={startingSession}
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#14142b] py-3 text-[13px] font-semibold text-white hover:bg-[#232735] disabled:opacity-60"
-          >
-            {startingSession ? <Loader2 size={15} className="animate-spin" /> : null}
-            Start proctoring session
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   if (!honorCodeAccepted) {
     return (
       <div
@@ -435,13 +383,7 @@ export default function ExamEnginePage() {
       >
         <HonorCodeModal
           isOpen={true}
-          onClose={() => {
-            if (returnTo) {
-              router.push(returnTo);
-            } else {
-              router.back();
-            }
-          }}
+          onClose={() => router.push(leaveTo)}
           onContinue={() => {
             try {
               sessionStorage.setItem('arcade_honor_code_accepted', 'true');
@@ -456,10 +398,17 @@ export default function ExamEnginePage() {
   if (loadError) {
     return (
       <div
-        className="flex min-h-screen items-center justify-center px-4 text-center text-[13px] font-medium text-rose-600"
+        className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center"
         style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
       >
-        {loadError}
+        <p className="max-w-md text-[14px] font-semibold text-rose-600">{loadError}</p>
+        <button
+          type="button"
+          onClick={() => router.push(leaveTo)}
+          className="cursor-pointer rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-[#232735]"
+        >
+          Go back
+        </button>
       </div>
     );
   }
@@ -500,10 +449,14 @@ export default function ExamEnginePage() {
                 <AlertTriangle className="text-rose-600" size={26} />
               </div>
               <h2 className="text-[1.25rem] font-bold tracking-tight text-[#14142b]">
-                Fullscreen exited
+                You left the exam
               </h2>
               <p className="mt-2 text-[13px] font-medium leading-relaxed text-slate-500">
-                Strike {strikes} of 2. A third violation will terminate this exam.
+                {rules.proctored && rules.maxViolations > 0
+                  ? `This was recorded (${violations} of ${rules.maxViolations}). Reaching the limit ends your attempt.`
+                  : rules.proctored
+                  ? 'This was recorded and will be visible to the exam administrator.'
+                  : 'Stay in the exam window until you submit.'}
               </p>
               <button
                 type="button"
@@ -521,7 +474,7 @@ export default function ExamEnginePage() {
         <div>
           <p className="text-[13px] font-bold text-[#14142b]">Exam in progress</p>
           <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-            Secure session
+            {isPreview ? 'Preview — nothing is saved' : rules.proctored ? 'Proctored session' : 'In progress'}
           </p>
         </div>
         <div

@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useMemo } from 'react';
-import { Home, Compass, BookOpen, Trophy, ShieldAlert } from 'lucide-react';
+import { Home, Compass, BookOpen, ClipboardCheck, Trophy, ShieldAlert } from 'lucide-react';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/shared/design-system/ui/dock';
 import { cn } from '@/shared/utils/utils';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -32,6 +32,16 @@ const dockItems = [
     href: '/learning',
     icon: BookOpen,
     activeColor: 'text-emerald-600 dark:text-emerald-400',
+    exact: false,
+  },
+  {
+    // Main exams: certifications and standalone exams the learner registers for. Assessments that
+    // live inside a course or event are sat from that content, not from here.
+    id: 'exams',
+    label: 'Exams',
+    href: '/exams',
+    icon: ClipboardCheck,
+    activeColor: 'text-sky-600 dark:text-sky-400',
     exact: false,
   },
   {
