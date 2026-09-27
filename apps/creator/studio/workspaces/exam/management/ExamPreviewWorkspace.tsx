@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clock, Eye, Lock, RefreshCw, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { Clock, Eye, Lock, Play, RefreshCw, ShieldCheck } from "lucide-react";
 import {
+  planKindLabel,
   previewExamPaper,
   type ExamPlanResponse,
   type ExamResponse,
@@ -73,6 +75,66 @@ export function ExamPreviewWorkspace({
   return (
     <div className="flex flex-col gap-4">
       {/* ── Candidate-facing cover ──────────────────────────────────────── */}
+      <section className="rounded-2xl border border-white/50 bg-white/70 p-5 shadow-sm backdrop-blur-md">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              {planKindLabel(plan.planType, plan.graded)} · {plan.name}
+            </span>
+            <h2 className="mt-1 text-lg font-black tracking-tight text-[#14142b]">{exam.title}</h2>
+            {exam.description && (
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">{exam.description}</p>
+            )}
+          </div>
+          {/* Sits the plan's draft paper end to end as a candidate would, graded on submit. Nothing
+              is saved and no attempt is used up. */}
+          <Link
+            href={`/exams/${exam.id}/attempt?planId=${plan.id}&preview=true&returnTo=${encodeURIComponent(`/studio/content/exam/${exam.id}`)}`}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-black"
+          >
+            <Play size={13} /> Sit it as a candidate
+          </Link>
+        </div>
+
+        <dl className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Fact icon={Clock} label="Time allowed" value={`${plan.durationMinutes} minutes`} />
+          <Fact icon={Eye} label="Questions" value={String(plan.totalQuestions)} />
+          <Fact
+            icon={ShieldCheck}
+            label="Pass mark"
+            value={plan.planType === "ASSESSMENT" && !plan.graded ? "Not graded" : `${plan.passPercentage}%`}
+          />
+          <Fact
+            icon={RefreshCw}
+            label="Attempts"
+            value={plan.maxAttempts === 1 ? "One attempt" : `${plan.maxAttempts} attempts`}
+          />
+        </dl>
+
+        {(plan.proctoringRequired || plan.identityVerificationRequired || plan.fullscreenRequired || plan.hubListed) && (
+          <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50/60 p-4">
+            <span className="flex items-center gap-1.5 text-xs font-bold text-amber-800">
+              <Lock size={13} /> Before you start
+            </span>
+            <ul className="mt-2 space-y-1 text-xs leading-relaxed text-amber-900/80">
+              {plan.hubListed && (
+                <li>
+                  · You register for this exam from the Exams hub
+                  {exam.tieType ? ` after completing ${exam.tiedContentTitle ?? "the tied content"}` : ""}.
+                </li>
+              )}
+              {plan.identityVerificationRequired && <li>· You submit a photo of yourself before starting.</li>}
+              {plan.proctoringRequired && (
+                <li>
+                  · This exam is proctored; leaving the window is recorded
+                  {plan.maxViolations > 0 ? ` and ${plan.maxViolations} violations end the attempt` : ""}.
+                </li>
+              )}
+              {plan.fullscreenRequired && <li>· You must stay in full screen for the whole attempt.</li>}
+            </ul>
+          </div>
+        )}
+      </section>
       <section className="rounded-2xl border border-white/50 bg-white/80 p-6 shadow-sm backdrop-blur-md">
         <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-500">{plan.name}</span>
         <h2 className="mt-1 text-xl font-black tracking-tight text-[#14142b]">{exam.title}</h2>

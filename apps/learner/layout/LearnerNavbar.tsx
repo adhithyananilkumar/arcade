@@ -280,13 +280,12 @@ export default function LearnerNavbar() {
           </Link>
         </div>
 
-        {/* Course learn page — separate back-to-Learning pill beside the logo */}
-        {courseLearnId && (
+        {pathname !== '/' && (
           <button
             type="button"
-            onClick={() => router.push('/learning')}
+            onClick={() => router.back()}
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full apple-glass-dock text-slate-600 shadow-none transition-colors [box-shadow:none] hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
-            title="Back to Learning"
+            title="Go back"
           >
             <ArrowLeft size={18} />
           </button>
