@@ -89,6 +89,7 @@ export {
   updateExam,
   listMyExams,
   tieExam,
+  listTieCandidates,
   untieExam,
   submitExamForReview,
   getCourseExam,

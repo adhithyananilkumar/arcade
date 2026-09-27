@@ -64,3 +64,15 @@ export { ContentVersionHistory } from "./components/ContentVersionHistory";
 export { ContentLifecycleTimeline } from "./components/ContentLifecycleTimeline";
 export { ReviewPathPanel } from "./components/ReviewPathPanel";
 export { RollbackDialog } from "./components/RollbackDialog";
+
+// ── Central content scheduling ────────────────────────────────────────────────
+export { SchedulePanel } from "./components/SchedulePanel";
+export type { SchedulePanelProps } from "./components/SchedulePanel";
+export { contentScheduleApi } from "./api/contentSchedule";
+export type {
+  ContentScheduleResponse,
+  ContentScheduleRequest,
+  ScheduledContentType,
+  ScheduleState,
+  ScheduleWindow,
+} from "./api/contentSchedule";

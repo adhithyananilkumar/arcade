@@ -10,12 +10,14 @@
 import { useDeferredValue, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ClipboardCheck, Loader2, Search } from "lucide-react";
+import { Award, ChevronRight, ClipboardCheck, Loader2, Search } from "lucide-react";
 import {
   ExamHubCardView,
   getAvailableHubExams,
+  getMyGradeCards,
   getMyHubExams,
   type ExamHubCard,
+  type GradeCardResponse,
 } from "@/domains/assessments";
 import { examRoutes } from "@/shared/routes/content.routes";
 
@@ -23,7 +25,7 @@ const pageBg = {
   background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 32%, #FFFFFF 70%)",
 };
 
-type Tab = "mine" | "available";
+type Tab = "mine" | "available" | "cards";
 
 export default function ExamsHubPage() {
   const router = useRouter();
@@ -36,6 +38,12 @@ export default function ExamsHubPage() {
     queryKey: ["exams", "hub", "available", deferredQuery.trim()],
     queryFn: () => getAvailableHubExams(deferredQuery),
     enabled: tab === "available",
+  });
+
+  const gradeCards = useQuery({
+    queryKey: ["exams", "grade-cards", "mine"],
+    queryFn: getMyGradeCards,
+    enabled: tab === "cards",
   });
 
   const active = tab === "mine" ? mine : available;
@@ -51,7 +59,7 @@ export default function ExamsHubPage() {
               Exams
             </div>
             <h1 className="text-[1.75rem] font-bold tracking-tight text-[#14142b] sm:text-[2rem]">
-              {tab === "mine" ? "Your exams" : "Find an exam"}
+              {tab === "mine" ? "Your exams" : tab === "available" ? "Find an exam" : "Your grade cards"}
             </h1>
             <p className="mt-1.5 text-[13px] font-medium text-slate-500">
               Certifications and standalone exams. Course and event assessments are taken inside that
@@ -64,6 +72,7 @@ export default function ExamsHubPage() {
               [
                 ["mine", "My exams", mine.data?.length],
                 ["available", "Available", undefined],
+                ["cards", "Grade cards", undefined],
               ] as const
             ).map(([id, label, count]) => (
               <button
@@ -93,7 +102,13 @@ export default function ExamsHubPage() {
           </label>
         )}
 
-        {active.isLoading ? (
+        {tab === "cards" ? (
+          <GradeCardList
+            loading={gradeCards.isLoading}
+            cards={gradeCards.data ?? []}
+            onOpen={(id) => router.push(examRoutes.gradeCard(id))}
+          />
+        ) : active.isLoading ? (
           <div className="flex justify-center py-24">
             <Loader2 className="animate-spin text-slate-400" size={26} />
           </div>
@@ -164,5 +179,66 @@ function EmptyState({
         </>
       )}
     </div>
+  );
+}
+
+function GradeCardList({
+  loading,
+  cards,
+  onOpen,
+}: {
+  loading: boolean;
+  cards: GradeCardResponse[];
+  onOpen: (id: string) => void;
+}) {
+  if (loading) {
+    return (
+      <div className="flex justify-center py-24">
+        <Loader2 className="animate-spin text-slate-400" size={26} />
+      </div>
+    );
+  }
+  if (cards.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-3 rounded-3xl border border-dashed border-slate-300 bg-white/60 px-6 py-20 text-center">
+        <Award size={30} className="text-slate-300" />
+        <p className="text-[15px] font-semibold text-[#14142b]">No grade cards yet</p>
+        <p className="max-w-sm text-[13px] font-medium text-slate-500">
+          Certification exams issue a grade card, and completing a course with graded assessments
+          issues a transcript.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      {cards.map((card) => (
+        <li key={card.id}>
+          <button
+            type="button"
+            onClick={() => onOpen(card.id)}
+            className="flex w-full cursor-pointer items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-slate-50"
+          >
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-violet-50 text-violet-700">
+              <Award size={18} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[14px] font-semibold text-[#14142b]">{card.examTitle}</span>
+              <span className="block text-[12px] font-medium text-slate-500">
+                {card.kind === "CONTENT_TRANSCRIPT" ? "Assessment transcript" : card.planName ?? "Grade card"} ·{" "}
+                {new Date(card.issuedAt).toLocaleDateString()}
+                {card.revoked && " · revoked"}
+              </span>
+            </span>
+            <span
+              className={`shrink-0 text-[13px] font-bold tabular-nums ${card.passed ? "text-emerald-700" : "text-slate-500"}`}
+            >
+              {card.percentage}%
+            </span>
+            <ChevronRight size={16} className="shrink-0 text-slate-300" />
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }

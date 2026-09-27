@@ -19,7 +19,7 @@
  * ------------------------------------------------------------------
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Award, ClipboardCheck, Flag, Loader2, Lock, Save, Unlock } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -59,25 +59,21 @@ export function ExamStandardsConsole() {
   const [draft, setDraft] = useState<ExamStandard | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      setStandards(await listExamStandards());
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not load exam standards.');
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    listExamStandards()
+      .then(setStandards)
+      .catch((err) => toast.error(err instanceof Error ? err.message : 'Could not load exam standards.'))
+      .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
-
   const current = useMemo(() => standards.find((s) => s.planType === active) ?? null, [standards, active]);
-  useEffect(() => {
+  // The draft follows the selected standard; resetting it while rendering (not in an effect) keeps
+  // one render pass per switch.
+  const [draftFor, setDraftFor] = useState<ExamStandard | null>(null);
+  if (current !== draftFor) {
+    setDraftFor(current);
     setDraft(current ? structuredClone(current) : null);
-  }, [current]);
+  }
 
   const dirty = useMemo(() => JSON.stringify(draft) !== JSON.stringify(current), [draft, current]);
 

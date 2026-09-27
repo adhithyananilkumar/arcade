@@ -237,7 +237,7 @@ function buildFacts(
     facts.push({ icon: Clock, label: 'Length', value: course.duration });
   }
   if (course.hasExam) {
-    facts.push({ icon: GraduationCap, label: 'Assessment', value: 'Included' });
+    facts.push({ icon: GraduationCap, label: 'Assessments', value: 'Included' });
   }
   if (typeof course.enrollmentCount === 'number') {
     facts.push({

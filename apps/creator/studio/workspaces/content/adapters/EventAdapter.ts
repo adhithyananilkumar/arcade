@@ -1,7 +1,7 @@
 import { api } from "@/infrastructure/http/api";
 import { ContentDataAdapter, ContentMeta, ContainerNode, ExamSummary, LeafNode, RootBadgeNode, Terminology } from "../types";
 import type { Event, EventSession } from "@/app/(authenticated)/studio/events/types";
-import { createExam, detachExamFromEvent, listExamsForEvent } from "@/domains/assessments";
+import { createEventExam, getEventExam, untieExam, updateExam } from "@/domains/assessments";
 
 export class EventAdapter implements ContentDataAdapter {
   private eventId: string;
@@ -149,17 +149,25 @@ export class EventAdapter implements ContentDataAdapter {
     await api.post(`/api/v1/events/lessons/${leafId}/document/versions`, payload);
   }
 
-  // ── Exams attached to this event ───────────────────────────────────────────────
+  // ── The event's exam ──────────────────────────────────────────────────────────
+  // An event has at most one exam: its completion/assessment plans sit in the event, and its
+  // certification plan is listed in the Exams hub with the event as the prerequisite.
 
   async listExams(contentId: string): Promise<ExamSummary[]> {
-    return listExamsForEvent(contentId);
+    const exam = await getEventExam(contentId);
+    return exam ? [{ id: exam.id, title: exam.title, published: exam.published }] : [];
   }
 
   async createAndAttachExam(contentId: string, title: string): Promise<ExamSummary> {
-    return createExam({ title, eventId: contentId });
+    const exam = await createEventExam(contentId);
+    if (exam.planCount === 0 && title && exam.title !== title) {
+      const renamed = await updateExam(exam.id, { title });
+      return { id: renamed.id, title: renamed.title, published: renamed.published };
+    }
+    return { id: exam.id, title: exam.title, published: exam.published };
   }
 
-  async detachExam(contentId: string, examId: string): Promise<void> {
-    await detachExamFromEvent(contentId, examId);
+  async detachExam(_contentId: string, examId: string): Promise<void> {
+    await untieExam(examId);
   }
 }

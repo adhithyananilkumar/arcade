@@ -106,17 +106,18 @@ export interface ContentDataAdapter {
   addContainerAssessment?(
     containerId: string,
     title: string,
-    contentId: string
+    contentId: string,
+    planType?: "COMPLETION" | "ASSESSMENT"
   ): Promise<AssessmentLeaf>;
   removeContainerAssessment?(placementId: string, planId: string | null): Promise<void>;
 
-  // Exams attached to this content item. Every content type that hosts the shared content
-  // editor runtime supports this (there is no capability gate here, unlike badges) — it exists
-  // on the adapter, rather than as a `contentType === ...` branch in the runtime, purely so the
-  // runtime never has to know which underlying API a Course vs an Event exam lives behind.
+  // The exam tied to this content item — at most one. It is the content's assessment system: its
+  // completion and assessment plans are placed inside the content, and its certification plan is
+  // listed in the learner Exams hub with this content as the prerequisite.
   listExams(contentId: string): Promise<ExamSummary[]>;
-  /** Creates a brand-new exam already attached to this content item, and returns it. */
+  /** Creates this content's exam (idempotent) and returns it. */
   createAndAttachExam(contentId: string, title: string): Promise<ExamSummary>;
+  /** Unties the exam: it becomes standalone and its placements here are removed. */
   detachExam(contentId: string, examId: string): Promise<void>;
 }
 
@@ -137,7 +138,8 @@ export interface AssessmentLeaf {
   containerId: string;
   title: string;
   position: number;
-  requiredForCompletion: boolean;
+  /** COMPLETION completes the content when passed; ASSESSMENT is a graded or practice check. */
+  planType: "COMPLETION" | "ASSESSMENT";
   /** Serialized Tiptap document shown to candidates above the Start button; null until written. */
   instructions?: string | null;
 }
@@ -146,5 +148,5 @@ export interface AssessmentLeaf {
 export interface ExamSummary {
   id: string;
   title: string;
-  wasPublished: boolean;
+  published: boolean;
 }

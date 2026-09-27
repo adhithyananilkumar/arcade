@@ -4,6 +4,7 @@ import type { Metric } from "../sections/MetricsGrid";
 import { CollaboratorsSection } from "../sections/CollaboratorsSection";
 import { PublishingWorkflow } from "../sections/PublishingWorkflow";
 import { editorHref } from "../../lib/contentTypeRouting";
+import { SchedulePanel } from "@/domains/publishing";
 
 export function getCourseMetrics(_data: OverviewData): Metric[] {
   return [
@@ -44,6 +45,15 @@ export function CourseOverviewTab({
         unavailable={data.collaborators.status === "error"}
         canManage={canManage}
         onChanged={onChanged}
+      />
+    );
+  }
+  if (tab === "settings") {
+    return (
+      <SchedulePanel
+        contentType="COURSE"
+        contentId={contentId}
+        readOnly={data.content?.status === "SUBMITTED"}
       />
     );
   }

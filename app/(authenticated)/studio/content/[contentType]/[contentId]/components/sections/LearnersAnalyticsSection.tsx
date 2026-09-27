@@ -10,8 +10,9 @@ import { formatMoney, fromMinorUnits, toMinorUnits } from "@/shared/utils/money"
 import {
   listAssessmentPlacementsForCourse,
   listExamPlans,
-  listExamsForCourse,
-  listExamsForEvent,
+  getCourseExam,
+  getEventExam,
+  planKindLabel,
   type AssessmentPlacementResponse,
   type ExamPlanResponse,
   type ExamResponse,
@@ -109,8 +110,8 @@ export function LearnersAnalyticsSection({
   const [exams, setExams] = useState<ExamResponse[] | null>(null);
   useEffect(() => {
     if (!contentId || !segment) return;
-    const request = segment === "event" ? listExamsForEvent(contentId) : listExamsForCourse(contentId);
-    request.then(setExams).catch(() => setExams([]));
+    const request = segment === "event" ? getEventExam(contentId) : getCourseExam(contentId);
+    request.then((exam) => setExams(exam ? [exam] : [])).catch(() => setExams([]));
   }, [contentId, segment]);
 
   /**
@@ -390,18 +391,15 @@ export function LearnersAnalyticsSection({
                         </span>
                       </div>
                       <div className="flex flex-shrink-0 items-center gap-1.5">
-                        {placement.requiredForCompletion && (
-                          <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-amber-700">
-                            Required
-                          </span>
-                        )}
-                        {plan && plan.outcome !== "NONE" && (
-                          <span className="rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-violet-700">
-                            {plan.outcome === "CERTIFICATE"
-                              ? "Certification"
-                              : plan.outcome === "GRADE_CARD"
-                                ? "Grade card"
-                                : "Completion"}
+                        {plan && (
+                          <span
+                            className={`rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide ${
+                              plan.planType === "COMPLETION"
+                                ? "border-amber-200 bg-amber-50 text-amber-700"
+                                : "border-violet-200 bg-violet-50 text-violet-700"
+                            }`}
+                          >
+                            {planKindLabel(plan.planType, plan.graded)}
                           </span>
                         )}
                       </div>
@@ -434,7 +432,7 @@ export function LearnersAnalyticsSection({
                         </span>
                       </div>
                       <span className="flex-shrink-0 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-700">
-                        {exam.wasPublished ? "Published" : "Draft"}
+                        {exam.published ? "Published" : "Draft"}
                       </span>
                     </Link>
                   );

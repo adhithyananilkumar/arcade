@@ -8,6 +8,7 @@ import { OverviewHero } from './sections/OverviewHero';
 import { OverviewSyllabus } from './sections/OverviewSyllabus';
 import { OverviewNotesPanel } from './sections/OverviewNotesPanel';
 import { OverviewFacts, OverviewPeople } from './sections/OverviewAside';
+import { CertificationCard } from './sections/CertificationCard';
 import type { ContentOverviewModel } from './contentOverview.types';
 
 /**
@@ -109,6 +110,11 @@ export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) 
             contentId={model.contentId}
             notesHref={model.notesHref}
             items={flatItems}
+          />
+          <CertificationCard
+            contentType={model.contentType}
+            contentId={model.contentId}
+            completed={model.progress.state === 'COMPLETED'}
           />
           <OverviewFacts facts={model.facts} />
           <OverviewPeople people={model.people} />

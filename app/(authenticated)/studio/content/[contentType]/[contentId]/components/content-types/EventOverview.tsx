@@ -32,6 +32,7 @@ import { EventSettingsSection } from "../sections/EventSettingsSection";
 import { RegisteredMembersSection } from "../sections/RegisteredMembersSection";
 import { EventCollaboratorsManager } from "@/app/(authenticated)/studio/events/components/wizard/review/EventCollaboratorsManager";
 import { PublishingWorkflow } from "../sections/PublishingWorkflow";
+import { SchedulePanel } from "@/domains/publishing";
 import { ReadinessCard } from "../sections/ReadinessCard";
 import { EmptyState } from "../sections/EmptyState";
 import { editorHref } from "../../lib/contentTypeRouting";
@@ -152,11 +153,14 @@ export function EventOverviewTab({
   // ── Settings Tab ────────────────────────────────────────────────────────────
   if (tab === "settings") {
     return (
-      <EventSettingsSection
-        eventId={contentId}
-        initialEvent={eventDetails}
-        onChanged={onChanged}
-      />
+      <div className="flex flex-col gap-6">
+        <EventSettingsSection
+          eventId={contentId}
+          initialEvent={eventDetails}
+          onChanged={onChanged}
+        />
+        <SchedulePanel contentType="EVENT" contentId={contentId} enrollmentNoun="Registration" />
+      </div>
     );
   }
 

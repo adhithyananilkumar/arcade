@@ -275,6 +275,13 @@ export function listMyExams() {
   );
 }
 
+/** The caller's own courses or events — what a standalone exam can be tied to. */
+export function listTieCandidates(type: ExamTieType) {
+  return api.get<Array<{ id: string; type: string; title: string; status: string }>>(
+    `/api/content?type=${type}`
+  );
+}
+
 /**
  * Ties a standalone exam to one course or event. Refused when either side already has a tie. The
  * platform's locked settings then apply to every plan on it.

@@ -6,7 +6,7 @@
 // it afterwards, and a certificate waits for that approval. Nothing here decides whether the
 // candidate is verified — the browser only collects the photo.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Camera, Loader2, RefreshCw, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { uploadFileToStorage } from '@/infrastructure/media/upload';
@@ -30,19 +30,14 @@ export function IdentityCapture({
   const streamRef = useRef<MediaStream | null>(null);
   const [cameraOn, setCameraOn] = useState(false);
   const [photo, setPhoto] = useState<Blob | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const preview = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo]);
+  useEffect(() => () => {
+    if (preview) URL.revokeObjectURL(preview);
+  }, [preview]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- release the camera on unmount only
   useEffect(() => () => stopCamera(), []);
-  useEffect(() => {
-    if (!photo) {
-      setPreview(null);
-      return;
-    }
-    const url = URL.createObjectURL(photo);
-    setPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [photo]);
 
   function stopCamera() {
     streamRef.current?.getTracks().forEach((t) => t.stop());

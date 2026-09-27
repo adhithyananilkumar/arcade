@@ -4,9 +4,9 @@
 //
 // Selecting an assessment in the tree opens this in the canvas, the same way selecting a lesson
 // opens the lesson editor — authoring an assessment is editing a page, not a trip to another part
-// of the app. What lives here is everything about *this placement*: how it introduces itself to a
-// candidate, and whether passing it is required. The questions and plans belong to the exam itself,
-// which is shared across every placement, so those open the Exam workspace explicitly.
+// of the app. What lives here is everything about *this placement*: its title and how it introduces
+// itself to a candidate. Its type (completion or assessment), questions and settings belong to its
+// plan on the content's exam, so those open the Exam workspace explicitly.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ExternalLink, GraduationCap, Loader2 } from "lucide-react";
@@ -14,19 +14,12 @@ import { ArcadeEditor } from "@/apps/creator/editor";
 import type { TiptapDocument } from "@/shared/types/editor.types";
 import {
   getExamPlan,
+  planKindLabel,
+  planTypeMeta,
   updateAssessmentPlacement,
-  type AssessmentOutcome,
   type ExamPlanResponse,
 } from "@/domains/assessments";
 import type { AssessmentLeaf } from "../types";
-
-/** Plain-English names for what passing produces, matching the Exam workspace's own wording. */
-const OUTCOME_LABELS: Record<AssessmentOutcome, string> = {
-  NONE: "Score only",
-  COMPLETION: "Counts towards completion",
-  GRADE_CARD: "Grade card",
-  CERTIFICATE: "Certification",
-};
 
 export interface AssessmentSettingsPanelProps {
   assessment: AssessmentLeaf;
@@ -46,7 +39,6 @@ export function AssessmentSettingsPanel({
   onChange,
 }: AssessmentSettingsPanelProps) {
   const [title, setTitle] = useState(assessment.title);
-  const [required, setRequired] = useState(assessment.requiredForCompletion);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -101,13 +93,6 @@ export function AssessmentSettingsPanel({
     void persist({ titleOverride: next });
   };
 
-  const toggleRequired = () => {
-    const next = !required;
-    setRequired(next);
-    onChange({ requiredForCompletion: next });
-    void persist({ requiredForCompletion: next });
-  };
-
   const saveInstructions = useCallback(
     (doc: TiptapDocument) => persist({ instructions: JSON.stringify(doc) }),
     [persist]
@@ -146,24 +131,18 @@ export function AssessmentSettingsPanel({
       </header>
 
       <section className="mb-7 rounded-xl border border-slate-200 bg-white px-4 py-3.5">
-        <label className="flex cursor-pointer items-start gap-3">
-          <input
-            type="checkbox"
-            checked={required}
-            onChange={toggleRequired}
-            disabled={readOnly}
-            className="mt-0.5 size-4 rounded border-slate-300 accent-[#14142b]"
-          />
-          <span>
-            <span className="block text-[13px] font-semibold text-[#14142b]">
-              Required to complete this course
-            </span>
-            <span className="block text-[12px] font-medium text-slate-500">
-              Learners must pass this before the course counts as complete. It also counts towards
-              their progress.
-            </span>
-          </span>
-        </label>
+        <span
+          className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${planTypeMeta(assessment.planType).chip}`}
+        >
+          {planKindLabel(assessment.planType, plan?.graded ?? true)}
+        </span>
+        <p className="mt-2 text-[12px] font-medium text-slate-500">
+          {assessment.planType === "COMPLETION"
+            ? "Passing this completes the course for the learner. A course has one completion assessment."
+            : plan && !plan.graded
+            ? "A practice check: learners see their score, and it doesn't count towards anything."
+            : "A graded check: it appears on the learner's assessment transcript when they complete the course."}
+        </p>
       </section>
 
       <section className="mb-7">
@@ -191,10 +170,9 @@ export function AssessmentSettingsPanel({
         <h2 className="text-[13px] font-semibold text-[#14142b]">Questions & timing</h2>
         <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">
           This assessment is a <strong className="font-semibold text-slate-600">plan</strong> on the
-          course&apos;s exam. Every assessment in this course shares that one exam and its question
-          bank — what makes them different from each other is their plan: which questions it draws,
-          how long candidates get, how many attempts, the pass mark, proctoring, and what passing
-          produces.
+          course&apos;s exam. Every assessment in this course shares that exam and its question bank;
+          each plan sets which questions it draws, the time, attempts and pass mark — within the
+          platform&apos;s standard for its type.
         </p>
         {plan && (
           <dl className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[12px]">
@@ -206,18 +184,22 @@ export function AssessmentSettingsPanel({
               <dt className="font-medium text-slate-400">Attempts</dt>
               <dd className="font-semibold text-[#14142b]">{plan.maxAttempts}</dd>
             </span>
-            <span className="flex gap-1.5">
-              <dt className="font-medium text-slate-400">Pass mark</dt>
-              <dd className="font-semibold text-[#14142b]">{plan.passPercentage}%</dd>
-            </span>
+            {(plan.planType !== "ASSESSMENT" || plan.graded) && (
+              <span className="flex gap-1.5">
+                <dt className="font-medium text-slate-400">Pass mark</dt>
+                <dd className="font-semibold text-[#14142b]">{plan.passPercentage}%</dd>
+              </span>
+            )}
             <span className="flex gap-1.5">
               <dt className="font-medium text-slate-400">Questions</dt>
               <dd className="font-semibold text-[#14142b]">{plan.totalQuestions}</dd>
             </span>
-            <span className="flex gap-1.5">
-              <dt className="font-medium text-slate-400">Outcome</dt>
-              <dd className="font-semibold text-[#14142b]">{OUTCOME_LABELS[plan.outcome]}</dd>
-            </span>
+            {plan.proctoringRequired && (
+              <span className="flex gap-1.5">
+                <dt className="font-medium text-slate-400">Proctored</dt>
+                <dd className="font-semibold text-[#14142b]">Yes</dd>
+              </span>
+            )}
           </dl>
         )}
         {plan && plan.totalQuestions === 0 && (

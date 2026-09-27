@@ -56,7 +56,7 @@ import {
   listSections,
   planReadiness,
   promptToPlainText,
-  publishExam,
+  submitExamForReview,
   renameSection,
   saveSectionQuestions,
   searchBankQuestions,
@@ -347,15 +347,20 @@ export function ExamWorkspace({ examId }: { examId: string }) {
   }, [pendingOpenId, questions, questionsLoading]);
 
   /**
-   * Publishing cuts an immutable version of the exam and every plan on it. Blocked when a plan
-   * cannot build its paper: publishing a plan that asks for more questions than exist would let a
-   * candidate start an exam that fails at generation time. Plans are edited on the overview, so a
-   * failure here points the author there rather than opening a panel in the editor.
+   * Submits a standalone exam to Platform Review; approval publishes it. Checked here first so the
+   * author gets a pointed message about the plan that can't build its paper; the server runs the
+   * same checks (and the platform's minimum question counts) and is the one that decides.
    */
   const handlePublish = async () => {
     setPublishing(true);
     try {
       const plans = (await listExamPlans(examId)).filter((p) => p.active);
+      if (plans.length === 0) {
+        toast.error("Add a plan before submitting", {
+          description: "Open the exam's overview and add a certification or assessment plan.",
+        });
+        return;
+      }
       const results = await Promise.all(plans.map((p) => validateExamPlan(p.id)));
       const broken = results.filter((r) => !isPlanPublishable(r));
       if (broken.length > 0) {
@@ -366,11 +371,11 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         return;
       }
 
-      await publishExam(examId);
-      toast.success("Exam published");
+      await submitExamForReview(examId);
+      toast.success("Submitted for review");
       setExam(await getExam(examId));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't publish this exam");
+      toast.error(err instanceof Error ? err.message : "Couldn't submit this exam");
     } finally {
       setPublishing(false);
     }
@@ -621,23 +626,24 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         panelOpen={panel.open}
         onTogglePanel={() => panel.setOpen(!panel.open)}
         workspaceActionsBefore={
-          exam.courseId ? (
+          exam.tieType ? (
             <span
-              title="This assessment is part of a course and will be reviewed and published when the course is submitted."
+              title={`This exam is tied to ${exam.tiedContentTitle ?? "its " + exam.tieType.toLowerCase()} and is reviewed and published with it.`}
               className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/70 px-3 py-1.5 text-[11px] font-semibold text-slate-600 backdrop-blur-md"
             >
-              Course Assessment
+              {exam.tieType === "COURSE" ? "Course exam" : "Event exam"}
+              {exam.tiedContentTitle ? ` · ${exam.tiedContentTitle}` : ""}
             </span>
           ) : undefined
         }
         primaryAction={
-          !readOnly && !exam.courseId
+          !readOnly && !exam.tieType
             ? {
                 onClick: handlePublish,
                 disabled: publishing,
-                title: "Snapshot this exam and its plans into a new published version",
+                title: "Send this exam to Platform Review. Approval publishes a new frozen version.",
                 icon: publishing ? <Loader2 size={14} className="animate-spin" /> : <UploadCloud size={14} />,
-                label: "Publish",
+                label: exam.published ? "Submit changes" : "Submit for review",
               }
             : null
         }

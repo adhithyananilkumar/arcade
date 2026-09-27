@@ -91,25 +91,25 @@ export function ExamPreviewWorkspace({
           />
         </dl>
 
-        {(plan.proctoringRequired ||
-          plan.identityVerificationRequired ||
-          plan.fullscreenRequired ||
-          plan.registrationRequired ||
-          plan.deliveryMode === "SCHEDULED") && (
+        {(plan.proctoringRequired || plan.identityVerificationRequired || plan.fullscreenRequired || plan.hubListed) && (
           <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50/60 p-4">
             <span className="flex items-center gap-1.5 text-xs font-bold text-amber-800">
               <Lock size={13} /> Before you start
             </span>
             <ul className="mt-2 space-y-1 text-xs leading-relaxed text-amber-900/80">
-              {plan.registrationRequired && <li>· You need to be registered for this exam.</li>}
-              {plan.deliveryMode === "SCHEDULED" && (
+              {plan.hubListed && (
                 <li>
-                  · This exam can only be started inside its scheduled window
-                  {plan.opensAt ? ` (opens ${new Date(plan.opensAt).toLocaleString()})` : ""}.
+                  · You register for this exam from the Exams hub
+                  {exam.tieType ? ` after completing ${exam.tiedContentTitle ?? "the tied content"}` : ""}.
                 </li>
               )}
-              {plan.identityVerificationRequired && <li>· Your identity will be verified first.</li>}
-              {plan.proctoringRequired && <li>· This exam is proctored and monitored throughout.</li>}
+              {plan.identityVerificationRequired && <li>· You submit a photo of yourself before starting.</li>}
+              {plan.proctoringRequired && (
+                <li>
+                  · This exam is proctored; leaving the window is recorded
+                  {plan.maxViolations > 0 ? ` and ${plan.maxViolations} violations end the attempt` : ""}.
+                </li>
+              )}
               {plan.fullscreenRequired && <li>· You must stay in full screen for the whole attempt.</li>}
             </ul>
           </div>

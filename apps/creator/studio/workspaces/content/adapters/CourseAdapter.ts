@@ -11,17 +11,16 @@ import {
 } from "../types";
 import type { CourseResponse, ModuleResponse, LessonResponse, QuizResponse, BadgeSummaryResponse } from "@/shared/types/api.types";
 import {
-  createExam,
   createExamPlan,
   deleteExamPlan,
   getCourseExam,
   createCourseExam,
-  detachExamFromCourse,
-  listExamsForCourse,
   listAssessmentPlacementsForCourse,
+  listExamPlans,
   placeAssessment,
-  removeAssessmentPlacement,
+  untieExam,
   updateAssessmentPlacement,
+  updateExam,
 } from "@/domains/assessments";
 
 export class CourseAdapter implements ContentDataAdapter {
@@ -170,27 +169,40 @@ export class CourseAdapter implements ContentDataAdapter {
     await api.patch(`/api/badges/${badgeId}`, { title });
   }
 
-  // ── Exams attached to this course ─────────────────────────────────────────────
+  // ── The course's exam ─────────────────────────────────────────────────────────
+  // A course has at most one exam. All of its assessments are plans on it and share its bank.
 
   async listExams(contentId: string): Promise<ExamSummary[]> {
-    return listExamsForCourse(contentId);
+    const exam = await getCourseExam(contentId);
+    return exam ? [{ id: exam.id, title: exam.title, published: exam.published }] : [];
   }
 
   async createAndAttachExam(contentId: string, title: string): Promise<ExamSummary> {
-    return createExam({ title, courseId: contentId });
+    const exam = await createCourseExam(contentId);
+    // A freshly created exam gets a meaningful name; an existing one keeps the author's.
+    if (exam.planCount === 0 && title && exam.title !== title) {
+      const renamed = await updateExam(exam.id, { title });
+      return { id: renamed.id, title: renamed.title, published: renamed.published };
+    }
+    return { id: exam.id, title: exam.title, published: exam.published };
   }
 
-  async detachExam(contentId: string, examId: string): Promise<void> {
-    await detachExamFromCourse(contentId, examId);
+  async detachExam(_contentId: string, examId: string): Promise<void> {
+    await untieExam(examId);
   }
 
   // ── Assessments inside modules ────────────────────────────────────────────────
-  // A module assessment is an exam placed on that module. The exam is created against the course
-  // so it draws on the course's question bank; the placement is what makes it appear in module 3
-  // between two lessons.
+  // A module assessment is a plan on the course's exam, placed on that module. The placement is
+  // what makes it appear in module 3 between two lessons.
 
   async listContainerAssessments(contentId: string): Promise<AssessmentLeaf[]> {
-    const placements = await listAssessmentPlacementsForCourse(contentId);
+    const [placements, exam] = await Promise.all([
+      listAssessmentPlacementsForCourse(contentId),
+      getCourseExam(contentId),
+    ]);
+    const plans = exam ? await listExamPlans(exam.id) : [];
+    const typeOf = new Map(plans.map((p) => [p.id, p.planType]));
+    const nameOf = new Map(plans.map((p) => [p.id, p.name]));
     return placements
       .filter((p) => p.hostType === "COURSE_MODULE")
       .map((p) => ({
@@ -198,23 +210,13 @@ export class CourseAdapter implements ContentDataAdapter {
         examId: p.examId,
         containerId: p.hostId,
         planId: p.planId,
-        title: p.titleOverride ?? "Assessment",
+        title: p.titleOverride ?? nameOf.get(p.planId) ?? "Assessment",
         position: p.position,
-        requiredForCompletion: p.requiredForCompletion,
+        planType: typeOf.get(p.planId) === "COMPLETION" ? ("COMPLETION" as const) : ("ASSESSMENT" as const),
         instructions: p.instructions,
       }));
   }
 
-  /**
-   * A course has one exam content item, and each assessment is a *plan* on it — not an exam of its
-   * own. The exam owns the question bank; a plan owns how one sitting runs (its question selection,
-   * timing, attempt allowance, pass mark, security and outcome). That is exactly the split plans
-   * exist for, and it is what lets a module quiz, the course final and a certification sitting all
-   * draw on the same bank while behaving completely differently.
-   *
-   * So placing an assessment is three steps: get (or create) the course's exam, add a plan named
-   * after this assessment, and place that (exam, plan) pair on the module.
-   */
   async findAssessmentExam(contentId: string): Promise<{ id: string; title: string } | null> {
     const exam = await getCourseExam(contentId);
     return exam ? { id: exam.id, title: exam.title } : null;
@@ -225,14 +227,18 @@ export class CourseAdapter implements ContentDataAdapter {
     return { id: exam.id, title: exam.title };
   }
 
+  /**
+   * Adds a plan of the given type to the course's exam and places it on the module. The server
+   * places every new in-content plan at the course root first; placing it here moves it.
+   */
   async addContainerAssessment(
     containerId: string,
     title: string,
-    contentId: string
+    contentId: string,
+    planType: "COMPLETION" | "ASSESSMENT" = "ASSESSMENT"
   ): Promise<AssessmentLeaf> {
-    // Created by now: the runtime sets the course up before it gets here the first time.
     const exam = await createCourseExam(contentId);
-    const plan = await createExamPlan(exam.id, { name: title });
+    const plan = await createExamPlan(exam.id, { planType, name: title });
     const placement = await placeAssessment({
       examId: exam.id,
       hostType: "COURSE_MODULE",
@@ -249,19 +255,13 @@ export class CourseAdapter implements ContentDataAdapter {
       containerId,
       title,
       position: placement.position,
-      requiredForCompletion: placement.requiredForCompletion,
+      planType,
       instructions: placement.instructions,
     };
   }
 
-  async removeContainerAssessment(placementId: string, planId: string | null): Promise<void> {
-    // The exam itself survives — it's the course's single shared question bank, and may back other
-    // placements too. The plan, though, is created fresh for this placement alone (see
-    // addContainerAssessment) and nothing else can reference it, so it would otherwise be left
-    // behind still requiring questions and blocking course submission indefinitely.
-    await removeAssessmentPlacement(placementId);
-    if (planId) {
-      await deleteExamPlan(planId);
-    }
+  /** Deleting the plan removes its placement with it; the exam and its bank are untouched. */
+  async removeContainerAssessment(_placementId: string, planId: string | null): Promise<void> {
+    if (planId) await deleteExamPlan(planId);
   }
 }

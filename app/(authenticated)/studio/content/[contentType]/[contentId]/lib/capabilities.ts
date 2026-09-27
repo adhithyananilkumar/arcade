@@ -38,6 +38,8 @@ export const GROUP_ORDER: CapabilityGroup[] = ["pricing", "settings", "people", 
 
 export const CONTENT_CAPABILITIES: Record<ContentTypeSegment, CapabilityDef[]> = {
   course: [
+    // Settings holds the course's schedule (enrolment and access windows).
+    { id: "SETTINGS", label: "Schedule", group: "settings", availability: "available" },
     { id: "COLLABORATORS", label: "Collaborators", group: "people", availability: "available" },
     { id: "PUBLISHING", label: "Publishing", group: "publishing", availability: "available" },
     // Planned — no course analytics/learners/discussion/reviews endpoint exists yet.

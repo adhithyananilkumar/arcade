@@ -674,6 +674,9 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
     };
   }, [activeYDoc]);
 
+  /** One completion assessment per exam — the server enforces it; this only hides the menu entry. */
+  const hasCompletionAssessment = modules.some((m) => m.assessments.some((a) => a.planType === "COMPLETION"));
+
   // ── Exams attached to this content ────────────────────────────────────────
 
   /**
@@ -688,18 +691,22 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
 
   const addExam = useCallback(async () => {
     if (!contentId) return;
+    // One exam per course or event: if it exists, open it rather than create a second.
+    if (exams.length > 0) {
+      openExamConfig(exams[0].id);
+      return;
+    }
     setAddingExam(true);
     try {
-      const nextIndex = exams.length + 1;
-      const exam = await adapter.createAndAttachExam(contentId, `Assessment ${nextIndex}`);
-      setExams((prev) => [...prev, exam]);
+      const exam = await adapter.createAndAttachExam(contentId, `${title || adapter.terminology.root} exam`);
+      setExams([exam]);
       openExamConfig(exam.id);
-    } catch {
-      toast.error("Failed to create exam");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to set up the exam");
     } finally {
       setAddingExam(false);
     }
-  }, [contentId, exams.length, adapter, openExamConfig]);
+  }, [contentId, exams, adapter, openExamConfig, title]);
 
   const removeExam = useCallback(
     async (examId: string) => {
@@ -761,15 +768,16 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
    * than an empty shell they have to go and configure elsewhere before it does anything.
    */
   const placeAssessmentIn = useCallback(
-    async (moduleId: string) => {
+    async (moduleId: string, planType: "COMPLETION" | "ASSESSMENT" = "ASSESSMENT") => {
       if (!contentId || !adapter.addContainerAssessment) return;
       try {
         const mod = modules.find((m) => m.id === moduleId);
         const nextIndex = (mod?.assessments.length ?? 0) + 1;
         const placed = await adapter.addContainerAssessment(
           moduleId,
-          `Assessment ${nextIndex}`,
-          contentId
+          planType === "COMPLETION" ? "Completion assessment" : `Assessment ${nextIndex}`,
+          contentId,
+          planType
         );
         setModules((prev) =>
           prev.map((m) =>
@@ -783,6 +791,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
         setHasDraftChanges(true);
       } catch (e) {
         console.error("Failed to add assessment", e);
+        toast.error(e instanceof Error ? e.message : "Failed to add the assessment");
       }
     },
     [contentId, modules, adapter, openAssessment]
@@ -795,14 +804,14 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
    * first assessment explains the arrangement and asks; after that, adding is immediate.
    */
   const addAssessment = useCallback(
-    async (moduleId: string) => {
+    async (moduleId: string, planType: "COMPLETION" | "ASSESSMENT" = "ASSESSMENT") => {
       if (!contentId || !adapter.addContainerAssessment) return;
       try {
         const existingExam = adapter.findAssessmentExam
           ? await adapter.findAssessmentExam(contentId)
           : null;
         if (existingExam) {
-          await placeAssessmentIn(moduleId);
+          await placeAssessmentIn(moduleId, planType);
           return;
         }
       } catch (e) {
@@ -813,15 +822,17 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
       confirm({
         title: `Set up assessments for this ${adapter.terminology.root.toLowerCase()}`,
         message:
-          `Assessments here all run on one exam and share a single question bank — what makes each ` +
-          `one different is its own plan: which questions it draws, how long candidates get, how ` +
-          `many attempts, the pass mark, and what passing produces. This ${adapter.terminology.root.toLowerCase()} ` +
-          `doesn't have that exam yet, so adding your first assessment will create it.`,
+          `A ${adapter.terminology.root.toLowerCase()} has one exam: it holds the question bank, and every ` +
+          `assessment here is a plan on it — a completion assessment that finishes the ` +
+          `${adapter.terminology.root.toLowerCase()}, graded or practice assessments, and optionally a ` +
+          `certification learners register for. Its settings follow the platform's exam standards. ` +
+          `Adding your first assessment creates the exam.`,
         confirmLabel: "Create and add",
         icon: <GraduationCap size={20} className="text-[#14142b]" />,
         onConfirm: async () => {
-          await adapter.createAssessmentExam?.(contentId);
-          await placeAssessmentIn(moduleId);
+          const exam = await adapter.createAssessmentExam?.(contentId);
+          if (exam) setExams([{ id: exam.id, title: exam.title, published: false }]);
+          await placeAssessmentIn(moduleId, planType);
         },
       });
     },
@@ -983,9 +994,9 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
 
   const askRemoveExam = (exam: ExamSummary) =>
     confirm({
-      title: "Remove this exam?",
-      message: `"${exam.title}" will no longer be attached here. It becomes a standalone exam — nothing about the exam itself (questions, attempts, results) is deleted.`,
-      confirmLabel: "Remove",
+      title: "Untie this exam?",
+      message: `"${exam.title}" becomes a standalone exam. Its assessments are removed from this ${adapter.terminology.root.toLowerCase()} and its completion assessment stops completing it. Questions, attempts and results are kept.`,
+      confirmLabel: "Untie",
       danger: true,
       onConfirm: () => removeExam(exam.id),
     });
@@ -1278,6 +1289,12 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                                 Assessment
                               </DropdownMenuItem>
                             )}
+                            {adapter.addContainerAssessment && !hasCompletionAssessment && (
+                              <DropdownMenuItem onClick={() => addAssessment(mod.id, "COMPLETION")}>
+                                <GraduationCap size={13} />
+                                Completion assessment
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                         <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
@@ -1379,9 +1396,9 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                             >
                               <GraduationCap size={11} className="flex-shrink-0" />
                               <span className="truncate">{assessment.title}</span>
-                              {assessment.requiredForCompletion && (
+                              {assessment.planType === "COMPLETION" && (
                                 <span className="flex-shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-700">
-                                  Required
+                                  Completion
                                 </span>
                               )}
                             </button>
@@ -1427,8 +1444,8 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
               );
             })}
 
-            {/* ── Exams: a sibling of Modules — placement, not a lesson. Any number of
-                 exams may be attached; each is independently configured, versioned, published. ── */}
+            {/* ── The exam: a sibling of Modules. At most one per course or event — it is the
+                 content's assessment system (question bank, completion, grading, certification). ── */}
             {exams.length > 0 && (
               <div className="mb-2 flex flex-col gap-1">
                 {exams.map((exam) => (
@@ -1447,19 +1464,19 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                         {exam.title}
                       </span>
                       <span className="flex-shrink-0 rounded-full bg-[#14142b]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#14142b]/50">
-                        {exam.wasPublished ? "Published" : "Draft"}
+                        {exam.published ? "Published" : "Draft"}
                       </span>
                     </button>
                     {status !== "SUBMITTED" && (
-                      <IconBtn title="Remove" danger onClick={() => askRemoveExam(exam)}>
+                      <IconBtn title="Untie exam" danger onClick={() => askRemoveExam(exam)}>
                         <Trash2 size={12} />
                       </IconBtn>
                     )}
                   </div>
                 ))}
                 <p className="pl-3 text-[10px] leading-relaxed text-slate-400">
-                  Shown to students on the {adapter.terminology.root.toLowerCase()} page&apos;s Assessments tab. Open an exam to edit its
-                  questions and plans.
+                  This {adapter.terminology.root.toLowerCase()}&apos;s exam. Open it to edit questions, plans and
+                  its certification. Its settings follow the platform&apos;s exam standards.
                 </p>
               </div>
             )}
@@ -1542,7 +1559,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                     )}
                     <DropdownMenuItem onClick={addExam} className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50">
                       {addingExam ? <Loader2 size={14} className="animate-spin text-indigo-500" /> : <GraduationCap size={14} className="text-indigo-500" />}
-                      Add Exam
+                      {exams.length > 0 ? "Open exam" : "Set up exam"}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
