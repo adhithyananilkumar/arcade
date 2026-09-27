@@ -39,8 +39,8 @@ export default function NewExamPage() {
       });
       toast.success("Exam created");
       router.push(`/studio/content/exam/${exam.id}`);
-    } catch {
-      toast.error("Failed to create exam");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create exam");
     } finally {
       setCreating(false);
     }

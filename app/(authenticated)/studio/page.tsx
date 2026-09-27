@@ -178,7 +178,7 @@ function TypeBadge({ type }: { type: string }) {
   if (t === "QUIZ" || t === "EXAM") {
     return (
       <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12">
-        <FileQuestion size={11} strokeWidth={2.4} className="text-amber-800" /> {t === "EXAM" ? "Exam" : "Quiz"}
+        <FileQuestion size={11} strokeWidth={2.4} className="text-amber-800" /> Exam
       </span>
     );
   }
@@ -382,112 +382,6 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ── New Quiz creation modal ──────────────────────────────────────────────────
-
-function CreateQuizModal({ onClose }: { onClose: () => void }) {
-  const router = useRouter();
-  const [name, setName] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { channels, loading: channelsLoading } = useEligibleChannels();
-  const [channelId, setChannelId] = useState("");
-
-  useEffect(() => {
-    if (channels.length === 1 && !channelId) setChannelId(channels[0].id);
-  }, [channels, channelId]);
-
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    if (!name.trim() || !channelId) return;
-    setCreating(true);
-    setError(null);
-    try {
-      const quiz = await api.post<{ id: string }>("/api/quizzes", {
-        title: name.trim(),
-        channelId,
-      });
-      toast.success(`"${name.trim()}" created`);
-      router.push(`/studio/quiz/${quiz.id}`);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not create quiz";
-      setError(message);
-      toast.error(message);
-      setCreating(false);
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b] cursor-pointer"
-        >
-          <X size={18} />
-        </button>
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
-            <HelpCircle size={20} strokeWidth={2.4} />
-          </div>
-          <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Quiz</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
-          </div>
-        </div>
-
-        {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleCreate} className="space-y-4">
-          <div>
-            <label htmlFor="quiz-name" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Quiz title <span className="text-rose-500">*</span>
-            </label>
-            <input
-              id="quiz-name"
-              type="text"
-              required
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Chapter 1 Quiz"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
-            />
-          </div>
-          {!channelsLoading && channels.length > 0 && (
-            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
-          )}
-          {!channelsLoading && channels.length === 0 && (
-            <p className="text-sm text-rose-600">
-              You need a channel with content-authoring rights before you can create a quiz.
-            </p>
-          )}
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b] cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={!name.trim() || !channelId || creating}
-              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60 cursor-pointer"
-            >
-              {creating ? "Creating…" : "Create Quiz"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 // ── New Roadmap creation modal ──────────────────────────────────────────────────
 
@@ -940,23 +834,22 @@ function ContentCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<"archive" | "delete" | null>(null);
   const isRoadmap = item.type === "ROADMAP";
-  const isQuiz = item.type === "QUIZ" || item.type === "EXAM";
+  const isExam = item.type === "EXAM";
   const segment = toContentTypeSegment(item.type);
-  const openHref = isQuiz
-    ? `/studio/quiz/${item.id}`
-    : contentOverviewHref(item.type, item.id) ??
-      (item.type === "COURSE" ? `/studio/course/${item.id}/edit` : `/studio`);
+  const openHref =
+    contentOverviewHref(item.type, item.id) ??
+    (item.type === "COURSE" ? `/studio/course/${item.id}/edit` : `/studio`);
   const channelSuspended = item.channelStatus === "SUSPENDED";
   const unlistDate =
     channelSuspended && !item.channelForcedSuspension && item.channelSuspendedAt
       ? new Date(new Date(item.channelSuspendedAt).setMonth(new Date(item.channelSuspendedAt).getMonth() + 6))
       : null;
 
-  const preview = segment && !isQuiz ? previewHref(segment, item.id) : null;
+  const preview = segment && !isExam ? previewHref(segment, item.id) : null;
   const duplicate = segment ? DUPLICATE_ACTION[segment] : undefined;
   const canArchive = segment === "event" && item.status?.toUpperCase() !== "ARCHIVED";
   const isPendingInvitation = item.collaborationStatus === "PENDING";
-  const hasSecondaryMenu = (isRoadmap || (!isQuiz && segment != null)) && !isPendingInvitation;
+  const hasSecondaryMenu = (isRoadmap || (!isExam && segment != null)) && !isPendingInvitation;
 
   const typeKey = item.type?.toUpperCase() || "COURSE";
   const typeInfo = TYPE_CONFIG[typeKey] ?? TYPE_CONFIG.COURSE;
@@ -1104,12 +997,12 @@ function ContentCard({
               >
                 <TypeIcon size={12} className="text-amber-400/90" />
                 <span>
-                  {!isQuiz && !isRoadmap && item.status === "SUBMITTED"
+                  {!isExam && !isRoadmap && item.status === "SUBMITTED"
                     ? "Review"
                     : isRoadmap
                     ? "Open"
-                    : isQuiz
-                    ? "Open Quiz"
+                    : isExam
+                    ? "Open Exam"
                     : "Open"}
                 </span>
                 <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5 text-amber-200/80" />
@@ -1184,12 +1077,10 @@ function ContentTable({
           </thead>
           <tbody className="divide-y divide-amber-900/[0.07]">
             {items.map((item) => {
-              const isQuiz = item.type === "QUIZ" || item.type === "EXAM";
               const segment = toContentTypeSegment(item.type);
-              const openHref = isQuiz
-                ? `/studio/quiz/${item.id}`
-                : contentOverviewHref(item.type, item.id) ??
-                  (item.type === "COURSE" ? `/studio/course/${item.id}/edit` : `/studio`);
+              const openHref =
+                contentOverviewHref(item.type, item.id) ??
+                (item.type === "COURSE" ? `/studio/course/${item.id}/edit` : `/studio`);
 
               return (
                 <tr
@@ -1331,7 +1222,7 @@ export default function DashboardPage() {
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [channelDropdownOpen, setChannelDropdownOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "event" | "quiz" | null>(null);
+  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "event" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
@@ -1360,7 +1251,7 @@ export default function DashboardPage() {
       setChannelRequiredModalOpen(true);
       return;
     }
-    if (typeId === "course" || typeId === "roadmap" || typeId === "event" || typeId === "quiz") {
+    if (typeId === "course" || typeId === "roadmap" || typeId === "event") {
       setCreateOpen(typeId as any);
     } else if (href) {
       router.push(href);
@@ -1376,7 +1267,9 @@ export default function DashboardPage() {
         setChannelRequiredModalOpen(true);
       } else if (create === "webinar" || create === "workshop" || create === "event") {
         setCreateOpen("event");
-      } else if (create === "course" || create === "roadmap" || create === "quiz") {
+      } else if (create === "exam" || create === "quiz") {
+        router.replace("/studio/exam/new");
+      } else if (create === "course" || create === "roadmap") {
         setCreateOpen(create as any);
       }
     }
@@ -1511,7 +1404,6 @@ export default function DashboardPage() {
       />
       {createOpen === "course" && <CreateCourseModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "roadmap" && <CreateRoadmapModal onClose={() => setCreateOpen(null)} />}
-      {createOpen === "quiz" && <CreateQuizModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "event" && <CreateEventModal onClose={() => setCreateOpen(null)} />}
       {renameTarget && (
         <RenameRoadmapModal
@@ -1890,7 +1782,7 @@ export default function DashboardPage() {
             <div>
               <p className="text-sm font-bold text-[#14142b]">No creations yet</p>
               <p className="mt-1 text-xs text-slate-400">
-                Click &quot;Create Content&quot; to build your first course, roadmap, quiz, or event.
+                Click &quot;Create Content&quot; to build your first course, event or exam.
               </p>
             </div>
           </div>
