@@ -14,7 +14,7 @@ export default function ArcConsoleIndex() {
   // meant a user with ONLY e.g. Content Manage access got a 404 landing on /console at all, even
   // though /console/content-manage itself worked fine once navigated to directly.
   const showAdminChannels = AuthorizationService.canManageChannels(user);
-  const showReviewCourses = AuthorizationService.canReviewCourses(user);
+  const showReviewCourses = AuthorizationService.canAccessPlatformReviews(user);
   const showContentManage = AuthorizationService.canManageContent(user);
   const showExams = AuthorizationService.canManageExams(user);
   const showPayments = AuthorizationService.canViewPayments(user);

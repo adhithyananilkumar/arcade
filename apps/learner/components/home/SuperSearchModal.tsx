@@ -170,7 +170,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
       if (AuthorizationService.canManageChannels(user)) {
         items.push({ id: 'console-channels', label: 'Manage Channels', href: '/console/channels', icon: Tv, keywords: ['console', 'requests'] });
       }
-      if (AuthorizationService.canReviewContent(user)) {
+      if (AuthorizationService.canAccessPlatformReviews(user)) {
         items.push({ id: 'console-reviews', label: 'Content Reviews', href: '/console/reviews', icon: FileClock, keywords: ['console', 'approve', 'reject'] });
       }
       if (AuthorizationService.canManageContent(user)) {

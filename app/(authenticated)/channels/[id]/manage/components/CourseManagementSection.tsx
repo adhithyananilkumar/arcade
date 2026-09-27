@@ -222,7 +222,7 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
     if (course.status === 'SUBMITTED') {
       const reviewId = reviewMap[course.id];
       if (reviewId) {
-        router.push(`/console/reviews/${reviewId}`);
+        router.push(`/channels/${channelId}/manage/reviews/${reviewId}`);
       } else {
         toast.error('Review record not found');
       }

@@ -273,7 +273,9 @@ export const platformReviewApi = {
   list: (filters?: ReviewQueueFilters) =>
     api.get<ReviewQueueItem[]>(`/api/platform/reviews${toQuery(filters)}`),
 
-  counts: () => api.get<ReviewCounts>(`/api/platform/reviews/counts`),
+  /** Without a channel: the platform (Console) queue. With one: that channel's organization queue. */
+  counts: (channelId?: string) =>
+    api.get<ReviewCounts>(`/api/platform/reviews/counts${channelId ? `?channelId=${channelId}` : ""}`),
 
   get: (id: string) => api.get<ReviewResponse>(`/api/platform/reviews/${id}`),
 

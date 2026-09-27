@@ -79,7 +79,7 @@ export default function LearnerNavbar() {
   // makes — that page issued `delete-requests` three times and `requests` twice on one load.
   // Reading the same keys the page reads means the navbar adds nothing on top of it.
   const canManageChannels = AuthorizationService.canManageChannels(user);
-  const canReviewContent = AuthorizationService.canReviewContent(user);
+  const canReviewContent = AuthorizationService.canAccessPlatformReviews(user);
 
   // Only as many as the menu shows. Unpaged this returned all 1,235 pending requests — 775 KB —
   // on every authenticated page load.

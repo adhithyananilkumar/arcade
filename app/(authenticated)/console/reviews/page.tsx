@@ -52,7 +52,7 @@ function detailHref(item: ReviewQueueItem): string {
 
 export default function PlatformReviewsPage() {
   const { user } = useAuthStore();
-  if (!AuthorizationService.canReviewContent(user)) {
+  if (!AuthorizationService.canAccessPlatformReviews(user)) {
     notFound();
   }
 

@@ -48,15 +48,20 @@ export const AuthorizationService = {
     AuthorizationService.hasPermission(user, 'platform.handles.manage'),
 
   /** Accepts platform.content.review, legacy platform.courses.review, or channel.content.review. */
-  /**
-   * Console -> Reviews. Reviewers act; platform governors (platform administrators) see the whole
-   * pipeline read-only. Mirrors the backend's ReviewerScope, which decides what each can do.
-   */
   canReviewContent: (user: User | null | undefined) =>
     AuthorizationService.hasPermission(user, 'platform.content.review') ||
     AuthorizationService.hasPermission(user, 'platform.courses.review') ||
-    AuthorizationService.hasPermission(user, 'platform.content.governance') ||
     AuthorizationService.hasPermission(user, 'channel.content.review'),
+
+  /**
+   * Console -> Reviews: the platform-stage queue. Platform reviewers act on it; platform
+   * administrators (governance) see it read-only. Organization-stage reviews are not here — they
+   * live on each channel's dashboard. Mirrors the backend's ReviewerScope.seesPlatformQueue.
+   */
+  canAccessPlatformReviews: (user: User | null | undefined) =>
+    AuthorizationService.hasPermission(user, 'platform.content.review') ||
+    AuthorizationService.hasPermission(user, 'platform.courses.review') ||
+    AuthorizationService.hasPermission(user, 'platform.content.governance'),
 
   /** Checks if the user is a platform/global reviewer */
   canReviewPlatformContent: (user: User | null | undefined) =>

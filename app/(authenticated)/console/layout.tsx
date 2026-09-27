@@ -15,7 +15,7 @@ export default function ArcConsoleLayout({
   const pathname = usePathname();
   const { user } = useAuthStore();
   const showAdminChannels = AuthorizationService.canManageChannels(user);
-  const showReviews = AuthorizationService.canReviewContent(user);
+  const showReviews = AuthorizationService.canAccessPlatformReviews(user);
   const showContentManage = AuthorizationService.canManageContent(user);
   const showExams = AuthorizationService.canManageExams(user);
   const showPayments = AuthorizationService.canViewPayments(user);

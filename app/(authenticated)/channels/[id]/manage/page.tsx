@@ -9,6 +9,8 @@ import {
   channelService,
 } from '@/domains/channels';
 import { platformReviewApi } from '@/domains/publishing';
+import { ClipboardCheck } from 'lucide-react';
+import { ChannelReviewQueue } from '@/apps/core/components/reviews/ChannelReviewQueue';
 import { toast } from 'sonner';
 import {
   AtSign,
@@ -44,6 +46,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shar
 type ManageTab =
   | 'OVERVIEW'
   | 'CONTENT'
+  | 'REVIEWS'
   | 'IDENTITY'
   | 'STAFF'
   | 'ANALYTICS'
@@ -182,6 +185,11 @@ export default function ManageChannelPage() {
   const mainTabs: { id: ManageTab; label: string; icon: any; danger?: boolean }[] = [
     { id: 'OVERVIEW', label: 'Overview', icon: LayoutGrid },
     { id: 'CONTENT', label: 'Content', icon: BookOpen },
+    // The organization stage of the review pipeline lives with the organization, not in the
+    // platform Console. Personal channels have no organization review.
+    ...(!channel.isPersonal && (isOwner || canReviewChannelContent)
+      ? [{ id: 'REVIEWS' as const, label: 'Reviews', icon: ClipboardCheck }]
+      : []),
     // Personal channels have no handle, no standalone page and no staff — their owner's profile
     // IS their page, and the owner is the sole authority. Both tabs are omitted rather than
     // shown disabled: "you cannot have this" is not a setting.
@@ -333,6 +341,8 @@ export default function ManageChannelPage() {
           )}
 
           {/* TAB 2: CONTENT */}
+          {activeTab === 'REVIEWS' && !channel.isPersonal && <ChannelReviewQueue channelId={channelId} />}
+
           {activeTab === 'CONTENT' && (
             <CourseManagementSection channelId={channelId} reviewMap={channelReviews} onAddCourse={() => router.push('/studio')} />
           )}
