@@ -1,25 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { GraduationCap, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { createExam } from "@/domains/assessments";
+import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
 
 export default function NewExamPage() {
   const router = useRouter();
+  const { channels, loading: loadingChannels } = useEligibleChannels();
+  const [channelId, setChannelId] = useState("");
   const [title, setTitle] = useState("");
   const [purpose, setPurpose] = useState("");
   const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    if (channels.length === 1 && !channelId) {
+      setChannelId(channels[0].id);
+    }
+  }, [channels, channelId]);
 
   const handleCreate = async () => {
     if (!title.trim()) {
       toast.error("Give the exam a title first");
       return;
     }
+    if (channels.length > 1 && !channelId) {
+      toast.error("Please select a channel");
+      return;
+    }
     setCreating(true);
     try {
-      const exam = await createExam({ title: title.trim(), purpose: purpose.trim() || undefined });
+      const exam = await createExam({
+        title: title.trim(),
+        purpose: purpose.trim() || undefined,
+        channelId: channelId || undefined,
+      });
       toast.success("Exam created");
       router.push(`/studio/content/exam/${exam.id}`);
     } catch {
@@ -45,6 +62,14 @@ export default function NewExamPage() {
         </div>
 
         <div className="space-y-4">
+          {channels.length > 1 && (
+            <ChannelPicker
+              channels={channels}
+              value={channelId}
+              onChange={setChannelId}
+            />
+          )}
+
           <div>
             <label htmlFor="exam-title" className="mb-1.5 block text-sm font-semibold text-[#14142b]">
               Title
@@ -88,7 +113,7 @@ export default function NewExamPage() {
           <button
             type="button"
             onClick={handleCreate}
-            disabled={creating}
+            disabled={creating || loadingChannels || (channels.length > 1 && !channelId)}
             className="flex items-center gap-2 rounded-xl bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black disabled:opacity-60"
           >
             {creating && <Loader2 size={14} className="animate-spin" />}
@@ -99,3 +124,4 @@ export default function NewExamPage() {
     </div>
   );
 }
+

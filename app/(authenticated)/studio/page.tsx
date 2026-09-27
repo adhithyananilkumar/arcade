@@ -102,13 +102,6 @@ const CONTENT_TYPES = [
     href: "/studio/course/new",
   },
   {
-    id: "roadmap",
-    icon: Map,
-    label: "Roadmap",
-    desc: "Visual interactive learning path with nodes",
-    href: "",
-  },
-  {
     id: "event",
     icon: Calendar,
     label: "Event",
@@ -121,13 +114,6 @@ const CONTENT_TYPES = [
     label: "Article",
     desc: "Rich publication document with the editor",
     href: "/studio/article/new",
-  },
-  {
-    id: "quiz",
-    icon: HelpCircle,
-    label: "Quiz",
-    desc: "Question bank with automated grading",
-    href: "/studio/quiz/new",
   },
   {
     id: "exam",
