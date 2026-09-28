@@ -396,7 +396,7 @@ export default function MyLearningPage() {
                 isEmpty={filteredCourses.length === 0}
                 empty={
                   <EmptyState
-                    icon={BookOpen}
+                    tab="courses"
                     title={searchQuery ? 'No matching courses' : 'Your library is empty'}
                     body={
                       searchQuery
@@ -436,7 +436,7 @@ export default function MyLearningPage() {
                 isEmpty={filteredEvents.length === 0}
                 empty={
                   <EmptyState
-                    icon={Calendar}
+                    tab="events"
                     title={searchQuery ? 'No matching events' : 'No upcoming events'}
                     body={
                       searchQuery
@@ -646,30 +646,177 @@ function SectionState({
   return <>{children}</>;
 }
 
+function CoursesDoodle() {
+  return (
+    <motion.div
+      initial={{ scale: 0.92, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="relative mb-3 flex items-center justify-center select-none"
+    >
+      <svg
+        width="110"
+        height="100"
+        viewBox="0 0 110 100"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="relative z-10"
+      >
+        {/* Soft blue/indigo background glow ellipse */}
+        <ellipse cx="55" cy="50" rx="38" ry="32" className="fill-[#2962D6]/10 dark:fill-[#3B82F6]/15" />
+
+        {/* Tilted bottom book in stack */}
+        <rect
+          x="26"
+          y="48"
+          width="54"
+          height="14"
+          rx="4"
+          transform="rotate(-4 26 48)"
+          className="fill-slate-100 dark:fill-slate-800 stroke-slate-800 dark:stroke-slate-200"
+          strokeWidth="2"
+        />
+        <path d="M72 45L78 45" className="stroke-[#2962D6] dark:stroke-[#3B82F6]" strokeWidth="2" strokeLinecap="round" />
+
+        {/* Middle book in stack */}
+        <rect
+          x="30"
+          y="34"
+          width="50"
+          height="14"
+          rx="4"
+          transform="rotate(2 30 34)"
+          className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200"
+          strokeWidth="2"
+        />
+        <path d="M34 37L48 37" className="stroke-emerald-500 dark:stroke-emerald-400" strokeWidth="2" strokeLinecap="round" />
+
+        {/* Top open notebook / book */}
+        <g transform="translate(32, 16)">
+          {/* Left page */}
+          <path
+            d="M22 24C14 22 4 23 2 24V6C4 5 14 4 22 6V24Z"
+            className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200"
+            strokeWidth="2"
+            strokeLinejoin="round"
+          />
+          {/* Right page */}
+          <path
+            d="M22 24C30 22 40 23 42 24V6C40 5 30 4 22 6V24Z"
+            className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200"
+            strokeWidth="2"
+            strokeLinejoin="round"
+          />
+          {/* Center spine */}
+          <line x1="22" y1="6" x2="22" y2="24" className="stroke-slate-800 dark:stroke-slate-200" strokeWidth="2" />
+          {/* Left page text lines */}
+          <line x1="6" y1="10" x2="18" y2="10" className="stroke-[#2962D6] dark:stroke-[#3B82F6]" strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="6" y1="14" x2="15" y2="14" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="6" y1="18" x2="17" y2="18" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeLinecap="round" />
+          {/* Right page text lines */}
+          <line x1="26" y1="10" x2="38" y2="10" className="stroke-emerald-500 dark:stroke-emerald-400" strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="26" y1="14" x2="35" y2="14" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="26" y1="18" x2="37" y2="18" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeLinecap="round" />
+        </g>
+
+        {/* Minimal Bookmark ribbon */}
+        <path d="M72 26V38L75 35L78 38V26" className="fill-amber-400 stroke-slate-800 dark:stroke-slate-200" strokeWidth="1.2" strokeLinejoin="round" />
+
+        {/* Sparkles */}
+        <path d="M18 30L19 26L23 25L19 24L18 20L17 24L13 25L17 26Z" className="fill-amber-400 dark:fill-amber-300" />
+        <path d="M90 24L91 21L94 20L91 19L90 16L89 19L86 20L89 21Z" className="fill-[#27C5D8]" />
+      </svg>
+    </motion.div>
+  );
+}
+
+function EventsDoodle() {
+  return (
+    <motion.div
+      initial={{ scale: 0.92, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="relative mb-3 flex items-center justify-center select-none"
+    >
+      <svg
+        width="110"
+        height="100"
+        viewBox="0 0 110 100"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="relative z-10"
+      >
+        {/* Soft cyan/teal background glow ellipse */}
+        <ellipse cx="55" cy="50" rx="38" ry="32" className="fill-[#27C5D8]/10 dark:fill-[#27C5D8]/15" />
+
+        {/* Calendar Body */}
+        <rect
+          x="30"
+          y="22"
+          width="50"
+          height="56"
+          rx="10"
+          className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200"
+          strokeWidth="2"
+        />
+
+        {/* Calendar Top Header Banner */}
+        <path
+          d="M31 34 C31 27 34 23 41 23 H69 C76 23 79 27 79 34 V36 H31 V34 Z"
+          className="fill-[#2962D6]/20 dark:fill-[#2962D6]/40"
+        />
+        <line x1="30" y1="36" x2="80" y2="36" className="stroke-slate-800 dark:stroke-slate-200" strokeWidth="2" />
+
+        {/* Calendar Rings / Binders at top */}
+        <rect x="40" y="16" width="4" height="10" rx="2" className="fill-slate-800 dark:fill-slate-200" />
+        <rect x="66" y="16" width="4" height="10" rx="2" className="fill-slate-800 dark:fill-slate-200" />
+
+        {/* Calendar Grid Dates */}
+        <circle cx="41" cy="45" r="2.5" className="fill-slate-300 dark:fill-slate-600" />
+        <circle cx="55" cy="45" r="2.5" className="fill-slate-300 dark:fill-slate-600" />
+        <circle cx="69" cy="45" r="2.5" className="fill-slate-300 dark:fill-slate-600" />
+
+        <circle cx="41" cy="56" r="2.5" className="fill-slate-300 dark:fill-slate-600" />
+        {/* Highlighted Event Date Star/Pill */}
+        <rect x="49" y="50" width="12" height="12" rx="4" className="fill-[#2962D6] dark:fill-[#3B82F6]" />
+        <path d="M53 56L54.5 57.5L57.5 54.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+
+        <circle cx="69" cy="56" r="2.5" className="fill-slate-300 dark:fill-slate-600" />
+
+        <circle cx="41" cy="67" r="2.5" className="fill-slate-300 dark:fill-slate-600" />
+        <circle cx="55" cy="67" r="2.5" className="fill-slate-300 dark:fill-slate-600" />
+        <circle cx="69" cy="67" r="2.5" className="fill-[#27C5D8]" />
+
+        {/* Sparkles */}
+        <path d="M18 34L19 30L23 29L19 28L18 24L17 28L13 29L17 30Z" className="fill-amber-400 dark:fill-amber-300" />
+        <path d="M88 26L89 23L92 22L89 21L88 18L87 21L84 22L87 23Z" className="fill-[#27C5D8]" />
+      </svg>
+    </motion.div>
+  );
+}
+
 function EmptyState({
-  icon: Icon,
+  tab,
   title,
   body,
   ctaHref,
   ctaLabel,
 }: {
-  icon: React.ElementType;
+  tab: Tab;
   title: string;
   body: string;
   ctaHref?: string;
   ctaLabel?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-10 text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 mb-3">
-        <Icon className="h-6 w-6" />
-      </div>
-      <h3 className="text-base font-bold text-slate-900 dark:text-white">{title}</h3>
-      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">{body}</p>
+    <div className="py-10 px-4 text-center flex flex-col items-center justify-center">
+      {tab === 'courses' ? <CoursesDoodle /> : <EventsDoodle />}
+      <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
+      <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">{body}</p>
       {ctaHref && ctaLabel && (
         <Link
           href={ctaHref}
-          className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-slate-900 dark:bg-white px-4 py-2 text-xs font-bold text-white dark:text-slate-900 hover:opacity-90 transition"
+          className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-slate-900 dark:bg-white px-5 py-2.5 text-xs sm:text-sm font-bold text-white dark:text-slate-900 hover:opacity-90 transition shadow-sm"
         >
           <Compass className="h-3.5 w-3.5" />
           {ctaLabel}

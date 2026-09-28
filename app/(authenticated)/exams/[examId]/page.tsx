@@ -1,30 +1,25 @@
 'use client';
 
-// A main exam's page, reached from the Exams hub (or a course's certification card). Composes the
-// shared AssessmentLanding with the three things only this page supplies: registration/payment
-// (the shared enrolment checkout, on an EXAM resource), the identity-verification step, and a way
-// to the tied content when its completion is still a prerequisite.
+// A main exam's overview page, reached from the Exams hub (or a course's certification card). It
+// matches the course and event landing pages and composes ExamOverview with the three things only
+// this page supplies: registration/payment (the shared enrolment checkout, on an EXAM resource),
+// the identity-verification step, and a way to the tied content when its completion is still a
+// prerequisite. Results are read on grade cards, which this page links to.
 //
 // Every decision — may they register, may they start, why not — comes from the landing response.
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import {
-  AssessmentLanding,
+  ExamOverview,
   getAssessmentLanding,
-  planKindLabel,
   type AssessmentLandingResponse,
 } from '@/domains/assessments';
 import { EnrollmentButton } from '@/domains/enrollment';
 import { courseRoutes, eventRoutes, examRoutes } from '@/shared/routes/content.routes';
 import { formatMoney } from '@/shared/utils/money';
 import { IdentityCapture } from '@/apps/learner/components/exams/IdentityCapture';
-
-const pageBg = {
-  background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 32%, #FFFFFF 70%)',
-};
 
 export default function ExamPage() {
   const router = useRouter();
@@ -56,20 +51,15 @@ export default function ExamPage() {
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, [load]);
 
-  if (error) {
+  if (error || !landing) {
     return (
-      <Shell>
-        <p className="py-24 text-center text-[14px] font-semibold text-rose-600">{error}</p>
-      </Shell>
-    );
-  }
-  if (!landing) {
-    return (
-      <Shell>
-        <div className="flex justify-center py-24">
+      <main className="arcade-wash flex min-h-screen items-center justify-center px-4">
+        {error ? (
+          <p className="text-center text-[14px] font-semibold text-rose-600">{error}</p>
+        ) : (
           <Loader2 className="animate-spin text-slate-400" size={26} />
-        </div>
-      </Shell>
+        )}
+      </main>
     );
   }
 
@@ -90,20 +80,13 @@ export default function ExamPage() {
     : undefined;
 
   const registration = (
-    <div className="max-w-sm space-y-2">
-      {landing.feeMinor > 0 && (
-        <p className="text-[13px] font-semibold text-[#14142b]">
-          Registration fee {formatMoney(landing.feeMinor, landing.currency ?? 'INR')}
-        </p>
-      )}
-      <EnrollmentButton
-        resourceType="EXAM"
-        resourceId={examId}
-        initialState={landing.registered ? 'ENROLLED' : 'NOT_ENROLLED'}
-        onStateChange={(state) => state === 'ENROLLED' && load()}
-        onGoToResource={load}
-      />
-    </div>
+    <EnrollmentButton
+      resourceType="EXAM"
+      resourceId={examId}
+      initialState={landing.registered ? 'ENROLLED' : 'NOT_ENROLLED'}
+      onStateChange={(state) => state === 'ENROLLED' && load()}
+      onGoToResource={load}
+    />
   );
 
   const identity =
@@ -117,51 +100,16 @@ export default function ExamPage() {
     ) : undefined;
 
   return (
-    <Shell>
-      {landing.plans.length > 1 && (
-        <nav className="mx-auto mb-6 flex w-full max-w-3xl flex-wrap gap-2">
-          {landing.plans.map((p) => (
-            <button
-              key={p.planId}
-              type="button"
-              onClick={() => router.replace(`${examRoutes.landing(examId)}?planId=${p.planId}`)}
-              className={`cursor-pointer rounded-full border px-4 py-1.5 text-[12px] font-semibold transition-colors ${
-                p.planId === landing.planId
-                  ? 'border-[#14142b] bg-[#14142b] text-white'
-                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
-              }`}
-            >
-              {p.name}
-              <span className="ml-1.5 opacity-60">{planKindLabel(p.planType, true)}</span>
-            </button>
-          ))}
-        </nav>
-      )}
-
-      <AssessmentLanding
-        landing={landing}
-        onStart={start}
-        registrationSlot={registration}
-        identitySlot={identity}
-        onOpenPrerequisite={openPrerequisite}
-        onViewGradeCard={(id) => router.push(examRoutes.gradeCard(id))}
-      />
-    </Shell>
-  );
-}
-
-function Shell({ children }: { children: React.ReactNode }) {
-  return (
-    <main className="min-h-screen pb-32" style={pageBg}>
-      <div className="mx-auto w-full max-w-4xl px-4 pt-28 sm:px-6 md:pt-32">
-        <Link
-          href="/exams"
-          className="mb-6 inline-flex items-center gap-1.5 text-[12px] font-semibold text-slate-500 transition-colors hover:text-[#14142b]"
-        >
-          <ArrowLeft size={14} /> Exams
-        </Link>
-        {children}
-      </div>
-    </main>
+    <ExamOverview
+      landing={landing}
+      hubHref="/exams"
+      onStart={start}
+      onSelectPlan={(id) => router.replace(`${examRoutes.landing(examId)}?planId=${id}`)}
+      onViewGradeCard={(id) => router.push(examRoutes.gradeCard(id))}
+      registrationSlot={registration}
+      identitySlot={identity}
+      feeLabel={landing.feeMinor > 0 ? formatMoney(landing.feeMinor, landing.currency ?? 'INR') : null}
+      onOpenPrerequisite={openPrerequisite}
+    />
   );
 }

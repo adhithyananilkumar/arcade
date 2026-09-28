@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/infrastructure/http/api';
 import type {
   AssessmentNodeResponse,
@@ -36,13 +36,11 @@ import {
 import {
   TiptapContentView,
   courseProgressService,
+  courseReviewService,
   useLessonEngagementTracker,
   NotesEditor,
-  useNoteAutosave,
   type CourseProgress,
-  courseReviewService,
 } from '@/domains/learning';
-import { courseRoutes } from '@/shared/routes/content.routes';
 import { toast } from 'sonner';
 import { ReportModal } from '@/shared/design-system/ui/ReportModal';
 import { AssessmentLandingPane } from './AssessmentLandingPane';
@@ -51,7 +49,7 @@ import { AssessmentLandingPane } from './AssessmentLandingPane';
  * A node in the course's running order. Until assessments existed every node was a lesson and this
  * page assumed so throughout — there was no type switch anywhere in it.
  */
-export type PlayerItem =
+type PlayerItem =
   | { kind: 'lesson'; id: string; moduleId: string; position: number; lesson: LessonResponse }
   | {
       kind: 'assessment';
@@ -66,7 +64,7 @@ export type PlayerItem =
  * sorted. Ties break on kind then id, keeping the order total and stable rather than dependent on
  * however the two arrays happened to arrive.
  */
-export function itemsForModule(mod: ModuleResponse): PlayerItem[] {
+function itemsForModule(mod: ModuleResponse): PlayerItem[] {
   const lessons: PlayerItem[] = (mod.lessons ?? []).map((lesson) => ({
     kind: 'lesson',
     id: lesson.id,
@@ -86,31 +84,25 @@ export function itemsForModule(mod: ModuleResponse): PlayerItem[] {
   );
 }
 
-/** A local, session-only stand-in for server progress — never persisted, never sent anywhere. */
-export function createEphemeralProgress(
-  completedLessonIds: string[],
-  totalLessons: number = 1,
-): CourseProgress {
-  const isComplete = totalLessons > 0 && completedLessonIds.length >= totalLessons;
-  return {
-    completedLessons: completedLessonIds.length,
-    totalLessons: Math.max(1, totalLessons),
-    percent: totalLessons > 0 ? Math.round((completedLessonIds.length / totalLessons) * 100) : 0,
-    completedLessonIds,
-    enrollmentStatus: isComplete ? 'COMPLETED' : 'ACTIVE',
-  };
-}
-
 export interface CoursePlayerProps {
   courseId?: string;
-  /** The selected item's id — a real address in learner mode, ignored (first item wins) in preview. */
   lessonId?: string;
   isPreview?: boolean;
   onExitPreview?: () => void;
 }
 
-export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPreview }: CoursePlayerProps) {
+export function CoursePlayer({
+  courseId: propCourseId,
+  lessonId: propLessonId,
+  isPreview = false,
+  onExitPreview,
+}: CoursePlayerProps) {
+  const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const lessonParam = propLessonId || searchParams?.get('lesson');
+  const courseId = propCourseId || (params?.id as string | undefined) || (params?.courseId as string | undefined);
+
   const [course, setCourse] = useState<CourseResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<PlayerItem | null>(null);
@@ -122,15 +114,11 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
   const toggleModule = (moduleId: string) =>
     setCollapsedModules((prev) => ({ ...prev, [moduleId]: !prev[moduleId] }));
   const [rightPanelTab, setRightPanelTab] = useState<'notes' | 'ai'>('notes');
+  const [notesDraft, setNotesDraft] = useState('');
   const [rightPanelWidth, setRightPanelWidth] = useState(380);
   const [isDesktopViewport, setIsDesktopViewport] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches,
   );
-  const [refreshKey, setRefreshKey] = useState(0);
-  // Preview-only notes: a session-local draft, never autosaved to the server.
-  const [previewNotesDraft, setPreviewNotesDraft] = useState('');
-
-  const previewStorageKey = courseId ? `preview_course_progress_${courseId}` : null;
 
   // The right rail's width is only meaningful once it sits beside the content instead of
   // stacking full-width on mobile, so the drag-resize only takes effect at the md breakpoint.
@@ -157,6 +145,7 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
   };
+
   const [reportingContext, setReportingContext] = useState<{
     moduleId: string;
     moduleTitle: string;
@@ -177,13 +166,7 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
   const handleFeedbackSubmit = async () => {
     if (!courseId || feedbackRating < 1) {
       setFeedbackModalOpen(false);
-      if (!isPreview) router.push('/learning');
-      return;
-    }
-
-    if (isPreview) {
-      toast.success('Thank you for rating! (Preview mode — not saved)');
-      setFeedbackModalOpen(false);
+      router.push('/learning');
       return;
     }
 
@@ -207,16 +190,11 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
 
   const handleFeedbackSkip = () => {
     setFeedbackModalOpen(false);
-    if (!isPreview) router.push('/learning');
+    router.push('/learning');
   };
 
   const handleReportSubmit = async (combinedNote: string) => {
     if (!courseId || !reportingContext) return;
-    if (isPreview) {
-      toast.success('Report simulated successfully (preview mode).');
-      setReportingContext(null);
-      return;
-    }
     await api.post('/api/v1/reports', {
       contentId: courseId,
       contentType: 'LESSON',
@@ -232,77 +210,50 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
 
   useEffect(() => {
     if (courseId) {
-      // Preview reads the author's working copy so unpublished edits show up; a real learner only
-      // ever sees the published snapshot.
-      const endpoint = isPreview
-        ? `/api/courses/${courseId}`
-        : `/api/v1/public/courses/${courseId}`;
       api
-        .get<CourseResponse>(endpoint)
+        .get<CourseResponse>(`/api/v1/public/courses/${courseId}`)
         .then((data) => {
           setCourse(data);
           if (data.modules && data.modules.length > 0) {
             const items = data.modules.flatMap(itemsForModule);
-            // The path segment addresses any item, lesson or assessment alike. Preview has no
-            // lesson segment of its own, so it always lands on the first item.
-            const target = lessonId ? items.find((i) => i.id === lessonId) : null;
+            const target = lessonParam
+              ? items.find((i) => i.id === lessonParam || (i.kind === 'lesson' && i.id === lessonParam))
+              : null;
             setSelectedItem(target ?? items[0] ?? null);
           }
         })
         .catch(console.error)
         .finally(() => setLoading(false));
 
-      if (isPreview) {
-        if (typeof window !== 'undefined' && previewStorageKey) {
-          const stored = sessionStorage.getItem(previewStorageKey);
-          if (stored) {
-            try {
-              setProgress(JSON.parse(stored));
-            } catch {
-              setProgress(createEphemeralProgress([]));
-            }
-          } else {
-            setProgress(createEphemeralProgress([]));
-          }
-        }
-      } else {
+      if (!isPreview) {
         courseProgressService
           .getCourseProgress(courseId)
           .then(setProgress)
           .catch(() => setProgress(null));
+      } else {
+        setProgress({
+          courseId,
+          completedLessonIds: [],
+          completedLessons: 0,
+          totalLessons: 0,
+          percent: 0,
+          enrollmentStatus: 'ACTIVE',
+        });
       }
     } else {
       setLoading(false);
     }
-  }, [courseId, lessonId, isPreview, previewStorageKey]);
+  }, [courseId, lessonParam, isPreview]);
 
   // Null while an assessment is on screen: engagement time is measured against lesson content, and
   // time spent reading an assessment's instructions is not lesson study time.
   const selectedLesson = selectedItem?.kind === 'lesson' ? selectedItem.lesson : null;
 
-  // Notes live on the server now (V311 learner_notes), not in localStorage: the overview hub and
-  // the notes workspace both read them, and a note only visible on the device that typed it could
-  // not appear on either. `useNoteAutosave` owns the debounce and flushes on lesson change, so
-  // clicking to the next lesson mid-keystroke no longer drops what was typed. Preview reads the
-  // same saved notes (harmless), but never calls `.save` — a session-local draft stands in for the
-  // editor's onChange instead, so nothing an author types while previewing is ever persisted.
-  const noteAnchor = useMemo(
-    () => ({
-      id: selectedLesson?.id ?? null,
-      label: selectedLesson?.title ?? null,
-      order: selectedItem?.position ?? null,
-    }),
-    [selectedLesson?.id, selectedLesson?.title, selectedItem?.position],
-  );
-
-  const notes = useNoteAutosave('courses', courseId, noteAnchor);
-
   /**
    * Records real engaged time against the lesson currently on screen — the only source of
    * `learner_daily_activity.learning_minutes`. Instrumentation only: it renders nothing, and it
    * measures interaction-gated engagement, never "the tab was open". Gated on lesson content
-   * actually being displayed, so the loading and not-found states accrue nothing. Preview accrues
-   * nothing either — an author reading their own material isn't a learner studying it.
+   * actually being displayed, so the loading and not-found states accrue nothing.
    */
   useLessonEngagementTracker({
     courseId,
@@ -330,23 +281,21 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
 
   const markComplete = async (): Promise<CourseProgress | null> => {
     if (!courseId || !selectedLesson) return null;
-    if (isLessonComplete(selectedLesson.id)) return progress;
-
     if (isPreview) {
-      const nextCompleted = Array.from(new Set([...(progress?.completedLessonIds ?? []), selectedLesson.id]));
-      const totalLessons = course?.modules.flatMap((m) => m.lessons || []).length || 1;
-      const updated = createEphemeralProgress(nextCompleted, totalLessons);
+      const completedIds = Array.from(new Set([...(progress?.completedLessonIds ?? []), selectedLesson.id]));
+      const total = orderedItems.filter((i) => i.kind === 'lesson').length;
+      const updated: CourseProgress = {
+        courseId,
+        completedLessonIds: completedIds,
+        completedLessons: completedIds.length,
+        totalLessons: total,
+        percent: total > 0 ? Math.round((completedIds.length / total) * 100) : 0,
+        enrollmentStatus: completedIds.length >= total ? 'COMPLETED' : 'ACTIVE',
+      };
       setProgress(updated);
-      if (previewStorageKey) {
-        sessionStorage.setItem(previewStorageKey, JSON.stringify(updated));
-      }
-      if (updated.enrollmentStatus === 'COMPLETED') {
-        toast.success('Course completed (preview mode)!');
-        setFeedbackModalOpen(true);
-      }
       return updated;
     }
-
+    if (isLessonComplete(selectedLesson.id)) return progress;
     const previousStatus = progress?.enrollmentStatus;
     const updated = await courseProgressService.markLessonComplete(courseId, selectedLesson.id);
     setProgress(updated);
@@ -357,17 +306,9 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
     return updated;
   };
 
-  /**
-   * Navigates rather than only swapping state, so every item in the course is a real address:
-   * shareable, bookmarkable, and a browser Back away from where you were. Preview has no lesson
-   * route of its own to navigate to, so it only ever swaps local state.
-   */
   const goTo = (item: PlayerItem | null) => {
     if (!item) return;
     setSelectedItem(item);
-    if (!isPreview && courseId) {
-      router.push(courseRoutes.lesson(courseId, item.id));
-    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -395,79 +336,61 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
 
   /** Refreshes the progress bar after an assessment is passed, without a full reload. */
   const refreshProgress = () => {
-    if (!courseId) return;
-    if (isPreview) {
-      if (typeof window !== 'undefined' && previewStorageKey) {
-        const stored = sessionStorage.getItem(previewStorageKey);
-        if (stored) {
-          try {
-            setProgress(JSON.parse(stored));
-          } catch {}
-        }
-      }
-    } else {
-      courseProgressService.getCourseProgress(courseId).then(setProgress).catch(() => {});
-    }
+    if (!courseId || isPreview) return;
+    courseProgressService.getCourseProgress(courseId).then(setProgress).catch(() => {});
   };
-
-  const handleResetPreview = () => {
-    if (previewStorageKey) {
-      sessionStorage.removeItem(previewStorageKey);
-    }
-    if (course) {
-      for (const mod of course.modules) {
-        for (const ass of mod.assessments || []) {
-          sessionStorage.removeItem(`preview_attempts_${ass.examId}`);
-        }
-      }
-    }
-    const totalLessons = course?.modules.flatMap((m) => m.lessons || []).length || 1;
-    setProgress(createEphemeralProgress([], totalLessons));
-    setRefreshKey((k) => k + 1);
-    toast.success('Preview progress and assessment marks have been reset.');
-  };
-
-  const handleExitPreview = () => {
-    if (onExitPreview) {
-      onExitPreview();
-    } else if (courseId) {
-      router.push(`/studio/content/course/${courseId}`);
-    } else {
-      router.push('/studio');
-    }
-  };
-
-  const completedCount = progress?.completedLessonIds.length ?? 0;
-  const totalCount = orderedItems.length;
-  const percentComplete = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-  const lessonDone = selectedLesson ? isLessonComplete(selectedLesson.id) : false;
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+      <main
+        className="flex min-h-screen items-center justify-center"
+        style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
+      >
         <div className="size-8 animate-spin rounded-full border-2 border-[#14142b] border-t-transparent" />
-      </div>
+      </main>
     );
   }
 
   if (!course) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 p-6 text-center">
-        <p className="text-base font-semibold text-[#14142b]">Course not found</p>
+      <main
+        className="flex min-h-screen flex-col items-center justify-center px-4 text-[#14142b]"
+        style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
+      >
+        <h2 className="mb-2 text-xl font-bold">Course not found</h2>
+        <p className="mb-6 text-sm font-medium text-slate-500">
+          This course does not exist or you do not have access.
+        </p>
         <button
           type="button"
-          onClick={() => router.push(isPreview ? `/studio/content/course/${courseId}` : '/learning')}
-          className="mt-3 text-sm text-[#FF6B4A] underline"
+          onClick={() => (isPreview ? onExitPreview?.() || router.push(`/studio/content/course/${courseId}`) : router.back())}
+          className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#232735]"
         >
-          {isPreview ? 'Back to Studio' : 'Back to My Learning'}
+          Go back
         </button>
-      </div>
+      </main>
     );
   }
 
+  const lessonDone = selectedLesson ? isLessonComplete(selectedLesson.id) : false;
+
   return (
-    <div className="flex min-h-screen flex-col bg-[#FAF9F5] text-slate-800">
-      {/* Author Preview Banner */}
+    <div
+      className="relative min-h-screen w-full"
+      style={{
+        background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)',
+      }}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[320px]"
+        style={{
+          backgroundImage:
+            'radial-gradient(ellipse 45% 40% at 8% 20%, rgba(255,107,74,0.1) 0%, transparent 55%), radial-gradient(ellipse 40% 35% at 92% 10%, rgba(20,20,43,0.06) 0%, transparent 50%)',
+        }}
+      />
+
+      {/* Creator Preview Top Banner */}
       {isPreview && (
         <div className="sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 border-b border-amber-300/60 bg-amber-50/95 px-4 py-2.5 backdrop-blur-md sm:px-8 shadow-xs">
           <div className="flex items-center gap-2 text-[13px] font-medium text-amber-950">
@@ -475,13 +398,23 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
               Creator Preview Mode
             </span>
             <span>
-              Viewing as an enrolled student. Progress and assessment scores are temporary and will not be saved.
+              Viewing as an enrolled student. Progress is temporary and will not be saved.
             </span>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={handleResetPreview}
+              onClick={() => {
+                setProgress({
+                  courseId: courseId ?? '',
+                  completedLessonIds: [],
+                  completedLessons: 0,
+                  totalLessons: 0,
+                  percent: 0,
+                  enrollmentStatus: 'ACTIVE',
+                });
+                toast.success('Preview progress reset.');
+              }}
               className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/80 bg-white px-3 py-1 text-[12px] font-semibold text-amber-900 transition-colors hover:bg-amber-100/50 cursor-pointer shadow-xs"
             >
               <RotateCcw size={12} />
@@ -489,7 +422,7 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
             </button>
             <button
               type="button"
-              onClick={handleExitPreview}
+              onClick={() => (onExitPreview ? onExitPreview() : router.push(`/studio/content/course/${courseId}`))}
               className="rounded-full bg-[#14142b] px-3.5 py-1 text-[12px] font-semibold text-white transition-colors hover:bg-[#232735] cursor-pointer shadow-xs"
             >
               Exit Preview
@@ -498,228 +431,181 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
         </div>
       )}
 
-      {/* Sticky top chrome */}
-      <header className={`sticky ${isPreview ? 'top-10' : 'top-0'} z-40 border-b border-black/[0.06] bg-[#FAF9F5]/90 backdrop-blur-md transition-all`}>
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <div className="flex min-w-0 items-center gap-3">
-            <button
-              type="button"
-              onClick={() => router.push(isPreview ? `/studio/content/course/${courseId}` : '/learning')}
-              aria-label={isPreview ? 'Back to Studio' : 'Back to My Learning'}
-              className="grid size-9 shrink-0 place-items-center rounded-full border border-slate-200 bg-white text-[#14142b] transition-colors hover:bg-slate-100 cursor-pointer"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <div className="min-w-0">
-              <p className="truncate text-[15px] font-bold text-[#14142b]">{course.title}</p>
-              {course.channel && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
-                  {course.channel.name}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-4">
-            <div className="hidden sm:flex sm:items-center sm:gap-2 text-[12px] font-medium text-slate-500">
-              <span>{completedCount} of {totalCount} completed</span>
-              <span className="font-bold text-[#14142b]">({percentComplete}%)</span>
-            </div>
-            <div className="h-2 w-24 sm:w-32 overflow-hidden rounded-full bg-slate-200">
-              <div
-                className="h-full bg-emerald-500 transition-all duration-300"
-                style={{ width: `${percentComplete}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main player body */}
-      <div className="relative z-10 flex min-h-screen w-full flex-col gap-4 px-4 pb-10 md:flex-row md:px-8 lg:px-12 xl:px-16">
+      {/* Clear floating navbar padding */}
+      <div className={`relative z-10 flex min-h-screen w-full flex-col gap-4 px-4 ${isPreview ? 'pt-8' : 'pt-28 md:pt-32'} md:flex-row md:px-8 lg:px-12 xl:px-16`}>
         {/* Sidebar */}
         <aside className="flex w-full shrink-0 flex-col md:sticky md:top-32 md:h-[calc(100vh-8.5rem)] md:w-[280px] lg:w-[300px]">
           <div className="flex h-full flex-col">
-          <nav className="flex-1 space-y-3 overflow-y-auto px-3 pb-5 pt-5 md:px-4 arcade-scrollbar-mini">
-            {course.modules.length === 0 ? (
-              <p className="px-2 text-sm text-slate-400">No modules yet.</p>
-            ) : (
-              course.modules.map((mod, modIdx) => {
-                const isCollapsed = Boolean(collapsedModules[mod.id]);
-                return (
-                <div key={mod.id} className="mb-2 flex flex-col gap-1">
-                  <button
-                    type="button"
-                    onClick={() => toggleModule(mod.id)}
-                    className="group flex w-full items-center gap-2 rounded-2xl border border-white/40 bg-white/60 px-3.5 py-2.5 text-left shadow-sm backdrop-blur-md transition-all hover:border-white/60 hover:bg-white/80"
-                  >
-                    {isCollapsed ? (
-                      <ChevronRight size={15} className="flex-shrink-0 text-[#14142b]/50" />
-                    ) : (
-                      <ChevronDown size={15} className="flex-shrink-0 text-[#14142b]/50" />
-                    )}
-                    <span className="flex-1 truncate text-[13px] font-bold text-[#14142b]">
-                      {mod.title?.trim() ? mod.title : `Module ${modIdx + 1}`}
-                    </span>
-                  </button>
+            <nav className="flex-1 space-y-3 overflow-y-auto px-3 pb-5 pt-5 md:px-4 arcade-scrollbar-mini">
+              {course.modules.length === 0 ? (
+                <p className="px-2 text-sm text-slate-400">No modules yet.</p>
+              ) : (
+                course.modules.map((mod, modIdx) => {
+                  const isCollapsed = Boolean(collapsedModules[mod.id]);
+                  return (
+                    <div key={mod.id} className="mb-2 flex flex-col gap-1">
+                      <button
+                        type="button"
+                        onClick={() => toggleModule(mod.id)}
+                        className="group flex w-full items-center gap-2 rounded-2xl border border-white/40 bg-white/60 px-3.5 py-2.5 text-left shadow-sm backdrop-blur-md transition-all hover:border-white/60 hover:bg-white/80"
+                      >
+                        {isCollapsed ? (
+                          <ChevronRight size={15} className="flex-shrink-0 text-[#14142b]/50" />
+                        ) : (
+                          <ChevronDown size={15} className="flex-shrink-0 text-[#14142b]/50" />
+                        )}
+                        <span className="flex-1 truncate text-[13px] font-bold text-[#14142b]">
+                          {mod.title?.trim() ? mod.title : `Module ${modIdx + 1}`}
+                        </span>
+                      </button>
 
-                  {!isCollapsed && (
-                  <div className="ml-5 flex flex-col gap-1 pl-3 pt-1">
-                    {itemsForModule(mod).map((item) => {
-                      const isSelected = selectedItem?.id === item.id;
+                      {!isCollapsed && (
+                        <div className="ml-5 flex flex-col gap-1 pl-3 pt-1">
+                          {itemsForModule(mod).map((item) => {
+                            const isSelected = selectedItem?.id === item.id;
 
-                      // Assessments get a distinct row: no completion tick (passing is what counts,
-                      // and this page doesn't know the result), no report menu, and an icon instead
-                      // of a step number so they read as a different kind of thing in the tree.
-                      if (item.kind === 'assessment') {
-                        return (
-                          <div
-                            key={item.id}
-                            className={`group flex items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
-                              isSelected ? 'bg-[#14142b] shadow-md' : 'bg-white/50 hover:bg-white/80'
-                            }`}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => goTo(item)}
-                              className={`flex min-w-0 flex-1 items-center gap-1.5 py-2 text-left text-[13px] ${
-                                isSelected ? 'font-semibold text-white' : 'text-slate-500'
-                              }`}
-                            >
-                              <GraduationCap size={13} className="flex-shrink-0" />
-                              <span className="truncate">{item.assessment.title}</span>
-                              {item.assessment.requiredForCompletion && (
-                                <span className="flex-shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-700">
-                                  Required
-                                </span>
-                              )}
-                            </button>
-                          </div>
-                        );
-                      }
-
-                      const lesson = item.lesson;
-                      const isComplete = isLessonComplete(lesson.id);
-                      return (
-                        <div
-                          key={lesson.id}
-                          className={`group/item flex items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
-                            isSelected ? 'bg-[#14142b] shadow-md' : 'bg-white/50 hover:bg-white/80'
-                          }`}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => goTo(item)}
-                            className={`flex min-w-0 flex-1 items-center gap-1.5 py-2 text-left text-[13px] ${
-                              isSelected
-                                ? 'font-semibold text-white'
-                                : isComplete
-                                  ? 'text-slate-400'
-                                  : 'text-slate-500'
-                            }`}
-                          >
-                            {isComplete && !isSelected ? (
-                              <Check size={13} strokeWidth={2.5} className="flex-shrink-0 text-emerald-500" />
-                            ) : (
-                              <FileText size={13} className="flex-shrink-0" />
-                            )}
-                            <span className="truncate" title={lesson.title}>
-                              {lesson.title}
-                            </span>
-                          </button>
-
-                          {!isPreview && (
-                          <div className="relative flex flex-shrink-0 items-center opacity-0 transition-opacity group-hover/item:opacity-100">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveMenuLessonId(activeMenuLessonId === lesson.id ? null : lesson.id);
-                              }}
-                              onKeyDown={(e) => {
-                                e.stopPropagation();
-                              }}
-                              className={`rounded-full p-1 transition-all ${
-                                activeMenuLessonId === lesson.id ? 'opacity-100' : ''
-                              } ${
-                                isSelected
-                                  ? 'text-white/70 hover:bg-white/15 hover:text-white'
-                                  : 'text-[#14142b]/50 hover:bg-[#14142b]/10 hover:text-[#14142b]'
-                              }`}
-                              title="Lesson options"
-                            >
-                              <MoreVertical size={14} />
-                            </button>
-
-                            {activeMenuLessonId === lesson.id && (
-                              <>
+                            // Assessments get a distinct row: no completion tick, no report menu, and an icon instead
+                            if (item.kind === 'assessment') {
+                              return (
                                 <div
-                                  className="fixed inset-0 z-30"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActiveMenuLessonId(null);
-                                  }}
-                                />
-                                <div className="absolute right-0 top-full mt-1 z-40 w-32 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
+                                  key={item.id}
+                                  className={`group flex items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
+                                    isSelected ? 'bg-[#14142b] shadow-md' : 'bg-white/50 hover:bg-white/80'
+                                  }`}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => goTo(item)}
+                                    className={`flex min-w-0 flex-1 items-center gap-1.5 py-2 text-left text-[13px] ${
+                                      isSelected ? 'font-semibold text-white' : 'text-slate-500'
+                                    }`}
+                                  >
+                                    <GraduationCap size={13} className="flex-shrink-0" />
+                                    <span className="truncate">{item.assessment.title}</span>
+                                    {item.assessment.requiredForCompletion && (
+                                      <span className="flex-shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-700">
+                                        Required
+                                      </span>
+                                    )}
+                                  </button>
+                                </div>
+                              );
+                            }
+
+                            const lesson = item.lesson;
+                            const isComplete = isLessonComplete(lesson.id);
+                            return (
+                              <div
+                                key={lesson.id}
+                                className={`group/item flex items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
+                                  isSelected ? 'bg-[#14142b] shadow-md' : 'bg-white/50 hover:bg-white/80'
+                                }`}
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => goTo(item)}
+                                  className={`flex min-w-0 flex-1 items-center gap-1.5 py-2 text-left text-[13px] ${
+                                    isSelected
+                                      ? 'font-semibold text-white'
+                                      : isComplete
+                                        ? 'text-slate-400'
+                                        : 'text-slate-500'
+                                  }`}
+                                >
+                                  {isComplete && !isSelected ? (
+                                    <Check size={13} strokeWidth={2.5} className="flex-shrink-0 text-emerald-500" />
+                                  ) : (
+                                    <FileText size={13} className="flex-shrink-0" />
+                                  )}
+                                  <span className="truncate" title={lesson.title}>
+                                    {lesson.title}
+                                  </span>
+                                </button>
+
+                                <div className="relative flex flex-shrink-0 items-center opacity-0 transition-opacity group-hover/item:opacity-100">
                                   <button
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setActiveMenuLessonId(null);
-                                      setReportingContext({
-                                        moduleId: mod.id,
-                                        moduleTitle: mod.title?.trim() ? mod.title : `Module ${modIdx + 1}`,
-                                        lessonId: lesson.id,
-                                        lessonTitle: lesson.title,
-                                      });
-                                      setReportModalOpen(true);
+                                      setActiveMenuLessonId(activeMenuLessonId === lesson.id ? null : lesson.id);
                                     }}
-                                    onKeyDown={(e) => {
-                                      e.stopPropagation();
-                                    }}
-                                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-red-50 hover:text-red-600"
+                                    className={`rounded-full p-1 transition-all ${
+                                      activeMenuLessonId === lesson.id ? 'opacity-100' : ''
+                                    } ${
+                                      isSelected
+                                        ? 'text-white/70 hover:bg-white/15 hover:text-white'
+                                        : 'text-[#14142b]/50 hover:bg-[#14142b]/10 hover:text-[#14142b]'
+                                    }`}
+                                    title="Lesson options"
                                   >
-                                    <Flag size={13} />
-                                    <span>Report</span>
+                                    <MoreVertical size={14} />
                                   </button>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  )}
-                </div>
-                );
-              })
-            )}
-          </nav>
 
-          {progress && progress.totalLessons > 0 && (
-            <div className="space-y-2 px-5 pt-3 pb-5 md:px-6">
-              {progress.enrollmentStatus === 'COMPLETED' && (
-                <p className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
-                  <CheckCircle2 size={12} />
-                  Course completed
-                </p>
+                                  {activeMenuLessonId === lesson.id && (
+                                    <>
+                                      <div
+                                        className="fixed inset-0 z-30"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setActiveMenuLessonId(null);
+                                        }}
+                                      />
+                                      <div className="absolute right-0 top-full mt-1 z-40 w-32 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setActiveMenuLessonId(null);
+                                            setReportingContext({
+                                              moduleId: mod.id,
+                                              moduleTitle: mod.title?.trim() ? mod.title : `Module ${modIdx + 1}`,
+                                              lessonId: lesson.id,
+                                              lessonTitle: lesson.title,
+                                            });
+                                            setReportModalOpen(true);
+                                          }}
+                                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-red-50 hover:text-red-600"
+                                        >
+                                          <Flag size={13} />
+                                          <span>Report</span>
+                                        </button>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               )}
-              <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400">
-                <span>
-                  {progress.completedLessons} of {progress.totalLessons}
-                </span>
-                <span className="tabular-nums text-[#14142b]">{progress.percent}%</span>
+            </nav>
+
+            {progress && progress.totalLessons > 0 && (
+              <div className="space-y-2 px-5 pt-3 pb-5 md:px-6">
+                {progress.enrollmentStatus === 'COMPLETED' && (
+                  <p className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                    <CheckCircle2 size={12} />
+                    Course completed
+                  </p>
+                )}
+                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400">
+                  <span>
+                    {progress.completedLessons} of {progress.totalLessons}
+                  </span>
+                  <span className="tabular-nums text-[#14142b]">{progress.percent}%</span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200/80">
+                  <div
+                    className="h-full rounded-full bg-[#FF6B4A] transition-all duration-500"
+                    style={{ width: `${progress.percent}%` }}
+                  />
+                </div>
               </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200/80">
-                <div
-                  className="h-full rounded-full bg-[#FF6B4A] transition-all duration-500"
-                  style={{ width: `${progress.percent}%` }}
-                />
-              </div>
-            </div>
-          )}
+            )}
           </div>
         </aside>
 
@@ -727,20 +613,19 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
         <main className="relative flex min-w-0 flex-1 justify-center px-4 py-6 sm:px-8 md:py-8 lg:px-12">
           <article className="relative flex w-full max-w-4xl flex-col">
             {selectedItem?.kind === 'assessment' ? (
-              // An assessment is a page in the structure, not a button: it describes itself here,
-              // inside the course shell, and only hands off to the exam player once the candidate
-              // actually starts — which needs fullscreen and possibly proctoring.
               <AssessmentLandingPane
-                key={`${selectedItem.id}-${refreshKey}`}
+                key={selectedItem.id}
                 assessment={selectedItem.assessment}
                 courseId={courseId}
                 onPassed={refreshProgress}
+                onNextItem={nextItem ? handleNext : undefined}
+                onReportIssue={() => setReportModalOpen(true)}
                 isPreview={isPreview}
               />
             ) : selectedLesson ? (
               <>
                 <div className="min-h-[42vh] flex-1 rounded-3xl border border-white/40 bg-white/30 px-5 py-7 shadow-lg backdrop-blur-xl sm:px-8 sm:py-9 md:px-12 md:py-11">
-                  <div className="arcade-rich-text max-w-none">
+                  <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-[#14142b] prose-a:text-[#FF6B4A] hover:prose-a:text-[#D94F32] prose-p:text-slate-700">
                     {selectedLesson.body ? (
                       <TiptapContentView body={selectedLesson.body} />
                     ) : (
@@ -755,7 +640,7 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
                   </div>
                 </div>
 
-                {/* Bottom actions only — hide absent prev/next */}
+                {/* Bottom actions footer */}
                 <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 pt-5 pb-10">
                   <div>
                     {previousItem && (
@@ -785,11 +670,11 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
                       lessonDone ? (
                         <button
                           type="button"
-                          onClick={() => setFeedbackModalOpen(true)}
+                          onClick={() => (isPreview ? onExitPreview?.() || router.push(`/studio/content/course/${courseId}`) : setFeedbackModalOpen(true))}
                           className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(5,150,105,0.22)] transition-colors hover:bg-emerald-700"
                         >
                           <CheckCircle2 size={16} />
-                          {isPreview ? 'Complete course' : 'Back to Learning'}
+                          Back to Learning
                         </button>
                       ) : (
                         <button
@@ -816,9 +701,7 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
           </article>
         </main>
 
-        {/* Drag handle — resizes the right rail against the lesson canvas. Invisible at rest; the
-            full-height gap itself becomes the grabbable affordance on hover, rather than a small
-            icon or a hard line sitting in the middle of it. */}
+        {/* Drag handle */}
         <div
           onPointerDown={handleRightPanelResizeStart}
           className="group hidden w-4 shrink-0 cursor-col-resize md:sticky md:top-32 md:flex md:h-[calc(100vh-8.5rem)] md:items-stretch md:justify-center"
@@ -826,7 +709,7 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
           <div className="w-1.5 rounded-full bg-transparent transition-colors group-hover:bg-slate-300/60 group-active:bg-slate-400/70" />
         </div>
 
-        {/* Right rail — notes / AI chat, glass-pill styled to match the left nav */}
+        {/* Right rail — notes / AI chat, glass-pill styled */}
         <aside
           className="flex w-full shrink-0 flex-col md:sticky md:top-32 md:h-[calc(100vh-8.5rem)]"
           style={isDesktopViewport ? { width: rightPanelWidth } : undefined}
@@ -861,29 +744,7 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
 
             <div className="flex h-full flex-1 flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/30 p-4 shadow-lg backdrop-blur-xl">
               {rightPanelTab === 'notes' ? (
-                isPreview ? (
-                  <NotesEditor
-                    key={`preview-${selectedLesson?.id ?? 'none'}`}
-                    content={previewNotesDraft}
-                    onChange={setPreviewNotesDraft}
-                    saveStatus="idle"
-                    placeholder={
-                      selectedLesson
-                        ? `Jot notes for “${selectedLesson.title}” (preview — not saved)…`
-                        : undefined
-                    }
-                  />
-                ) : (
-                  <NotesEditor
-                    key={notes.editorKey}
-                    content={notes.initialBody}
-                    onChange={notes.save}
-                    saveStatus={notes.saveStatus === 'error' ? 'idle' : notes.saveStatus}
-                    placeholder={
-                      selectedLesson ? `Jot notes for “${selectedLesson.title}”…` : undefined
-                    }
-                  />
-                )
+                <NotesEditor content={notesDraft} onChange={setNotesDraft} />
               ) : (
                 <div className="flex h-full min-h-[50vh] flex-col items-center justify-center text-center">
                   <Sparkles size={28} className="mb-3 text-slate-300" />
@@ -917,8 +778,7 @@ export function CoursePlayer({ courseId, lessonId, isPreview = false, onExitPrev
         contentType={reportingContext?.lessonTitle ? 'LESSON' : 'COURSE'}
       />
 
-      {/* Post-completion feedback. Opens when the course flips to COMPLETED, and again from
-          "Back to Learning" so a learner who dismissed it can still rate the course. */}
+      {/* Post-completion feedback */}
       <Dialog
         open={feedbackModalOpen}
         onOpenChange={(open) => {

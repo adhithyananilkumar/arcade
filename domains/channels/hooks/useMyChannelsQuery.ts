@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { channelService } from '../api/channel.service';
 import type { Channel } from '../api/channel.service';
@@ -55,6 +56,31 @@ export function useMyWorkspacesQuery({ enabled = true }: SharedChannelQueryOptio
 }
 
 /**
+ * Combined list of unique channels the current user owns or staffs.
+ */
+export function useUserChannels({ enabled = true }: SharedChannelQueryOptions = {}): {
+  channels: Channel[];
+  isLoading: boolean;
+} {
+  const owned = useMyChannelsQuery({ enabled });
+  const workspaces = useMyWorkspacesQuery({ enabled });
+
+  const channels = useMemo(() => {
+    const map = new Map<string, Channel>();
+    (owned.data ?? []).forEach((c) => map.set(c.id, c));
+    (workspaces.data ?? []).forEach((c) => {
+      if (!map.has(c.id)) map.set(c.id, c);
+    });
+    return Array.from(map.values());
+  }, [owned.data, workspaces.data]);
+
+  return {
+    channels,
+    isLoading: owned.isPending || workspaces.isPending,
+  };
+}
+
+/**
  * Whether the user owns or staffs any channel at all — the question the navbar actually asks.
  *
  * <p>Returns `undefined` while either query is still loading, so callers can distinguish "not yet
@@ -71,3 +97,4 @@ export function useHasAnyChannel(): boolean | undefined {
 }
 
 export type { Channel };
+

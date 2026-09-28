@@ -146,7 +146,7 @@ export default function LearnerHomePage() {
   const { user, status } = useAuthStore();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState('');
+  const [selectedTopicForSearch, setSelectedTopicForSearch] = useState<string | null>(null);
   const [hasSeenHomeBefore, setHasSeenHomeBefore] = useState(true);
   const [upcomingEvents, setUpcomingEvents] = useState<EventCard[]>([]);
   const [superSearchOpen, setSuperSearchOpen] = useState(false);
@@ -378,10 +378,10 @@ export default function LearnerHomePage() {
             </p>
 
             <form onSubmit={handleSearch} className="relative mt-7 w-full max-w-lg">
-              <div className="group relative flex items-center w-full rounded-full border border-slate-200/90 bg-white/95 pl-5 pr-1.5 py-1.5 shadow-[0_10px_30px_rgba(20,20,43,0.06)] transition-all focus-within:border-[#4C6FFF]/60 focus-within:shadow-[0_12px_36px_rgba(76,111,255,0.14)]">
+              <div className="group relative flex items-center w-full rounded-full border border-slate-200/80 bg-white/95 px-4.5 py-2.5 transition-all focus-within:border-[#4C6FFF]/60">
                 {/* Left Search Icon */}
-                <div className="pointer-events-none flex items-center pr-3 text-slate-400 group-focus-within:text-[#4C6FFF] transition-colors shrink-0">
-                  <Search size={20} strokeWidth={2.2} />
+                <div className="pointer-events-none flex items-center pr-3 text-slate-400 group-focus-within:text-[#2962D6] transition-colors shrink-0">
+                  <Search size={19} strokeWidth={2.2} />
                 </div>
 
                 {/* Input Field — opens the super search modal rather than typing inline.
@@ -393,28 +393,17 @@ export default function LearnerHomePage() {
                     click on the original target — after which the dialog can safely mount. */}
                 <input
                   type="search"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  value=""
+                  onChange={() => {}}
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => setSuperSearchOpen(true)}
+                  onClick={() => {
+                    setSelectedTopicForSearch(null);
+                    setSuperSearchOpen(true);
+                  }}
                   readOnly
                   placeholder="Search courses, skills, mentors…"
-                  className="block w-full cursor-pointer bg-transparent py-2 text-[14px] sm:text-[15px] font-medium text-[#14142b] outline-none placeholder:text-slate-400"
+                  className="block w-full cursor-pointer bg-transparent py-1 text-[14px] sm:text-[15px] font-medium text-[#14142b] outline-none placeholder:text-slate-400"
                 />
-
-                {/* Keyboard shortcut hint */}
-                <kbd className="hidden shrink-0 items-center gap-0.5 rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 sm:flex">
-                  <span>⌘</span>K
-                </kbd>
-
-                {/* Right Circular Blue-Violet Gradient Search Button */}
-                <button
-                  type="submit"
-                  aria-label="Search"
-                  className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#4C6FFF] to-[#635BFF] text-white shadow-[0_6px_20px_rgba(76,111,255,0.38)] transition-all hover:scale-105 hover:shadow-[0_8px_24px_rgba(76,111,255,0.48)] active:scale-95 cursor-pointer ml-2"
-                >
-                  <Search size={20} strokeWidth={2.5} />
-                </button>
               </div>
             </form>
 
@@ -430,10 +419,10 @@ export default function LearnerHomePage() {
                     key={topic}
                     type="button"
                     onClick={() => {
-                      setQuery(topic);
+                      setSelectedTopicForSearch(topic);
                       setSuperSearchOpen(true);
                     }}
-                    className="inline-flex items-center rounded-full border border-slate-200/80 bg-white/80 px-3.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
+                    className="inline-flex items-center rounded-tl-[1.1rem] rounded-br-[1.1rem] rounded-tr-xs rounded-bl-xs border border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-800/90 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-[#2962D6] dark:hover:border-[#3B82F6] hover:text-[#2962D6] dark:hover:text-[#3B82F6] hover:bg-[#2962D6]/5 dark:hover:bg-[#3B82F6]/10 transition-all cursor-pointer select-none"
                   >
                     <span>{topic}</span>
                   </button>
@@ -558,7 +547,7 @@ export default function LearnerHomePage() {
       <SuperSearchModal
         open={superSearchOpen}
         onOpenChange={setSuperSearchOpen}
-        initialQuery={query}
+        initialQuery={selectedTopicForSearch ?? ''}
       />
     </div>
   );

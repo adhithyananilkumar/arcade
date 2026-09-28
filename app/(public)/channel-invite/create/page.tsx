@@ -10,7 +10,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, useReducedMotion, Variants } from 'framer-motion';
-import { ArrowUpRight, Upload, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ArrowUpRight, Upload, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { channelService, ChannelApplicantInput, ChannelOrganizationInput } from '@/domains/channels';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -319,9 +319,6 @@ function ChannelInviteCreateContent() {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-[520px] mx-auto my-auto text-center flex flex-col items-center"
         >
-          <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 mb-6">
-            <CheckCircle2 className="w-6 h-6" />
-          </div>
           <h1 className="text-3xl sm:text-4xl font-normal font-serif italic text-[#0B132B] tracking-tight leading-snug">
             Request Received.
           </h1>

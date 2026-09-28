@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { AtSign, CreditCard, User, Shield, ToggleLeft, Palette, ChevronRight, Settings as SettingsIcon } from 'lucide-react';
-import { cn } from '@/shared/utils/utils';
+import { SideNav, type SideNavItem } from '@/shared/design-system/ui/side-nav';
 
 const sidebarItems = [
   { 
@@ -50,41 +50,27 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
     }
   }, [pathname, router]);
 
+  const navItems: SideNavItem[] = sidebarItems.map((item) => ({
+    key: item.href,
+    label: item.name,
+    href: item.href,
+    icon: item.icon,
+    iconClassName: item.iconBg,
+  }));
+
   const activeItem = sidebarItems.find(
     item => pathname === item.href || (pathname === '/settings' && item.href === '/settings/info') || (pathname === '/settings/profile' && item.href === '/settings/info')
   );
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen pt-28 md:pt-32 pb-16 bg-white dark:bg-[#202124] gap-8 md:gap-12 px-6 md:px-12 items-start">
-      {/* Sidebar Navigation - Scrolls naturally with document */}
-      <aside className="w-full md:w-[240px] shrink-0 bg-transparent">
-        <nav className="space-y-1.5">
-          {sidebarItems.map((item) => {
-            const isActive = pathname === item.href || (pathname === '/settings' && item.href === '/settings/info');
-            const Icon = item.icon;
-            
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3.5 px-4 py-3 rounded-full transition-all duration-200 text-sm font-semibold",
-                  isActive 
-                    ? "bg-sky-100/90 text-sky-950 border border-sky-200 dark:bg-sky-950/70 dark:text-sky-200 dark:border-sky-800/60 font-bold shadow-xs" 
-                    : "hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-700 dark:text-slate-300"
-                )}
-              >
-                <div className={cn(
-                  "flex items-center justify-center w-8 h-8 rounded-full shrink-0 shadow-2xs",
-                  item.iconBg
-                )}>
-                  <Icon size={16} strokeWidth={2} />
-                </div>
-                <span className="truncate text-xs font-semibold">{item.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
+    <div className="flex flex-col md:flex-row min-h-screen pt-28 md:pt-32 pb-16 bg-white dark:bg-[#202124] gap-10 md:gap-14 px-6 md:px-12 items-start">
+      {/* Sticky Sidebar Navigation */}
+      <aside className="w-full md:w-[240px] shrink-0 bg-transparent py-1 md:sticky md:top-28 self-start z-10">
+        <SideNav
+          sections={[{ items: navItems }]}
+          activeKey={activeItem?.href ?? null}
+          ariaLabel="Settings"
+        />
       </aside>
 
       {/* Main Content Area */}
