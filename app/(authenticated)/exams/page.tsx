@@ -404,6 +404,224 @@ function HubGrid({ cards, onOpen }: { cards: ExamHubCard[]; onOpen: (examId: str
   );
 }
 
+function ExamDoodle() {
+  return (
+    <motion.div
+      initial={{ scale: 0.92, opacity: 0 }}
+      animate={{ scale: 1, opacity: 0.82 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="relative mb-3 flex items-center justify-center select-none opacity-85 hover:opacity-100 transition-opacity"
+    >
+      <svg
+        width="110"
+        height="100"
+        viewBox="0 0 110 100"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="relative z-10"
+      >
+        {/* Soft background glow ellipse */}
+        <ellipse cx="55" cy="50" rx="38" ry="32" className="fill-[#2962D6]/10 dark:fill-[#3B82F6]/15" />
+
+        {/* Minimalist Exam Sheet */}
+        <rect
+          x="30"
+          y="18"
+          width="50"
+          height="64"
+          rx="10"
+          className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200"
+          strokeWidth="2"
+        />
+
+        {/* Header bar / title line */}
+        <path
+          d="M40 30H70"
+          className="stroke-[#2962D6] dark:stroke-[#3B82F6]"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+
+        {/* Question 1: Checkmark & line */}
+        <path
+          d="M39 42L42 45L48 39"
+          className="stroke-emerald-500 dark:stroke-emerald-400"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M53 42H70"
+          className="stroke-slate-400 dark:stroke-slate-500"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+
+        {/* Question 2: Checkmark & line */}
+        <path
+          d="M39 54L42 57L48 51"
+          className="stroke-emerald-500 dark:stroke-emerald-400"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M53 54H68"
+          className="stroke-slate-400 dark:stroke-slate-500"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+
+        {/* Question 3: Dot & line */}
+        <circle cx="43" cy="66" r="2" className="fill-slate-400 dark:fill-slate-500" />
+        <path
+          d="M53 66H65"
+          className="stroke-slate-300 dark:stroke-slate-600"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+
+        {/* Simple minimal doodle pencil floating at bottom right */}
+        <g transform="translate(68, 56) rotate(35)">
+          <rect x="0" y="0" width="6" height="24" rx="2" className="fill-amber-400 dark:fill-amber-300 stroke-slate-800 dark:stroke-slate-200" strokeWidth="1.5" />
+          <path d="M0 24L3 29L6 24Z" className="fill-amber-200 dark:fill-amber-100 stroke-slate-800 dark:stroke-slate-200" strokeWidth="1.5" strokeLinejoin="round" />
+          <circle cx="3" cy="27.5" r="0.8" className="fill-slate-900 dark:fill-slate-900" />
+        </g>
+
+        {/* Tiny playful sparkle stars */}
+        <path
+          d="M20 32L21 28L25 27L21 26L20 22L19 26L15 27L19 28Z"
+          className="fill-amber-400 dark:fill-amber-300"
+        />
+        <path
+          d="M88 24L89 21L92 20L89 19L88 16L87 19L84 20L87 21Z"
+          className="fill-[#27C5D8]"
+        />
+      </svg>
+    </motion.div>
+  );
+}
+
+function AvailableExamsDoodle() {
+  return (
+    <motion.div
+      initial={{ scale: 0.92, opacity: 0 }}
+      animate={{ scale: 1, opacity: 0.82 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="relative mb-3 flex items-center justify-center select-none opacity-85 hover:opacity-100 transition-opacity"
+    >
+      <svg
+        width="110"
+        height="100"
+        viewBox="0 0 110 100"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="relative z-10"
+      >
+        {/* Soft cyan/blue background glow ellipse */}
+        <ellipse cx="55" cy="50" rx="38" ry="32" className="fill-[#27C5D8]/10 dark:fill-[#27C5D8]/15" />
+
+        {/* Minimalist Catalog / Certificate Sheet */}
+        <rect
+          x="30"
+          y="18"
+          width="50"
+          height="64"
+          rx="10"
+          className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200"
+          strokeWidth="2"
+        />
+
+        {/* Certificate / Exam Badge Ribbon at top */}
+        <path
+          d="M48 18V30L55 26L62 30V18"
+          className="fill-[#2962D6]/20 stroke-[#2962D6] dark:stroke-[#3B82F6]"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+
+        {/* Clean Content Lines */}
+        <path d="M38 40H72" className="stroke-[#2962D6] dark:stroke-[#3B82F6]" strokeWidth="2" strokeLinecap="round" />
+        <path d="M38 50H66" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="2" strokeLinecap="round" />
+        <path d="M38 60H58" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="2" strokeLinecap="round" />
+
+        {/* Minimal Magnifying Glass Doodle */}
+        <g transform="translate(68, 52)">
+          <circle cx="12" cy="12" r="10" className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200" strokeWidth="2" />
+          <path d="M19 19L27 27" className="stroke-slate-800 dark:stroke-slate-200" strokeWidth="2.5" strokeLinecap="round" />
+          {/* Cyan shine in glass */}
+          <path d="M8 9A5 5 0 0 1 15 8" className="stroke-[#27C5D8]" strokeWidth="1.5" strokeLinecap="round" />
+        </g>
+
+        {/* Sparkles */}
+        <path d="M20 32L21 28L25 27L21 26L20 22L19 26L15 27L19 28Z" className="fill-amber-400 dark:fill-amber-300" />
+        <path d="M88 24L89 21L92 20L89 19L88 16L87 19L84 20L87 21Z" className="fill-[#27C5D8]" />
+      </svg>
+    </motion.div>
+  );
+}
+
+function GradeCardsDoodle() {
+  return (
+    <motion.div
+      initial={{ scale: 0.92, opacity: 0 }}
+      animate={{ scale: 1, opacity: 0.82 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="relative mb-3 flex items-center justify-center select-none opacity-85 hover:opacity-100 transition-opacity"
+    >
+      <svg
+        width="110"
+        height="100"
+        viewBox="0 0 110 100"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="relative z-10"
+      >
+        {/* Soft violet background glow ellipse */}
+        <ellipse cx="55" cy="50" rx="38" ry="32" className="fill-violet-500/10 dark:fill-violet-500/15" />
+
+        {/* Tilted background card */}
+        <rect
+          x="26"
+          y="22"
+          width="48"
+          height="60"
+          rx="8"
+          transform="rotate(-8 26 22)"
+          className="fill-slate-100 dark:fill-slate-800 stroke-slate-300 dark:stroke-slate-700"
+          strokeWidth="1.5"
+        />
+
+        {/* Main Certificate / Grade Card */}
+        <rect
+          x="32"
+          y="18"
+          width="52"
+          height="64"
+          rx="10"
+          className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200"
+          strokeWidth="2"
+        />
+
+        {/* Decorative Laurel / Medal Award Circle */}
+        <circle cx="58" cy="38" r="11" className="fill-violet-50 dark:fill-violet-950/60 stroke-violet-500 dark:stroke-violet-400" strokeWidth="1.5" />
+        <path d="M54 38L57 41L63 35" className="stroke-violet-600 dark:stroke-violet-300" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+
+        {/* Grade Ribbon Tails */}
+        <path d="M54 48L51 58L56 55L60 58L58 48" className="fill-violet-100 dark:fill-violet-900/60 stroke-violet-500 dark:stroke-violet-400" strokeWidth="1.2" strokeLinejoin="round" />
+
+        {/* Lines representing scores */}
+        <path d="M42 66H74" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="2" strokeLinecap="round" />
+        <path d="M48 72H68" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeLinecap="round" />
+
+        {/* Sparkles */}
+        <path d="M18 36L19 32L23 31L19 30L18 26L17 30L13 31L17 32Z" className="fill-amber-400 dark:fill-amber-300" />
+        <path d="M90 28L91 25L94 24L91 23L90 20L89 23L86 24L89 25Z" className="fill-violet-400" />
+      </svg>
+    </motion.div>
+  );
+}
+
 function EmptyState({
   tab,
   searching,
@@ -414,10 +632,12 @@ function EmptyState({
   onBrowse: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-dashed border-slate-300 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 px-6 py-20 text-center backdrop-blur-sm">
-      <div className="grid size-14 place-items-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-[#2962D6] dark:text-[#3B82F6]">
-        <ClipboardCheck size={28} />
-      </div>
+    <div className="py-10 px-4 text-center flex flex-col items-center justify-center">
+      {tab === "mine" ? (
+        <ExamDoodle />
+      ) : (
+        <AvailableExamsDoodle />
+      )}
       <p className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
         {tab === "mine"
           ? searching
@@ -429,15 +649,15 @@ function EmptyState({
       </p>
       {tab === "mine" && !searching && (
         <>
-          <p className="max-w-sm text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
+          <p className="mt-1 max-w-sm text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
             Browse certifications and standalone exams, then register to sit them and earn your certificates.
           </p>
           <button
             type="button"
             onClick={onBrowse}
-            className="mt-2 cursor-pointer rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] dark:bg-white text-white dark:text-slate-900 px-6 py-2.5 text-[13px] font-bold shadow-sm hover:shadow-md transition-all"
+            className="mt-5 cursor-pointer rounded-full bg-[#12141C] dark:bg-white text-white dark:text-slate-900 px-6 py-2.5 text-xs sm:text-sm font-bold shadow-sm hover:opacity-90 transition-all"
           >
-            Browse Exams
+            Browse exams
           </button>
         </>
       )}
@@ -472,14 +692,12 @@ function GradeCardList({
 
   if (filtered.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-dashed border-slate-300 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 px-6 py-20 text-center backdrop-blur-sm">
-        <div className="grid size-14 place-items-center rounded-2xl bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400">
-          <Award size={28} />
-        </div>
+      <div className="py-10 px-4 text-center flex flex-col items-center justify-center">
+        <GradeCardsDoodle />
         <p className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
           {searchQuery ? "No grade cards match your search" : "No grade cards yet"}
         </p>
-        <p className="max-w-sm text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
+        <p className="mt-1 max-w-sm text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
           Certification exams issue a grade card, and completing a course with graded assessments issues a verified transcript.
         </p>
       </div>

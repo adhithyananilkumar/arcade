@@ -934,69 +934,106 @@ function getCameraAwareMove(
 
   const renderControls = () => {
     return (
-      <div className="flex items-center gap-1.5">
-        {/* Undo Button */}
+      <div className="flex items-center gap-1.5 select-none">
+        {/* Undo Doodle Button */}
         <button
           type="button"
           onClick={handleUndo}
           disabled={isTwisting || solveStatus === 'solving' || moveCount === 0}
-          className="relative inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-white/95 dark:bg-slate-800/95 hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200/90 dark:border-slate-700/80 shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all active:scale-95 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+          className="relative inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-slate-100/40 dark:bg-slate-800/40 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 text-slate-800 dark:text-slate-100 border border-slate-200/50 dark:border-slate-700/50 transition-all hover:scale-105 active:scale-95 disabled:opacity-25 disabled:pointer-events-none cursor-pointer"
           title={moveCount > 0 ? `Undo last move (${moveCount} left)` : 'Undo'}
           aria-label="Undo"
         >
-          <Undo2 size={13} strokeWidth={2.2} />
-          {moveCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-[#4C6FFF] px-0.5 text-[8px] font-bold text-white shadow-xs">
-              {moveCount > 99 ? '99+' : moveCount}
-            </span>
-          )}
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" strokeWidth="1.5">
+            <path d="M5.5 3.5L2.2 6.8L5.5 10" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M2.5 6.8H9C11.5 6.8 13.5 8.5 13.5 10.8C13.5 13 11.5 14 9 14H7.5" stroke="currentColor" strokeLinecap="round" />
+          </svg>
         </button>
 
-        {/* Hint Button */}
+        {/* Hint Doodle Button (Bulb) */}
         <button
           type="button"
           onClick={handleHint}
           disabled={isTwisting || solveStatus === 'solving' || isSolved}
-          className="inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-amber-50/95 hover:bg-amber-100 dark:bg-amber-950/50 dark:hover:bg-amber-900/60 text-amber-600 dark:text-amber-400 border border-amber-200/90 dark:border-amber-700/60 shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all active:scale-95 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+          className="inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-amber-50/40 hover:bg-amber-100/60 dark:bg-amber-950/20 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200/40 dark:border-amber-700/30 transition-all hover:scale-105 active:scale-95 disabled:opacity-25 disabled:pointer-events-none cursor-pointer"
           title="Get hint"
           aria-label="Hint"
         >
-          <Lightbulb size={13} strokeWidth={2.2} />
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" strokeWidth="1.5">
+            <path d="M8 2C5.5 2 4 3.7 4 6C4 7.6 5 8.7 6 9.7V11C6 11.4 6.4 11.8 6.8 11.8H9.2C9.6 11.8 10 11.4 10 11V9.7C11 8.7 12 7.6 12 6C12 3.7 10.5 2 8 2Z" stroke="currentColor" strokeLinejoin="round" />
+            <path d="M6.5 13.5H9.5" stroke="currentColor" strokeLinecap="round" />
+            <path d="M6.5 5.8L8 4.5L9.5 5.8" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </button>
 
-        {/* Scramble Button */}
+        {/* Scramble Doodle Button (Dice) */}
         <button
           type="button"
           onClick={handleScramble}
           disabled={isTwisting || solveStatus === 'solving'}
-          className="inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-orange-50/95 hover:bg-orange-100 dark:bg-orange-950/50 dark:hover:bg-orange-900/60 text-orange-600 dark:text-orange-400 border border-orange-200/90 dark:border-orange-700/60 shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all active:scale-95 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+          className="inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-orange-50/40 hover:bg-orange-100/60 dark:bg-orange-950/20 dark:hover:bg-orange-900/40 text-orange-700 dark:text-orange-300 border border-orange-200/40 dark:border-orange-700/30 transition-all hover:scale-105 active:scale-95 disabled:opacity-25 disabled:pointer-events-none cursor-pointer"
           title="Scramble cube"
           aria-label="Scramble"
         >
-          <Dices size={13} strokeWidth={2.2} />
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" strokeWidth="1.5">
+            {/* Front Die */}
+            <rect x="2.5" y="5.5" width="7" height="7" rx="1.8" stroke="currentColor" />
+            <circle cx="4.5" cy="7.5" r="0.75" fill="currentColor" />
+            <circle cx="7.5" cy="10.5" r="0.75" fill="currentColor" />
+            {/* 3D Top/Right Flange lines */}
+            <path d="M7.5 4.2L11 2.5C11.8 2.2 12.6 2.6 12.9 3.4L13.8 6.2C14.1 6.9 13.8 7.7 13.1 8L11 8.8" stroke="currentColor" strokeLinecap="round" />
+            <circle cx="11.2" cy="5.2" r="0.65" fill="currentColor" />
+          </svg>
         </button>
 
-        {/* Solve Button */}
+        {/* Solve Doodle Button (Magic Wand) */}
         <button
           type="button"
           onClick={handleSolve}
           disabled={isTwisting || solveStatus === 'solving' || isSolved}
-          className="inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-gradient-to-r from-[#4C6FFF] to-[#2563EB] hover:from-[#3a5de6] hover:to-[#1d4ed8] text-white shadow-[0_2px_8px_rgba(37,99,235,0.25)] transition-all active:scale-95 disabled:opacity-35 disabled:pointer-events-none disabled:bg-slate-400 dark:disabled:bg-slate-700 cursor-pointer"
+          className="inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-blue-50/40 hover:bg-blue-100/60 dark:bg-blue-950/20 dark:hover:bg-blue-900/40 text-[#2962D6] dark:text-[#3B82F6] border border-blue-200/40 dark:border-blue-700/30 transition-all hover:scale-105 active:scale-95 disabled:opacity-25 disabled:pointer-events-none cursor-pointer"
           title={isSolved ? 'Cube is already solved' : 'Magic solve'}
           aria-label="Magic solve"
         >
-          <Wand2 size={13} strokeWidth={2.2} className={solveStatus === 'solving' ? 'animate-spin' : ''} />
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            strokeWidth="1.5"
+            className={solveStatus === 'solving' ? 'animate-spin' : ''}
+          >
+            {/* Wand Shaft */}
+            <path d="M2.5 13.5L8.8 7.2" stroke="currentColor" strokeLinecap="round" />
+            <path d="M8.8 7.2L11.5 4.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            {/* Sparkle */}
+            <path d="M12.2 1.2L12.7 2.6L14.1 3.1L12.7 3.6L12.2 5L11.7 3.6L10.3 3.1L11.7 2.6Z" fill="currentColor" />
+            <circle cx="4.5" cy="4" r="0.75" fill="currentColor" />
+          </svg>
         </button>
 
-        {/* Maximize / Minimize Fullscreen Button */}
+        {/* Maximize / Minimize Fullscreen Doodle Button */}
         <button
           type="button"
           onClick={() => setIsMaximized((prev) => !prev)}
-          className="inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-indigo-50/95 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/90 dark:border-indigo-700/60 shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all active:scale-95 cursor-pointer"
+          className="inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-indigo-50/40 hover:bg-indigo-100/60 dark:bg-indigo-950/20 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/40 dark:border-indigo-700/30 transition-all hover:scale-105 active:scale-95 cursor-pointer"
           title={isMaximized ? 'Exit Fullscreen (Esc)' : 'Expand to Fullscreen'}
           aria-label={isMaximized ? 'Exit Fullscreen' : 'Expand to Fullscreen'}
         >
-          {isMaximized ? <Minimize2 size={13} strokeWidth={2.2} /> : <Maximize2 size={13} strokeWidth={2.2} />}
+          {isMaximized ? (
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" strokeWidth="1.5">
+              <path d="M6 2.5V6H2.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M10 13.5V10H13.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" strokeWidth="1.5">
+              <path d="M9.5 2.5H13.5V6.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M13.5 2.5L8.5 7.5" stroke="currentColor" strokeLinecap="round" />
+              <path d="M6.5 13.5H2.5V9.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M2.5 13.5L7.5 8.5" stroke="currentColor" strokeLinecap="round" />
+            </svg>
+          )}
         </button>
       </div>
     );

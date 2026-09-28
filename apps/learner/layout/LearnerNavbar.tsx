@@ -280,7 +280,7 @@ export default function LearnerNavbar() {
           </Link>
         </div>
 
-        {pathname !== '/' && (
+        {!['/', '/search', '/learning', '/exams', '/achievements'].includes(pathname) && (
           <button
             type="button"
             onClick={() => router.back()}
