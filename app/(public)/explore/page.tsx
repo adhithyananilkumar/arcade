@@ -134,8 +134,8 @@ export const CATEGORY_DATA: Record<string, {
   },
   "All": {
     coursesCount: 0,
-    gradient: "linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)",
-    colors: { primary: "#2563EB", secondary: "rgba(37, 99, 235, 0.08)" },
+    gradient: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%)",
+    colors: { primary: "#6366F1", secondary: "rgba(99, 102, 241, 0.08)" },
     desc: "Explore all comprehensive learning paths, hands-on bootcamps, and educational resources across all disciplines.",
     courses: [],
     bootcamps: [],
@@ -155,7 +155,7 @@ export const categoriesList = ["All", ...Object.keys(CATEGORY_DATA).filter((c) =
 
 
 const ILLUSTRATION_BGS: Record<string, string> = {
-  "All": "#2563EB", // Solid vibrant blue
+  "All": "#6366F1", // Solid vibrant indigo
   "Computer Science": "#7C3AED", // Solid vibrant purple
   "Information Technology": "#2563EB", // Solid vibrant blue
   "Business & Management": "#EA580C", // Solid vibrant orange

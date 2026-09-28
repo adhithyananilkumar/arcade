@@ -1313,16 +1313,13 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
 
   // In events mode the filter bar lists the categories that actually have published events, so a
   // pill never leads to an empty page. Courses keep their own admin-curated taxonomy.
-  const mergedCategoriesList =
-    mode === "events"
-      ? ["All", ...(eventFacets?.categories ?? []).map((facet) => facet.value)]
-      : [
-          "All",
-          ...categoriesList.filter((c) => c !== "All"),
-          ...adminCategories
-            .filter((c) => c.name !== "All" && !categoriesList.includes(c.name))
-            .map((c) => c.name),
-        ];
+  const mergedCategoriesList = [
+    "All",
+    ...categoriesList.filter((c) => c !== "All"),
+    ...adminCategories
+      .filter((c) => c.name !== "All" && !categoriesList.includes(c.name))
+      .map((c) => c.name),
+  ];
   const getCategoryData = (cat: string) => {
     if (cat.toLowerCase() === "all") {
       const allCourses: any[] = [];
@@ -1473,76 +1470,24 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
   useEffect(() => {
     if (mode !== "events") return;
 
-    if (journeyCompleted) {
-      progressValue.set(1);
-      return;
-    }
-
-    // Lock page scroll initially
-    document.body.style.overflow = "hidden";
-
-    let currentProgress = 0;
-    const scrollStep = 0.15;
-
-    const handleWheel = (e: WheelEvent) => {
-      if (currentProgress >= 1) return;
-
-      // Prevent page from scrolling
-      e.preventDefault();
-
-      // Support scroll down (forward) and scroll up (backward)
-      if (e.deltaY > 0) {
-        currentProgress = Math.min(currentProgress + scrollStep, 1);
-      } else {
-        currentProgress = Math.max(currentProgress - scrollStep, 0);
-      }
-      progressValue.set(currentProgress);
-
-      if (currentProgress >= 1) {
-        // Unlock page scroll
-        document.body.style.overflow = "";
+    // Auto-animate rocket smoothly on load without scroll trapping
+    const obj = { val: 0 };
+    const tween = gsap.to(obj, {
+      val: 1,
+      duration: 3.5,
+      ease: "power2.inOut",
+      onUpdate: () => {
+        progressValue.set(obj.val);
+      },
+      onComplete: () => {
         setJourneyCompleted(true);
       }
-    };
-
-    let touchStart = 0;
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStart = e.touches[0].clientY;
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (currentProgress >= 1) return;
-
-      e.preventDefault();
-
-      const touchEnd = e.touches[0].clientY;
-      const diff = touchStart - touchEnd;
-
-      if (diff > 8) {
-        currentProgress = Math.min(currentProgress + scrollStep, 1);
-      } else if (diff < -8) {
-        currentProgress = Math.max(currentProgress - scrollStep, 0);
-      }
-      progressValue.set(currentProgress);
-      touchStart = touchEnd;
-
-      if (currentProgress >= 1) {
-        document.body.style.overflow = "";
-        setJourneyCompleted(true);
-      }
-    };
-
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    });
 
     return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("wheel", handleWheel);
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchmove", handleTouchMove);
+      tween.kill();
     };
-  }, [mode, progressValue, journeyCompleted]);
+  }, [mode, activeCategory, progressValue]);
 
   // Ratings for the courses currently on screen. Keyed by course id, so a card with no reviews
   // is simply missing from the map and renders as unrated rather than as a plausible default.
@@ -1978,7 +1923,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
       >
 
         {/* Breadcrumb back into explore hub (authenticated) or public explore, and content-type mode switcher */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: isEmbeddedHub ? "20px" : "28px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: isEmbeddedHub ? "20px" : "28px", position: "relative", zIndex: 30 }}>
           <div
             style={{
               display: "flex",
@@ -2170,93 +2115,6 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                 Learn from experts, join live sessions, and build practical skills through events, bootcamps, and hands-on experiences designed for the next generation of developers.
               </p>
 
-              {/* 5. FEATURE HIGHLIGHTS */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                  gap: "16px",
-                  marginBottom: "32px",
-                  maxWidth: "580px"
-                }}
-              >
-                {[
-                  {
-                    title: "Live & Interactive",
-                    desc: "Real-time learning",
-                    icon: (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <circle cx="12" cy="12" r="3" fill="currentColor" />
-                      </svg>
-                    )
-                  },
-                  {
-                    title: "Expert Speakers",
-                    desc: "Industry professionals",
-                    icon: (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                      </svg>
-                    )
-                  },
-                  {
-                    title: "Hands-on Learning",
-                    desc: "Build real-world skills",
-                    icon: (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                      </svg>
-                    )
-                  },
-                  {
-                    title: "Flexible Schedule",
-                    desc: "Learn at your pace",
-                    icon: (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
-                      </svg>
-                    )
-                  }
-                ].map((feat, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      display: "flex",
-                      gap: "10px",
-                      alignItems: "center",
-                      background: "rgba(255, 255, 255, 0.55)",
-                      border: "1px solid rgba(20, 23, 31, 0.05)",
-                      padding: "10px 14px",
-                      borderRadius: "12px"
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: activeData.colors.primary,
-                        background: `${activeData.colors.secondary}`,
-                        padding: "6px",
-                        borderRadius: "8px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center"
-                      }}
-                    >
-                      {feat.icon}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: "0.82rem", fontWeight: "800", color: "var(--l-ink)" }}>{feat.title}</div>
-                      <div style={{ fontSize: "0.72rem", color: "rgba(20, 20, 43, 0.5)" }}>{feat.desc}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
               {/* 6. MNC Google-Style Search Bar */}
               <div style={{ position: "relative", maxWidth: "520px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
                 <div style={{ position: "absolute", left: "18px", top: "50%", transform: "translateY(-50%)", color: "#4285F4", pointerEvents: "none", display: "flex", alignItems: "center" }}>
@@ -2327,22 +2185,25 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
               </div>
             </div>
 
-            {/* 7. RIGHT-SIDE ILLUSTRATION */}
+            {/* 7. RIGHT-SIDE ILLUSTRATION (Subtle background illustration) */}
             <div
               style={{
-                position: "relative",
-                width: "100%",
-                height: "100%",
-                minHeight: isEmbeddedHub ? "220px" : "300px",
-                maxHeight: isEmbeddedHub ? "340px" : undefined,
+                position: "absolute",
+                right: "-20px",
+                top: "-20px",
+                width: "280px",
+                height: "280px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                zIndex: 2,
+                zIndex: 0,
+                opacity: 0.7,
+                transform: "scale(0.65)",
+                pointerEvents: "none",
               }}
             >
               {/* Soft Radial Glow */}
-              <div style={{ position: "absolute", width: "240px", height: "240px", borderRadius: "50%", background: `radial-gradient(circle, ${activeData.colors.primary}1e 0%, transparent 70%)`, filter: "blur(20px)", zIndex: -1 }} />
+              <div style={{ position: "absolute", width: "160px", height: "160px", borderRadius: "50%", background: `radial-gradient(circle, ${activeData.colors.primary}18 0%, transparent 70%)`, filter: "blur(20px)", zIndex: -1 }} />
               <RocketJourney activeColor={activeData.colors.primary} progress={progressValue} />
             </div>
           </div>

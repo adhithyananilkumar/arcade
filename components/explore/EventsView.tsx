@@ -45,10 +45,7 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
         <path d="M50 100 L150 100 M100 50 L100 150" stroke="currentColor" strokeWidth="2" />
       </svg>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
-        <div style={{ display: "inline-block", padding: "4px 10px", background: "#FFFFFF", borderRadius: "20px", fontSize: "0.7rem", fontWeight: "800", color: getAccentColor(), boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
-          {category}
-        </div>
+      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
         <div style={{ display: "inline-block", padding: "4px 8px", background: isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#6B7280"), borderRadius: "6px", fontSize: "0.7rem", fontWeight: "700", color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.05em" }}>
           {status}
         </div>

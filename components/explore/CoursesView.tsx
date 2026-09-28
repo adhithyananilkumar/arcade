@@ -580,28 +580,6 @@ export const CourseCard: React.FC<CourseCardProps> = ({
               {getCourseGlyph(course.title, index, activeData.colors.primary)}
             </div>
 
-            {/* Category tag pill */}
-            <div
-              style={{
-                position: "absolute",
-                top: "10px",
-                left: "12px",
-                background: "rgba(255, 255, 255, 0.92)",
-                backdropFilter: "blur(6px)",
-                WebkitBackdropFilter: "blur(6px)",
-                padding: "3px 8px",
-                borderRadius: "6px",
-                fontSize: "0.72rem",
-                fontWeight: "700",
-                color: activeData.colors.primary,
-                border: `1px solid ${activeData.colors.primary}30`,
-                letterSpacing: "0.02em",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.04)"
-              }}
-            >
-              {course.category || enriched.categoryTag}
-            </div>
-
             {/* Level pill */}
             <div
               style={{
