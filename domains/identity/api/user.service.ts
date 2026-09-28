@@ -89,7 +89,8 @@ export class UserService {
     address?: string,
     githubUrl?: string,
     avatarUrl?: string,
-    onboardingCompleted?: boolean
+    onboardingCompleted?: boolean,
+    nickname?: string
   ): Promise<User> {
     const data = await api.put<User>('/api/v1/users/me', {
       firstName,
@@ -103,6 +104,7 @@ export class UserService {
       githubUrl,
       avatarUrl,
       onboardingCompleted,
+      nickname,
     });
     return data;
   }
@@ -130,6 +132,15 @@ export class UserService {
       lastName,
       ...fields,
     });
+  }
+
+  /**
+   * Updates only the nickname — private to its owner, shown in their greeting and nav pill.
+   * An empty string clears it. `firstName`/`lastName` travel along only because the server
+   * requires them on every save (see {@link updateInstructorProfile}).
+   */
+  static async updateNickname(firstName: string, lastName: string, nickname: string): Promise<User> {
+    return api.put<User>('/api/v1/users/me', { firstName, lastName, nickname });
   }
 
   /**

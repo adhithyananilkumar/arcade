@@ -1,6 +1,7 @@
 'use client';
 
 import { ForumSidebar, TrendingSidebar, NotificationPanel, NavUserMenu } from '@/domains/community';
+import { navPillName } from '@/domains/identity';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthService } from '@/infrastructure/auth/auth.service';
 import Link from 'next/link';
@@ -153,7 +154,8 @@ export function ForumLayout({ children }: Props) {
                   username: user.username,
                   email: user.email,
                   firstName: user.firstName,
-                  avatarUrl: user.avatarUrl
+                  avatarUrl: user.avatarUrl,
+                  pillName: navPillName(user),
                 }}
                 onLogout={async () => {
                   try {

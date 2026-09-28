@@ -9,7 +9,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Lock, AlertTriangle, BookOpen } from 'lucide-react';
+import { Lock, AlertTriangle, BookOpen } from 'lucide-react';
 import type { LearnerEnrollmentSummary } from '@/domains/enrollment';
 import {
   STATUS_TONE_CLASSES,
@@ -68,15 +68,16 @@ export function LibraryCard({
             {item.title ?? 'Untitled (resource no longer available)'}
           </h3>
           <div className="flex flex-wrap items-center gap-2">
-            <span
-              title={badge.hint ?? undefined}
-              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 ${STATUS_TONE_CLASSES[badge.tone]}`}
-            >
-              {badge.tone === 'emerald' && badge.label === 'Completed' && <CheckCircle2 size={11} />}
-              {badge.tone === 'amber' && <Lock size={11} />}
-              {badge.tone === 'rose' && <AlertTriangle size={11} />}
-              {badge.label}
-            </span>
+            {item.accessState !== 'ACCESSIBLE' && (
+              <span
+                title={badge.hint ?? undefined}
+                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 ${STATUS_TONE_CLASSES[badge.tone]}`}
+              >
+                {badge.tone === 'amber' && <Lock size={11} />}
+                {badge.tone === 'rose' && <AlertTriangle size={11} />}
+                {badge.label}
+              </span>
+            )}
             {enrolledOn && (
               <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
                 Enrolled {enrolledOn}

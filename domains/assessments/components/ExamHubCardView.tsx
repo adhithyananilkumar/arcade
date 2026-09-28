@@ -16,6 +16,7 @@ export interface ExamHubCardViewProps {
   /** Opens the learner's grades for this exam; the button shows only when given. */
   onViewGrades?: () => void;
   index?: number;
+  hideTypeAndFeeBadge?: boolean;
 }
 
 const STATUS: Record<ExamHubStatus, { label: string; className: string }> = {
@@ -29,11 +30,12 @@ const STATUS: Record<ExamHubStatus, { label: string; className: string }> = {
   PASSED: { label: "Passed", className: "bg-emerald-600 text-white border-emerald-600 dark:bg-emerald-600 dark:text-white dark:border-emerald-500" },
 };
 
-export function ExamHubCardView({ card, onOpen, onViewGrades, index = 0 }: ExamHubCardViewProps) {
+export function ExamHubCardView({ card, onOpen, onViewGrades, index = 0, hideTypeAndFeeBadge }: ExamHubCardViewProps) {
   const status = STATUS[card.status] ?? STATUS.CLOSED;
   const window = describeWindow(card);
   const totalQuestions = card.plans.reduce((n, p) => n + p.questionCount, 0);
   const longest = card.plans.reduce((m, p) => Math.max(m, p.durationMinutes), 0);
+  const showTypeAndFee = !hideTypeAndFeeBadge && !card.registered;
 
   return (
     <motion.div
@@ -75,23 +77,24 @@ export function ExamHubCardView({ card, onOpen, onViewGrades, index = 0 }: ExamH
 
         {/* Content details */}
         <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span
-              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-                card.certification
-                  ? "bg-violet-100/90 text-violet-800 dark:bg-violet-950/80 dark:text-violet-300 border border-violet-200/60 dark:border-violet-800/60"
-                  : "bg-blue-100/90 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60"
-              }`}
-            >
-              {card.certification ? <Award size={11} /> : <ClipboardCheck size={11} />}
-              {card.certification ? "Certification" : "Exam"}
-            </span>
+          {showTypeAndFee && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                  card.certification
+                    ? "bg-violet-100/90 text-violet-800 dark:bg-violet-950/80 dark:text-violet-300 border border-violet-200/60 dark:border-violet-800/60"
+                    : "bg-blue-100/90 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60"
+                }`}
+              >
+                {card.certification ? <Award size={11} /> : <ClipboardCheck size={11} />}
+                {card.certification ? "Certification" : "Exam"}
+              </span>
 
-            <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700">
-              {card.feeMinor > 0 ? formatMoney(card.feeMinor, card.currency ?? "INR") : "Free"}
-            </span>
-
-          </div>
+              <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700">
+                {card.feeMinor > 0 ? formatMoney(card.feeMinor, card.currency ?? "INR") : "Free"}
+              </span>
+            </div>
+          )}
 
           <h2 className="line-clamp-2 text-base sm:text-lg font-bold tracking-tight text-[#14142b] dark:text-white group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6] transition-colors">
             {card.title}

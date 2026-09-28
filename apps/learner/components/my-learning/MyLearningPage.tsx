@@ -565,6 +565,7 @@ export default function MyLearningPage() {
                         key={card.examId}
                         card={card}
                         index={idx}
+                        hideTypeAndFeeBadge
                         onOpen={() => router.push(examRoutes.landing(card.examId))}
                         onViewGrades={gradesByExam.has(card.examId) ? () => setGradesFor(card) : undefined}
                       />
