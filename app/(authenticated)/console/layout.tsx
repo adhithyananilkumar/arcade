@@ -1,9 +1,8 @@
 'use client';
 
-import { usePathname, notFound } from 'next/navigation';
-import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Tv, ClipboardCheck, Shield, SlidersHorizontal, Inbox, Receipt, Library, AtSign, BadgeCheck } from 'lucide-react';
-import { cn } from '@/shared/utils/utils';
+import { SideNav, SideNavTabs, type SideNavItem } from '@/shared/design-system/ui/side-nav';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 
@@ -50,7 +49,14 @@ export default function ArcConsoleLayout({
       ? [{ name: 'Handles', href: '/console/handles', icon: AtSign, iconBg: 'bg-[#c7d2fe] text-[#312e81]' }]
       : []),
     ...(showIam ? [{ name: 'IAM', href: '/console/iam', icon: Shield, iconBg: 'bg-[#fed7aa] text-[#7c2d12]' }] : []),
-  ];
+  ].map((item): SideNavItem => ({
+    key: item.href,
+    label: item.name,
+    href: item.href,
+    icon: item.icon,
+    iconClassName: item.iconBg,
+  }));
+  const activeKey = navItems.find((item) => pathname.startsWith(item.href))?.key ?? null;
 
   // Removed notFound() when navItems is empty. This allows Org staff to access 
   // specific console routes (like reviews/[id]) even if they don't have global
@@ -64,61 +70,11 @@ export default function ArcConsoleLayout({
     >
       <div className="relative z-10 flex w-full flex-1 min-h-0 flex-col gap-5 px-4 pt-24 sm:px-6 md:flex-row md:gap-5 md:px-8 md:pt-24 pb-0">
         {/* Mobile tabs */}
-        <nav className="flex gap-1.5 overflow-x-auto shrink-0 pb-1 md:hidden">
-          {navItems.map((item) => {
-            const active = pathname.startsWith(item.href);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'inline-flex shrink-0 items-center gap-2 rounded-full pr-4 pl-2 py-1.5 text-[12px] font-semibold transition-colors',
-                  active
-                    ? "bg-sky-100/90 text-sky-950 border border-sky-200 dark:bg-sky-950/70 dark:text-sky-200 dark:border-sky-800/60" 
-                    : "border border-slate-200 bg-white/90 text-slate-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-slate-300"
-                )}
-              >
-                <div className={cn(
-                  "flex items-center justify-center w-6 h-6 rounded-full shrink-0 shadow-2xs",
-                  item.iconBg
-                )}>
-                  <Icon size={12} strokeWidth={2} />
-                </div>
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
+        <SideNavTabs items={navItems} activeKey={activeKey} ariaLabel="Console" className="md:hidden" />
 
         {/* Desktop sidebar — nav only, no Platform/Console heading */}
         <aside className="hidden w-[220px] shrink-0 md:flex flex-col overflow-y-auto lg:w-[240px] pb-12">
-          <nav className="flex flex-col gap-1.5">
-            {navItems.map((item) => {
-              const active = pathname.startsWith(item.href);
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3.5 px-4 py-3 rounded-full transition-all duration-200 text-sm font-semibold",
-                    active 
-                      ? "bg-sky-100/90 text-sky-950 border border-sky-200 dark:bg-sky-950/70 dark:text-sky-200 dark:border-sky-800/60 font-bold shadow-xs" 
-                      : "hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-700 dark:text-slate-300"
-                  )}
-                >
-                  <div className={cn(
-                    "flex items-center justify-center w-8 h-8 rounded-full shrink-0 shadow-2xs",
-                    item.iconBg
-                  )}>
-                    <Icon size={16} strokeWidth={2} />
-                  </div>
-                  <span className="truncate text-xs font-semibold">{item.name}</span>
-                </Link>
-              );
-            })}
-          </nav>
+          <SideNav sections={[{ items: navItems }]} activeKey={activeKey} ariaLabel="Console" />
         </aside>
 
         <main className="min-w-0 flex-1 flex flex-col min-h-0 relative px-1">{children}</main>

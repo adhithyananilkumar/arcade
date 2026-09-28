@@ -13,6 +13,7 @@ import { usePermissions } from "@/domains/identity";
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 import {
   useStudioAccess,
+  useUserChannels,
   useHasAnyChannel,
   myChannelsKeys,
   usePendingChannelRequestsQuery,
@@ -57,7 +58,9 @@ export default function LearnerNavbar() {
   // persists across every authenticated page, and each of these was previously an uncached fetch
   // re-issued on every full page load — two of them duplicating requests `useStudioAccess` was
   // making on the same render for the same question.
-  const hasChannels = useHasAnyChannel() ?? false;
+  const { channels: userChannels } = useUserChannels();
+  const channelCount = userChannels.length;
+  const singleChannel = channelCount === 1 ? userChannels[0] : null;
 
   const { data: invitations = [] } = useQuery<ChannelInvitation[]>({
     queryKey: NAVBAR_INVITATIONS_KEY,
@@ -477,12 +480,18 @@ export default function LearnerNavbar() {
             >
               Profile
             </MenuItem>
-            {hasChannels && (
+            {channelCount > 0 && (
               <MenuItem 
                 icon={<Tv className="text-[#FF6B4A]" strokeWidth={2} />} 
-                onClick={() => router.push('/manage-channels')} 
+                onClick={() => {
+                  if (singleChannel) {
+                    router.push(`/channels/${singleChannel.id}/manage`);
+                  } else {
+                    router.push('/manage-channels');
+                  }
+                }} 
               >
-                My Channel
+                {channelCount === 1 ? 'Channel' : 'Channels'}
               </MenuItem>
             )}
             {showStudio && (

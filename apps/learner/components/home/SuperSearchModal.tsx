@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
-import { useHasAnyChannel, useStudioAccess } from '@/domains/channels';
+import { useUserChannels, useStudioAccess } from '@/domains/channels';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 import { usePublicCoursesPage } from '@/shared/hooks/usePublicCourses';
 import { getPublishedEvents } from '@/domains/events';
@@ -102,7 +102,9 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
     if (open) setQuery(initialQuery);
   }, [open, initialQuery]);
 
-  const hasChannels = useHasAnyChannel() ?? false;
+  const { channels: userChannels } = useUserChannels();
+  const channelCount = userChannels.length;
+  const singleChannel = channelCount === 1 ? userChannels[0] : null;
   const { hasAccess: showStudio } = useStudioAccess();
   const showConsole = AuthorizationService.canAccessConsole(user);
 
@@ -140,11 +142,18 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
       },
     ];
 
-    if (hasChannels) {
+    if (channelCount > 0) {
       sections.push({
-        heading: 'Your Channel',
+        heading: channelCount === 1 ? 'Your Channel' : 'Your Channels',
         items: [
-          { id: 'my-channel', label: 'My Channel', subtitle: 'Manage your channel', href: '/manage-channels', icon: Tv, suggested: true },
+          {
+            id: 'channel',
+            label: channelCount === 1 ? 'Channel' : 'Channels',
+            subtitle: channelCount === 1 ? 'View your channel' : 'Manage your channels',
+            href: singleChannel ? `/channels/${singleChannel.id}/manage` : '/manage-channels',
+            icon: Tv,
+            suggested: true,
+          },
         ],
       });
     }
@@ -209,7 +218,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
     });
 
     return sections;
-  }, [hasChannels, showStudio, showConsole, user]);
+  }, [channelCount, singleChannel, showStudio, showConsole, user]);
 
   const visibleSections = useMemo(
     () =>

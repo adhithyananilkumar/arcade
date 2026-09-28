@@ -263,41 +263,27 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
     <div className="space-y-6">
       {/* 1. Sub-View Switcher Bar at the Very Top */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        {/* Flat Minimal Sub-View Switcher (No Oval Shapes) with Hover-Based Switching */}
-        <div className="flex items-center gap-6">
-          <button
-            type="button"
-            onMouseEnter={() => setActiveSubView('ROSTER')}
-            onClick={() => setActiveSubView('ROSTER')}
-            className={`group inline-flex items-center gap-2 text-sm font-extrabold transition-all cursor-pointer relative py-1.5 ${activeSubView === 'ROSTER'
-              ? 'text-blue-600'
-              : 'text-slate-500 hover:text-slate-900'
-              }`}
-          >
-            <Users size={16} className={`transition-transform ${activeSubView === 'ROSTER' ? 'scale-110 text-blue-600' : 'text-slate-400 group-hover:text-slate-700'}`} />
-            <span>Manage Staff</span>
-            {activeSubView === 'ROSTER' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-blue-600 shadow-xs" />
-            )}
-          </button>
-
-          {canManageStaff && (
-            <button
-              type="button"
-              onMouseEnter={() => setActiveSubView('CUSTOM_ROLES')}
-              onClick={() => setActiveSubView('CUSTOM_ROLES')}
-              className={`group inline-flex items-center gap-2 text-sm font-extrabold transition-all cursor-pointer relative py-1.5 ${activeSubView === 'CUSTOM_ROLES'
-                ? 'text-blue-600'
-                : 'text-slate-500 hover:text-slate-900'
+        <div className="flex flex-wrap gap-1.5">
+          {[
+            { id: 'ROSTER' as const, label: 'Members', icon: Users, show: true },
+            { id: 'CUSTOM_ROLES' as const, label: 'Roles & policies', icon: ShieldCheck, show: canManageStaff },
+          ]
+            .filter((v) => v.show)
+            .map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => setActiveSubView(v.id)}
+                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 text-[12px] font-semibold transition-colors ${
+                  activeSubView === v.id
+                    ? 'bg-[#14142b] text-white'
+                    : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                 }`}
-            >
-              <ShieldCheck size={16} className={`transition-transform ${activeSubView === 'CUSTOM_ROLES' ? 'scale-110 text-blue-600' : 'text-slate-400 group-hover:text-slate-700'}`} />
-              <span>Custom Roles</span>
-              {activeSubView === 'CUSTOM_ROLES' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-blue-600 shadow-xs" />
-              )}
-            </button>
-          )}
+              >
+                <v.icon size={13} />
+                {v.label}
+              </button>
+            ))}
         </div>
 
         {/* Actions (Search + Invite Staff) */}
@@ -331,17 +317,6 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
         )}
       </div>
 
-      {/* 2. Dynamic Title Block */}
-      <div>
-        <h3 className="text-xl font-bold text-[#14142b]">
-          {activeSubView === 'ROSTER' ? 'Staff Management' : 'Custom Roles & Policies'}
-        </h3>
-        <p className="text-sm font-medium text-slate-500">
-          {activeSubView === 'ROSTER'
-            ? 'Manage who has access to this channel and their permissions.'
-            : 'Configure custom role policies and permission assignments for your channel staff.'}
-        </p>
-      </div>
 
       {activeSubView === 'ROSTER' ? (
         <>

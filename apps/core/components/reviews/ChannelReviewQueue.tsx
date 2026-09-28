@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, ClipboardCheck, Inbox, Loader2, RefreshCw } from "lucide-react";
+import { ChevronRight, Inbox, Loader2, RefreshCw } from "lucide-react";
 import {
   platformReviewApi,
   type ReviewCounts,
@@ -61,27 +61,9 @@ export function ChannelReviewQueue({ channelId }: { channelId: string }) {
   }, [channelId, tab, nonce]);
 
   return (
+    // The page title and description belong to the host page's header; this renders the queue only.
     <section className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight text-[#14142b]">
-            <ClipboardCheck size={18} /> Organization review
-          </h2>
-          <p className="mt-1 max-w-2xl text-[13px] font-medium text-slate-500">
-            Content your creators submit is reviewed here first. Approved content is published, or —
-            if this channel&apos;s review policy requires it — sent on to platform review.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={refresh}
-          className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[12px] font-semibold text-slate-600 hover:bg-slate-50"
-        >
-          <RefreshCw size={13} /> Refresh
-        </button>
-      </div>
-
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -106,6 +88,13 @@ export function ChannelReviewQueue({ channelId }: { channelId: string }) {
             )}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={refresh}
+          className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[12px] font-semibold text-slate-600 hover:bg-slate-50"
+        >
+          <RefreshCw size={13} /> Refresh
+        </button>
       </div>
 
       {error ? (

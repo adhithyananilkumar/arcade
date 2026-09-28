@@ -1,60 +1,75 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import {
-  Channel,
-  ChannelContentItem,
-  ChannelDeletionRequestDto,
-  channelService,
-} from '@/domains/channels';
-import { platformReviewApi } from '@/domains/publishing';
-import { ClipboardCheck } from 'lucide-react';
-import { ChannelReviewQueue } from '@/apps/core/components/reviews/ChannelReviewQueue';
 import { toast } from 'sonner';
 import {
-  AtSign,
-  Home,
-  LayoutGrid,
-  AlertTriangle,
-  BookOpen,
-  Users,
-  Bell,
-  BarChart3,
   Activity,
-  ShieldAlert,
+  AlertTriangle,
+  ArrowLeft,
+  AtSign,
+  BarChart3,
+  BookOpen,
+  Building2,
+  Check,
+  ClipboardCheck,
+  Edit3,
+  ExternalLink,
+  LayoutGrid,
+  Link2,
   Loader2,
+  Plus,
+  ShieldAlert,
+  Users,
 } from 'lucide-react';
-
-import { OrganizationHeader } from './components/OrganizationHeader';
-import { SmallCourseOverview } from './components/SmallCourseOverview';
-import { CourseManagementSection } from './components/CourseManagementSection';
-import { OrganizationAnalyticsSection } from './components/OrganizationAnalyticsSection';
-import { RecentActivityTimeline } from './components/RecentActivityTimeline';
-import { EditOrganizationModal } from './components/EditOrganizationModal';
-
-import { ChannelStaffManager } from './ChannelStaffManager';
-import { ChannelAuditLogManager } from './ChannelAuditLogManager';
-import { ChannelDangerZone } from './ChannelDangerZone';
+import {
+  channelService,
+  type Channel,
+  type ChannelContentItem,
+  type ChannelDeletionRequestDto,
+} from '@/domains/channels';
+import { platformReviewApi } from '@/domains/publishing';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { ChannelReviewQueue } from '@/apps/core/components/reviews/ChannelReviewQueue';
+import { SideNav, SideNavTabs, type SideNavItem, type SideNavSection } from '@/shared/design-system/ui/side-nav';
+import { PageHeader } from '@/shared/design-system/ui/page-header';
+
+import { ChannelOverview } from './components/ChannelOverview';
+import { ChannelContentSection } from './components/ChannelContentSection';
+import { ChannelAnalyticsSection } from './components/ChannelAnalyticsSection';
+import { ChannelActivityLog } from './components/ChannelActivityLog';
+import { EditOrganizationModal } from './components/EditOrganizationModal';
 import { ChannelIdentityManager } from './ChannelIdentityManager';
-import { motion } from 'framer-motion';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/design-system/ui/tooltip';
+import { ChannelStaffManager } from './ChannelStaffManager';
+import { ChannelDangerZone } from './ChannelDangerZone';
 
+type Section = 'overview' | 'content' | 'reviews' | 'analytics' | 'identity' | 'staff' | 'activity' | 'danger';
 
+const SECTION_COPY: Record<Section, { title: string; description: string }> = {
+  overview: { title: 'Overview', description: 'Your channel at a glance.' },
+  content: { title: 'Content', description: 'Everything created for this channel, in every state.' },
+  reviews: {
+    title: 'Organization review',
+    description:
+      "Content your creators submit is reviewed here first. Approved content is published, or — if this channel's review policy requires it — sent on to platform review.",
+  },
+  analytics: { title: 'Analytics', description: "Enrollments and learner feedback across this channel's courses." },
+  identity: { title: 'Identity & handle', description: 'The address and public profile this organization is shown under.' },
+  staff: { title: 'Staff & roles', description: "Who can work on this channel, and what they're allowed to do." },
+  activity: { title: 'Activity log', description: 'Every change made to this channel, newest first.' },
+  danger: { title: 'Danger zone', description: 'Ownership transfer and channel deletion.' },
+};
 
-type ManageTab =
-  | 'OVERVIEW'
-  | 'CONTENT'
-  | 'REVIEWS'
-  | 'IDENTITY'
-  | 'STAFF'
-  | 'ANALYTICS'
-  | 'LOGS'
-  | 'NOTIFICATIONS'
-  | 'DANGER';
+// `?tab=` values from before the sidebar (uppercase ids, and the two tabs that were merged).
+const LEGACY_TAB: Record<string, Section> = { LOGS: 'activity', NOTIFICATIONS: 'activity' };
 
-type ContentFilter = 'ALL' | 'PUBLISHED' | 'DRAFT' | 'SUBMITTED';
+function parseSection(raw: string | null): Section {
+  if (!raw) return 'overview';
+  if (LEGACY_TAB[raw.toUpperCase()]) return LEGACY_TAB[raw.toUpperCase()];
+  const lower = raw.toLowerCase();
+  return lower in SECTION_COPY ? (lower as Section) : 'overview';
+}
 
 export default function ManageChannelPage() {
   const params = useParams();
@@ -65,112 +80,121 @@ export default function ManageChannelPage() {
 
   const [channel, setChannel] = useState<Channel | null>(null);
   const [permissions, setPermissions] = useState<string[]>([]);
-  const [pendingDeletionRequest, setPendingDeletionRequest] =
-    useState<ChannelDeletionRequestDto | null>(null);
+  const [pendingDeletion, setPendingDeletion] = useState<ChannelDeletionRequestDto | null>(null);
   const [content, setContent] = useState<ChannelContentItem[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  const initialTab = (searchParams.get('tab')?.toUpperCase() as ManageTab) || 'OVERVIEW';
-  const [activeTab, setActiveTabState] = useState<ManageTab>(initialTab);
-
-  const setActiveTab = (tab: ManageTab) => {
-    setActiveTabState(tab);
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      url.searchParams.set('tab', tab);
-      window.history.replaceState({}, '', url.toString());
-      window.dispatchEvent(new Event('popstate'));
-    }
-  };
-  const [hoveredTab, setHoveredTab] = useState<string | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [contentFilter, setContentFilter] = useState<ContentFilter>('ALL');
-  const [channelReviews, setChannelReviews] = useState<Record<string, string>>({});
+  const [openReviews, setOpenReviews] = useState<Record<string, string>>({});
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (channelId) fetchChannel();
-  }, [channelId]);
-
-  const fetchChannel = async () => {
-    try {
-      setLoading(true);
-      const [channelData, perms, myDeletionRequests, channelContent] = await Promise.all([
-        channelService.getChannel(channelId),
-        channelService.getMyChannelPermissions(channelId),
-        channelService.getMyDeletionRequests().catch(() => []),
-        channelService.getChannelContent(channelId).catch(() => [] as ChannelContentItem[]),
-      ]);
-
-      setChannel(channelData);
-      setPermissions(perms);
-      setPendingDeletionRequest(
-        myDeletionRequests.find((r) => r.channelId === channelId && r.status === 'PENDING') || null,
-      );
-      setContent(channelContent);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to load channel details');
-      router.push('/manage-channels');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const stats = useMemo(() => {
-    const published = content.filter((c) => c.status?.toUpperCase() === 'PUBLISHED').length;
-    const drafts = content.filter((c) => c.status?.toUpperCase() === 'DRAFT').length;
-    const inReview = content.filter((c) => c.status?.toUpperCase() === 'SUBMITTED').length;
-    return {
-      total: content.length,
-      published,
-      drafts,
-      inReview,
+    if (!channelId) return;
+    let cancelled = false;
+    Promise.all([
+      channelService.getChannel(channelId),
+      channelService.getMyChannelPermissions(channelId),
+      channelService.getMyDeletionRequests().catch(() => [] as ChannelDeletionRequestDto[]),
+      channelService.getChannelContent(channelId).catch(() => [] as ChannelContentItem[]),
+    ])
+      .then(([channelData, perms, deletionRequests, channelContent]) => {
+        if (cancelled) return;
+        setChannel(channelData);
+        setPermissions(perms);
+        setPendingDeletion(
+          deletionRequests.find((r) => r.channelId === channelId && r.status === 'PENDING') ?? null,
+        );
+        setContent(channelContent);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        toast.error(error instanceof Error ? error.message : 'Failed to load channel details');
+        router.push('/manage-channels');
+      })
+      .finally(() => !cancelled && setLoading(false));
+    return () => {
+      cancelled = true;
     };
-  }, [content]);
+  }, [channelId, router]);
 
-  const filteredContent = useMemo(() => {
-    if (contentFilter === 'ALL') return content;
-    return content.filter((c) => c.status?.toUpperCase() === contentFilter);
-  }, [content, contentFilter]);
+  const canReview = permissions.includes('ALL') || permissions.includes('channel.content.review');
 
-  const recentContent = useMemo(
-    () =>
-      [...content]
-        .filter((c) => c.status?.toUpperCase() === 'PUBLISHED')
-        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-        .slice(0, 6),
-    [content],
+  useEffect(() => {
+    if (!canReview) return;
+    platformReviewApi
+      .list({ channelId, status: 'OPEN' })
+      .then((items) => {
+        const byContent: Record<string, string> = {};
+        items.forEach((i) => (byContent[i.contentId] = i.id));
+        setOpenReviews(byContent);
+      })
+      .catch(() => setOpenReviews({}));
+  }, [channelId, canReview]);
+
+  const tabHref = useCallback(
+    (tab: string, extra?: Record<string, string>) => {
+      const qs = new URLSearchParams({ tab, ...extra });
+      return `/channels/${channelId}/manage?${qs.toString()}`;
+    },
+    [channelId],
   );
 
-  const canReviewChannelContent =
-    permissions.includes('ALL') ||
-    permissions.includes('channel.content.review');
+  const isOwner = !!channel && user?.id === channel.ownerId;
+  const isOrg = !!channel && !channel.isPersonal;
+  const canEdit = isOwner || permissions.includes('ALL') || permissions.includes('channel.settings.manage');
 
-  useEffect(() => {
-    if (canReviewChannelContent) {
-      platformReviewApi.list({ channelId }).then(items => {
-        const reviewMap: Record<string, string> = {};
-        items.forEach(i => {
-           if (i.status === 'OPEN') {
-             reviewMap[i.contentId] = i.id;
-           }
-        });
-        setChannelReviews(reviewMap);
-      }).catch(console.error);
-    }
-  }, [channelId, canReviewChannelContent]);
+  // Which sections this viewer gets. Personal channels have no handle, staff or organization
+  // review — their owner is the sole authority and their profile is their page — so those are
+  // omitted rather than shown disabled. The backend enforces every one of these independently.
+  const sections: SideNavSection[] = useMemo(() => {
+    const item = (key: Section, label: string, icon: SideNavItem['icon'], iconClassName: string, more?: Partial<SideNavItem>): SideNavItem => ({
+      key,
+      label,
+      icon,
+      iconClassName,
+      href: tabHref(key),
+      ...more,
+    });
+    const openCount = Object.keys(openReviews).length;
+    return [
+      {
+        items: [
+          item('overview', 'Overview', LayoutGrid, 'bg-[#bae6fd] text-[#0c4a6e]'),
+          item('content', 'Content', BookOpen, 'bg-[#fbcfe8] text-[#831843]'),
+          ...(isOrg && (isOwner || canReview)
+            ? [item('reviews', 'Reviews', ClipboardCheck, 'bg-[#fef08a] text-[#854d0e]', { count: openCount })]
+            : []),
+          ...(canEdit ? [item('analytics', 'Analytics', BarChart3, 'bg-[#bbf7d0] text-[#14532d]')] : []),
+        ],
+      },
+      {
+        title: 'Organization',
+        items: isOrg
+          ? [
+              item('identity', 'Identity & handle', AtSign, 'bg-[#c7d2fe] text-[#312e81]'),
+              item('staff', 'Staff & roles', Users, 'bg-[#e9d5ff] text-[#4c1d95]'),
+            ]
+          : [],
+      },
+      {
+        title: 'Records',
+        items: [item('activity', 'Activity log', Activity, 'bg-[#dbeafe] text-[#1e40af]')],
+      },
+      {
+        items: isOwner
+          ? [item('danger', 'Danger zone', ShieldAlert, 'bg-[#fecdd3] text-[#881337]', { danger: true })]
+          : [],
+      },
+    ];
+  }, [tabHref, isOrg, isOwner, canReview, canEdit, openReviews]);
+
+  const allowed = sections.flatMap((s) => s.items.map((i) => i.key));
+  const requested = parseSection(searchParams.get('tab'));
+  const active: Section = allowed.includes(requested) ? requested : 'overview';
 
   if (loading) {
     return (
-      <div
-        className="flex min-h-screen items-center justify-center"
-        style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
-      >
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
-          <p className="text-xs font-black uppercase tracking-widest text-indigo-900">
-            Loading Arcade Organization Dashboard...
-          </p>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-[#202124]">
+        <Loader2 className="h-7 w-7 animate-spin text-slate-400" />
       </div>
     );
   }
@@ -178,218 +202,157 @@ export default function ManageChannelPage() {
   if (!channel) return null;
 
   const isSuspended = channel.status === 'SUSPENDED';
-  const isOwner = user?.id === channel.ownerId;
-  const isPersonalChannel = channel.isPersonal;
-  const canEdit = isOwner || permissions.includes('ALL') || permissions.includes('channel.settings.manage');
+  const publicPath = channel.handle ? `/${channel.handle}` : `/channels/${channel.id}`;
 
-  const mainTabs: { id: ManageTab; label: string; icon: any; danger?: boolean }[] = [
-    { id: 'OVERVIEW', label: 'Overview', icon: LayoutGrid },
-    { id: 'CONTENT', label: 'Content', icon: BookOpen },
-    // The organization stage of the review pipeline lives with the organization, not in the
-    // platform Console. Personal channels have no organization review.
-    ...(!channel.isPersonal && (isOwner || canReviewChannelContent)
-      ? [{ id: 'REVIEWS' as const, label: 'Reviews', icon: ClipboardCheck }]
-      : []),
-    // Personal channels have no handle, no standalone page and no staff — their owner's profile
-    // IS their page, and the owner is the sole authority. Both tabs are omitted rather than
-    // shown disabled: "you cannot have this" is not a setting.
-    ...(!channel.isPersonal
-      ? [
-          { id: 'IDENTITY' as const, label: 'Identity & Handle', icon: AtSign },
-          { id: 'STAFF' as const, label: 'Staff & Policies', icon: Users },
-        ]
-      : []),
-    { id: 'ANALYTICS', label: 'Analytics & Reviews', icon: BarChart3 },
-    { id: 'LOGS', label: 'Logs', icon: Activity },
-    { id: 'NOTIFICATIONS', label: 'Notifications', icon: Bell as any },
-    ...(isOwner ? [{ id: 'DANGER' as const, label: 'Danger', icon: ShieldAlert, danger: true }] : []),
-  ];
+  const copyPublicLink = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}${publicPath}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Could not copy the link');
+    }
+  };
+
+  const outlineBtn =
+    'inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[12px] font-semibold text-slate-700 transition-colors hover:bg-slate-50';
+  const primaryBtn =
+    'inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#14142b] px-3.5 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#232735]';
+
+  const headerActions =
+    active === 'overview' ? (
+      <>
+        {canEdit && (
+          <button type="button" onClick={() => setIsEditOpen(true)} className={primaryBtn}>
+            <Edit3 size={13} /> Edit profile
+          </button>
+        )}
+        <Link href={publicPath} className={outlineBtn}>
+          <ExternalLink size={13} /> View public page
+        </Link>
+        <button type="button" onClick={copyPublicLink} className={outlineBtn}>
+          {copied ? <Check size={13} /> : <Link2 size={13} />} {copied ? 'Copied' : 'Copy link'}
+        </button>
+      </>
+    ) : active === 'content' ? (
+      <Link href="/studio" className={primaryBtn}>
+        <Plus size={13} /> Create in Studio
+      </Link>
+    ) : null;
 
   return (
-    <div
-      className="relative min-h-screen w-full"
-      style={{
-        background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)',
-      }}
-    >
-      {/* Floating Horizontal Bottom Dock Navigation Bar */}
-      <TooltipProvider delay={100}>
-        <motion.nav
-          initial={{ y: 80, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ type: "spring", bounce: 0.3, duration: 0.8 }}
-          aria-label="Floating Organization Navigation Dock"
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/90 p-2 shadow-[0_16px_40px_rgba(20,20,43,0.15)] backdrop-blur-xl ring-1 ring-black/[0.04] max-w-[95vw] overflow-x-auto scrollbar-none"
-        >
-        <motion.div 
-          layout 
-          className={`relative group shrink-0 ${hoveredTab === 'HOME' ? 'mx-2 sm:mx-3' : 'mx-0'}`}
-          onHoverStart={() => setHoveredTab('HOME')}
-          onHoverEnd={() => setHoveredTab(null)}
-        >
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <button
-                  type="button"
-                  onClick={() => router.push('/')}
-                  className="relative flex h-11 w-11 items-center justify-center rounded-2xl text-slate-500 hover:bg-slate-100/90 hover:text-[#14142b] transition-all duration-300 cursor-pointer"
-                  title="Go to Home"
-                >
-                  <Home size={19} className="group-hover:scale-110 transition-transform" />
-                </button>
-              }
-            />
-            <TooltipContent side="top" sideOffset={8} className="bg-white text-slate-800 border border-slate-200 shadow-xl font-extrabold text-xs px-3.5 py-2 rounded-2xl [&_.fill-foreground]:hidden">
-              Home
-            </TooltipContent>
-          </Tooltip>
-        </motion.div>
+    <div className="min-h-screen bg-white px-4 pb-16 pt-24 sm:px-6 md:px-10 md:pt-28 dark:bg-[#202124]">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 md:flex-row md:items-start md:gap-12">
+        <aside className="w-full shrink-0 md:sticky md:top-28 md:w-[240px]">
+          <Link
+            href="/manage-channels"
+            className="mb-3 inline-flex items-center gap-1.5 px-1 text-[12px] font-semibold text-slate-500 transition-colors hover:text-slate-800"
+          >
+            <ArrowLeft size={13} /> All channels
+          </Link>
 
-        {/* Divider line */}
-        <motion.div layout className="h-6 w-px bg-slate-200 shrink-0 mx-1" />
-
-        {/* 2. Management Tab Icons */}
-        {mainTabs.map((tab) => {
-          const active = activeTab === tab.id;
-          const Icon = tab.icon;
-          return (
-            <motion.div 
-              layout 
-              key={tab.id} 
-              className={`relative group shrink-0 ${hoveredTab === tab.id ? 'mx-2 sm:mx-3' : 'mx-0'}`}
-              onHoverStart={() => setHoveredTab(tab.id)}
-              onHoverEnd={() => setHoveredTab(null)}
-            >
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`relative z-10 flex h-11 w-11 items-center justify-center rounded-2xl transition-colors duration-300 cursor-pointer ${
-                        active
-                          ? tab.id === 'DANGER'
-                            ? 'text-rose-600'
-                            : 'text-indigo-600'
-                          : tab.id === 'DANGER'
-                          ? 'text-rose-600 hover:bg-rose-50'
-                          : 'text-slate-500 hover:bg-slate-100/90 hover:text-[#14142b]'
-                      }`}
-                    >
-                      <Icon size={19} className={active ? 'scale-110' : 'group-hover:scale-110 transition-transform'} />
-                    </button>
-                  }
-                />
-                <TooltipContent side="top" sideOffset={8} className="bg-white text-slate-800 border border-slate-200 shadow-xl font-extrabold text-xs px-3.5 py-2 rounded-2xl [&_.fill-foreground]:hidden">
-                  {tab.label}
-                </TooltipContent>
-              </Tooltip>
-            </motion.div>
-          );
-        })}
-        </motion.nav>
-      </TooltipProvider>
-
-      {/* Main Content Container */}
-      <div className="relative z-10 mx-auto w-full max-w-7xl space-y-8 px-4 pb-36 pt-28 sm:px-8 sm:pt-32">
-        {channel.status && channel.status !== 'ACTIVE' && (
-          <div className="flex justify-end">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-200/80 bg-rose-50/90 px-3 py-1 text-[11px] font-bold text-rose-700">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-              <span>{channel.status}</span>
-            </span>
-          </div>
-        )}
-
-        {/* Lock Warning Banners */}
-        {!isSuspended && pendingDeletionRequest && (
-          <div className="flex items-start gap-3.5 rounded-2xl border border-amber-200 bg-amber-50/90 p-4.5 shadow-xs">
-            <div className="p-2 rounded-xl bg-amber-100 text-amber-700 shrink-0">
-              <AlertTriangle size={18} />
+          <div className="mb-5 flex items-center gap-3 rounded-2xl border border-slate-200/80 p-2.5 dark:border-neutral-800">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-indigo-500 via-purple-600 to-slate-900 text-white">
+              {channel.iconUrl ? (
+                <img src={channel.iconUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <Building2 size={18} />
+              )}
             </div>
-            <div>
-              <h3 className="font-extrabold text-amber-900 text-sm">Deletion Request Pending</h3>
-              <p className="mt-0.5 text-xs font-medium text-amber-800/90">
-                Submitted on {new Date(pendingDeletionRequest.createdAt).toLocaleDateString()}.
-                Settings, staff, and content controls are locked while pending platform review.
+            <div className="min-w-0">
+              <p className="truncate text-[13px] font-bold text-[#14142b] dark:text-white">{channel.name}</p>
+              <p className="truncate text-[11.5px] font-medium text-slate-500">
+                {channel.isPersonal ? 'Personal channel' : channel.handle ? `@${channel.handle}` : 'Organization'}
               </p>
             </div>
           </div>
-        )}
 
-        {/* Organization Header Banner & Profile Section */}
-        {activeTab === 'OVERVIEW' && (
-          <OrganizationHeader
-            channel={channel}
-            canEdit={canEdit}
-            onEditClick={() => setIsEditModalOpen(true)}
-            onViewPublicClick={() => router.push(`/channels/${channelId}`)}
-            onUpdate={setChannel}
+          <SideNav sections={sections} activeKey={active} ariaLabel="Channel dashboard" className="hidden md:flex" />
+          <SideNavTabs
+            items={sections.flatMap((s) => s.items)}
+            activeKey={active}
+            ariaLabel="Channel dashboard"
+            className="md:hidden"
           />
-        )}
+        </aside>
 
-        {/* Dynamic Lower Section Content Display */}
-        <div className="space-y-10">
-          {/* TAB 1: SMALL COURSE OVERVIEW DASHBOARD */}
-          {activeTab === 'OVERVIEW' && (
-            <SmallCourseOverview
-              onNavigateToCatalog={() => setActiveTab('CONTENT')}
-              onNavigateToAnalytics={() => setActiveTab('ANALYTICS')}
-              onAddCourse={() => router.push('/studio')}
+        <main className="min-w-0 flex-1 space-y-6">
+          {isSuspended && (
+            <Notice tone="rose" title="This channel is suspended">
+              {channel.suspensionReason || 'Settings, staff and content controls are restricted while suspended.'}
+            </Notice>
+          )}
+          {!isSuspended && pendingDeletion && (
+            <Notice tone="amber" title="Deletion request pending">
+              Submitted {new Date(pendingDeletion.createdAt).toLocaleDateString()}. Settings, staff and content
+              controls are locked while platform review is pending.
+            </Notice>
+          )}
+
+          <PageHeader
+            title={SECTION_COPY[active].title}
+            description={SECTION_COPY[active].description}
+            actions={headerActions}
+          />
+
+          {active === 'overview' && (
+            <ChannelOverview
+              channel={channel}
+              content={content}
+              openReviews={openReviews}
+              canEdit={canEdit}
+              canReview={canReview}
+              tabHref={tabHref}
+              onChannelUpdate={setChannel}
             />
           )}
-
-          {/* TAB 2: CONTENT */}
-          {activeTab === 'REVIEWS' && !channel.isPersonal && <ChannelReviewQueue channelId={channelId} />}
-
-          {activeTab === 'CONTENT' && (
-            <CourseManagementSection channelId={channelId} reviewMap={channelReviews} onAddCourse={() => router.push('/studio')} />
+          {active === 'content' && (
+            <ChannelContentSection
+              key={searchParams.get('status') ?? 'ALL'}
+              channelId={channelId}
+              content={content}
+              openReviews={openReviews}
+              initialStatus={searchParams.get('status') ?? undefined}
+            />
           )}
-
-          {/* TAB 3: STAFF */}
-          {activeTab === 'STAFF' && (
+          {active === 'reviews' && <ChannelReviewQueue channelId={channelId} />}
+          {active === 'analytics' && <ChannelAnalyticsSection channelId={channelId} />}
+          {active === 'identity' && <ChannelIdentityManager channel={channel} canEdit={canEdit} onUpdate={setChannel} />}
+          {active === 'staff' && (
             <ChannelStaffManager
               channelId={channelId}
               permissions={permissions}
               isSuspended={isSuspended}
-              isPersonalChannel={isPersonalChannel}
+              isPersonalChannel={channel.isPersonal}
             />
           )}
-
-          {/* TAB: IDENTITY & HANDLE (organization channels only) */}
-          {activeTab === 'IDENTITY' && !channel.isPersonal && (
-            <ChannelIdentityManager
-              channel={channel}
-              canEdit={canEdit}
-              onUpdate={(updated) => setChannel(updated)}
-            />
-          )}
-
-          {/* TAB 4: ANALYTICS & REVIEWS */}
-          {activeTab === 'ANALYTICS' && <OrganizationAnalyticsSection />}
-
-          {/* TAB 8: LOGS */}
-          {activeTab === 'LOGS' && <RecentActivityTimeline channelId={channelId} />}
-
-          {/* TAB 9: NOTIFICATIONS */}
-          {activeTab === 'NOTIFICATIONS' && <ChannelAuditLogManager channel={channel} />}
-
-          {/* TAB 10: DANGER ZONE */}
-          {activeTab === 'DANGER' && isOwner && (
-            <ChannelDangerZone channel={channel} />
-          )}
-        </div>
+          {active === 'activity' && <ChannelActivityLog channelId={channelId} />}
+          {active === 'danger' && <ChannelDangerZone channel={channel} />}
+        </main>
       </div>
 
-      {/* Edit Organization Modal Overlay */}
       <EditOrganizationModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
         channel={channel}
-        onUpdate={(updated) => setChannel(updated)}
+        onUpdate={setChannel}
       />
     </div>
   );
 }
 
+function Notice({ tone, title, children }: { tone: 'amber' | 'rose'; title: string; children: React.ReactNode }) {
+  const styles =
+    tone === 'amber'
+      ? 'border-amber-200 bg-amber-50/80 text-amber-900'
+      : 'border-rose-200 bg-rose-50/80 text-rose-900';
+  return (
+    <div className={`flex items-start gap-3 rounded-2xl border px-4 py-3.5 ${styles}`}>
+      <AlertTriangle size={17} className="mt-0.5 shrink-0" />
+      <div>
+        <p className="text-[13px] font-bold">{title}</p>
+        <p className="mt-0.5 text-[12.5px] font-medium opacity-90">{children}</p>
+      </div>
+    </div>
+  );
+}
