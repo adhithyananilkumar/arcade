@@ -205,7 +205,51 @@ export default function ChannelHomePage() {
                       />
                     ) : (
                       <div className="w-full h-full bg-[#F5F0E6] flex items-center justify-center text-[#14142b]">
-                        <Tv size={36} />
+                        <svg
+                          width="38"
+                          height="38"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="text-[#2962D6] dark:text-[#3B82F6]"
+                        >
+                          {/* Megaphone Cone Body */}
+                          <path
+                            d="M3.5 10.5V13.5C3.5 14.1 4 14.5 4.5 14.5H6.5L14 18V6L6.5 9.5H4.5C4 9.5 3.5 9.9 3.5 10.5Z"
+                            stroke="currentColor"
+                            strokeWidth="1.6"
+                            strokeLinejoin="round"
+                          />
+                          {/* Megaphone Back rim */}
+                          <path
+                            d="M14 6C15 6 16 8.7 16 12C16 15.3 15 18 14 18"
+                            stroke="currentColor"
+                            strokeWidth="1.6"
+                            strokeLinecap="round"
+                          />
+                          {/* Handle */}
+                          <path
+                            d="M7 14.5L7.8 19C7.9 19.6 8.4 20 9 20C9.6 20 10.1 19.5 10 18.9L9.5 14.5"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                          />
+                          {/* Accent dot on cone */}
+                          <circle cx="5" cy="12" r="0.75" fill="#F59E0B" />
+                          {/* Soundwaves / Broadcast arcs */}
+                          <path
+                            d="M18 9C19.2 10 19.8 11 19.8 12C19.8 13 19.2 14 18 15"
+                            stroke="#27C5D8"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                          />
+                          <path
+                            d="M20.5 7C22.2 8.5 23 10.2 23 12C23 13.8 22.2 15.5 20.5 17"
+                            stroke="#27C5D8"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                          />
+                        </svg>
                       </div>
                     )}
                   </div>

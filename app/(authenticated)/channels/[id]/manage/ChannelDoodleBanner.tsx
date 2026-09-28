@@ -54,7 +54,7 @@ export function ChannelDoodleBanner({ bannerUrl, className = "h-40 w-full sm:h-5
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`relative w-full overflow-hidden border-b border-slate-200/80 bg-[#F5F0E6] text-black ${className}`}
+      className={`relative w-full overflow-hidden bg-[#F5F0E6] text-black ${className}`}
       style={{
         backgroundColor: '#F5F0E6',
         backgroundImage: `radial-gradient(#14142b 0.8px, transparent 0.8px)`,
@@ -77,9 +77,6 @@ export function ChannelDoodleBanner({ bannerUrl, className = "h-40 w-full sm:h-5
           parentRef={containerRef}
         />
       ))}
-
-      {/* Sleek Subtle Bottom Shadow Line */}
-      <div className="absolute inset-x-0 bottom-0 h-1 bg-black/10 pointer-events-none" />
     </div>
   );
 }

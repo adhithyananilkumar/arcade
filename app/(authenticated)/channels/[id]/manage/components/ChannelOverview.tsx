@@ -1,13 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, ClipboardCheck, FileText, PenLine, Plus, Send } from 'lucide-react';
+import { ArrowRight, ClipboardCheck, Plus } from 'lucide-react';
 import type { Channel, ChannelContentItem } from '@/domains/channels';
 import { Panel } from '@/shared/design-system/ui/panel';
 import { SectionHeader } from '@/shared/design-system/ui/page-header';
 import { ChannelProfileCard } from './ChannelProfileCard';
 import { ContentCard } from './ChannelContentSection';
-import { statusOf } from './contentStatus';
 
 interface Props {
   channel: Channel;
@@ -31,15 +30,7 @@ export function ChannelOverview({
   onChannelUpdate,
   onEditProfile,
 }: Props) {
-  const count = (status: string) => content.filter((c) => statusOf(c) === status).length;
   const openReviewCount = Object.keys(openReviews).length;
-
-  const stats = [
-    { label: 'All content', value: content.length, icon: FileText, href: tabHref('content') },
-    { label: 'Published', value: count('PUBLISHED'), icon: Send, href: tabHref('content', { status: 'PUBLISHED' }) },
-    { label: 'In review', value: count('SUBMITTED'), icon: ClipboardCheck, href: tabHref('content', { status: 'SUBMITTED' }) },
-    { label: 'Drafts', value: count('DRAFT'), icon: PenLine, href: tabHref('content', { status: 'DRAFT' }) },
-  ];
 
   const recent = [...content]
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
@@ -54,29 +45,10 @@ export function ChannelOverview({
         onEditProfile={onEditProfile}
       />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {stats.map((s) => {
-          const Icon = s.icon;
-          return (
-            <Link
-              key={s.label}
-              href={s.href}
-              className="group rounded-[20px] border border-slate-200/80 bg-white p-4 transition-colors hover:border-slate-300 hover:bg-slate-50/60 dark:border-neutral-800 dark:bg-neutral-950"
-            >
-              <div className="flex items-center justify-between text-slate-400">
-                <span className="text-[12px] font-semibold text-slate-500">{s.label}</span>
-                <Icon size={15} />
-              </div>
-              <p className="mt-2 text-2xl font-bold tabular-nums text-[#14142b] dark:text-white">{s.value}</p>
-            </Link>
-          );
-        })}
-      </div>
-
       {canReview && !channel.isPersonal && openReviewCount > 0 && (
         <Link
           href={tabHref('reviews')}
-          className="flex items-center gap-3 rounded-[20px] border border-amber-200 bg-amber-50/70 px-5 py-4 transition-colors hover:bg-amber-50"
+          className="flex items-center gap-3 rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-amber-200 bg-amber-50/70 px-5 py-4 transition-colors hover:bg-amber-50"
         >
           <ClipboardCheck size={18} className="shrink-0 text-amber-700" />
           <p className="flex-1 text-[13px] font-semibold text-amber-900">
@@ -86,7 +58,7 @@ export function ChannelOverview({
         </Link>
       )}
 
-      <Panel className="space-y-4">
+      <Panel className="space-y-5">
         <SectionHeader
           title="Recently updated"
           description="The latest changes across this channel's content."
@@ -114,7 +86,7 @@ export function ChannelOverview({
             Nothing published to this channel yet. Content you create in Studio for this channel appears here.
           </p>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {recent.map((item) => (
               <ContentCard key={item.id} item={item} channelId={channel.id} openReviews={openReviews} />
             ))}
