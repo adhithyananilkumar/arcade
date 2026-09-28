@@ -59,17 +59,9 @@ export function AssessmentResultCard({
   // An ungraded assessment records a score, never a pass.
   const hasPassed = graded && (landing.passed ?? bestAttempt?.passed ?? latestAttempt?.passed ?? false);
 
-  // Determine which score to display prominently
-  const displayScore =
-    landing.score ??
-    bestAttempt?.percentage ??
-    latestAttempt?.percentage ??
-    null;
-
-  const scoreLabel = bestAttempt ? "Best score" : "Latest attempt";
-
-  const feedbackGradeCardId =
-    bestAttempt?.gradeCardId ?? latestAttempt?.gradeCardId ?? null;
+  // Marks live on the grade card, not here: this page only says where the candidate stands and
+  // links to the card that reports the sitting in full.
+  const gradeCardId = latestAttempt?.gradeCardId ?? bestAttempt?.gradeCardId ?? null;
 
   const resuming = landing.openAttemptId !== null;
   const retakeAllowed = landing.startable && !resuming;
@@ -225,7 +217,7 @@ export function AssessmentResultCard({
               ) : !graded ? (
                 <>
                   <FileText className="text-slate-500" size={19} />
-                  <span className="text-[15px] font-bold text-slate-800">Practice result</span>
+                  <span className="text-[15px] font-bold text-slate-800">Completed</span>
                 </>
               ) : (
                 <>
@@ -239,39 +231,26 @@ export function AssessmentResultCard({
 
             <p className="text-[13px] font-medium text-slate-600">
               {graded
-                ? `To pass you need a grade of at least ${landing.passPercentage}%.`
-                : "This practice assessment is not graded. Your score is for your own reference."}
+                ? `To pass you need a grade of at least ${landing.passPercentage}%. Your marks, section by section, are on your grade card.`
+                : "This practice assessment is not graded. Your marks are on your grade card, for your own reference."}
             </p>
 
-            <div className="mt-4 flex flex-wrap items-baseline gap-3">
-              {displayScore !== null ? (
-                <div className="flex items-baseline gap-2">
-                  <span
-                    className={`text-[2.5rem] font-extrabold leading-none tracking-tight tabular-nums ${
-                      hasPassed
-                        ? "text-emerald-700"
-                        : "text-slate-800"
-                    }`}
-                  >
-                    {displayScore}%
-                  </span>
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                    {scoreLabel}
-                  </span>
-                </div>
-              ) : (
-                <span className="text-[1.8rem] font-bold text-slate-400">—</span>
-              )}
-
-              {feedbackGradeCardId && onViewGradeCard && (
+            <div className="mt-4">
+              {gradeCardId && onViewGradeCard ? (
                 <button
                   type="button"
-                  onClick={() => onViewGradeCard(feedbackGradeCardId)}
-                  className="rounded-lg border border-slate-300 bg-white px-3.5 py-1.5 text-[12px] font-semibold text-slate-700 shadow-xs transition-colors hover:bg-slate-50 cursor-pointer"
+                  onClick={() => onViewGradeCard(gradeCardId)}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#232735] cursor-pointer"
                 >
-                  View feedback
+                  <Award size={14} />
+                  View grade card
+                  <ChevronRight size={14} />
                 </button>
-              )}
+              ) : isAwaitingReview ? (
+                <p className="text-[12px] font-medium text-amber-800">
+                  Your grade card is issued once marking is complete.
+                </p>
+              ) : null}
             </div>
           </div>
 
@@ -374,13 +353,7 @@ export function AssessmentResultCard({
                       <p className="text-[13px] font-semibold text-[#14142b]">
                         Attempt {attempt.attemptNumber}
                       </p>
-                      {bestAttempt?.attemptId === attempt.attemptId && (
-                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
-                          Highest
-                        </span>
-                      )}
-                      {latestAttempt?.attemptId === attempt.attemptId &&
-                        bestAttempt?.attemptId !== attempt.attemptId && (
+                      {latestAttempt?.attemptId === attempt.attemptId && landing.history.length > 1 && (
                           <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
                             Latest
                           </span>
@@ -403,12 +376,12 @@ export function AssessmentResultCard({
                       </span>
                     ) : attempt.percentage !== null ? (
                       <span
-                        className={`inline-flex items-center gap-1.5 text-[13px] font-bold tabular-nums ${
-                          attempt.passed ? "text-emerald-700" : "text-slate-600"
+                        className={`inline-flex items-center gap-1.5 text-[12px] font-semibold ${
+                          graded && attempt.passed ? "text-emerald-700" : "text-slate-500"
                         }`}
                       >
-                        {attempt.passed && <CheckCircle2 size={14} />}
-                        {attempt.percentage}%
+                        {graded && attempt.passed && <CheckCircle2 size={14} />}
+                        {!graded ? "Completed" : attempt.passed ? "Passed" : "Not passed"}
                       </span>
                     ) : (
                       <span className="text-[12px] text-slate-400">{attemptStatusLabel(attempt)}</span>
@@ -420,7 +393,7 @@ export function AssessmentResultCard({
                         onClick={() => onViewGradeCard(attempt.gradeCardId!)}
                         className="rounded-lg border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600 transition-colors hover:bg-slate-100 cursor-pointer"
                       >
-                        Grade card
+                        View grade card
                       </button>
                     )}
                   </div>

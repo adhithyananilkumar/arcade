@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Trophy, Award, Loader2, ChevronLeft, Hourglass, FileText } from 'lucide-react';
+import { Trophy, Award, Loader2, ChevronLeft, Hourglass, FileText, CheckCircle2, ArrowRight } from 'lucide-react';
 import { examRoutes } from '@/shared/routes/content.routes';
-import { getExamResult, type ExamResultResponse } from '@/domains/assessments';
+import { getExamResult, getMyGradeCards, type ExamResultResponse } from '@/domains/assessments';
 
 const pageBg = {
   background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 32%, #FFFFFF 70%)',
@@ -19,9 +19,12 @@ export default function ExamResultsPage() {
 
   const [result, setResult] = useState<ExamResultResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const isPreview = searchParams.get('preview') === 'true';
+  // The sitting's grade card — where the marks are read. Issued in the same transaction as a final
+  // result, so it exists as soon as the result does (a paper awaiting marking has none yet).
+  const [gradeCardId, setGradeCardId] = useState<string | null>(null);
 
   useEffect(() => {
-    const isPreview = searchParams.get('preview') === 'true';
     if (isPreview) {
       const mockStr = sessionStorage.getItem(`preview_result_${examId}`);
       if (mockStr) {
@@ -41,9 +44,16 @@ export default function ExamResultsPage() {
       return;
     }
     getExamResult(attemptId)
-      .then(setResult)
+      .then((r) => {
+        setResult(r);
+        if (r.status !== 'PENDING_REVIEW') {
+          getMyGradeCards()
+            .then((cards) => setGradeCardId(cards.find((c) => c.attemptId === attemptId)?.id ?? null))
+            .catch(() => undefined);
+        }
+      })
       .catch(() => setError('We could not load your result.'));
-  }, [examId, router, searchParams]);
+  }, [examId, isPreview, router, searchParams]);
 
   if (error) {
     return (
@@ -70,6 +80,53 @@ export default function ExamResultsPage() {
   const back = searchParams.get('returnTo') ?? examRoutes.landing(examId);
   const backLabel = back.startsWith('/courses') ? 'Back to course' : back.startsWith('/events') ? 'Back to event' : 'Back to exam';
 
+  if (!isPreview) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4 pb-28 pt-28" style={pageBg}>
+        <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 text-center shadow-[0_12px_40px_rgba(20,20,43,0.08)]">
+          <div className="px-8 py-9">
+            <div
+              className={`mx-auto grid size-16 place-items-center rounded-2xl ${
+                awaiting ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
+              }`}
+            >
+              {awaiting ? <Hourglass size={28} /> : <CheckCircle2 size={28} />}
+            </div>
+            <h1 className="mt-5 text-[1.5rem] font-bold tracking-tight text-[#14142b]">
+              {awaiting ? 'Submitted for marking' : 'Submission received'}
+            </h1>
+            <p className="mx-auto mt-2 max-w-sm text-[13px] font-medium leading-relaxed text-slate-500">
+              {awaiting
+                ? 'Some answers are written and need marking. Your grade card is issued, and you are notified, once they are marked.'
+                : 'Your grade card has been issued. Open it for your marks, section by section.'}
+            </p>
+
+            <div className="mt-7 flex flex-col gap-2">
+              {!awaiting && (
+                <Link
+                  href={gradeCardId ? examRoutes.gradeCard(gradeCardId) : examRoutes.gradeCards}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#14142b] px-5 py-3 text-[13px] font-semibold text-white hover:bg-[#232735]"
+                >
+                  <Award size={15} />
+                  View grade card
+                  <ArrowRight size={15} />
+                </Link>
+              )}
+              <Link
+                href={back}
+                className="inline-flex items-center justify-center gap-1.5 rounded-full border border-slate-200 bg-white px-5 py-3 text-[13px] font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                <ChevronLeft size={16} />
+                {backLabel}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Preview (a reviewer's dry run): no grade card exists, so the score is shown here.
   return (
     <div className="flex min-h-screen items-center justify-center px-4 pb-28 pt-28" style={pageBg}>
       <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 text-center shadow-[0_12px_40px_rgba(20,20,43,0.08)]">

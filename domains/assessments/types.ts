@@ -907,4 +907,21 @@ export interface GradeCardResponse {
   revokedReason: string | null;
   sections: GradeCardSection[];
   lineItems: GradeCardLineItem[];
+  /** The sitting an attempt card reports; null for a transcript and on the public verify view. */
+  sitting: GradeCardSitting | null;
+}
+
+/** Read from the sitting's own frozen attempt and result. */
+export interface GradeCardSitting {
+  planType: ExamPlanType | null;
+  /** False for an ungraded assessment: the score stands, pass/fail must not be shown. */
+  graded: boolean;
+  attemptNumber: number;
+  startedAt: string | null;
+  submittedAt: string | null;
+  timeTakenSeconds: number | null;
+  totalQuestions: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+  unanswered: number;
 }

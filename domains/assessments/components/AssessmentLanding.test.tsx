@@ -76,7 +76,7 @@ describe("AssessmentLanding", () => {
     expect(screen.queryByText("Not passed yet")).toBeNull();
   });
 
-  it("renders State B (Attempted - Passed) with score, threshold and action buttons", () => {
+  it("renders State B (Attempted - Passed) with threshold, grade card link and action buttons", () => {
     const onStart = vi.fn();
     const onViewGradeCard = vi.fn();
     const onNextItem = vi.fn();
@@ -141,8 +141,9 @@ describe("AssessmentLanding", () => {
 
     // Result Card
     expect(screen.getByText("You passed!")).toBeDefined();
-    expect(screen.getAllByText("85%").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("To pass you need a grade of at least 70%.")).toBeDefined();
+    // Marks are read on the grade card, never on this page.
+    expect(screen.queryByText("85%")).toBeNull();
+    expect(screen.getByText(/To pass you need a grade of at least 70%\./)).toBeDefined();
     expect(screen.getByText("What to expect")).toBeDefined();
     expect(screen.getByText("3 attempts allowed")).toBeDefined();
     expect(screen.getByText("2 remaining")).toBeDefined();
@@ -156,10 +157,10 @@ describe("AssessmentLanding", () => {
     const retakeButton = screen.getByText("Retake assessment");
     expect(retakeButton).toBeDefined();
 
-    // Feedback
-    const feedbackButtons = screen.getAllByText("View feedback");
-    expect(feedbackButtons.length).toBeGreaterThan(0);
-    fireEvent.click(feedbackButtons[0]);
+    // Grade card
+    const gradeCardButtons = screen.getAllByText("View grade card");
+    expect(gradeCardButtons.length).toBeGreaterThan(0);
+    fireEvent.click(gradeCardButtons[0]);
     expect(onViewGradeCard).toHaveBeenCalledWith("card-1");
   });
 
@@ -214,7 +215,7 @@ describe("AssessmentLanding", () => {
     render(<AssessmentLanding landing={landing} onStart={onStart} />);
 
     expect(screen.getByText("Not passed yet")).toBeDefined();
-    expect(screen.getAllByText("60%").length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText("60%")).toBeNull();
     expect(screen.getByText("Try again")).toBeDefined();
   });
 
@@ -298,8 +299,9 @@ describe("AssessmentLanding", () => {
 
     render(<AssessmentLanding landing={landing} />);
 
-    expect(screen.getByText("Practice result")).toBeDefined();
+    expect(screen.getAllByText("Completed").length).toBeGreaterThan(0);
     expect(screen.queryByText("Not passed yet")).toBeNull();
+    expect(screen.queryByText("Not passed")).toBeNull();
   });
 
   it("shows an unmet prerequisite with a way to open the tied content", () => {

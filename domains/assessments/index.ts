@@ -24,6 +24,8 @@ export { QuestionTagEditor } from "./components/QuestionTagEditor";
 export { AssessmentLanding } from "./components/AssessmentLanding";
 export type { AssessmentLandingProps } from "./components/AssessmentLanding";
 export { AssessmentResultCard } from "./components/AssessmentResultCard";
+export { ExamOverview } from "./components/ExamOverview";
+export type { ExamOverviewProps } from "./components/ExamOverview";
 export { ExamHubCardView } from "./components/ExamHubCardView";
 export { planTypeMeta, planKindLabel, PLAN_TYPES } from "./lib/planTypeMeta";
 export type { PlanTypeMeta } from "./lib/planTypeMeta";
@@ -137,6 +139,7 @@ export type {
   GradeCardResponse,
   GradeCardSection,
   GradeCardLineItem,
+  GradeCardSitting,
   ContentCertificationView,
   ExamHubCard,
   ExamHubPlan,

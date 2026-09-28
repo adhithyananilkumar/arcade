@@ -7,8 +7,8 @@
 // Everything a card shows — status, prerequisite state, fee, windows — is computed server-side by
 // ExamHubService; this page only fetches and lays it out.
 
-import { useDeferredValue, useState, useRef, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useDeferredValue, useState, useRef, useEffect, useMemo, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -26,6 +26,7 @@ import {
   getAvailableHubExams,
   getMyGradeCards,
   getMyHubExams,
+  planKindLabel,
   type ExamHubCard,
   type GradeCardResponse,
 } from "@/domains/assessments";
@@ -41,9 +42,21 @@ const EXAMS_MESSAGES = [
 ];
 
 export default function ExamsHubPage() {
+  return (
+    <Suspense fallback={null}>
+      <ExamsHub />
+    </Suspense>
+  );
+}
+
+function ExamsHub() {
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
-  const [tab, setTab] = useState<Tab>("mine");
+  // Deep link from a grade card or a finished sitting: /exams?tab=cards.
+  const requestedTab = useSearchParams().get("tab");
+  const [tab, setTab] = useState<Tab>(
+    requestedTab === "cards" || requestedTab === "available" ? requestedTab : "mine"
+  );
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -698,7 +711,7 @@ function GradeCardList({
           {searchQuery ? "No grade cards match your search" : "No grade cards yet"}
         </p>
         <p className="mt-1 max-w-sm text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
-          Certification exams issue a grade card, and completing a course with graded assessments issues a verified transcript.
+          Every exam you finish issues a grade card with your marks, and completing a course with graded assessments issues a verified transcript.
         </p>
       </div>
     );
@@ -721,14 +734,25 @@ function GradeCardList({
               {card.examTitle}
             </span>
             <span className="block text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
-              {card.kind === "CONTENT_TRANSCRIPT" ? "Assessment transcript" : card.planName ?? "Grade card"} ·{" "}
+              {card.kind === "CONTENT_TRANSCRIPT"
+                ? "Assessment transcript"
+                : [
+                    card.sitting?.planType ? planKindLabel(card.sitting.planType, card.sitting.graded) : null,
+                    card.planName,
+                    card.sitting ? `Attempt ${card.sitting.attemptNumber}` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ") || "Grade card"}{" "}
+              ·{" "}
               {new Date(card.issuedAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
               {card.revoked && " · revoked"}
             </span>
           </span>
           <span
             className={`shrink-0 text-sm font-bold tabular-nums px-2.5 py-1 rounded-full border ${
-              card.passed
+              card.sitting && !card.sitting.graded
+                ? "bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800"
+                : card.passed
                 ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700"
             }`}
