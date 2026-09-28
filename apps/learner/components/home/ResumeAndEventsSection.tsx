@@ -288,9 +288,6 @@ function RecommendedFeaturedCard({ course }: { course: CourseSummaryResponse }) 
               </span>
             </div>
           )}
-          <span className="absolute top-3 left-3 rounded-full bg-[#12141C]/80 backdrop-blur-md px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
-            Recommended
-          </span>
         </div>
 
         {/* Title and Author */}
@@ -363,9 +360,6 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
               </span>
             </div>
           )}
-          <span className="absolute top-3 left-3 rounded-full bg-[#12141C]/80 backdrop-blur-md px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
-            In progress
-          </span>
         </div>
 
         {/* Title and Author details */}

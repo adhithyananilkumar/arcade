@@ -181,6 +181,41 @@ export interface ChannelContentItem {
   authorUsername?: string | null;
 }
 
+export type ChannelAnalyticsTimeframe = '7D' | '30D' | '90D' | '1Y';
+
+/**
+ * Mirrors the backend's `ChannelAnalyticsResponse`. Only the fields the backend actually
+ * computes are typed here. `enrollmentGrowth`, `completionRate`, `revenue`, `revenueGrowth`,
+ * `chartPoints`, `categoryBreakdown` and `mostMentionedTopics` are still placeholders in
+ * `ChannelAnalyticsService` (constant strings, a synthetic ramp, a $50-per-enrollment guess),
+ * so they are deliberately left untyped until the backend computes them for real.
+ */
+export interface ChannelAnalytics {
+  timeframeData: {
+    timeframeLabel: string;
+    enrollments: string;
+    rating: string;
+    reviewsCount: string;
+  };
+  ratingOverview: {
+    averageRating: number;
+    totalRatings: number;
+    distribution: { stars: number; percentage: number; count: number }[];
+  };
+  recentReviews: {
+    id: string;
+    learnerName: string;
+    learnerAvatar?: string | null;
+    courseName: string;
+    rating: number;
+    date: string;
+    sentiment: string;
+    reviewText?: string | null;
+    instructorResponse?: string | null;
+  }[];
+  hasPaidCourses: boolean;
+}
+
 export interface ChannelAuditLogEntry {
   id: string;
   channelId: string;
@@ -561,6 +596,14 @@ export const channelService = {
   getAuditLog: async (): Promise<ChannelAuditLogEntry[]> => {
     const response = await api.get<{ content: ChannelAuditLogEntry[] }>('/api/v1/channels/audit-log?size=100');
     return response.content;
+  },
+
+  /** Gated on `channel.settings.manage` (or platform channel admin) by the backend. */
+  getChannelAnalytics: async (
+    channelId: string,
+    timeframe: ChannelAnalyticsTimeframe,
+  ): Promise<ChannelAnalytics> => {
+    return api.get<ChannelAnalytics>(`/api/channels/${channelId}/analytics?timeframe=${timeframe}`);
   },
 
   getChannelAuditLog: async (channelId: string, category: string = 'ALL'): Promise<ChannelAuditLogEntry[]> => {

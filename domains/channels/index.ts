@@ -27,6 +27,8 @@ export type {
   CreateChannelRequestOptions,
   ValidateCreationInvitationResponse,
   ChannelAuditLogEntry,
+  ChannelAnalytics,
+  ChannelAnalyticsTimeframe,
   ChannelContentItem,
   ChannelSummary,
   ChannelSummaryQuery,
@@ -40,6 +42,7 @@ export { useEligibleChannels } from './hooks/useEligibleChannels';
 export {
   useMyChannelsQuery,
   useMyWorkspacesQuery,
+  useUserChannels,
   useHasAnyChannel,
   myChannelsKeys,
 } from './hooks/useMyChannelsQuery';
