@@ -40,10 +40,12 @@ import {
   type MyEnrollmentsQueryParams,
 } from '@/domains/enrollment';
 import {
+  ExamGradesDialog,
   ExamHubCardView,
-  GradeCardListView,
   getMyGradeCards,
   getMyHubExams,
+  type ExamHubCard,
+  type GradeCardResponse,
 } from '@/domains/assessments';
 import { examRoutes } from '@/shared/routes/content.routes';
 import { LibraryCard } from './LibraryCard';
@@ -111,8 +113,8 @@ export default function MyLearningPage() {
   const upcomingEventsQuery = useMyEventsQuery('UPCOMING', eventPage, PAGE_SIZE, isAuthenticated);
   const pastEventsQuery = useMyEventsQuery('PAST', 0, PAGE_SIZE, isAuthenticated);
 
-  // Exams: the ones the learner registered for (with where they stand) and every grade card issued
-  // to them. Only fetched once the tab is opened.
+  // Exams: the ones the learner registered for (with where they stand), and their grade cards —
+  // opened per exam from its card. Only fetched once the tab is opened.
   const myExamsQuery = useQuery({
     queryKey: ['exams', 'hub', 'mine'],
     queryFn: getMyHubExams,
@@ -182,6 +184,21 @@ export default function MyLearningPage() {
     const q = searchQuery.toLowerCase().trim();
     return displayEvents.filter((e) => (e.title ?? '').toLowerCase().includes(q));
   }, [displayEvents, searchQuery]);
+
+  // An exam's grades are its attempt cards on the plans listed here (certifications and standalone
+  // exams). Assessments inside a tied course or event belong to that content, not to this tab.
+  const gradesByExam = useMemo(() => {
+    const map = new Map<string, GradeCardResponse[]>();
+    for (const exam of myExamsQuery.data ?? []) {
+      const planIds = new Set(exam.plans.map((pl) => pl.planId));
+      const cards = (gradeCardsQuery.data ?? []).filter(
+        (c) => c.kind === 'ATTEMPT' && c.examId === exam.examId && c.planId !== null && planIds.has(c.planId)
+      );
+      if (cards.length > 0) map.set(exam.examId, cards);
+    }
+    return map;
+  }, [myExamsQuery.data, gradeCardsQuery.data]);
+  const [gradesFor, setGradesFor] = useState<ExamHubCard | null>(null);
 
   const filteredExams = useMemo(() => {
     const exams = myExamsQuery.data ?? [];
@@ -549,31 +566,19 @@ export default function MyLearningPage() {
                         card={card}
                         index={idx}
                         onOpen={() => router.push(examRoutes.landing(card.examId))}
+                        onViewGrades={gradesByExam.has(card.examId) ? () => setGradesFor(card) : undefined}
                       />
                     ))}
                   </motion.div>
                 </SectionState>
 
-                <div className="space-y-4">
-                  <h3 className="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-white">
-                    Grade Cards &amp; Transcripts
-                  </h3>
-                  <SectionState
-                    isLoading={false}
-                    isError={gradeCardsQuery.isError}
-                    onRetry={() => gradeCardsQuery.refetch()}
-                    isEmpty={false}
-                    empty={null}
-                    skeletonKind="rows"
-                  >
-                    <GradeCardListView
-                      loading={gradeCardsQuery.isLoading}
-                      cards={gradeCardsQuery.data ?? []}
-                      searchQuery={searchQuery}
-                      onOpen={(id) => router.push(examRoutes.gradeCard(id))}
-                    />
-                  </SectionState>
-                </div>
+                <ExamGradesDialog
+                  open={gradesFor !== null}
+                  onOpenChange={(open) => !open && setGradesFor(null)}
+                  examTitle={gradesFor?.title ?? ''}
+                  cards={gradesFor ? gradesByExam.get(gradesFor.examId) ?? [] : []}
+                  onOpenPrintable={(id) => router.push(examRoutes.gradeCard(id))}
+                />
               </div>
             )}
           </div>

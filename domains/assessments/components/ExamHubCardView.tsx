@@ -13,6 +13,8 @@ import type { ExamHubCard, ExamHubStatus } from "../types";
 export interface ExamHubCardViewProps {
   card: ExamHubCard;
   onOpen: () => void;
+  /** Opens the learner's grades for this exam; the button shows only when given. */
+  onViewGrades?: () => void;
   index?: number;
 }
 
@@ -27,7 +29,7 @@ const STATUS: Record<ExamHubStatus, { label: string; className: string }> = {
   PASSED: { label: "Passed", className: "bg-emerald-600 text-white border-emerald-600 dark:bg-emerald-600 dark:text-white dark:border-emerald-500" },
 };
 
-export function ExamHubCardView({ card, onOpen, index = 0 }: ExamHubCardViewProps) {
+export function ExamHubCardView({ card, onOpen, onViewGrades, index = 0 }: ExamHubCardViewProps) {
   const status = STATUS[card.status] ?? STATUS.CLOSED;
   const window = describeWindow(card);
   const totalQuestions = card.plans.reduce((n, p) => n + p.questionCount, 0);
@@ -131,21 +133,33 @@ export function ExamHubCardView({ card, onOpen, index = 0 }: ExamHubCardViewProp
           )}
         </div>
 
-        {/* Bottom Full-Width CTA Action Button */}
-        <div className="pt-2">
+        {/* Actions: the exam, and — once sat — its grades */}
+        <div className="flex gap-2 pt-2">
+          {onViewGrades && (
+            <button
+              type="button"
+              onClick={onViewGrades}
+              className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] hover:bg-[#232735] dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 px-4 py-3 text-[13px] font-bold transition-all shadow-sm hover:shadow-md"
+            >
+              <Award size={14} />
+              <span>Grades</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={onOpen}
-            className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] hover:bg-[#232735] dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 px-5 py-3 text-[13px] font-bold transition-all shadow-sm hover:shadow-md"
+            className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md px-4 py-3 text-[13px] font-bold transition-all ${
+              onViewGrades
+                ? "border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
+                : "bg-[#12141C] hover:bg-[#232735] dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 shadow-sm hover:shadow-md"
+            }`}
           >
             <span>
               {card.status === "READY"
                 ? "Sit Exam"
-                : card.status === "PASSED"
-                ? "View Exam"
                 : card.status === "OPEN"
                 ? "Register Now"
-                : "View Details"}
+                : "View Exam"}
             </span>
             <ChevronRight size={14} />
           </button>
