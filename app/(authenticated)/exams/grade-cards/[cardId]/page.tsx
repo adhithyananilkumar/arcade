@@ -60,8 +60,8 @@ export default function GradeCardPage() {
                 <nav aria-label="Breadcrumb">
                   <ol className="flex flex-wrap items-center gap-2 text-[13.5px] font-bold">
                     <li>
-                      <Link href={examRoutes.gradeCards} className="inline-flex items-center gap-1.5 text-slate-700 hover:text-ink">
-                        <ArrowLeft size={14} /> Grade cards
+                      <Link href={examRoutes.mine} className="inline-flex items-center gap-1.5 text-slate-700 hover:text-ink">
+                        <ArrowLeft size={14} /> My exams
                       </Link>
                     </li>
                   </ol>

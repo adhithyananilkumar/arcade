@@ -113,7 +113,7 @@ export interface ContentDataAdapter {
 
   // The exam tied to this content item — at most one. It is the content's assessment system: its
   // completion and assessment plans are placed inside the content, and its certification plan is
-  // listed in the learner Exams hub with this content as the prerequisite.
+  // listed in Explore > Exams with this content as the prerequisite.
   listExams(contentId: string): Promise<ExamSummary[]>;
   /** Creates this content's exam (idempotent) and returns it. */
   createAndAttachExam(contentId: string, title: string): Promise<ExamSummary>;

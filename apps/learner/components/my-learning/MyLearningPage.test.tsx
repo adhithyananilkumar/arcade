@@ -32,6 +32,12 @@ vi.mock('@/infrastructure/auth/auth.store', () => ({
   useAuthStore: () => ({ user: { id: 'u1', fullName: 'Ada', email: 'a@b.c' }, status: 'authenticated' }),
 }));
 
+// The page reads ?tab= and navigates to exams; no router is mounted in jsdom.
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 // TextType animates with gsap on a timer; irrelevant to what is under test here.
 vi.mock('@/shared/design-system/ui/TextType/TextType', () => ({
   default: () => null,
@@ -257,10 +263,10 @@ describe('MyLearningPage — events tab', () => {
 });
 
 describe('MyLearningPage — tabs and filters', () => {
-  it('offers only Courses and Events — no Webinars/Workshops/Articles tabs with no backend source', async () => {
+  it('offers Courses, Events and Exams — no Webinars/Workshops/Articles tabs with no backend source', async () => {
     renderPage();
     const tabs = await screen.findAllByRole('tab');
-    expect(tabs.map((t) => t.textContent)).toHaveLength(2);
+    expect(tabs.map((t) => t.textContent)).toEqual(['Courses', 'Events', 'Exams']);
     expect(screen.queryByRole('tab', { name: /Webinars/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: /Articles/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: /Workshops/i })).not.toBeInTheDocument();

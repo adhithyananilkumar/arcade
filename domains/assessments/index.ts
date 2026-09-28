@@ -25,6 +25,7 @@ export { AssessmentLanding } from "./components/AssessmentLanding";
 export type { AssessmentLandingProps } from "./components/AssessmentLanding";
 export { AssessmentResultCard } from "./components/AssessmentResultCard";
 export { ExamOverview } from "./components/ExamOverview";
+export { GradeCardListView } from "./components/GradeCardListView";
 export type { ExamOverviewProps } from "./components/ExamOverview";
 export { ExamHubCardView } from "./components/ExamHubCardView";
 export { planTypeMeta, planKindLabel, PLAN_TYPES } from "./lib/planTypeMeta";
@@ -101,6 +102,7 @@ export {
   getContentCertification,
   getMyHubExams,
   getAvailableHubExams,
+  getPublicExams,
   listExamStandards,
   updateExamStandard,
   startExamAttempt,

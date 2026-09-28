@@ -232,7 +232,6 @@ export function CoursePlayer({
           .catch(() => setProgress(null));
       } else {
         setProgress({
-          courseId,
           completedLessonIds: [],
           completedLessons: 0,
           totalLessons: 0,
@@ -285,7 +284,6 @@ export function CoursePlayer({
       const completedIds = Array.from(new Set([...(progress?.completedLessonIds ?? []), selectedLesson.id]));
       const total = orderedItems.filter((i) => i.kind === 'lesson').length;
       const updated: CourseProgress = {
-        courseId,
         completedLessonIds: completedIds,
         completedLessons: completedIds.length,
         totalLessons: total,
@@ -406,7 +404,6 @@ export function CoursePlayer({
               type="button"
               onClick={() => {
                 setProgress({
-                  courseId: courseId ?? '',
                   completedLessonIds: [],
                   completedLessons: 0,
                   totalLessons: 0,

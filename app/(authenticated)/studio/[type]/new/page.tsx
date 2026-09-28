@@ -1,10 +1,10 @@
 // app/(authenticated)/studio/[type]/new/page.tsx
-// Catches workshop, webinar, article types — Coming Soon stub.
+// Catches workshop and webinar types (redirected to event creation); anything else is unknown.
 // These routes are locked in from day one so no other teams get 404s.
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Wrench, Radio, FileText, ArrowLeft } from "lucide-react";
+import { Wrench, Radio, ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Coming Soon — Arcade",
@@ -27,13 +27,6 @@ const TYPE_META: Record<
     icon: Radio,
     color: "text-blue-500",
     bg: "bg-blue-50",
-  },
-  article: {
-    label: "Article",
-    desc: "Standalone rich document authored using the Arcade Tiptap editor.",
-    icon: FileText,
-    color: "text-emerald-500",
-    bg: "bg-emerald-50",
   },
 };
 

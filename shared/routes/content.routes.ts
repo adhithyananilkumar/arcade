@@ -68,8 +68,10 @@ export const examRoutes = {
   terminated: (examId: string) => `/exams/${examId}/terminated`,
   /** A grade card: one finished sitting, or a course/event assessment transcript. */
   gradeCard: (gradeCardId: string) => `/exams/grade-cards/${gradeCardId}`,
-  /** The Exams hub opened on its grade cards tab. */
-  gradeCards: '/exams?tab=cards',
+  /** My Learning's Exams tab: the learner's exams, progress and grade cards. */
+  mine: '/learning?tab=exams',
+  /** Explore's Exams tab: the published exam catalogue. */
+  catalogue: '/search?tab=exams',
 } as const;
 
 /**

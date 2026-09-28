@@ -36,7 +36,7 @@ export function CourseWorkspace({ courseId }: { courseId: string }) {
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [savingCategory, setSavingCategory] = useState(false);
   // Categories created via Console -> Content Manage -> Categories (super-user only), scoped to
-  // COURSES-type categories only — this is the Course editor, not events/articles.
+  // COURSES-type categories only — this is the Course editor, not events or exams.
   const publicCategories = usePublicCategories();
   const courseCategories = useMemo(() => publicCategories.filter((c) => c.type === "COURSES"), [publicCategories]);
 

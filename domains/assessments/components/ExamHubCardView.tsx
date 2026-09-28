@@ -1,6 +1,7 @@
 "use client";
 
-// One main exam in the learner Exams hub. Pure UI: status, prerequisite state, fee and windows are
+// One main exam, in Explore > Exams and My Learning > Exams. Marks are not shown here — they are on
+// the grade cards. Pure UI: status, prerequisite state, fee and windows are
 // all computed by the server (ExamHubService) — this only chooses words and colours for them.
 
 import { motion } from "framer-motion";
@@ -88,11 +89,6 @@ export function ExamHubCardView({ card, onOpen, index = 0 }: ExamHubCardViewProp
               {card.feeMinor > 0 ? formatMoney(card.feeMinor, card.currency ?? "INR") : "Free"}
             </span>
 
-            {card.bestPercentage !== null && (
-              <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800">
-                Best {card.bestPercentage}%
-              </span>
-            )}
           </div>
 
           <h2 className="line-clamp-2 text-base sm:text-lg font-bold tracking-tight text-[#14142b] dark:text-white group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6] transition-colors">
@@ -146,7 +142,7 @@ export function ExamHubCardView({ card, onOpen, index = 0 }: ExamHubCardViewProp
               {card.status === "READY"
                 ? "Sit Exam"
                 : card.status === "PASSED"
-                ? "View Results"
+                ? "View Exam"
                 : card.status === "OPEN"
                 ? "Register Now"
                 : "View Details"}

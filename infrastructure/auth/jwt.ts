@@ -26,29 +26,41 @@ export function isJwtExpired(token: string, skewSeconds = 30): boolean {
   }
 }
 
+let inFlightTokenRefresh: Promise<string | null> | null = null;
+
 /**
  * Returns a valid, non-expired access token. If the current token in the auth store
  * is missing or expired, it automatically refreshes it via the BFF refresh route.
+ * Concurrent callers share a single in-flight refresh to avoid race conditions.
  * If refresh fails, it clears the auth store and returns null.
  */
 export async function getValidAccessToken(): Promise<string | null> {
   const state = useAuthStore.getState();
-  let token = state.accessToken;
+  const token = state.accessToken;
 
   if (token && !isJwtExpired(token)) {
     return token;
   }
 
-  try {
-    const res = await AuthService.refresh();
-    if (res?.accessToken) {
-      state.setAuth(res.user || state.user || ({} as User), res.accessToken);
-      return res.accessToken;
-    }
-  } catch {
-    state.clearAuth();
-    return null;
+  if (inFlightTokenRefresh) {
+    return inFlightTokenRefresh;
   }
 
-  return null;
+  inFlightTokenRefresh = (async () => {
+    try {
+      const res = await AuthService.refresh();
+      if (res?.accessToken) {
+        state.setAuth(res.user || state.user || ({} as User), res.accessToken);
+        return res.accessToken;
+      }
+    } catch {
+      state.clearAuth();
+      return null;
+    } finally {
+      inFlightTokenRefresh = null;
+    }
+    return null;
+  })();
+
+  return inFlightTokenRefresh;
 }

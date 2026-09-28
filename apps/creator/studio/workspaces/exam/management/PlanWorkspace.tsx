@@ -118,7 +118,7 @@ export function PlanWorkspace({
       <StudioCanvasEmpty
         icon={ClipboardList}
         title="Add a plan to decide how this exam is sat"
-        description="Each plan is one sitting of a platform-defined type: a Certification (listed in the Exams hub, issues a certificate), a Completion assessment (completes the tied course or event), or an Assessment (graded or practice). Its settings follow the platform's standard for that type."
+        description="Each plan is one sitting of a platform-defined type: a Certification (listed in Explore > Exams, issues a certificate), a Completion assessment (completes the tied course or event), or an Assessment (graded or practice). Its settings follow the platform's standard for that type."
         action={!readOnly && createSlot}
       />
     );
@@ -352,7 +352,7 @@ export function PlanWorkspace({
               <MapPin size={15} className="mt-0.5 shrink-0 text-slate-400" />
               <p className="text-xs leading-relaxed text-slate-600">
                 {plan.hubListed
-                  ? "Listed in learners' Exams hub. Learners register for this exam to sit it; its registration and sitting windows follow the exam's schedule."
+                  ? "Listed in Explore > Exams. Learners register for this exam to sit it; its registration and sitting windows follow the exam's schedule."
                   : plan.placement
                   ? `Placed inside the tied ${plan.placement.hostType === "COURSE_MODULE" ? "course module" : plan.placement.hostType.toLowerCase()}. Learners enrolled there sit it from the course or event; move it from the course editor.`
                   : "Not placed yet. It is placed at the root of the tied course or event automatically."}

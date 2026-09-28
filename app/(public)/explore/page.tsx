@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import Footer from "@/apps/public/components/landing/Footer";
 import GradientText from "@/components/landing/GradientText";
 import CategoryDetailedView, { CourseCard } from "@/components/explore/CategoryDetailedView";
+import ExamsView from "@/components/explore/ExamsView";
 import Link from "next/link";
 import "@/apps/public/landing.css";
 import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
@@ -14,13 +15,11 @@ import { usePublicCoursesPage } from "@/shared/hooks/usePublicCourses";
 import { usePublicCourseCounts } from "@/shared/hooks/usePublicCourseCounts";
 
 /*
- * `bootcamps` and `resources` held invented content -- three fabricated bootcamps under Computer
- * Science and eight fabricated articles with invented read times -- rendered as though a creator
- * had published them.
+ * `bootcamps` held invented content -- three fabricated bootcamps under Computer Science --
+ * rendered as though a creator had published them.
  *
- * They are empty now. Real bootcamps are events with eventType BOOTCAMP and come from the server
- * (see EventsView). There is no articles backend yet, so that section renders its empty state
- * rather than being filled with plausible-looking copy.
+ * It is empty now. Real bootcamps are events with eventType BOOTCAMP and come from the server
+ * (see EventsView). Exams have no categories and are listed by ExamsView from the server.
  *
  * `desc`, `gradient` and `colors` are presentation, not content, and stay.
  */
@@ -30,7 +29,6 @@ export const CATEGORY_DATA: Record<string, {
   gradient: string;
   courses: Array<{ title: string; duration: string; level: string; desc: string }>;
   bootcamps: Array<{ title: string; duration: string; type: string; date: string; desc: string }>;
-  resources: Array<{ title: string; type: string; readTime: string }>;
   colors: { primary: string; secondary: string };
 }> = {
   "Computer Science": {
@@ -39,8 +37,7 @@ export const CATEGORY_DATA: Record<string, {
     colors: { primary: "#8B5CF6", secondary: "rgba(139, 92, 246, 0.08)" },
     desc: "Gain foundational and advanced skills in software development, data structures, database design, and software engineering workflows.",
     courses: [],
-    bootcamps: [],
-    resources: []
+    bootcamps: []
   },
   "Information Technology": {
     coursesCount: 0,
@@ -48,8 +45,7 @@ export const CATEGORY_DATA: Record<string, {
     colors: { primary: "#4B6189", secondary: "rgba(75, 97, 137, 0.08)" },
     desc: "Understand enterprise server configuration, cloud virtualization, cybersecurity models, and network protocol routing.",
     courses: [],
-    bootcamps: [],
-    resources: []
+    bootcamps: []
   },
   "Business & Management": {
     coursesCount: 0,
@@ -57,8 +53,7 @@ export const CATEGORY_DATA: Record<string, {
     colors: { primary: "#D97462", secondary: "rgba(217, 116, 98, 0.08)" },
     desc: "Develop strategic startup frameworks, financial accounting competence, agile project leadership, and product marketing strategies.",
     courses: [],
-    bootcamps: [],
-    resources: []
+    bootcamps: []
   },
   "Civil & Mechanical": {
     coursesCount: 0,
@@ -66,8 +61,7 @@ export const CATEGORY_DATA: Record<string, {
     colors: { primary: "#10B981", secondary: "rgba(16, 185, 129, 0.08)" },
     desc: "Gain dynamic engineering skills in mechanical stress calculations, structural analysis, materials composition, and CAD drafting.",
     courses: [],
-    bootcamps: [],
-    resources: []
+    bootcamps: []
   },
   "Basic Sciences": {
     coursesCount: 0,
@@ -75,8 +69,7 @@ export const CATEGORY_DATA: Record<string, {
     colors: { primary: "#14B8A6", secondary: "rgba(20, 184, 166, 0.08)" },
     desc: "Strengthen academic foundations in mathematics, matrix dynamics, electromagnetics, and organic engineering structures.",
     courses: [],
-    bootcamps: [],
-    resources: []
+    bootcamps: []
   },
   "Humanities & Languages": {
     coursesCount: 0,
@@ -84,8 +77,7 @@ export const CATEGORY_DATA: Record<string, {
     colors: { primary: "#6366F1", secondary: "rgba(99, 102, 241, 0.08)" },
     desc: "Develop professional competence in copywriting, tech documentation, legal corporate ethics, and vocal presentation skills.",
     courses: [],
-    bootcamps: [],
-    resources: []
+    bootcamps: []
   },
   "Personal Development": {
     coursesCount: 0,
@@ -93,8 +85,7 @@ export const CATEGORY_DATA: Record<string, {
     colors: { primary: "#84CC16", secondary: "rgba(132, 204, 22, 0.08)" },
     desc: "Build professional soft skills, goal planning techniques, stress resolution, and technical interview confidence.",
     courses: [],
-    bootcamps: [],
-    resources: []
+    bootcamps: []
   },
   "Design & UI/UX": {
     coursesCount: 0,
@@ -102,8 +93,7 @@ export const CATEGORY_DATA: Record<string, {
     colors: { primary: "#EC4899", secondary: "rgba(236, 72, 153, 0.08)" },
     desc: "Master user interface design, user experience research, wireframing, and interactive prototyping.",
     courses: [],
-    bootcamps: [],
-    resources: []
+    bootcamps: []
   },
   "Data Science & AI": {
     coursesCount: 0,
@@ -111,8 +101,7 @@ export const CATEGORY_DATA: Record<string, {
     colors: { primary: "#F59E0B", secondary: "rgba(245, 158, 11, 0.08)" },
     desc: "Dive into machine learning, deep neural networks, data analysis, and predictive modeling.",
     courses: [],
-    bootcamps: [],
-    resources: []
+    bootcamps: []
   },
   "Productivity Tools": {
     coursesCount: 0,
@@ -120,8 +109,7 @@ export const CATEGORY_DATA: Record<string, {
     colors: { primary: "#3B82F6", secondary: "rgba(59, 130, 246, 0.08)" },
     desc: "Learn to streamline your workflow with modern productivity software, automation, and integrations.",
     courses: [],
-    bootcamps: [],
-    resources: []
+    bootcamps: []
   },
   "Marketing & SEO": {
     coursesCount: 0,
@@ -129,8 +117,7 @@ export const CATEGORY_DATA: Record<string, {
     colors: { primary: "#8B5CF6", secondary: "rgba(139, 92, 246, 0.08)" },
     desc: "Understand digital marketing strategies, search engine optimization, and social media growth.",
     courses: [],
-    bootcamps: [],
-    resources: []
+    bootcamps: []
   },
   "All": {
     coursesCount: 0,
@@ -138,8 +125,7 @@ export const CATEGORY_DATA: Record<string, {
     colors: { primary: "#6366F1", secondary: "rgba(99, 102, 241, 0.08)" },
     desc: "Explore all comprehensive learning paths, hands-on bootcamps, and educational resources across all disciplines.",
     courses: [],
-    bootcamps: [],
-    resources: []
+    bootcamps: []
   }};
 
 export const categoriesList = ["All", ...Object.keys(CATEGORY_DATA).filter((c) => c !== "All")];
@@ -426,7 +412,7 @@ function CategoryHeaderIllustration({ category, activeTab }: { category: string;
       medium: "#B88CC5",
       dark: "#7A4A91"
     };
-  } else if (activeTab === "articles") {
+  } else if (activeTab === "exams") {
     colors = {
       light: "#A7F3D0",
       veryLight: "#ECFDF5",
@@ -1038,23 +1024,23 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
   // Tab State
   const initialTab = (tabParam === "bootcamps" || tabParam === "events")
     ? "bootcamps"
-    : tabParam === "articles"
-      ? "articles"
+    : tabParam === "exams"
+      ? "exams"
       : "courses";
-  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "articles">(initialTab);
+  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "exams">(initialTab);
 
   useEffect(() => {
     if (tabParam) {
       if (tabParam === "bootcamps" || tabParam === "events") setActiveTab("bootcamps");
-      else if (tabParam === "articles") setActiveTab("articles");
+      else if (tabParam === "exams") setActiveTab("exams");
       else if (tabParam === "courses") setActiveTab("courses");
     }
   }, [tabParam]);
 
   // Categories created via Console -> Content Manage -> Categories (super-user only),
   // merged additively on top of the hardcoded dummy categories — never removes them.
-  // Each admin category is scoped to one section (courses/events/articles) via its `type`.
-  const categoryType = activeTab === "bootcamps" ? "EVENTS" : activeTab === "articles" ? "ARTICLES" : activeTab === "courses" ? "COURSES" : null;
+  // Each admin category is scoped to one section (courses/events/exams) via its `type`.
+  const categoryType = activeTab === "bootcamps" ? "EVENTS" : activeTab === "exams" ? "EXAMS" : "COURSES";
   const allPublicCategories = usePublicCategories();
   const adminCategories = allPublicCategories.filter((c) => c.type === categoryType || c.type === "ALL");
 
@@ -1089,13 +1075,11 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
     if (cat.toLowerCase() === "all") {
       const allCourses: any[] = [];
       const allBootcamps: any[] = [];
-      const allResources: any[] = [];
 
       Object.entries(CATEGORY_DATA).forEach(([k, val]) => {
         if (k.toLowerCase() === "all") return;
         val.courses.forEach((c) => allCourses.push({ ...c, category: k }));
         val.bootcamps.forEach((b) => allBootcamps.push({ ...b, category: k }));
-        val.resources.forEach((r) => allResources.push({ ...r, category: k }));
       });
 
       publicCourses.forEach((c) => {
@@ -1114,13 +1098,12 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
       const staticAllCoursesCount = allCourses.length - publicCourses.length;
 
       return {
-        desc: "Access all self-paced courses, expert bootcamps, and in-depth articles across every topic.",
+        desc: "Access all self-paced courses and expert bootcamps across every topic.",
         coursesCount: staticAllCoursesCount + publicCourseCounts.total,
         gradient: "linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)",
         colors: { primary: "#2563EB", secondary: "rgba(37, 99, 235, 0.08)" },
         courses: allCourses,
         bootcamps: allBootcamps,
-        resources: allResources,
       };
     }
 
@@ -1159,7 +1142,6 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
           colors: { primary: "#3B82F6", secondary: "#3B82F614" },
           courses: publishedForCat,
           bootcamps: [],
-          resources: [],
         };
       }
       return undefined;
@@ -1172,7 +1154,6 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
       colors: { primary: color, secondary: `${color}14` },
       courses: publishedForCat,
       bootcamps: [],
-      resources: [],
     };
   };
 
@@ -1197,7 +1178,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
   // Ref for the content section — used to auto-scroll into view on tab switch
   const contentRef = React.useRef<HTMLDivElement>(null);
 
-  const handleTabSwitch = (tab: "courses" | "bootcamps" | "articles") => {
+  const handleTabSwitch = (tab: "courses" | "bootcamps" | "exams") => {
     setActiveTab(tab);
     setSearchQuery("");
     // Small delay lets React flush the state before scrolling
@@ -1226,7 +1207,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
     } else {
       if (activeTab === "courses") router.push(`/courses?category=${encodedCat}`);
       else if (activeTab === "bootcamps") router.push(`/events?category=${encodedCat}`);
-      else if (activeTab === "articles") router.push(`/articles?category=${encodedCat}`);
+      else if (activeTab === "exams") router.push(`/exams?category=${encodedCat}`);
     }
   };
 
@@ -1529,30 +1510,30 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               </svg>
             </motion.div>
           </motion.div>
-          {/* Card: Articles */}
+          {/* Card: Exams */}
           <motion.div
-            onClick={() => handleTabSwitch("articles")}
+            onClick={() => handleTabSwitch("exams")}
             whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
             animate={{
-              scale: activeTab === "articles" ? 1.03 : 0.97,
-              opacity: activeTab === "articles" ? 1 : 0.7,
-              rotate: activeTab === "articles" ? 1.5 : 0
+              scale: activeTab === "exams" ? 1.03 : 0.97,
+              opacity: activeTab === "exams" ? 1 : 0.7,
+              rotate: activeTab === "exams" ? 1.5 : 0
             }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             style={{
               position: "relative",
-              background: activeTab === "articles" ? "#EFF4FC" : "#FFFFFF",
-              border: activeTab === "articles" ? "3px solid #0A1931" : "2px solid #E5E7EB",
+              background: activeTab === "exams" ? "#EFF4FC" : "#FFFFFF",
+              border: activeTab === "exams" ? "3px solid #0A1931" : "2px solid #E5E7EB",
               borderRadius: "20px",
               padding: "24px 20px",
               cursor: "pointer",
               textAlign: "left",
-              boxShadow: activeTab === "articles" ? "8px 8px 0px #0A1931" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
+              boxShadow: activeTab === "exams" ? "8px 8px 0px #0A1931" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
               minHeight: "260px",
-              zIndex: activeTab === "articles" ? 3 : 1,
+              zIndex: activeTab === "exams" ? 3 : 1,
               transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
             }}
           >
@@ -1560,55 +1541,55 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               <div style={{
                 fontSize: "0.68rem",
                 fontWeight: "800",
-                color: activeTab === "articles" ? "#1E3A8A" : "#6B7280",
+                color: activeTab === "exams" ? "#1E3A8A" : "#6B7280",
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 marginBottom: "10px",
                 transition: "color 0.3s"
               }}>
-                03 // ARTICLES
+                03 // EXAMS
               </div>
               <h3 style={{
                 fontSize: "1.15rem",
                 fontWeight: "800",
-                color: activeTab === "articles" ? "#0F172A" : "#1A1A1A",
+                color: activeTab === "exams" ? "#0F172A" : "#1A1A1A",
                 margin: "0 0 8px",
                 lineHeight: "1.2",
                 transition: "color 0.3s"
               }}>
-                Articles
+                Exams
               </h3>
               <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
-                Read comprehensive articles, insightful guides, and technical documentation to deepen your knowledge.
+                Earn certifications and prove your skills with proctored, graded exams and practice assessments.
               </p>
             </div>
             {/* Minimalist Sketch Illustration */}
             <motion.div
               animate={{
-                scale: activeTab === "articles" ? 1.15 : 1,
-                y: activeTab === "articles" ? -5 : 0
+                scale: activeTab === "exams" ? 1.15 : 1,
+                y: activeTab === "exams" ? -5 : 0
               }}
               transition={{ type: "spring", stiffness: 300, damping: 15 }}
               style={{ width: "100%", height: "65px" }}
             >
               <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <motion.circle cx="45" cy="40" r="7" fill={activeTab === "articles" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "articles" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 45,47 L 45,75" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,55 L 30,65" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,52 L 65,38" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,75 L 35,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,75 L 55,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <motion.circle cx="45" cy="40" r="7" fill={activeTab === "exams" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "exams" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 45,47 L 45,75" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,55 L 30,65" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,52 L 65,38" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,75 L 35,95" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,75 L 55,95" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
 
-                <motion.circle cx="115" cy="40" r="7" fill={activeTab === "articles" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "articles" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 115,47 L 115,75" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,52 L 95,38" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,55 L 130,65" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,75 L 105,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,75 L 125,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <motion.circle cx="115" cy="40" r="7" fill={activeTab === "exams" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "exams" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 115,47 L 115,75" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,52 L 95,38" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,55 L 130,65" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,75 L 105,95" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,75 L 125,95" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
 
-                <motion.path d="M 80,30 L 80,24" stroke={activeTab === "articles" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "articles" ? { scaleY: [1, 1.5, 1], y: [0, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transformOrigin: "80px 30px", transition: "stroke 0.3s" }} />
-                <motion.path d="M 75,34 L 69,30" stroke={activeTab === "articles" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "articles" ? { x: [0, -2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-                <motion.path d="M 85,34 L 91,30" stroke={activeTab === "articles" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "articles" ? { x: [0, 2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.path d="M 80,30 L 80,24" stroke={activeTab === "exams" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "exams" ? { scaleY: [1, 1.5, 1], y: [0, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transformOrigin: "80px 30px", transition: "stroke 0.3s" }} />
+                <motion.path d="M 75,34 L 69,30" stroke={activeTab === "exams" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "exams" ? { x: [0, -2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.path d="M 85,34 L 91,30" stroke={activeTab === "exams" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "exams" ? { x: [0, 2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
               </svg>
             </motion.div>
           </motion.div>
@@ -1718,7 +1699,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                 if (cat.toLowerCase() === "all") return;
 
                 const data = getCategoryData(cat)!;
-                const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
+                const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "exams" ? "#10B981" : data.colors.primary;
                 if (activeTab === "courses") {
                   data.courses.forEach(course => {
                     if (course.title.toLowerCase().includes(query) || course.desc.toLowerCase().includes(query)) {
@@ -1729,12 +1710,6 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                   data.bootcamps.forEach(bootcamp => {
                     if (bootcamp.title.toLowerCase().includes(query) || bootcamp.desc.toLowerCase().includes(query)) {
                       searchResults.push({ ...bootcamp, category: cat, type: 'Bootcamp' });
-                    }
-                  });
-                } else if (activeTab === "articles") {
-                  data.resources.forEach(resource => {
-                    if (resource.title.toLowerCase().includes(query)) {
-                      searchResults.push({ ...resource, category: cat, type: 'Article' });
                     }
                   });
                 }
@@ -1765,7 +1740,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                       .map((cat) => {
 
                         const data = getCategoryData(cat)!;
-                        const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
+                        const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "exams" ? "#10B981" : data.colors.primary;
                         return (
                           <div
                             key={cat}
@@ -1849,10 +1824,18 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                 </>
               )}
               
+              {/* Individual exams: matched by the server across every category */}
+              {searchQuery && activeTab === "exams" && (
+                <div style={{ marginTop: "40px" }}>
+                  <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "#111827" }}>Individual Exams</h3>
+                  <ExamsView searchQuery={searchQuery} onClearSearch={() => setSearchQuery("")} />
+                </div>
+              )}
+
               {/* Individual Items Grid */}
               {searchQuery && searchResults.length > 0 && (
                 <div style={{ marginTop: "40px" }}>
-                  <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "#111827" }}>Individual {activeTab === "courses" ? "Courses" : activeTab === "articles" ? "Articles" : "Bootcamps"}</h3>
+                  <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "#111827" }}>Individual {activeTab === "courses" ? "Courses" : "Bootcamps"}</h3>
                   <div style={{ display: "grid", gridTemplateColumns: activeTab === "courses" ? "repeat(auto-fill, minmax(350px, 1fr))" : "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
                     {searchResults.map((item, idx) => {
                        if (activeTab === "courses") {
@@ -1982,8 +1965,8 @@ function ExploreHubInner({ hubBasePath }: { hubBasePath?: string } = {}) {
   if (hubBasePath && category) {
     const mode = (tabParam === "bootcamps" || tabParam === "events")
       ? "events"
-      : tabParam === "articles"
-        ? "articles"
+      : tabParam === "exams"
+        ? "exams"
         : "courses";
     return <CategoryDetailedView hubBasePath={hubBasePath} mode={mode} />;
   }

@@ -159,9 +159,9 @@ export default function CreatorFormats() {
     },
     {
       step: "04",
-      title: "Article",
-      desc: "Self-paced written documentation guides and research reference logs.",
-      badge: "Reference manuals",
+      title: "Exam",
+      desc: "Proctored certifications, graded assessments and practice tests with grade cards.",
+      badge: "Verified credentials",
       icon: Layers,
       color: "#F5A623",
       lightBg: "#FEF3C7",

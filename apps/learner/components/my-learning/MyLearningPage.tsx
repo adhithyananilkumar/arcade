@@ -10,6 +10,7 @@
  * DATA SOURCES (all backend-owned, all paginated server-side)
  *   Courses tab : GET /api/v1/me/enrollments?resourceType=COURSE   (D2 read model)
  *   Events tab  : GET /api/v1/me/events?timeframe=…                (D2 read model)
+ *   Exams tab   : GET /api/exams/hub/mine + /api/exams/grade-cards/mine
  *   Activity    : GET /api/v1/me/activity                          (LearnerDailyActivity)
  *
  * ------------------------------------------------------------------
@@ -17,6 +18,8 @@
 
 import { useMemo, useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   BookOpen,
@@ -36,18 +39,26 @@ import {
   useMyEventsQuery,
   type MyEnrollmentsQueryParams,
 } from '@/domains/enrollment';
+import {
+  ExamHubCardView,
+  GradeCardListView,
+  getMyGradeCards,
+  getMyHubExams,
+} from '@/domains/assessments';
+import { examRoutes } from '@/shared/routes/content.routes';
 import { LibraryCard } from './LibraryCard';
 import { EventRegistrationCard } from './EventRegistrationCard';
 import { LearningActivityPanel } from './LearningActivityPanel';
 
 const PAGE_SIZE = 12;
 
-type Tab = 'courses' | 'events';
+type Tab = 'courses' | 'events' | 'exams';
 
 const LEARNING_MESSAGES = [
   'Track active course progress',
   'Resume your latest modules',
   'See your registered events',
+  'Review your exam grade cards',
   'Keep up the great work!',
 ];
 
@@ -75,7 +86,12 @@ export default function MyLearningPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const [tab, setTab] = useState<Tab>('courses');
+  const router = useRouter();
+  // Deep links: /learning?tab=exams (where finished exams and grade cards point).
+  const requestedTab = useSearchParams().get('tab');
+  const [tab, setTab] = useState<Tab>(
+    requestedTab === 'events' || requestedTab === 'exams' ? requestedTab : 'courses'
+  );
   const [sortId, setSortId] = useState<(typeof SORT_OPTIONS)[number]['id']>('recent-activity');
   const [coursePage, setCoursePage] = useState(0);
   const [eventPage, setEventPage] = useState(0);
@@ -94,6 +110,19 @@ export default function MyLearningPage() {
   const coursesQuery = useMyEnrollmentsQuery(courseParams, isAuthenticated);
   const upcomingEventsQuery = useMyEventsQuery('UPCOMING', eventPage, PAGE_SIZE, isAuthenticated);
   const pastEventsQuery = useMyEventsQuery('PAST', 0, PAGE_SIZE, isAuthenticated);
+
+  // Exams: the ones the learner registered for (with where they stand) and every grade card issued
+  // to them. Only fetched once the tab is opened.
+  const myExamsQuery = useQuery({
+    queryKey: ['exams', 'hub', 'mine'],
+    queryFn: getMyHubExams,
+    enabled: isAuthenticated && tab === 'exams',
+  });
+  const gradeCardsQuery = useQuery({
+    queryKey: ['exams', 'grade-cards', 'mine'],
+    queryFn: getMyGradeCards,
+    enabled: isAuthenticated && tab === 'exams',
+  });
 
   const rawCourses = useMemo(() => coursesQuery.data?.content ?? [], [coursesQuery.data]);
   const upcomingEventsRaw = useMemo(() => upcomingEventsQuery.data?.content ?? [], [upcomingEventsQuery.data]);
@@ -153,6 +182,15 @@ export default function MyLearningPage() {
     const q = searchQuery.toLowerCase().trim();
     return displayEvents.filter((e) => (e.title ?? '').toLowerCase().includes(q));
   }, [displayEvents, searchQuery]);
+
+  const filteredExams = useMemo(() => {
+    const exams = myExamsQuery.data ?? [];
+    if (!searchQuery.trim()) return exams;
+    const q = searchQuery.toLowerCase().trim();
+    return exams.filter(
+      (e) => (e.title ?? '').toLowerCase().includes(q) || (e.channelName ?? '').toLowerCase().includes(q)
+    );
+  }, [myExamsQuery.data, searchQuery]);
 
   return (
     <div className="relative min-h-screen w-full text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/40">
@@ -288,6 +326,14 @@ export default function MyLearningPage() {
               }}
               label="Events"
             />
+            <TabButton
+              active={tab === 'exams'}
+              onClick={() => {
+                setTab('exams');
+                setSearchQuery('');
+              }}
+              label="Exams"
+            />
           </div>
 
           {/* RIGHT: Search & Sort Dropdown */}
@@ -325,7 +371,7 @@ export default function MyLearningPage() {
                           setIsSearchOpen(false);
                         }
                       }}
-                      placeholder={tab === 'courses' ? 'Search courses...' : 'Search events...'}
+                      placeholder={tab === 'courses' ? 'Search courses...' : tab === 'events' ? 'Search events...' : 'Search exams...'}
                       className="w-full pl-9 pr-8 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm bg-transparent border border-slate-200/80 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-300 dark:focus:ring-slate-700 transition-all font-medium"
                     />
                     <button
@@ -360,8 +406,8 @@ export default function MyLearningPage() {
               </AnimatePresence>
             </div>
 
-            {/* Sort Dropdown */}
-            <div className="w-full sm:w-auto flex items-center justify-start sm:justify-end shrink-0">
+            {/* Sort Dropdown — exams are ordered by the server (in progress first) */}
+            <div className={`w-full sm:w-auto items-center justify-start sm:justify-end shrink-0 ${tab === 'exams' ? 'hidden' : 'flex'}`}>
               <SortDropdown
                 selectedId={sortId}
                 onChange={(id) => {
@@ -425,7 +471,7 @@ export default function MyLearningPage() {
                   onChange={setCoursePage}
                 />
               </SectionState>
-            ) : (
+            ) : tab === 'events' ? (
               <SectionState
                 isLoading={upcomingEventsQuery.isLoading || pastEventsQuery.isLoading}
                 isError={upcomingEventsQuery.isError || pastEventsQuery.isError}
@@ -469,6 +515,66 @@ export default function MyLearningPage() {
                   onChange={setEventPage}
                 />
               </SectionState>
+            ) : (
+              <div className="space-y-10">
+                <SectionState
+                  isLoading={myExamsQuery.isLoading}
+                  isError={myExamsQuery.isError}
+                  onRetry={() => myExamsQuery.refetch()}
+                  isEmpty={filteredExams.length === 0}
+                  empty={
+                    <EmptyState
+                      tab="exams"
+                      title={searchQuery ? 'No matching exams' : 'No exams yet'}
+                      body={
+                        searchQuery
+                          ? `No exams matched "${searchQuery}". Try a different search term.`
+                          : 'Certifications and exams you register for appear here with where you stand.'
+                      }
+                      ctaHref={searchQuery ? undefined : examRoutes.catalogue}
+                      ctaLabel={searchQuery ? undefined : 'Browse exams'}
+                    />
+                  }
+                  skeletonKind="grid"
+                >
+                  <motion.div
+                    key={`exams-${searchQuery}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7"
+                  >
+                    {filteredExams.map((card, idx) => (
+                      <ExamHubCardView
+                        key={card.examId}
+                        card={card}
+                        index={idx}
+                        onOpen={() => router.push(examRoutes.landing(card.examId))}
+                      />
+                    ))}
+                  </motion.div>
+                </SectionState>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-white">
+                    Grade Cards &amp; Transcripts
+                  </h3>
+                  <SectionState
+                    isLoading={false}
+                    isError={gradeCardsQuery.isError}
+                    onRetry={() => gradeCardsQuery.refetch()}
+                    isEmpty={false}
+                    empty={null}
+                    skeletonKind="rows"
+                  >
+                    <GradeCardListView
+                      loading={gradeCardsQuery.isLoading}
+                      cards={gradeCardsQuery.data ?? []}
+                      searchQuery={searchQuery}
+                      onOpen={(id) => router.push(examRoutes.gradeCard(id))}
+                    />
+                  </SectionState>
+                </div>
+              </div>
             )}
           </div>
         </section>
@@ -810,7 +916,7 @@ function EmptyState({
 }) {
   return (
     <div className="py-10 px-4 text-center flex flex-col items-center justify-center">
-      {tab === 'courses' ? <CoursesDoodle /> : <EventsDoodle />}
+      {tab === 'events' ? <EventsDoodle /> : <CoursesDoodle />}
       <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
       <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">{body}</p>
       {ctaHref && ctaLabel && (

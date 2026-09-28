@@ -119,7 +119,7 @@ export function ExamPreviewWorkspace({
             <ul className="mt-2 space-y-1 text-xs leading-relaxed text-amber-900/80">
               {plan.hubListed && (
                 <li>
-                  · You register for this exam from the Exams hub
+                  · You register for this exam from Explore &gt; Exams
                   {exam.tieType ? ` after completing ${exam.tiedContentTitle ?? "the tied content"}` : ""}.
                 </li>
               )}
@@ -161,7 +161,7 @@ export function ExamPreviewWorkspace({
             <ul className="mt-2 space-y-1 text-xs leading-relaxed text-amber-900/80">
               {plan.hubListed && (
                 <li>
-                  · You register for this exam from the Exams hub
+                  · You register for this exam from Explore &gt; Exams
                   {exam.tieType ? ` after completing ${exam.tiedContentTitle ?? "the tied content"}` : ""}.
                 </li>
               )}
