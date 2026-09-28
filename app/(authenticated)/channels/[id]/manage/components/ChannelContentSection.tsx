@@ -2,11 +2,113 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, FileText, Search } from 'lucide-react';
+import {
+  ArrowUpRight,
+  BookOpen,
+  Calendar,
+  ChevronRight,
+  FileText,
+  GraduationCap,
+  LayoutGrid,
+  List,
+  Map,
+  Search,
+  User,
+} from 'lucide-react';
 import type { ChannelContentItem } from '@/domains/channels';
 import { Panel } from '@/shared/design-system/ui/panel';
 import { cn } from '@/shared/utils/utils';
 import { CONTENT_STATUSES, ContentStatusPill, contentHref, statusOf, typeLabel } from './contentStatus';
+
+interface CardProps {
+  item: ChannelContentItem;
+  channelId: string;
+  openReviews: Record<string, string>;
+}
+
+/** One content item as an Explore-style rich card. */
+export function ContentCard({ item, channelId, openReviews }: CardProps) {
+  const href = contentHref(item, channelId, openReviews);
+  const typeStr = item.type?.toUpperCase() || '';
+
+  const TypeIcon =
+    typeStr === 'COURSE'
+      ? BookOpen
+      : typeStr === 'WORKSHOP' || typeStr === 'EVENT' || typeStr === 'WEBINAR'
+      ? Calendar
+      : typeStr === 'EXAM' || typeStr === 'ASSESSMENT'
+      ? GraduationCap
+      : typeStr === 'ROADMAP'
+      ? Map
+      : FileText;
+
+  const card = (
+    <div className="group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_4px_16px_rgba(20,20,43,0.03)] transition-all duration-200 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-[0_12px_30px_rgba(20,20,43,0.08)] dark:border-neutral-800 dark:bg-neutral-900">
+      {/* Top Banner Image / Fallback Glyph */}
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 dark:bg-neutral-800">
+        {item.coverImageUrl ? (
+          <img
+            src={item.coverImageUrl}
+            alt={item.title || ''}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-50 via-slate-100 to-indigo-50/40 text-slate-400 dark:from-neutral-800 dark:to-neutral-900">
+            <TypeIcon size={28} className="text-slate-300 dark:text-neutral-600" />
+          </div>
+        )}
+
+        {/* Floating Top Badges */}
+        <div className="absolute inset-x-2.5 top-2.5 flex items-center justify-between gap-1.5 pointer-events-none">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#12141C]/80 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-xs">
+            <TypeIcon size={10} />
+            {typeLabel(item.type)}
+          </span>
+          <ContentStatusPill status={item.status} />
+        </div>
+      </div>
+
+      {/* Card Content Details */}
+      <div className="flex flex-1 flex-col justify-between p-3.5 sm:p-4">
+        <div>
+          <h4 className="line-clamp-2 text-[14px] font-bold tracking-tight text-[#14142b] transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
+            {item.title || 'Untitled'}
+          </h4>
+
+          {item.authorName && (
+            <p className="mt-1.5 flex items-center gap-1 text-[11.5px] font-medium text-slate-500">
+              <User size={11} className="text-slate-400 shrink-0" />
+              <span className="truncate">
+                {item.authorName}
+                {item.authorUsername && <span className="text-slate-400"> (@{item.authorUsername})</span>}
+              </span>
+            </p>
+          )}
+        </div>
+
+        {/* Card Footer */}
+        <div className="mt-3.5 flex items-center justify-between border-t border-slate-100 pt-2.5 text-[11px] font-medium text-slate-400 dark:border-neutral-800">
+          <span>Updated {new Date(item.updatedAt).toLocaleDateString()}</span>
+          {href && (
+            <span className="inline-flex items-center gap-0.5 font-semibold text-indigo-600 transition-transform group-hover:translate-x-0.5 dark:text-indigo-400">
+              Manage <ArrowUpRight size={12} />
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  if (!href) {
+    return <div className="h-full cursor-default">{card}</div>;
+  }
+
+  return (
+    <Link href={href} className="block h-full outline-none">
+      {card}
+    </Link>
+  );
+}
 
 interface RowProps {
   item: ChannelContentItem;
@@ -15,7 +117,7 @@ interface RowProps {
   compact?: boolean;
 }
 
-/** One content item as a list row. Shared by the overview's "recently updated" and the content list. */
+/** One content item as a list row. */
 export function ContentRow({ item, channelId, openReviews, compact }: RowProps) {
   const href = contentHref(item, channelId, openReviews);
   const body = (
@@ -71,12 +173,11 @@ interface Props {
 }
 
 /**
- * Everything this channel holds, filterable by status and type. Rows open the item's studio
- * overview (or its open review) — status changes happen there, through the review pipeline,
- * never as a local toggle here.
+ * Everything this channel holds, filterable by status and type.
  */
 export function ChannelContentSection({ channelId, content, openReviews, initialStatus }: Props) {
   const [query, setQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [status, setStatus] = useState<string>(
     CONTENT_STATUSES.some((s) => s.id === initialStatus) ? initialStatus! : 'ALL',
   );
@@ -111,7 +212,7 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
   const filters = [{ id: 'ALL', label: 'All', count: content.length }, ...CONTENT_STATUSES.map((s) => ({ ...s, count: counts[s.id] ?? 0 }))];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap gap-1.5">
           {filters.map((f) => (
@@ -139,7 +240,7 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
           ))}
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {types.length > 1 && (
             <select
               value={type}
@@ -155,7 +256,8 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
               ))}
             </select>
           )}
-          <div className="relative w-full sm:w-64">
+
+          <div className="relative w-full sm:w-56">
             <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="search"
@@ -165,29 +267,61 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
               className="h-9 w-full rounded-full border border-slate-200 bg-white pl-9 pr-3 text-[12.5px] font-medium text-slate-800 placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
             />
           </div>
+
+          <div className="hidden sm:flex items-center rounded-full border border-slate-200 bg-white p-0.5">
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className={cn(
+                'flex h-7.5 w-7.5 items-center justify-center rounded-full transition-colors',
+                viewMode === 'grid' ? 'bg-[#14142b] text-white' : 'text-slate-500 hover:text-slate-800',
+              )}
+              title="Grid view"
+            >
+              <LayoutGrid size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className={cn(
+                'flex h-7.5 w-7.5 items-center justify-center rounded-full transition-colors',
+                viewMode === 'list' ? 'bg-[#14142b] text-white' : 'text-slate-500 hover:text-slate-800',
+              )}
+              title="List view"
+            >
+              <List size={14} />
+            </button>
+          </div>
         </div>
       </div>
 
-      <Panel padded={false} className="p-2">
-        {filtered.length === 0 ? (
-          <div className="px-6 py-14 text-center">
-            <p className="text-[14px] font-semibold text-[#14142b]">
-              {content.length === 0 ? 'No content yet' : 'Nothing matches these filters'}
-            </p>
-            <p className="mt-1 text-[12.5px] font-medium text-slate-500">
-              {content.length === 0
-                ? 'Content created in Studio for this channel shows up here.'
-                : 'Try another status, type or search term.'}
-            </p>
-          </div>
-        ) : (
+      {filtered.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white/60 px-6 py-14 text-center dark:border-neutral-800 dark:bg-neutral-900/60">
+          <p className="text-[14px] font-semibold text-[#14142b] dark:text-white">
+            {content.length === 0 ? 'No content yet' : 'Nothing matches these filters'}
+          </p>
+          <p className="mt-1 text-[12.5px] font-medium text-slate-500">
+            {content.length === 0
+              ? 'Content created in Studio for this channel shows up here.'
+              : 'Try another status, type or search term.'}
+          </p>
+        </div>
+      ) : viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filtered.map((item) => (
+            <ContentCard key={item.id} item={item} channelId={channelId} openReviews={openReviews} />
+          ))}
+        </div>
+      ) : (
+        <Panel padded={false} className="p-2">
           <ul className="divide-y divide-slate-100 dark:divide-neutral-800">
             {filtered.map((item) => (
               <ContentRow key={item.id} item={item} channelId={channelId} openReviews={openReviews} />
             ))}
           </ul>
-        )}
-      </Panel>
+        </Panel>
+      )}
     </div>
   );
 }
+

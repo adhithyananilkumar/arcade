@@ -85,7 +85,6 @@ export default function ManageChannelPage() {
   const [loading, setLoading] = useState(true);
   const [openReviews, setOpenReviews] = useState<Record<string, string>>({});
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!channelId) return;
@@ -202,71 +201,20 @@ export default function ManageChannelPage() {
   if (!channel) return null;
 
   const isSuspended = channel.status === 'SUSPENDED';
-  const publicPath = channel.handle ? `/${channel.handle}` : `/channels/${channel.id}`;
-
-  const copyPublicLink = async () => {
-    try {
-      await navigator.clipboard.writeText(`${window.location.origin}${publicPath}`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error('Could not copy the link');
-    }
-  };
-
-  const outlineBtn =
-    'inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[12px] font-semibold text-slate-700 transition-colors hover:bg-slate-50';
   const primaryBtn =
     'inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#14142b] px-3.5 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#232735]';
 
   const headerActions =
-    active === 'overview' ? (
-      <>
-        {canEdit && (
-          <button type="button" onClick={() => setIsEditOpen(true)} className={primaryBtn}>
-            <Edit3 size={13} /> Edit profile
-          </button>
-        )}
-        <Link href={publicPath} className={outlineBtn}>
-          <ExternalLink size={13} /> View public page
-        </Link>
-        <button type="button" onClick={copyPublicLink} className={outlineBtn}>
-          {copied ? <Check size={13} /> : <Link2 size={13} />} {copied ? 'Copied' : 'Copy link'}
-        </button>
-      </>
-    ) : active === 'content' ? (
+    active === 'content' ? (
       <Link href="/studio" className={primaryBtn}>
         <Plus size={13} /> Create in Studio
       </Link>
     ) : null;
 
   return (
-    <div className="min-h-screen bg-white px-4 pb-16 pt-24 sm:px-6 md:px-10 md:pt-28 dark:bg-[#202124]">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 md:flex-row md:items-start md:gap-12">
-        <aside className="w-full shrink-0 md:sticky md:top-28 md:w-[240px]">
-          <Link
-            href="/manage-channels"
-            className="mb-3 inline-flex items-center gap-1.5 px-1 text-[12px] font-semibold text-slate-500 transition-colors hover:text-slate-800"
-          >
-            <ArrowLeft size={13} /> All channels
-          </Link>
-
-          <div className="mb-5 flex items-center gap-3 rounded-2xl border border-slate-200/80 p-2.5 dark:border-neutral-800">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-indigo-500 via-purple-600 to-slate-900 text-white">
-              {channel.iconUrl ? (
-                <img src={channel.iconUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <Building2 size={18} />
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-[13px] font-bold text-[#14142b] dark:text-white">{channel.name}</p>
-              <p className="truncate text-[11.5px] font-medium text-slate-500">
-                {channel.isPersonal ? 'Personal channel' : channel.handle ? `@${channel.handle}` : 'Organization'}
-              </p>
-            </div>
-          </div>
-
+    <div className="min-h-screen bg-white px-4 pb-16 pt-24 sm:px-6 md:px-8 lg:px-10 md:pt-28 dark:bg-[#202124]">
+      <div className="flex w-full flex-col gap-6 md:flex-row md:items-start md:gap-8 lg:gap-10">
+        <aside className="w-full shrink-0 md:sticky md:top-28 md:w-[220px] lg:w-[240px]">
           <SideNav sections={sections} activeKey={active} ariaLabel="Channel dashboard" className="hidden md:flex" />
           <SideNavTabs
             items={sections.flatMap((s) => s.items)}
@@ -289,11 +237,13 @@ export default function ManageChannelPage() {
             </Notice>
           )}
 
-          <PageHeader
-            title={SECTION_COPY[active].title}
-            description={SECTION_COPY[active].description}
-            actions={headerActions}
-          />
+          {active !== 'overview' && (
+            <PageHeader
+              title={SECTION_COPY[active].title}
+              description={SECTION_COPY[active].description}
+              actions={headerActions}
+            />
+          )}
 
           {active === 'overview' && (
             <ChannelOverview
@@ -304,6 +254,7 @@ export default function ManageChannelPage() {
               canReview={canReview}
               tabHref={tabHref}
               onChannelUpdate={setChannel}
+              onEditProfile={() => setIsEditOpen(true)}
             />
           )}
           {active === 'content' && (

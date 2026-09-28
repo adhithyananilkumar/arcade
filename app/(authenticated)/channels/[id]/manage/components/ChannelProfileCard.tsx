@@ -2,9 +2,22 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Building2, Calendar, Globe, Mail, Plus, User, X } from 'lucide-react';
+import {
+  Building2,
+  Calendar,
+  Check,
+  Edit3,
+  ExternalLink,
+  Globe,
+  Link2,
+  Mail,
+  Plus,
+  User,
+  X,
+} from 'lucide-react';
 import type { Channel } from '@/domains/channels';
 import { Panel } from '@/shared/design-system/ui/panel';
+import { toast } from 'sonner';
 import { ChannelDoodleBanner } from '../ChannelDoodleBanner';
 import { ChannelSocialLinksCard } from '../ChannelSocialLinksCard';
 
@@ -64,18 +77,35 @@ function socialPlatform(link: string): { icon: React.ComponentType<IconProps>; l
 }
 
 const chip =
-  'flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-[#14142b]';
+  'flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-[#14142b] dark:border-neutral-700 dark:bg-neutral-800 dark:text-slate-200';
+
+const actionBtn =
+  'inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200/90 bg-white px-3.5 py-1.5 text-[12px] font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-slate-200 dark:hover:bg-neutral-700';
 
 interface Props {
   channel: Channel;
   canEdit: boolean;
   onUpdate: (channel: Channel) => void;
+  onEditProfile?: () => void;
 }
 
 /** The channel as the world sees it — banner, mark, name, owner, links — in one compact card. */
-export function ChannelProfileCard({ channel, canEdit, onUpdate }: Props) {
+export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }: Props) {
   const [socialOpen, setSocialOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const links = (channel.socialLinks ?? []).filter(Boolean);
+  const publicPath = channel.handle ? `/${channel.handle}` : `/channels/${channel.id}`;
+
+  const copyPublicLink = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}${publicPath}`);
+      setCopied(true);
+      toast.success('Link copied to clipboard');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Could not copy the link');
+    }
+  };
 
   return (
     <>
@@ -122,27 +152,46 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate }: Props) {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            {canEdit && onEditProfile && (
+              <button
+                type="button"
+                onClick={onEditProfile}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#14142b] px-3.5 py-1.5 text-[12px] font-semibold text-white shadow-xs transition-colors hover:bg-[#232735]"
+              >
+                <Edit3 size={13} /> Edit profile
+              </button>
+            )}
+
+            <Link href={publicPath} className={actionBtn}>
+              <ExternalLink size={13} /> View public page
+            </Link>
+
+            <button type="button" onClick={copyPublicLink} className={actionBtn}>
+              {copied ? <Check size={13} className="text-emerald-600" /> : <Link2 size={13} />}
+              {copied ? 'Copied' : 'Copy link'}
+            </button>
+
             {links.map((link) => {
               const platform = socialPlatform(link);
               if (!platform) return null;
               const Icon = platform.icon;
               return (
                 <a key={link} href={link} target="_blank" rel="noreferrer" className={chip} title={platform.label}>
-                  <Icon size={15} />
+                  <Icon size={14} />
                 </a>
               );
             })}
             {channel.ownerEmail && (
               <a href={`mailto:${channel.ownerEmail}`} className={chip} title={`Email ${channel.ownerEmail}`}>
-                <Mail size={15} />
+                <Mail size={14} />
               </a>
             )}
             {canEdit && (
               <button
                 type="button"
                 onClick={() => setSocialOpen(true)}
-                className="flex h-8 cursor-pointer items-center gap-1 rounded-xl border border-dashed border-slate-300 px-2.5 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-400 hover:bg-slate-50"
+                className="flex h-8 cursor-pointer items-center gap-1 rounded-xl border border-dashed border-slate-300 px-2.5 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-400 hover:bg-slate-50 dark:border-neutral-700 dark:text-slate-300"
                 title="Manage social links"
               >
                 <Plus size={14} />

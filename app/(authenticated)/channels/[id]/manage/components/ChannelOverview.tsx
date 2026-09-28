@@ -6,7 +6,7 @@ import type { Channel, ChannelContentItem } from '@/domains/channels';
 import { Panel } from '@/shared/design-system/ui/panel';
 import { SectionHeader } from '@/shared/design-system/ui/page-header';
 import { ChannelProfileCard } from './ChannelProfileCard';
-import { ContentRow } from './ChannelContentSection';
+import { ContentCard } from './ChannelContentSection';
 import { statusOf } from './contentStatus';
 
 interface Props {
@@ -18,6 +18,7 @@ interface Props {
   /** Builds a link to another section of this dashboard, e.g. `tabHref('content', { status: 'DRAFT' })`. */
   tabHref: (tab: string, params?: Record<string, string>) => string;
   onChannelUpdate: (channel: Channel) => void;
+  onEditProfile?: () => void;
 }
 
 export function ChannelOverview({
@@ -28,6 +29,7 @@ export function ChannelOverview({
   canReview,
   tabHref,
   onChannelUpdate,
+  onEditProfile,
 }: Props) {
   const count = (status: string) => content.filter((c) => statusOf(c) === status).length;
   const openReviewCount = Object.keys(openReviews).length;
@@ -41,11 +43,16 @@ export function ChannelOverview({
 
   const recent = [...content]
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-    .slice(0, 5);
+    .slice(0, 8);
 
   return (
     <div className="space-y-6">
-      <ChannelProfileCard channel={channel} canEdit={canEdit} onUpdate={onChannelUpdate} />
+      <ChannelProfileCard
+        channel={channel}
+        canEdit={canEdit}
+        onUpdate={onChannelUpdate}
+        onEditProfile={onEditProfile}
+      />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map((s) => {
@@ -107,11 +114,11 @@ export function ChannelOverview({
             Nothing published to this channel yet. Content you create in Studio for this channel appears here.
           </p>
         ) : (
-          <ul className="-mx-2 divide-y divide-slate-100 dark:divide-neutral-800">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {recent.map((item) => (
-              <ContentRow key={item.id} item={item} channelId={channel.id} openReviews={openReviews} compact />
+              <ContentCard key={item.id} item={item} channelId={channel.id} openReviews={openReviews} />
             ))}
-          </ul>
+          </div>
         )}
       </Panel>
     </div>
