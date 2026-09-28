@@ -579,26 +579,6 @@ export const CourseCard: React.FC<CourseCardProps> = ({
             <div style={{ color: activeData.colors.primary, opacity: 0.25 }}>
               {getCourseGlyph(course.title, index, activeData.colors.primary)}
             </div>
-
-            {/* Level pill */}
-            <div
-              style={{
-                position: "absolute",
-                top: "10px",
-                right: "12px",
-                background: "rgba(255, 255, 255, 0.9)",
-                backdropFilter: "blur(6px)",
-                WebkitBackdropFilter: "blur(6px)",
-                padding: "3px 8px",
-                borderRadius: "6px",
-                fontSize: "0.7rem",
-                fontWeight: "600",
-                color: "#5A5870",
-                border: "1px solid #E6E3F1"
-              }}
-            >
-              {course.level}
-            </div>
           </div>
 
           <div style={{ padding: "16px 16px 14px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "8px" }}>
