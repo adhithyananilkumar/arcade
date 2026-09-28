@@ -460,27 +460,33 @@ function ChannelRowItem({ channel }: { channel: Row }) {
             )}
           </div>
           <p className="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-            {channel.status === 'PENDING' ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 font-bold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                <Clock size={11} /> Awaiting approval
-              </span>
-            ) : channel.status === 'SUSPENDED' ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 dark:bg-rose-950/60 px-2.5 py-0.5 font-bold text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-                Suspended
-              </span>
-            ) : channel.status === 'REJECTED' ? (
-              <span
-                className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 font-bold text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700"
-                title={channel.rejectionReason || undefined}
-              >
-                <XCircle size={11} /> Rejected
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                <CheckCircle size={11} /> Active
-              </span>
+            {channel.status === 'PENDING' && (
+              <>
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 font-bold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                  <Clock size={11} /> Awaiting approval
+                </span>
+                <span>·</span>
+              </>
             )}
-            <span>·</span>
+            {channel.status === 'SUSPENDED' && (
+              <>
+                <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 dark:bg-rose-950/60 px-2.5 py-0.5 font-bold text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                  Suspended
+                </span>
+                <span>·</span>
+              </>
+            )}
+            {channel.status === 'REJECTED' && (
+              <>
+                <span
+                  className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 font-bold text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700"
+                  title={channel.rejectionReason || undefined}
+                >
+                  <XCircle size={11} /> Rejected
+                </span>
+                <span>·</span>
+              </>
+            )}
             <span className="inline-flex items-center gap-1">
               {channel.isPersonal ? (
                 <span>Personal</span>
