@@ -66,6 +66,7 @@
     "katex": "^0.17.0",
     "konva": "^9.3.22",
     "lib0": "^0.2.117",
+    "libphonenumber-js": "^1.13.14",
     "lodash.debounce": "^4.0.8",
     "lottie-react": "^2.4.1",
     "lowlight": "^3.3.0",

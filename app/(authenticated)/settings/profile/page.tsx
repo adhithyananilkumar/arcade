@@ -15,8 +15,15 @@
  * ------------------------------------------------------------------
  */
 
-import { ProfileSettingsOrchestrator } from '@/apps/learner/orchestrators/ProfileSettingsOrchestrator';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function ProfileSettingsPage() {
-  return <ProfileSettingsOrchestrator />;
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/settings/info');
+  }, [router]);
+
+  return null;
 }

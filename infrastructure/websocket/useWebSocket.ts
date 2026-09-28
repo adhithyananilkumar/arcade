@@ -5,6 +5,8 @@ import { Client } from '@stomp/stompjs';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { WS_ORIGIN } from '@/infrastructure/config/env';
 
+import { getValidAccessToken } from '@/infrastructure/auth/jwt';
+
 export function toBrokerUrl(httpBase: string): string {
   const base = httpBase.replace(/\/$/, '');
   if (base.startsWith('https://')) return `wss://${base.slice('https://'.length)}/ws`;
@@ -66,9 +68,37 @@ export function useWebSocket() {
       reconnectDelay: 5000,
       onConnect: () => setConnected(true),
       onDisconnect: () => setConnected(false),
-      onStompError: () => setConnected(false),
+      onStompError: async (frame) => {
+        setConnected(false);
+        const message = frame.headers['message'] || '';
+        const isAuthError =
+          message.includes('STOMP CONNECT rejected') ||
+          message.includes('invalid token') ||
+          message.includes('Authorization');
+
+        if (isAuthError) {
+          client.reconnectDelay = 0;
+          void client.deactivate();
+          const freshToken = await getValidAccessToken();
+          if (!freshToken) {
+            useAuthStore.getState().clearAuth();
+          }
+        }
+      },
       onWebSocketClose: () => setConnected(false),
     });
+
+    client.beforeConnect = async () => {
+      const validToken = await getValidAccessToken();
+      if (!validToken) {
+        client.reconnectDelay = 0;
+        void client.deactivate();
+        return;
+      }
+      client.connectHeaders = {
+        Authorization: `Bearer ${validToken}`,
+      };
+    };
 
     client.activate();
     clientRef.current = client;

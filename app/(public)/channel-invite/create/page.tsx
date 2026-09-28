@@ -10,11 +10,14 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, useReducedMotion, Variants } from 'framer-motion';
-import { ArrowUpRight, Upload, CheckCircle2 } from 'lucide-react';
+import { ArrowUpRight, Upload, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { channelService, ChannelApplicantInput, ChannelOrganizationInput } from '@/domains/channels';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { PebbleLoader } from '@/domains/identity/components/PebbleLoader';
+import { PhoneInput } from '@/shared/design-system/ui/phone-input';
+import { validateDateOfBirth, getTodayDateString, UNDER_AGE_ERROR_MESSAGE } from '@/shared/utils/dob';
+import { cn } from '@/shared/utils/utils';
 import '@/apps/public/landing.css';
 
 // Subtle stagger reveal variants (shared editorial motion language — see /reach-us)
@@ -58,16 +61,23 @@ function EditorialBackdrop() {
 interface FormFieldProps {
   label: string;
   required?: boolean;
+  error?: string;
   children: React.ReactNode;
 }
 
-function FormField({ label, required, children }: FormFieldProps) {
+function FormField({ label, required, error, children }: FormFieldProps) {
   return (
     <div className="space-y-2">
       <label className="block text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold">
         {label} {required && <span className="text-blue-600">*</span>}
       </label>
       {children}
+      {error && (
+        <p className="text-xs text-red-600 font-medium flex items-center gap-1.5 mt-1.5 animate-in fade-in duration-150">
+          <AlertCircle size={13} className="shrink-0" />
+          <span>{error}</span>
+        </p>
+      )}
     </div>
   );
 }
@@ -154,6 +164,8 @@ function ChannelInviteCreateContent() {
   const [iconPreview, setIconPreview] = useState<string | null>(null);
 
   const [applicant, setApplicant] = useState(emptyApplicant);
+  const [isPhoneValid, setIsPhoneValid] = useState(false);
+  const [dobError, setDobError] = useState('');
   const [personalIdProofDocument, setPersonalIdProofDocument] = useState<File | null>(null);
 
   const [organization, setOrganization] = useState(emptyOrganization);
@@ -215,6 +227,17 @@ function ChannelInviteCreateContent() {
         toast.error('Please fill in all applicant details.');
         return;
       }
+    }
+    if (!isPhoneValid) {
+      toast.error('Enter a valid phone number for the selected country.');
+      return;
+    }
+    const dobValidation = validateDateOfBirth(applicant.dateOfBirth, 16, true);
+    if (!dobValidation.isValid) {
+      const msg = dobValidation.error || UNDER_AGE_ERROR_MESSAGE;
+      setDobError(msg);
+      toast.error(msg);
+      return;
     }
     if (!personalIdProofDocument) {
       toast.error('Please upload your ID proof document.');
@@ -440,13 +463,38 @@ function ChannelInviteCreateContent() {
                     <input type="text" className={inputClass} placeholder="e.g. Rahul Sharma" value={applicant.fullName} onChange={(e) => updateApplicant('fullName', e.target.value)} required />
                   </FormField>
                   <FormField label="Phone Number" required>
-                    <input type="tel" className={inputClass} placeholder="+91 98765 43210" value={applicant.phoneNumber} onChange={(e) => updateApplicant('phoneNumber', e.target.value)} required />
+                    <PhoneInput
+                      variant="underline"
+                      value={applicant.phoneNumber}
+                      required
+                      onChange={(val, meta) => {
+                        updateApplicant('phoneNumber', val);
+                        setIsPhoneValid(meta.isValid);
+                      }}
+                      onValidate={(valid) => setIsPhoneValid(valid)}
+                    />
                   </FormField>
                   <FormField label="Email Address" required>
                     <input type="email" className={inputClass} placeholder="rahul@example.com" value={applicant.email} onChange={(e) => updateApplicant('email', e.target.value)} required />
                   </FormField>
-                  <FormField label="Date of Birth" required>
-                    <input type="date" className={inputClass} value={applicant.dateOfBirth} onChange={(e) => updateApplicant('dateOfBirth', e.target.value)} required />
+                  <FormField label="Date of Birth" required error={dobError}>
+                    <input
+                      type="date"
+                      className={cn(inputClass, dobError && "border-red-500 text-red-900 focus:border-red-500")}
+                      value={applicant.dateOfBirth}
+                      max={getTodayDateString()}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        updateApplicant('dateOfBirth', val);
+                        if (val) {
+                          const res = validateDateOfBirth(val, 16);
+                          setDobError(res.error || '');
+                        } else {
+                          setDobError('');
+                        }
+                      }}
+                      required
+                    />
                   </FormField>
                   <FormField label="Gender" required>
                     <select className={selectClass} value={applicant.gender} onChange={(e) => updateApplicant('gender', e.target.value)} required>
@@ -636,7 +684,7 @@ function ChannelInviteCreateContent() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || Boolean(dobError)}
                   className="relative inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-[#0B132B] hover:bg-[#205ca8] text-white font-medium text-sm tracking-wide shadow-sm hover:shadow-md transition-all duration-300 ease-out group disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (

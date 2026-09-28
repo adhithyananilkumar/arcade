@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { FaLinkedin } from 'react-icons/fa';
 import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
+import { PhoneInput } from '@/shared/design-system/ui/phone-input';
 
 
 function ProfilePageContent() {
@@ -50,6 +51,7 @@ function ProfilePageContent() {
   const [editLinkedinUrl, setEditLinkedinUrl] = useState('');
   const [editGithubUrl, setEditGithubUrl] = useState('');
   const [editMobileNumber, setEditMobileNumber] = useState('');
+  const [isMobileValid, setIsMobileValid] = useState(true);
   const [editGender, setEditGender] = useState('MALE');
   const [editAddress, setEditAddress] = useState('');
 
@@ -161,6 +163,11 @@ function ProfilePageContent() {
 
     if (usernameAvailable === false) {
       toast.error('The selected username is already taken. Please choose another.');
+      return;
+    }
+
+    if (editMobileNumber && !isMobileValid) {
+      toast.error('Enter a valid phone number for the selected country.');
       return;
     }
 
@@ -790,13 +797,13 @@ function ProfilePageContent() {
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
                         <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">Mobile</label>
-                        <input
-                          type="text"
-                          required
+                        <PhoneInput
                           value={editMobileNumber}
-                          onChange={(e) => setEditMobileNumber(e.target.value)}
-                          placeholder="+91 XXXXX XXXXX"
-                          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition focus:border-purple-600 focus:ring-1 focus:ring-purple-600"
+                          onChange={(val, meta) => {
+                            setEditMobileNumber(val);
+                            setIsMobileValid(meta.isValid);
+                          }}
+                          onValidate={(valid) => setIsMobileValid(valid)}
                         />
                       </div>
                       <div>

@@ -18,6 +18,7 @@ import {
   CalendarCheck,
 } from "lucide-react";
 import { api } from "@/infrastructure/http/api";
+import { PhoneInput } from "@/shared/design-system/ui/phone-input";
 import type { FetchResult, EventParticipant } from "../../lib/fetchOverviewData";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -246,6 +247,7 @@ function AddMemberModal({
     paymentStatus: "FREE",
     notes: "",
   });
+  const [isPhoneValid, setIsPhoneValid] = useState(true);
   const [saving, setSaving] = useState(false);
 
   function update(k: string, v: string) {
@@ -255,6 +257,10 @@ function AddMemberModal({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim()) return;
+    if (form.phone.trim() && !isPhoneValid) {
+      toast.error('Enter a valid phone number for the selected country.');
+      return;
+    }
     setSaving(true);
     try {
       await api.post(`/api/v1/events/${eventId}/participants`, {
@@ -315,12 +321,13 @@ function AddMemberModal({
             </div>
             <div className="col-span-2 sm:col-span-1">
               <label className={labelCls}>Phone (optional)</label>
-              <input
-                type="tel"
+              <PhoneInput
                 value={form.phone}
-                onChange={(e) => update("phone", e.target.value)}
-                className={inputCls}
-                placeholder="+91 98765 43210"
+                onChange={(val, meta) => {
+                  update("phone", val);
+                  setIsPhoneValid(meta.isValid);
+                }}
+                onValidate={(valid) => setIsPhoneValid(valid)}
               />
             </div>
             <div className="col-span-2 sm:col-span-1">

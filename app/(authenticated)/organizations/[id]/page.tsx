@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { API_V1_BASE_URL } from '@/infrastructure/config/env';
+import { PhoneInput } from '@/shared/design-system/ui/phone-input';
 
 export default function OrganizationDetailsPage() {
   const { id } = useParams();
@@ -33,6 +34,7 @@ export default function OrganizationDetailsPage() {
   const [description, setDescription] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [isPhoneValid, setIsPhoneValid] = useState(true);
   const [adminName, setAdminName] = useState('');
   const [adminTitle, setAdminTitle] = useState('');
   const [address, setAddress] = useState('');
@@ -80,6 +82,12 @@ export default function OrganizationDetailsPage() {
     setIsSavingSettings(true);
     setSettingsSuccess(false);
     setSettingsError('');
+
+    if (phone && !isPhoneValid) {
+      setSettingsError('Enter a valid phone number for the selected country.');
+      setIsSavingSettings(false);
+      return;
+    }
 
     try {
       const updatedOrg = await OrganizationService.updateOrgProfile(id as string, {
@@ -540,11 +548,13 @@ export default function OrganizationDetailsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                <input
-                  type="text"
+                <PhoneInput
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2.5 border"
+                  onChange={(val, meta) => {
+                    setPhone(val);
+                    setIsPhoneValid(meta.isValid);
+                  }}
+                  onValidate={(valid) => setIsPhoneValid(valid)}
                 />
               </div>
 

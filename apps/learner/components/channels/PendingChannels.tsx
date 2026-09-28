@@ -41,6 +41,7 @@ import {
 import { toast } from 'sonner';
 import { usePermissions } from "@/domains/identity";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
+import { cn } from '@/shared/utils/utils';
 
 type StatusFilter = 'ALL' | 'PENDING' | 'ACTIVE' | 'SUSPENDED';
 type TypeFilter = 'ALL' | 'PERSONAL' | 'ORGANIZATION';
@@ -995,73 +996,108 @@ export function PendingChannels() {
 
       {/* Modal: Channel Details */}
       <Dialog open={!!selectedRow} onOpenChange={(open) => !open && setSelectedRow(null)}>
-        <DialogContent className="max-w-lg p-6 sm:p-7">
+        <DialogContent className="max-w-4xl lg:max-w-5xl w-[94vw] p-6 sm:p-8 max-h-[90vh] overflow-y-auto overflow-x-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-2xl border border-slate-200 shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-slate-900">Channel Overview</DialogTitle>
+            <DialogTitle className="text-lg font-bold text-slate-900 tracking-tight">Channel Overview</DialogTitle>
           </DialogHeader>
 
           {selectedChannel && (
-            <div className="space-y-6 mt-4">
+            <div className="space-y-5 mt-2">
               {/* Channel Header Banner/Avatar */}
-              <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-                <div className="flex size-14 items-center justify-center rounded-2xl bg-white text-slate-800 overflow-hidden shrink-0 shadow-sm border border-slate-200/60">
-                  {selectedChannel.iconUrl ? (
-                    <img
-                      src={selectedChannel.iconUrl}
-                      alt={selectedChannel.name}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <Tv size={26} />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1 space-y-1">
-                  <h3 className="text-base font-bold text-slate-900 leading-tight">
-                    {selectedChannel.name}
-                  </h3>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold border ${
-                        selectedChannel.isPersonal
-                          ? 'border-sky-200 bg-sky-50 text-sky-700'
-                          : 'border-slate-200 bg-slate-50 text-slate-700'
-                      }`}
-                    >
-                      {selectedChannel.isPersonal ? 'Personal' : 'Organization'}
-                    </span>
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
-                        selectedChannel.status === 'ACTIVE'
-                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                          : selectedChannel.status === 'SUSPENDED'
-                          ? 'border-rose-200 bg-rose-50 text-rose-700'
-                          : selectedChannel.status === 'REJECTED'
-                          ? 'border-slate-200 bg-slate-100 text-slate-600'
-                          : 'border-amber-200 bg-amber-50 text-amber-700'
-                      }`}
-                    >
-                      {selectedChannel.status || 'PENDING'}
-                    </span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50/60">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="flex size-13 items-center justify-center rounded-xl bg-white text-slate-700 overflow-hidden shrink-0 border border-slate-200/80 shadow-2xs">
+                    {selectedChannel.iconUrl ? (
+                      <img
+                        src={selectedChannel.iconUrl}
+                        alt={selectedChannel.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <Tv size={24} className="text-slate-500" />
+                    )}
+                  </div>
+                  <div className="min-w-0 space-y-1">
+                    <h3 className="text-base sm:text-lg font-semibold text-slate-900 leading-snug truncate">
+                      {selectedChannel.name}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium border border-slate-200 bg-white text-slate-600">
+                        {selectedChannel.isPersonal ? 'Personal' : 'Organization'}
+                      </span>
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-medium border ${
+                          selectedChannel.status === 'ACTIVE'
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                            : selectedChannel.status === 'SUSPENDED'
+                            ? 'border-rose-200 bg-rose-50 text-rose-700'
+                            : selectedChannel.status === 'REJECTED'
+                            ? 'border-slate-200 bg-slate-100 text-slate-600'
+                            : 'border-amber-200 bg-amber-50 text-amber-700'
+                        }`}
+                      >
+                        <span
+                          className={`size-1.5 rounded-full ${
+                            selectedChannel.status === 'ACTIVE'
+                              ? 'bg-emerald-500'
+                              : selectedChannel.status === 'SUSPENDED'
+                              ? 'bg-rose-500'
+                              : selectedChannel.status === 'REJECTED'
+                              ? 'bg-slate-400'
+                              : 'bg-amber-500'
+                          }`}
+                        />
+                        {selectedChannel.status || 'PENDING'}
+                      </span>
+                    </div>
                   </div>
                 </div>
+
+                {selectedChannel.createdAt && (
+                  <div className="text-left sm:text-right shrink-0">
+                    <span className="block text-[11px] font-medium text-slate-400">Submitted</span>
+                    <span className="text-xs font-medium text-slate-600">
+                      {new Date(selectedChannel.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}
+                    </span>
+                  </div>
+                )}
               </div>
 
-              {/* Description */}
-              {selectedChannel.description && (
-                <div className="space-y-1.5">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                    Description
-                  </h4>
-                  <p className="text-xs text-slate-700 leading-relaxed bg-white p-3 rounded-xl border border-slate-200/80">
-                    {selectedChannel.description}
-                  </p>
+              {/* Description & Purpose Side-by-Side on Desktop */}
+              {(selectedChannel.description || selectedChannel.purpose) && (
+                <div className={cn(
+                  "grid gap-4",
+                  selectedChannel.description && selectedChannel.purpose
+                    ? "grid-cols-1 md:grid-cols-2"
+                    : "grid-cols-1"
+                )}>
+                  {selectedChannel.description && (
+                    <div className="space-y-1.5">
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                        Description
+                      </h4>
+                      <p className="text-sm text-slate-700 leading-relaxed bg-white p-3.5 rounded-xl border border-slate-200 min-h-[72px]">
+                        {selectedChannel.description}
+                      </p>
+                    </div>
+                  )}
+                  {selectedChannel.purpose && (
+                    <div className="space-y-1.5">
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                        Purpose
+                      </h4>
+                      <p className="text-sm text-slate-700 leading-relaxed bg-white p-3.5 rounded-xl border border-slate-200 min-h-[72px]">
+                        {selectedChannel.purpose}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Suspension Reason */}
               {selectedChannel.status === 'SUSPENDED' && selectedChannel.suspensionReason && (
                 <div className="space-y-1 bg-rose-50 p-3.5 rounded-xl border border-rose-200">
-                  <h4 className="text-xs font-bold text-rose-800 flex items-center gap-1.5">
+                  <h4 className="text-xs font-semibold text-rose-800 flex items-center gap-1.5">
                     <AlertTriangle size={13} /> Suspension Reason
                   </h4>
                   <p className="text-xs text-rose-700">{selectedChannel.suspensionReason}</p>
@@ -1071,183 +1107,238 @@ export function PendingChannels() {
               {/* Rejection Reason */}
               {selectedChannel.status === 'REJECTED' && selectedChannel.rejectionReason && (
                 <div className="space-y-1 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-                  <h4 className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <h4 className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
                     <AlertTriangle size={13} /> Rejection Reason
                   </h4>
                   <p className="text-xs text-slate-600">{selectedChannel.rejectionReason}</p>
                 </div>
               )}
 
-              {/* Purpose */}
-              {selectedChannel.purpose && (
+              {/* Applicant Details */}
+              {selectedChannel.applicantProfile && (
                 <div className="space-y-2">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                    Purpose
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                    <UserCircle2 size={13} className="text-slate-400" /> Applicant Details
                   </h4>
-                  <p className="text-xs text-slate-600 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 leading-relaxed">
-                    {selectedChannel.purpose}
-                  </p>
+                  <div className="rounded-xl border border-slate-200 bg-white p-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5 text-left">
+                      <div>
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Full Name</span>
+                        <span className="text-sm font-medium text-slate-900 break-words">
+                          {selectedChannel.applicantProfile.fullName || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Email</span>
+                        <span className="text-sm font-medium text-slate-900 break-all">
+                          {selectedChannel.applicantProfile.email || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Phone</span>
+                        <span className="text-sm font-medium text-slate-900">
+                          {selectedChannel.applicantProfile.phoneNumber || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Date of Birth</span>
+                        <span className="text-sm font-medium text-slate-900">
+                          {selectedChannel.applicantProfile.dateOfBirth || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Gender</span>
+                        <span className="text-sm font-medium text-slate-900 capitalize">
+                          {selectedChannel.applicantProfile.gender ? selectedChannel.applicantProfile.gender.toLowerCase().replace(/_/g, ' ') : '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Nationality</span>
+                        <span className="text-sm font-medium text-slate-900">
+                          {selectedChannel.applicantProfile.nationality || '—'}
+                        </span>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Address</span>
+                        <span className="text-sm font-medium text-slate-900 break-words leading-snug">
+                          {[
+                            selectedChannel.applicantProfile.address,
+                            selectedChannel.applicantProfile.city,
+                            selectedChannel.applicantProfile.state,
+                            selectedChannel.applicantProfile.country,
+                            selectedChannel.applicantProfile.pinCode,
+                          ]
+                            .filter(Boolean)
+                            .join(', ') || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">ID Proof Type</span>
+                        <span className="text-sm font-medium text-slate-900">
+                          {selectedChannel.applicantProfile.personalIdProofType || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">ID Proof Number</span>
+                        <span className="text-sm font-mono font-medium text-slate-900 tracking-tight">
+                          {selectedChannel.applicantProfile.personalIdProofNumber || '—'}
+                        </span>
+                      </div>
+                      {selectedChannel.applicantProfile.personalIdProofDocumentUrl && (
+                        <div className="sm:col-span-2 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-[11px] font-medium text-slate-500">ID Proof Document</span>
+                          <a
+                            href={selectedChannel.applicantProfile.personalIdProofDocumentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#205ca8] hover:text-[#184884] hover:underline transition-colors shrink-0"
+                          >
+                            <FileText size={14} className="text-slate-400" />
+                            <span>View ID Proof Document</span>
+                            <ExternalLink size={12} className="text-slate-400 ml-0.5" />
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {/* Applicant / Organization KYC — captured on the invite-gated creation request */}
-              {selectedChannel.applicantProfile && (
-                <div className="space-y-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                    <UserCircle2 size={13} /> Applicant Details
+              {/* Organization Details */}
+              {!selectedChannel.isPersonal && selectedChannel.applicantProfile && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                    <Building2 size={13} className="text-slate-400" /> Organization Details
                   </h4>
-                  <div className="grid grid-cols-2 gap-3 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 text-xs">
-                    <div>
-                      <span className="block text-[10px] font-medium text-slate-400">Full Name</span>
-                      <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.fullName}</span>
+                  <div className="rounded-xl border border-slate-200 bg-white p-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5 text-left">
+                      <div>
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Organization Name</span>
+                        <span className="text-sm font-medium text-slate-900 break-words">
+                          {selectedChannel.applicantProfile.organizationName || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Organization Type</span>
+                        <span className="text-sm font-medium text-slate-900">
+                          {selectedChannel.applicantProfile.organizationType || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Organization Email</span>
+                        <span className="text-sm font-medium text-slate-900 break-all">
+                          {selectedChannel.applicantProfile.organizationEmail || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Website</span>
+                        <span className="text-sm font-medium text-slate-900 break-all">
+                          {selectedChannel.applicantProfile.organizationWebsite ? (
+                            <a
+                              href={selectedChannel.applicantProfile.organizationWebsite.startsWith('http') ? selectedChannel.applicantProfile.organizationWebsite : `https://${selectedChannel.applicantProfile.organizationWebsite}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#205ca8] hover:underline inline-flex items-center gap-1"
+                            >
+                              {selectedChannel.applicantProfile.organizationWebsite}
+                              <ExternalLink size={11} />
+                            </a>
+                          ) : '—'}
+                        </span>
+                      </div>
+                      {selectedChannel.applicantProfile.organizationDescription && (
+                        <div className="sm:col-span-2">
+                          <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Description</span>
+                          <span className="text-sm text-slate-700 leading-relaxed">
+                            {selectedChannel.applicantProfile.organizationDescription}
+                          </span>
+                        </div>
+                      )}
+                      <div className="sm:col-span-2">
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Address</span>
+                        <span className="text-sm font-medium text-slate-900 break-words">
+                          {selectedChannel.applicantProfile.organizationAddress || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Registration Number</span>
+                        <span className="text-sm font-mono font-medium text-slate-900">
+                          {selectedChannel.applicantProfile.organizationRegistrationNumber || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Role in Organization</span>
+                        <span className="text-sm font-medium text-slate-900">
+                          {selectedChannel.applicantProfile.roleInOrganization || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Proof Number</span>
+                        <span className="text-sm font-mono font-medium text-slate-900">
+                          {selectedChannel.applicantProfile.organizationProofNumber || '—'}
+                        </span>
+                      </div>
+                      {selectedChannel.applicantProfile.organizationProofDocumentUrl && (
+                        <div className="sm:col-span-2 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-[11px] font-medium text-slate-500">Organization Proof Document</span>
+                          <a
+                            href={selectedChannel.applicantProfile.organizationProofDocumentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#205ca8] hover:text-[#184884] hover:underline transition-colors shrink-0"
+                          >
+                            <FileText size={14} className="text-slate-400" />
+                            <span>View Organization Proof Document</span>
+                            <ExternalLink size={12} className="text-slate-400 ml-0.5" />
+                          </a>
+                        </div>
+                      )}
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Owner Information Grid - 4 Columns on Desktop */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                  <User size={13} className="text-slate-400" /> Owner Details
+                </h4>
+                <div className="rounded-xl border border-slate-200 bg-white p-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3.5 text-left">
                     <div>
-                      <span className="block text-[10px] font-medium text-slate-400">Email</span>
-                      <span className="font-semibold text-slate-800 break-all">{selectedChannel.applicantProfile.email}</span>
-                    </div>
-                    <div>
-                      <span className="block text-[10px] font-medium text-slate-400">Phone</span>
-                      <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.phoneNumber}</span>
-                    </div>
-                    <div>
-                      <span className="block text-[10px] font-medium text-slate-400">Date of Birth</span>
-                      <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.dateOfBirth}</span>
-                    </div>
-                    <div>
-                      <span className="block text-[10px] font-medium text-slate-400">Gender</span>
-                      <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.gender}</span>
-                    </div>
-                    <div>
-                      <span className="block text-[10px] font-medium text-slate-400">Nationality</span>
-                      <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.nationality}</span>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="block text-[10px] font-medium text-slate-400">Address</span>
-                      <span className="font-semibold text-slate-800">
-                        {[selectedChannel.applicantProfile.address, selectedChannel.applicantProfile.city, selectedChannel.applicantProfile.state, selectedChannel.applicantProfile.country, selectedChannel.applicantProfile.pinCode]
-                          .filter(Boolean)
-                          .join(', ')}
+                      <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Full Name</span>
+                      <span className="text-sm font-medium text-slate-900 break-words">
+                        {selectedChannel.ownerName || '—'}
                       </span>
                     </div>
                     <div>
-                      <span className="block text-[10px] font-medium text-slate-400">ID Proof Type</span>
-                      <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.personalIdProofType}</span>
+                      <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Username</span>
+                      <span className="text-sm font-medium text-slate-900">
+                        {selectedChannel.ownerUsername ? `@${selectedChannel.ownerUsername}` : '—'}
+                      </span>
                     </div>
                     <div>
-                      <span className="block text-[10px] font-medium text-slate-400">ID Proof Number</span>
-                      <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.personalIdProofNumber}</span>
+                      <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Email</span>
+                      <span className="text-sm font-medium text-slate-900 break-all">
+                        {selectedChannel.ownerEmail || '—'}
+                      </span>
                     </div>
-                    {selectedChannel.applicantProfile.personalIdProofDocumentUrl && (
-                      <div className="col-span-2">
-                        <a
-                          href={selectedChannel.applicantProfile.personalIdProofDocumentUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 font-semibold text-indigo-600 hover:text-indigo-700"
-                        >
-                          <FileText size={13} /> View ID Proof Document
-                        </a>
-                      </div>
-                    )}
-                  </div>
-
-                  {!selectedChannel.isPersonal && (
-                    <>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5 pt-1">
-                        <Building2 size={13} /> Organization Details
-                      </h4>
-                      <div className="grid grid-cols-2 gap-3 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 text-xs">
-                        <div>
-                          <span className="block text-[10px] font-medium text-slate-400">Organization Name</span>
-                          <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.organizationName || '—'}</span>
-                        </div>
-                        <div>
-                          <span className="block text-[10px] font-medium text-slate-400">Organization Type</span>
-                          <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.organizationType || '—'}</span>
-                        </div>
-                        <div>
-                          <span className="block text-[10px] font-medium text-slate-400">Organization Email</span>
-                          <span className="font-semibold text-slate-800 break-all">{selectedChannel.applicantProfile.organizationEmail || '—'}</span>
-                        </div>
-                        <div>
-                          <span className="block text-[10px] font-medium text-slate-400">Website</span>
-                          <span className="font-semibold text-slate-800 break-all">{selectedChannel.applicantProfile.organizationWebsite || '—'}</span>
-                        </div>
-                        <div className="col-span-2">
-                          <span className="block text-[10px] font-medium text-slate-400">Description</span>
-                          <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.organizationDescription || '—'}</span>
-                        </div>
-                        <div className="col-span-2">
-                          <span className="block text-[10px] font-medium text-slate-400">Address</span>
-                          <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.organizationAddress || '—'}</span>
-                        </div>
-                        <div>
-                          <span className="block text-[10px] font-medium text-slate-400">Registration Number</span>
-                          <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.organizationRegistrationNumber || '—'}</span>
-                        </div>
-                        <div>
-                          <span className="block text-[10px] font-medium text-slate-400">Role in Organization</span>
-                          <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.roleInOrganization || '—'}</span>
-                        </div>
-                        <div>
-                          <span className="block text-[10px] font-medium text-slate-400">Proof Number</span>
-                          <span className="font-semibold text-slate-800">{selectedChannel.applicantProfile.organizationProofNumber || '—'}</span>
-                        </div>
-                        {selectedChannel.applicantProfile.organizationProofDocumentUrl && (
-                          <div className="col-span-2">
-                            <a
-                              href={selectedChannel.applicantProfile.organizationProofDocumentUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 font-semibold text-indigo-600 hover:text-indigo-700"
-                            >
-                              <FileText size={13} /> View Organization Proof Document
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-
-              {/* Owner Information Grid */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Owner Details
-                </h4>
-                <div className="grid grid-cols-2 gap-3 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/80 text-xs">
-                  <div>
-                    <span className="block text-[10px] font-medium text-slate-400">Full Name</span>
-                    <span className="font-semibold text-slate-800">{selectedChannel.ownerName}</span>
-                  </div>
-                  <div>
-                    <span className="block text-[10px] font-medium text-slate-400">Username</span>
-                    <span className="font-semibold text-slate-800">
-                      {selectedChannel.ownerUsername ? `@${selectedChannel.ownerUsername}` : '—'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="block text-[10px] font-medium text-slate-400">Email</span>
-                    <span className="font-semibold text-slate-800 break-all">
-                      {selectedChannel.ownerEmail || '—'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="block text-[10px] font-medium text-slate-400">Phone</span>
-                    <span className="font-semibold text-slate-800">
-                      {selectedChannel.ownerPhone || '—'}
-                    </span>
+                    <div>
+                      <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Phone</span>
+                      <span className="text-sm font-medium text-slate-900">
+                        {selectedChannel.ownerPhone || '—'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Channel Content Section */}
+              {/* Channel Content Section - 2 Columns on Desktop */}
               {selectedChannel.status !== 'PENDING' && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                      <BookOpen size={13} /> Channel Content
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                      <BookOpen size={13} className="text-slate-400" /> Channel Content
                     </h4>
                     <span className="text-[10px] font-bold text-slate-500">
                       {channelContent.length} Items
@@ -1255,15 +1346,15 @@ export function PendingChannels() {
                   </div>
 
                   {contentLoading ? (
-                    <div className="py-4 text-center text-xs text-slate-400">Loading content items...</div>
+                    <div className="py-3 text-center text-xs text-slate-400">Loading content items...</div>
                   ) : channelContent.length === 0 ? (
-                    <p className="text-xs text-slate-400 py-2">No courses or roadmaps under this channel yet.</p>
+                    <p className="text-xs text-slate-400 py-1">No courses or roadmaps under this channel yet.</p>
                   ) : (
-                    <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {channelContent.map((item) => (
                         <div
                           key={item.id}
-                          className="flex items-center justify-between gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200/60 text-xs"
+                          className="flex items-center justify-between gap-3 bg-white p-2.5 rounded-lg border border-slate-200 text-xs"
                         >
                           <div className="min-w-0">
                             <p className="font-semibold text-slate-800 truncate">{item.title}</p>
@@ -1290,9 +1381,18 @@ export function PendingChannels() {
               )}
 
               {/* Action Buttons in Modal */}
-              <div className="space-y-3 pt-4 border-t border-slate-200">
+              <div className="space-y-3 pt-3 border-t border-slate-200">
                 {selectedChannel.status === 'PENDING' && (
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap sm:flex-nowrap gap-2.5 justify-end">
+                    {canSuspend && (
+                      <button
+                        type="button"
+                        onClick={() => openRejectDialog(selectedChannel)}
+                        className="px-5 py-2.5 bg-white text-rose-700 rounded-lg hover:bg-rose-50 transition-colors font-medium text-xs border border-rose-200"
+                      >
+                        <X size={14} className="inline mr-1" /> Reject Request
+                      </button>
+                    )}
                     {canApprove && (
                       <button
                         type="button"
@@ -1300,40 +1400,31 @@ export function PendingChannels() {
                           handleAccept(selectedChannel.id);
                           setSelectedRow(null);
                         }}
-                        className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-[#14142b] text-white rounded-xl hover:bg-[#232735] transition-colors font-semibold text-xs shadow-sm"
+                        className="px-6 py-2.5 bg-[#0B132B] text-white rounded-lg hover:bg-[#205ca8] transition-colors font-medium text-xs shadow-2xs"
                       >
-                        <Check size={14} className="text-emerald-400" /> Approve Channel
-                      </button>
-                    )}
-                    {canSuspend && (
-                      <button
-                        type="button"
-                        onClick={() => openRejectDialog(selectedChannel)}
-                        className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-rose-50 text-rose-700 rounded-xl hover:bg-rose-100 transition-colors font-semibold text-xs border border-rose-200"
-                      >
-                        <X size={14} /> Reject Request
+                        <Check size={14} className="inline mr-1 text-emerald-400" /> Approve Channel
                       </button>
                     )}
                   </div>
                 )}
 
                 {canSuspend && selectedChannel.status === 'ACTIVE' && (
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap sm:flex-nowrap gap-2.5 justify-end">
                     <button
                       type="button"
                       onClick={() => {
                         setSelectedRow(null);
                         openSuspendDialog(selectedChannel);
                       }}
-                      className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-rose-50 text-rose-700 rounded-xl hover:bg-rose-100 transition-colors font-semibold text-xs border border-rose-200"
+                      className="px-5 py-2.5 bg-white text-rose-700 rounded-lg hover:bg-rose-50 transition-colors font-medium text-xs border border-rose-200"
                     >
-                      <ShieldOff size={14} /> Suspend Channel
+                      <ShieldOff size={14} className="inline mr-1" /> Suspend Channel
                     </button>
                     <a
                       href={`/channels/${selectedChannel.id}/manage`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors font-semibold text-xs shadow-sm"
+                      className="px-6 py-2.5 bg-[#0B132B] text-white rounded-lg hover:bg-[#205ca8] transition-colors font-medium text-xs shadow-2xs inline-flex items-center gap-1.5"
                     >
                       <ExternalLink size={14} /> Open Studio Manage
                     </a>
@@ -1341,14 +1432,14 @@ export function PendingChannels() {
                 )}
 
                 {canSuspend && selectedChannel.status === 'SUSPENDED' && (
-                  <div className="flex gap-2">
+                  <div className="flex gap-2.5 justify-end">
                     <button
                       type="button"
                       onClick={() => {
                         handleReactivate(selectedChannel.id);
                         setSelectedRow(null);
                       }}
-                      className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold text-xs shadow-sm"
+                      className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium text-xs shadow-2xs inline-flex items-center gap-1.5"
                     >
                       <ShieldCheck size={14} /> Reactivate Channel
                     </button>
@@ -1357,14 +1448,14 @@ export function PendingChannels() {
 
                 {/* Danger Zone */}
                 {canSuspend && (selectedChannel.status === 'ACTIVE' || selectedChannel.status === 'SUSPENDED') && (
-                  <div className="pt-3 border-t border-dashed border-rose-200">
+                  <div className="pt-2 border-t border-dashed border-rose-200 flex justify-end">
                     <button
                       type="button"
                       onClick={() => {
                         setSelectedRow(null);
                         openHardDeleteDialog(selectedChannel);
                       }}
-                      className="w-full inline-flex justify-center items-center gap-1.5 px-3 py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-xl transition-colors font-semibold text-xs border border-rose-200"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg transition-colors font-medium text-xs border border-rose-200"
                     >
                       <Trash2 size={13} /> Force Permanent Delete
                     </button>

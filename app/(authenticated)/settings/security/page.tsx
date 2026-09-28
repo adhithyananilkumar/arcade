@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { PhoneInput } from '@/shared/design-system/ui/phone-input';
 
 export default function SecurityLogsPage() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
@@ -36,6 +37,7 @@ export default function SecurityLogsPage() {
   // Linked Phone & 2FA state
   const [phone, setPhone] = useState('+1 (555) 000-0000');
   const [isPhoneEditing, setIsPhoneEditing] = useState(false);
+  const [isPhoneValid, setIsPhoneValid] = useState(true);
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
 
   // Active Sessions Mock Data
@@ -276,23 +278,28 @@ export default function SecurityLogsPage() {
           <p className="text-xs text-gray-500 dark:text-neutral-400">Used for account recovery and two-factor verification.</p>
 
           <div className="pt-2 flex items-center gap-2">
-            <input 
-              type="text" 
+            <PhoneInput 
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(val, meta) => {
+                setPhone(val);
+                setIsPhoneValid(meta.isValid);
+              }}
+              onValidate={(valid) => setIsPhoneValid(valid)}
               disabled={!isPhoneEditing}
-              className={`flex-1 px-3.5 py-2 rounded-xl border text-xs font-semibold ${
-                isPhoneEditing 
-                  ? 'border-emerald-500 bg-white dark:bg-neutral-950 text-gray-900 dark:text-white' 
-                  : 'border-gray-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-950 text-gray-600 dark:text-neutral-300 cursor-not-allowed'
-              }`}
+              className="flex-1"
             />
             <button
               onClick={() => {
-                if (isPhoneEditing) toast.success('Phone number saved!');
+                if (isPhoneEditing) {
+                  if (phone && !isPhoneValid) {
+                    toast.error('Enter a valid phone number for the selected country.');
+                    return;
+                  }
+                  toast.success('Phone number saved!');
+                }
                 setIsPhoneEditing(!isPhoneEditing);
               }}
-              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors"
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors shrink-0"
             >
               {isPhoneEditing ? 'Save' : 'Edit'}
             </button>

@@ -13,14 +13,6 @@ const sidebarItems = [
     icon: User, 
     iconBg: 'bg-[#bbf7d0] text-[#14532d]',
   },
-  {
-    // Distinct from Personal info on purpose: that page holds private account data (contact
-    // details, billing address); this one holds what the world sees at domain/<handle>.
-    name: 'Public profile',
-    href: '/settings/profile',
-    icon: AtSign,
-    iconBg: 'bg-[#c7d2fe] text-[#312e81]',
-  },
   { 
     name: 'Appearance', 
     href: '/settings/appearance', 
@@ -51,21 +43,21 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   const pathname = usePathname();
   const router = useRouter();
 
-  // If hitting root /settings directly, redirect to /settings/info
+  // If hitting root /settings or deprecated /settings/profile directly, redirect to /settings/info
   useEffect(() => {
-    if (pathname === '/settings') {
+    if (pathname === '/settings' || pathname === '/settings/profile') {
       router.replace('/settings/info');
     }
   }, [pathname, router]);
 
   const activeItem = sidebarItems.find(
-    item => pathname === item.href || (pathname === '/settings' && item.href === '/settings/info')
+    item => pathname === item.href || (pathname === '/settings' && item.href === '/settings/info') || (pathname === '/settings/profile' && item.href === '/settings/info')
   );
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen pt-28 md:pt-32 pb-16 bg-white dark:bg-[#202124] gap-10 md:gap-14 px-6 md:px-12 items-start">
-      {/* Sticky Sidebar Navigation */}
-      <aside className="w-full md:w-[240px] shrink-0 bg-transparent py-1 md:sticky md:top-28 self-start z-10">
+    <div className="flex flex-col md:flex-row min-h-screen pt-28 md:pt-32 pb-16 bg-white dark:bg-[#202124] gap-8 md:gap-12 px-6 md:px-12 items-start">
+      {/* Sidebar Navigation - Scrolls naturally with document */}
+      <aside className="w-full md:w-[240px] shrink-0 bg-transparent">
         <nav className="space-y-1.5">
           {sidebarItems.map((item) => {
             const isActive = pathname === item.href || (pathname === '/settings' && item.href === '/settings/info');
@@ -96,10 +88,10 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 bg-transparent py-1 w-full min-w-0">
+      <main className="flex-1 bg-transparent w-full min-w-0">
         <div className="w-full">
-          {/* Sticky breadcrumb sits just under the floating navbar */}
-          <div className="sticky top-24 md:top-28 z-30 bg-white dark:bg-[#202124] pb-3.5 mb-6 border-b border-slate-200/80 dark:border-neutral-800 flex items-center gap-2 text-sm text-slate-500 dark:text-neutral-400 font-semibold">
+          {/* Breadcrumb Header */}
+          <div className="pb-3.5 mb-6 border-b border-slate-200/80 dark:border-neutral-800 flex items-center gap-2 text-sm text-slate-500 dark:text-neutral-400 font-semibold">
             <Link href="/settings/info" className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-1.5">
               <SettingsIcon size={15} />
               <span>Settings</span>

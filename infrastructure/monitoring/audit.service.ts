@@ -49,7 +49,7 @@ export class AuditService {
    * Retrieves the current user's personal audit logs.
    */
   static async getUserAuditLogs(page: number = 0, size: number = 20): Promise<PageResponse<AuditLog>> {
-    const data = await api.get<PageResponse<AuditLog>>(`/audit-logs/me?page=${page}&size=${size}`);
+    const data = await api.get<PageResponse<AuditLog>>(`/api/v1/audit-logs/me?page=${page}&size=${size}`);
     return data;
   }
 
@@ -57,7 +57,7 @@ export class AuditService {
    * Retrieves an organization's audit logs.
    */
   static async getOrgAuditLogs(orgId: string, page: number = 0, size: number = 20): Promise<PageResponse<AuditLog>> {
-    const data = await api.get<PageResponse<AuditLog>>(`/audit-logs/organizations/${orgId}?page=${page}&size=${size}`);
+    const data = await api.get<PageResponse<AuditLog>>(`/api/v1/channels/${orgId}/audit-log?page=${page}&size=${size}`);
     return data;
   }
 }

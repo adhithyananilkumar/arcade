@@ -13,6 +13,7 @@ import '@/domains/identity/components/auth-fields.css';
 import { PebbleLoader } from '@/domains/identity/components/PebbleLoader';
 import { getAvatarUrl } from '@/shared/utils/avatar';
 import { useInterestsQuery, InterestService, UserService } from '@/domains/identity';
+import { PhoneInput } from '@/shared/design-system/ui/phone-input';
 
 const MAX_INTERESTS = 10;
 
@@ -37,6 +38,7 @@ export default function OnboardingPage() {
   const [firstName, setFirstName] = useState(user?.firstName || user?.fullName?.split(' ')[0] || '');
   const [lastName, setLastName] = useState(user?.lastName || user?.fullName?.split(' ')[1] || '');
   const [mobileNumber, setMobileNumber] = useState('');
+  const [isPhoneValid, setIsPhoneValid] = useState(false);
   const [gender, setGender] = useState(user?.gender || '');
   const [isGenderDropdownOpen, setIsGenderDropdownOpen] = useState(false);
   const genderOptions = [
@@ -157,7 +159,7 @@ export default function OnboardingPage() {
   };
 
   const isStep1Valid = username.length >= 3 && usernameStatus === 'available';
-  const isStep2Valid = firstName.trim() !== '' && lastName.trim() !== '' && gender !== '' && mobileNumber.trim() !== '';
+  const isStep2Valid = firstName.trim() !== '' && lastName.trim() !== '' && gender !== '' && isPhoneValid;
   const isLinkedinValid = socialLink1.trim() === '' || /^https?:\/\/(www\.)?linkedin\.com\/.*$/.test(socialLink1);
   const isGithubValid = socialLink2.trim() === '' || /^https?:\/\/(www\.)?github\.com\/.*$/.test(socialLink2);
   const isStep3Valid = isLinkedinValid && isGithubValid;
@@ -315,18 +317,19 @@ export default function OnboardingPage() {
                     </div>
                   </div>
 
-                  <div className="auth-field relative flex h-[60px] cursor-text flex-col justify-center rounded-[20px] px-5 py-2">
+                  <div className="auth-field relative flex min-h-[64px] flex-col justify-center rounded-[20px] px-5 py-2">
                     <label htmlFor="mobile" className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA] capitalize">Mobile number</label>
-                    <input 
-                      id="mobile" 
-                      type="tel" 
-                      value={mobileNumber} 
-                      onChange={e => setMobileNumber(e.target.value.replace(/[^\d\s+-]/g, ''))} 
-                      placeholder="+1 234 567 8900"
-                      autoComplete="tel"
-                      className="w-full border-none bg-transparent p-0 pr-10 text-[15px] font-bold text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300" 
+                    <PhoneInput
+                      id="mobile"
+                      variant="auth"
+                      value={mobileNumber}
+                      required
+                      onChange={(val, meta) => {
+                        setMobileNumber(val);
+                        setIsPhoneValid(meta.isValid);
+                      }}
+                      onValidate={(valid) => setIsPhoneValid(valid)}
                     />
-                    <Phone className="absolute right-5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#A5B3CA]" />
                   </div>
 
                   <div className="w-full">

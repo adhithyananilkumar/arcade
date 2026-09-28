@@ -2,9 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { Button } from '@/shared/design-system/ui/button';
-import { Textarea } from '@/shared/design-system/ui/textarea';
-import { Input } from '@/shared/design-system/ui/input';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +10,6 @@ import {
   DialogTitle,
 } from '@/shared/design-system/ui/dialog';
 import { toast } from 'sonner';
-import { Sparkles, User, Briefcase, Star } from 'lucide-react';
 import { UserService } from '@/domains/identity';
 import { channelService } from '@/domains/channels';
 
@@ -179,100 +175,115 @@ export function StaffOnboardingModal() {
         if (!open) void handleDismiss();
       }}
     >
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-500/20">
-            <Sparkles className="h-7 w-7 text-sky-600 dark:text-sky-400" />
-          </div>
-          <DialogTitle className="text-center font-serif text-[26px] font-light leading-tight">
-            {manualOpen
-              ? 'Your instructor profile'
-              : `Welcome, ${user.firstName || user.fullName || 'there'}!`}
+      <DialogContent
+        className="max-w-[530px] w-[92vw] p-6 sm:p-7 rounded-2xl border border-slate-200/90 shadow-xl"
+        style={{
+          backgroundColor: '#FAFBFD',
+          backgroundImage: `
+            radial-gradient(ellipse 80% 50% at 50% 0%, rgba(224, 236, 255, 0.45) 0%, transparent 70%),
+            radial-gradient(ellipse 60% 40% at 95% 90%, rgba(233, 225, 254, 0.25) 0%, transparent 65%),
+            linear-gradient(180deg, #FAFBFD 0%, #F5F7FC 100%)
+          `,
+        }}
+      >
+        <DialogHeader className="space-y-1.5 pb-4 border-b border-slate-200/80 text-left">
+          <DialogTitle className="text-2xl sm:text-[26px] font-normal font-serif italic text-[#0B132B] dark:text-white tracking-tight leading-snug">
+            Your instructor profile.
           </DialogTitle>
-          <DialogDescription className="text-center text-[15px]">
+          <span className="block h-0.5 w-10 bg-[#205ca8]/60 rounded-full mt-1 mb-1" />
+          <DialogDescription className="text-xs sm:text-[13px] text-slate-500 dark:text-neutral-400 leading-relaxed">
             This is what learners see next to your name on the courses you publish.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5 pt-2">
-          <div className="space-y-1.5">
+        <form onSubmit={handleSubmit} className="space-y-5 pt-4">
+          {/* SHORT BIO */}
+          <div className="space-y-1">
             <label
               htmlFor="staff-bio"
-              className="flex items-center gap-2 text-[14px] font-medium text-slate-700 dark:text-slate-300"
+              className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 font-semibold"
             >
-              <User size={16} className="text-slate-400" />
-              Short bio
+              SHORT BIO
             </label>
-            <Textarea
+            <textarea
               id="staff-bio"
+              rows={2}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="What you do, and what you teach."
-              className="min-h-[110px] resize-none rounded-xl border-slate-300 bg-slate-50 text-[15px] focus:ring-sky-500 dark:border-slate-700 dark:bg-slate-800/50"
+              className="w-full py-2 bg-transparent border-b border-slate-300 dark:border-neutral-700 text-slate-900 dark:text-white text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#205ca8] dark:focus:border-sky-400 transition-colors resize-none min-h-[64px] leading-relaxed"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label
-              htmlFor="staff-specialities"
-              className="flex items-center gap-2 text-[14px] font-medium text-slate-700 dark:text-slate-300"
-            >
-              <Briefcase size={16} className="text-slate-400" />
-              Specialities{' '}
-              <span className="text-[12px] font-normal text-slate-400">(comma separated)</span>
-            </label>
-            <Input
-              id="staff-specialities"
-              value={specialities}
-              onChange={(e) => setSpecialities(e.target.value)}
-              placeholder="e.g. Design systems, Prototyping"
-              className="h-12 rounded-xl border-slate-300 bg-slate-50 text-[15px] focus:ring-sky-500 dark:border-slate-700 dark:bg-slate-800/50"
-            />
+          {/* SPECIALITIES + YEARS OF EXP. */}
+          <div className="grid grid-cols-2 gap-5">
+            <div className="space-y-1">
+              <label
+                htmlFor="staff-specialities"
+                className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 font-semibold"
+              >
+                SPECIALITIES
+              </label>
+              <input
+                type="text"
+                id="staff-specialities"
+                value={specialities}
+                onChange={(e) => setSpecialities(e.target.value)}
+                placeholder="e.g. Design systems"
+                className="w-full py-2 bg-transparent border-b border-slate-300 dark:border-neutral-700 text-slate-900 dark:text-white text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#205ca8] dark:focus:border-sky-400 transition-colors"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label
+                htmlFor="staff-experience"
+                className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 font-semibold whitespace-nowrap"
+              >
+                YEARS OF EXP.
+              </label>
+              <input
+                type="number"
+                id="staff-experience"
+                min="0"
+                max="80"
+                step="1"
+                value={experience}
+                onChange={(e) => setExperience(e.target.value)}
+                placeholder="e.g. 5"
+                className="w-full py-2 bg-transparent border-b border-slate-300 dark:border-neutral-700 text-slate-900 dark:text-white text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#205ca8] dark:focus:border-sky-400 transition-colors"
+              />
+              {!experienceIsValid && (
+                <p className="text-[11px] text-red-600 font-medium mt-1">
+                  Enter a whole number between 0 and 80.
+                </p>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label
-              htmlFor="staff-experience"
-              className="flex items-center gap-2 text-[14px] font-medium text-slate-700 dark:text-slate-300"
-            >
-              <Star size={16} className="text-slate-400" />
-              Years of experience
-            </label>
-            <Input
-              id="staff-experience"
-              type="number"
-              min="0"
-              max="80"
-              step="1"
-              value={experience}
-              onChange={(e) => setExperience(e.target.value)}
-              placeholder="e.g. 5"
-              className="h-12 rounded-xl border-slate-300 bg-slate-50 text-[15px] focus:ring-sky-500 dark:border-slate-700 dark:bg-slate-800/50"
-            />
-            {!experienceIsValid && (
-              <p className="text-[12px] font-medium text-red-600">
-                Enter a whole number between 0 and 80.
-              </p>
-            )}
-          </div>
-
-          <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button
+          {/* BUTTONS */}
+          <div className="pt-3 flex items-center justify-end gap-3">
+            <button
               type="button"
-              variant="ghost"
               onClick={() => void handleDismiss()}
               disabled={isSubmitting}
-              className="h-12 rounded-xl text-[15px]"
+              className="px-4 py-2 text-xs sm:text-sm font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors"
             >
               {manualOpen ? 'Cancel' : 'Not now'}
-            </Button>
-            <Button
+            </button>
+            <button
               type="submit"
               disabled={isSubmitting || !experienceIsValid}
-              className="h-12 rounded-xl bg-sky-600 text-[15px] font-semibold text-white shadow-md transition-all hover:bg-sky-700 hover:shadow-lg active:scale-[0.98] disabled:opacity-60 sm:min-w-[160px]"
+              className="relative inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#0B132B] hover:bg-[#205ca8] text-white font-medium text-xs sm:text-sm tracking-wide shadow-2xs transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Saving…' : 'Save profile'}
-            </Button>
+              {isSubmitting ? (
+                <>
+                  <div className="size-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Saving…</span>
+                </>
+              ) : (
+                'Save profile'
+              )}
+            </button>
           </div>
         </form>
       </DialogContent>
