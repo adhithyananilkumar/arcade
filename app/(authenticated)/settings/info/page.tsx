@@ -3,7 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { UserService } from '@/domains/identity';
+import {
+  UserService,
+  NICKNAME_MAX_LENGTH,
+  formatNicknameInput,
+  nicknameError,
+  nicknameLength,
+} from '@/domains/identity';
 import {
   HandleField,
   HandleAppealForm,
@@ -32,6 +38,7 @@ import {
   Sparkles,
   Globe,
   Eye,
+  Smile,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -50,6 +57,7 @@ export default function PersonalInfoPage() {
 
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
+  const [nickname, setNickname] = useState(user?.nickname || '');
   const [mobileNumber, setMobileNumber] = useState(user?.mobileNumber || '');
   const [isPhoneValid, setIsPhoneValid] = useState(true);
   const [gender, setGender] = useState(user?.gender || '');
@@ -89,6 +97,7 @@ export default function PersonalInfoPage() {
     if (user) {
       setFirstName(user.firstName || '');
       setLastName(user.lastName || '');
+      setNickname(user.nickname || '');
       setMobileNumber(user.mobileNumber || '');
       setGender(user.gender || '');
       setAddress(user.address || '');
@@ -198,6 +207,30 @@ export default function PersonalInfoPage() {
     }
   };
 
+  const handleSaveNickname = async () => {
+    if (!user) return;
+    const issue = nicknameError(nickname);
+    if (issue) {
+      toast.error(issue);
+      return;
+    }
+    setSaving(true);
+    try {
+      const updated = await UserService.updateNickname(
+        user.firstName ?? '',
+        user.lastName ?? '',
+        nickname.trim()
+      );
+      updateUser(updated);
+      setEditingField(null);
+      toast.success('Nickname updated');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not update your nickname.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const claimHandle = async (newHandle: string) => {
     const result = await HandleService.claimForMe(newHandle);
     updateUser({ username: result.handle });
@@ -277,6 +310,7 @@ export default function PersonalInfoPage() {
     // Revert local draft state back to the last-saved values.
     setFirstName(user?.firstName || '');
     setLastName(user?.lastName || '');
+    setNickname(user?.nickname || '');
     setMobileNumber(user?.mobileNumber || '');
     setGender(user?.gender || '');
     setAddress(user?.address || '');
@@ -348,6 +382,45 @@ export default function PersonalInfoPage() {
           </div>
           {editingField !== 'name' && (
             <button onClick={() => setEditingField('name')} className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
+              <Edit2 size={14} />
+            </button>
+          )}
+        </div>
+
+        {/* Nickname — private: only its owner ever sees it (greeting + nav pill) */}
+        <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="text-slate-400 dark:text-neutral-400 shrink-0">
+              <Smile size={18} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Nickname</h3>
+              {editingField === 'nickname' ? (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <div className="relative w-full">
+                    <input
+                      type="text"
+                      value={nickname}
+                      onChange={(e) => setNickname(formatNicknameInput(e.target.value))}
+                      placeholder="e.g. Dr. Rubin"
+                      autoComplete="nickname"
+                      className="w-full px-2 py-1 pr-10 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                    />
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold tabular-nums text-slate-400">
+                      {nicknameLength(nickname.trim())}/{NICKNAME_MAX_LENGTH}
+                    </span>
+                  </div>
+                  {renderSaveCancelButtons('Nickname', handleSaveNickname)}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+                  {user?.nickname || 'Not set'} <span className="text-slate-400">· only you see this</span>
+                </p>
+              )}
+            </div>
+          </div>
+          {editingField !== 'nickname' && (
+            <button onClick={() => setEditingField('nickname')} className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
               <Edit2 size={14} />
             </button>
           )}

@@ -1,6 +1,7 @@
 'use client';
 
-// A main exam's overview page, reached from the Exams hub (or a course's certification card). It
+// A main exam's overview page, reached from Explore > Exams, My Learning > Exams, or a course's
+// certification card. It
 // matches the course and event landing pages and composes ExamOverview with the three things only
 // this page supplies: registration/payment (the shared enrolment checkout, on an EXAM resource),
 // the identity-verification step, and a way to the tied content when its completion is still a
@@ -102,7 +103,7 @@ export default function ExamPage() {
   return (
     <ExamOverview
       landing={landing}
-      hubHref="/exams"
+      hubHref={examRoutes.catalogue}
       onStart={start}
       onSelectPlan={(id) => router.replace(`${examRoutes.landing(examId)}?planId=${id}`)}
       onViewGradeCard={(id) => router.push(examRoutes.gradeCard(id))}

@@ -92,7 +92,6 @@ const CONTENT_ICON: Record<string, LucideIcon> = {
   COURSE: GraduationCap,
   EVENT: CalendarDays,
   WORKSHOP: CalendarDays,
-  ARTICLE: FileText,
 };
 
 export interface ContentCardProps {

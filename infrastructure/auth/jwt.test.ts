@@ -44,7 +44,7 @@ describe('jwt utils', () => {
     it('returns existing token if unexpired', async () => {
       const validToken = createMockJwt(600);
       useAuthStore.getState().setAuth(
-        { id: '1', email: 'test@example.com', fullName: 'Test' },
+        { id: '1', email: 'test@example.com', fullName: 'Test', emailVerified: true },
         validToken
       );
 
@@ -56,13 +56,13 @@ describe('jwt utils', () => {
       const expiredToken = createMockJwt(-60);
       const freshToken = createMockJwt(900);
       useAuthStore.getState().setAuth(
-        { id: '1', email: 'test@example.com', fullName: 'Test' },
+        { id: '1', email: 'test@example.com', fullName: 'Test', emailVerified: true },
         expiredToken
       );
 
       vi.spyOn(AuthService, 'refresh').mockResolvedValue({
         accessToken: freshToken,
-        user: { id: '1', email: 'test@example.com', fullName: 'Test' },
+        user: { id: '1', email: 'test@example.com', fullName: 'Test', emailVerified: true },
       });
 
       const token = await getValidAccessToken();
@@ -73,7 +73,7 @@ describe('jwt utils', () => {
     it('clears auth if refresh fails', async () => {
       const expiredToken = createMockJwt(-60);
       useAuthStore.getState().setAuth(
-        { id: '1', email: 'test@example.com', fullName: 'Test' },
+        { id: '1', email: 'test@example.com', fullName: 'Test', emailVerified: true },
         expiredToken
       );
 

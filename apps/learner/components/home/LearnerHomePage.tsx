@@ -18,7 +18,7 @@ import {
   TrendingUp,
   Sparkles,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { api } from '@/infrastructure/http/api';
 import { usePublicCoursesPage } from '@/shared/hooks/usePublicCourses';
 import type { CourseSummaryResponse } from '@/shared/types/api.types';
@@ -32,6 +32,46 @@ import { getPublishedEvents } from '@/domains/events';
 import type { EventDto } from '@/domains/events';
 import { DeliveryMode } from '@/app/(authenticated)/studio/events/types';
 import { getDynamicGreeting, HOME_SEEN_KEY } from './greeting';
+
+/**
+ * Keeps each greeting line on one line by shrinking it to fit its container, so the hero is always
+ * exactly two lines whatever the template or name. Each line's font-size is
+ * `calc(<design size> * var(--fit, 1))`; this measures the line at full size and writes `--fit`
+ * directly. It is measured rather than estimated because script glyph widths vary too much to
+ * predict (a name like "Mmmmmmmm" runs far wider than "Jo"). React never sets `--fit`, so
+ * re-renders leave it alone.
+ */
+function useFitLines(key: string) {
+  const boxRef = useRef<HTMLHeadingElement>(null);
+  const lineRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useLayoutEffect(() => {
+    const box = boxRef.current;
+    if (!box) return;
+    const fit = () => {
+      const available = box.clientWidth;
+      for (const line of lineRefs.current) {
+        if (!line) continue;
+        let scale = 1;
+        line.style.setProperty('--fit', '1');
+        // A few passes, because the gap and the sparkle accent don't shrink with the text, so one
+        // proportional step lands slightly wide.
+        for (let pass = 0; pass < 4 && line.scrollWidth > available; pass++) {
+          scale = Math.floor(scale * (available / line.scrollWidth) * 1000) / 1000;
+          line.style.setProperty('--fit', String(scale));
+        }
+      }
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(box);
+    // The script font may arrive after first paint and is much wider than its fallback.
+    document.fonts?.ready.then(fit);
+    return () => observer.disconnect();
+  }, [key]);
+
+  return { boxRef, lineRefs };
+}
 import { StreakCalendar } from './StreakCalendar';
 import { SuperSearchModal } from './SuperSearchModal';
 import {
@@ -275,6 +315,7 @@ export default function LearnerHomePage() {
   const greeting = useMemo(
     () =>
       getDynamicGreeting({
+        nickname: user?.nickname,
         firstName: user?.firstName || user?.fullName,
         userKey: user?.id || user?.username || user?.email || user?.firstName,
         createdAt: user?.createdAt,
@@ -301,8 +342,17 @@ export default function LearnerHomePage() {
       line2 = '';
     }
 
-    return { line1, line2, line3 };
+    return {
+      line1,
+      line2,
+      line3,
+    };
   }, [greeting]);
+
+  const { boxRef: greetingRef, lineRefs: greetingLineRefs } = useFitLines(
+    // `status` is in the key because the hero only mounts once the session has loaded.
+    `${status}|${parsedGreeting.line1}|${parsedGreeting.line2}|${parsedGreeting.line3}`,
+  );
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -336,16 +386,25 @@ export default function LearnerHomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
-            <h1 className="max-w-xl text-left flex flex-col items-start select-none">
+            <h1
+              ref={greetingRef}
+              className="w-full max-w-xl text-left flex flex-col items-start select-none"
+            >
               {/* Line 1: Script font, dark color with sparkle accent */}
               {parsedGreeting.line1 && (
-                <div className="relative inline-flex items-center gap-1.5">
-                  <span className="font-script text-3xl sm:text-4xl md:text-5xl font-bold tracking-wide text-[#14142b] dark:text-slate-100 leading-tight">
+                <div
+                  className="relative inline-flex items-center gap-1.5 whitespace-nowrap"
+                  ref={(el) => {
+                    greetingLineRefs.current[0] = el;
+                  }}
+                  style={{ fontSize: 'calc(min(3rem, 8.5vw) * var(--fit, 1))' }}
+                >
+                  <span className="font-script font-bold tracking-wide text-[#14142b] dark:text-slate-100 leading-tight">
                     {parsedGreeting.line1}
                   </span>
                   {/* 3 Sparkle lines accent (matching top-right accent in Image 2) */}
                   <svg
-                    className="ml-1 -mt-3 size-5 sm:size-6 text-[#4C6FFF] shrink-0"
+                    className="ml-1 -mt-3 size-[0.5em] min-w-5 min-h-5 text-[#4C6FFF] shrink-0"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -358,16 +417,22 @@ export default function LearnerHomePage() {
               )}
 
               {/* Line 2: Sans-serif keyword in dark/black + Script font name with gradient */}
-              <div className="relative inline-flex items-baseline flex-wrap gap-x-2.5 gap-y-1 my-0.5">
+              <div
+                className="relative inline-flex items-baseline whitespace-nowrap gap-x-[0.2em] my-0.5"
+                ref={(el) => {
+                  greetingLineRefs.current[1] = el;
+                }}
+                style={{ fontSize: 'calc(min(4.5rem, 11vw) * var(--fit, 1))' }}
+              >
                 {parsedGreeting.line2 && (
-                  <span className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-none text-[#14142b] cursor-default">
+                  <span className="font-bold tracking-tight leading-none text-[#14142b] cursor-default">
                     {parsedGreeting.line2}
                   </span>
                 )}
                 <GradientText
                   colors={NAME_GRADIENT}
                   animationSpeed={4.5}
-                  className="font-script !cursor-default !text-4xl sm:!text-5xl md:!text-6xl lg:!text-7xl !font-bold !leading-none"
+                  className="font-script !cursor-default ![font-size:inherit] !font-bold !leading-none"
                 >
                   {parsedGreeting.line3}
                 </GradientText>

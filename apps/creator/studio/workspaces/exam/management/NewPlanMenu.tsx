@@ -39,14 +39,14 @@ export function planTypeUnavailable(
 const DESCRIPTIONS: Record<ExamPlanType, (exam: ExamResponse) => string> = {
   CERTIFICATION: (exam) =>
     exam.tieType
-      ? `Listed in learners' Exams hub. Completing ${exam.tiedContentTitle ?? "the tied content"} is a prerequisite; passing issues a certificate.`
-      : "Listed in learners' Exams hub. Passing issues a certificate.",
+      ? `Listed in Explore > Exams. Completing ${exam.tiedContentTitle ?? "the tied content"} is a prerequisite; passing issues a certificate.`
+      : "Listed in Explore > Exams. Passing issues a certificate.",
   COMPLETION: (exam) =>
     `Placed inside ${exam.tiedContentTitle ?? "the tied content"}. Passing it completes it.`,
   ASSESSMENT: (exam) =>
     exam.tieType
       ? `A graded or practice check placed inside ${exam.tiedContentTitle ?? "the tied content"}.`
-      : "A standalone exam, listed in learners' Exams hub.",
+      : "A standalone exam, listed in Explore > Exams.",
 };
 
 export function NewPlanMenu({

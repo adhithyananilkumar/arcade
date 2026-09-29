@@ -334,7 +334,7 @@ export function getContentCertification(tieType: ExamTieType, contentId: string)
   return api.get<ContentCertificationView | null>(`/api/${base}/${contentId}/exam/certification`);
 }
 
-// ── Exams hub (learner) ───────────────────────────────────────────────────────
+// ── Exam catalogue (Explore > Exams) and the learner's exams (My Learning > Exams) ──
 
 /** Exams the caller registered for, with where they stand. */
 export function getMyHubExams() {
@@ -342,9 +342,22 @@ export function getMyHubExams() {
 }
 
 /** Every published main exam — certifications and standalone exams. */
-export function getAvailableHubExams(query?: string) {
+export function getAvailableHubExams(query?: string, categoryId?: string) {
+  return api.get<ExamHubCard[]>(`/api/exams/hub/available${catalogueParams(query, categoryId)}`);
+}
+
+/** The same catalogue for a visitor who is not signed in (no registration state). */
+export function getPublicExams(query?: string, categoryId?: string) {
+  return api.get<ExamHubCard[]>(`/api/v1/public/exams${catalogueParams(query, categoryId)}`);
+}
+
+function catalogueParams(query?: string, categoryId?: string): string {
+  const params = new URLSearchParams();
   const q = query?.trim();
-  return api.get<ExamHubCard[]>(`/api/exams/hub/available${q ? `?q=${encodeURIComponent(q)}` : ""}`);
+  if (q) params.set("q", q);
+  if (categoryId) params.set("categoryId", categoryId);
+  const s = params.toString();
+  return s ? `?${s}` : "";
 }
 
 // ── Exam standards (Platform Console) ─────────────────────────────────────────

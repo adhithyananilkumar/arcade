@@ -151,7 +151,7 @@ export class EventAdapter implements ContentDataAdapter {
 
   // ── The event's exam ──────────────────────────────────────────────────────────
   // An event has at most one exam: its completion/assessment plans sit in the event, and its
-  // certification plan is listed in the Exams hub with the event as the prerequisite.
+  // certification plan is listed in Explore > Exams with the event as the prerequisite.
 
   async listExams(contentId: string): Promise<ExamSummary[]> {
     const exam = await getEventExam(contentId);

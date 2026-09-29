@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { AuthService } from '@/infrastructure/auth/auth.service';
 import { ChannelStaffService, ChannelInvitation } from "@/domains/channels";
 import { useNotifications, NotificationList } from "@/domains/notifications";
-import { usePermissions } from "@/domains/identity";
+import { usePermissions, navPillName } from "@/domains/identity";
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 import {
   useStudioAccess,
@@ -460,7 +460,7 @@ export default function LearnerNavbar() {
             {/* Trigger (Profile Picture and Name) */}
             <div className="flex h-full w-full items-center justify-between gap-2">
               <span className="max-w-[100px] truncate text-sm font-bold text-[#14142b]">
-                {user?.username || user?.firstName || 'user'}
+                {navPillName(user)}
               </span>
               <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-black/5 shadow-xs">
                 {user?.avatarUrl ? (

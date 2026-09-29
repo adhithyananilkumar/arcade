@@ -12,6 +12,8 @@ interface NavUserMenuProps {
     email: string;
     firstName?: string;
     avatarUrl?: string | null;
+    /** The name on the pill itself — the owner's private nickname, lowercased by the caller. */
+    pillName?: string;
   };
   onLogout: () => void;
 }
@@ -65,7 +67,7 @@ export function NavUserMenu({ user, onLogout }: NavUserMenuProps) {
             whiteSpace: 'nowrap',
           }}
         >
-          {user.username || user.firstName || user.email.split('@')[0]}
+          {user.pillName || user.username || user.firstName || user.email.split('@')[0]}
         </span>
         <ChevronDown
           size={12}

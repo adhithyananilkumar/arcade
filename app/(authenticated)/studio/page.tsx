@@ -41,7 +41,6 @@ import Magnet from "@/components/ui/Magnet";
 import {
   BookOpen,
   Calendar,
-  FileText,
   Plus,
   ChevronDown,
   Clock,
@@ -109,13 +108,6 @@ const CONTENT_TYPES = [
     href: "/studio/events/new",
   },
   {
-    id: "article",
-    icon: FileText,
-    label: "Article",
-    desc: "Rich publication document with the editor",
-    href: "/studio/article/new",
-  },
-  {
     id: "exam",
     icon: ClipboardCheck,
     label: "Exam",
@@ -179,13 +171,6 @@ function TypeBadge({ type }: { type: string }) {
     return (
       <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12">
         <FileQuestion size={11} strokeWidth={2.4} className="text-amber-800" /> Exam
-      </span>
-    );
-  }
-  if (t === "ARTICLE") {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12">
-        <FileText size={11} strokeWidth={2.4} className="text-amber-800" /> Article
       </span>
     );
   }
@@ -255,14 +240,6 @@ const TYPE_CONFIG: Record<
     border: "border-orange-500/20",
     badgeBg: "bg-orange-50 text-orange-800 border-orange-200",
   },
-  ARTICLE: {
-    label: "Article",
-    icon: FileText,
-    color: "text-emerald-700",
-    bgGradient: "from-emerald-500/15 to-teal-500/10",
-    border: "border-emerald-500/20",
-    badgeBg: "bg-emerald-50 text-emerald-800 border-emerald-200",
-  },
 };
 
 const TYPE_DEFAULT_COVERS: Record<string, string> = {
@@ -272,7 +249,6 @@ const TYPE_DEFAULT_COVERS: Record<string, string> = {
   WORKSHOP: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=80",
   QUIZ: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800&auto=format&fit=crop&q=80",
   EXAM: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800&auto=format&fit=crop&q=80",
-  ARTICLE: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&auto=format&fit=crop&q=80",
 };
 
 // ── New Course creation modal ───────────────────────────────────────────────────

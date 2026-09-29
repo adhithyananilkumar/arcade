@@ -9,6 +9,11 @@ export interface User {
   firstName?: string;
   lastName?: string;
   fullName: string;
+  /**
+   * What we call the user in their own chrome (home greeting, nav pill). Private: the backend
+   * returns it only on the caller's own profile. Never render it anywhere another person sees.
+   */
+  nickname?: string | null;
   username?: string;
   mobileNumber?: string;
   gender?: string;

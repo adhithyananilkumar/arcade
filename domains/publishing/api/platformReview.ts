@@ -4,7 +4,6 @@ export type ContentType =
   | "COURSE"
   | "EVENT"
   | "WORKSHOP"
-  | "ARTICLE"
   | "WEBINAR"
   | "BOOTCAMP"
   | "LEARNING_PATH"

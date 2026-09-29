@@ -22,20 +22,20 @@ interface ConsoleCourse {
   enrollments: number;
 }
 
-type CategoryType = 'COURSES' | 'EVENTS' | 'ARTICLES' | 'ALL';
+type CategoryType = 'COURSES' | 'EVENTS' | 'EXAMS' | 'ALL';
 
 const CATEGORY_TYPE_OPTIONS: { value: CategoryType; label: string }[] = [
-  { value: 'ALL', label: 'All Content Types (Courses, Events, Articles)' },
+  { value: 'ALL', label: 'All Content Types (Courses, Events, Exams)' },
   { value: 'COURSES', label: 'Self-Paced Courses' },
   { value: 'EVENTS', label: 'Events' },
-  { value: 'ARTICLES', label: 'Articles' },
+  { value: 'EXAMS', label: 'Exams' },
 ];
 
 const CATEGORY_TYPE_LABELS: Record<string, string> = {
   ALL: 'All Content Types',
   COURSES: 'Self-Paced Courses',
   EVENTS: 'Events',
-  ARTICLES: 'Articles',
+  EXAMS: 'Exams',
 };
 
 interface ConsoleCategory {
