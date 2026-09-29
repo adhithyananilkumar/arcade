@@ -11,17 +11,22 @@ import { useActivitySummaryQuery, useDailyActivityQuery } from '@/domains/learni
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAvatarUrl } from '@/shared/utils/avatar';
-import { BadgeRow, type ProfileBadge } from '@/domains/recognition';
+import { BadgeRow, VerifiedBadge, BadgeIcon, type ProfileBadge } from '@/domains/recognition';
 import {
   User as UserIcon, MapPin, Mail, Calendar, Edit3,
   Code, Star,
   Flame,
   Loader2, X, Camera, Globe,
-  BadgeCheck, Lock, Trash2, Sparkles, Shield
+  BadgeCheck, Lock, Trash2, Sparkles, Shield,
+  Building2, ExternalLink, BookOpen, ChevronRight,
+  Trophy
 } from 'lucide-react';
 import { FaLinkedin } from 'react-icons/fa';
 import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
 import { PhoneInput } from '@/shared/design-system/ui/phone-input';
+import { useUserChannels, channelService, type ChannelContentItem } from '@/domains/channels';
+import { ContentCard, ProfileEmptyState } from '@/domains/profiles';
+import { credentialsApi, type MyBadges, CredentialBadge } from '@/domains/credentials';
 
 
 function ProfilePageContent() {
@@ -30,6 +35,22 @@ function ProfilePageContent() {
   
   const { user, updateUser } = useAuthStore();
   const { data: activitySummary } = useActivitySummaryQuery(Boolean(user));
+  const { channels: userChannels, isLoading: isLoadingChannels } = useUserChannels({ enabled: Boolean(user) });
+  const organizationChannels = useMemo(
+    () => userChannels.filter((channel) => !channel.isPersonal),
+    [userChannels]
+  );
+  const personalChannel = useMemo(
+    () => userChannels.find((channel) => channel.isPersonal),
+    [userChannels]
+  );
+
+  const [channelContent, setChannelContent] = useState<ChannelContentItem[]>([]);
+  const [isLoadingContent, setIsLoadingContent] = useState(false);
+  const [myBadges, setMyBadges] = useState<MyBadges | null>(null);
+  const [isLoadingBadges, setIsLoadingBadges] = useState(false);
+  const [viewMode, setViewMode] = useState<'activity' | 'content'>('activity');
+  const [contentFilter, setContentFilter] = useState<'ALL' | 'COURSE' | 'EVENT'>('ALL');
   const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -102,6 +123,48 @@ function ProfilePageContent() {
     };
     loadProfile();
   }, []);
+
+  // Fetch personal channel published content
+  useEffect(() => {
+    if (!personalChannel) return;
+    let cancelled = false;
+    setIsLoadingContent(true);
+    channelService
+      .getPublishedChannelContent(personalChannel.id)
+      .then((items) => {
+        if (!cancelled) setChannelContent(items || []);
+      })
+      .catch((err) => {
+        console.error('Failed to load personal channel content:', err);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingContent(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [personalChannel]);
+
+  // Fetch credential badges
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    setIsLoadingBadges(true);
+    credentialsApi
+      .mine()
+      .then((res) => {
+        if (!cancelled) setMyBadges(res);
+      })
+      .catch((err) => {
+        console.warn('Failed to load credential badges:', err);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingBadges(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   // Handle populating fields and resetting validations when edit modal is opened
   useEffect(() => {
@@ -316,7 +379,56 @@ function ProfilePageContent() {
   // durable LearningActivity history server-side, not recomputed client-side.
   const currentStreak = activitySummary?.currentStreak ?? 0;
 
-  if (isLoading) {
+  const currentUser = profileData || user;
+  const username = currentUser?.username || currentUser?.email?.split('@')[0] || 'username';
+
+  // Combine personal channel published content with any user authored courses/workshops
+  const allPersonalContent = useMemo(() => {
+    if (channelContent.length > 0) return channelContent;
+    const items: ChannelContentItem[] = [];
+    (currentUser?.courses ?? []).forEach((c: any) => {
+      items.push({
+        id: c.id,
+        type: 'COURSE',
+        title: c.title,
+        description: c.description,
+        coverImageUrl: c.coverImageUrl,
+        status: c.status || 'PUBLISHED',
+        createdAt: c.createdAt || new Date().toISOString(),
+        updatedAt: c.updatedAt || new Date().toISOString(),
+      });
+    });
+    (currentUser?.workshops ?? []).forEach((w: any) => {
+      items.push({
+        id: w.id,
+        type: 'WORKSHOP',
+        title: w.title,
+        description: w.description,
+        coverImageUrl: w.coverImageUrl,
+        status: w.status || 'PUBLISHED',
+        createdAt: w.createdAt || new Date().toISOString(),
+        updatedAt: w.updatedAt || new Date().toISOString(),
+      });
+    });
+    return items;
+  }, [channelContent, currentUser?.courses, currentUser?.workshops]);
+
+  const filteredPersonalContent = useMemo(() => {
+    if (contentFilter === 'ALL') return allPersonalContent;
+    if (contentFilter === 'COURSE') {
+      return allPersonalContent.filter(
+        (item) => item.type?.toUpperCase() === 'COURSE'
+      );
+    }
+    return allPersonalContent.filter(
+      (item) =>
+        item.type?.toUpperCase() === 'WORKSHOP' ||
+        item.type?.toUpperCase() === 'EVENT' ||
+        item.type?.toUpperCase() === 'WEBINAR'
+    );
+  }, [allPersonalContent, contentFilter]);
+
+  if (isLoading || !currentUser) {
     return (
       <div className="flex h-[60vh] w-full flex-col items-center justify-center gap-3">
         <Loader2 className="animate-spin text-purple-600" size={36} />
@@ -324,10 +436,6 @@ function ProfilePageContent() {
       </div>
     );
   }
-
-  const currentUser = profileData || user;
-
-  const username = currentUser.username || currentUser.email?.split('@')[0] || 'username';
 
   return (
     <>
@@ -458,21 +566,22 @@ function ProfilePageContent() {
             </div>
 
             {/* Bio */}
-            <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed text-center md:text-left">
-              {currentUser.bio ? (
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-1">
-                  <Code size={14} className="text-purple-600 dark:text-purple-400 shrink-0 mr-1" />
-                  {currentUser.bio.split('|').map((part: string, i: number, arr: string[]) => (
-                    <span key={i} className="inline-flex items-center">
-                      {part.trim()}
-                      {i < arr.length - 1 && <span className="mx-1.5 text-slate-300 dark:text-slate-700">|</span>}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p>Passionate learner exploring new skills and enhancing knowledge every day.</p>
-              )}
-            </div>
+            {currentUser.bio && (
+              <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed text-center md:text-left whitespace-pre-line break-words">
+                {currentUser.bio.includes('\n')
+                  ? currentUser.bio
+                  : currentUser.bio.split('|').map((part: string) => part.trim()).join('\n')}
+              </div>
+            )}
+
+            {/* GitHub-style Full Width Edit Profile Button */}
+            <button 
+              onClick={() => setIsEditModalOpen(true)}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold px-4 py-2 text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shadow-xs cursor-pointer"
+            >
+              <Edit3 size={15} />
+              <span>Edit profile</span>
+            </button>
 
             {/* GitHub Details List */}
             <div className="space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium pt-1">
@@ -516,116 +625,344 @@ function ProfilePageContent() {
               )}
             </div>
 
-            {/* GitHub-style Full Width Edit Profile Button */}
-            <button 
-              onClick={() => setIsEditModalOpen(true)}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold px-4 py-2 text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shadow-xs cursor-pointer"
-            >
-              <Edit3 size={15} />
-              <span>Edit profile</span>
-            </button>
+            {/* Achievements Section */}
+            <div className="border-t border-slate-200 dark:border-slate-800/80 pt-5">
+              <div className="flex items-center justify-between mb-3">
+                <Link
+                  href="/achievements"
+                  className="group inline-flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                >
+                  <Trophy size={15} className="text-amber-500" />
+                  <span>Achievements</span>
+                  {((currentUser.badges?.length ?? 0) + (myBadges?.earned?.length ?? 0)) > 0 && (
+                    <span className="rounded-full bg-purple-100 dark:bg-purple-950/60 px-2 py-0.5 text-[11px] font-bold text-purple-700 dark:text-purple-300">
+                      {(currentUser.badges?.length ?? 0) + (myBadges?.earned?.length ?? 0)}
+                    </span>
+                  )}
+                </Link>
+                <Link
+                  href="/achievements"
+                  className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline"
+                >
+                  View all
+                </Link>
+              </div>
+
+              {isLoadingBadges ? (
+                <div className="flex items-center gap-2 py-2 text-xs text-slate-400">
+                  <Loader2 className="animate-spin" size={14} />
+                  <span>Loading achievements...</span>
+                </div>
+              ) : ((currentUser.badges?.length ?? 0) === 0 && (myBadges?.earned?.length ?? 0) === 0) ? (
+                <p className="text-xs text-slate-400 dark:text-slate-500 italic">
+                  No achievements unlocked yet.
+                </p>
+              ) : (
+                <div className="flex flex-wrap items-center gap-5 pt-2">
+                  {/* Live Recognition Badges Granted to User */}
+                  {(currentUser.badges as ProfileBadge[] | undefined)?.map((badge) => (
+                    <VerifiedBadge
+                      key={badge.code}
+                      badge={badge}
+                      size={96}
+                      showDetailOnHover={true}
+                      className="transition-transform hover:scale-105"
+                    />
+                  ))}
+
+                  {/* Live Issued Credential Badges */}
+                  {myBadges?.earned?.map((b) => (
+                    <Link
+                      key={b.credentialCode}
+                      href={`/credentials/${encodeURIComponent(b.credentialCode)}`}
+                      className="transition-transform hover:scale-105"
+                      title={`${b.name} (${b.badgeClass.tier.label}) - Issued by ${b.issuerName}`}
+                    >
+                      <CredentialBadge
+                        family={b.badgeClass.family.key}
+                        level={b.badgeClass.tier.level}
+                        title={b.name}
+                        className="w-24 h-24"
+                      />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Organizations Section */}
+            <div className="border-t border-slate-200 dark:border-slate-800/80 pt-5">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Building2 size={15} className="text-purple-600 dark:text-purple-400" />
+                  <span>Organizations</span>
+                  {organizationChannels.length > 0 && (
+                    <span className="ml-1 rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                      {organizationChannels.length}
+                    </span>
+                  )}
+                </h2>
+              </div>
+
+              {isLoadingChannels ? (
+                <div className="flex items-center gap-2 py-2 text-xs text-slate-400">
+                  <Loader2 className="animate-spin" size={14} />
+                  <span>Loading organizations...</span>
+                </div>
+              ) : organizationChannels.length === 0 ? (
+                <p className="text-xs text-slate-400 dark:text-slate-500 italic">
+                  No organizations joined yet.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {organizationChannels.map((channel) => {
+                    const channelHref = channel.handle
+                      ? `/${channel.handle}`
+                      : `/channels/${channel.id}`;
+                    return (
+                      <Link
+                        key={channel.id}
+                        href={channelHref}
+                        className="group flex items-center justify-between gap-3 p-2 rounded-xl border border-slate-200/70 dark:border-slate-800/80 bg-white/60 dark:bg-slate-850/50 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-purple-300 dark:hover:border-purple-900/50 transition-all shadow-2xs"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50">
+                            {channel.iconUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={channel.iconUrl}
+                                alt={channel.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <Building2 size={15} />
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                              {channel.name}
+                            </p>
+                            <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium">
+                              <span>Organization</span>
+                              {channel.status && channel.status !== 'ACTIVE' && (
+                                <>
+                                  <span>•</span>
+                                  <span className={channel.status === 'PENDING' ? 'text-amber-500 font-semibold' : 'text-rose-500 font-semibold'}>
+                                    {channel.status}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <ExternalLink size={13} className="text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
           </div>
 
           {/* ── RIGHT MAIN CONTENT (GitHub Profile Cards Column) ── */}
           <div className="flex-1 min-w-0 w-full space-y-6">
 
-
-
-            {/* 2. Learning Streak & GitHub Contribution Matrix */}
-            <div className="py-2">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-                <div>
-                  <h3 className="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
-                    <Flame size={18} className="text-amber-500" />
-                    <span>Learning Streak & Activity</span>
-                  </h3>
-                </div>
-                {currentStreak > 0 && (
-                  <div className="flex items-center gap-1.5 text-sm font-bold text-amber-600 dark:text-amber-400">
-                    <Flame size={16} className="text-amber-500" />
-                    <span>{currentStreak} day{currentStreak === 1 ? '' : 's'} in a row</span>
-                  </div>
-                )}
+            {/* Toggle Switcher: Learning Activity vs Personal Channel Popular Content */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 dark:border-slate-800 pb-3.5">
+              <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800/80 p-1 border border-slate-200/70 dark:border-slate-700/60 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('activity')}
+                  className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                    viewMode === 'activity'
+                      ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Flame size={15} className={viewMode === 'activity' ? 'text-amber-500' : 'text-slate-400'} />
+                  <span>Learning Activity</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('content')}
+                  className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                    viewMode === 'content'
+                      ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Sparkles size={15} className={viewMode === 'content' ? 'text-purple-600 dark:text-purple-400' : 'text-slate-400'} />
+                  <span>Channel & Popular Content</span>
+                  {allPersonalContent.length > 0 && (
+                    <span className="rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 px-1.5 py-0.2 text-[10px] font-bold">
+                      {allPersonalContent.length}
+                    </span>
+                  )}
+                </button>
               </div>
 
-              {/* Daily Streak Checks + Heatmap Grid */}
-              <div className="flex flex-col lg:flex-row items-center gap-6 pt-1">
-                {/* Heatmap Grid */}
-                <div className="flex-grow w-full overflow-hidden">
-                  <div className="flex gap-3 items-start">
-                    <div className="hidden sm:grid grid-rows-7 gap-[2px] text-[9px] text-slate-400 font-bold select-none shrink-0 pt-4">
-                      <div className="flex items-center h-[10px]">Sun</div>
-                      <div className="h-[10px]" />
-                      <div className="flex items-center h-[10px]">Wed</div>
-                      <div className="h-[10px]" />
-                      <div className="flex items-center h-[10px]">Fri</div>
-                      <div className="h-[10px]" />
+              {viewMode === 'activity' && currentStreak > 0 && (
+                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
+                  <Flame size={15} className="text-amber-500" />
+                  <span>{currentStreak} day{currentStreak === 1 ? '' : 's'} in a row</span>
+                </div>
+              )}
+
+              {viewMode === 'content' && personalChannel && (
+                <Link
+                  href={personalChannel.handle ? `/${personalChannel.handle}` : `/channels/${personalChannel.id}`}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline"
+                >
+                  <span>Go to Personal Channel</span>
+                  <ChevronRight size={13} />
+                </Link>
+              )}
+            </div>
+
+            {/* View 1: Learning Streak & GitHub Contribution Matrix */}
+            {viewMode === 'activity' && (
+              <div className="py-2 animate-in fade-in duration-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                  <div>
+                    <h3 className="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
+                      <Flame size={18} className="text-amber-500" />
+                      <span>Learning Streak & Activity</span>
+                    </h3>
+                  </div>
+                  {currentStreak > 0 && (
+                    <div className="flex items-center gap-1.5 text-sm font-bold text-amber-600 dark:text-amber-400">
+                      <Flame size={16} className="text-amber-500" />
+                      <span>{currentStreak} day{currentStreak === 1 ? '' : 's'} in a row</span>
                     </div>
+                  )}
+                </div>
 
-                    <div className="flex-grow overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1">
-                      <div className="w-fit">
-                        <div className="flex text-[9px] text-slate-400 font-bold mb-1.5 h-3.5 relative select-none">
-                          {months.map((m, i) => (
-                            <span 
-                              key={`${m.name}-${m.col}-${i}`} 
-                              className="absolute" 
-                              style={{ left: `calc(${m.col} * (100% / ${totalWeeks || 53}))` }}
-                            >
-                              {m.name}
-                            </span>
-                          ))}
-                        </div>
+                {/* Daily Streak Checks + Heatmap Grid */}
+                <div className="flex flex-col lg:flex-row items-center gap-6 pt-1">
+                  {/* Heatmap Grid */}
+                  <div className="flex-grow w-full overflow-hidden">
+                    <div className="flex gap-3 items-start">
+                      <div className="hidden sm:grid grid-rows-7 gap-[2px] text-[9px] text-slate-400 font-bold select-none shrink-0 pt-4">
+                        <div className="flex items-center h-[10px]">Sun</div>
+                        <div className="h-[10px]" />
+                        <div className="flex items-center h-[10px]">Wed</div>
+                        <div className="h-[10px]" />
+                        <div className="flex items-center h-[10px]">Fri</div>
+                        <div className="h-[10px]" />
+                      </div>
 
-                        <div className="grid grid-flow-col grid-rows-7 gap-[2px]">
-                          {contributionGrid.map((week, wIdx) => 
-                            week.map((cell, dIdx) => (
-                              <div 
-                                key={`${wIdx}-${dIdx}`}
-                                onMouseEnter={(e) => {
-                                  const rect = e.currentTarget.getBoundingClientRect();
-                                  setHoveredCell({
-                                    count: cell.count,
-                                    dateStr: cell.dateStr,
-                                    x: rect.left + rect.width / 2,
-                                    y: rect.top - 8
-                                  });
-                                }}
-                                onMouseLeave={() => setHoveredCell(null)}
-                                className={`w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-xs transition-all duration-150 cursor-pointer ${
-                                  cell.level === 0 ? 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200' :
-                                  cell.level === 1 ? 'bg-purple-200 dark:bg-purple-900/60 hover:scale-110' :
-                                  cell.level === 2 ? 'bg-purple-400 dark:bg-purple-600 hover:scale-110' :
-                                  'bg-purple-600 dark:bg-purple-500 hover:scale-110 shadow-2xs'
-                                }`}
-                              />
-                            ))
-                          )}
+                      <div className="flex-grow overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1">
+                        <div className="w-fit">
+                          <div className="flex text-[9px] text-slate-400 font-bold mb-1.5 h-3.5 relative select-none">
+                            {months.map((m, i) => (
+                              <span 
+                                key={`${m.name}-${m.col}-${i}`} 
+                                className="absolute" 
+                                style={{ left: `calc(${m.col} * (100% / ${totalWeeks || 53}))` }}
+                              >
+                                {m.name}
+                              </span>
+                            ))}
+                          </div>
+
+                          <div className="grid grid-flow-col grid-rows-7 gap-[2px]">
+                            {contributionGrid.map((week, wIdx) => 
+                              week.map((cell, dIdx) => (
+                                <div 
+                                  key={`${wIdx}-${dIdx}`}
+                                  onMouseEnter={(e) => {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    setHoveredCell({
+                                      count: cell.count,
+                                      dateStr: cell.dateStr,
+                                      x: rect.left + rect.width / 2,
+                                      y: rect.top - 8
+                                    });
+                                  }}
+                                  onMouseLeave={() => setHoveredCell(null)}
+                                  className={`w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-xs transition-all duration-150 cursor-pointer ${
+                                    cell.level === 0 ? 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200' :
+                                    cell.level === 1 ? 'bg-purple-200 dark:bg-purple-900/60 hover:scale-110' :
+                                    cell.level === 2 ? 'bg-purple-400 dark:bg-purple-600 hover:scale-110' :
+                                    'bg-purple-600 dark:bg-purple-500 hover:scale-110 shadow-2xs'
+                                  }`}
+                                />
+                              ))
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center justify-end gap-2 mt-3 text-xs text-slate-400 font-medium">
-                    <span>Less</span>
-                    <div className="w-2.5 h-2.5 rounded-xs bg-slate-100 dark:bg-slate-800" />
-                    <div className="w-2.5 h-2.5 rounded-xs bg-purple-200 dark:bg-purple-900/60" />
-                    <div className="w-2.5 h-2.5 rounded-xs bg-purple-400 dark:bg-purple-600" />
-                    <div className="w-2.5 h-2.5 rounded-xs bg-purple-600 dark:bg-purple-500" />
-                    <span>More</span>
+                    <div className="flex items-center justify-end gap-2 mt-3 text-xs text-slate-400 font-medium">
+                      <span>Less</span>
+                      <div className="w-2.5 h-2.5 rounded-xs bg-slate-100 dark:bg-slate-800" />
+                      <div className="w-2.5 h-2.5 rounded-xs bg-purple-200 dark:bg-purple-900/60" />
+                      <div className="w-2.5 h-2.5 rounded-xs bg-purple-400 dark:bg-purple-600" />
+                      <div className="w-2.5 h-2.5 rounded-xs bg-purple-600 dark:bg-purple-500" />
+                      <span>More</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* Achievements/badges/certificates are not backed by a real system yet — removed
-                rather than shown as fake data. See docs/architecture/LEARNER_IDENTITY_DOMAIN.md. */}
+            {/* View 2: Personal Channel & Popular Content */}
+            {viewMode === 'content' && (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                {/* Content Filter Pills */}
+                {allPersonalContent.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    {(['ALL', 'COURSE', 'EVENT'] as const).map((filter) => (
+                      <button
+                        key={filter}
+                        type="button"
+                        onClick={() => setContentFilter(filter)}
+                        className={`rounded-lg px-3 py-1 text-xs font-bold transition-colors cursor-pointer ${
+                          contentFilter === filter
+                            ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-2xs'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        }`}
+                      >
+                        {filter === 'ALL' ? 'All Content' : filter === 'COURSE' ? 'Courses' : 'Events & Workshops'}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-
+                {/* Content Grid */}
+                {isLoadingContent ? (
+                  <div className="flex h-40 w-full flex-col items-center justify-center gap-2 text-slate-400">
+                    <Loader2 className="animate-spin text-purple-600" size={24} />
+                    <span className="text-xs font-medium">Loading channel content...</span>
+                  </div>
+                ) : filteredPersonalContent.length === 0 ? (
+                  <ProfileEmptyState
+                    icon={BookOpen}
+                    title="No published content yet"
+                    description="No published courses or events yet on this personal channel."
+                  />
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredPersonalContent.map((item) => {
+                      const isCourse = item.type?.toUpperCase() === 'COURSE';
+                      const href = isCourse ? `/courses/${item.id}` : `/events/${item.id}`;
+                      return (
+                        <ContentCard
+                          key={item.id}
+                          item={item}
+                          kind={isCourse ? 'COURSE' : 'EVENT'}
+                          href={href}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
-
-
 
       </motion.div>
 
@@ -819,12 +1156,18 @@ function ProfilePageContent() {
                     </div>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">Bio</label>
-                      <p className="mb-1.5 text-[11px] text-slate-400">Use | to split lines</p>
+                      <div className="mb-1.5 flex items-center justify-between">
+                        <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Bio</label>
+                        <span className={`text-[11px] font-medium ${editBio.length >= 250 ? 'text-amber-500 font-bold' : 'text-slate-400'}`}>
+                          {editBio.length}/250
+                        </span>
+                      </div>
                       <textarea
                         rows={3}
+                        maxLength={250}
                         value={editBio}
                         onChange={(e) => setEditBio(e.target.value)}
+                        placeholder="Tell us a little about yourself (press Enter for new lines)..."
                         className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition focus:border-purple-600 focus:ring-1 focus:ring-purple-600 resize-none"
                       />
                     </div>

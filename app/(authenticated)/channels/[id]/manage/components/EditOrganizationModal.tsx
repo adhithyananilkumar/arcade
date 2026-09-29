@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { X, Upload, Loader2, Building2, Image as ImageIcon, Check, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 import { ChannelDoodleBanner } from '../ChannelDoodleBanner';
 
 interface EditOrganizationModalProps {
@@ -211,7 +212,7 @@ export function EditOrganizationModal({
                 </div>
 
                 <div className="relative group overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50">
-                  <ChannelDoodleBanner bannerUrl={bannerPreview} className="h-36 w-full" />
+                  <ChannelDoodleBanner bannerUrl={bannerPreview} className="w-full aspect-[4/1]" />
 
                   <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-xs">
                     <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-xs font-extrabold text-slate-800 shadow-md hover:bg-slate-50 transition-all">
@@ -249,7 +250,7 @@ export function EditOrganizationModal({
 
                   <div className="relative group h-24 w-24 overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center">
                     {iconPreview ? (
-                      <img src={iconPreview} alt="Logo" className="h-full w-full object-cover" />
+                      <img src={getAvatarUrl(iconPreview)} alt="Logo" className="h-full w-full object-cover" />
                     ) : (
                       <svg
                         width="36"

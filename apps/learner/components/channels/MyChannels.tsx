@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Channel, channelService } from '@/domains/channels';
 import { Tv, Clock, CheckCircle, ChevronRight, Users, Crown, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 import Link from 'next/link';
 
 type Row = Channel & { relationship: 'OWNER' | 'STAFF' };
@@ -108,7 +109,7 @@ export function MyChannels() {
                 <div className="flex min-w-0 items-center gap-3.5">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 text-slate-500">
                     {channel.iconUrl ? (
-                      <img src={channel.iconUrl} alt={channel.name} className="h-full w-full object-cover" />
+                      <img src={getAvatarUrl(channel.iconUrl)} alt={channel.name} className="h-full w-full object-cover" />
                     ) : (
                       <Tv size={22} />
                     )}

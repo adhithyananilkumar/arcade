@@ -18,6 +18,7 @@ import {
   Link as LinkIcon,
 } from 'lucide-react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 import { ChannelDoodleBanner } from './manage/ChannelDoodleBanner';
 
 // Public channel page — YouTube/Instagram-style published grid.
@@ -188,85 +189,46 @@ export default function ChannelHomePage() {
       <div className="relative z-10 mx-auto w-full max-w-6xl space-y-6 px-5 pb-16 pt-32 sm:px-8 sm:pt-36">
 
         {/* Hero */}
-        <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_10px_32px_rgba(20,20,43,0.05)]">
-          <ChannelDoodleBanner bannerUrl={channel.bannerUrl} className="h-44 w-full sm:h-56" />
+        <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_10px_32px_rgba(20,20,43,0.05)] dark:border-neutral-800 dark:bg-neutral-950">
+          {/* Hero Banner with floating info */}
+          <div className="relative group/banner w-full overflow-hidden bg-slate-900">
+            <ChannelDoodleBanner
+              bannerUrl={channel.bannerUrl}
+              className="w-full h-56 sm:h-64 md:h-72 object-cover"
+            />
 
-          <div className="px-5 pb-6 sm:px-7">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-                {/* Avatar floating over banner */}
-                <div className="-mt-12 sm:-mt-14 shrink-0 relative z-10">
-                  <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center overflow-hidden rounded-2xl border-[4px] border-white bg-[#F5F0E6] text-black shadow-md ring-1 ring-black/5">
-                    {channel.iconUrl ? (
-                      <img
-                        src={channel.iconUrl}
-                        alt={channel.name}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-[#F5F0E6] flex items-center justify-center text-[#14142b]">
-                        <svg
-                          width="38"
-                          height="38"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="text-[#2962D6] dark:text-[#3B82F6]"
-                        >
-                          {/* Megaphone Cone Body */}
-                          <path
-                            d="M3.5 10.5V13.5C3.5 14.1 4 14.5 4.5 14.5H6.5L14 18V6L6.5 9.5H4.5C4 9.5 3.5 9.9 3.5 10.5Z"
-                            stroke="currentColor"
-                            strokeWidth="1.6"
-                            strokeLinejoin="round"
-                          />
-                          {/* Megaphone Back rim */}
-                          <path
-                            d="M14 6C15 6 16 8.7 16 12C16 15.3 15 18 14 18"
-                            stroke="currentColor"
-                            strokeWidth="1.6"
-                            strokeLinecap="round"
-                          />
-                          {/* Handle */}
-                          <path
-                            d="M7 14.5L7.8 19C7.9 19.6 8.4 20 9 20C9.6 20 10.1 19.5 10 18.9L9.5 14.5"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                          />
-                          {/* Accent dot on cone */}
-                          <circle cx="5" cy="12" r="0.75" fill="#F59E0B" />
-                          {/* Soundwaves / Broadcast arcs */}
-                          <path
-                            d="M18 9C19.2 10 19.8 11 19.8 12C19.8 13 19.2 14 18 15"
-                            stroke="#27C5D8"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                          />
-                          <path
-                            d="M20.5 7C22.2 8.5 23 10.2 23 12C23 13.8 22.2 15.5 20.5 17"
-                            stroke="#27C5D8"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
+            {/* Dark gradient overlay for text readability */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+            {/* Floating identity & actions bar */}
+            <div className="absolute bottom-0 inset-x-0 z-20 flex flex-col gap-4 p-5 sm:flex-row sm:items-end sm:justify-between sm:p-6">
+              <div className="flex flex-col gap-3.5 sm:flex-row sm:items-end min-w-0">
+                <div className="relative flex h-20 w-20 sm:h-24 sm:w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-white/90 bg-slate-900 text-white shadow-2xl backdrop-blur-md">
+                  {channel.iconUrl ? (
+                    <img
+                      src={getAvatarUrl(channel.iconUrl)}
+                      alt={channel.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Tv size={36} className="text-white" />
+                  )}
                 </div>
 
-                <div className="min-w-0 space-y-1.5 pt-1 sm:pt-3 pb-0.5">
-                  <h1 className="truncate text-2xl font-extrabold tracking-tight bg-gradient-to-r from-[#14142b] via-indigo-950 to-blue-900 bg-clip-text text-transparent sm:text-[1.75rem]">
+                <div className="min-w-0 space-y-1">
+                  <h1 className="truncate text-2xl font-extrabold tracking-tight text-white drop-shadow-md sm:text-3xl">
                     {channel.name}
                   </h1>
-                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-medium text-slate-500">
-                    <span>{channel.ownerName}</span>
-                    <span className="text-slate-300">·</span>
-                    <span>
+                  <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[12px] font-semibold text-white/90">
+                    <span className="drop-shadow">{channel.ownerName}</span>
+                    <span className="text-white/40">·</span>
+                    <span className="drop-shadow">
                       {items.length} {items.length === 1 ? 'published item' : 'published items'}
                     </span>
-                    <span className="text-slate-300">·</span>
-                    <span>{channel.isPersonal ? 'Personal' : 'Organization'}</span>
+                    <span className="text-white/40">·</span>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/15 backdrop-blur-md px-2.5 py-0.5 text-white shadow-xs">
+                      {channel.isPersonal ? 'Personal' : 'Organization'}
+                    </span>
                   </p>
                 </div>
               </div>
@@ -274,45 +236,49 @@ export default function ChannelHomePage() {
               {canManage && (
                 <Link
                   href={`/channels/${channelId}/manage`}
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#14142b] px-4 py-2.5 text-[12px] font-semibold text-white shadow-[0_8px_18px_rgba(20,20,43,0.16)] transition-colors hover:bg-[#232735]"
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white text-slate-900 hover:bg-slate-100 px-4 py-2 text-[12px] font-bold shadow-lg transition-all active:scale-95"
                 >
                   <Settings size={14} />
-                  Manage
+                  Manage channel
                 </Link>
               )}
             </div>
-
-            {channel.description && (
-              <p className="max-w-3xl whitespace-pre-wrap text-[13px] leading-relaxed text-slate-600">
-                {channel.description}
-              </p>
-            )}
-
-            {channel.socialLinks && channel.socialLinks.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2.5">
-                {channel.socialLinks.map((link, idx) => {
-                  try {
-                    const url = new URL(link);
-                    const hostname = url.hostname.replace(/^www\./, '');
-                    return (
-                      <a
-                        key={idx}
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded-full bg-slate-100/80 px-3 py-1.5 text-[12px] font-medium text-slate-600 transition-colors hover:bg-[#14142b] hover:text-white"
-                      >
-                        <LinkIcon size={12} />
-                        {hostname}
-                      </a>
-                    );
-                  } catch (e) {
-                    return null;
-                  }
-                })}
-              </div>
-            )}
           </div>
+
+          {(channel.description || (channel.socialLinks && channel.socialLinks.length > 0)) && (
+            <div className="px-6 py-5 sm:px-7 space-y-4">
+              {channel.description && (
+                <p className="max-w-3xl whitespace-pre-wrap text-[13.5px] leading-relaxed text-slate-600 dark:text-neutral-300">
+                  {channel.description}
+                </p>
+              )}
+
+              {channel.socialLinks && channel.socialLinks.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {channel.socialLinks.map((link, idx) => {
+                    try {
+                      const url = new URL(link);
+                      const hostname = url.hostname.replace(/^www\./, '');
+                      return (
+                        <a
+                          key={idx}
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[12px] font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+                        >
+                          <LinkIcon size={12} />
+                          {hostname}
+                        </a>
+                      );
+                    } catch (e) {
+                      return null;
+                    }
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
         {/* Content */}

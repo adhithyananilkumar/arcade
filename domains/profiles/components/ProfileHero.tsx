@@ -125,8 +125,10 @@ export function ProfileHero({ profile, actions }: ProfileHeroProps) {
           )}
 
           {profile.bio && (
-            <p className="mt-3 max-w-2xl text-[13.5px] font-medium leading-relaxed text-slate-500 dark:text-neutral-400">
-              {profile.bio}
+            <p className="mt-3 max-w-2xl text-[13.5px] font-medium leading-relaxed text-slate-500 dark:text-neutral-400 whitespace-pre-line break-words">
+              {profile.bio.includes('\n')
+                ? profile.bio
+                : profile.bio.split('|').map((part) => part.trim()).join('\n')}
             </p>
           )}
 

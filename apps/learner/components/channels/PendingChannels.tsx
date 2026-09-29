@@ -42,6 +42,7 @@ import { toast } from 'sonner';
 import { usePermissions } from "@/domains/identity";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
 import { cn } from '@/shared/utils/utils';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 
 type StatusFilter = 'ALL' | 'PENDING' | 'ACTIVE' | 'SUSPENDED';
 type TypeFilter = 'ALL' | 'PERSONAL' | 'ORGANIZATION';
@@ -542,7 +543,7 @@ export function PendingChannels() {
                       <div className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200/90 text-slate-700 overflow-hidden shrink-0 border border-slate-200/80 shadow-2xs group-hover:scale-105 transition-transform font-bold text-sm">
                         {channel.iconUrl ? (
                           <img
-                            src={channel.iconUrl}
+                            src={getAvatarUrl(channel.iconUrl)}
                             alt={channel.name}
                             className="h-full w-full object-cover"
                           />
@@ -758,7 +759,7 @@ export function PendingChannels() {
                           <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 via-slate-50 to-indigo-100/70 text-indigo-600 overflow-hidden shrink-0 border border-indigo-200/50 shadow-2xs group-hover:scale-105 group-hover:border-indigo-300 transition-all">
                             {channel.iconUrl ? (
                               <img
-                                src={channel.iconUrl}
+                                src={getAvatarUrl(channel.iconUrl)}
                                 alt={channel.name}
                                 className="h-full w-full object-cover"
                               />
@@ -1009,7 +1010,7 @@ export function PendingChannels() {
                   <div className="flex size-13 items-center justify-center rounded-xl bg-white text-slate-700 overflow-hidden shrink-0 border border-slate-200/80 shadow-2xs">
                     {selectedChannel.iconUrl ? (
                       <img
-                        src={selectedChannel.iconUrl}
+                        src={getAvatarUrl(selectedChannel.iconUrl)}
                         alt={selectedChannel.name}
                         className="h-full w-full object-cover"
                       />

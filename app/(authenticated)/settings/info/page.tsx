@@ -667,9 +667,10 @@ export default function PersonalInfoPage() {
                     <div className="flex items-center gap-1.5 mt-1">
                       <input
                         type="text"
+                        maxLength={250}
                         value={bioInput}
                         onChange={(e) => setBioInput(e.target.value)}
-                        placeholder="Short intro for learners"
+                        placeholder="Short intro for learners (max 250 chars)"
                         className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
                       />
                       {renderSaveCancelButtons("Bio", () => handleSaveInstructorField('bio'))}

@@ -171,7 +171,27 @@ function ChannelInviteCreateContent() {
   const [organization, setOrganization] = useState(emptyOrganization);
   const [organizationProofDocument, setOrganizationProofDocument] = useState<File | null>(null);
 
-  const personalName = (user?.fullName || user?.email || '').trim();
+  const personalName = (
+    user?.fullName ||
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
+    user?.email ||
+    ''
+  ).trim();
+
+  useEffect(() => {
+    if (!user) return;
+    setApplicant((prev) => ({
+      ...prev,
+      fullName: prev.fullName || personalName,
+      email: prev.email || user.email || '',
+      phoneNumber: prev.phoneNumber || user.mobileNumber || '',
+      gender: prev.gender || user.gender || '',
+      address: prev.address || user.address || '',
+    }));
+    if (user.mobileNumber) {
+      setIsPhoneValid(true);
+    }
+  }, [user, personalName]);
 
   const updateApplicant = (field: keyof typeof emptyApplicant, value: string) => {
     setApplicant((prev) => ({ ...prev, [field]: value }));
