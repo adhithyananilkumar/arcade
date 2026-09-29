@@ -598,7 +598,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   // ── Auto-save handler ─────────────────────────────────────────────────────
   const handleSave = useCallback(
     async (doc: TiptapDocument) => {
-      if (!activeLessonId) return;
+      if (!activeLessonId || status === "SUBMITTED") return;
       const ydoc = activeYDocRef.current;
       if (!ydoc) return;
 
@@ -638,7 +638,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeLessonId, collabState.status]
+    [activeLessonId, status, collabState.status]
   );
 
   const handleRestore = useCallback(
@@ -1007,50 +1007,68 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
     if (navigatingBack) return;
     setNavigatingBack(true);
 
-    const tasks: Promise<unknown>[] = [];
-    // When the metadata room is live, Hocuspocus already persisted every keystroke and the
-    // backend's onDocumentSaved hook already wrote it back into the Course/Event row — sending a
-    // REST PATCH too would just be a redundant, potentially-stale write racing a fresher one.
-    // Only fall back to REST when collaboration never connected (matches the lesson-body pattern
-    // in handleSave below).
-    if (contentId && metadataCollabStatus !== "connected") {
-      tasks.push(
-        adapter.updateMeta(contentId, { title, description, pricingModel }).catch((e) => console.warn("Content metadata flush failed", e))
-      );
-    }
-    if (activeLessonId) {
-      tasks.push(
-        api
-          .patch(`/api/lessons/${activeLessonId}`, { title: activeLessonTitle.trim() || adapter.terminology.leafDocument })
-          .catch((e) => console.warn("Lesson title flush failed", e))
-      );
-      if (editorRef.current) {
-        tasks.push(Promise.resolve(editorRef.current.flush()).catch((e) => console.warn("Lesson body flush failed", e)));
-      }
-    }
-    await Promise.all(tasks);
+    try {
+      if (status !== "SUBMITTED") {
+        const tasks: Promise<unknown>[] = [];
+        // When the metadata room is live, Hocuspocus already persisted every keystroke and the
+        // backend's onDocumentSaved hook already wrote it back into the Course/Event row — sending a
+        // REST PATCH too would just be a redundant, potentially-stale write racing a fresher one.
+        // Only fall back to REST when collaboration never connected (matches the lesson-body pattern
+        // in handleSave below).
+        if (contentId && metadataCollabStatus !== "connected") {
+          tasks.push(
+            adapter.updateMeta(contentId, { title, description, pricingModel }).catch((e) => console.warn("Content metadata flush failed", e))
+          );
+        }
+        if (activeLessonId) {
+          const currentLesson = modules.flatMap((m) => m.lessons).find((l) => l.id === activeLessonId);
+          if (currentLesson && activeLessonTitle.trim() && currentLesson.title !== activeLessonTitle.trim()) {
+            tasks.push(
+              api
+                .patch(`/api/lessons/${activeLessonId}`, { title: activeLessonTitle.trim() || adapter.terminology.leafDocument })
+                .catch((e) => console.warn("Lesson title flush failed", e))
+            );
+          }
+          if (editorRef.current) {
+            tasks.push(Promise.resolve(editorRef.current.flush()).catch((e) => console.warn("Lesson body flush failed", e)));
+          }
+        }
+        await Promise.all(tasks);
 
-    if (activeLessonId && activeYDocRef.current && editorRef.current) {
-      const json = editorRef.current.getJSON();
-      if (json) {
-        try {
-          const versionsUrl =
-            adapter.terminology.root === "Course"
-              ? `/api/documents/LESSON/${activeLessonId}/versions`
-              : `/api/v1/events/lessons/${activeLessonId}/document/versions`;
-          await api.post(versionsUrl, {
-            snapshot: encodeSnapshotBase64(activeYDocRef.current),
-            body: JSON.stringify(json),
-            kind: "AUTO",
-          });
-        } catch (e) {
-          console.warn("Exit snapshot failed", e);
+        if (activeLessonId && activeYDocRef.current && editorRef.current) {
+          const json = editorRef.current.getJSON();
+          if (json) {
+            try {
+              const versionsUrl =
+                adapter.terminology.root === "Course"
+                  ? `/api/documents/LESSON/${activeLessonId}/versions`
+                  : `/api/v1/events/lessons/${activeLessonId}/document/versions`;
+              await api.post(versionsUrl, {
+                snapshot: encodeSnapshotBase64(activeYDocRef.current),
+                body: JSON.stringify(json),
+                kind: "AUTO",
+              });
+            } catch (e) {
+              console.warn("Exit snapshot failed", e);
+            }
+          }
         }
       }
+    } catch (e) {
+      console.warn("Back flush error:", e);
+    } finally {
+      if (typeof window !== "undefined" && window.history.length > 1) {
+        router.back();
+      } else if (backHref) {
+        router.push(backHref);
+      } else {
+        router.back();
+      }
+      setTimeout(() => {
+        setNavigatingBack(false);
+      }, 1000);
     }
-
-    router.push(backHref);
-  }, [navigatingBack, contentId, title, description, pricingModel, metadataCollabStatus, activeLessonId, activeLessonTitle, router, adapter, backHref]);
+  }, [navigatingBack, status, contentId, title, description, pricingModel, metadataCollabStatus, activeLessonId, activeLessonTitle, modules, router, adapter, backHref]);
 
   // ── Submit for review ─────────────────────────────────────────────────────
 

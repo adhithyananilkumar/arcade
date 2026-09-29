@@ -68,13 +68,13 @@ export function ChannelHero({ channel, actions }: ChannelHeroProps) {
 
       <div className="relative -mt-12 flex flex-col gap-6 px-1 sm:-mt-14 md:flex-row md:items-end md:gap-8">
         <div className="h-24 w-24 shrink-0 self-center rounded-[22px] border-4 border-white bg-white shadow-[0_8px_24px_-12px_rgb(15,23,42,0.3)] sm:h-28 sm:w-28 md:self-auto dark:border-black dark:bg-black">
-          <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[16px] bg-slate-50 dark:bg-neutral-900">
+          <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[16px] bg-white">
             {channel.iconUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={getAvatarUrl(channel.iconUrl)}
                 alt=""
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover bg-white"
               />
             ) : (
               <Building2 size={32} className="text-slate-300 dark:text-neutral-700" />

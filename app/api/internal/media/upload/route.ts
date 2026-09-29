@@ -115,12 +115,14 @@ export async function POST(req: Request) {
 
     const arrayBuffer = await file.arrayBuffer();
 
+    const headers: Record<string, string> = {};
+    if (file.type) {
+      headers['Content-Type'] = file.type;
+    }
+
     const res = await fetch(uploadUrl, {
       method: 'PUT',
-      headers: {
-        'Content-Type': file.type,
-        'Content-Length': arrayBuffer.byteLength.toString(),
-      },
+      headers,
       body: arrayBuffer,
       // Presigned storage PUT uploads never legitimately redirect; treat any
       // redirect response as a failure rather than silently following it to

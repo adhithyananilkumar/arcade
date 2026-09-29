@@ -13,6 +13,12 @@ export interface CourseAttribution {
   name: string;
   role: string;
   avatarUrl: string;
+  isOrg: boolean;
+  instructors: Array<{
+    id?: string;
+    name: string;
+    avatarUrl?: string | null;
+  }>;
 }
 
 /** Fields a course card needs to attribute itself; all optional so partial rows are safe. */
@@ -31,18 +37,39 @@ export function monogramAvatar(name: string): string {
 export function getCourseAttribution(course: AttributableCourse): CourseAttribution {
   const channel = course.channel;
   if (channel && !channel.isPersonal && channel.name) {
+    const credited = course.collaborators ?? [];
+    let instructors: Array<{ id?: string; name: string; avatarUrl?: string | null }> = [];
+    if (credited.length > 0) {
+      instructors = credited.map((c) => ({
+        id: c.id,
+        name: c.name,
+        avatarUrl: c.avatarUrl,
+      }));
+    } else if (course.authorName) {
+      instructors = [
+        {
+          name: course.authorName,
+          avatarUrl: course.authorAvatarUrl,
+        },
+      ];
+    }
+
     return {
       name: channel.name,
-      role: "Organization",
+      role: "",
       avatarUrl: channel.iconUrl || monogramAvatar(channel.name),
+      isOrg: true,
+      instructors,
     };
   }
 
   if (course.authorName) {
     return {
       name: course.authorName,
-      role: "Course Author",
+      role: "",
       avatarUrl: course.authorAvatarUrl || monogramAvatar(course.authorName),
+      isOrg: false,
+      instructors: [],
     };
   }
 
@@ -53,10 +80,12 @@ export function getCourseAttribution(course: AttributableCourse): CourseAttribut
   if (primary?.name) {
     return {
       name: primary.name,
-      role: primary.role === "Author" ? "Course Author" : "Instructor",
+      role: "",
       avatarUrl: primary.avatarUrl || monogramAvatar(primary.name),
+      isOrg: false,
+      instructors: [],
     };
   }
 
-  return { name: "Arcade", role: "Course Author", avatarUrl: monogramAvatar("Arcade") };
+  return { name: "Arcade", role: "", avatarUrl: monogramAvatar("Arcade"), isOrg: false, instructors: [] };
 }

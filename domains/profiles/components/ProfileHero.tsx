@@ -88,13 +88,13 @@ export function ProfileHero({ profile, actions }: ProfileHeroProps) {
       <div className="relative flex flex-col gap-7 pt-4 md:flex-row md:items-start md:gap-9">
         <div className="relative h-[112px] w-[112px] shrink-0 self-center md:self-start">
           <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full border border-slate-100 bg-white p-1 shadow-[0_8px_24px_-12px_rgb(15,23,42,0.25)] dark:border-neutral-800 dark:bg-black">
-            <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-slate-50 dark:bg-neutral-900">
+            <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-white">
               {profile.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={getAvatarUrl(profile.avatarUrl)}
                   alt=""
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover bg-white"
                   referrerPolicy="no-referrer"
                 />
               ) : (

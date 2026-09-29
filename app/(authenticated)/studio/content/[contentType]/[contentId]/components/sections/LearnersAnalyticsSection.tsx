@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
 import type { CourseResponse } from "@/shared/types/api.types";
 import { formatMoney, fromMinorUnits, toMinorUnits } from "@/shared/utils/money";
+import { uploadFileToStorage } from "@/infrastructure/media/upload";
 import {
   listAssessmentPlacementsForCourse,
   listExamPlans,
@@ -57,9 +58,11 @@ export interface FeedbackRecord {
 export function LearnersAnalyticsSection({
   contentId,
   segment,
+  onChanged,
 }: {
   contentId?: string;
   segment?: ContentTypeSegment | null;
+  onChanged?: () => void;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSubTab, setActiveSubTab] = useState<
@@ -517,11 +520,11 @@ export function LearnersAnalyticsSection({
         {/* TAB 5: Course overview and pricing — the authoring surfaces for what the public
             course page shows. Courses only; events price through their own workspace. */}
         {activeSubTab === "overview" && segment === "course" && contentId && (
-          <CourseOverviewEditor contentId={contentId} />
+          <CourseOverviewEditor contentId={contentId} onChanged={onChanged} />
         )}
 
         {activeSubTab === "pricing" && segment === "course" && contentId && (
-          <CoursePricingEditor contentId={contentId} />
+          <CoursePricingEditor contentId={contentId} onChanged={onChanged} />
         )}
 
       </div>
@@ -540,7 +543,13 @@ export function LearnersAnalyticsSection({
  * Outcomes are stored as one newline-separated string rather than a list, matching the
  * `courses.learning_outcomes` column — the reader splits on newlines.
  */
-function CourseOverviewEditor({ contentId }: { contentId: string }) {
+function CourseOverviewEditor({
+  contentId,
+  onChanged,
+}: {
+  contentId: string;
+  onChanged?: () => void;
+}) {
   const [description, setDescription] = useState("");
   const [learningOutcomes, setLearningOutcomes] = useState("");
   const [duration, setDuration] = useState("");
@@ -572,60 +581,73 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
     };
   }, [contentId]);
 
-  /**
-   * Three-step upload, matching the rest of the app: presign, PUT through the internal proxy
-   * (the storage origin does not allow browser CORS), then register the object's metadata.
-   * The URL is only held in form state — it is persisted by "Save overview" like every other
-   * field here.
-   */
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsUploading(true);
     try {
-      const { key, uploadUrl, publicUrl } = await api.post<{
-        key: string;
-        uploadUrl: string;
-        publicUrl: string;
-      }>("/api/media/presign", { fileName: file.name, contentType: file.type });
-
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("uploadUrl", uploadUrl);
-      const uploadRes = await fetch("/api/internal/media/upload", { method: "POST", body: formData });
-      if (!uploadRes.ok) throw new Error("Upload failed");
-
-      await api.post("/api/media/metadata", {
-        key,
-        fileName: file.name,
-        contentType: file.type,
-        sizeBytes: file.size,
-      });
-
+      const allowedTypes = [
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "image/webp",
+        "image/svg+xml",
+      ];
+      const publicUrl = await uploadFileToStorage(file, allowedTypes);
       setCoverImageUrl(publicUrl);
       toast.success("Image uploaded. Save the overview to apply it.");
-    } catch {
-      toast.error("Could not upload that image");
+    } catch (err: unknown) {
+      console.error("Cover upload error:", err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "object" && err !== null && "message" in err
+          ? String((err as { message: unknown }).message)
+          : "Could not upload that image";
+      toast.error(message || "Could not upload that image");
     } finally {
       setIsUploading(false);
+      e.target.value = "";
     }
   };
 
+  const MAX_DESCRIPTION_WORDS = 500;
+  const descriptionWordCount = description && description.trim() ? description.trim().split(/\s+/).filter(Boolean).length : 0;
+  const isDescriptionOverLimit = descriptionWordCount > MAX_DESCRIPTION_WORDS;
+
   const handleSave = async () => {
+    if (isDescriptionOverLimit) {
+      toast.error("About this course must be 500 words or fewer.");
+      return;
+    }
     setIsSaving(true);
     try {
       // PATCH only the fields this form owns. The server ignores absent fields, so nothing
       // else on the course is touched.
-      await api.patch(`/api/courses/${contentId}`, {
+      const res = await api.patch<CourseResponse>(`/api/courses/${contentId}`, {
         description,
         learningOutcomes,
         duration,
         coverImageUrl,
       });
+      if (res) {
+        setDescription(res.description ?? "");
+        setLearningOutcomes(res.learningOutcomes ?? "");
+        setDuration(res.duration ?? "");
+        setCoverImageUrl(res.coverImageUrl ?? "");
+      }
       toast.success("Course overview saved");
-    } catch {
-      toast.error("Could not save the course overview");
+      onChanged?.();
+    } catch (err: unknown) {
+      console.error("Save overview failed:", err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "object" && err !== null && "message" in err
+          ? String((err as { message: unknown }).message)
+          : "Could not save the course overview";
+      toast.error(message || "Could not save the course overview");
     } finally {
       setIsSaving(false);
     }
@@ -667,17 +689,17 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
             <input
               id="course-cover"
               type="file"
-              accept="image/*"
+              accept="image/png,image/jpeg,image/webp,image/svg+xml"
               onChange={handleCoverUpload}
               disabled={isUploading}
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-sm text-slate-800 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-slate-700 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10 disabled:opacity-60"
             />
             <span className="mt-1 block text-[11px] font-medium text-slate-400">
-              {isUploading ? "Uploading\u2026" : "Shown on the course card and the course page."}
+              {isUploading ? "Uploading\u2026" : "Shown on the course card and the course page. Supports PNG, JPG, WEBP, and SVG."}
             </span>
           </div>
           {coverImageUrl && (
-            <div className="h-20 w-32 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+            <div className="h-20 w-32 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={coverImageUrl} alt="Course cover preview" className="size-full object-cover" />
             </div>
@@ -703,16 +725,34 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="course-description" className="text-sm font-bold text-slate-700">
-          About this course
-        </label>
+        <div className="flex items-center justify-between">
+          <label htmlFor="course-description" className="text-sm font-bold text-slate-700">
+            About this course
+          </label>
+          <span
+            className={`text-xs font-semibold ${
+              isDescriptionOverLimit ? "text-red-600 font-bold" : "text-slate-400"
+            }`}
+          >
+            {descriptionWordCount} / {MAX_DESCRIPTION_WORDS} words
+          </span>
+        </div>
         <textarea
           id="course-description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Write a brief overview of what this course is about..."
-          className="min-h-[120px] w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10"
+          className={`min-h-[120px] w-full rounded-xl border bg-white p-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-4 ${
+            isDescriptionOverLimit
+              ? "border-red-500 focus:border-red-500 focus:ring-red-400/20"
+              : "border-slate-200 focus:border-purple-400 focus:ring-purple-400/10"
+          }`}
         />
+        {isDescriptionOverLimit && (
+          <span className="text-[11px] font-semibold text-red-600">
+            About this course must be 500 words or fewer.
+          </span>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -756,7 +796,13 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
  * helpers — the same conversion the rest of the app uses, so a price set here reads back
  * identically on the public course page.
  */
-function CoursePricingEditor({ contentId }: { contentId: string }) {
+function CoursePricingEditor({
+  contentId,
+  onChanged,
+}: {
+  contentId: string;
+  onChanged?: () => void;
+}) {
   const [pricingModel, setPricingModel] = useState<"FREE" | "PAID">("FREE");
   const [priceAmount, setPriceAmount] = useState<number | "">("");
   const [currency, setCurrency] = useState("INR");
@@ -811,8 +857,16 @@ function CoursePricingEditor({ contentId }: { contentId: string }) {
       });
       toast.success("Pricing saved");
       await loadHistory(contentId);
-    } catch {
-      toast.error("Could not save pricing");
+      onChanged?.();
+    } catch (err: unknown) {
+      console.error("Save pricing failed:", err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "object" && err !== null && "message" in err
+          ? String((err as { message: unknown }).message)
+          : "Could not save pricing";
+      toast.error(message || "Could not save pricing");
     } finally {
       setIsSaving(false);
     }

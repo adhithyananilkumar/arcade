@@ -129,6 +129,7 @@ export const ArcadeEditor = memo(
 
   const handleSave = useCallback(
     async (doc: TiptapDocument) => {
+      if (readOnly) return;
       statusStore.set("saving");
       try {
         await onSave?.(doc);
@@ -139,7 +140,7 @@ export const ArcadeEditor = memo(
         statusStore.set("idle");
       }
     },
-    [onSave, statusStore]
+    [readOnly, onSave, statusStore]
   );
 
   const { editor, flushSave, setContent, getJSON, collabStatus, collaborators } = useArcadeEditor({

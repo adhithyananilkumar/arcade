@@ -202,23 +202,23 @@ export function StudioEditorBody({
   children: ReactNode;
 }) {
   return (
-    <div className="relative min-h-0 flex-1 flex flex-col overflow-hidden">
-      {/* ── Floating sidebar: content structure ─────────── */}
-      <aside className="absolute left-10 top-4 z-20 flex flex-col h-[calc(100%-2rem)] w-[268px] pointer-events-none">
-        <div className="pointer-events-auto flex flex-col w-full h-full overflow-hidden">
+    <div className="relative min-h-0 flex-1 flex flex-row overflow-hidden w-full px-4 sm:px-6 pb-4 sm:pb-6 gap-4 sm:gap-6">
+      {/* ── Left structure sidebar ─────────────────── */}
+      <aside className="flex flex-col flex-shrink-0 w-[280px] sm:w-[300px] lg:w-[320px] h-full overflow-hidden rounded-3xl bg-white/40 backdrop-blur-xl border border-white/60 p-4 shadow-sm z-10 transition-all duration-300">
+        <div className="flex flex-col w-full h-full overflow-hidden">
           {/* ── Sidebar header ───────────────── */}
-          <div className="flex flex-shrink-0 items-center justify-between mb-3">
-            <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#14142b]/60">
+          <div className="flex flex-shrink-0 items-center justify-between mb-3 px-1">
+            <span className="min-w-0 flex-1 truncate text-[11px] font-bold uppercase tracking-[0.15em] text-[#14142b]/60">
               {sidebarTitle}
             </span>
           </div>
 
-          {/* ── Body ──────────────────────────────── */}
-          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4 pr-1 arcade-scrollbar-mini">
+          {/* ── Body: independent scroll area for modules & lessons ──────────────── */}
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-2 pr-1 arcade-scrollbar-mini">
             {sidebarTree}
           </div>
 
-          {/* ── Sidebar actions (pinned at the bottom) ───────────────── */}
+          {/* ── Sidebar actions (pinned at the bottom of the sidebar) ───────────── */}
           {sidebarActions}
         </div>
       </aside>
@@ -238,11 +238,13 @@ export function StudioEditorBody({
        * underlap or scroll behind the top bar.
        */}
       <main
-        className={`z-0 flex flex-col min-h-0 flex-1 items-center overflow-y-auto px-6 pb-6 sm:px-12 arcade-scrollbar-mini ${
+        className={`z-0 flex flex-col min-h-0 flex-1 min-w-0 items-center overflow-y-auto arcade-scrollbar-mini ${
           toolbarClearance ? "pt-20" : "pt-6"
         }`}
       >
-        {children}
+        <div className="w-full h-full flex flex-col flex-1 min-h-0 items-center">
+          {children}
+        </div>
       </main>
     </div>
   );
@@ -259,7 +261,7 @@ export const TREE_SIDEBAR_BUTTON_CLASS =
   "flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow disabled:opacity-60";
 
 export const TREE_SIDEBAR_ACTIONS_CLASS =
-  "flex shrink-0 flex-col gap-2 mt-auto pt-4 pb-2 px-1 border-t border-slate-100/50";
+  "flex shrink-0 flex-col gap-2 mt-auto pt-3 pb-1 border-t border-slate-200/50";
 
 export const TREE_EMPTY_STATE_CLASS =
   "flex flex-col items-center gap-3 px-4 py-8 text-center rounded-3xl border border-white/40 bg-white/30 backdrop-blur-md shadow-sm";
@@ -271,7 +273,7 @@ export const TREE_EMPTY_STATE_CLASS =
  * viewport's own header-safe scroll region.
  */
 export const CANVAS_CARD_CLASS =
-  "h-full overflow-y-auto rounded-3xl bg-white/30 backdrop-blur-xl border border-white/40 shadow-lg p-8 arcade-scrollbar-mini";
+  "h-full overflow-y-auto rounded-3xl bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg p-6 sm:p-8 arcade-scrollbar-mini flex flex-col";
 
 /**
  * Width-constrains and centers a workspace's canvas content inside the Studio viewport. Carries
@@ -279,7 +281,7 @@ export const CANVAS_CARD_CLASS =
  * workspace can never misplace them the way earlier ad-hoc per-workspace variants did (padding
  * placed inside a differently-scrolled element let content render behind the header).
  */
-export const CANVAS_WRAPPER_CLASS = "w-full max-w-[1024px] flex-1 min-h-0";
+export const CANVAS_WRAPPER_CLASS = "w-full max-w-[1024px] flex-1 min-h-0 flex flex-col";
 
 
 // ── Shared canvas states ──────────────────────────────────────────────────────

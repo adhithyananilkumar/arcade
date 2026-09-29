@@ -6,7 +6,8 @@ import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
-import { getCourseAttribution, type AttributableCourse } from "./courseAttribution";
+import { getCourseAttribution, type AttributableCourse, type CourseAttribution } from "./courseAttribution";
+import { getAvatarUrl } from "@/shared/utils/avatar";
 import ExploreEmptyState from "./ExploreEmptyState";
 function hexToRgbStr(hex: string): string {
   hex = hex.replace(/^#/, "");
@@ -61,11 +62,7 @@ interface EnrichedCourse {
   rating: number;
   reviewsCount: number;
   categoryTag: string;
-  instructor: {
-    name: string;
-    role: string;
-    avatarUrl: string;
-  };
+  instructor: CourseAttribution;
 }
 
 function getEnrichedCourse(course: { title: string; duration: string; level: string; desc: string; category?: string } & AttributableCourse, index: number, categoryName: string): EnrichedCourse {
@@ -184,6 +181,83 @@ function getCourseGlyph(title: string, index: number, color: string): React.Reac
       <circle cx="7.5" cy="7.5" r="0.9" fill="currentColor" stroke="none" />
       <circle cx="7.5" cy="16.5" r="0.9" fill="currentColor" stroke="none" />
     </svg>
+  );
+}
+
+function ExploreAvatarItem({
+  name,
+  avatarUrl,
+  size = "24px",
+  fontSize = "9px",
+  border = "2px solid #FFFFFF",
+  bgColor = "#F1F5F9",
+  textColor = "#475569",
+  style = {},
+}: {
+  name: string;
+  avatarUrl?: string | null;
+  size?: string;
+  fontSize?: string;
+  border?: string;
+  bgColor?: string;
+  textColor?: string;
+  style?: React.CSSProperties;
+}) {
+  const [imgError, setImgError] = useState(false);
+  const resolvedUrl = getAvatarUrl(avatarUrl);
+  const initials = name?.trim()
+    ? name
+        .trim()
+        .split(/\s+/)
+        .map((p) => p[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "IN";
+
+  if (resolvedUrl && !imgError) {
+    return (
+      <img
+        src={resolvedUrl}
+        alt={name}
+        onError={() => setImgError(true)}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: "50%",
+          objectFit: "cover",
+          border: border,
+          boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+          display: "block",
+          flexShrink: 0,
+          ...style,
+        }}
+      />
+    );
+  }
+
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        background: bgColor,
+        color: textColor,
+        fontSize: fontSize,
+        fontWeight: "700",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        border: border,
+        boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+        userSelect: "none",
+        flexShrink: 0,
+        ...style,
+      }}
+    >
+      {initials}
+    </div>
   );
 }
 
@@ -514,7 +588,6 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   realRating,
   realReviewsCount
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const descRef = useRef<HTMLParagraphElement>(null);
   const { status } = useAuthStore();
@@ -598,12 +671,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({
               <div style={{ position: "relative", marginBottom: "12px" }}>
                 <p
                   ref={descRef}
-                  style={isExpanded ? {
-                    fontSize: "0.86rem",
-                    color: "#5A5870",
-                    lineHeight: "1.5",
-                    margin: 0
-                  } : {
+                  style={{
                     fontSize: "0.86rem",
                     color: "#5A5870",
                     lineHeight: "1.5",
@@ -621,7 +689,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setIsExpanded(!isExpanded);
+                      handleCourseClick();
                     }}
                     style={{
                       background: "none",
@@ -636,7 +704,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({
                       outline: "none"
                     }}
                   >
-                    {isExpanded ? "Read less" : "Read more"}
+                    Read more
                   </button>
                 )}
               </div>
@@ -645,26 +713,77 @@ export const CourseCard: React.FC<CourseCardProps> = ({
             {/* Attribution + CTA are pinned to the bottom of the card, so cards in a row line
                 their buttons up regardless of how long each description runs. */}
             <div style={{ display: "flex", flexDirection: "column", marginTop: "auto" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-                <img
-                  src={enriched.instructor.avatarUrl}
-                  alt={enriched.instructor.name}
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    border: "1px solid #E6E3F1"
-                  }}
-                />
-                <div style={{ display: "flex", flexDirection: "column", lineHeight: "1.3" }}>
-                  <span style={{ fontSize: "0.84rem", fontWeight: "700", color: "var(--l-ink)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", marginBottom: "16px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
+                  <ExploreAvatarItem
+                    name={enriched.instructor.name}
+                    avatarUrl={enriched.instructor.avatarUrl}
+                    size="28px"
+                    fontSize="11px"
+                    border="1px solid #E6E3F1"
+                    bgColor={enriched.instructor.isOrg ? "#EEF2FF" : "#F1F5F9"}
+                    textColor={enriched.instructor.isOrg ? "#4338CA" : "#475569"}
+                  />
+                  <span style={{ fontSize: "0.84rem", fontWeight: "700", color: "var(--l-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {enriched.instructor.name}
                   </span>
-                  <span style={{ fontSize: "0.68rem", color: "#8886A0", fontWeight: "600" }}>
-                    {enriched.instructor.role}
-                  </span>
                 </div>
+
+                {enriched.instructor.isOrg && enriched.instructor.instructors && enriched.instructor.instructors.length > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", flexShrink: 0, paddingLeft: "4px" }}>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      {enriched.instructor.instructors.slice(0, 3).map((inst, idx) => {
+                        return (
+                          <div
+                            key={inst.id || inst.name || idx}
+                            style={{
+                              marginLeft: idx === 0 ? "0px" : "-8px",
+                              zIndex: enriched.instructor.instructors.length - idx,
+                              position: "relative"
+                            }}
+                            title={inst.name}
+                          >
+                            <ExploreAvatarItem
+                              name={inst.name}
+                              avatarUrl={inst.avatarUrl}
+                              size="24px"
+                              fontSize="9px"
+                              border="2px solid #FFFFFF"
+                              bgColor="#F1F5F9"
+                              textColor="#475569"
+                            />
+                          </div>
+                        );
+                      })}
+                      {enriched.instructor.instructors.length > 3 && (
+                        <div
+                          style={{
+                            marginLeft: "-8px",
+                            zIndex: 0,
+                            position: "relative",
+                            width: "24px",
+                            height: "24px",
+                            borderRadius: "50%",
+                            background: "#F1F5F9",
+                            color: "#475569",
+                            fontSize: "9px",
+                            fontWeight: "700",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            border: "2px solid #FFFFFF",
+                            boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+                            userSelect: "none",
+                            flexShrink: 0
+                          }}
+                          title={`+${enriched.instructor.instructors.length - 3} more`}
+                        >
+                          +{enriched.instructor.instructors.length - 3}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>

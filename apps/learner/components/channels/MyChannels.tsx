@@ -106,9 +106,9 @@ export function MyChannels() {
                 className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
               >
                 <div className="flex min-w-0 items-center gap-3.5">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 text-slate-500">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-2xs text-slate-500">
                     {channel.iconUrl ? (
-                      <img src={channel.iconUrl} alt={channel.name} className="h-full w-full object-cover" />
+                      <img src={channel.iconUrl} alt={channel.name} className="h-full w-full object-cover bg-white" />
                     ) : (
                       <Tv size={22} />
                     )}

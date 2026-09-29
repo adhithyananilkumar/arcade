@@ -347,7 +347,7 @@ function ContentOverviewPageContent() {
           )
         ) : activeTab === "OVERVIEW" ? (
           <div className="flex flex-col gap-6">
-            <LearnersAnalyticsSection contentId={contentId} segment={segment} />
+            <LearnersAnalyticsSection contentId={contentId} segment={segment} onChanged={reload} />
           </div>
         ) : segment === "exam" ? (
           <ExamOverviewTab
@@ -358,7 +358,7 @@ function ContentOverviewPageContent() {
             submitting={submitting}
           />
         ) : activeTab === "analytics" ? (
-          <LearnersAnalyticsSection contentId={contentId} segment={segment} />
+          <LearnersAnalyticsSection contentId={contentId} segment={segment} onChanged={reload} />
         ) : (
           <CourseOverviewTab
             tab={activeTab}

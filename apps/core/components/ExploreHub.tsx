@@ -12,6 +12,7 @@ import CategoryDetailedView from "@/components/explore/CategoryDetailedView";
 import "@/apps/public/landing.css";
 import { CourseCard } from "@/components/explore/CategoryDetailedView";
 import { usePublicCategories, type PublicCategory } from "@/shared/hooks/usePublicCategories";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 /*
  * `bootcamps` and `resources` held invented content -- three fabricated bootcamps under Computer
@@ -1838,41 +1839,98 @@ function ExploreCatalog() {
                 )}
 
                 {!searchQuery && totalPages > 1 && (
-                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "16px", marginTop: "32px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: "16px",
+                      marginTop: "36px",
+                      marginBottom: "8px",
+                    }}
+                  >
                     <button
+                      type="button"
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
+                      aria-label="Previous page"
                       style={{
-                        padding: "8px 16px",
-                        borderRadius: "8px",
-                        border: "1px solid #E5E7EB",
+                        width: "42px",
+                        height: "42px",
+                        borderRadius: "50%",
+                        border: "1px solid",
+                        borderColor: currentPage === 1 ? "#E5E7EB" : "#E2E8F0",
                         background: currentPage === 1 ? "#F9FAFB" : "#FFFFFF",
-                        color: currentPage === 1 ? "#9CA3AF" : "#374151",
+                        color: currentPage === 1 ? "#9CA3AF" : "#1E293B",
                         cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                        fontWeight: "500",
-                        transition: "all 0.2s"
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: currentPage === 1 ? "none" : "0 1px 3px rgba(0, 0, 0, 0.05)",
+                        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                        outline: "none",
+                        opacity: currentPage === 1 ? 0.5 : 1,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (currentPage !== 1) {
+                          e.currentTarget.style.background = "#F8FAFC";
+                          e.currentTarget.style.borderColor = "#CBD5E1";
+                          e.currentTarget.style.boxShadow = "0 3px 8px rgba(0, 0, 0, 0.08)";
+                          e.currentTarget.style.transform = "translateY(-1px)";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (currentPage !== 1) {
+                          e.currentTarget.style.background = "#FFFFFF";
+                          e.currentTarget.style.borderColor = "#E2E8F0";
+                          e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                          e.currentTarget.style.transform = "translateY(0)";
+                        }
                       }}
                     >
-                      Previous
+                      <ArrowLeft size={18} strokeWidth={2.2} />
                     </button>
-                    <span style={{ fontSize: "0.9rem", color: "#6B7280", fontWeight: "500" }}>
-                      Page {currentPage} of {totalPages}
-                    </span>
+
                     <button
+                      type="button"
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
+                      aria-label="Next page"
                       style={{
-                        padding: "8px 16px",
-                        borderRadius: "8px",
-                        border: "1px solid #E5E7EB",
+                        width: "42px",
+                        height: "42px",
+                        borderRadius: "50%",
+                        border: "1px solid",
+                        borderColor: currentPage === totalPages ? "#E5E7EB" : "#E2E8F0",
                         background: currentPage === totalPages ? "#F9FAFB" : "#FFFFFF",
-                        color: currentPage === totalPages ? "#9CA3AF" : "#374151",
+                        color: currentPage === totalPages ? "#9CA3AF" : "#1E293B",
                         cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                        fontWeight: "500",
-                        transition: "all 0.2s"
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: currentPage === totalPages ? "none" : "0 1px 3px rgba(0, 0, 0, 0.05)",
+                        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                        outline: "none",
+                        opacity: currentPage === totalPages ? 0.5 : 1,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (currentPage !== totalPages) {
+                          e.currentTarget.style.background = "#F8FAFC";
+                          e.currentTarget.style.borderColor = "#CBD5E1";
+                          e.currentTarget.style.boxShadow = "0 3px 8px rgba(0, 0, 0, 0.08)";
+                          e.currentTarget.style.transform = "translateY(-1px)";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (currentPage !== totalPages) {
+                          e.currentTarget.style.background = "#FFFFFF";
+                          e.currentTarget.style.borderColor = "#E2E8F0";
+                          e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                          e.currentTarget.style.transform = "translateY(0)";
+                        }
                       }}
                     >
-                      Next
+                      <ArrowRight size={18} strokeWidth={2.2} />
                     </button>
                   </div>
                 )}

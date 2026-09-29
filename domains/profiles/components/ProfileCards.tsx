@@ -181,10 +181,10 @@ export function ChannelCard({ channel }: ChannelCardProps) {
 
   const body = (
     <div className="flex items-start gap-4 p-5">
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 dark:border-neutral-900 dark:bg-neutral-950">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xs">
         {channel.iconUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={getAvatarUrl(channel.iconUrl)} alt="" className="h-full w-full object-cover" />
+          <img src={getAvatarUrl(channel.iconUrl)} alt="" className="h-full w-full object-cover bg-white" />
         ) : (
           <Building2 size={18} className="text-slate-300 dark:text-neutral-700" />
         )}

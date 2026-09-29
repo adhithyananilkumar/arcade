@@ -20,7 +20,7 @@ import EventsView from "./EventsView";
 import ArticlesView from "./ArticlesView";
 import WindmillAnimation from "./WindmillAnimation";
 
-import { getCourseAttribution, type AttributableCourse } from "./courseAttribution";
+import { getCourseAttribution, type AttributableCourse, type CourseAttribution } from "./courseAttribution";
 import { courseReviewService } from "@/domains/learning";
 export { CourseCard };
 
@@ -734,11 +734,7 @@ interface EnrichedCourse {
   rating: number;
   reviewsCount: number;
   categoryTag: string;
-  instructor: {
-    name: string;
-    role: string;
-    avatarUrl: string;
-  };
+  instructor: CourseAttribution;
 }
 
 function getEnrichedCourse(course: { title: string; duration: string; level: string; desc: string } & AttributableCourse, index: number, categoryName: string): EnrichedCourse {

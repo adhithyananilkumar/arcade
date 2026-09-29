@@ -157,10 +157,10 @@ export function useArcadeEditor({
    */
   const flushSave = useCallback(async () => {
     debouncedSave.cancel();
-    if (editor && onSaveRef.current) {
+    if (editor && !readOnly && onSaveRef.current) {
       await onSaveRef.current(editor.getJSON() as TiptapDocument);
     }
-  }, [editor, debouncedSave]);
+  }, [editor, readOnly, debouncedSave]);
 
   /**
    * Replace the editor's content — used to restore a past version. In collaborative

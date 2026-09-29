@@ -1,5 +1,6 @@
-import React from "react"
+import React, { useState } from "react"
 import { Award } from "lucide-react"
+import { getAvatarUrl } from "@/shared/utils/avatar"
 
 export function FlowerMark({
   size = 24,
@@ -45,6 +46,9 @@ export function Avatar({
   size?: number
   onDark?: boolean
 }) {
+  const [imgError, setImgError] = useState(false)
+  const resolvedUrl = getAvatarUrl(imageUrl)
+
   const initials = name
     .split(" ")
     .map((w) => w[0])
@@ -58,12 +62,13 @@ export function Avatar({
     boxShadow: onDark ? "0 0 0 3px rgba(255,255,255,0.08)" : "0 0 0 3px rgba(20,22,28,0.04)",
   }
 
-  if (imageUrl) {
+  if (resolvedUrl && !imgError) {
     return (
       <img
-        src={imageUrl}
+        src={resolvedUrl}
         alt={name}
-        className="shrink-0 rounded-full object-cover"
+        onError={() => setImgError(true)}
+        className="shrink-0 rounded-full object-cover bg-white"
         style={commonStyle}
       />
     )

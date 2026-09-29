@@ -113,11 +113,13 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
         <ChannelDoodleBanner bannerUrl={channel.bannerUrl} className="h-28 w-full sm:h-36" />
 
         <div className="flex flex-col gap-4 px-5 pb-5 sm:flex-row sm:items-end sm:px-6 sm:pb-6">
-          <div className="-mt-10 flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-gradient-to-br from-indigo-500 via-purple-600 to-slate-900 text-white shadow-md dark:border-neutral-950">
+          <div className="-mt-10 flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-white text-slate-700 shadow-md ring-1 ring-slate-900/5">
             {channel.iconUrl ? (
-              <img src={channel.iconUrl} alt="" className="h-full w-full object-cover" />
+              <img src={channel.iconUrl} alt="" className="h-full w-full object-cover bg-white" />
+            ) : channel.isPersonal ? (
+              <User size={30} strokeWidth={1.75} className="text-slate-400" />
             ) : (
-              <Building2 size={30} strokeWidth={1.75} />
+              <Building2 size={30} strokeWidth={1.75} className="text-slate-400" />
             )}
           </div>
 

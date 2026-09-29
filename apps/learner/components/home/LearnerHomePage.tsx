@@ -516,11 +516,6 @@ export default function LearnerHomePage() {
                       </div>
 
                       <div className="flex min-w-0 flex-1 flex-col justify-center pl-3.5 pr-2 sm:pl-4">
-                        <div className="mb-0.5 flex items-center gap-2">
-                          <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                            {course.authorName || 'Instructor'}
-                          </span>
-                        </div>
                         <h3 className="truncate text-[15px] font-bold tracking-tight text-[#14142b]">
                           {course.title}
                         </h3>

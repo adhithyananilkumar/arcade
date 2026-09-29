@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { courseRoutes } from '@/shared/routes/content.routes';
 import { motion } from 'framer-motion';
@@ -16,8 +17,11 @@ import {
   Palette,
   ChevronRight,
   Compass,
+  Clock,
 } from 'lucide-react';
 import type { CourseSummaryResponse } from '@/shared/types/api.types';
+import { courseReviewService } from '@/domains/learning/delivery/api/reviews';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 import { RubiksCube3D } from './RubiksCube3D';
 
 export type EventCard = {
@@ -261,56 +265,287 @@ function EmptyRecommendedCard() {
   );
 }
 
+function getAuthorInitials(name?: string): string {
+  if (!name || !name.trim()) return 'AU';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
+
+function InstructorAvatarItem({
+  name,
+  avatarUrl,
+  size = 'h-6 w-6',
+  textClass = 'text-[9px]',
+  className = '',
+}: {
+  name: string;
+  avatarUrl?: string | null;
+  size?: string;
+  textClass?: string;
+  className?: string;
+}) {
+  const [hasError, setHasError] = useState(false);
+  const resolvedUrl = getAvatarUrl(avatarUrl);
+  const initials = getAuthorInitials(name);
+
+  if (resolvedUrl && !hasError) {
+    return (
+      <img
+        src={resolvedUrl}
+        alt={name}
+        onError={() => setHasError(true)}
+        className={`${size} rounded-full object-cover ring-2 ring-white border border-slate-200/60 shadow-xs ${className}`}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`flex ${size} items-center justify-center rounded-full bg-slate-100 ring-2 ring-white ${textClass} font-bold text-slate-600 border border-slate-200/80 shadow-xs select-none ${className}`}
+    >
+      {initials}
+    </div>
+  );
+}
+
+function ChannelAvatarItem({
+  name,
+  iconUrl,
+}: {
+  name: string;
+  iconUrl?: string | null;
+}) {
+  const [hasError, setHasError] = useState(false);
+  const resolvedUrl = getAvatarUrl(iconUrl);
+  const initials = getAuthorInitials(name);
+
+  if (resolvedUrl && !hasError) {
+    return (
+      <img
+        src={resolvedUrl}
+        alt={name}
+        onError={() => setHasError(true)}
+        className="h-7 w-7 shrink-0 rounded-full object-cover border border-slate-200"
+      />
+    );
+  }
+
+  return (
+    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-[10px] font-bold text-indigo-600 border border-indigo-200/80 select-none">
+      {initials}
+    </div>
+  );
+}
+
+function SoloAuthorAvatarItem({
+  name,
+  avatarUrl,
+}: {
+  name: string;
+  avatarUrl?: string | null;
+}) {
+  const [hasError, setHasError] = useState(false);
+  const resolvedUrl = getAvatarUrl(avatarUrl);
+  const initials = getAuthorInitials(name);
+
+  if (resolvedUrl && !hasError) {
+    return (
+      <img
+        src={resolvedUrl}
+        alt={name}
+        onError={() => setHasError(true)}
+        className="h-7 w-7 shrink-0 rounded-full object-cover border border-slate-200"
+      />
+    );
+  }
+
+  return (
+    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600 border border-slate-200/80 select-none">
+      {initials}
+    </div>
+  );
+}
+
 function RecommendedFeaturedCard({ course }: { course: CourseSummaryResponse }) {
+  const [stats, setStats] = useState<{ averageRating: number; reviewsCount: number } | null>(null);
+
+  useEffect(() => {
+    if (!course?.id) return;
+    courseReviewService
+      .statsFor([course.id])
+      .then((res: Record<string, { averageRating: number; reviewsCount: number }>) => {
+        if (res && res[course.id]) {
+          setStats(res[course.id]);
+        }
+      })
+      .catch(() => {});
+  }, [course?.id]);
+
+  const rating = stats && stats.reviewsCount > 0 ? stats.averageRating.toFixed(1) : '4.5';
+  const reviewsCount = stats && stats.reviewsCount > 0 ? stats.reviewsCount : 12;
+
+  const isOrgCourse = Boolean(course.channel && !course.channel.isPersonal && course.channel.name);
+  const orgName = course.channel?.name || '';
+  const orgIconUrl = course.channel?.iconUrl;
+
+  const authorDisplayName = course.authorName || course.authorUsername || 'Course Author';
+
+  // Instructors for organization course
+  const rawInstructors =
+    course.collaborators && course.collaborators.length > 0
+      ? course.collaborators
+      : course.authorName
+      ? [{ id: course.authorId, name: course.authorName, avatarUrl: course.authorAvatarUrl }]
+      : [];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="relative flex h-full flex-col justify-between overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white/95 p-4 sm:p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] backdrop-blur-sm"
+      className="relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-[0_4px_20px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_8px_30px_rgba(20,20,43,0.08)]"
     >
-      <div className="relative z-10 flex flex-1 flex-col justify-between gap-4">
-        {/* Large Cover Image Banner */}
-        <div className="relative h-44 sm:h-48 w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 bg-slate-100 shadow-sm">
-          {course.coverImageUrl ? (
-            <img
-              src={course.coverImageUrl}
-              alt={course.title}
-              className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-            />
-          ) : (
-            <div
-              aria-hidden
-              className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#4C6FFF]/15 via-slate-100 to-[#9B5DE5]/10"
-            >
-              <span className="text-4xl font-black text-slate-400 select-none">
-                {(course.title || '?').trim().charAt(0).toUpperCase()}
-              </span>
+      <div className="flex flex-1 flex-col justify-between gap-4">
+        {/* Top Cover Image Banner */}
+        <Link href={courseRoutes.landing(course.id)} className="block group/thumb">
+          <div className="relative h-40 sm:h-44 w-full shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 shadow-xs">
+            {course.coverImageUrl ? (
+              <img
+                src={course.coverImageUrl}
+                alt={course.title}
+                className="h-full w-full object-cover transition-transform duration-500 group-hover/thumb:scale-105"
+              />
+            ) : (
+              <div
+                aria-hidden
+                className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#4C6FFF]/15 via-slate-100 to-[#9B5DE5]/10"
+              >
+                <span className="text-4xl font-black text-slate-400 select-none group-hover/thumb:scale-110 transition-transform">
+                  {(course.title || '?').trim().charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+          </div>
+        </Link>
+
+        {/* Course Information (Title, Rating, Author) */}
+        <div className="space-y-2">
+          <Link href={courseRoutes.landing(course.id)} className="block group/title">
+            <h3 className="line-clamp-1 text-base sm:text-lg font-bold tracking-tight text-[#14142b] group-hover/title:text-[#4C6FFF] transition-colors">
+              {course.title}
+            </h3>
+          </Link>
+
+          {/* Rating and Review Count */}
+          <div className="flex items-center gap-1.5 text-xs font-semibold">
+            <span className="text-[#F59E0B] text-sm">★</span>
+            <span className="font-bold text-[#14142b]">{rating}</span>
+            <span className="text-slate-400">
+              ({reviewsCount} {reviewsCount === 1 ? 'Review' : 'Reviews'})
+            </span>
+          </div>
+
+          {/* Course Description */}
+          {course.description && (
+            <div className="text-xs font-medium text-slate-500 leading-relaxed">
+              <p className="line-clamp-2">
+                {course.description}
+              </p>
+              {course.description.length > 60 && (
+                <Link
+                  href={courseRoutes.landing(course.id)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="mt-0.5 inline-block text-xs font-bold text-[#4C6FFF] hover:underline"
+                >
+                  Read more
+                </Link>
+              )}
             </div>
           )}
+
+          {/* Course Author / Organization Row */}
+          <div className="flex items-center justify-between gap-2 pt-0.5">
+            {isOrgCourse ? (
+              <>
+                <div className="flex min-w-0 items-center gap-2">
+                  <ChannelAvatarItem name={orgName} iconUrl={orgIconUrl} />
+                  <span className="truncate text-xs font-bold text-[#14142b]">
+                    {orgName}
+                  </span>
+                </div>
+
+                {rawInstructors.length > 0 && (
+                  <div className="flex items-center shrink-0 pl-2">
+                    <div className="flex items-center -space-x-2">
+                      {rawInstructors.slice(0, 3).map((inst, idx) => {
+                        return (
+                          <div
+                            key={inst.id || inst.name || idx}
+                            className="relative inline-block"
+                            style={{ zIndex: rawInstructors.length - idx }}
+                            title={inst.name}
+                          >
+                            <InstructorAvatarItem
+                              name={inst.name}
+                              avatarUrl={inst.avatarUrl}
+                            />
+                          </div>
+                        );
+                      })}
+                      {rawInstructors.length > 3 && (
+                        <div
+                          className="relative inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 ring-2 ring-white text-[9px] font-bold text-slate-600 border border-slate-200/80 shadow-xs select-none"
+                          style={{ zIndex: 0 }}
+                          title={`+${rawInstructors.length - 3} more`}
+                        >
+                          +{rawInstructors.length - 3}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="flex min-w-0 items-center gap-2">
+                <SoloAuthorAvatarItem
+                  name={authorDisplayName}
+                  avatarUrl={course.authorAvatarUrl}
+                />
+                <span className="truncate text-xs font-bold text-[#14142b]">
+                  {authorDisplayName}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Title and Author */}
-        <div>
-          <span className="text-[11px] font-bold uppercase tracking-wider text-[#4C6FFF]">
-            {course.authorName || 'Featured Course'}
-          </span>
-          <h3 className="line-clamp-1 text-base sm:text-lg font-bold tracking-tight text-[#14142b] mt-0.5">
-            {course.title}
-          </h3>
-          <p className="mt-1 line-clamp-2 text-xs sm:text-[13px] font-medium leading-relaxed text-slate-500">
-            {course.description || `${course.moduleCount} modules · Self-paced learning`}
-          </p>
-        </div>
-
-        {/* CTA Button */}
+        {/* Action Button: Enroll Now */}
         <div className="pt-1">
           <Link
             href={courseRoutes.landing(course.id)}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#4C6FFF] px-5 py-3 text-[13px] font-semibold text-white transition-all shadow-sm hover:bg-[#3a5ae6] hover:shadow-md"
+            className="inline-flex w-full items-center justify-center rounded-xl bg-[#EEF2FF] hover:bg-[#E0E7FF] py-2.5 sm:py-3 px-4 text-[13px] sm:text-sm font-bold text-[#4C6FFF] transition-all hover:scale-[1.01] shadow-2xs cursor-pointer"
           >
-            <BookOpen size={16} /> View Course
+            Enroll Now
           </Link>
+        </div>
+
+        {/* Bottom Section: Divider + View Course + Self-Paced */}
+        <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+          <Link
+            href={courseRoutes.landing(course.id)}
+            className="inline-flex items-center gap-1 text-xs sm:text-[13px] font-bold text-slate-600 hover:text-[#4C6FFF] transition-colors group/link"
+          >
+            <span>View Course</span>
+            <span className="transition-transform group-hover/link:translate-x-0.5">→</span>
+          </Link>
+
+          <div className="flex items-center gap-1.5 text-xs sm:text-[13px] font-semibold text-slate-400">
+            <Clock size={14} className="text-slate-400" />
+            <span>{course.duration || 'Self-Paced'}</span>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -332,7 +567,7 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="relative flex h-full flex-col justify-between overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white/95 p-4 sm:p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] backdrop-blur-sm"
+      className="relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-[0_4px_20px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_8px_30px_rgba(20,20,43,0.08)]"
     >
       {/* Decorative background ambient glow */}
       <div
@@ -342,7 +577,7 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
 
       <div className="relative z-10 flex flex-1 flex-col justify-between gap-4">
         {/* Prominent Large Course Cover Image Banner */}
-        <div className="relative h-44 sm:h-48 w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 bg-slate-100 shadow-sm">
+        <div className="relative h-40 sm:h-44 w-full shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 shadow-xs">
           {course.coverImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -362,13 +597,13 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
           )}
         </div>
 
-        {/* Title and Author details */}
+        {/* Title and details */}
         <div>
           <h3 className="line-clamp-1 text-base sm:text-lg font-bold tracking-tight text-[#14142b]">
             {course.title}
           </h3>
           <p className="mt-0.5 truncate text-xs sm:text-[13px] font-medium text-slate-500">
-            {course.authorName || (pct && pct > 0 ? 'Pick up right where you left off' : 'Continue where you left off')}
+            {pct && pct > 0 ? 'Pick up right where you left off' : 'Continue where you left off'}
           </p>
         </div>
 
@@ -459,15 +694,15 @@ function EventRowItem({ event, index }: { event: EventCard; index: number }) {
 
 export function ResumeAndEventsSection({
   resumeCourse,
-  events,
+  events = [],
   recommendedCourses = [],
 }: {
   resumeCourse: ResumeCourse | null;
-  events: EventCard[];
+  events?: EventCard[];
   recommendedCourses?: CourseSummaryResponse[];
 }) {
-  const displayedEvents = events.slice(0, 3);
-  const featuredRecommended = recommendedCourses[0] || null;
+  const displayedEvents = (events || []).slice(0, 3);
+  const featuredRecommended = (recommendedCourses || [])[0] || null;
 
   return (
     <div className="space-y-8">

@@ -196,16 +196,16 @@ export default function ChannelHomePage() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
                 {/* Avatar floating over banner */}
                 <div className="-mt-12 sm:-mt-14 shrink-0 relative z-10">
-                  <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center overflow-hidden rounded-2xl border-[4px] border-white bg-[#F5F0E6] text-black shadow-md ring-1 ring-black/5">
+                  <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center overflow-hidden rounded-2xl border-[4px] border-white bg-white text-black shadow-md ring-1 ring-black/5">
                     {channel.iconUrl ? (
                       <img
                         src={channel.iconUrl}
                         alt={channel.name}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover bg-white"
                       />
                     ) : (
-                      <div className="w-full h-full bg-[#F5F0E6] flex items-center justify-center text-[#14142b]">
-                        <Tv size={36} />
+                      <div className="w-full h-full bg-white flex items-center justify-center text-slate-400">
+                        {channel.isPersonal ? <User size={36} /> : <Tv size={36} />}
                       </div>
                     )}
                   </div>

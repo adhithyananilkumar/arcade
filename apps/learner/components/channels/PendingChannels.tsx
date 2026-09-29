@@ -539,12 +539,12 @@ export function PendingChannels() {
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200/90 text-slate-700 overflow-hidden shrink-0 border border-slate-200/80 shadow-2xs group-hover:scale-105 transition-transform font-bold text-sm">
+                      <div className="flex size-11 items-center justify-center rounded-2xl bg-white text-slate-700 overflow-hidden shrink-0 border border-slate-200/80 shadow-2xs group-hover:scale-105 transition-transform font-bold text-sm">
                         {channel.iconUrl ? (
                           <img
                             src={channel.iconUrl}
                             alt={channel.name}
-                            className="h-full w-full object-cover"
+                            className="h-full w-full object-cover bg-white"
                           />
                         ) : (
                           <Tv size={18} className="text-slate-600" />
@@ -755,12 +755,12 @@ export function PendingChannels() {
                       {/* Channel Column */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3.5">
-                          <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 via-slate-50 to-indigo-100/70 text-indigo-600 overflow-hidden shrink-0 border border-indigo-200/50 shadow-2xs group-hover:scale-105 group-hover:border-indigo-300 transition-all">
+                          <div className="flex size-10 items-center justify-center rounded-xl bg-white text-indigo-600 overflow-hidden shrink-0 border border-slate-200/80 shadow-2xs group-hover:scale-105 group-hover:border-slate-300 transition-all">
                             {channel.iconUrl ? (
                               <img
                                 src={channel.iconUrl}
                                 alt={channel.name}
-                                className="h-full w-full object-cover"
+                                className="h-full w-full object-cover bg-white"
                               />
                             ) : (
                               <Tv size={17} className="text-indigo-600" />
@@ -1011,7 +1011,7 @@ export function PendingChannels() {
                       <img
                         src={selectedChannel.iconUrl}
                         alt={selectedChannel.name}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover bg-white"
                       />
                     ) : (
                       <Tv size={24} className="text-slate-500" />

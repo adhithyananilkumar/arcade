@@ -563,10 +563,14 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
           <div className="grid gap-12 md:grid-cols-2 md:gap-16">
             <AnimatedItem index={0} style={{ cursor: "default" }}>
               <h3 className="font-serif text-2xl font-light text-ink">About this course</h3>
-              {course?.description ? (
-                <p className="mt-4 whitespace-pre-wrap text-[15px] leading-relaxed text-subtle">
-                  {course.description}
-                </p>
+              {course?.description && course.description.trim().length > 0 ? (
+                <div className="mt-4 space-y-3 text-[15px] leading-relaxed text-subtle">
+                  {course.description.split(/\r?\n\r?\n/).map((paragraph, i) => (
+                    <p key={i} className="whitespace-pre-line">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
               ) : (
                 <p className="mt-4 text-[15px] italic leading-relaxed text-subtle/75">
                   The author hasn&apos;t written an overview for this course yet.

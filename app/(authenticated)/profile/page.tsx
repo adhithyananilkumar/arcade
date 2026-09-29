@@ -354,9 +354,9 @@ function ProfilePageContent() {
           <div className="w-full md:w-72 lg:w-80 shrink-0 space-y-5">
 
             <div className="relative flex w-48 h-48 sm:w-64 sm:h-64 shrink-0 group/avatar mx-auto md:mx-0">
-              <div className="relative z-10 flex h-full w-full items-center justify-center rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl bg-slate-100 dark:bg-slate-900 transition-transform hover:scale-[1.02]">
+              <div className="relative z-10 flex h-full w-full items-center justify-center rounded-full overflow-hidden border-4 border-white shadow-xl bg-white transition-transform hover:scale-[1.02]">
                 {currentUser.avatarUrl ? (
-                  <img src={getAvatarUrl(currentUser.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                  <img src={getAvatarUrl(currentUser.avatarUrl)} alt="Avatar" className="h-full w-full object-cover bg-white" referrerPolicy="no-referrer" />
                 ) : (
                   <UserIcon size={110} className="text-purple-400 dark:text-purple-300" />
                 )}
