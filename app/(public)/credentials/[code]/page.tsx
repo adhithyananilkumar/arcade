@@ -3,7 +3,8 @@
  * Arcade Frontend Architecture
  * Layer: App (routing only)
  *
- * The public credential page: `/credentials/ARC-XXXX-XXXX-XXXX`. Server-rendered metadata so a
+ * The public credential page: `/credentials/ARC-XXXX-XXXX-XXXX` (badge) or `/credentials/CERT-…`
+ * (certificate). Server-rendered metadata so a
  * shared link previews with the holder's name and the award; the page itself is the orchestrator.
  * ------------------------------------------------------------------
  */
@@ -17,13 +18,24 @@ interface Params {
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const { code } = await params;
+  const { code: raw } = await params;
+  const code = decodeURIComponent(raw);
+  // Same routing hint as the domain's credentialKindOf; inlined to keep this server module free of
+  // the client-side API stack.
+  const certificate = code.toUpperCase().replace(/[^0-9A-Z]/g, "").startsWith("CERT");
   try {
-    const res = await fetch(`${API_ORIGIN}/api/v1/public/credentials/badges/${encodeURIComponent(code)}`, {
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `${API_ORIGIN}/api/v1/public/credentials/${certificate ? "certificates" : "badges"}/${encodeURIComponent(code)}`,
+      { cache: "no-store" },
+    );
     if (!res.ok) throw new Error(String(res.status));
     const data = await res.json();
+    if (certificate) {
+      const c = data.certificate;
+      const title = `${c.recipientName} — ${c.title} · ${c.documentTitle} | Arcade`;
+      const description = `${c.documentTitle}, issued by ${c.issuerName} through Arcade. Credential ID ${c.credentialCode}. ${c.criteria}`;
+      return { title, description, openGraph: { title, description, type: "profile" }, robots: { index: false } };
+    }
     const b = data.badge;
     const title = `${b.recipientName} — ${b.name} · ${b.badgeClass.tier.label} | Arcade`;
     const description = `${b.badgeClass.name}, issued by ${b.issuerName} through Arcade. Credential ID ${b.credentialCode}. ${b.criteria}`;

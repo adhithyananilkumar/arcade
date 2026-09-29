@@ -5,7 +5,8 @@
  * Domain: Credentials
  *
  * Public surface of the Credentials domain: the platform's issued, verifiable credentials.
- * Badges today (three platform levels); certificates will join them on the same verification model.
+ * Badges (three platform levels) and certificates, on one verification model; grade cards (owned by
+ * `domains/assessments`) verify through the same endpoint.
  *
  * Not to be confused with `domains/recognition` (profile badges such as the verified tick, granted
  * by staff and asserting identity) or `domains/badges` (the archived creator badge designer — see
@@ -22,15 +23,24 @@ export type {
   BadgeFamilyKey,
   BadgeLevel,
   BadgeTierInfo,
+  CredentialKind,
   InProgressBadge,
   IssuedBadge,
+  IssuedCertificate,
   MyBadges,
   PublicBadge,
+  PublicCertificate,
   VerificationStatus,
   VerifyResult,
 } from "./types/credential.types";
 
-export { credentialsApi, credentialPath, openBadgesAssertionUrl } from "./api/credentials.service";
+export {
+  credentialsApi,
+  credentialPath,
+  credentialKindOf,
+  verifyPath,
+  openBadgesAssertionUrl,
+} from "./api/credentials.service";
 export {
   renderBadgeSvg,
   parseBadgeClassCode,
@@ -52,3 +62,5 @@ export { TierLadder } from "./components/TierLadder";
 export { BadgeTierPicker } from "./components/BadgeTierPicker";
 export { LinkedInGlyph } from "./components/LinkedInGlyph";
 export { BadgeLevelSummary } from "./components/BadgeLevelSummary";
+export { CertificateFace } from "./components/CertificateFace";
+export type { CertificateFaceProps } from "./components/CertificateFace";

@@ -108,7 +108,52 @@ export interface MyBadges {
   total: number;
 }
 
-export type VerificationStatus = "VALID" | "REVOKED" | "TAMPERED" | "NOT_FOUND";
+export type VerificationStatus = "VALID" | "REVOKED" | "EXPIRED" | "TAMPERED" | "NOT_FOUND";
+
+/** What kind of credential an ID belongs to. The server decides; the frontend only renders it. */
+export type CredentialKind = "BADGE" | "CERTIFICATE" | "GRADE_CARD";
+
+/** An issued certificate (backend `certification.certificates`), as its holder or the public sees it. */
+export interface IssuedCertificate {
+  /** `CERT-XXXX-XXXX-XXXX`. */
+  credentialCode: string;
+  /** "Certificate of Certification" and the like — the heading printed on the certificate. */
+  documentTitle: string;
+  /** What issued it, e.g. `EXAM_CERTIFICATION`; new programmes add values. */
+  source: string;
+  sourceLabel: string;
+  title: string;
+  programme: string | null;
+  criteria: string;
+  recipientName: string;
+  recipientHandle: string | null;
+  issuerName: string;
+  issuerHandle: string | null;
+  issuerLogoUrl: string | null;
+  scorePercent: number | null;
+  passPercent: number | null;
+  achievedAt: string;
+  issuedAt: string;
+  expiresAt: string | null;
+  /** The holder's grade card for the sitting; only on the holder's own view. */
+  gradeCardId: string | null;
+  publicVisible: boolean;
+  revoked: boolean;
+  revokedAt: string | null;
+  revokedReason: string | null;
+  expired: boolean;
+}
+
+export interface PublicCertificate {
+  certificate: IssuedCertificate;
+  verification: {
+    status: Exclude<VerificationStatus, "NOT_FOUND">;
+    signatureValid: boolean;
+    signatureAlgorithm: string;
+    checkedAt: string;
+    message: string;
+  };
+}
 
 export interface PublicBadge {
   badge: IssuedBadge;
@@ -123,7 +168,8 @@ export interface PublicBadge {
     available: boolean;
   };
   verification: {
-    status: Exclude<VerificationStatus, "NOT_FOUND">;
+    /** Badges do not expire. */
+    status: Exclude<VerificationStatus, "NOT_FOUND" | "EXPIRED">;
     signatureValid: boolean;
     signatureAlgorithm: string;
     checkedAt: string;
@@ -131,16 +177,27 @@ export interface PublicBadge {
   };
 }
 
+/** The shared verification answer, the same shape for every credential kind. */
 export interface VerifyResult {
+  /** Null when nothing matched. */
+  kind: CredentialKind | null;
   credentialCode: string;
   status: VerificationStatus;
   signatureValid: boolean;
   publicPage: boolean;
+  /** Site-relative public page, when the holder keeps one. */
+  publicPath: string | null;
   name: string | null;
+  /** e.g. "Certificate of Certification", "Statement of Result". */
+  subtitle: string | null;
+  /** Badges only. */
   badgeClass: BadgeClassInfo | null;
   recipientName: string | null;
   issuerName: string | null;
   issuedAt: string | null;
+  expiresAt: string | null;
   revokedAt: string | null;
+  /** Further facts to show, in order (score, programme, result…). */
+  details: { label: string; value: string }[];
   message: string;
 }

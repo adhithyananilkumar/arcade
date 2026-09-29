@@ -15,6 +15,7 @@ import {
 } from '@/domains/assessments';
 import type { AssessmentNodeResponse } from '@/shared/types/api.types';
 import { examRoutes, courseRoutes } from '@/shared/routes/content.routes';
+import { IdentityCapture } from '@/apps/learner/components/exams/IdentityCapture';
 
 interface AssessmentLandingPaneProps {
   assessment: AssessmentNodeResponse;
@@ -102,6 +103,17 @@ export function AssessmentLandingPane({
       <AssessmentLanding
         landing={landing}
         onStart={handleStart}
+        identitySlot={
+          // An author preview writes nothing, so it has no identity step.
+          !isPreview && landing.planId && landing.blockedReason === 'IDENTITY_REQUIRED' ? (
+            <IdentityCapture
+              examId={assessment.examId}
+              planId={landing.planId}
+              rejected={landing.identityStatus === 'REJECTED'}
+              onSubmitted={load}
+            />
+          ) : undefined
+        }
         onViewGradeCard={(gradeCardId) => router.push(examRoutes.gradeCard(gradeCardId))}
         onNextItem={onNextItem}
         onReportIssue={onReportIssue}

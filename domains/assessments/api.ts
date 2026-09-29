@@ -627,6 +627,11 @@ export function getGradeCard(cardId: string) {
   return api.get<GradeCardResponse>(`/api/exams/grade-cards/${cardId}`);
 }
 
+/** Saves the card as the server's sealed, read-only PDF (holder or exam administrators only). */
+export function downloadGradeCardPdf(cardId: string, credentialCode: string) {
+  return api.download(`/api/exams/grade-cards/${cardId}/pdf`, `Arcade grade card ${credentialCode}.pdf`);
+}
+
 export function getMyGradeCards() {
   return api.get<GradeCardResponse[]>(`/api/exams/grade-cards/mine`);
 }
