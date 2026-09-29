@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { Award, Star, Search, Calendar, Download, X } from 'lucide-react';
 import AchievementsHero from './AchievementsHero';
 import { BadgeWallet } from './BadgeWallet';
-import { BadgeDetailDialog } from './BadgeDetailDialog';
+import { BadgeDetailPanel } from './BadgeDetailPanel';
 import { credentialsApi, type BadgeTierInfo, type IssuedBadge, type MyBadges } from '@/domains/credentials';
 
 // ─── Certificate Data ────────────────────────────────────────────────────────
@@ -443,7 +443,7 @@ export default function AchievementsPage() {
           </section>
         )}
 
-        <BadgeDetailDialog
+        <BadgeDetailPanel
           badge={selectedBadge}
           tiers={tiers}
           onClose={() => setSelectedBadge(null)}
