@@ -41,7 +41,7 @@ export function CertificationCard({
 
   const noun = contentType === 'COURSE' ? 'course' : 'event';
   return (
-    <section className="overflow-hidden rounded-2xl border border-violet-200/80 bg-gradient-to-b from-violet-50/70 to-white p-5">
+    <section className="overflow-hidden rounded-[1.75rem] border border-violet-200/80 bg-gradient-to-b from-violet-50/70 to-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.04)]">
       <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-violet-700">
         <Award size={14} /> Certification
       </div>

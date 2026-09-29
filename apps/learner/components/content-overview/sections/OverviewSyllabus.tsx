@@ -7,7 +7,6 @@ import {
   ChevronDown,
   FileText,
   Lock,
-  NotebookPen,
   PlayCircle,
   Radio,
 } from 'lucide-react';
@@ -18,7 +17,6 @@ interface OverviewSyllabusProps {
   sections: OverviewSection[];
   contentType: NoteContentType;
   contentId: string;
-  /** Item the resume button points at, highlighted as "you are here". */
   currentItemId?: string | null;
 }
 
@@ -29,15 +27,6 @@ const ITEM_ICON = {
   RESOURCE: FileText,
 } as const;
 
-/**
- * The contents of the thing, with the learner's own progress and their own notes drawn onto it.
- *
- * <p>The note marker is the point. Everywhere else in the product — and in both reference designs —
- * a syllabus tells you what the author wrote and a notes page tells you what you wrote, and the two
- * never meet. Marking which lessons you annotated turns your own writing into a navigation aid:
- * scanning the syllabus shows where you did the thinking, which is almost always where you want to
- * return.
- */
 export function OverviewSyllabus({
   sections,
   contentType,
@@ -51,8 +40,6 @@ export function OverviewSyllabus({
     [notes],
   );
 
-  // Sections containing unfinished work open by default; fully-completed ones collapse, so a
-  // learner returning to a long course lands on what is left rather than scrolling past what isn't.
   const [collapsed, setCollapsed] = useState<Set<string>>(
     () =>
       new Set(
@@ -72,56 +59,67 @@ export function OverviewSyllabus({
 
   if (sections.length === 0) {
     return (
-      <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+      <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
         There is no published content here yet.
-      </p>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      {sections.map((section) => {
-        const isCollapsed = collapsed.has(section.id);
-        const done = section.items.filter((i) => i.completed).length;
+    <div className="space-y-6">
+      <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+        Course Curriculum
+      </h2>
 
-        return (
-          <section
-            key={section.id}
-            className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/70 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/60"
-          >
-            <button
-              type="button"
-              onClick={() => toggle(section.id)}
-              aria-expanded={!isCollapsed}
-              className="flex w-full items-center gap-3 px-5 py-4 text-left transition hover:bg-slate-50/70 dark:hover:bg-slate-800/40"
+      <div className="space-y-5">
+        {sections.map((section, idx) => {
+          const isCollapsed = collapsed.has(section.id);
+          const done = section.items.filter((i) => i.completed).length;
+
+          return (
+            <div
+              key={section.id}
+              className="rounded-tl-[2rem] rounded-tr-[2rem] rounded-br-[2rem] rounded-bl-xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
             >
-              <ChevronDown
-                size={16}
-                className={`shrink-0 text-slate-400 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-              />
-              <span className="flex-1 text-[15px] font-semibold text-slate-900 dark:text-slate-100">
-                {section.title}
-              </span>
-              <span className="shrink-0 text-xs font-medium tabular-nums text-slate-400">
-                {done}/{section.items.length}
-              </span>
-            </button>
+              <div className="flex items-center justify-between gap-4 pb-2">
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-blue-600 dark:text-blue-400">
+                    Chapter {idx + 1}: {section.title}
+                  </h3>
+                  <p className="mt-0.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    {section.items.length} {section.items.length === 1 ? 'LESSON' : 'LESSONS'} • {done} COMPLETED
+                  </p>
+                </div>
 
-            {!isCollapsed && (
-              <ul className="border-t border-slate-100 dark:border-slate-800">
-                {section.items.map((item) => (
-                  <SyllabusRow
-                    key={item.id}
-                    item={item}
-                    hasNote={notedAnchors.has(item.id)}
-                    isCurrent={item.id === currentItemId}
+                <button
+                  type="button"
+                  onClick={() => toggle(section.id)}
+                  aria-expanded={!isCollapsed}
+                  className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                >
+                  <ChevronDown
+                    size={18}
+                    className={`transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`}
                   />
-                ))}
-              </ul>
-            )}
-          </section>
-        );
-      })}
+                </button>
+              </div>
+
+              {!isCollapsed && (
+                <ul className="mt-4 space-y-2.5">
+                  {section.items.map((item) => (
+                    <SyllabusRow
+                      key={item.id}
+                      item={item}
+                      hasNote={notedAnchors.has(item.id)}
+                      isCurrent={item.id === currentItemId}
+                    />
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -137,60 +135,51 @@ function SyllabusRow({
 }) {
   const Icon = ITEM_ICON[item.kind];
 
-  const inner = (
-    <>
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center">
+  const content = (
+    <div
+      className={`group flex items-center justify-between rounded-xl px-4 py-3.5 text-sm font-medium transition-all ${
+        isCurrent
+          ? 'bg-blue-50 text-blue-900 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-100 dark:border-blue-800'
+          : 'bg-[#F8FAFC] text-slate-700 hover:bg-[#F1F5F9] dark:bg-slate-800/60 dark:text-slate-300 dark:hover:bg-slate-800'
+      }`}
+    >
+      <div className="flex items-center gap-3 min-w-0">
         {item.completed ? (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
             <Check size={12} strokeWidth={3} />
           </span>
         ) : item.locked ? (
-          <Lock size={14} className="text-slate-300 dark:text-slate-600" />
+          <Lock size={15} className="shrink-0 text-slate-400" />
         ) : (
-          <Icon size={16} className="text-slate-400" />
+          <Icon size={17} className="shrink-0 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
         )}
-      </span>
-
-      <span className="min-w-0 flex-1">
-        <span
-          className={`block truncate text-[14px] ${
-            isCurrent
-              ? 'font-semibold text-indigo-600 dark:text-indigo-400'
-              : item.completed
-                ? 'text-slate-500 dark:text-slate-400'
-                : 'text-slate-800 dark:text-slate-200'
-          }`}
-        >
+        <span className="truncate text-slate-800 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">
           {item.title}
         </span>
-      </span>
+      </div>
 
-      {hasNote && (
-        <NotebookPen
-          size={13}
-          className="shrink-0 text-amber-500"
-          aria-label="You have notes on this"
-        />
-      )}
-      {item.durationLabel && (
-        <span className="shrink-0 text-xs tabular-nums text-slate-400">{item.durationLabel}</span>
-      )}
-    </>
+      <div className="flex items-center gap-3 shrink-0 ml-4">
+        {hasNote && (
+          <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:bg-blue-900/60 dark:text-blue-300">
+            Note
+          </span>
+        )}
+        <span className="text-xs text-slate-400 font-normal">
+          {item.completed ? 'Done' : '15 Min'}
+        </span>
+      </div>
+    </div>
   );
 
-  const className = `flex w-full items-center gap-3 px-5 py-2.5 text-left transition ${
-    isCurrent ? 'bg-indigo-50/60 dark:bg-indigo-950/30' : ''
-  } ${item.href && !item.locked ? 'hover:bg-slate-50 dark:hover:bg-slate-800/40' : 'cursor-default opacity-70'}`;
-
-  return (
-    <li className="border-b border-slate-50 last:border-0 dark:border-slate-800/50">
-      {item.href && !item.locked ? (
-        <Link href={item.href} className={className}>
-          {inner}
+  if (item.href && !item.locked) {
+    return (
+      <li>
+        <Link href={item.href} className="block">
+          {content}
         </Link>
-      ) : (
-        <div className={className}>{inner}</div>
-      )}
-    </li>
-  );
+      </li>
+    );
+  }
+
+  return <li>{content}</li>;
 }

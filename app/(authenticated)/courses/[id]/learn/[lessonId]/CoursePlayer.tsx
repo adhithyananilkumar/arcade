@@ -21,7 +21,6 @@ import {
   GraduationCap,
   MoreVertical,
   NotebookPen,
-  Sparkles,
   Star,
   RotateCcw,
 } from 'lucide-react';
@@ -113,7 +112,6 @@ export function CoursePlayer({
   const [collapsedModules, setCollapsedModules] = useState<Record<string, boolean>>({});
   const toggleModule = (moduleId: string) =>
     setCollapsedModules((prev) => ({ ...prev, [moduleId]: !prev[moduleId] }));
-  const [rightPanelTab, setRightPanelTab] = useState<'notes' | 'ai'>('notes');
   const [notesDraft, setNotesDraft] = useState('');
   const [rightPanelWidth, setRightPanelWidth] = useState(380);
   const [isDesktopViewport, setIsDesktopViewport] = useState(
@@ -712,43 +710,13 @@ export function CoursePlayer({
           style={isDesktopViewport ? { width: rightPanelWidth } : undefined}
         >
           <div className="flex flex-col gap-3 h-full px-5 pb-8 md:px-4">
-            <div className="flex items-center gap-1.5 rounded-full border border-white/40 bg-white/30 p-1 shadow-lg backdrop-blur-xl">
-              <button
-                type="button"
-                onClick={() => setRightPanelTab('notes')}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[12px] font-semibold transition-all ${
-                  rightPanelTab === 'notes'
-                    ? 'bg-[#14142b] text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)]'
-                    : 'text-slate-500 hover:text-[#14142b]'
-                }`}
-              >
-                <NotebookPen size={13} />
-                Notes
-              </button>
-              <button
-                type="button"
-                onClick={() => setRightPanelTab('ai')}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[12px] font-semibold transition-all ${
-                  rightPanelTab === 'ai'
-                    ? 'bg-[#14142b] text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)]'
-                    : 'text-slate-500 hover:text-[#14142b]'
-                }`}
-              >
-                <Sparkles size={13} />
-                AI Chat
-              </button>
+            <div className="flex items-center gap-2 rounded-full border border-white/40 bg-white/30 px-4 py-2.5 shadow-lg backdrop-blur-xl">
+              <NotebookPen size={16} className="text-[#14142b]" />
+              <h2 className="text-sm font-bold text-[#14142b]">Notes</h2>
             </div>
 
             <div className="flex h-full flex-1 flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/30 p-4 shadow-lg backdrop-blur-xl">
-              {rightPanelTab === 'notes' ? (
-                <NotesEditor content={notesDraft} onChange={setNotesDraft} />
-              ) : (
-                <div className="flex h-full min-h-[50vh] flex-col items-center justify-center text-center">
-                  <Sparkles size={28} className="mb-3 text-slate-300" />
-                  <p className="text-[13px] font-semibold text-[#14142b]">AI chat coming soon</p>
-                  <p className="mt-1 text-[12px] text-slate-400">Ask questions about this lesson.</p>
-                </div>
-              )}
+              <NotesEditor content={notesDraft} onChange={setNotesDraft} />
             </div>
           </div>
         </aside>
