@@ -4,72 +4,25 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { UserService } from '@/domains/identity';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'sonner';
-import { Award, Star, Search, Calendar, Download, X } from 'lucide-react';
+import { Award, Search, Calendar, X, ShieldAlert, TimerOff, EyeOff } from 'lucide-react';
+import Link from 'next/link';
 import AchievementsHero from './AchievementsHero';
 import { BadgeWallet } from './BadgeWallet';
-import { BadgeDetailDialog } from './BadgeDetailDialog';
-import { credentialsApi, type BadgeTierInfo, type IssuedBadge, type MyBadges } from '@/domains/credentials';
+import { BadgeDetailPanel } from './BadgeDetailPanel';
+import { CertificateDetailPanel } from './CertificateDetailPanel';
+import {
+  CertificateFace,
+  credentialsApi,
+  type BadgeTierInfo,
+  type IssuedBadge,
+  type IssuedCertificate,
+  type MyBadges,
+} from '@/domains/credentials';
+import { examRoutes } from '@/shared/routes/content.routes';
 
-// ─── Certificate Data ────────────────────────────────────────────────────────
-interface CertificateItem {
-  id: string;
-  title: string;
-  issuer: string;
-  issueDate: string;
-  code: string;
-  skills: string[];
-  score: number;
-  percentile: number;
-  status: 'PASSED' | 'FAILED';
+function shortDate(iso: string) {
+  return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
-
-const CERTIFICATES: CertificateItem[] = [
-  {
-    id: 'cert-1',
-    title: 'Two-Dimensional Arrays and Pointers in C',
-    issuer: 'Arcade Engineering Academy',
-    issueDate: 'Mar 8, 2024',
-    code: 'ARC-C-2024-8891',
-    skills: ['Arrays', 'Pointers', 'Memory Allocation'],
-    score: 60,
-    percentile: 60,
-    status: 'PASSED'
-  },
-  {
-    id: 'cert-2',
-    title: 'Pointers In C Programming',
-    issuer: 'Arcade Engineering Academy',
-    issueDate: 'Mar 2, 2024',
-    code: 'ARC-PTR-2024-9412',
-    skills: ['Pointers', 'C Programming', 'Memory'],
-    score: 60,
-    percentile: 60,
-    status: 'PASSED'
-  },
-  {
-    id: 'cert-3',
-    title: 'C Programming Course',
-    issuer: 'Arcade Engineering Academy',
-    issueDate: 'Mar 2, 2024',
-    code: 'ARC-C-2024-7731',
-    skills: ['C Language', 'Algorithms', 'Syntax'],
-    score: 66,
-    percentile: 66,
-    status: 'PASSED'
-  },
-  {
-    id: 'cert-4',
-    title: 'Advanced Memory Management & Dynamic Allocation',
-    issuer: 'Arcade Engineering Academy',
-    issueDate: 'Jan 14, 2024',
-    code: 'ARC-MEM-2024-3104',
-    skills: ['Malloc', 'Free', 'Heap Management'],
-    score: 45,
-    percentile: 45,
-    status: 'FAILED'
-  }
-];
 
 // ─── Asymmetric TabButton Matching My Learning ───────────────────────────────
 function TabButton({
@@ -100,8 +53,7 @@ function TabButton({
 
 // ─── Main Achievements Page Component ─────────────────────────────────────────
 export default function AchievementsPage() {
-  const { user, updateUser } = useAuthStore();
-  const [certFilter, setCertFilter] = useState<string>('All');
+  const { updateUser } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -111,6 +63,9 @@ export default function AchievementsPage() {
   const [tiers, setTiers] = useState<BadgeTierInfo[]>([]);
   const [badgesError, setBadgesError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'badges' | 'certificates'>('badges');
+  const [certificates, setCertificates] = useState<IssuedCertificate[] | null>(null);
+  const [certificatesError, setCertificatesError] = useState<string | null>(null);
+  const [selectedCertificate, setSelectedCertificate] = useState<IssuedCertificate | null>(null);
 
   useEffect(() => {
     if (isSearchOpen && searchInputRef.current) {
@@ -131,10 +86,20 @@ export default function AchievementsPage() {
       .catch(() => {
         // The ladder falls back to level numbers.
       });
+    // Certificates are issued by the server when a certification exam is passed and cleared.
+    credentialsApi
+      .myCertificates()
+      .then((data) => !cancelled && setCertificates(data))
+      .catch((e) => !cancelled && setCertificatesError(e instanceof Error ? e.message : 'Could not load your certificates.'));
     return () => {
       cancelled = true;
     };
   }, []);
+
+  const replaceCertificate = (next: IssuedCertificate) => {
+    setSelectedCertificate(next);
+    setCertificates((prev) => prev?.map((c) => (c.credentialCode === next.credentialCode ? next : c)) ?? prev);
+  };
 
   const replaceBadge = (next: IssuedBadge) => {
     setSelectedBadge(next);
@@ -156,28 +121,19 @@ export default function AchievementsPage() {
     loadUserData();
   }, []);
 
-  const handleDownloadCert = (certTitle: string) => {
-    toast.success(`Downloading certificate PDF for "${certTitle}"...`);
-  };
-
   // Stats calculation
   const unlockedCount = badges?.total ?? 0;
   const totalBadges = (badges?.earned.length ?? 0) + (badges?.inProgress.length ?? 0);
+  const certificateCount = certificates?.filter((c) => !c.revoked).length ?? 0;
 
   const filteredCertificates = useMemo(() => {
-    return CERTIFICATES.filter((cert) => {
-      const matchesFilter =
-        certFilter === 'All' ? true :
-          certFilter === 'Passed' ? cert.status === 'PASSED' :
-            certFilter === 'Failed' ? cert.status === 'FAILED' : true;
-
-      const matchesSearch = cert.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        cert.issuer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        cert.skills.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
-
-      return matchesFilter && matchesSearch;
-    });
-  }, [certFilter, searchQuery]);
+    const q = searchQuery.trim().toLowerCase();
+    if (!certificates) return [];
+    if (!q) return certificates;
+    return certificates.filter((c) =>
+      [c.title, c.issuerName, c.programme ?? '', c.credentialCode].some((s) => s.toLowerCase().includes(q))
+    );
+  }, [certificates, searchQuery]);
 
   return (
     <div className="relative min-h-screen w-full text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/40">
@@ -220,7 +176,7 @@ export default function AchievementsPage() {
           unlockedCount={unlockedCount}
           totalBadges={totalBadges}
           streakDays={14}
-          certificatesCount={CERTIFICATES.length}
+          certificatesCount={certificateCount}
         />
 
         {/* ── Toolbar: Left Asymmetric Tabs | Right Search ── */}
@@ -245,7 +201,7 @@ export default function AchievementsPage() {
                 setActiveTab('certificates');
                 setSearchQuery('');
               }}
-              label={`Certificates (${CERTIFICATES.length})`}
+              label={`Certificates (${certificateCount})`}
             />
           </div>
 
@@ -334,42 +290,53 @@ export default function AchievementsPage() {
         {/* ── TAB 2: CERTIFICATES ── */}
         {activeTab === 'certificates' && (
           <section aria-label="Certificates" className="space-y-6">
-            {/* Filter Pills */}
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              {['All', 'Passed', 'Failed'].map((filter) => {
-                const isActive = certFilter === filter;
-                return (
-                  <button
-                    key={filter}
-                    type="button"
-                    onClick={() => setCertFilter(filter)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all select-none cursor-pointer border ${
-                      isActive
-                        ? 'bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] text-white border-transparent shadow-sm'
-                        : 'bg-white/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {filter}
-                  </button>
-                );
-              })}
-            </div>
+            {certificatesError && (
+              <p className="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">{certificatesError}</p>
+            )}
+            {!certificates && !certificatesError && (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-busy>
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="h-80 animate-pulse rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl bg-slate-200/60 dark:bg-slate-800/60" />
+                ))}
+              </div>
+            )}
+            {certificates && certificates.length === 0 && (
+              <div className="flex flex-col items-center rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-dashed border-slate-300 bg-white/70 px-6 py-14 text-center dark:border-slate-700 dark:bg-slate-900/60">
+                <Award className="h-10 w-10 text-slate-300" />
+                <h3 className="mt-3 text-lg font-black tracking-tight text-[#14142b] dark:text-white">No certificates yet</h3>
+                <p className="mt-1.5 max-w-md text-sm text-slate-500">
+                  Certificates are awarded when you pass a certification exam. Each one is sealed by Arcade, verifiable by its ID,
+                  and downloadable as a PDF.
+                </p>
+                <Link
+                  href={examRoutes.catalogue}
+                  className="mt-5 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#232735] dark:bg-white dark:text-slate-900"
+                >
+                  Browse exams
+                </Link>
+              </div>
+            )}
+            {certificates && certificates.length > 0 && filteredCertificates.length === 0 && (
+              <p className="text-sm text-slate-500">No certificates match “{searchQuery}”.</p>
+            )}
 
-            {/* Certificates Grid matching My Learning Card System */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
               {filteredCertificates.map((cert, idx) => {
-                const isPassed = cert.status !== 'FAILED';
+                const inactive = cert.revoked || cert.expired;
 
                 return (
-                  <motion.div
-                    key={cert.id}
+                  <motion.button
+                    type="button"
+                    onClick={() => setSelectedCertificate(cert)}
+                    aria-label={`Open ${cert.title} certificate`}
+                    key={cert.credentialCode}
                     layout="position"
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.1 }}
                     exit={{ opacity: 0, y: 8 }}
                     transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: Math.min(idx * 0.04, 0.2) }}
-                    className="group relative flex h-full flex-col justify-between overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-4 sm:p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] hover:-translate-y-1 backdrop-blur-sm"
+                    className="group relative flex h-full flex-col justify-between overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-4 sm:p-5 text-left shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] hover:-translate-y-1 backdrop-blur-sm cursor-pointer"
                   >
                     {/* Ambient Glow */}
                     <div
@@ -378,30 +345,34 @@ export default function AchievementsPage() {
                     />
 
                     <div className="relative z-10 flex flex-1 flex-col justify-between gap-4">
-                      {/* Top Header Seal Artwork */}
-                      <div className="relative h-44 sm:h-48 w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 dark:border-slate-800 shadow-xs transition-transform duration-500 group-hover:scale-[1.02] bg-slate-50/70 dark:bg-slate-800/40 flex flex-col items-center justify-center">
-                        <div className="w-16 h-16 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-xs bg-white dark:bg-slate-800 my-1">
-                          <Award className={`w-8 h-8 stroke-[2] ${isPassed ? 'text-[#2962D6]' : 'text-rose-500'}`} />
-                        </div>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Star className={`w-3.5 h-3.5 fill-current ${isPassed ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'}`} />
-                          <Star className={`w-4 h-4 fill-current ${isPassed ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'}`} />
-                          <Star className={`w-3.5 h-3.5 fill-current ${isPassed ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'}`} />
-                        </div>
+                      {/* The certificate itself, in miniature */}
+                      <div className="relative w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-3 transition-transform duration-500 group-hover:scale-[1.02]">
+                        <CertificateFace certificate={cert} className="shadow-md" />
                       </div>
 
                       {/* Details */}
-                      {/* Details */}
                       <div className="space-y-1.5">
                         <div className="flex flex-wrap items-center gap-2">
-                          {!isPassed && (
+                          {cert.revoked && (
                             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300">
-                              <X size={11} />
-                              Failed
+                              <ShieldAlert size={11} />
+                              Revoked
+                            </span>
+                          )}
+                          {!cert.revoked && cert.expired && (
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300">
+                              <TimerOff size={11} />
+                              Expired
+                            </span>
+                          )}
+                          {!cert.publicVisible && !inactive && (
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 border-slate-200 dark:border-slate-700 text-slate-500">
+                              <EyeOff size={11} />
+                              Private
                             </span>
                           )}
                           <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                            {cert.issuer}
+                            {cert.issuerName}
                           </span>
                         </div>
 
@@ -411,39 +382,25 @@ export default function AchievementsPage() {
 
                         <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
                           <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Issued on {cert.issueDate}</span>
+                          <span>Awarded {shortDate(cert.achievedAt)}</span>
+                          <span className="ml-auto font-mono text-[11px] tracking-wider text-slate-400">{cert.credentialCode}</span>
                         </div>
                       </div>
-
-                      {/* Bottom Action Button */}
-                      <div className="pt-1">
-                        {isPassed ? (
-                          <button
-                            type="button"
-                            onClick={() => handleDownloadCert(cert.title)}
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] hover:bg-[#232735] dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 px-5 py-3 text-[13px] font-semibold transition-all shadow-xs hover:shadow-md cursor-pointer select-none"
-                          >
-                            <Download size={15} />
-                            <span>Download Certificate</span>
-                          </button>
-                        ) : (
-                          <span
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-slate-100 dark:bg-slate-800 px-5 py-3 text-[13px] font-semibold text-slate-400 dark:text-slate-500 cursor-not-allowed select-none"
-                            aria-disabled="true"
-                          >
-                            Certificate Unavailable
-                          </span>
-                        )}
-                      </div>
                     </div>
-                  </motion.div>
+                  </motion.button>
                 );
               })}
             </div>
           </section>
         )}
 
-        <BadgeDetailDialog
+        <CertificateDetailPanel
+          certificate={selectedCertificate}
+          onClose={() => setSelectedCertificate(null)}
+          onChanged={replaceCertificate}
+        />
+
+        <BadgeDetailPanel
           badge={selectedBadge}
           tiers={tiers}
           onClose={() => setSelectedBadge(null)}

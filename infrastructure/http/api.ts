@@ -211,6 +211,75 @@ async function request<T>(
   return (text ? JSON.parse(text) : null) as T;
 }
 
+/**
+ * Fetches a binary response (a PDF, an image, an export) with the same session handling as
+ * {@link request}: bearer token attached, one silent refresh on 401. Errors surface as
+ * {@link ApiError} with the server's message, exactly like JSON calls.
+ */
+async function requestBlob(path: string, isRetry = false): Promise<{ blob: Blob; fileName: string | null }> {
+  const token = getAccessToken();
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      method: "GET",
+      cache: "no-store",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  } catch (cause) {
+    throw new ApiError(
+      NETWORK_ERROR_STATUS,
+      `Cannot reach the Arcade API at ${BASE_URL}. The server may not be running.`,
+      { cause },
+    );
+  }
+  if (res.status === 401 && !isRetry && token && (await refreshTokens())) {
+    return requestBlob(path, true);
+  }
+  if (!res.ok) {
+    let message = res.status === 429 ? "Too many downloads. Please wait a minute and try again." : `Download failed (${res.status})`;
+    if (res.status < 500 && res.status !== 429) {
+      try {
+        const err = JSON.parse(await res.text());
+        message = err.message ?? message;
+      } catch {
+        // not JSON — keep the generic message
+      }
+    } else if (res.status >= 500) {
+      message = "Something went wrong on our end. Please try again in a moment.";
+    }
+    throw new ApiError(res.status, message);
+  }
+  return { blob: await res.blob(), fileName: fileNameFrom(res.headers.get("Content-Disposition")) };
+}
+
+/** The filename a Content-Disposition header offers, preferring the RFC 5987 UTF-8 form. */
+function fileNameFrom(header: string | null): string | null {
+  if (!header) return null;
+  const extended = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(header)?.[1];
+  if (extended) {
+    try {
+      return decodeURIComponent(extended.trim());
+    } catch {
+      // fall through to the plain form
+    }
+  }
+  return /filename\s*=\s*"?([^";]+)"?/i.exec(header)?.[1]?.trim() ?? null;
+}
+
+/** Hands a blob to the browser as a file download. */
+function saveBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  // Revoke on the next tick: some browsers start the download asynchronously.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
 // ── Exports ────────────────────────────────────────────────────────────────────
 
 export const api = {
@@ -227,4 +296,12 @@ export const api = {
       ...(body !== undefined ? { body: body instanceof FormData ? body : JSON.stringify(body) } : {}),
       ...options,
     }),
+  /**
+   * Downloads a file the API serves (e.g. a PDF) and saves it in the browser, named as the server
+   * says, else `fallbackFileName`. Rejects with an {@link ApiError} like any other call.
+   */
+  download: async (path: string, fallbackFileName: string): Promise<void> => {
+    const { blob, fileName } = await requestBlob(path);
+    saveBlob(blob, fileName ?? fallbackFileName);
+  },
 };

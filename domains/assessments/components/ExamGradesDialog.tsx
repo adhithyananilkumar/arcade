@@ -269,7 +269,7 @@ function AttemptDetail({
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/70 pt-3 text-[12px] text-slate-500">
         <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <span>
-            Verification <b className="font-mono tracking-wider text-[#14142b]">{card.verificationCode}</b>
+            Grade card no. <b className="font-mono tracking-wider text-[#14142b]">{card.credentialCode}</b>
           </span>
           {card.certificateIssued && (
             <span className="inline-flex items-center gap-1 font-semibold text-violet-700">

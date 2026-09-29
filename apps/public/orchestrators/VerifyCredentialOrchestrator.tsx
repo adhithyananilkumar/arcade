@@ -14,16 +14,29 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Loader2, Search, ShieldAlert, ShieldCheck, ShieldQuestion, ShieldX } from "lucide-react";
-import { CredentialBadge, credentialPath, credentialsApi, type BadgeLevel, type VerifyResult } from "@/domains/credentials";
+import { ArrowRight, Award, ClipboardList, Loader2, Search, ShieldAlert, ShieldCheck, ShieldQuestion, ShieldX, TimerOff } from "lucide-react";
+import { CredentialBadge, credentialsApi, type BadgeLevel, type CredentialKind, type VerifyResult } from "@/domains/credentials";
 import { cn } from "@/shared/utils/utils";
 
 const LOOK = {
-  VALID: { icon: ShieldCheck, title: "Valid credential", cls: "border-emerald-200 bg-emerald-50 text-emerald-900" },
-  REVOKED: { icon: ShieldAlert, title: "Revoked credential", cls: "border-amber-200 bg-amber-50 text-amber-900" },
+  VALID: { icon: ShieldCheck, title: "Valid", cls: "border-emerald-200 bg-emerald-50 text-emerald-900" },
+  REVOKED: { icon: ShieldAlert, title: "Revoked", cls: "border-amber-200 bg-amber-50 text-amber-900" },
+  EXPIRED: { icon: TimerOff, title: "Expired", cls: "border-amber-200 bg-amber-50 text-amber-900" },
   TAMPERED: { icon: ShieldX, title: "Failed verification", cls: "border-rose-200 bg-rose-50 text-rose-900" },
   NOT_FOUND: { icon: ShieldQuestion, title: "No such credential", cls: "border-slate-200 bg-slate-50 text-slate-800" },
 } as const;
+
+const NOUN: Record<CredentialKind, string> = {
+  BADGE: "badge",
+  CERTIFICATE: "certificate",
+  GRADE_CARD: "grade card",
+};
+
+function heading(result: VerifyResult) {
+  const look = LOOK[result.status];
+  if (!result.kind || result.status === "NOT_FOUND" || result.status === "TAMPERED") return look.title;
+  return `${look.title} ${NOUN[result.kind]}`;
+}
 
 export function VerifyCredentialOrchestrator() {
   const params = useSearchParams();
@@ -68,7 +81,9 @@ export function VerifyCredentialOrchestrator() {
         </span>
         <h1 className="mt-4 text-3xl font-black tracking-tight text-[#14142b] dark:text-white sm:text-4xl">Verify a credential</h1>
         <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-500">
-          Enter the credential ID printed on an Arcade badge or certificate, e.g. <span className="font-mono font-bold">ARC-7KQ2-M9XD-4TPA</span>.
+          Enter the ID printed on an Arcade badge, certificate or grade card — e.g.{" "}
+          <span className="font-mono font-bold">ARC-…</span>, <span className="font-mono font-bold">CERT-…</span> or{" "}
+          <span className="font-mono font-bold">GC-…</span>.
         </p>
       </div>
 
@@ -79,7 +94,7 @@ export function VerifyCredentialOrchestrator() {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="ARC-XXXX-XXXX-XXXX"
+            placeholder="CERT-XXXX-XXXX-XXXX"
             autoComplete="off"
             spellCheck={false}
             className="w-full rounded-2xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 font-mono text-sm font-bold uppercase tracking-wider text-slate-900 shadow-sm placeholder:font-sans placeholder:normal-case placeholder:tracking-normal placeholder:text-slate-400 focus:border-[#2962D6] focus:outline-none focus:ring-2 focus:ring-[#2962D6]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
@@ -101,10 +116,35 @@ export function VerifyCredentialOrchestrator() {
           <div className="flex items-start gap-3">
             <Icon size={24} className="mt-0.5 shrink-0" />
             <div>
-              <p className="text-lg font-black">{look.title}</p>
+              <p className="text-lg font-black">{heading(result)}</p>
               <p className="mt-1 text-sm opacity-80">{result.message}</p>
             </div>
           </div>
+
+          {!result.badgeClass && result.name && result.kind && (
+            <div className="mt-5 flex items-start gap-4 rounded-2xl bg-white/80 p-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#14142b] text-white">
+                {result.kind === "GRADE_CARD" ? <ClipboardList size={20} /> : <Award size={20} />}
+              </span>
+              <dl className="grid min-w-0 flex-1 gap-x-4 gap-y-1.5 text-sm text-slate-800 sm:grid-cols-2">
+                <Row label={result.subtitle ?? "Credential"}>{result.name}</Row>
+                <Row label="Holder">{result.recipientName}</Row>
+                <Row label="Issuer">{result.issuerName}</Row>
+                {result.issuedAt && <Row label="Issued">{new Date(result.issuedAt).toLocaleDateString()}</Row>}
+                {result.expiresAt && <Row label="Valid until">{new Date(result.expiresAt).toLocaleDateString()}</Row>}
+                {result.details
+                  .filter((d) => d.label !== "Type")
+                  .map((d) => (
+                    <Row key={d.label} label={d.label}>
+                      {d.value}
+                    </Row>
+                  ))}
+                <Row label="ID">
+                  <span className="font-mono">{result.credentialCode}</span>
+                </Row>
+              </dl>
+            </div>
+          )}
 
           {result.badgeClass && result.name && (
             <div className="mt-5 flex items-center gap-4 rounded-2xl bg-white/80 p-4">
@@ -129,16 +169,22 @@ export function VerifyCredentialOrchestrator() {
             </div>
           )}
 
-          {result.publicPage && result.status !== "NOT_FOUND" && (
+          {result.publicPage && result.publicPath && result.status !== "NOT_FOUND" && (
             <Link
-              href={credentialPath(result.credentialCode)}
+              href={result.publicPath}
               className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[#2962D6] hover:underline"
             >
               Open the full credential page <ArrowRight size={14} />
             </Link>
           )}
-          {!result.publicPage && result.status !== "NOT_FOUND" && (
+          {!result.publicPage && result.status !== "NOT_FOUND" && result.kind !== "GRADE_CARD" && (
             <p className="mt-4 text-xs opacity-70">The holder keeps this credential off their public profile.</p>
+          )}
+          {result.kind === "GRADE_CARD" && result.status !== "NOT_FOUND" && (
+            <p className="mt-4 text-xs opacity-70">
+              Grade cards have no public page. Compare these facts with the document you were given; any difference means
+              the document was altered.
+            </p>
           )}
         </section>
       )}
@@ -150,7 +196,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   return (
     <div className="min-w-0">
       <dt className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">{label}</dt>
-      <dd className="truncate font-bold">{children}</dd>
+      <dd className="break-words font-bold">{children}</dd>
     </div>
   );
 }

@@ -906,9 +906,26 @@ export interface GradeCardResponse {
   percentage: number;
   passPercentage: number;
   passed: boolean;
+  /** The stored 12-character code. */
   verificationCode: string;
+  /** The same code as printed on the PDF and checked on the verify page: `GC-XXXX-XXXX-XXXX`. */
+  credentialCode: string;
   issuedAt: string;
   certificateIssued: boolean;
+  /**
+   * Where this card's certificate stands, decided by the server. Null on the public verify view.
+   * AWAITING_ISSUE means cleared but not yet recorded; the server issues it on the next read.
+   */
+  certificateStatus:
+    | "ISSUED"
+    | "AWAITING_IDENTITY_REVIEW"
+    | "AWAITING_ISSUE"
+    | "IDENTITY_REJECTED"
+    | "WITHHELD"
+    | "NOT_APPLICABLE"
+    | null;
+  /** The certificate's `CERT-…` ID once issued. */
+  certificateCode: string | null;
   revoked: boolean;
   revokedReason: string | null;
   sections: GradeCardSection[];
