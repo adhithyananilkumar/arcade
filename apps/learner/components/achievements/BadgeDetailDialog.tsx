@@ -78,7 +78,7 @@ export function BadgeDetailDialog({ badge, tiers, onClose, onChanged }: BadgeDet
   const download = async (format: 'png' | 'svg') => {
     setDownloading(format);
     try {
-      await downloadBadgeImage(family, level, badge.name, `${badge.name} - Arcade Level ${level} badge`, format);
+      await downloadBadgeImage(family, level, badge.name, `${badge.name} - Arcade Level ${level} badge`, format, badge.issuerLogoUrl);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Download failed');
     } finally {
@@ -104,6 +104,7 @@ export function BadgeDetailDialog({ badge, tiers, onClose, onChanged }: BadgeDet
                 family={family}
                 level={level}
                 title={badge.name}
+                issuerLogoUrl={badge.issuerLogoUrl}
                 revoked={badge.revoked}
                 label={`${badge.badgeClass.name} — ${badge.name}`}
               />

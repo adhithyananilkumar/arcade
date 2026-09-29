@@ -7,11 +7,11 @@
  * The platform badge artwork. One design for the whole platform; nobody draws their own.
  *
  *   family → silhouette            (course: hexagon · event: circle · exam: shield)
- *   level  → colour and name        (1 Foundation teal · 2 Intermediate violet · 3 Advanced amber)
- *   title  → the content's name, printed in the middle of the badge
+ *   level  → metal                  (1 Foundation bronze · 2 Intermediate silver · 3 Advanced gold)
+ *   title  → the content's name; the Arcade wordmark above it, the issuing organisation's logo below
  *
- * Minimal but colourful — a white face, one gradient per level, clean type — so a badge reads like a
- * professional credential rather than a game trophy.
+ * Minimal — a white face, a muted metal rim, clean type — so a badge reads like a professional
+ * credential rather than a game trophy.
  *
  * A pure string builder rather than a React component so the same bytes serve the in-app
  * <CredentialBadge>, the downloadable image, and the Open Badges `image` URL
@@ -19,20 +19,21 @@
  * ------------------------------------------------------------------
  */
 
+import { ARCADE_WORDMARK_PATHS, ARCADE_WORDMARK_VIEWBOX } from "./arcadeWordmark";
+
 export type BadgeFamilyKey = "COURSE" | "EVENT" | "EXAM";
 export type BadgeLevel = 1 | 2 | 3;
 
 /**
- * Each level's colour: a two-stop gradient for the rim and level band. Distinct hues rather than
- * shades of one, so the level reads at a glance even at thumbnail size.
+ * Each level's metal — bronze, silver, gold — in muted, printed-medal tones rather than bright
+ * primaries: a three-stop rim (highlight → body → shadow) and a faint tint for the face.
  */
-const TONE: Record<BadgeLevel, { from: string; to: string; tint: string }> = {
-  1: { from: "#14B8A6", to: "#0EA5E9", tint: "#E6FAF8" }, // Foundation: teal → sky
-  2: { from: "#3B82F6", to: "#7C3AED", tint: "#EEF0FF" }, // Intermediate: blue → violet
-  3: { from: "#F59E0B", to: "#E11D48", tint: "#FFF3E8" }, // Advanced: amber → rose
+const METAL: Record<BadgeLevel, { rim: [string, string, string]; tint: string; line: string }> = {
+  1: { rim: ["#DCC3AE", "#BF9D83", "#9C7A62"], tint: "#FBF8F5", line: "#D2B9A4" }, // Foundation: bronze
+  2: { rim: ["#DDE1E6", "#A7AFBA", "#6C7582"], tint: "#F5F7F9", line: "#B8C0CA" }, // Intermediate: silver
+  3: { rim: ["#E8CF8C", "#C29C4C", "#86651F"], tint: "#FBF7EC", line: "#D6B96E" }, // Advanced: gold
 };
-const LEVEL_NAME: Record<BadgeLevel, string> = { 1: "FOUNDATION", 2: "INTERMEDIATE", 3: "ADVANCED" };
-const INK = "#14142B";
+const INK = "#1A2238";
 const MUTED = "#6B7385";
 
 const FAMILY_LABEL: Record<BadgeFamilyKey, string> = {
@@ -142,7 +143,7 @@ function title(text: string, family: BadgeFamilyKey): string {
   const width = family === "EVENT" ? 138 : 150;
   const { size, lines } = layoutTitle(text, width);
   const lineHeight = size * 1.18;
-  const blockCenter = 104;
+  const blockCenter = 112;
   const first = blockCenter - ((lines.length - 1) * lineHeight) / 2 + size * 0.35;
   return lines
     .map(
@@ -159,6 +160,12 @@ export interface BadgeArtOptions {
   level: BadgeLevel;
   /** The content's name, printed on the badge. Omitted for the generic class artwork. */
   title?: string;
+  /**
+   * The issuing organisation's logo, shown in the lower medallion. An https URL works when the
+   * SVG is inlined in the page; for a standalone file pass a data: URL (see downloadBadgeImage),
+   * because an SVG drawn as an image loads nothing external.
+   */
+  issuerLogoUrl?: string | null;
   /** Prefix for gradient ids — must be unique per badge on a page. */
   uid?: string;
   /** Adds the xmlns and a <title>, for a standalone .svg file. */
@@ -169,9 +176,48 @@ export function isBadgeLevel(n: number): n is BadgeLevel {
   return Number.isInteger(n) && n >= 1 && n <= 3;
 }
 
+function wordmark(): string {
+  const width = 66;
+  const scale = width / ARCADE_WORDMARK_VIEWBOX.width;
+  const x = CX - width / 2;
+  return `<g transform="translate(${x.toFixed(2)} 54) scale(${scale.toFixed(4)})" fill="${INK}">${ARCADE_WORDMARK_PATHS.map(
+    (d) => `<path d="${d}"/>`
+  ).join("")}</g>`;
+}
+
+function channels(hex: string): [number, number, number] {
+  const n = parseInt(hex.slice(1), 16);
+  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+}
+
+/**
+ * The organisation's logo, recoloured into the badge's metal: a duotone that maps the logo's dark
+ * tones to the metal's shadow and its light tones to the face, so any brand colour reads as bronze,
+ * silver or gold. Nothing is drawn when there is no logo.
+ */
+function medallion(id: string, logo: string | null | undefined, metal: (typeof METAL)[BadgeLevel]): string {
+  if (!logo) return "";
+  const cy = 186;
+  const dark = channels(metal.rim[2]);
+  const light = channels(metal.tint);
+  const table = (i: number) => `${dark[i].toFixed(3)} ${light[i].toFixed(3)}`;
+  return `
+    <filter id="${id}-duo" color-interpolation-filters="sRGB">
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="${table(0)}"/>
+        <feFuncG type="table" tableValues="${table(1)}"/>
+        <feFuncB type="table" tableValues="${table(2)}"/>
+      </feComponentTransfer>
+    </filter>
+    <clipPath id="${id}-logo"><circle cx="${CX}" cy="${cy}" r="14"/></clipPath>
+    <circle cx="${CX}" cy="${cy}" r="16.5" fill="${metal.tint}" stroke="url(#${id}-rim)" stroke-width="2"/>
+    <image href="${escapeXml(logo)}" x="${CX - 14}" y="${cy - 14}" width="28" height="28" preserveAspectRatio="xMidYMid slice" clip-path="url(#${id}-logo)" filter="url(#${id}-duo)"/>`;
+}
+
 /** The complete badge as an SVG document string. */
-export function renderBadgeSvg({ family, level, title: name, uid = "b", standalone }: BadgeArtOptions): string {
-  const tone = TONE[level];
+export function renderBadgeSvg({ family, level, title: name, issuerLogoUrl, uid = "b", standalone }: BadgeArtOptions): string {
+  const metal = METAL[level];
   const id = uid.replace(/[^a-zA-Z0-9_-]/g, "");
   const outer = silhouette(family, 0);
   const face = silhouette(family, 7);
@@ -179,35 +225,31 @@ export function renderBadgeSvg({ family, level, title: name, uid = "b", standalo
 
   const centre = name && name.trim()
     ? title(name, family)
-    : `<text x="${CX}" y="110" text-anchor="middle" font-family="${FONT}" font-weight="700" font-size="18" fill="${INK}">${
+    : `<text x="${CX}" y="118" text-anchor="middle" font-family="${FONT}" font-weight="700" font-size="18" fill="${INK}">${
         family === "COURSE" ? "Course" : family === "EVENT" ? "Event" : "Exam"
       }</text>`;
-
-  // A soft sweep across the lower face in the level's colours: the one decorative gesture.
-  const sweep = `<path d="M0 176 C60 150 150 206 240 164 V256 H0 Z" fill="url(#${id}-rim)" fill-opacity="0.12"/>
-    <path d="M0 196 C70 172 160 222 240 186 V256 H0 Z" fill="url(#${id}-rim)" fill-opacity="0.10"/>`;
 
   const svg = `
     <defs>
       <linearGradient id="${id}-rim" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="${tone.from}"/><stop offset="1" stop-color="${tone.to}"/>
+        <stop offset="0" stop-color="${metal.rim[0]}"/><stop offset="0.5" stop-color="${metal.rim[1]}"/><stop offset="1" stop-color="${metal.rim[2]}"/>
       </linearGradient>
       <linearGradient id="${id}-face" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="${tone.tint}"/>
+        <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="${metal.tint}"/>
       </linearGradient>
       <clipPath id="${id}-clip"><path d="${face}"/></clipPath>
     </defs>
     <ellipse cx="${CX}" cy="246" rx="70" ry="6" fill="#0F172A" fill-opacity="0.07"/>
     <path d="${outer}" fill="url(#${id}-rim)"/>
     <path d="${face}" fill="url(#${id}-face)"/>
-    <g clip-path="url(#${id}-clip)">${sweep}</g>
-    <path d="${inner}" fill="none" stroke="url(#${id}-rim)" stroke-width="1" stroke-opacity="0.45"/>
-    <text x="${CX}" y="58" text-anchor="middle" font-family="${FONT}" font-weight="800" font-size="8.5" letter-spacing="3.2" fill="url(#${id}-rim)">ARCADE</text>
-    <rect x="${CX - 9}" y="65" width="18" height="2" rx="1" fill="url(#${id}-rim)"/>
+    <g clip-path="url(#${id}-clip)">
+      <path d="M0 196 C60 176 150 222 240 190 V256 H0 Z" fill="url(#${id}-rim)" fill-opacity="0.10"/>
+    </g>
+    <path d="${inner}" fill="none" stroke="${metal.line}" stroke-width="1" stroke-opacity="0.7"/>
+    ${wordmark()}
     ${centre}
-    <text x="${CX}" y="148" text-anchor="middle" font-family="${FONT}" font-weight="600" font-size="7.2" letter-spacing="1.6" fill="${MUTED}">${FAMILY_LABEL[family]}</text>
-    <rect x="50" y="158" width="140" height="23" rx="11.5" fill="url(#${id}-rim)"/>
-    <text x="${CX}" y="172.8" text-anchor="middle" font-family="${FONT}" font-weight="700" font-size="8" letter-spacing="1.1" fill="#FFFFFF">LEVEL ${level} · ${LEVEL_NAME[level]}</text>`;
+    <text x="${CX}" y="156" text-anchor="middle" font-family="${FONT}" font-weight="600" font-size="7.2" letter-spacing="1.6" fill="${MUTED}">${FAMILY_LABEL[family]}</text>
+    ${medallion(id, issuerLogoUrl, metal)}`;
 
   const attrs = `viewBox="0 0 ${BADGE_ART_VIEWBOX.width} ${BADGE_ART_VIEWBOX.height}"${
     standalone ? ` xmlns="http://www.w3.org/2000/svg" width="${BADGE_ART_VIEWBOX.width * 2}" height="${BADGE_ART_VIEWBOX.height * 2}"` : ""

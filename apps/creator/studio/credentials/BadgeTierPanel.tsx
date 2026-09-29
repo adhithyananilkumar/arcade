@@ -154,6 +154,7 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
                   family={contentType}
                   level={draft}
                   title={assignment.contentTitle}
+                  issuerLogoUrl={assignment.issuerLogoUrl}
                   className="w-40"
                   label={`Level ${draft} ${assignment.family.label} badge`}
                 />
@@ -182,6 +183,7 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
                 family={contentType}
                 tiers={catalogue.tiers}
                 contentTitle={assignment.contentTitle}
+                issuerLogoUrl={assignment.issuerLogoUrl}
                 value={draft}
                 onChange={setDraft}
                 disabled={locked || saving}

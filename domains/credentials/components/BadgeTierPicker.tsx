@@ -21,10 +21,11 @@ export interface BadgeTierPickerProps {
   onChange: (level: BadgeLevel) => void;
   /** Printed on each option's badge, so the creator sees exactly what learners receive. */
   contentTitle?: string;
+  issuerLogoUrl?: string | null;
   disabled?: boolean;
 }
 
-export function BadgeTierPicker({ family, tiers, value, onChange, contentTitle, disabled }: BadgeTierPickerProps) {
+export function BadgeTierPicker({ family, tiers, value, onChange, contentTitle, issuerLogoUrl, disabled }: BadgeTierPickerProps) {
   const ordered = [...tiers].sort((a, b) => a.level - b.level);
   return (
     <div role="radiogroup" aria-label="Badge level" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -47,7 +48,7 @@ export function BadgeTierPicker({ family, tiers, value, onChange, contentTitle, 
             )}
           >
             <div className="w-24">
-              <CredentialBadge family={family} level={level} title={contentTitle} />
+              <CredentialBadge family={family} level={level} title={contentTitle} issuerLogoUrl={issuerLogoUrl} />
             </div>
             <span className="mt-2 flex items-center gap-1.5 text-sm font-bold text-slate-900 dark:text-white">
               <span

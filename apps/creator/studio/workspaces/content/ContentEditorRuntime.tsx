@@ -1435,6 +1435,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                     family={badgeContentType}
                     level={badgeAssignment.tier.level as BadgeLevel}
                     title={badgeAssignment.contentTitle}
+                    issuerLogoUrl={badgeAssignment.issuerLogoUrl}
                     className="w-8 shrink-0"
                   />
                   <span className="min-w-0 flex-1">

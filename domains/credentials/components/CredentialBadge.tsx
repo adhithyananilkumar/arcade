@@ -19,6 +19,8 @@ export interface CredentialBadgeProps {
   level: BadgeLevel;
   /** The content's name, printed on the badge. Omit for the generic level artwork. */
   title?: string;
+  /** The issuing organisation's logo, shown in the badge's lower medallion. */
+  issuerLogoUrl?: string | null;
   /** Not yet earned: drawn in grey. */
   locked?: boolean;
   /** Revoked: drawn in grey with reduced contrast. */
@@ -28,11 +30,11 @@ export interface CredentialBadgeProps {
   className?: string;
 }
 
-export function CredentialBadge({ family, level, title, locked, revoked, label, className }: CredentialBadgeProps) {
+export function CredentialBadge({ family, level, title, issuerLogoUrl, locked, revoked, label, className }: CredentialBadgeProps) {
   const uid = useId();
   const svg = useMemo(
-    () => renderBadgeSvg({ family, level, title, uid: `cb${uid}` }),
-    [family, level, title, uid]
+    () => renderBadgeSvg({ family, level, title, issuerLogoUrl, uid: `cb${uid}` }),
+    [family, level, title, issuerLogoUrl, uid]
   );
   return (
     <div

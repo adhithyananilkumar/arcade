@@ -195,7 +195,7 @@ function EarnedCard({ badge, index, onOpen }: { badge: IssuedBadge; index: numbe
         className="group/badge relative flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl pb-2 pt-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2962D6]"
       >
         <div className="w-28 drop-shadow-md transition-transform duration-300 group-hover/badge:scale-105 group-active/badge:scale-95 sm:w-32">
-          <CredentialBadge family={badge.badgeClass.family.key} level={level} title={badge.name} revoked={badge.revoked} />
+          <CredentialBadge family={badge.badgeClass.family.key} level={level} title={badge.name} issuerLogoUrl={badge.issuerLogoUrl} revoked={badge.revoked} />
         </div>
         <span className="mt-4 line-clamp-1 text-center text-base font-bold tracking-tight text-[#14142b] transition-colors group-hover/badge:text-[#2962D6] dark:text-white sm:text-lg">
           {badge.name}
@@ -228,7 +228,7 @@ function ProgressCard({ badge, index }: { badge: InProgressBadge; index: number 
       {GLOW}
       <div className="relative flex w-full flex-col items-center pb-2 pt-2">
         <div className="relative w-28 sm:w-32">
-          <CredentialBadge family={badge.badgeClass.family.key} level={level} title={badge.name} locked />
+          <CredentialBadge family={badge.badgeClass.family.key} level={level} title={badge.name} issuerLogoUrl={badge.issuerLogoUrl} locked />
           <span className="absolute inset-0 flex items-center justify-center">
             <Lock className="h-8 w-8 text-slate-700 drop-shadow-md dark:text-white" />
           </span>

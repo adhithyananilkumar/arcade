@@ -26,6 +26,7 @@ export function BadgeLevelSummary({ assignment }: { assignment: BadgeAssignment 
               family={assignment.contentType}
               level={tier.level as BadgeLevel}
               title={assignment.contentTitle}
+              issuerLogoUrl={assignment.issuerLogoUrl}
             />
           </div>
           <div className="min-w-0">

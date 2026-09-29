@@ -53,9 +53,12 @@ export async function downloadBadgeImage(
   level: BadgeLevel,
   title: string,
   fileName: string,
-  format: "svg" | "png" = "png"
+  format: "svg" | "png" = "png",
+  issuerLogoUrl?: string | null
 ): Promise<void> {
-  const svg = renderBadgeSvg({ family, level, title, uid: "dl", standalone: true });
+  // A standalone SVG loads nothing external, so the logo travels inside it as a data: URL.
+  const logo = issuerLogoUrl ? await toDataUrl(issuerLogoUrl) : null;
+  const svg = renderBadgeSvg({ family, level, title, issuerLogoUrl: logo, uid: "dl", standalone: true });
   const svgBlob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
   if (format === "svg") {
     triggerDownload(svgBlob, `${fileName}.svg`);
@@ -82,6 +85,23 @@ export async function downloadBadgeImage(
     triggerDownload(png, `${fileName}.png`);
   } finally {
     URL.revokeObjectURL(url);
+  }
+}
+
+/** Null when the logo cannot be fetched (e.g. a host without CORS): the badge is drawn without it. */
+async function toDataUrl(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, { mode: "cors" });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise<string | null>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : null);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
   }
 }
 

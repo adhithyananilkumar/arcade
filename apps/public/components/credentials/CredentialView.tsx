@@ -84,7 +84,7 @@ export function CredentialView({ data, tiers }: { data: PublicBadge; tiers: Badg
   const download = async () => {
     setDownloading(true);
     try {
-      await downloadBadgeImage(family, level, badge.name, `${badge.name} - Arcade Level ${level} badge`, "png");
+      await downloadBadgeImage(family, level, badge.name, `${badge.name} - Arcade Level ${level} badge`, "png", badge.issuerLogoUrl);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Download failed");
     } finally {
@@ -147,7 +147,7 @@ export function CredentialView({ data, tiers }: { data: PublicBadge; tiers: Badg
                 transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
                 className="relative w-60 drop-shadow-2xl sm:w-64"
               >
-                <CredentialBadge family={family} level={level} title={badge.name} revoked={!valid} label={`${badge.badgeClass.name} — ${badge.name}`} />
+                <CredentialBadge family={family} level={level} title={badge.name} issuerLogoUrl={badge.issuerLogoUrl} revoked={!valid} label={`${badge.badgeClass.name} — ${badge.name}`} />
               </motion.div>
               <p className="relative mt-4 font-mono text-[11px] font-bold tracking-wider text-slate-500">{badge.badgeClass.code}</p>
             </div>

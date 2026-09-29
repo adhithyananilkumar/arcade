@@ -4,7 +4,7 @@
  * Layer: Domains
  * Domain: Credentials
  *
- * Presentation-only styling per level, matching the tones in badgeArt. What a level MEANS comes
+ * Presentation-only styling per level, matching the bronze / silver / gold metals in badgeArt. What a level MEANS comes
  * from the backend catalogue; this only says what colour it is.
  * ------------------------------------------------------------------
  */
@@ -20,16 +20,16 @@ export interface TierStyle {
 
 export const TIER_STYLE: Record<BadgeLevel, TierStyle> = {
   1: {
-    chip: "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
-    swatch: "bg-[#64748B]",
+    chip: "bg-[#FBF8F5] text-[#7A5A45] border-[#E6D6C8] dark:bg-[#3A2A1E] dark:text-[#E7C4A3] dark:border-[#6B4B33]",
+    swatch: "bg-gradient-to-br from-[#DCC3AE] to-[#9C7A62]",
   },
   2: {
-    chip: "bg-blue-50 text-[#2962D6] border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900",
-    swatch: "bg-[#2962D6]",
+    chip: "bg-[#F5F7F9] text-[#4B5563] border-[#CBD2DA] dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600",
+    swatch: "bg-gradient-to-br from-[#DDE1E6] to-[#6C7582]",
   },
   3: {
-    chip: "bg-[#0E1A3D] text-white border-[#C8A24A]/70 dark:bg-[#0E1A3D] dark:text-white",
-    swatch: "bg-[#0E1A3D]",
+    chip: "bg-[#FBF7EC] text-[#7A5C1C] border-[#E6D29C] dark:bg-[#3A3018] dark:text-[#EBD28E] dark:border-[#6E5A27]",
+    swatch: "bg-gradient-to-br from-[#E8CF8C] to-[#86651F]",
   },
 };
 

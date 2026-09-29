@@ -55,6 +55,8 @@ export interface BadgeAssignment {
   contentType: BadgeContentType;
   contentId: string;
   contentTitle: string;
+  /** The issuing organisation's logo, printed on the badge. Null for personal channels. */
+  issuerLogoUrl: string | null;
   family: BadgeFamilyInfo;
   /** Null when the content awards no badge. */
   tier: BadgeTierInfo | null;
@@ -80,6 +82,7 @@ export interface IssuedBadge {
   recipientHandle: string | null;
   issuerName: string;
   issuerHandle: string | null;
+  issuerLogoUrl: string | null;
   issuedAt: string;
   publicVisible: boolean;
   revoked: boolean;
@@ -93,6 +96,7 @@ export interface InProgressBadge {
   name: string;
   contentPath: string | null;
   issuerName: string | null;
+  issuerLogoUrl: string | null;
   badgeClass: BadgeClassInfo;
   progressPercent: number;
 }
