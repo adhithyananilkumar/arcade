@@ -166,14 +166,12 @@ export function ProfileSettingsOrchestrator() {
               This is your address on Arcade. People and organizations share one
               namespace, so a handle is unique across the whole platform.
             </p>
-            {handle && (
-              <Link
-                href={`/${handle}`}
-                className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-extrabold text-indigo-500 transition-colors hover:text-indigo-600 dark:text-indigo-400"
-              >
-                View your profile <ExternalLink size={12} />
-              </Link>
-            )}
+            <Link
+              href="/profile"
+              className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-extrabold text-indigo-500 transition-colors hover:text-indigo-600 dark:text-indigo-400"
+            >
+              View your profile <ExternalLink size={12} />
+            </Link>
           </div>
         </div>
 

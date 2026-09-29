@@ -530,24 +530,9 @@ function ProfilePageContent() {
               </h1>
 
               <div className="flex items-center justify-center md:justify-start gap-2 mt-1">
-                {/*
-                  The handle is also the public address, so it links there — this page is the
-                  private dashboard (editing, streaks, enrolments) and domain/<handle> is what
-                  everyone else sees. `user.username` is null until a handle is claimed, in which
-                  case there is nowhere to link to and it renders as plain text.
-                */}
-                {currentUser.username ? (
-                  <Link
-                    href={`/${currentUser.username}`}
-                    className="text-base font-normal text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
-                  >
-                    @{username}
-                  </Link>
-                ) : (
-                  <span className="text-base font-normal text-slate-500 dark:text-slate-400">
-                    @{username}
-                  </span>
-                )}
+                <span className="text-base font-normal text-slate-500 dark:text-slate-400">
+                  @{username}
+                </span>
                 {/*
                   What this account actually is on Arcade, decided by the backend rather than by
                   reading role names here. "Instructor" means they staff a channel or have
@@ -730,7 +715,7 @@ function ProfilePageContent() {
                             {channel.iconUrl ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
-                                src={channel.iconUrl}
+                                src={getAvatarUrl(channel.iconUrl)}
                                 alt={channel.name}
                                 className="h-full w-full object-cover"
                               />

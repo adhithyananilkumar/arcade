@@ -707,18 +707,14 @@ export default function PersonalInfoPage() {
               Information that appears publicly on your profile page.
             </p>
           </div>
-          {handle && (
-            <Link
-              href={`/${handle}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 transition-colors"
-              title="View your public profile"
-            >
-              <span>View profile</span>
-              <ExternalLink size={12} />
-            </Link>
-          )}
+          <Link
+            href="/profile"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 transition-colors"
+            title="View your profile"
+          >
+            <span>View profile</span>
+            <ExternalLink size={12} />
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
