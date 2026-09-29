@@ -14,6 +14,7 @@ import {
   type ExamTieType,
 } from "@/domains/assessments";
 import { SchedulePanel } from "@/domains/publishing";
+import { BadgeTierPanel } from "../../../credentials/BadgeTierPanel";
 import { formatMoney } from "@/shared/utils/money";
 
 /**
@@ -179,6 +180,8 @@ export function ExamSettingsWorkspace({
       <CategorySection exam={exam} onChange={onChange} readOnly={readOnly} />
 
       {!exam.tieType && <SchedulePanel contentType="EXAM" contentId={exam.id} readOnly={readOnly} />}
+      {/* A tied exam completes its course or event, and that content's badge is the one earned. */}
+      {!exam.tieType && <BadgeTierPanel contentType="EXAM" contentId={exam.id} readOnly={readOnly} />}
       {exam.tieType && (
         <section className="rounded-2xl border border-white/50 bg-white/50 p-5 shadow-sm backdrop-blur-md">
           <h3 className="text-sm font-black tracking-tight text-[#14142b]">Schedule</h3>

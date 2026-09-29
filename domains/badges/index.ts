@@ -5,6 +5,10 @@
  * Domain: Badges
  *
  * Public surface of the Badges domain.
+ *
+ * ARCHIVED (2026-09-29): the creator badge designer. No longer reachable from Studio — badges are
+ * now central, levelled credentials (domains/credentials). Kept intact for possible reuse; see
+ * docs/archive/badge-editor.md before wiring it anywhere.
  * ------------------------------------------------------------------
  */
 

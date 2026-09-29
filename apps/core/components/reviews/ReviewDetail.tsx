@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { AssessmentReviewQuestions } from "@/domains/learning";
+import { BadgeLevelSummary, credentialsApi, type BadgeAssignment } from "@/domains/credentials";
 
 export interface ReviewDetailProps {
   reviewId: string;
@@ -69,6 +70,9 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
   const [newCommentBody, setNewCommentBody] = useState("");
   const [postingComment, setPostingComment] = useState(false);
 
+  // The badge level the content awards — part of what is being approved.
+  const [badge, setBadge] = useState<BadgeAssignment | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,6 +94,10 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
         setVersions(v);
         setLifecycle(l);
         if (r.contentType === "COURSE" || r.contentType === "EVENT" || r.contentType === "EXAM") {
+          credentialsApi
+            .getAssignment(r.contentType, r.contentId)
+            .then(setBadge)
+            .catch(() => setBadge(null));
           setLoadingExams(true);
           platformReviewApi
             .getExams(reviewId)
@@ -347,6 +355,12 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
         currentStage={review.stage}
         approvalPublishes={review.actions.approvalPublishes}
       />
+
+      {badge && (
+        <div className="max-w-md">
+          <BadgeLevelSummary assignment={badge} />
+        </div>
+      )}
 
       {/* Associated Assessments & Exams Section */}
       {(review.contentType === "COURSE" || review.contentType === "EVENT" || review.contentType === "EXAM") && (
