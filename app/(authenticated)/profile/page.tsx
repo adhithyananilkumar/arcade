@@ -11,7 +11,7 @@ import { useActivitySummaryQuery, useDailyActivityQuery } from '@/domains/learni
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAvatarUrl } from '@/shared/utils/avatar';
-import { BadgeRow, VerifiedBadge, BadgeIcon, type ProfileBadge } from '@/domains/recognition';
+import { BadgeRow, type ProfileBadge } from '@/domains/recognition';
 import {
   User as UserIcon, MapPin, Mail, Calendar, Edit3,
   Code, Star,
@@ -619,9 +619,9 @@ function ProfilePageContent() {
                 >
                   <Trophy size={15} className="text-amber-500" />
                   <span>Achievements</span>
-                  {((currentUser.badges?.length ?? 0) + (myBadges?.earned?.length ?? 0)) > 0 && (
+                  {(myBadges?.earned?.length ?? 0) > 0 && (
                     <span className="rounded-full bg-purple-100 dark:bg-purple-950/60 px-2 py-0.5 text-[11px] font-bold text-purple-700 dark:text-purple-300">
-                      {(currentUser.badges?.length ?? 0) + (myBadges?.earned?.length ?? 0)}
+                      {myBadges?.earned?.length ?? 0}
                     </span>
                   )}
                 </Link>
@@ -638,23 +638,12 @@ function ProfilePageContent() {
                   <Loader2 className="animate-spin" size={14} />
                   <span>Loading achievements...</span>
                 </div>
-              ) : ((currentUser.badges?.length ?? 0) === 0 && (myBadges?.earned?.length ?? 0) === 0) ? (
+              ) : (myBadges?.earned?.length ?? 0) === 0 ? (
                 <p className="text-xs text-slate-400 dark:text-slate-500 italic">
                   No achievements unlocked yet.
                 </p>
               ) : (
                 <div className="flex flex-wrap items-center gap-5 pt-2">
-                  {/* Live Recognition Badges Granted to User */}
-                  {(currentUser.badges as ProfileBadge[] | undefined)?.map((badge) => (
-                    <VerifiedBadge
-                      key={badge.code}
-                      badge={badge}
-                      size={96}
-                      showDetailOnHover={true}
-                      className="transition-transform hover:scale-105"
-                    />
-                  ))}
-
                   {/* Live Issued Credential Badges */}
                   {myBadges?.earned?.map((b) => (
                     <Link
