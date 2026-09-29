@@ -18,7 +18,7 @@ const FILTERS = [
 
 function iconFor(action: string) {
   const a = action.toUpperCase();
-  if (a.includes('COURSE') || a.includes('CONTENT') || a.includes('ARTICLE')) return BookOpen;
+  if (a.includes('COURSE') || a.includes('CONTENT')) return BookOpen;
   if (a.includes('STAFF') || a.includes('MEMBER') || a.includes('USER')) return Users;
   if (a.includes('ROLE') || a.includes('POLICY') || a.includes('OWNER')) return ShieldCheck;
   if (a.includes('REVIEW')) return Star;

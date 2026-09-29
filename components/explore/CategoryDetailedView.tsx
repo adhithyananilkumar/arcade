@@ -15,10 +15,10 @@ import GradientText from "@/components/landing/GradientText";
 import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
 import { api } from "@/infrastructure/http/api";
+import ExamsView from "./ExamsView";
+import WindmillAnimation from "./WindmillAnimation";
 import CoursesView, { CourseCard } from "./CoursesView";
 import EventsView from "./EventsView";
-import ArticlesView from "./ArticlesView";
-import WindmillAnimation from "./WindmillAnimation";
 
 import { getCourseAttribution, type AttributableCourse, type CourseAttribution } from "./courseAttribution";
 import { courseReviewService } from "@/domains/learning";
@@ -1208,7 +1208,7 @@ const CategoryPillButton: React.FC<CategoryPillButtonProps> = ({
 type CategoryDetailedViewProps = {
   /** When set (e.g. `/search`), stay inside the authenticated hub instead of public landing routes. */
   hubBasePath?: string;
-  mode?: "courses" | "events" | "articles";
+  mode?: "courses" | "events" | "exams";
 };
 
 export default function CategoryDetailedView({ hubBasePath, mode: propMode = "courses" }: CategoryDetailedViewProps = {}) {
@@ -1217,22 +1217,22 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
   const tabFromQuery = searchParams.get("tab");
   const initialMode = (tabFromQuery === "bootcamps" || tabFromQuery === "events")
     ? "events"
-    : tabFromQuery === "articles"
-      ? "articles"
+    : tabFromQuery === "exams"
+      ? "exams"
       : propMode;
-  const [mode, setMode] = useState<"courses" | "events" | "articles">(initialMode);
+  const [mode, setMode] = useState<"courses" | "events" | "exams">(initialMode);
 
   useEffect(() => {
     if (tabFromQuery === "bootcamps" || tabFromQuery === "events") {
       setMode("events");
-    } else if (tabFromQuery === "articles") {
-      setMode("articles");
+    } else if (tabFromQuery === "exams") {
+      setMode("exams");
     } else if (tabFromQuery === "courses") {
       setMode("courses");
     }
   }, [tabFromQuery]);
 
-  const exploreHome = hubBasePath || (mode === "events" ? "/events" : mode === "articles" ? "/articles" : "/explore");
+  const exploreHome = hubBasePath || (mode === "events" ? "/events" : mode === "exams" ? "/explore?tab=exams" : "/explore");
   const isEmbeddedHub = Boolean(hubBasePath);
 
   // Route selector
@@ -1266,8 +1266,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
 
   // Categories created via Console -> Content Manage -> Categories (super-user only),
   // merged additively on top of the hardcoded dummy categories — never removes them.
-  // Each admin category is scoped to one section (courses/events/articles) via its `type`.
-  const categoryType = mode === "events" ? "EVENTS" : mode === "articles" ? "ARTICLES" : "COURSES";
+  // Each admin category is scoped to one section (courses/events/exams) via its `type`.
+  const categoryType = mode === "events" ? "EVENTS" : mode === "exams" ? "EXAMS" : "COURSES";
   const allPublicCategories = usePublicCategories();
   const adminCategories = allPublicCategories.filter((c) => c.type === categoryType || c.type === "ALL");
 
@@ -1320,13 +1320,11 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
     if (cat.toLowerCase() === "all") {
       const allCourses: any[] = [];
       const allBootcamps: any[] = [];
-      const allResources: any[] = [];
 
       Object.entries(CATEGORY_DATA).forEach(([k, val]) => {
         if (k.toLowerCase() === "all") return;
         val.courses.forEach((c) => allCourses.push({ ...c, category: k }));
         val.bootcamps.forEach((b) => allBootcamps.push({ ...b, category: k }));
-        val.resources.forEach((r) => allResources.push({ ...r, category: k }));
       });
 
       // `publicCourses` is one page, not the catalogue, so the cards shown here are this page's
@@ -1356,7 +1354,6 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
         colors: { primary: "#2563EB", secondary: "rgba(37, 99, 235, 0.08)" },
         courses: allCourses,
         bootcamps: allBootcamps,
-        resources: allResources,
       };
     }
 
@@ -1404,7 +1401,6 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
           colors: { primary: "#3B82F6", secondary: "#3B82F614" },
           courses: publishedForCat,
           bootcamps: [],
-          resources: [],
         };
       }
       return undefined;
@@ -1417,7 +1413,6 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
       colors: { primary: color, secondary: `${color}14` },
       courses: publishedForCat,
       bootcamps: [],
-      resources: [],
     };
   };
   const [courseStats, setCourseStats] = useState<Record<string, { averageRating: number; reviewsCount: number }>>({});
@@ -1536,49 +1531,24 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
     }
   }, [activeCategoryName]);
 
-  // Sync body background so the footer (rendered outside this component) blends seamlessly.
-  // Only active on articles mode — cleans up on unmount so other pages are unaffected.
-  useEffect(() => {
-    if (mode !== "articles") return;
-
-    const ARTICLES_BODY_BG: Record<string, string> = {
-      "All":                    "linear-gradient(160deg, #F8FAFC 0%, #EEF2FF 35%, #F5F3FF 70%, #F8FAFC 100%)",
-      "Computer Science":       "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)",
-      "Information Technology": "linear-gradient(160deg, #FFF8F0 0%, #FEECD8 35%, #FFF3E0 70%, #FDE8C8 100%)",
-      "Business & Management":  "linear-gradient(160deg, #FFF9EC 0%, #FEF2D0 35%, #FFFBF0 70%, #FAEAC0 100%)",
-      "Civil & Mechanical":     "linear-gradient(160deg, #F6F9F0 0%, #EBF3E0 35%, #F5FAF0 70%, #E2EED4 100%)",
-      "Basic Sciences":         "linear-gradient(160deg, #FDF8F0 0%, #FAF0E0 35%, #FEFAF5 70%, #F5EDE0 100%)",
-      "Humanities & Languages": "linear-gradient(160deg, #FDF4EE 0%, #FBEAD8 35%, #FDF8F0 70%, #F7E4D0 100%)",
-      "Personal Development":   "linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%)",
-    };
-
-    const bg = ARTICLES_BODY_BG[activeCategoryName] ?? ARTICLES_BODY_BG["All"] ?? ARTICLES_BODY_BG["Computer Science"];
-    const prev = document.body.style.background;
-    document.body.style.background = bg;
-
-    return () => {
-      document.body.style.background = prev;
-    };
-  }, [mode, activeCategoryName]);
-
   const handleCategorySwitch = (category: string) => {
     setActiveCategory(category);
     setCourseSearchQuery("");
 
     const base = hubBasePath || window.location.pathname;
-    const tabParam = mode === "events" ? "&tab=bootcamps" : mode === "articles" ? "&tab=articles" : "&tab=courses";
+    const tabParam = mode === "events" ? "&tab=bootcamps" : mode === "exams" ? "&tab=exams" : "&tab=courses";
     const newUrl = `${base}?category=${encodeURIComponent(category)}${tabParam}`;
     window.history.replaceState(null, "", newUrl);
   };
 
-  const handleModeChange = (newMode: "courses" | "events" | "articles") => {
+  const handleModeChange = (newMode: "courses" | "events" | "exams") => {
     setMode(newMode);
     if (hubBasePath) {
       const tabParam = newMode === "events" ? "bootcamps" : newMode;
       const newUrl = `${hubBasePath}?category=${encodeURIComponent(activeCategoryName)}&tab=${tabParam}`;
       window.history.replaceState(null, "", newUrl);
     } else {
-      const targetPath = newMode === "events" ? "/events" : newMode === "articles" ? "/articles" : "/courses";
+      const targetPath = newMode === "events" ? "/events" : newMode === "exams" ? "/exams" : "/courses";
       router.push(`${targetPath}?category=${encodeURIComponent(activeCategoryName)}`);
     }
   };
@@ -1587,25 +1557,11 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
     router.push(exploreHome);
   };
 
-  const ARTICLES_BG: Record<string, string> = {
-    "All":                    "linear-gradient(160deg, #F8FAFC 0%, #EEF2FF 35%, #F5F3FF 70%, #F8FAFC 100%)",
-    "Computer Science":       "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)", // warm antique parchment
-    "Information Technology": "linear-gradient(160deg, #FFF8F0 0%, #FEECD8 35%, #FFF3E0 70%, #FDE8C8 100%)", // soft amber scroll
-    "Business & Management":  "linear-gradient(160deg, #FFF9EC 0%, #FEF2D0 35%, #FFFBF0 70%, #FAEAC0 100%)", // golden honey
-    "Civil & Mechanical":     "linear-gradient(160deg, #F6F9F0 0%, #EBF3E0 35%, #F5FAF0 70%, #E2EED4 100%)", // earthy sage parchment
-    "Basic Sciences":         "linear-gradient(160deg, #FDF8F0 0%, #FAF0E0 35%, #FEFAF5 70%, #F5EDE0 100%)", // warm cream linen
-    "Humanities & Languages": "linear-gradient(160deg, #FDF4EE 0%, #FBEAD8 35%, #FDF8F0 70%, #F7E4D0 100%)", // warm terracotta scroll
-    "Personal Development":   "linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%)", // old vellum yellow
-  };
-
-  const articlesBackground = ARTICLES_BG[activeCategoryName] ?? ARTICLES_BG["All"] ?? "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)";
-
   return (
     <div
       className="landing-root"
       style={{
         background: mode === "events" ? "linear-gradient(135deg, #FDF4FF 0%, #F5F3FF 50%, #E0F2FE 100%)" : // Pastel lavender-violet-blue sunset mix
-          mode === "articles" ? articlesBackground : // Dynamic per-category gradient
             "#f8fafc",
         minHeight: "100vh",
         paddingBottom: "110px",
@@ -1952,7 +1908,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
               onMouseEnter={(e) => { e.currentTarget.style.color = activeData.colors.primary; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "inherit"; }}
             >
-              {mode === "courses" ? "Courses" : mode === "events" ? "Events & Bootcamps" : "Articles & Research"}
+              {mode === "courses" ? "Courses" : mode === "exams" ? "Exams" : "Events & Bootcamps"}
             </span>
             <span>/</span>
             <span style={{ color: activeData.colors.primary, fontWeight: "700" }}>{activeCategoryName}</span>
@@ -1997,12 +1953,13 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                 )
               },
               {
-                id: "articles",
-                label: "Articles & Research",
+                id: "exams",
+                label: "Exams",
                 icon: (
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                    <path d="m9 14 2 2 4-4" />
                   </svg>
                 )
               }
@@ -2204,7 +2161,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
             </div>
           </div>
         ) : (
-          /* Original Hero Section for Courses / Articles */
+          /* Hero Section for Courses and Exams */
           <div
             style={{
               position: "relative",
@@ -2230,20 +2187,20 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                   fontFamily: "'Space Grotesk', sans-serif"
                 }}
               >
-                {mode === "courses" ? (
+                {mode === "exams" ? (
                   <>
-                    {CATEGORY_HEADLINES[activeCategoryName]?.main || "Discover. Learn. "}
+                    Prove it. Get certified in <br />
                     <GradientText colors={["#2563EB", "#0EA5E9", "#06B6D4", "#10B981", "#4F46E5", "#2563EB"]} animationSpeed={8} showBorder={false}>
-                      {CATEGORY_HEADLINES[activeCategoryName]?.highlight || "Grow."}
+                      {activeCategoryName === "All" ? "every field." : activeCategoryName}
                     </GradientText>
                   </>
                 ) : (
-                  <>
-                    Latest Research & Articles in <br />
-                    <GradientText colors={["#10B981", "#059669", "#2563EB", "#3B82F6", "#10B981"]} animationSpeed={8} showBorder={false}>
-                      {activeCategoryName}
-                    </GradientText>
-                  </>
+                <>
+                      {CATEGORY_HEADLINES[activeCategoryName]?.main || "Discover. Learn. "}
+                      <GradientText colors={["#2563EB", "#0EA5E9", "#06B6D4", "#10B981", "#4F46E5", "#2563EB"]} animationSpeed={8} showBorder={false}>
+                        {CATEGORY_HEADLINES[activeCategoryName]?.highlight || "Grow."}
+                      </GradientText>
+                    </>
                 )}
               </h1>
               <p
@@ -2256,7 +2213,9 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                   fontWeight: 500
                 }}
               >
-                {activeData.desc} Browse the courses, practical bootcamps, and resources curated to level up your career.
+                {mode === "exams"
+                  ? "Certifications, graded exams and practice assessments. Register, sit it, and get a verified grade card."
+                  : `${activeData.desc} Browse the courses and practical bootcamps curated to level up your career.`}
               </p>
 
               {/* Banner Inner MNC Google-Style Search */}
@@ -2270,9 +2229,9 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                 <input
                   type="text"
                   placeholder={
-                    mode === "courses"
-                      ? (activeCategoryName === "All" ? "Search courses, topics, or skills..." : `Search ${activeCategoryName} courses...`)
-                      : (activeCategoryName === "All" ? "Search articles, research papers & guides..." : `Search ${activeCategoryName} articles...`)
+                    mode === "exams"
+                      ? (activeCategoryName === "All" ? "Search exams and certifications..." : `Search ${activeCategoryName} exams...`)
+                      : (activeCategoryName === "All" ? "Search courses, topics, or skills..." : `Search ${activeCategoryName} courses...`)
                   }
                   value={courseSearchQuery}
                   onChange={(e) => setCourseSearchQuery(e.target.value)}
@@ -2348,11 +2307,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                 zIndex: 2,
               }}
             >
-              {mode === "articles" ? (
-                <WindmillAnimation />
-              ) : (
-                <HoneycombIllustration />
-              )}
+              {mode === "exams" ? <WindmillAnimation /> : <HoneycombIllustration />}
             </div>
           </div>
         )}
@@ -2494,19 +2449,19 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
           </>
         )}
 
+        {mode === "exams" && (
+          <ExamsView
+            searchQuery={courseSearchQuery}
+            onClearSearch={() => setCourseSearchQuery("")}
+            categoryId={selectedAdminCategory?.id}
+            unmatchedCategory={selectedCategoryName.toLowerCase() !== "all" && !selectedAdminCategory}
+          />
+        )}
+
         {mode === "events" && (
           <EventsView
             activeData={activeData}
             activeCategoryName={activeCategoryName}
-            isEmbeddedHub={isEmbeddedHub}
-            courseSearchQuery={courseSearchQuery}
-            setCourseSearchQuery={setCourseSearchQuery}
-          />
-        )}
-
-        {mode === "articles" && (
-          <ArticlesView
-            activeData={activeData}
             isEmbeddedHub={isEmbeddedHub}
             courseSearchQuery={courseSearchQuery}
             setCourseSearchQuery={setCourseSearchQuery}

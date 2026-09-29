@@ -52,153 +52,75 @@ export default function ExploreEmptyState({
         }
       `}</style>
 
-      {/* MNC Googlish Animated Vector Illustration — Open / No Box */}
+      {/* Classic Clean Search Vector Doodle */}
       <div
         style={{
           position: "relative",
-          width: "140px",
-          height: "140px",
-          marginBottom: "24px",
+          width: "110px",
+          height: "110px",
+          marginBottom: "16px",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center"
+          justifyContent: "center",
+          userSelect: "none"
         }}
       >
-        {/* Soft Background Radial Rings */}
-        <div
-          style={{
-            position: "absolute",
-            width: "128px",
-            height: "128px",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(66, 133, 244, 0.08) 0%, rgba(66, 133, 244, 0.02) 65%, transparent 100%)",
-            animation: "exploreRingPulse 4s ease-in-out infinite",
-            pointerEvents: "none"
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            width: "96px",
-            height: "96px",
-            borderRadius: "50%",
-            border: "1.5px dashed rgba(66, 133, 244, 0.22)",
-            animation: "exploreRingPulse 4s ease-in-out infinite reverse",
-            pointerEvents: "none"
-          }}
-        />
-
-        {/* Minimal Google Palette Accent Dots */}
-        <div
-          style={{
-            position: "absolute",
-            top: "14px",
-            right: "24px",
-            width: "8px",
-            height: "8px",
-            borderRadius: "50%",
-            background: "#4285F4", // Google Blue
-            opacity: 0.85,
-            animation: "exploreDotDrift 3s ease-in-out infinite"
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: "22px",
-            left: "20px",
-            width: "7px",
-            height: "7px",
-            borderRadius: "50%",
-            background: "#34A853", // Google Green
-            opacity: 0.85,
-            animation: "exploreDotDrift 2.6s ease-in-out 0.4s infinite"
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: "32px",
-            left: "22px",
-            width: "6px",
-            height: "6px",
-            borderRadius: "50%",
-            background: "#FBBC05", // Google Yellow
-            opacity: 0.85,
-            animation: "exploreDotDrift 3.2s ease-in-out 0.8s infinite"
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: "18px",
-            right: "26px",
-            width: "6px",
-            height: "6px",
-            borderRadius: "50%",
-            background: "#EA4335", // Google Red
-            opacity: 0.85,
-            animation: "exploreDotDrift 2.8s ease-in-out 1.2s infinite"
-          }}
-        />
-
-        {/* Floating Magnifying Glass SVG */}
-        <div
-          style={{
-            position: "relative",
-            width: "84px",
-            height: "84px",
-            animation: "exploreLensFloat 3.5s ease-in-out infinite"
-          }}
+        <svg
+          width="100"
+          height="100"
+          viewBox="0 0 100 100"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{ animation: "exploreLensFloat 3.6s ease-in-out infinite" }}
         >
-          <svg width="84" height="84" viewBox="0 0 84 84" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Search Glass Base Shadow */}
-            <ellipse cx="40" cy="40" rx="26" ry="26" fill="url(#lensGradient)" />
+          {/* Ambient Glow */}
+          <circle cx="48" cy="46" r="38" fill="#2962D6" fillOpacity="0.08" />
 
-            {/* Subtle Internal Reflection Arc */}
-            <path
-              d="M24 34 A18 18 0 0 1 44 20"
-              stroke="white"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              opacity="0.75"
-            />
+          {/* Sparkles */}
+          <path d="M16 28L17.5 24L21 23L17.5 22L16 18L14.5 22L11 23L14.5 24Z" fill="#F59E0B" />
+          <path d="M84 22L85.5 19L89 18L85.5 17L84 14L82.5 17L79 18L82.5 19Z" fill="#27C5D8" />
+          <path d="M80 72L81.5 69L85 68L81.5 67L80 64L78.5 67L75 68L78.5 69Z" fill="#10B981" />
 
-            {/* Lens Outer Rim */}
-            <circle
-              cx="40"
-              cy="40"
-              r="24"
-              stroke="#4285F4"
-              strokeWidth="4"
-              strokeLinecap="round"
-            />
+          {/* Magnifying Glass Lens */}
+          <circle
+            cx="44"
+            cy="42"
+            r="23"
+            fill="#FFFFFF"
+            stroke="#0F172A"
+            strokeWidth="2.4"
+          />
 
-            {/* Handle Base & Bar */}
-            <path
-              d="M58 58 L72 72"
-              stroke="#3B82F6"
-              strokeWidth="5.5"
-              strokeLinecap="round"
-            />
-            <path
-              d="M57 57 L63 63"
-              stroke="#93C5FD"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-            />
+          {/* Lens Glass Glare Reflection */}
+          <path
+            d="M30 33 A 14 14 0 0 1 45 25"
+            stroke="#2962D6"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
 
-            {/* Center question mark / inquiry dot */}
-            <circle cx="40" cy="40" r="3.5" fill="#4285F4" opacity="0.9" />
+          {/* Question Mark inside Magnifying Glass */}
+          {/* Question Mark Upper Hook */}
+          <path
+            d="M38 37 C 38 32, 49 32, 49 38 C 49 42, 44 43, 44 47"
+            stroke="#0F172A"
+            strokeWidth="2.6"
+            strokeLinecap="round"
+          />
+          {/* Question Mark Dot */}
+          <circle cx="44" cy="52" r="1.6" fill="#0F172A" />
 
-            <defs>
-              <linearGradient id="lensGradient" x1="20" y1="20" x2="60" y2="60" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#EBF4FE" stopOpacity="0.95" />
-                <stop offset="1" stopColor="#D2E3FC" stopOpacity="0.65" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
+          {/* Magnifying Glass Straight Handle */}
+          <line
+            x1="61"
+            y1="59"
+            x2="78"
+            y2="76"
+            stroke="#0F172A"
+            strokeWidth="3.2"
+            strokeLinecap="round"
+          />
+        </svg>
       </div>
 
       {/* Heading & Subtext */}

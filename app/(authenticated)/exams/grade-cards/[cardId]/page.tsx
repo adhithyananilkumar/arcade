@@ -15,8 +15,10 @@ import {
   CheckCircle2,
   CircleSlash,
   Clock,
+  Download,
   FileText,
   Hash,
+  Hourglass,
   ListChecks,
   Loader2,
   Printer,
@@ -24,7 +26,9 @@ import {
   Target,
   XCircle,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
+  downloadGradeCardPdf,
   getGradeCard,
   planKindLabel,
   planTypeMeta,
@@ -37,12 +41,25 @@ export default function GradeCardPage() {
   const cardId = params.cardId as string;
   const [card, setCard] = useState<GradeCardResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     getGradeCard(cardId)
       .then(setCard)
       .catch((err) => setError(err?.message ?? 'Could not load this grade card.'));
   }, [cardId]);
+
+  const download = async () => {
+    if (!card) return;
+    setDownloading(true);
+    try {
+      await downloadGradeCardPdf(card.id, card.credentialCode);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Download failed');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-white text-ink print:bg-white">
@@ -60,8 +77,8 @@ export default function GradeCardPage() {
                 <nav aria-label="Breadcrumb">
                   <ol className="flex flex-wrap items-center gap-2 text-[13.5px] font-bold">
                     <li>
-                      <Link href={examRoutes.gradeCards} className="inline-flex items-center gap-1.5 text-slate-700 hover:text-ink">
-                        <ArrowLeft size={14} /> Grade cards
+                      <Link href={examRoutes.mine} className="inline-flex items-center gap-1.5 text-slate-700 hover:text-ink">
+                        <ArrowLeft size={14} /> My exams
                       </Link>
                     </li>
                   </ol>
@@ -79,6 +96,14 @@ export default function GradeCardPage() {
                     className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-line bg-paper px-4 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"
                   >
                     <Printer size={14} /> Print
+                  </button>
+                  <button
+                    type="button"
+                    onClick={download}
+                    disabled={downloading}
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-white hover:opacity-90 disabled:opacity-60"
+                  >
+                    {downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />} Download PDF
                   </button>
                 </div>
               </div>
@@ -136,6 +161,8 @@ function Card({ card }: { card: GradeCardResponse }) {
           Issued to <b className="text-ink">{card.candidateName}</b> on {formatDate(card.issuedAt)}
         </p>
       </header>
+
+      <CertificateStatus card={card} />
 
       {/* The result */}
       <section className="grid gap-6 border-b border-slate-100 px-7 py-7 sm:grid-cols-[auto_1fr] sm:items-center sm:px-9">
@@ -263,8 +290,14 @@ function Card({ card }: { card: GradeCardResponse }) {
 
       <footer className="flex flex-wrap items-center justify-between gap-3 bg-slate-50/70 px-7 py-4 text-[12px] font-medium text-slate-500 sm:px-9">
         <span className="inline-flex items-center gap-1.5">
-          <Hash size={13} /> Verification code{' '}
-          <b className="font-mono tracking-wider text-ink">{card.verificationCode}</b>
+          <Hash size={13} /> Grade card no.{' '}
+          <b className="font-mono tracking-wider text-ink">{card.credentialCode}</b>
+          <Link
+            href={`/credentials/verify?id=${encodeURIComponent(card.credentialCode)}`}
+            className="ml-1 font-semibold text-[#2962D6] hover:underline print:hidden"
+          >
+            Verify
+          </Link>
         </span>
         {card.certificateIssued && (
           <span className="inline-flex items-center gap-1.5 font-semibold text-violet-700">
@@ -273,6 +306,69 @@ function Card({ card }: { card: GradeCardResponse }) {
         )}
       </footer>
     </article>
+  );
+}
+
+/** What happened to the certificate this sitting earns — only shown for a passed certification. */
+function CertificateStatus({ card }: { card: GradeCardResponse }) {
+  const status = card.certificateStatus;
+  if (!status || status === 'NOT_APPLICABLE') return null;
+
+  if (status === 'ISSUED') {
+    return (
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50/70 px-7 py-4 sm:px-9 print:hidden">
+        <span className="inline-flex items-center gap-2 text-[13px] font-semibold text-emerald-800">
+          <BadgeCheck size={16} /> Certificate issued
+          {card.certificateCode && <span className="font-mono text-[12px] tracking-wider">{card.certificateCode}</span>}
+        </span>
+        <span className="flex items-center gap-2">
+          <Link
+            href="/achievements"
+            className="rounded-full bg-emerald-700 px-4 py-1.5 text-[12px] font-semibold text-white hover:bg-emerald-800"
+          >
+            View certificate
+          </Link>
+          {card.certificateCode && (
+            <Link
+              href={`/credentials/verify?id=${encodeURIComponent(card.certificateCode)}`}
+              className="rounded-full border border-emerald-300 px-4 py-1.5 text-[12px] font-semibold text-emerald-800 hover:bg-emerald-100"
+            >
+              Verify
+            </Link>
+          )}
+        </span>
+      </div>
+    );
+  }
+
+  const copy: Record<Exclude<typeof status, 'ISSUED' | 'NOT_APPLICABLE'>, { tone: string; icon: ReactNode; text: string }> = {
+    AWAITING_IDENTITY_REVIEW: {
+      tone: 'border-amber-100 bg-amber-50/80 text-amber-900',
+      icon: <Hourglass size={16} />,
+      text: 'You passed. Your certificate will be issued once the exam administrator approves your identity photo.',
+    },
+    AWAITING_ISSUE: {
+      tone: 'border-amber-100 bg-amber-50/80 text-amber-900',
+      icon: <Hourglass size={16} />,
+      text: 'You passed. Your certificate is being issued — refresh this page in a moment.',
+    },
+    IDENTITY_REJECTED: {
+      tone: 'border-rose-100 bg-rose-50/80 text-rose-800',
+      icon: <ShieldAlert size={16} />,
+      text: 'No certificate was issued: the exam administrator did not accept your identity photo.',
+    },
+    WITHHELD: {
+      tone: 'border-rose-100 bg-rose-50/80 text-rose-800',
+      icon: <ShieldAlert size={16} />,
+      text: 'No certificate was issued because this grade card was revoked.',
+    },
+  };
+  const c = copy[status];
+  return (
+    <div className={`flex items-start gap-2 border-b px-7 py-4 text-[13px] font-semibold sm:px-9 print:hidden ${c.tone}`}>
+      <span className="mt-0.5 shrink-0">{c.icon}</span>
+      {c.text}
+    </div>
   );
 }
 

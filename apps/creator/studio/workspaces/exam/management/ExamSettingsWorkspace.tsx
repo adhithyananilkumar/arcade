@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { BookOpen, Calendar, Check, ExternalLink, Link2, Loader2, Unlink } from "lucide-react";
 import { toast } from "sonner";
@@ -13,6 +14,7 @@ import {
   type ExamTieType,
 } from "@/domains/assessments";
 import { SchedulePanel } from "@/domains/publishing";
+import { BadgeTierPanel } from "../../../credentials/BadgeTierPanel";
 import { formatMoney } from "@/shared/utils/money";
 
 /**
@@ -165,7 +167,7 @@ export function ExamSettingsWorkspace({
         ) : (
           <>
             <p className="mt-1 text-xs leading-relaxed text-slate-500">
-              Standalone — learners find this exam in their Exams hub and register for it. Tie it to one
+              Standalone — learners find this exam in Explore &gt; Exams and register for it. Tie it to one
               of your courses or events to make it that content&apos;s assessment system instead. A course
               or event can have only one exam.
             </p>
@@ -175,15 +177,18 @@ export function ExamSettingsWorkspace({
       </section>
 
       <PricingSection exam={exam} onChange={onChange} readOnly={readOnly} />
+      <CategorySection exam={exam} onChange={onChange} readOnly={readOnly} />
 
       {!exam.tieType && <SchedulePanel contentType="EXAM" contentId={exam.id} readOnly={readOnly} />}
+      {/* A tied exam completes its course or event, and that content's badge is the one earned. */}
+      {!exam.tieType && <BadgeTierPanel contentType="EXAM" contentId={exam.id} readOnly={readOnly} />}
       {exam.tieType && (
         <section className="rounded-2xl border border-white/50 bg-white/50 p-5 shadow-sm backdrop-blur-md">
           <h3 className="text-sm font-black tracking-tight text-[#14142b]">Schedule</h3>
           <p className="mt-1 text-xs leading-relaxed text-slate-500">
             Assessments inside the {exam.tieType === "COURSE" ? "course" : "event"} follow its schedule. The
             schedule below applies only to this exam&apos;s certification: when learners can register for it
-            in the Exams hub, and when it can be sat.
+            in Explore &gt; Exams, and when it can be sat.
           </p>
           <div className="mt-3">
             <SchedulePanel contentType="EXAM" contentId={exam.id} readOnly={readOnly} />
@@ -305,6 +310,61 @@ function UntieButton({ exam, onChange }: { exam: ExamResponse; onChange: (exam: 
   );
 }
 
+/**
+ * Where the exam is shelved in Explore > Exams. The categories are the super-user-managed ones
+ * scoped to exams (type EXAMS, or ALL); none picked is "Other".
+ */
+function CategorySection({
+  exam,
+  onChange,
+  readOnly,
+}: {
+  exam: ExamResponse;
+  onChange: (exam: ExamResponse) => void;
+  readOnly?: boolean;
+}) {
+  const publicCategories = usePublicCategories();
+  const categories = useMemo(
+    () => publicCategories.filter((c) => c.type === "EXAMS" || c.type === "ALL"),
+    [publicCategories]
+  );
+  const [saving, setSaving] = useState(false);
+
+  const save = async (categoryId: string) => {
+    setSaving(true);
+    try {
+      onChange(await updateExam(exam.id, { categoryId }));
+      toast.success("Category saved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't save the category");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <section className="rounded-2xl border border-white/50 bg-white/70 p-5 shadow-sm backdrop-blur-md">
+      <h3 className="text-sm font-black tracking-tight text-[#14142b]">Category</h3>
+      <p className="mt-1 text-xs leading-relaxed text-slate-500">
+        Where learners find this exam in Explore &gt; Exams.
+      </p>
+      <select
+        value={exam.categoryId ?? ""}
+        disabled={readOnly || saving}
+        onChange={(e) => save(e.target.value)}
+        className="mt-3 w-64 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#14142b] outline-none focus:border-indigo-300 disabled:bg-slate-50"
+      >
+        {categories.map((cat) => (
+          <option key={cat.id} value={cat.id}>
+            {cat.name}
+          </option>
+        ))}
+        <option value="">Other</option>
+      </select>
+    </section>
+  );
+}
+
 function PricingSection({
   exam,
   onChange,
@@ -350,7 +410,7 @@ function PricingSection({
       ) : (
         <>
           <p className="mt-1 text-xs leading-relaxed text-slate-500">
-            What learners pay to register for this exam in the Exams hub. Leave empty for free.
+            What learners pay to register for this exam in Explore &gt; Exams. Leave empty for free.
             {exam.registrationFeeMinor !== (exam.priceAmountMinor ?? 0) &&
               ` The platform standard currently makes it ${formatMoney(exam.registrationFeeMinor, currency)}.`}
           </p>

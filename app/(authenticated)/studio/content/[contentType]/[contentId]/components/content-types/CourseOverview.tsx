@@ -5,6 +5,7 @@ import { CollaboratorsSection } from "../sections/CollaboratorsSection";
 import { PublishingWorkflow } from "../sections/PublishingWorkflow";
 import { editorHref } from "../../lib/contentTypeRouting";
 import { SchedulePanel } from "@/domains/publishing";
+import { BadgeTierPanel } from "@/apps/creator/studio/credentials/BadgeTierPanel";
 
 export function getCourseMetrics(_data: OverviewData): Metric[] {
   return [
@@ -50,11 +51,14 @@ export function CourseOverviewTab({
   }
   if (tab === "settings") {
     return (
-      <SchedulePanel
-        contentType="COURSE"
-        contentId={contentId}
-        readOnly={data.content?.status === "SUBMITTED"}
-      />
+      <div className="flex flex-col gap-6">
+        <SchedulePanel
+          contentType="COURSE"
+          contentId={contentId}
+          readOnly={data.content?.status === "SUBMITTED"}
+        />
+        <BadgeTierPanel contentType="COURSE" contentId={contentId} />
+      </div>
     );
   }
   if (tab === "publishing") {

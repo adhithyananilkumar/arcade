@@ -1,6 +1,6 @@
 "use client";
 
-// A main exam's public overview — the page a learner reaches from the Exams hub. It follows the
+// A main exam's public overview — the page a learner reaches from Explore > Exams. It follows the
 // same layout as a course's or event's landing page (hero with the headline, facts and the one
 // action; an overview body below), using only the parts an exam needs.
 //
@@ -37,7 +37,7 @@ import { PrerequisiteNotice, attemptStatusLabel } from "./LandingParts";
 
 export interface ExamOverviewProps {
   landing: AssessmentLandingResponse;
-  /** Where the breadcrumb's "Exams" leads. */
+  /** Where the breadcrumb's "Exams" leads (Explore's Exams tab). */
   hubHref: string;
   /** Begin or resume, after the honor code is accepted. */
   onStart: () => void;
@@ -129,7 +129,7 @@ export function ExamOverview({
               <ol className="flex flex-wrap items-center gap-2 text-[13.5px]">
                 <li className="flex items-center gap-2">
                   <Link href={hubHref} className="font-bold text-slate-700 transition-colors hover:text-ink">
-                    Exams
+                    Explore Exams
                   </Link>
                   <ChevronRight size={13} className="text-subtle/50" />
                 </li>

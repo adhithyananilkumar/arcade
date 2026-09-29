@@ -26,6 +26,16 @@ export type { Role, RoleRequest } from './api/iam/role.service';
 export { permissionService } from './api/iam/permission.service';
 export type { Permission, ConsoleSurface } from './api/iam/permission.service';
 export { usePermissions } from './hooks/usePermissions';
+export {
+  NICKNAME_MIN_LENGTH,
+  NICKNAME_MAX_LENGTH,
+  nicknameLength,
+  formatNicknameInput,
+  nicknameError,
+  suggestNickname,
+  greetingName,
+  navPillName,
+} from './nickname';
 export { InterestService } from './api/interest.service';
 export type { Interest } from './api/interest.service';
 export {

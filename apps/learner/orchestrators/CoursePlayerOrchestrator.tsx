@@ -6,6 +6,7 @@ import { getQuizStats, type QuizStatsResponse } from "@/domains/assessments";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import { AuthorizationService } from "@/infrastructure/auth/authorization.service";
 import { platformReviewApi } from "@/domains/publishing";
+import { BadgeLevelSummary, credentialsApi, type BadgeAssignment } from "@/domains/credentials";
 import type { CourseRenderResponse } from "@/shared/types/api.types";
 import { VersionHistoryOrchestrator } from "@/apps/creator/studio/workspaces/content/history/VersionHistoryOrchestrator";
 import { ArcadeEditor } from "@/apps/creator/editor";
@@ -25,6 +26,8 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
   const [historyLessonId, setHistoryLessonId] = useState<string | null>(null);
   const [publishedCourse, setPublishedCourse] = useState<CourseRenderResponse | null>(null);
   const [reviewId, setReviewId] = useState<string | null>(null);
+  // The badge level is part of what a reviewer approves, so it sits beside the course tree.
+  const [badge, setBadge] = useState<BadgeAssignment | null>(null);
 
   const canPublish = AuthorizationService.canReviewContent(user);
 
@@ -49,6 +52,19 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Could not load course"))
       .finally(() => setLoading(false));
+  }, [courseId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    credentialsApi
+      .getAssignment("COURSE", courseId)
+      .then((a) => !cancelled && setBadge(a))
+      .catch(() => {
+        // Best-effort: the review still works without the badge card.
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [courseId]);
 
   useEffect(() => {
@@ -196,6 +212,7 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
         quizStats={quizStats}
         canPublish={!!canPublish}
         publishedCourse={publishedCourse}
+        sidebarFooter={badge ? <BadgeLevelSummary assignment={badge} /> : undefined}
         onPublish={handlePublish}
         onReject={handleReject}
         onAttemptGraded={handleAttemptGraded}

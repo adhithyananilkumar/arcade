@@ -33,6 +33,7 @@ import { RegisteredMembersSection } from "../sections/RegisteredMembersSection";
 import { EventCollaboratorsManager } from "@/app/(authenticated)/studio/events/components/wizard/review/EventCollaboratorsManager";
 import { PublishingWorkflow } from "../sections/PublishingWorkflow";
 import { SchedulePanel } from "@/domains/publishing";
+import { BadgeTierPanel } from "@/apps/creator/studio/credentials/BadgeTierPanel";
 import { ReadinessCard } from "../sections/ReadinessCard";
 import { EmptyState } from "../sections/EmptyState";
 import { editorHref } from "../../lib/contentTypeRouting";
@@ -160,6 +161,7 @@ export function EventOverviewTab({
           onChanged={onChanged}
         />
         <SchedulePanel contentType="EVENT" contentId={contentId} enrollmentNoun="Registration" />
+        <BadgeTierPanel contentType="EVENT" contentId={contentId} />
       </div>
     );
   }

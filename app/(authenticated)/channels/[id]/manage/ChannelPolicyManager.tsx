@@ -43,6 +43,17 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isModalOpen]);
+
   // Mirrors the backend gate on /channels/{id}/roles: policies are managed by whoever manages
   // staff (`channel.staff.manage`), or the owner via `ALL`. There is no separate roles permission.
   const canManageRoles = userPermissions.includes('ALL') || userPermissions.includes('channel.staff.manage');
@@ -288,8 +299,8 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
       )}
 
       {isModalOpen && mounted && createPortal(
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 sm:p-6 overflow-y-auto">
-          <div className="w-full max-w-xl rounded-3xl overflow-hidden shadow-2xl border border-slate-200/80 bg-white my-auto">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 sm:p-6 overflow-hidden">
+          <div className="w-full max-w-4xl max-h-[88vh] rounded-3xl overflow-hidden shadow-2xl border border-slate-200/80 bg-white flex flex-col">
             <PolicyEditor
               scope="CHANNEL"
               resourceId={channelId}

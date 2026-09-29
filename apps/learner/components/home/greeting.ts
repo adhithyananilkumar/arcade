@@ -1,4 +1,8 @@
+import { greetingName } from '@/domains/identity';
+
 export type GreetingContext = {
+  /** Private nickname — preferred over the first name. Only ever rendered to its owner. */
+  nickname?: string | null;
   firstName?: string | null;
   /** Stable per-user id (username/email/id) so two people don’t share the same line at the same hour */
   userKey?: string | null;
@@ -17,11 +21,6 @@ export type DynamicGreeting = {
   after: string;
   subline: string;
 };
-
-function firstNameOrFallback(name?: string | null) {
-  const n = name?.trim();
-  return n && n.length > 0 ? n.split(' ')[0] : 'there';
-}
 
 function daysSince(iso?: string | null) {
   if (!iso) return null;
@@ -279,7 +278,7 @@ const SUB_NIGHT = [
  * Pools are large so the page feels fresh across hours/days.
  */
 export function getDynamicGreeting(ctx: GreetingContext): DynamicGreeting {
-  const name = firstNameOrFallback(ctx.firstName);
+  const name = greetingName({ nickname: ctx.nickname, firstName: ctx.firstName });
   const ageDays = daysSince(ctx.createdAt);
   const hour = new Date().getHours();
   const userKey =

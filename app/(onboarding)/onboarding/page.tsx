@@ -12,7 +12,16 @@ import { AuthPageShell } from '@/apps/public/layout/AuthPageShell';
 import '@/domains/identity/components/auth-fields.css';
 import { PebbleLoader } from '@/domains/identity/components/PebbleLoader';
 import { getAvatarUrl } from '@/shared/utils/avatar';
-import { useInterestsQuery, InterestService, UserService } from '@/domains/identity';
+import {
+  useInterestsQuery,
+  InterestService,
+  UserService,
+  NICKNAME_MAX_LENGTH,
+  formatNicknameInput,
+  nicknameError,
+  nicknameLength,
+  suggestNickname,
+} from '@/domains/identity';
 import { PhoneInput } from '@/shared/design-system/ui/phone-input';
 
 const MAX_INTERESTS = 10;
@@ -37,6 +46,10 @@ export default function OnboardingPage() {
   // Step 2: Personal Details
   const [firstName, setFirstName] = useState(user?.firstName || user?.fullName?.split(' ')[0] || '');
   const [lastName, setLastName] = useState(user?.lastName || user?.fullName?.split(' ')[1] || '');
+  // What we call them in their own chrome — private, never shown to anyone else. Follows the first
+  // name as a suggestion until they type in it themselves.
+  const [nickname, setNickname] = useState(() => user?.nickname || suggestNickname(firstName));
+  const [nicknameTouched, setNicknameTouched] = useState(Boolean(user?.nickname));
   const [mobileNumber, setMobileNumber] = useState('');
   const [isPhoneValid, setIsPhoneValid] = useState(false);
   const [gender, setGender] = useState(user?.gender || '');
@@ -134,7 +147,8 @@ export default function OnboardingPage() {
         address,
         socialLink2.trim() || undefined,
         uploadedAvatarUrl,
-        true
+        true,
+        nickname.trim()
       );
       updateUser(profileRes);
       router.push('/');
@@ -159,7 +173,8 @@ export default function OnboardingPage() {
   };
 
   const isStep1Valid = username.length >= 3 && usernameStatus === 'available';
-  const isStep2Valid = firstName.trim() !== '' && lastName.trim() !== '' && gender !== '' && isPhoneValid;
+  const nicknameIssue = nicknameError(nickname);
+  const isStep2Valid = firstName.trim() !== '' && lastName.trim() !== '' && !nicknameIssue && gender !== '' && isPhoneValid;
   const isLinkedinValid = socialLink1.trim() === '' || /^https?:\/\/(www\.)?linkedin\.com\/.*$/.test(socialLink1);
   const isGithubValid = socialLink2.trim() === '' || /^https?:\/\/(www\.)?github\.com\/.*$/.test(socialLink2);
   const isStep3Valid = isLinkedinValid && isGithubValid;
@@ -298,7 +313,10 @@ export default function OnboardingPage() {
                       <input 
                         id="firstName" 
                         value={firstName} 
-                        onChange={e => setFirstName(e.target.value)}
+                        onChange={e => {
+                          setFirstName(e.target.value);
+                          if (!nicknameTouched) setNickname(suggestNickname(e.target.value));
+                        }}
                         autoComplete="given-name"
                         className="w-full border-none bg-transparent p-0 pr-10 text-[15px] font-bold text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300" 
                       />
@@ -315,6 +333,30 @@ export default function OnboardingPage() {
                       />
                       <Briefcase className="absolute right-5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#A5B3CA]" />
                     </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className={`auth-field relative flex h-[60px] cursor-text flex-col justify-center rounded-[20px] px-5 py-2 ${nicknameTouched && nicknameIssue ? 'auth-field--error' : ''}`}>
+                      <label htmlFor="nickname" className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA]">What should we call you?</label>
+                      <input
+                        id="nickname"
+                        value={nickname}
+                        onChange={e => {
+                          setNickname(formatNicknameInput(e.target.value));
+                          setNicknameTouched(true);
+                        }}
+                        placeholder="e.g. Dr. Rubin"
+                        autoComplete="nickname"
+                        aria-describedby="nickname-hint"
+                        className="w-full border-none bg-transparent p-0 pr-14 text-[15px] font-bold text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300"
+                      />
+                      <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[12px] font-bold tabular-nums text-[#A5B3CA]">
+                        {nicknameLength(nickname.trim())}/{NICKNAME_MAX_LENGTH}
+                      </span>
+                    </div>
+                    <p id="nickname-hint" className={`px-1 pt-1 text-[12.5px] font-medium ${nicknameTouched && nicknameIssue ? 'text-red-500' : 'text-slate-400'}`}>
+                      {nicknameTouched && nicknameIssue ? nicknameIssue : 'Only you see this — it greets you on your home page.'}
+                    </p>
                   </div>
 
                   <div className="auth-field relative flex min-h-[64px] flex-col justify-center rounded-[20px] px-5 py-2">

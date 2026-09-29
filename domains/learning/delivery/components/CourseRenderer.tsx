@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -61,6 +61,8 @@ interface CourseRendererProps {
   onViewHistory?: (lessonId: string) => void;
   currentUser?: { id: string; name: string; avatarUrl?: string };
   publishedCourse?: CourseRenderResponse | null;
+  /** Pinned under the course tree — e.g. the badge this course awards, for its reviewer. */
+  sidebarFooter?: ReactNode;
 }
 
 function statusTone(status: string) {
@@ -107,6 +109,7 @@ export function CourseRenderer({
   onViewHistory,
   currentUser,
   publishedCourse,
+  sidebarFooter,
 }: CourseRendererProps) {
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
@@ -425,6 +428,7 @@ export function CourseRenderer({
             </div>
           )}
         </nav>
+        {sidebarFooter && <div className="shrink-0 border-t border-slate-200/80 p-3">{sidebarFooter}</div>}
       </aside>
 
       {/* Content pane */}

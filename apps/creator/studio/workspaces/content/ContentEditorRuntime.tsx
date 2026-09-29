@@ -8,11 +8,11 @@
  * Type: Shared workspace runtime
  *
  * Purpose:
- * The lesson/module/badge editing engine shared by CourseWorkspace and EventWorkspace.
+ * The lesson/module editing engine shared by CourseWorkspace and EventWorkspace.
  * ------------------------------------------------------------------
  */
 
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CSSProperties, ReactNode } from "react";
 import type * as Y from "yjs";
@@ -58,7 +58,8 @@ import {
   CANVAS_CARD_CLASS,
 } from "@/apps/creator/studio/core/StudioShell";
 import { TiptapContentView } from "@/domains/learning";
-import { useBadgeEditor, BadgeEditorWorkspace, BadgeEditorContextPanel } from "@/domains/badges";
+import { CredentialBadge, credentialsApi, type BadgeAssignment, type BadgeContentType, type BadgeLevel } from "@/domains/credentials";
+import { BadgeTierDialog } from "../../credentials/BadgeTierDialog";
 import { ContentSubmitDialog } from "./dialogs/ContentSubmitDialog";
 import {
   DropdownMenu,
@@ -85,7 +86,7 @@ import type { AssessmentLeaf, ContentDataAdapter, ExamSummary } from "./types";
 import { AssessmentSettingsPanel } from "./assessment/AssessmentSettingsPanel";
 
 /**
- * The lesson/module/badge editing engine Course and Event share: tree state and CRUD, Y.Doc
+ * The lesson/module editing engine Course and Event share: tree state and CRUD, Y.Doc
  * lesson bootstrap and autosave, version history, collaboration, the submit dialog, and attached
  * exams.
  *
@@ -93,7 +94,7 @@ import { AssessmentSettingsPanel } from "./assessment/AssessmentSettingsPanel";
  * which this component itself is a *consumer* of, exactly like `ExamWorkspace` is. This is one
  * layer above that: the specific editing engine that happens to be identical for two content
  * types because they both decompose into the same shape (a root item containing containers of
- * document leaves, plus optional root-level badges).
+ * document leaves).
  *
  * <p>Everything that genuinely differs between Course and Event is a named prop here — never a
  * `contentType` check. `CourseWorkspace` and `EventWorkspace` are the only two places that know
@@ -166,12 +167,6 @@ interface LessonNode {
   position: number;
 }
 
-interface BadgeNode {
-  id: string;
-  title: string;
-  position: number;
-}
-
 interface ModuleNode {
   id: string;
   title: string;
@@ -187,7 +182,7 @@ interface ModuleNode {
   expanded: boolean;
 }
 
-type EditKind = "module" | "lesson" | "badge";
+type EditKind = "module" | "lesson";
 
 /** How long (of edit activity) between automatic version snapshots. */
 const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
@@ -343,7 +338,11 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   }, []);
 
   const [modules, setModules] = useState<ModuleNode[]>([]);
-  const [badges, setBadges] = useState<BadgeNode[]>([]);
+  // The badge this content awards is a platform level chosen in a dialog (BadgeTierDialog), not a
+  // designed document. The old per-course designer is archived — docs/archive/badge-editor.md.
+  const badgeContentType: BadgeContentType = adapter.terminology.root === "Course" ? "COURSE" : "EVENT";
+  const [badgeAssignment, setBadgeAssignment] = useState<BadgeAssignment | null>(null);
+  const [badgeDialogOpen, setBadgeDialogOpen] = useState(false);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   // Which live-collaboration room's presence to show: the open lesson's, or — when no lesson is
   // open (viewing the course/event's own settings) — the metadata room's, so "Active now" is
@@ -352,13 +351,11 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
     ? collabState
     : { status: metadataCollabStatus, collaborators: metadataCollaborators };
   const [activeLessonTitle, setActiveLessonTitle] = useState(adapter.terminology.leafDocument);
-  const [activeBadgeId, setActiveBadgeId] = useState<string | null>(null);
   /**
    * The assessment open in the canvas. Held as the whole node rather than an id because its
    * settings page edits the placement itself, not a document fetched by id.
    */
   const [activeAssessment, setActiveAssessment] = useState<AssessmentLeaf | null>(null);
-  const badgeEditor = useBadgeEditor(activeBadgeId, status === "SUBMITTED");
   const [activeSeedContent, setActiveSeedContent] = useState<TiptapDocument | undefined>(undefined);
 
   const [activeYDoc, setActiveYDoc] = useState<Y.Doc | null>(null);
@@ -404,16 +401,6 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
         : `/api/v1/events/${contentId}/status-history`
       : null,
   });
-
-  const BADGE_PANEL_IDS = useMemo(() => ["design", "properties", "layers"], []);
-  useEffect(() => {
-    if (activeBadgeId) {
-      panel.setTab((prev) => (BADGE_PANEL_IDS.includes(prev) ? prev : "design"));
-    } else {
-      panel.setTab((prev) => (BADGE_PANEL_IDS.includes(prev) ? "status" : prev));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeBadgeId]);
 
   // Warn on tab close / refresh with unsaved changes — the dirty flag was previously tracked
   // (set in every mutation handler below) but never acted on, so a learner could lose in-flight
@@ -497,22 +484,9 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
       setActiveSeedContent(seed);
       setActiveLessonTitle(lesson.title);
       setActiveLessonId(lesson.id);
-      setActiveBadgeId(null);
       setActiveAssessment(null);
     },
     [adapter, resolveLegacyContent, panel.tab]
-  );
-
-  const openBadge = useCallback(
-    (badge: { id: string; title: string }) => {
-      panel.setOpen((prev) => (panel.tab === "history" ? false : prev));
-      setActiveYDoc(null);
-      setActiveLessonId(null);
-      setActiveAssessment(null);
-      setActiveLessonTitle(badge.title);
-      setActiveBadgeId(badge.id);
-    },
-    [panel.tab]
   );
 
   /**
@@ -525,7 +499,6 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
       panel.setOpen((prev) => (panel.tab === "history" ? false : prev));
       setActiveYDoc(null);
       setActiveLessonId(null);
-      setActiveBadgeId(null);
       setActiveLessonTitle(assessment.title);
       setActiveAssessment(assessment);
     },
@@ -540,7 +513,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
     }
     async function bootstrap() {
       try {
-        const { meta, containers, badges: loadedBadges } = await adapter.loadContent(contentId!);
+        const { meta, containers } = await adapter.loadContent(contentId!);
         setTitle(meta.title);
         setDescription(meta.description ?? "");
         setPricingModel(meta.pricingModel as "FREE" | "PAID");
@@ -581,7 +554,12 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
             assessments: assessmentsByContainer.get(m.id) ?? [],
           }))
         );
-        setBadges(loadedBadges ?? []);
+        credentialsApi
+          .getAssignment(badgeContentType, contentId!)
+          .then(setBadgeAssignment)
+          .catch(() => {
+            // Best-effort, like the exam list: the tree simply shows no badge.
+          });
         const firstLeaf = containers[0]?.leaves?.[0];
         if (firstLeaf && firstLeaf.type === "document") {
           await openLesson(firstLeaf);
@@ -858,19 +836,6 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
     [adapter]
   );
 
-  const addBadge = useCallback(async () => {
-    if (!contentId || !adapter.addBadge) return;
-    try {
-      const nextIndex = badges.length + 1;
-      const newBadge = await adapter.addBadge(contentId, `${adapter.terminology.leafBadge ?? "Badge"} ${nextIndex}`);
-      setBadges((prev) => [...prev, newBadge]);
-      openBadge(newBadge);
-      setHasDraftChanges(true);
-    } catch (e) {
-      console.error("Failed to add badge", e);
-    }
-  }, [contentId, badges.length, openBadge, adapter]);
-
   // ── Inline rename ─────────────────────────────────────────────────────────
 
   const startEdit = (kind: EditKind, id: string, current: string) => {
@@ -892,15 +857,6 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
         setHasDraftChanges(true);
       } catch (e) {
         console.warn("Module rename failed", e);
-      }
-    } else if (kind === "badge") {
-      setBadges((prev) => prev.map((b) => (b.id === id ? { ...b, title: value } : b)));
-      if (activeBadgeId === id) setActiveLessonTitle(value);
-      try {
-        await adapter.renameBadge?.(id, value);
-        setHasDraftChanges(true);
-      } catch (e) {
-        console.warn("Badge rename failed", e);
       }
     } else {
       setModules((prev) => prev.map((m) => ({ ...m, lessons: m.lessons.map((l) => (l.id === id ? { ...l, title: value } : l)) })));
@@ -967,29 +923,6 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
       confirmLabel: "Delete",
       danger: true,
       onConfirm: () => deleteLessonNow(lesson.id),
-    });
-
-  const deleteBadgeNow = async (badgeId: string) => {
-    setBadges((prev) => prev.filter((b) => b.id !== badgeId));
-    if (activeBadgeId === badgeId) {
-      setActiveBadgeId(null);
-      panel.setOpen((prev) => (panel.tab === "history" ? false : prev));
-    }
-    try {
-      await adapter.deleteBadge?.(badgeId);
-      setHasDraftChanges(true);
-    } catch (e) {
-      console.error("Failed to delete badge", e);
-    }
-  };
-
-  const askDeleteBadge = (badge: BadgeNode) =>
-    confirm({
-      title: `Delete ${adapter.terminology.leafBadge ?? "Badge"}?`,
-      message: `"${badge.title}" and its saved design will be permanently deleted. This cannot be undone.`,
-      confirmLabel: "Delete",
-      danger: true,
-      onConfirm: () => deleteBadgeNow(badge.id),
     });
 
   const askRemoveExam = (exam: ExamSummary) =>
@@ -1146,12 +1079,22 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
       )}
       {confirmDialog}
       {extraDialogs}
+      {contentId && (
+        <BadgeTierDialog
+          open={badgeDialogOpen}
+          onOpenChange={setBadgeDialogOpen}
+          contentType={badgeContentType}
+          contentId={contentId}
+          readOnly={status === "SUBMITTED"}
+          onSaved={setBadgeAssignment}
+        />
+      )}
 
       <StudioEditorTopBar
         onBack={handleBack}
         backDisabled={navigatingBack}
         breadcrumb={
-          activeLessonId || activeBadgeId ? (
+          activeLessonId ? (
             <div className="flex items-center gap-1.5 text-gray-500">
               {activeLessonId && modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title && (
                 <>
@@ -1200,11 +1143,9 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
 
       <StudioRightPanel
         {...panel.sidebarProps}
-        mode={panel.open ? "workflow" : activeBadgeId ? "editor" : "closed"}
+        mode={panel.open ? "workflow" : "closed"}
         activeLessonId={activeLessonId}
         collabState={effectiveCollabState}
-        editorContextNode={activeBadgeId ? <BadgeEditorContextPanel editor={badgeEditor} /> : undefined}
-        footerOverride={activeBadgeId ? { label: "Badge ID", value: activeBadgeId } : null}
         historyCapability={
           !activeLessonId && contentId
             ? {
@@ -1252,10 +1193,10 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
 
       <StudioEditorBody
         sidebarTitle={`${adapter.terminology.root} structure`}
-        toolbarClearance={Boolean(activeLessonId || activeBadgeId || activeAssessment)}
+        toolbarClearance={Boolean(activeLessonId || activeAssessment)}
         sidebarTree={
           <>
-            {modules.length === 0 && badges.length === 0 && (
+            {modules.length === 0 && !badgeAssignment?.tier && (
               <div className={TREE_EMPTY_STATE_CLASS}>
                 <Layers size={24} className="text-[#14142b]/40" />
                 <p className="text-xs font-medium text-[#14142b]/60">{copy.noContainers}</p>
@@ -1499,46 +1440,32 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
               </div>
             )}
 
-            {/* ── Badges: root-level tree items, a sibling of Modules — never nested inside one. ── */}
-            {badges.length > 0 && (
-              <div className="mt-2 flex flex-col gap-1">
-                {badges
-                  .slice()
-                  .sort((a, b) => a.position - b.position)
-                  .map((badge) => {
-                    const isActive = activeBadgeId === badge.id;
-                    return (
-                      <div
-                        key={badge.id}
-                        className={`group flex items-center gap-2 rounded-2xl border border-white/40 px-3 py-2 backdrop-blur-md shadow-sm transition-all ${isActive ? "bg-[#14142b] shadow-md" : "bg-white/60 hover:bg-white/80"}`}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => openBadge(badge)}
-                          className={`flex min-w-0 flex-1 items-center gap-1.5 text-left text-xs ${isActive ? "font-semibold text-white" : "font-bold text-[#14142b]"}`}
-                        >
-                          <Award size={13} className="flex-shrink-0" />
-                          {isEditing("badge", badge.id) ? (
-                            renameInput("text-xs")
-                          ) : (
-                            <span className="truncate" title={badge.title}>
-                              {badge.title}
-                            </span>
-                          )}
-                        </button>
-                        {status !== "SUBMITTED" && (
-                          <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                            <IconBtn title="Rename badge" onClick={() => startEdit("badge", badge.id, badge.title)}>
-                              <Pencil size={12} />
-                            </IconBtn>
-                            <IconBtn title="Delete badge" danger onClick={() => askDeleteBadge(badge)}>
-                              <Trash2 size={12} />
-                            </IconBtn>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+            {/* ── Badge: the platform level this content awards, a sibling of Modules. ── */}
+            {badgeAssignment?.tier && (
+              <div className="mt-2">
+                <button
+                  type="button"
+                  onClick={() => setBadgeDialogOpen(true)}
+                  title="Change the badge level"
+                  className="group flex w-full items-center gap-2.5 rounded-2xl border border-white/40 bg-white/60 px-3 py-2 text-left shadow-sm backdrop-blur-md transition-all hover:bg-white/80"
+                >
+                  <CredentialBadge
+                    family={badgeContentType}
+                    level={badgeAssignment.tier.level as BadgeLevel}
+                    title={badgeAssignment.contentTitle}
+                    issuerLogoUrl={badgeAssignment.issuerLogoUrl}
+                    className="w-8 shrink-0"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-xs font-bold text-[#14142b]">
+                      Badge · {badgeAssignment.tier.label}
+                    </span>
+                    <span className="block truncate text-[10px] font-medium text-slate-500">
+                      Earned at 100% completion
+                    </span>
+                  </span>
+                  <Pencil size={12} className="shrink-0 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100" />
+                </button>
               </div>
             )}
           </>
@@ -1569,12 +1496,10 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                     <ChevronDown size={14} />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="z-50 w-56 rounded-xl border border-slate-100 bg-white p-1.5 shadow-lg">
-                    {typeof adapter.addBadge === "function" && (
-                      <DropdownMenuItem onClick={addBadge} className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50">
-                        <Award size={14} className="text-amber-500" />
-                        Add {adapter.terminology.leafBadge ?? "Badge"}
-                      </DropdownMenuItem>
-                    )}
+                    <DropdownMenuItem onClick={() => setBadgeDialogOpen(true)} className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50">
+                      <Award size={14} className="text-amber-500" />
+                      {badgeAssignment?.tier ? "Change badge level" : "Add badge"}
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={addExam} className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50">
                       {addingExam ? <Loader2 size={14} className="animate-spin text-indigo-500" /> : <GraduationCap size={14} className="text-indigo-500" />}
                       {exams.length > 0 ? "Open exam" : "Set up exam"}
@@ -1620,10 +1545,6 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                 }}
               />
             </div>
-          </div>
-        ) : activeBadgeId ? (
-          <div className="flex h-full w-full max-w-[1400px] flex-1 min-h-0 transition-all duration-300">
-            <BadgeEditorWorkspace key={activeBadgeId} editor={badgeEditor} />
           </div>
         ) : activeLessonId ? (
           <div className={CANVAS_WRAPPER_CLASS} style={{ "--arcade-toolbar-top": "64px" } as CSSProperties}>

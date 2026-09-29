@@ -9,7 +9,7 @@ export interface PublicCategory {
   slug: string;
   description: string | null;
   color: string | null;
-  type: 'COURSES' | 'EVENTS' | 'ARTICLES' | 'ALL';
+  type: 'COURSES' | 'EVENTS' | 'EXAMS' | 'ALL';
   displayOrder: number;
   active: boolean;
 }

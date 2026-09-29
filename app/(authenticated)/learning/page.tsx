@@ -9,8 +9,14 @@
  * `ui/CLAUDE.md`. The previous 1,845-line version put all of it in this route file.
  */
 
+import { Suspense } from 'react';
 import MyLearningPage from '@/apps/learner/components/my-learning/MyLearningPage';
 
+// Suspense: the page reads ?tab= (e.g. /learning?tab=exams) with useSearchParams.
 export default function LearningRoute() {
-  return <MyLearningPage />;
+  return (
+    <Suspense fallback={null}>
+      <MyLearningPage />
+    </Suspense>
+  );
 }

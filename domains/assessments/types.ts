@@ -195,8 +195,8 @@ export interface QuizStatsResponse {
 }
 
 // ── Central Exam capability ───────────────────────────────────────────────────
-// An exam is Arcade's assessment and grading unit. It is either standalone (found in the learner
-// Exams hub) or tied to exactly one course or event, whose assessments are then plans on it.
+// An exam is Arcade's assessment and grading unit. It is either standalone (found by learners in
+// Explore > Exams) or tied to exactly one course or event, whose assessments are then plans on it.
 // Mirrors arcade-backend exam/dto/{ExamRequest,ExamResponse}.java.
 
 /** The content an exam is tied to. Null when the exam is standalone. */
@@ -234,6 +234,8 @@ export interface ExamResponse {
   registrationFeeMinor: number;
   planCount: number;
   canManage: boolean;
+  /** The Explore category; null is "Other". */
+  categoryId: string | null;
 }
 
 export interface ExamRequest {
@@ -247,6 +249,8 @@ export interface ExamRequest {
   instructions?: string;
   priceAmountMinor?: number | null;
   currency?: string;
+  /** An Explore category id; "" clears it. */
+  categoryId?: string;
 }
 
 // ── Exam attempts (learner-facing, server-authoritative) ─────────────────────
@@ -354,7 +358,7 @@ export interface ExamResultResponse {
 // creator may change within limits). Mirrors exam/dto/ExamPlan{Request,Response}.java.
 
 /**
- * CERTIFICATION — issues a certificate; listed in the Exams hub; at most one per exam.
+ * CERTIFICATION — issues a certificate; listed in Explore > Exams; at most one per exam.
  * COMPLETION — passing it completes the tied course/event; at most one per exam; tied exams only.
  * ASSESSMENT — a graded or ungraded check inside content, or a standalone exam in the hub.
  */
@@ -468,7 +472,7 @@ export interface ExamPlanResponse {
   identityVerificationRequired: boolean;
   fullscreenRequired: boolean;
   maxViolations: number;
-  /** Shown in the learner Exams hub (certifications, and every plan of a standalone exam). */
+  /** Shown in Explore > Exams (certifications, and every plan of a standalone exam). */
   hubListed: boolean;
   /** Where inside the tied content this plan sits. Null for hub-listed plans. */
   placement: ExamPlanPlacement | null;
@@ -756,7 +760,7 @@ export interface AssessmentLandingResponse {
   planDescription: string | null;
   planType: ExamPlanType | null;
   graded: boolean;
-  /** Reached from the Exams hub (registration-based) rather than from inside content. */
+  /** Reached from Explore > Exams (registration-based) rather than from inside content. */
   hubListed: boolean;
   /** Other plans the candidate could sit on this exam from the same entry point. */
   plans: LandingPlanOption[];
@@ -797,7 +801,7 @@ export interface AssessmentLandingResponse {
   canManage: boolean;
 }
 
-// ── Exams hub (learner dock > Exams) ──────────────────────────────────────────
+// ── Exam catalogue (Explore > Exams) and My Learning > Exams ──────────────────────────────────────────
 
 export interface ExamHubPlan {
   planId: string;
@@ -845,6 +849,8 @@ export interface ExamHubCard {
   accessStartsAt: string | null;
   accessEndsAt: string | null;
   bestPercentage: number | null;
+  /** The Explore category; null is "Other". */
+  categoryId: string | null;
 }
 
 /** The certification a course or event leads to — the info card on the content's page. */
@@ -900,9 +906,26 @@ export interface GradeCardResponse {
   percentage: number;
   passPercentage: number;
   passed: boolean;
+  /** The stored 12-character code. */
   verificationCode: string;
+  /** The same code as printed on the PDF and checked on the verify page: `GC-XXXX-XXXX-XXXX`. */
+  credentialCode: string;
   issuedAt: string;
   certificateIssued: boolean;
+  /**
+   * Where this card's certificate stands, decided by the server. Null on the public verify view.
+   * AWAITING_ISSUE means cleared but not yet recorded; the server issues it on the next read.
+   */
+  certificateStatus:
+    | "ISSUED"
+    | "AWAITING_IDENTITY_REVIEW"
+    | "AWAITING_ISSUE"
+    | "IDENTITY_REJECTED"
+    | "WITHHELD"
+    | "NOT_APPLICABLE"
+    | null;
+  /** The certificate's `CERT-…` ID once issued. */
+  certificateCode: string | null;
   revoked: boolean;
   revokedReason: string | null;
   sections: GradeCardSection[];

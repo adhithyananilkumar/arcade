@@ -59,8 +59,8 @@ export default function ExamResultsPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center" style={pageBg}>
         <p className="text-[13px] font-medium text-rose-600">{error}</p>
-        <Link href="/exams" className="text-[13px] font-semibold text-[#14142b] underline">
-          Back to exams
+        <Link href={examRoutes.mine} className="text-[13px] font-semibold text-[#14142b] underline">
+          Back to my exams
         </Link>
       </div>
     );
@@ -104,7 +104,7 @@ export default function ExamResultsPage() {
             <div className="mt-7 flex flex-col gap-2">
               {!awaiting && (
                 <Link
-                  href={gradeCardId ? examRoutes.gradeCard(gradeCardId) : examRoutes.gradeCards}
+                  href={gradeCardId ? examRoutes.gradeCard(gradeCardId) : examRoutes.mine}
                   className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#14142b] px-5 py-3 text-[13px] font-semibold text-white hover:bg-[#232735]"
                 >
                   <Award size={15} />

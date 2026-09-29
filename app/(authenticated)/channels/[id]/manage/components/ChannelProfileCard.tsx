@@ -109,8 +109,17 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
 
   return (
     <>
-      <Panel padded={false} className="overflow-hidden">
-        <ChannelDoodleBanner bannerUrl={channel.bannerUrl} className="h-28 w-full sm:h-36" />
+      <div className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
+        <div
+          className="relative w-full overflow-hidden border-b border-slate-200/70 bg-[#F5F0E6] text-black"
+          style={{
+            backgroundColor: '#F5F0E6',
+            backgroundImage: `radial-gradient(#14142b 0.8px, transparent 0.8px)`,
+            backgroundSize: '24px 24px',
+          }}
+        >
+          {/* Top Banner section with doodles or custom banner */}
+          <ChannelDoodleBanner bannerUrl={channel.bannerUrl} className="h-32 w-full sm:h-44 border-b-0" />
 
         <div className="flex flex-col gap-4 px-5 pb-5 sm:flex-row sm:items-end sm:px-6 sm:pb-6">
           <div className="-mt-10 flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-white text-slate-700 shadow-md ring-1 ring-slate-900/5">
@@ -125,90 +134,91 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
 
           <div className="min-w-0 flex-1 space-y-2">
             <div>
-              <h2 className="truncate text-lg font-bold tracking-tight text-[#14142b] dark:text-white">{channel.name}</h2>
+              <h2 className="truncate text-xl font-bold tracking-tight text-[#14142b]">{channel.name}</h2>
               {channel.tagline && (
-                <p className="truncate text-[13px] font-medium text-slate-500">{channel.tagline}</p>
+                <p className="truncate text-[13px] font-medium text-slate-600">{channel.tagline}</p>
               )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12px] font-semibold text-slate-500">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-slate-700">
-                {channel.isPersonal ? <User size={12} /> : <Building2 size={12} />}
-                {channel.isPersonal ? 'Personal channel' : 'Organization'}
-              </span>
-              {channel.handle && <span className="text-indigo-600">@{channel.handle}</span>}
-              <span className="inline-flex items-center gap-1">
-                Owner
-                {channel.ownerUsername ? (
-                  <Link href={`/${channel.ownerUsername}`} className="text-slate-700 hover:underline">
-                    @{channel.ownerUsername}
-                  </Link>
-                ) : (
-                  <span className="text-slate-700">{channel.ownerName}</span>
-                )}
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <Calendar size={12} />
-                Since {new Date(channel.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
-              </span>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12px] font-semibold text-slate-600">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-300/80 bg-white/85 backdrop-blur-sm px-2.5 py-0.5 text-slate-800 shadow-xs">
+                  {channel.isPersonal ? <User size={12} /> : <Building2 size={12} />}
+                  {channel.isPersonal ? 'Personal channel' : 'Organization'}
+                </span>
+                {channel.handle && <span className="text-indigo-600 font-bold">@{channel.handle}</span>}
+                <span className="inline-flex items-center gap-1">
+                  Owner
+                  {channel.ownerUsername ? (
+                    <Link href={`/${channel.ownerUsername}`} className="text-slate-800 font-bold hover:underline">
+                      @{channel.ownerUsername}
+                    </Link>
+                  ) : (
+                    <span className="text-slate-800 font-bold">{channel.ownerName}</span>
+                  )}
+                </span>
+                <span className="inline-flex items-center gap-1 text-slate-500">
+                  <Calendar size={12} />
+                  Since {new Date(channel.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                </span>
+              </div>
             </div>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {canEdit && onEditProfile && (
-              <button
-                type="button"
-                onClick={onEditProfile}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#14142b] px-3.5 py-1.5 text-[12px] font-semibold text-white shadow-xs transition-colors hover:bg-[#232735]"
-              >
-                <Edit3 size={13} /> Edit profile
+            <div className="flex flex-wrap items-center gap-2">
+              {canEdit && onEditProfile && (
+                <button
+                  type="button"
+                  onClick={onEditProfile}
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#14142b] px-3.5 py-1.5 text-[12px] font-semibold text-white shadow-xs transition-colors hover:bg-[#232735]"
+                >
+                  <Edit3 size={13} /> Edit profile
+                </button>
+              )}
+
+              <Link href={publicPath} className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-300/80 bg-white/90 backdrop-blur-sm px-3.5 py-1.5 text-[12px] font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-400 hover:bg-white">
+                <ExternalLink size={13} /> View public page
+              </Link>
+
+              <button type="button" onClick={copyPublicLink} className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-300/80 bg-white/90 backdrop-blur-sm px-3.5 py-1.5 text-[12px] font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-400 hover:bg-white">
+                {copied ? <Check size={13} className="text-emerald-600" /> : <Link2 size={13} />}
+                {copied ? 'Copied' : 'Copy link'}
               </button>
-            )}
 
-            <Link href={publicPath} className={actionBtn}>
-              <ExternalLink size={13} /> View public page
-            </Link>
-
-            <button type="button" onClick={copyPublicLink} className={actionBtn}>
-              {copied ? <Check size={13} className="text-emerald-600" /> : <Link2 size={13} />}
-              {copied ? 'Copied' : 'Copy link'}
-            </button>
-
-            {links.map((link) => {
-              const platform = socialPlatform(link);
-              if (!platform) return null;
-              const Icon = platform.icon;
-              return (
-                <a key={link} href={link} target="_blank" rel="noreferrer" className={chip} title={platform.label}>
-                  <Icon size={14} />
+              {links.map((link) => {
+                const platform = socialPlatform(link);
+                if (!platform) return null;
+                const Icon = platform.icon;
+                return (
+                  <a key={link} href={link} target="_blank" rel="noreferrer" className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-300/80 bg-white/90 backdrop-blur-sm text-slate-700 transition-colors hover:border-slate-400 hover:bg-white hover:text-[#14142b]" title={platform.label}>
+                    <Icon size={14} />
+                  </a>
+                );
+              })}
+              {channel.ownerEmail && (
+                <a href={`mailto:${channel.ownerEmail}`} className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-300/80 bg-white/90 backdrop-blur-sm text-slate-700 transition-colors hover:border-slate-400 hover:bg-white hover:text-[#14142b]" title={`Email ${channel.ownerEmail}`}>
+                  <Mail size={14} />
                 </a>
-              );
-            })}
-            {channel.ownerEmail && (
-              <a href={`mailto:${channel.ownerEmail}`} className={chip} title={`Email ${channel.ownerEmail}`}>
-                <Mail size={14} />
-              </a>
-            )}
-            {canEdit && (
-              <button
-                type="button"
-                onClick={() => setSocialOpen(true)}
-                className="flex h-8 cursor-pointer items-center gap-1 rounded-xl border border-dashed border-slate-300 px-2.5 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-400 hover:bg-slate-50 dark:border-neutral-700 dark:text-slate-300"
-                title="Manage social links"
-              >
-                <Plus size={14} />
-                {links.length === 0 && 'Add links'}
-              </button>
-            )}
+              )}
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={() => setSocialOpen(true)}
+                  className="flex h-8 cursor-pointer items-center gap-1 rounded-xl border border-dashed border-slate-400/80 bg-white/60 px-2.5 text-[12px] font-semibold text-slate-700 transition-colors hover:border-slate-600 hover:bg-white"
+                  title="Manage social links"
+                >
+                  <Plus size={14} />
+                  {links.length === 0 && 'Add links'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         {channel.description && (
-          <p className="border-t border-slate-100 px-5 py-4 text-[13px] font-medium leading-relaxed text-slate-600 sm:px-6 dark:border-neutral-800">
+          <p className="px-5 py-4 text-[13px] font-medium leading-relaxed text-slate-600 sm:px-6 dark:text-slate-300">
             {channel.description}
           </p>
         )}
-      </Panel>
+      </div>
 
       {socialOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
