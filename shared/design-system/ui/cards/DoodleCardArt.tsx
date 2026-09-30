@@ -1,23 +1,6 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import {
-  Monitor,
-  ListFilter,
-  GraduationCap,
-  Code2,
-  Terminal,
-  BookOpen,
-  Cpu,
-  Layers,
-  Sparkles,
-  Shield,
-  FileText,
-  Workflow,
-  Compass,
-  Database,
-  Binary,
-} from 'lucide-react';
 
 export interface DoodleCardArtProps {
   id: string;
@@ -27,136 +10,438 @@ export interface DoodleCardArtProps {
   className?: string;
 }
 
-// Curated high-end minimal stripe palettes matching modern design systems
-const MINIMAL_STRIPE_THEMES = [
+// ---------------------------------------------------------------------------
+// 1. High-Precision Deterministic PRNG
+// ---------------------------------------------------------------------------
+function createRng(seedStr: string) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < seedStr.length; i++) {
+    h = Math.imul(h ^ seedStr.charCodeAt(i), 16777619);
+  }
+  let s = h >>> 0;
+
+  return function next(): number {
+    s = (s + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---------------------------------------------------------------------------
+// 2. Editorial Architectural & Tech Palettes (Muted, Sophisticated, High-End)
+// ---------------------------------------------------------------------------
+interface EditorialPalette {
+  bg: string;
+  ink: string; // Crisp slate charcoal ink stroke
+  primary: string; // Sophisticated hero wash
+  secondary: string; // Subtle tonal fill
+  accent: string; // Controlled warm accent
+  tint: string; // Ultra-light backdrop ground wash
+}
+
+const EDITORIAL_PALETTES: EditorialPalette[] = [
+  // 1. Scandinavian Sage & Nordic Slate
   {
-    bg: '#F5F8FD',
-    darkBg: '#0B1324',
-    stripeColor: 'rgba(219, 234, 254, 0.75)',
-    darkStripeColor: 'rgba(30, 58, 102, 0.4)',
-    podiumBg: 'rgba(255, 255, 255, 0.88)',
-    darkPodiumBg: 'rgba(15, 23, 42, 0.85)',
-    podiumBorder: 'rgba(191, 219, 254, 0.9)',
-    darkPodiumBorder: 'rgba(59, 130, 246, 0.3)',
-    iconColor: '#2563EB',
-    darkIconColor: '#60A5FA',
-    accentDot: '#3B82F6',
-    ambientGlow: 'rgba(59, 130, 246, 0.08)',
+    bg: '#FBFBF9',
+    ink: '#1E293B', // Slate 800
+    primary: '#0F766E', // Deep Teal 700
+    secondary: '#94A3B8', // Slate 400
+    accent: '#D97706', // Amber 600
+    tint: '#F0FDF4',
   },
+  // 2. Technical Indigo & Cobalt Steel
   {
-    bg: '#F6F7FB',
-    darkBg: '#0F1226',
-    stripeColor: 'rgba(224, 231, 255, 0.75)',
-    darkStripeColor: 'rgba(49, 46, 129, 0.35)',
-    podiumBg: 'rgba(255, 255, 255, 0.88)',
-    darkPodiumBg: 'rgba(17, 24, 39, 0.85)',
-    podiumBorder: 'rgba(199, 210, 254, 0.9)',
-    darkPodiumBorder: 'rgba(99, 102, 241, 0.3)',
-    iconColor: '#4F46E5',
-    darkIconColor: '#818CF8',
-    accentDot: '#6366F1',
-    ambientGlow: 'rgba(99, 102, 241, 0.08)',
+    bg: '#FAFAFC',
+    ink: '#0F172A',
+    primary: '#2563EB', // Royal Blue
+    secondary: '#64748B', // Cool Slate
+    accent: '#EA580C', // Rust Orange
+    tint: '#EFF6FF',
   },
+  // 3. Modern Forest Emerald & Warm Ochre
   {
-    bg: '#F3FAF7',
-    darkBg: '#081714',
-    stripeColor: 'rgba(209, 250, 229, 0.75)',
-    darkStripeColor: 'rgba(6, 78, 59, 0.35)',
-    podiumBg: 'rgba(255, 255, 255, 0.88)',
-    darkPodiumBg: 'rgba(6, 40, 32, 0.85)',
-    podiumBorder: 'rgba(167, 243, 208, 0.9)',
-    darkPodiumBorder: 'rgba(16, 185, 129, 0.3)',
-    iconColor: '#059669',
-    darkIconColor: '#34D399',
-    accentDot: '#10B981',
-    ambientGlow: 'rgba(16, 185, 129, 0.08)',
+    bg: '#FAFBF9',
+    ink: '#1A2E26',
+    primary: '#059669', // Emerald
+    secondary: '#86968F', // Muted sage
+    accent: '#CA8A04', // Rich Gold
+    tint: '#ECFDF5',
   },
+  // 4. Graphite Charcoal & Electric Cyan
   {
-    bg: '#FDF7F4',
-    darkBg: '#1C1009',
-    stripeColor: 'rgba(254, 215, 170, 0.65)',
-    darkStripeColor: 'rgba(124, 45, 18, 0.35)',
-    podiumBg: 'rgba(255, 255, 255, 0.88)',
-    darkPodiumBg: 'rgba(41, 22, 13, 0.85)',
-    podiumBorder: 'rgba(253, 186, 116, 0.9)',
-    darkPodiumBorder: 'rgba(249, 115, 22, 0.3)',
-    iconColor: '#EA580C',
-    darkIconColor: '#FB923C',
-    accentDot: '#F97316',
-    ambientGlow: 'rgba(249, 115, 22, 0.08)',
+    bg: '#F8FAFC',
+    ink: '#090D16',
+    primary: '#0284C7', // Sky Blue
+    secondary: '#64748B',
+    accent: '#E11D48', // Rose Red
+    tint: '#F0F9FF',
   },
+  // 5. Deep Plum & Warm Apricot
   {
-    bg: '#FAF6FC',
-    darkBg: '#170B22',
-    stripeColor: 'rgba(243, 232, 255, 0.75)',
-    darkStripeColor: 'rgba(88, 28, 135, 0.35)',
-    podiumBg: 'rgba(255, 255, 255, 0.88)',
-    darkPodiumBg: 'rgba(36, 15, 52, 0.85)',
-    podiumBorder: 'rgba(233, 213, 255, 0.9)',
-    darkPodiumBorder: 'rgba(168, 85, 247, 0.3)',
-    iconColor: '#9333EA',
-    darkIconColor: '#C084FC',
-    accentDot: '#A855F7',
-    ambientGlow: 'rgba(168, 85, 247, 0.08)',
-  },
-  {
-    bg: '#F3F9FC',
-    darkBg: '#081720',
-    stripeColor: 'rgba(207, 250, 254, 0.75)',
-    darkStripeColor: 'rgba(22, 78, 99, 0.35)',
-    podiumBg: 'rgba(255, 255, 255, 0.88)',
-    darkPodiumBg: 'rgba(8, 38, 52, 0.85)',
-    podiumBorder: 'rgba(165, 243, 252, 0.9)',
-    darkPodiumBorder: 'rgba(6, 182, 212, 0.3)',
-    iconColor: '#0891B2',
-    darkIconColor: '#22D3EE',
-    accentDot: '#06B6D4',
-    ambientGlow: 'rgba(6, 182, 212, 0.08)',
+    bg: '#FCFAFB',
+    ink: '#271B2D',
+    primary: '#7C3AED', // Violet
+    secondary: '#9CA3AF',
+    accent: '#F97316', // Apricot
+    tint: '#F5F3FF',
   },
 ];
 
-function stringToSeed(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
-  }
-  return hash;
-}
-
-function resolveTopicIcon(title: string, type: string, description: string) {
+// ---------------------------------------------------------------------------
+// 3. Meaningful Professional Topic Mapping
+// ---------------------------------------------------------------------------
+function detectEditorialTopic(title: string, type: string, description: string): string {
   const t = `${title} ${type} ${description}`.toLowerCase();
 
-  if (t.includes('exam') || t.includes('certif') || t.includes('assess') || t.includes('test') || t.includes('grade')) {
-    return GraduationCap;
+  if (t.includes('code') || t.includes('program') || t.includes('java') || t.includes('python') || t.includes('react') || t.includes('script') || t.includes('dev') || t.includes('web') || t.includes('front')) {
+    return 'syntax';
   }
-  if (t.includes('code') || t.includes('program') || t.includes('java') || t.includes('python') || t.includes('react') || t.includes('script') || t.includes('dev')) {
-    return Code2;
+  if (t.includes('terminal') || t.includes('linux') || t.includes('cli') || t.includes('bash') || t.includes('devops') || t.includes('docker') || t.includes('cloud') || t.includes('infra')) {
+    return 'network';
   }
-  if (t.includes('terminal') || t.includes('linux') || t.includes('cli') || t.includes('bash') || t.includes('devops')) {
-    return Terminal;
+  if (t.includes('ai') || t.includes('ml') || t.includes('neural') || t.includes('machine') || t.includes('model') || t.includes('chip') || t.includes('hardware')) {
+    return 'silicon';
   }
-  if (t.includes('data') || t.includes('sql') || t.includes('database') || t.includes('postgres')) {
-    return Database;
+  if (t.includes('exam') || t.includes('certif') || t.includes('assess') || t.includes('test') || t.includes('grade') || t.includes('standard') || t.includes('study')) {
+    return 'folio';
   }
-  if (t.includes('ai') || t.includes('ml') || t.includes('neural') || t.includes('machine') || t.includes('model')) {
-    return Cpu;
+  if (t.includes('security') || t.includes('auth') || t.includes('shield') || t.includes('crypto') || t.includes('cyber') || t.includes('lock')) {
+    return 'bastion';
   }
-  if (t.includes('security') || t.includes('auth') || t.includes('shield') || t.includes('crypto')) {
-    return Shield;
+  if (t.includes('data') || t.includes('sql') || t.includes('database') || t.includes('analytics') || t.includes('metric') || t.includes('growth')) {
+    return 'analytics';
   }
-  if (t.includes('workshop') || t.includes('event') || t.includes('live') || t.includes('workflow')) {
-    return Workflow;
-  }
-  if (t.includes('roadmap') || t.includes('explore') || t.includes('guide')) {
-    return Compass;
-  }
-  if (t.includes('list') || t.includes('track') || t.includes('notes') || t.includes('standard')) {
-    return ListFilter;
+  if (t.includes('design') || t.includes('ui') || t.includes('ux') || t.includes('creative') || t.includes('art')) {
+    return 'isometric-cube';
   }
 
-  return Monitor;
+  return 'monolith';
 }
 
+// ---------------------------------------------------------------------------
+// 4. Professional Editorial Vector Illustrations (Linear Minimalist Art)
+// ---------------------------------------------------------------------------
+function renderEditorialSubject(topic: string, cx: number, cy: number, p: EditorialPalette) {
+  const ink = p.ink;
+  const sw = 1.6; // Refined hairline precision stroke
+
+  switch (topic) {
+    case 'syntax':
+      // Architectural IDE Window with Precision Isometric Angles & Clean Lines
+      return (
+        <g transform={`translate(${cx}, ${cy})`}>
+          {/* Subtle Ground Horizon Shadow */}
+          <ellipse cx="0" cy="40" rx="46" ry="4" fill="#E2E8F0" opacity="0.6" />
+
+          {/* Underlay Tonal Color Wash Slab */}
+          <polygon points="-38,18 12,32 38,22 -12,8" fill={p.tint} />
+
+          {/* Main Clean Code Frame */}
+          <rect
+            x="-34"
+            y="-30"
+            width="68"
+            height="56"
+            rx="6"
+            fill="#FFFFFF"
+            stroke={ink}
+            strokeWidth={sw}
+          />
+
+          {/* Title Bar Separator */}
+          <line x1="-34" y1="-18" x2="34" y2="-18" stroke={ink} strokeWidth="1" opacity="0.5" />
+          <circle cx="-26" cy="-24" r="2" fill={p.accent} />
+          <circle cx="-19" cy="-24" r="2" fill={p.secondary} />
+          <circle cx="-12" cy="-24" r="2" fill={p.primary} />
+
+          {/* Precision Wireframe Syntax Lines */}
+          <line x1="-24" y1="-8" x2="-8" y2="-8" stroke={p.primary} strokeWidth="2.2" strokeLinecap="round" />
+          <line x1="-4" y1="-8" x2="16" y2="-8" stroke={p.secondary} strokeWidth="1.6" strokeLinecap="round" />
+
+          <line x1="-24" y1="0" x2="-14" y2="0" stroke={p.secondary} strokeWidth="1.6" strokeLinecap="round" />
+          <line x1="-10" y1="0" x2="8" y2="0" stroke={p.accent} strokeWidth="2.2" strokeLinecap="round" />
+          <line x1="12" y1="0" x2="22" y2="0" stroke={p.secondary} strokeWidth="1.6" strokeLinecap="round" />
+
+          <line x1="-24" y1="8" x2="2" y2="8" stroke={p.primary} strokeWidth="2.2" strokeLinecap="round" />
+
+          <line x1="-24" y1="16" x2="-6" y2="16" stroke={p.secondary} strokeWidth="1.6" strokeLinecap="round" />
+
+          {/* Precision Diamond Float Icon on Corner */}
+          <g transform="translate(24, 16)">
+            <polygon points="0,-10 10,0 0,10 -10,0" fill="#FFFFFF" stroke={ink} strokeWidth={sw} />
+            <polygon points="0,-5 5,0 0,5 -5,0" fill={p.primary} />
+          </g>
+        </g>
+      );
+
+    case 'network':
+      // Minimalist Cloud & Distributed Network Node Geometry
+      return (
+        <g transform={`translate(${cx}, ${cy})`}>
+          <ellipse cx="0" cy="40" rx="44" ry="4" fill="#E2E8F0" opacity="0.6" />
+
+          {/* Connecting Topology Lines */}
+          <line x1="-28" y1="18" x2="0" y2="-18" stroke={p.secondary} strokeWidth="1.2" strokeDasharray="3 3" />
+          <line x1="28" y1="18" x2="0" y2="-18" stroke={p.secondary} strokeWidth="1.2" strokeDasharray="3 3" />
+          <line x1="-28" y1="18" x2="28" y2="18" stroke={p.secondary} strokeWidth="1.2" strokeDasharray="3 3" />
+
+          {/* Top Apex Node Cube */}
+          <g transform="translate(0, -18)">
+            <polygon points="0,-16 14,-8 0,0 -14,-8" fill="#FFFFFF" stroke={ink} strokeWidth={sw} />
+            <polygon points="-14,-8 0,0 0,16 -14,8" fill={p.tint} stroke={ink} strokeWidth={sw} />
+            <polygon points="0,0 14,-8 14,8 0,16" fill={p.primary} stroke={ink} strokeWidth={sw} />
+          </g>
+
+          {/* Bottom Left Node Cube */}
+          <g transform="translate(-28, 18)">
+            <polygon points="0,-12 10,-6 0,0 -10,-6" fill="#FFFFFF" stroke={ink} strokeWidth={sw} />
+            <polygon points="-10,-6 0,0 0,12 -10,6" fill={p.secondary} stroke={ink} strokeWidth={sw} />
+            <polygon points="0,0 10,-6 10,6 0,12" fill={p.tint} stroke={ink} strokeWidth={sw} />
+          </g>
+
+          {/* Bottom Right Node Cube */}
+          <g transform="translate(28, 18)">
+            <polygon points="0,-12 10,-6 0,0 -10,-6" fill={p.accent} stroke={ink} strokeWidth={sw} />
+            <polygon points="-10,-6 0,0 0,12 -10,6" fill="#FFFFFF" stroke={ink} strokeWidth={sw} />
+            <polygon points="0,0 10,-6 10,6 0,12" fill={p.primary} stroke={ink} strokeWidth={sw} />
+          </g>
+
+          {/* Center Connection Ring */}
+          <circle cx="0" cy="4" r="6" fill="#FFFFFF" stroke={ink} strokeWidth={sw} />
+          <circle cx="0" cy="4" r="2.5" fill={p.primary} />
+        </g>
+      );
+
+    case 'silicon':
+      // High-Precision Architectural Microchip & Circuit Orthogonals
+      return (
+        <g transform={`translate(${cx}, ${cy})`}>
+          <ellipse cx="0" cy="40" rx="42" ry="4" fill="#E2E8F0" opacity="0.6" />
+
+          {/* Radiating Circuit Traces */}
+          <g stroke={ink} strokeWidth="1.2" strokeLinecap="round">
+            <line x1="-14" y1="-26" x2="-14" y2="-36" />
+            <line x1="0" y1="-26" x2="0" y2="-38" />
+            <line x1="14" y1="-26" x2="14" y2="-36" />
+
+            <line x1="-14" y1="26" x2="-14" y2="36" />
+            <line x1="0" y1="26" x2="0" y2="38" />
+            <line x1="14" y1="26" x2="14" y2="36" />
+
+            <line x1="-26" y1="-12" x2="-36" y2="-12" />
+            <line x1="-26" y1="0" x2="-38" y2="0" />
+            <line x1="-26" y1="12" x2="-36" y2="12" />
+
+            <line x1="26" y1="-12" x2="36" y2="-12" />
+            <line x1="26" y1="0" x2="38" y2="0" />
+            <line x1="26" y1="12" x2="36" y2="12" />
+          </g>
+
+          {/* Outer Ceramic Substrate */}
+          <rect
+            x="-26"
+            y="-26"
+            width="52"
+            height="52"
+            rx="6"
+            fill="#FFFFFF"
+            stroke={ink}
+            strokeWidth={sw}
+          />
+
+          {/* Metallic Heatspreader Die */}
+          <rect
+            x="-16"
+            y="-16"
+            width="32"
+            height="32"
+            rx="3"
+            fill={p.tint}
+            stroke={ink}
+            strokeWidth="1.2"
+          />
+
+          {/* Golden Core Silicon Emblem */}
+          <polygon points="0,-9 9,0 0,9 -9,0" fill={p.primary} stroke={ink} strokeWidth="1" />
+          <circle cx="0" cy="0" r="2.5" fill={p.accent} />
+
+          {/* Orientation Pin 1 Marker */}
+          <circle cx="-20" cy="-20" r="2" fill={p.accent} />
+        </g>
+      );
+
+    case 'folio':
+      // Architectural Scholar Folio & Golden Geometry
+      return (
+        <g transform={`translate(${cx}, ${cy})`}>
+          <ellipse cx="0" cy="40" rx="46" ry="4" fill="#E2E8F0" opacity="0.6" />
+
+          {/* Stepped Isometric Paper Sheets */}
+          <polygon points="-26,-26 22,-36 38,-10 -10,0" fill={p.tint} stroke={ink} strokeWidth="1" />
+          <polygon points="-32,-16 16,-26 32,0 -16,10" fill="#FFFFFF" stroke={ink} strokeWidth={sw} />
+          <polygon points="-38,-6 10,-16 26,10 -22,20" fill="#FFFFFF" stroke={ink} strokeWidth={sw} />
+
+          {/* Grid Layout Lines on Top Sheet */}
+          <line x1="-28" y1="-2" x2="0" y2="-10" stroke={p.secondary} strokeWidth="1.2" />
+          <line x1="-26" y1="4" x2="6" y2="-4" stroke={p.secondary} strokeWidth="1.2" />
+          <line x1="-24" y1="10" x2="-6" y2="5" stroke={p.secondary} strokeWidth="1.2" />
+
+          {/* Floating Minimalist Graduation Laurel Diamond */}
+          <g transform="translate(18, 8)">
+            <polygon points="0,-14 14,0 0,14 -14,0" fill={p.primary} stroke={ink} strokeWidth={sw} />
+            <polygon points="0,-8 8,0 0,8 -8,0" fill="#FFFFFF" />
+            <circle cx="0" cy="0" r="2.5" fill={p.accent} />
+          </g>
+        </g>
+      );
+
+    case 'bastion':
+      // Clean Linear Bastion Shield & Cryptographic Lock
+      return (
+        <g transform={`translate(${cx}, ${cy})`}>
+          <ellipse cx="0" cy="40" rx="42" ry="4" fill="#E2E8F0" opacity="0.6" />
+
+          {/* Outer Linear Shield Outline */}
+          <path
+            d="M -26 -28 H 26 V 4 C 26 22, 0 34, 0 34 C 0 34, -26 22, -26 4 Z"
+            fill="#FFFFFF"
+            stroke={ink}
+            strokeWidth={sw}
+            strokeLinejoin="round"
+          />
+
+          {/* Inset Half-Color Wash */}
+          <path
+            d="M 0 -28 H 26 V 4 C 26 22, 0 34, 0 34 Z"
+            fill={p.tint}
+          />
+
+          {/* Precision Vault Core */}
+          <rect x="-10" y="-8" width="20" height="18" rx="4" fill={p.primary} stroke={ink} strokeWidth="1.4" />
+          <path d="M -6 -8 V -14 C -6 -17, 6 -17, 6 -14 V -8" fill="none" stroke={ink} strokeWidth="1.6" strokeLinecap="round" />
+          <circle cx="0" cy="0" r="2.5" fill="#FFFFFF" />
+          <line x1="0" y1="2" x2="0" y2="6" stroke="#FFFFFF" strokeWidth="1.6" />
+        </g>
+      );
+
+    case 'analytics':
+      // Isometric Analytical Bar Matrix & Vector Rays
+      return (
+        <g transform={`translate(${cx}, ${cy})`}>
+          <ellipse cx="0" cy="40" rx="46" ry="4" fill="#E2E8F0" opacity="0.6" />
+
+          {/* Isometric Base Grid Plate */}
+          <polygon points="-38,20 0,34 38,20 0,6" fill={p.tint} stroke={ink} strokeWidth="1" />
+
+          {/* Bar 1 (Left, Short) */}
+          <g transform="translate(-20, 10)">
+            <polygon points="0,-12 8,-8 0,-4 -8,-8" fill="#FFFFFF" stroke={ink} strokeWidth={sw} />
+            <polygon points="-8,-8 0,-4 0,14 -8,10" fill={p.secondary} stroke={ink} strokeWidth={sw} />
+            <polygon points="0,-4 8,-8 8,10 0,14" fill="#E2E8F0" stroke={ink} strokeWidth={sw} />
+          </g>
+
+          {/* Bar 2 (Center, Tall) */}
+          <g transform="translate(0, -4)">
+            <polygon points="0,-24 8,-20 0,-16 -8,-20" fill={p.primary} stroke={ink} strokeWidth={sw} />
+            <polygon points="-8,-20 0,-16 0,22 -8,18" fill={p.primary} stroke={ink} strokeWidth={sw} />
+            <polygon points="0,-16 8,-20 8,18 0,22" fill={p.tint} stroke={ink} strokeWidth={sw} />
+          </g>
+
+          {/* Bar 3 (Right, Mid) */}
+          <g transform="translate(20, 4)">
+            <polygon points="0,-18 8,-14 0,-10 -8,-14" fill={p.accent} stroke={ink} strokeWidth={sw} />
+            <polygon points="-8,-14 0,-10 0,18 -8,14" fill={p.accent} stroke={ink} strokeWidth={sw} />
+            <polygon points="0,-10 8,-14 8,14 0,18" fill="#FFFFFF" stroke={ink} strokeWidth={sw} />
+          </g>
+
+          {/* Trend Growth Ray */}
+          <polyline points="-20,2 0,-18 20,-10" fill="none" stroke={ink} strokeWidth="1.6" strokeDasharray="3 3" />
+          <circle cx="20" cy="-10" r="3" fill={p.accent} stroke={ink} strokeWidth="1" />
+        </g>
+      );
+
+    case 'isometric-cube':
+    default:
+      // Bauhaus / Architectural Precision Isometric Polyhedron Stack
+      return (
+        <g transform={`translate(${cx}, ${cy})`}>
+          <ellipse cx="0" cy="40" rx="44" ry="4" fill="#E2E8F0" opacity="0.6" />
+
+          {/* Base Foundation Block */}
+          <g transform="translate(0, 10)">
+            <polygon points="0,-18 28,-4 0,10 -28,-4" fill="#FFFFFF" stroke={ink} strokeWidth={sw} />
+            <polygon points="-28,-4 0,10 0,26 -28,12" fill={p.secondary} stroke={ink} strokeWidth={sw} />
+            <polygon points="0,10 28,-4 28,12 0,26" fill={p.tint} stroke={ink} strokeWidth={sw} />
+          </g>
+
+          {/* Floating Mid Isometric Prism */}
+          <g transform="translate(-10, -14)">
+            <polygon points="0,-20 20,-10 0,0 -20,-10" fill={p.primary} stroke={ink} strokeWidth={sw} />
+            <polygon points="-20,-10 0,0 0,18 -20,8" fill={p.primary} stroke={ink} strokeWidth={sw} />
+            <polygon points="0,0 20,-10 20,8 0,18" fill="#FFFFFF" stroke={ink} strokeWidth={sw} />
+          </g>
+
+          {/* Top Crown Accent Diamond */}
+          <g transform="translate(18, -26)">
+            <polygon points="0,-10 10,0 0,10 -10,0" fill={p.accent} stroke={ink} strokeWidth={sw} />
+            <circle cx="0" cy="0" r="2.5" fill="#FFFFFF" />
+          </g>
+        </g>
+      );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 5. Professional Editorial Accents (Architectural Crosses, Micro Ticks, Axis)
+// ---------------------------------------------------------------------------
+function renderEditorialAccents(type: number, x: number, y: number, p: EditorialPalette) {
+  const ink = p.ink;
+
+  switch (type % 4) {
+    case 0:
+      // Precision Alignment Crosshairs +
+      return (
+        <g stroke={ink} strokeWidth="1" opacity="0.4">
+          <line x1={x - 4} y1={y} x2={x + 4} y2={y} />
+          <line x1={x} y1={y - 4} x2={x} y2={y + 4} />
+        </g>
+      );
+
+    case 1:
+      // Minimalist Geometric Diamond ◆
+      return (
+        <polygon
+          points={`${x},${y - 4} ${x + 4},${y} ${x},${y + 4} ${x - 4},${y}`}
+          fill={p.primary}
+          opacity="0.65"
+        />
+      );
+
+    case 2:
+      // Linear Calibration Tick Marks ╵╵
+      return (
+        <g stroke={p.secondary} strokeWidth="1.2" strokeLinecap="round" opacity="0.5">
+          <line x1={x - 3} y1={y - 3} x2={x - 3} y2={y + 3} />
+          <line x1={x + 3} y1={y - 3} x2={x + 3} y2={y + 3} />
+        </g>
+      );
+
+    case 3:
+    default:
+      // Subtle Concentric Node Dot
+      return (
+        <g opacity="0.5">
+          <circle cx={x} cy={y} r="3" fill="none" stroke={ink} strokeWidth="0.8" />
+          <circle cx={x} cy={y} r="1" fill={p.accent} />
+        </g>
+      );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 6. Main Component: Professional Editorial Linear Vector Artwork
+// ---------------------------------------------------------------------------
 export function DoodleCardArt({
   id,
   title = '',
@@ -164,183 +449,87 @@ export function DoodleCardArt({
   description = '',
   className = '',
 }: DoodleCardArtProps) {
-  const seedStr = `${id}-${title || ''}-${type || ''}`;
-  const seed = useMemo(() => stringToSeed(seedStr), [seedStr]);
+  const seedKey = `${id || 'arcade-course'}-${title || ''}`;
 
-  const { theme, IconComponent, tagCode } = useMemo(() => {
-    const theme = MINIMAL_STRIPE_THEMES[seed % MINIMAL_STRIPE_THEMES.length];
-    const IconComponent = resolveTopicIcon(title || '', type || '', description || '');
-    const tagCode = `REF.${((seed % 90) + 10)}`;
+  const { palette, topic, mainPos, accents } = useMemo(() => {
+    const rng = createRng(seedKey);
+
+    // 1. Select Editorial Palette
+    const paletteIndex = Math.floor(rng() * EDITORIAL_PALETTES.length);
+    const palette = EDITORIAL_PALETTES[paletteIndex];
+
+    // 2. Detect Editorial Subject Topic
+    const topic = detectEditorialTopic(title || '', type || '', description || '');
+
+    // 3. Crisp Asymmetric Placement
+    const mainPos = {
+      cx: 160 + (rng() - 0.5) * 16,
+      cy: 88 + (rng() - 0.5) * 10,
+    };
+
+    // 4. Exactly 2-3 Subtle Technical Reticle Accents
+    const accentCount = 2 + Math.floor(rng() * 2);
+    const accents: { type: number; x: number; y: number }[] = [];
+
+    const anchorPositions = [
+      { x: mainPos.cx - 78 + (rng() - 0.5) * 12, y: mainPos.cy - 36 + (rng() - 0.5) * 10 },
+      { x: mainPos.cx + 78 + (rng() - 0.5) * 12, y: mainPos.cy - 30 + (rng() - 0.5) * 10 },
+      { x: mainPos.cx + 68 + (rng() - 0.5) * 12, y: mainPos.cy + 34 + (rng() - 0.5) * 10 },
+      { x: mainPos.cx - 68 + (rng() - 0.5) * 12, y: mainPos.cy + 32 + (rng() - 0.5) * 10 },
+    ];
+
+    for (let i = 0; i < accentCount; i++) {
+      const pos = anchorPositions[i % anchorPositions.length];
+      accents.push({
+        type: Math.floor(rng() * 4),
+        x: pos.x,
+        y: pos.y,
+      });
+    }
 
     return {
-      theme,
-      IconComponent,
-      tagCode,
+      palette,
+      topic,
+      mainPos,
+      accents,
     };
-  }, [seed, title, type, description]);
+  }, [seedKey, title, type, description]);
 
   return (
     <div
-      className={`relative w-full h-full flex items-center justify-center overflow-hidden select-none transition-colors duration-300 ${className}`}
-      style={{
-        backgroundColor: theme.bg,
-      }}
+      className={`relative w-full h-full overflow-hidden select-none transition-colors duration-300 ${className}`}
+      style={{ backgroundColor: palette.bg }}
     >
-      {/* 1. Diagonal Striped Background Pattern */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-80 dark:hidden"
-        style={{
-          backgroundImage: `repeating-linear-gradient(
-            45deg,
-            transparent,
-            transparent 8px,
-            ${theme.stripeColor} 8px,
-            ${theme.stripeColor} 10px
-          )`,
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0 opacity-50 hidden dark:block"
-        style={{
-          backgroundColor: theme.darkBg,
-          backgroundImage: `repeating-linear-gradient(
-            45deg,
-            transparent,
-            transparent 8px,
-            ${theme.darkStripeColor} 8px,
-            ${theme.darkStripeColor} 10px
-          )`,
-        }}
-      />
-
-      {/* 2. Rich Technical Vector Graphic & Blueprint Design Layer */}
+      {/* 100% Pure SVG Professional Editorial Line Art */}
       <svg
-        className="pointer-events-none absolute inset-0 w-full h-full opacity-55 z-0"
+        className="w-full h-full block"
         viewBox="0 0 320 180"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="xMidYMid slice"
       >
-        {/* Soft Concentric Blueprint Orbit Rings */}
-        <circle
-          cx="160"
-          cy="90"
-          r="46"
-          stroke={theme.accentDot}
-          strokeWidth="1.2"
-          strokeDasharray="4 5"
-          opacity="0.75"
-        />
-        <circle
-          cx="160"
-          cy="90"
-          r="68"
-          stroke={theme.accentDot}
-          strokeWidth="0.8"
-          strokeDasharray="2 4"
-          opacity="0.4"
-        />
+        <defs>
+          {/* Subtle Clean Ambient Depth Gradient */}
+          <radialGradient id={`edit-ambient-${id}`} cx="50%" cy="48%" r="48%">
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+          </radialGradient>
+        </defs>
 
-        {/* Diagonal Ray Accent Vectors */}
-        <line x1="120" y1="50" x2="105" y2="35" stroke={theme.accentDot} strokeWidth="1" strokeDasharray="3 3" opacity="0.4" />
-        <line x1="200" y1="130" x2="215" y2="145" stroke={theme.accentDot} strokeWidth="1" strokeDasharray="3 3" opacity="0.4" />
-        <line x1="200" y1="50" x2="215" y2="35" stroke={theme.accentDot} strokeWidth="1" strokeDasharray="3 3" opacity="0.4" />
-        <line x1="120" y1="130" x2="105" y2="145" stroke={theme.accentDot} strokeWidth="1" strokeDasharray="3 3" opacity="0.4" />
+        {/* 1. Pure Off-White Professional Editorial Canvas */}
+        <rect width="320" height="180" fill={palette.bg} />
+        <rect width="320" height="180" fill={`url(#edit-ambient-${id})`} />
 
-        {/* Minimal Precision Axis Calibration Ticks */}
-        <path
-          d="M160 16 L160 26 M160 154 L160 164 M84 90 L94 90 M226 90 L236 90"
-          stroke={theme.accentDot}
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          opacity="0.6"
-        />
+        {/* 2. Micro Technical Accents & Crosshairs */}
+        {accents.map((acc, idx) => (
+          <g key={`accent-${id}-${idx}`}>
+            {renderEditorialAccents(acc.type, acc.x, acc.y, palette)}
+          </g>
+        ))}
 
-        {/* Architectural Technical HUD Corner Brackets */}
-        <path d="M16 26 L16 16 L26 16" stroke={theme.accentDot} strokeWidth="1.3" opacity="0.5" strokeLinecap="round" />
-        <path d="M304 26 L304 16 L294 16" stroke={theme.accentDot} strokeWidth="1.3" opacity="0.5" strokeLinecap="round" />
-        <path d="M16 154 L16 164 L26 164" stroke={theme.accentDot} strokeWidth="1.3" opacity="0.5" strokeLinecap="round" />
-        <path d="M304 154 L304 164 L294 164" stroke={theme.accentDot} strokeWidth="1.3" opacity="0.5" strokeLinecap="round" />
-
-        {/* Fine Calibration Measurement Ruler on Left */}
-        <line x1="24" y1="65" x2="28" y2="65" stroke={theme.accentDot} strokeWidth="1" opacity="0.4" />
-        <line x1="24" y1="75" x2="32" y2="75" stroke={theme.accentDot} strokeWidth="1" opacity="0.6" />
-        <line x1="24" y1="85" x2="28" y2="85" stroke={theme.accentDot} strokeWidth="1" opacity="0.4" />
-        <line x1="24" y1="95" x2="32" y2="95" stroke={theme.accentDot} strokeWidth="1" opacity="0.6" />
-        <line x1="24" y1="105" x2="28" y2="105" stroke={theme.accentDot} strokeWidth="1" opacity="0.4" />
-        <line x1="24" y1="115" x2="32" y2="115" stroke={theme.accentDot} strokeWidth="1" opacity="0.6" />
-
-        {/* Geometric Spark Nodes */}
-        <circle cx="282" cy="70" r="2" fill={theme.accentDot} opacity="0.5" />
-        <circle cx="288" cy="82" r="1.5" fill={theme.accentDot} opacity="0.3" />
-        <circle cx="278" cy="98" r="2" fill={theme.accentDot} opacity="0.5" />
+        {/* 3. Central Professional Architectural Vector Illustration */}
+        {renderEditorialSubject(topic, mainPos.cx, mainPos.cy, palette)}
       </svg>
-
-      {/* 3. Top-Right Reference HUD Tag */}
-      <div className="absolute top-2.5 right-3 flex items-center gap-1.5 opacity-70 pointer-events-none z-10 font-mono text-[8.5px] tracking-wider text-slate-500 dark:text-slate-400 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xs px-1.5 py-0.5 rounded-sm border border-slate-200/50 dark:border-slate-800/50 shadow-2xs">
-        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: theme.accentDot }} />
-        <span className="font-semibold">{tagCode}</span>
-      </div>
-
-      {/* 4. Bottom-Left Minimalist Topic Chip Pill */}
-      <div className="absolute bottom-2.5 left-3 flex items-center gap-1 opacity-65 pointer-events-none z-10 font-mono text-[8px] tracking-widest uppercase text-slate-600 dark:text-slate-300">
-        <span className="opacity-40">§</span>
-        <span>{type || 'MODULE'}</span>
-      </div>
-
-      {/* 5. Centered Icon with Glass Podium & Subtle Ambient Halo */}
-      <div className="relative z-10 flex items-center justify-center">
-        {/* Ambient Halo behind podium */}
-        <div
-          className="pointer-events-none absolute w-20 h-20 rounded-full blur-md opacity-40 transition-transform duration-500 group-hover:scale-125"
-          style={{ backgroundColor: theme.ambientGlow }}
-        />
-
-        {/* Light Mode Podium */}
-        <div
-          className="dark:hidden relative flex items-center justify-center w-15 h-15 rounded-2xl backdrop-blur-md shadow-[0_8px_20px_rgba(0,0,0,0.04)] border transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.08)]"
-          style={{
-            backgroundColor: theme.podiumBg,
-            borderColor: theme.podiumBorder,
-          }}
-        >
-          <IconComponent
-            size={28}
-            strokeWidth={1.6}
-            className="transition-transform duration-300 group-hover:scale-105"
-            style={{ color: theme.iconColor }}
-          />
-        </div>
-
-        {/* Dark Mode Podium */}
-        <div
-          className="hidden dark:flex relative items-center justify-center w-15 h-15 rounded-2xl backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.5)] border transition-all duration-300 group-hover:scale-110"
-          style={{
-            backgroundColor: theme.darkPodiumBg,
-            borderColor: theme.darkPodiumBorder,
-          }}
-        >
-          <IconComponent
-            size={28}
-            strokeWidth={1.6}
-            className="transition-transform duration-300 group-hover:scale-105"
-            style={{ color: theme.darkIconColor }}
-          />
-        </div>
-      </div>
-
-      {/* 6. Clean Bottom 1px Card Divider */}
-      <div className="absolute bottom-0 inset-x-0 h-[1px] bg-slate-200/60 dark:bg-slate-800/80" />
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-

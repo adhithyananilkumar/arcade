@@ -108,6 +108,8 @@ export interface ContentCardProps {
  * every card would be pure noise. (The previous profile page did show one — because it was
  * listing drafts too.)
  */
+import { DoodleCardArt } from '@/shared/design-system/ui/cards/DoodleCardArt';
+
 export function ContentCard({ item, kind, href }: ContentCardProps) {
   const type = kind ?? (item as ChannelContentItem).type ?? 'COURSE';
   const Icon = CONTENT_ICON[type.toUpperCase()] ?? GraduationCap;
@@ -125,9 +127,12 @@ export function ContentCard({ item, kind, href }: ContentCardProps) {
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <Icon size={26} className="text-slate-200 dark:text-neutral-800" />
-          </div>
+          <DoodleCardArt
+            id={item.id}
+            title={item.title}
+            type={type}
+            description={item.description}
+          />
         )}
       </div>
 
