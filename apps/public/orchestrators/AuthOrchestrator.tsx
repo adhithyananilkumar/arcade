@@ -132,7 +132,17 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
 
         const returnTo = redirectTarget || searchParams.get('returnTo') || searchParams.get('callbackUrl');
         // replace, not push: Back from the destination must not return to the sign-in form.
-        router.replace(postLoginPath(user, returnTo));
+        const destination = postLoginPath(user, returnTo);
+        if (destination === '/') {
+          // "/" is public landing vs dashboard depending on the session cookie, decided by
+          // middleware on the request. A soft navigation can be answered from the client router
+          // cache, which in a production build already holds the signed-out landing page
+          // (prefetched from the sign-in page's links) — the user lands back on the public view.
+          // A document navigation always reaches middleware with the cookie just set.
+          window.location.replace('/');
+        } else {
+          router.replace(destination);
+        }
       } else if (mode === 'signup') {
         await AuthService.register({
           firstName: data.firstName,

@@ -111,9 +111,12 @@ export default function HeroNav() {
       {/* Right actions */}
       <div className="l-nav__actions">
         {status === 'authenticated' ? (
-          <Link href="/" className="l-nav__get-started">
+          // Plain <a>, not <Link>: this renders on "/" itself, so a client-side Link to "/" is a
+          // same-URL navigation answered from the router cache — the landing page — and the click
+          // appears to do nothing. A document request lets middleware serve the dashboard.
+          <a href="/" className="l-nav__get-started">
             Open Arcade
-          </Link>
+          </a>
         ) : (
           <Link href="/sign" className="l-nav__get-started">
             Get Started
