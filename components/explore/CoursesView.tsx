@@ -8,6 +8,8 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
 import { getCourseAttribution, type AttributableCourse } from "./courseAttribution";
 import ExploreEmptyState from "./ExploreEmptyState";
+import { UnifiedContentCard } from "@/shared/design-system/ui/cards";
+
 function hexToRgbStr(hex: string): string {
   hex = hex.replace(/^#/, "");
   if (hex.length === 3) {
@@ -514,230 +516,37 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   realRating,
   realReviewsCount
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isOverflowing, setIsOverflowing] = useState(false);
-  const descRef = useRef<HTMLParagraphElement>(null);
-  const { status } = useAuthStore();
-
   const enriched = getEnrichedCourse(course, index, activeCategoryName);
   const courseSlug = slugify(course.title);
-
-  const handleCourseClick = () => {
-    router.push(courseRoutes.landing(course.id || courseSlug));
-  };
-
-  useEffect(() => {
-    if (descRef.current) {
-      setIsOverflowing(descRef.current.scrollHeight > 45);
-    }
-  }, [course.desc]);
+  const href = courseRoutes.landing(course.id || courseSlug);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <BorderGlow
-        edgeSensitivity={30}
-        glowColor={hexToHslStr(activeData.colors.primary)}
-        backgroundColor="#FFFFFF"
-        borderRadius={14}
-        glowRadius={40}
-        glowIntensity={0.3}
-        coneSpread={25}
-        animated={false}
-        colors={[`${activeData.colors.primary}40`, '#E6E3F1', `${activeData.colors.primary}40`]}
-        fillOpacity={0.08}
-        className="w-full h-full"
-      >
-        <div
-          style={{
-            background: "#FFFFFF",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            position: "relative",
-            width: "100%",
-            height: "100%",
-            minHeight: "360px"
-          }}
-          className="course-card-premium"
-        >
-          <div
-            style={{
-              height: "90px",
-              position: "relative",
-              overflow: "hidden",
-              background: `
-                radial-gradient(circle at 25% 25%, ${activeData.colors.primary}12, transparent 55%),
-                repeating-linear-gradient(135deg, ${activeData.colors.primary}08 0 2px, transparent 2px 14px),
-                #F9FAFB
-              `,
-              borderBottom: "1px solid #E6E3F1",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
-            <div style={{ color: activeData.colors.primary, opacity: 0.25 }}>
-              {getCourseGlyph(course.title, index, activeData.colors.primary)}
-            </div>
+    <UnifiedContentCard
+      id={course.id || `course-${index}`}
+      title={course.title}
+      description={course.desc || course.description}
+      type="COURSE"
+      typeLabel={enriched.categoryTag || 'Course'}
+      coverImageUrl={course.coverImageUrl}
+      authorName={enriched.instructor?.name}
+      authorSubtitle={enriched.instructor?.role}
+      authorAvatarUrl={enriched.instructor?.avatarUrl}
+      metaTags={[
+        course.duration ? course.duration : null,
+        course.level ? course.level : null,
+      ].filter(Boolean)}
+      metadataBadges={
+        realReviewsCount > 0 ? (
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+            <span className="text-amber-500">★</span>
+            <span className="font-bold text-slate-800 dark:text-slate-200">{realRating.toFixed(1)}</span>
+            <span className="text-slate-400">({realReviewsCount} {realReviewsCount === 1 ? 'Review' : 'Reviews'})</span>
           </div>
-
-          <div style={{ padding: "16px 16px 14px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "8px" }}>
-            <div>
-              <h3 style={{ fontSize: "1.05rem", fontWeight: "800", color: "var(--l-ink)", margin: "0 0 6px", lineHeight: "1.3", fontFamily: "'Space Grotesk', sans-serif" }}>
-                {course.title}
-              </h3>
-
-              <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.82rem", color: "#5A5870", fontWeight: "600" }}>
-                  <span style={{ color: "#F59E0B", fontSize: "0.95rem" }}>★</span>
-                  <span style={{ fontWeight: "700", color: "var(--l-ink)" }}>{realReviewsCount > 0 ? realRating.toFixed(1) : "0.0"}</span>
-                  <span style={{ color: "#8886A0" }}>({realReviewsCount} {realReviewsCount === 1 ? "Review" : "Reviews"})</span>
-                </div>
-              </div>
-
-              <div style={{ position: "relative", marginBottom: "12px" }}>
-                <p
-                  ref={descRef}
-                  style={isExpanded ? {
-                    fontSize: "0.86rem",
-                    color: "#5A5870",
-                    lineHeight: "1.5",
-                    margin: 0
-                  } : {
-                    fontSize: "0.86rem",
-                    color: "#5A5870",
-                    lineHeight: "1.5",
-                    margin: 0,
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                    maxHeight: "3em"
-                  }}
-                >
-                  {course.desc}
-                </p>
-                {isOverflowing && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsExpanded(!isExpanded);
-                    }}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: activeData.colors.primary,
-                      fontSize: "0.8rem",
-                      fontWeight: "800",
-                      cursor: "pointer",
-                      padding: "2px 0 0 0",
-                      marginTop: "4px",
-                      display: "block",
-                      outline: "none"
-                    }}
-                  >
-                    {isExpanded ? "Read less" : "Read more"}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Attribution + CTA are pinned to the bottom of the card, so cards in a row line
-                their buttons up regardless of how long each description runs. */}
-            <div style={{ display: "flex", flexDirection: "column", marginTop: "auto" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-                <img
-                  src={enriched.instructor.avatarUrl}
-                  alt={enriched.instructor.name}
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    border: "1px solid #E6E3F1"
-                  }}
-                />
-                <div style={{ display: "flex", flexDirection: "column", lineHeight: "1.3" }}>
-                  <span style={{ fontSize: "0.84rem", fontWeight: "700", color: "var(--l-ink)" }}>
-                    {enriched.instructor.name}
-                  </span>
-                  <span style={{ fontSize: "0.68rem", color: "#8886A0", fontWeight: "600" }}>
-                    {enriched.instructor.role}
-                  </span>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
-                <button
-                  onClick={handleCourseClick}
-                  style={{
-                    width: "100%",
-                    background: activeData.colors.secondary,
-                    color: activeData.colors.primary,
-                    border: "none",
-                    padding: "10px 16px",
-                    borderRadius: "10px",
-                    fontSize: "0.85rem",
-                    fontWeight: "700",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                    transition: "all 0.25s ease"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = activeData.colors.secondary.replace('0.08', '0.16');
-                    e.currentTarget.style.transform = "translateY(-1px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = activeData.colors.secondary;
-                    e.currentTarget.style.transform = "none";
-                  }}
-                >
-                  Enroll Now
-                </button>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #E6E3F1", paddingTop: "10px", marginTop: "2px" }}>
-              <span
-                onClick={handleCourseClick}
-                style={{
-                  fontSize: "0.85rem",
-                  fontWeight: "700",
-                  color: "#5A5870",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  cursor: "pointer",
-                  transition: "color 0.2s"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = activeData.colors.primary;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "#5A5870";
-                }}
-              >
-                View Course
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="view-arrow" style={{ transition: "transform .15s" }}>
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </span>
-
-              <span style={{ fontSize: "0.84rem", color: "#8886A0", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 7v5l3 2" />
-                </svg>
-                {course.duration}
-              </span>
-            </div>
-          </div>
-        </div>
-      </BorderGlow>
-    </div>
+        ) : null
+      }
+      actionHref={href}
+      actionLabel="Enroll Now"
+    />
   );
 };
 
