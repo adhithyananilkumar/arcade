@@ -205,7 +205,7 @@ export function StudioEditorBody({
     <div className="relative min-h-0 flex-1 flex flex-col overflow-hidden">
       {/* ── Floating sidebar: content structure ─────────── */}
       <aside className="absolute left-10 top-4 z-20 flex flex-col h-[calc(100%-2rem)] w-[268px] pointer-events-none">
-        <div className="pointer-events-auto flex flex-col w-full h-full overflow-hidden">
+        <div className="pointer-events-auto flex flex-col w-full h-full overflow-visible">
           {/* ── Sidebar header ───────────────── */}
           <div className="flex flex-shrink-0 items-center justify-between mb-3">
             <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#14142b]/60">

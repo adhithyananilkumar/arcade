@@ -263,7 +263,7 @@ function ContentOverviewPageContent() {
       <div className="absolute top-10 left-1/4 h-96 w-96 rounded-full bg-blue-400/15 blur-3xl pointer-events-none" />
       <div className="absolute top-1/3 right-1/4 h-96 w-96 rounded-full bg-indigo-400/15 blur-3xl pointer-events-none" />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pt-10 pb-28 sm:px-6 sm:pt-12 lg:pt-14">
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 pt-4 pb-28 sm:px-6 sm:pt-6 lg:pt-7">
         {backNav && (
           <div className="-mb-4">
             <Link
