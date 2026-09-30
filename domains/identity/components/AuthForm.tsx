@@ -314,11 +314,9 @@ export default function AuthForm({
     } else if (mode === 'verify') {
       handleModeChange('signup');
     } else if (mode === 'login') {
-      if (typeof window !== 'undefined' && window.history.length > 1) {
-        router.back();
-      } else {
-        router.push('/');
-      }
+      // Always the landing page. history.back() sent people to whatever they visited before
+      // (an old deep link, another site, or the sign-in form itself after a redirect loop).
+      router.push('/');
     }
   };
 

@@ -1,47 +1,48 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { API_V1_BASE_URL } from '@/infrastructure/config/env';
-import { refreshCookieOptions } from '../_lib/refreshCookie';
+import { refreshCookieOptions } from '../../_lib/refreshCookie';
 
-const BACKEND_URL = API_V1_BASE_URL;
-
-export async function GET() {
-  return NextResponse.json({ message: 'Login API route active' });
-}
-
+/**
+ * Finishes a Google sign-in. The backend's OAuth success handler redirects to /oauth2/redirect
+ * with a single-use, 60-second code; this route trades it server-to-server for tokens and sets the
+ * refresh cookie on this host — the backend can't, because it lives on a different host.
+ */
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    if (request.headers.get('x-requested-with') !== 'XMLHttpRequest') {
+      return NextResponse.json({ message: 'CSRF token missing or invalid' }, { status: 403 });
+    }
 
-    const response = await fetch(`${BACKEND_URL}/auth/login`, {
+    const { code } = await request.json();
+    if (typeof code !== 'string' || !code) {
+      return NextResponse.json({ message: 'Code is required' }, { status: 400 });
+    }
+
+    const response = await fetch(`${API_V1_BASE_URL}/auth/oauth/exchange`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // Forward client IP and User-Agent if needed
         'X-Forwarded-For': request.headers.get('x-forwarded-for') || '',
         'User-Agent': request.headers.get('user-agent') || '',
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ code }),
     });
 
     const data = await response.json();
-
     if (!response.ok) {
       return NextResponse.json(data, { status: response.status });
     }
 
     const { accessToken, refreshToken, user } = data;
-
-    // Set refresh token in HttpOnly cookie using standard Next.js method
     if (refreshToken) {
       const cookieStore = await cookies();
       cookieStore.set('refreshToken', refreshToken, refreshCookieOptions(request));
     }
 
-    // Return access token to the client
     return NextResponse.json({ accessToken, user });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('OAuth exchange error:', error);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }
