@@ -13,6 +13,7 @@
  * ------------------------------------------------------------------
  */
 
+import { postLoginPath } from '@/domains/identity/postLoginPath';
 import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -130,8 +131,8 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
         setAuth(user, accessToken);
 
         const returnTo = redirectTarget || searchParams.get('returnTo') || searchParams.get('callbackUrl');
-        const safePath = returnTo?.startsWith('/') ? returnTo : '/';
-        router.push(safePath);
+        // replace, not push: Back from the destination must not return to the sign-in form.
+        router.replace(postLoginPath(user, returnTo));
       } else if (mode === 'signup') {
         await AuthService.register({
           firstName: data.firstName,

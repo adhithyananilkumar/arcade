@@ -1,5 +1,6 @@
 'use client';
 
+import { postLoginPath } from '@/domains/identity/postLoginPath';
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -33,7 +34,7 @@ function OAuthRedirectHandler() {
       UserService.getMe()
         .then((user) => {
           setAuth(user, token);
-          router.push('/');
+          router.replace(postLoginPath(user));
         })
         .catch((err) => {
           console.error('Failed to fetch user profile after OAuth:', err);
