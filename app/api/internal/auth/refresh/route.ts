@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { API_V1_BASE_URL } from '@/infrastructure/config/env';
+import { refreshCookieOptions } from '../_lib/refreshCookie';
 
 const BACKEND_URL = API_V1_BASE_URL;
 
@@ -50,13 +51,7 @@ export async function POST(request: Request) {
 
     // Set new refresh token in HttpOnly cookie (Token Rotation)
     if (data.refreshToken) {
-      cookieStore.set('refreshToken', data.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 30 * 24 * 60 * 60, // 30 days
-      });
+      cookieStore.set('refreshToken', data.refreshToken, refreshCookieOptions(request));
     }
 
     return NextResponse.json({ accessToken: data.accessToken, user: data.user });

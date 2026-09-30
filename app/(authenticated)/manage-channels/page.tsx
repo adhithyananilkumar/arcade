@@ -20,6 +20,7 @@ import {
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 
 type Row = Channel & { relationship: 'OWNER' | 'STAFF' };
 type Tab = 'all' | 'owner' | 'staff';
@@ -399,7 +400,7 @@ function ChannelRowItem({ channel }: { channel: Row }) {
       <div className="flex min-w-0 items-center gap-4">
         <div className="relative flex h-13 w-13 shrink-0 items-center justify-center overflow-hidden rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-500 dark:text-slate-400 group-hover:scale-105 transition-transform">
           {channel.iconUrl ? (
-            <img src={channel.iconUrl} alt={channel.name} className="h-full w-full object-cover" />
+            <img src={getAvatarUrl(channel.iconUrl)} alt={channel.name} className="h-full w-full object-cover" />
           ) : (
             <svg
               width="24"

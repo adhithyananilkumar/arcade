@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { AuditLog, AuditService } from '@/infrastructure/monitoring/audit.service';
+import { Session, SessionService } from '@/infrastructure/auth/session.service';
 import { 
   Shield, 
   Loader2, 
@@ -20,6 +21,28 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { PhoneInput } from '@/shared/design-system/ui/phone-input';
+
+function getClientDeviceInfo(): { os: string; browser: string; isMobile: boolean } {
+  if (typeof window === 'undefined' || !navigator?.userAgent) {
+    return { os: 'Current Device', browser: 'Browser', isMobile: false };
+  }
+  const ua = navigator.userAgent;
+  let os = 'Unknown OS';
+  if (/Windows/i.test(ua)) os = 'Windows PC';
+  else if (/Macintosh|Mac OS X/i.test(ua)) os = 'macOS';
+  else if (/Linux/i.test(ua)) os = 'Linux PC';
+  else if (/Android/i.test(ua)) os = 'Android Device';
+  else if (/iPhone|iPad|iPod/i.test(ua)) os = 'iOS Device';
+
+  let browser = 'Browser';
+  if (/Edg/i.test(ua)) browser = 'Edge';
+  else if (/Chrome/i.test(ua)) browser = 'Chrome';
+  else if (/Firefox/i.test(ua)) browser = 'Firefox';
+  else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser = 'Safari';
+
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
+  return { os, browser, isMobile };
+}
 
 export default function SecurityLogsPage() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
@@ -40,25 +63,27 @@ export default function SecurityLogsPage() {
   const [isPhoneValid, setIsPhoneValid] = useState(true);
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
 
-  // Active Sessions Mock Data
-  const [sessions, setSessions] = useState([
-    {
-      id: 's1',
-      device: 'Windows PC • Chrome',
-      location: 'Kottayam, Kerala',
-      ip: '103.22.45.12',
-      isCurrent: true,
-      lastActive: 'Active now',
-    },
-    {
-      id: 's2',
-      device: 'iPhone 15 Pro • Arcade Mobile',
-      location: 'Kochi, Kerala',
-      ip: '49.37.120.89',
-      isCurrent: false,
-      lastActive: '2 hours ago',
-    },
-  ]);
+  // Active Sessions
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [isSessionsLoading, setIsSessionsLoading] = useState(true);
+  const [revokingFamilyId, setRevokingFamilyId] = useState<string | null>(null);
+  const [clientInfo, setClientInfo] = useState<{ os: string; browser: string; isMobile: boolean }>({
+    os: 'Current Device',
+    browser: 'Browser',
+    isMobile: false,
+  });
+
+  const loadSessions = async () => {
+    setIsSessionsLoading(true);
+    try {
+      const data = await SessionService.getSessions();
+      setSessions(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to load sessions', err);
+    } finally {
+      setIsSessionsLoading(false);
+    }
+  };
 
   const loadLogs = async (pageNumber: number) => {
     setIsLoading(true);
@@ -75,7 +100,9 @@ export default function SecurityLogsPage() {
   };
 
   useEffect(() => {
+    setClientInfo(getClientDeviceInfo());
     loadLogs(0);
+    loadSessions();
   }, []);
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
@@ -92,9 +119,18 @@ export default function SecurityLogsPage() {
     setTimeout(() => setIsPasswordSaved(false), 2000);
   };
 
-  const handleRevokeSession = (id: string) => {
-    setSessions(sessions.filter((s) => s.id !== id));
-    toast.success('Session revoked successfully');
+  const handleRevokeSession = async (familyId: string) => {
+    setRevokingFamilyId(familyId);
+    try {
+      await SessionService.revokeSession(familyId);
+      setSessions((prev) => prev.filter((s) => s.familyId !== familyId));
+      toast.success('Session revoked successfully');
+    } catch (err) {
+      console.error('Failed to revoke session', err);
+      toast.error('Failed to revoke session');
+    } finally {
+      setRevokingFamilyId(null);
+    }
   };
 
   const handleToggle2FA = () => {
@@ -146,42 +182,81 @@ export default function SecurityLogsPage() {
           <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Monitor size={18} className="text-sky-500" /> Active Sign-in Sessions
           </h3>
-          <span className="text-xs text-slate-500">{sessions.length} active device(s)</span>
+          <span className="text-xs text-slate-500">
+            {isSessionsLoading ? 'Checking devices...' : `${Math.max(sessions.length, 1)} active device(s)`}
+          </span>
         </div>
 
-        <div className="divide-y divide-gray-100 dark:divide-neutral-800">
-          {sessions.map((s) => (
-            <div key={s.id} className="py-3.5 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300">
-                  {s.device.includes('iPhone') ? <Smartphone size={18} /> : <Monitor size={18} />}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-bold text-gray-900 dark:text-white">{s.device}</p>
-                    {s.isCurrent && (
-                      <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 rounded-full">
-                        CURRENT DEVICE
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[11px] text-gray-500 mt-0.5">
-                    {s.location} • IP: {s.ip} • <span className="text-slate-400">{s.lastActive}</span>
-                  </p>
-                </div>
+        {isSessionsLoading ? (
+          <div className="p-6 flex justify-center">
+            <Loader2 className="animate-spin text-sky-500" size={24} />
+          </div>
+        ) : sessions.length === 0 ? (
+          <div className="py-3.5 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300">
+                {clientInfo.isMobile ? <Smartphone size={18} /> : <Monitor size={18} />}
               </div>
-
-              {!s.isCurrent && (
-                <button
-                  onClick={() => handleRevokeSession(s.id)}
-                  className="px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 text-xs font-semibold transition-colors flex items-center gap-1"
-                >
-                  <LogOut size={12} /> Revoke
-                </button>
-              )}
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs font-bold text-gray-900 dark:text-white">
+                    {clientInfo.os} • {clientInfo.browser}
+                  </p>
+                  <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 rounded-full">
+                    CURRENT DEVICE
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-500 mt-0.5">
+                  Active now
+                </p>
+              </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100 dark:divide-neutral-800">
+            {sessions.map((s, idx) => {
+              const isCurrent = idx === 0;
+              const deviceLabel = isCurrent 
+                ? `${clientInfo.os} • ${clientInfo.browser}` 
+                : `Device (${s.createdByIp || s.ipAddress || 'Remote Session'})`;
+              const ipDisplay = s.createdByIp || s.ipAddress ? `IP: ${s.createdByIp || s.ipAddress}` : null;
+              const dateDisplay = s.createdAt ? new Date(s.createdAt).toLocaleString() : 'Active now';
+
+              return (
+                <div key={s.familyId || s.id || idx} className="py-3.5 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300">
+                      {isCurrent && clientInfo.isMobile ? <Smartphone size={18} /> : <Monitor size={18} />}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-bold text-gray-900 dark:text-white">{deviceLabel}</p>
+                        {isCurrent && (
+                          <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 rounded-full">
+                            CURRENT DEVICE
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        {ipDisplay ? `${ipDisplay} • ` : ''}<span className="text-slate-400">{isCurrent ? 'Active now' : `Started ${dateDisplay}`}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {!isCurrent && (
+                    <button
+                      onClick={() => handleRevokeSession(s.familyId)}
+                      disabled={revokingFamilyId === s.familyId}
+                      className="px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 text-xs font-semibold transition-colors flex items-center gap-1 disabled:opacity-50"
+                    >
+                      <LogOut size={12} /> {revokingFamilyId === s.familyId ? 'Revoking...' : 'Revoke'}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Change Password Collapsible Section */}

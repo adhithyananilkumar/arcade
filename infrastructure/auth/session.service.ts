@@ -1,10 +1,12 @@
 import { api } from '@/infrastructure/http/api';
 
 export interface Session {
-  id: string;
+  id?: string;
   familyId: string;
-  ipAddress: string;
+  createdByIp?: string;
+  ipAddress?: string;
   createdAt: string;
+  expiresAt?: string;
 }
 
 export class SessionService {

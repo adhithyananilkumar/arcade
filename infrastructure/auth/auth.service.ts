@@ -63,6 +63,18 @@ export class AuthService {
     return readBody(res);
   }
 
+  /** Finishes a Google sign-in: trades the one-time code from /oauth2/redirect for a session. */
+  static async exchangeOAuthCode(code: string) {
+    const res = await fetch("/api/internal/auth/oauth/exchange", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
+      credentials: "include",
+      body: JSON.stringify({ code }),
+    });
+    if (!res.ok) throw await readError(res, "Google sign-in failed");
+    return readBody(res);
+  }
+
   static async logout() {
     const res = await fetch("/api/internal/auth/logout", {
       method: "POST",

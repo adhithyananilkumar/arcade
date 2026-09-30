@@ -11,7 +11,7 @@ import { useActivitySummaryQuery, useDailyActivityQuery } from '@/domains/learni
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAvatarUrl } from '@/shared/utils/avatar';
-import { BadgeRow, VerifiedBadge, BadgeIcon, type ProfileBadge } from '@/domains/recognition';
+import { BadgeRow, type ProfileBadge } from '@/domains/recognition';
 import {
   User as UserIcon, MapPin, Mail, Calendar, Edit3,
   Code, Star,
@@ -530,24 +530,9 @@ function ProfilePageContent() {
               </h1>
 
               <div className="flex items-center justify-center md:justify-start gap-2 mt-1">
-                {/*
-                  The handle is also the public address, so it links there — this page is the
-                  private dashboard (editing, streaks, enrolments) and domain/<handle> is what
-                  everyone else sees. `user.username` is null until a handle is claimed, in which
-                  case there is nowhere to link to and it renders as plain text.
-                */}
-                {currentUser.username ? (
-                  <Link
-                    href={`/${currentUser.username}`}
-                    className="text-base font-normal text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
-                  >
-                    @{username}
-                  </Link>
-                ) : (
-                  <span className="text-base font-normal text-slate-500 dark:text-slate-400">
-                    @{username}
-                  </span>
-                )}
+                <span className="text-base font-normal text-slate-500 dark:text-slate-400">
+                  @{username}
+                </span>
                 {/*
                   What this account actually is on Arcade, decided by the backend rather than by
                   reading role names here. "Instructor" means they staff a channel or have
@@ -634,9 +619,9 @@ function ProfilePageContent() {
                 >
                   <Trophy size={15} className="text-amber-500" />
                   <span>Achievements</span>
-                  {((currentUser.badges?.length ?? 0) + (myBadges?.earned?.length ?? 0)) > 0 && (
+                  {(myBadges?.earned?.length ?? 0) > 0 && (
                     <span className="rounded-full bg-purple-100 dark:bg-purple-950/60 px-2 py-0.5 text-[11px] font-bold text-purple-700 dark:text-purple-300">
-                      {(currentUser.badges?.length ?? 0) + (myBadges?.earned?.length ?? 0)}
+                      {myBadges?.earned?.length ?? 0}
                     </span>
                   )}
                 </Link>
@@ -653,23 +638,12 @@ function ProfilePageContent() {
                   <Loader2 className="animate-spin" size={14} />
                   <span>Loading achievements...</span>
                 </div>
-              ) : ((currentUser.badges?.length ?? 0) === 0 && (myBadges?.earned?.length ?? 0) === 0) ? (
+              ) : (myBadges?.earned?.length ?? 0) === 0 ? (
                 <p className="text-xs text-slate-400 dark:text-slate-500 italic">
                   No achievements unlocked yet.
                 </p>
               ) : (
                 <div className="flex flex-wrap items-center gap-5 pt-2">
-                  {/* Live Recognition Badges Granted to User */}
-                  {(currentUser.badges as ProfileBadge[] | undefined)?.map((badge) => (
-                    <VerifiedBadge
-                      key={badge.code}
-                      badge={badge}
-                      size={96}
-                      showDetailOnHover={true}
-                      className="transition-transform hover:scale-105"
-                    />
-                  ))}
-
                   {/* Live Issued Credential Badges */}
                   {myBadges?.earned?.map((b) => (
                     <Link
@@ -730,7 +704,7 @@ function ProfilePageContent() {
                             {channel.iconUrl ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
-                                src={channel.iconUrl}
+                                src={getAvatarUrl(channel.iconUrl)}
                                 alt={channel.name}
                                 className="h-full w-full object-cover"
                               />

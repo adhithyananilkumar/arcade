@@ -1,5 +1,6 @@
 import React from "react"
 import { Award } from "lucide-react"
+import { getAvatarUrl } from "@/shared/utils/avatar"
 
 export function FlowerMark({
   size = 24,
@@ -61,7 +62,7 @@ export function Avatar({
   if (imageUrl) {
     return (
       <img
-        src={imageUrl}
+        src={getAvatarUrl(imageUrl)}
         alt={name}
         className="shrink-0 rounded-full object-cover"
         style={commonStyle}
