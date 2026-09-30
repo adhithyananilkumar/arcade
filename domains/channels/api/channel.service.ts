@@ -515,6 +515,11 @@ export const channelService = {
     return api.get<number>('/api/courses/mine/count');
   },
 
+  /** Pending + accepted content collaborations (any type) — an invited collaborator's way into Studio. */
+  getMyCollaborationCount: async (): Promise<number> => {
+    return api.get<number>('/api/v1/content/collaborations/mine/count');
+  },
+
   getChannelContent: async (channelId: string): Promise<ChannelContentItem[]> => {
     const response = await api.get<ChannelContentItem[]>(`/api/v1/channels/${channelId}/content`);
     return response;
