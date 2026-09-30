@@ -1,9 +1,10 @@
 'use client';
 
 /**
- * The learner's badges: every earned badge and every badge they are working towards, as cards.
- * The level standard sits behind an ⓘ button rather than taking up the page. All data is issued by
- * the server; nothing here decides what was earned.
+ * Arcade Learner Architecture
+ * Layer: Apps (learner)
+ *
+ * Badge Wallet component styled to match My Learning design system.
  */
 
 import { useMemo, useState } from 'react';
@@ -85,8 +86,8 @@ export function BadgeWallet({ data, tiers, search, onOpen }: BadgeWalletProps) {
               className={cn(
                 'cursor-pointer select-none rounded-full border px-4 py-1.5 text-xs font-bold transition-all',
                 status === s
-                  ? 'border-transparent bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] text-white shadow-sm'
-                  : 'border-slate-200/80 bg-white/80 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
+                  ? 'border-transparent bg-[#2962D6] text-white shadow-xs dark:bg-[#3B82F6]'
+                  : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
               )}
             >
               {s}
@@ -101,9 +102,9 @@ export function BadgeWallet({ data, tiers, search, onOpen }: BadgeWalletProps) {
               type="button"
               onClick={() => setFamily(f.key)}
               className={cn(
-                'rounded-full px-3 py-1 text-[11px] font-bold transition-colors',
+                'rounded-full px-3 py-1 text-[11px] font-bold transition-colors cursor-pointer',
                 family === f.key
-                  ? 'bg-[#14142b] text-white dark:bg-white dark:text-slate-900'
+                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
               )}
             >
@@ -114,7 +115,7 @@ export function BadgeWallet({ data, tiers, search, onOpen }: BadgeWalletProps) {
       </div>
 
       {cards.length === 0 ? (
-        <EmptyState filtered={Boolean(q) || family !== 'ALL' || status !== 'All'} />
+        <EmptyBadgeState filtered={Boolean(q) || family !== 'ALL' || status !== 'All'} />
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-7 lg:grid-cols-3 xl:grid-cols-4">
           {cards.map((c, idx) =>
@@ -130,7 +131,7 @@ export function BadgeWallet({ data, tiers, search, onOpen }: BadgeWalletProps) {
   );
 }
 
-// ── The level standard, on demand ──────────────────────────────────────────────────────────
+// ── The level standard popover ──────────────────────────────────────────────────────────
 
 function LevelInfo({ tiers }: { tiers: BadgeTierInfo[] }) {
   return (
@@ -138,7 +139,7 @@ function LevelInfo({ tiers }: { tiers: BadgeTierInfo[] }) {
       <PopoverTrigger
         aria-label="About badge levels"
         title="About badge levels"
-        className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white/80 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/80 dark:hover:bg-slate-800 dark:hover:text-white"
+        className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white/80 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/80 dark:hover:bg-slate-800 dark:hover:text-white cursor-pointer"
       >
         <Info size={15} />
       </PopoverTrigger>
@@ -166,7 +167,7 @@ function LevelInfo({ tiers }: { tiers: BadgeTierInfo[] }) {
   );
 }
 
-// ── Cards (the Achievements card design) ───────────────────────────────────────────────────
+// ── Cards matching My Learning design system ─────────────────────────────────────────────
 
 const CARD =
   'group relative flex h-full flex-col items-center justify-between overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white/95 p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm transition-all hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] dark:border-slate-800 dark:bg-slate-900/95';
@@ -174,7 +175,7 @@ const CARD =
 const GLOW = (
   <div
     aria-hidden
-    className="pointer-events-none absolute -bottom-12 -right-12 h-44 w-44 rounded-full bg-gradient-to-br from-[#4C6FFF]/10 via-[#1DB876]/8 to-transparent blur-2xl"
+    className="pointer-events-none absolute -bottom-12 -right-12 h-44 w-44 rounded-full bg-gradient-to-br from-[#2962D6]/10 via-[#27C5D8]/8 to-transparent blur-2xl"
   />
 );
 
@@ -246,7 +247,7 @@ function ProgressCard({ badge, index }: { badge: InProgressBadge; index: number 
           />
         </div>
         {badge.contentPath && (
-          <Link href={badge.contentPath} className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#2962D6] hover:underline">
+          <Link href={badge.contentPath} className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition dark:bg-white dark:text-slate-900">
             Continue <ArrowRight size={12} />
           </Link>
         )}
@@ -255,20 +256,31 @@ function ProgressCard({ badge, index }: { badge: InProgressBadge; index: number 
   );
 }
 
-function EmptyState({ filtered }: { filtered: boolean }) {
+function EmptyBadgeState({ filtered }: { filtered: boolean }) {
   return (
-    <div className="flex flex-col items-center rounded-3xl border border-dashed border-slate-200 bg-white/60 px-6 py-14 text-center dark:border-slate-800 dark:bg-slate-900/40">
-      <Award size={30} className="text-slate-300" />
-      <p className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-200">
-        {filtered ? 'No badges match' : 'No badges yet'}
-      </p>
-      <p className="mt-1 max-w-sm text-xs leading-relaxed text-slate-500">
+    <div className="py-10 px-4 text-center flex flex-col items-center justify-center">
+      <div className="relative mb-3 flex items-center justify-center select-none">
+        <svg width="110" height="100" viewBox="0 0 110 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+          <ellipse cx="55" cy="50" rx="38" ry="32" className="fill-[#2962D6]/10 dark:fill-[#3B82F6]/15" />
+          <path d="M55 20L65 30H78V43L88 53L78 63V76H65L55 86L45 76H32V63L22 53L32 43V30H45L55 20Z" className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200" strokeWidth="2" strokeLinejoin="round" />
+          <circle cx="55" cy="53" r="14" className="fill-[#2962D6]/20 dark:fill-[#3B82F6]/30 stroke-[#2962D6] dark:stroke-[#3B82F6]" strokeWidth="2" />
+          <path d="M50 53L53.5 56.5L60 50" stroke="#2962D6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+      <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+        {filtered ? 'No matching badges' : 'No badges yet'}
+      </h3>
+      <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
         {filtered
-          ? 'Try another filter or search.'
-          : 'Complete a course, attend an event or pass an exam that awards a badge, and it will appear here — verifiable and ready to share.'}
+          ? 'Try another filter or search term.'
+          : 'Complete a course, attend an event or pass an exam that awards a badge to earn your first milestone.'}
       </p>
       {!filtered && (
-        <Link href="/explore" className="mt-4 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white hover:bg-[#23234a]">
+        <Link
+          href="/explore"
+          className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-slate-900 dark:bg-white px-5 py-2.5 text-xs sm:text-sm font-bold text-white dark:text-slate-900 hover:opacity-90 transition shadow-sm"
+        >
+          <Award className="h-4 w-4" />
           Explore courses
         </Link>
       )}

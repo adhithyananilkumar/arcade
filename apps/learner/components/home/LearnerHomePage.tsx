@@ -422,7 +422,7 @@ export default function LearnerHomePage() {
                 ref={(el) => {
                   greetingLineRefs.current[1] = el;
                 }}
-                style={{ fontSize: 'calc(min(4.5rem, 11vw) * var(--fit, 1))' }}
+                style={{ fontSize: 'calc(min(3.5rem, 8.5vw) * var(--fit, 1))' }}
               >
                 {parsedGreeting.line2 && (
                   <span className="font-bold tracking-tight leading-none text-[#14142b] cursor-default">

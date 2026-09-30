@@ -585,10 +585,6 @@ export default function MyLearningPage() {
           </div>
         </section>
 
-        {/* ── SECTION 3: LEARNING ACTIVITY TIME CHART ────────────────────────── */}
-        <section aria-label="Learning Activity Chart">
-          <LearningActivityPanel enabled={isAuthenticated} />
-        </section>
       </div>
     </div>
   );
