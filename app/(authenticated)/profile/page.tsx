@@ -19,7 +19,7 @@ import {
   Loader2, X, Camera, Globe,
   BadgeCheck, Lock, Trash2, Sparkles, Shield,
   Building2, ExternalLink, BookOpen, ChevronRight,
-  Trophy
+  Trophy, Search, LayoutGrid, CalendarDays, Award
 } from 'lucide-react';
 import { FaLinkedin } from 'react-icons/fa';
 import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
@@ -49,8 +49,8 @@ function ProfilePageContent() {
   const [isLoadingContent, setIsLoadingContent] = useState(false);
   const [myBadges, setMyBadges] = useState<MyBadges | null>(null);
   const [isLoadingBadges, setIsLoadingBadges] = useState(false);
-  const [viewMode, setViewMode] = useState<'activity' | 'content'>('activity');
-  const [contentFilter, setContentFilter] = useState<'ALL' | 'COURSE' | 'EVENT'>('ALL');
+  const [activeHubTab, setActiveHubTab] = useState<'overview' | 'courses' | 'events'>('overview');
+  const [contentSearchQuery, setContentSearchQuery] = useState('');
   const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -413,20 +413,27 @@ function ProfilePageContent() {
     return items;
   }, [channelContent, currentUser?.courses, currentUser?.workshops]);
 
-  const filteredPersonalContent = useMemo(() => {
-    if (contentFilter === 'ALL') return allPersonalContent;
-    if (contentFilter === 'COURSE') {
-      return allPersonalContent.filter(
-        (item) => item.type?.toUpperCase() === 'COURSE'
-      );
-    }
-    return allPersonalContent.filter(
+  const coursesList = useMemo(() => {
+    return allPersonalContent.filter((item) => item.type?.toUpperCase() === 'COURSE');
+  }, [allPersonalContent]);
+
+  const eventsList = useMemo(() => {
+    return allPersonalContent.filter((item) => item.type?.toUpperCase() !== 'COURSE');
+  }, [allPersonalContent]);
+
+  const displayedContent = useMemo(() => {
+    let list = allPersonalContent;
+    if (activeHubTab === 'courses') list = coursesList;
+    if (activeHubTab === 'events') list = eventsList;
+
+    if (!contentSearchQuery.trim()) return list;
+    const query = contentSearchQuery.toLowerCase().trim();
+    return list.filter(
       (item) =>
-        item.type?.toUpperCase() === 'WORKSHOP' ||
-        item.type?.toUpperCase() === 'EVENT' ||
-        item.type?.toUpperCase() === 'WEBINAR'
+        item.title?.toLowerCase().includes(query) ||
+        item.description?.toLowerCase().includes(query)
     );
-  }, [allPersonalContent, contentFilter]);
+  }, [allPersonalContent, coursesList, eventsList, activeHubTab, contentSearchQuery]);
 
   if (isLoading || !currentUser) {
     return (
@@ -455,169 +462,179 @@ function ProfilePageContent() {
 
 
 
-        {/* ── Main GitHub 2-Column Responsive Layout ── */}
-        <div className="flex flex-col md:flex-row gap-8 items-start">
+        {/* ── 1. Hero Identity Banner (Grounded Header with Avatar & Actions) ── */}
+        <div className="relative mb-8 overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-sm backdrop-blur-md">
+          {/* Subtle Top Accent Banner Stripe */}
+          <div className="h-28 sm:h-36 w-full bg-gradient-to-r from-teal-500/15 via-indigo-500/15 to-purple-500/15 dark:from-teal-900/30 dark:via-indigo-900/30 dark:to-purple-900/30 relative border-b border-slate-100 dark:border-slate-800/80">
+            <div className="absolute inset-0 bg-[radial-gradient(#6366f1_1px,transparent_1px)] [background-size:16px_16px] opacity-20" />
+          </div>
 
-          {/* ── LEFT SIDEBAR (GitHub Profile Column) ── */}
-          <div className="w-full md:w-72 lg:w-80 shrink-0 space-y-5">
-
-            <div className="relative flex w-48 h-48 sm:w-64 sm:h-64 shrink-0 group/avatar mx-auto md:mx-0">
-              <div className="relative z-10 flex h-full w-full items-center justify-center rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl bg-slate-100 dark:bg-slate-900 transition-transform hover:scale-[1.02]">
-                {currentUser.avatarUrl ? (
-                  <img src={getAvatarUrl(currentUser.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
-                ) : (
-                  <UserIcon size={110} className="text-purple-400 dark:text-purple-300" />
-                )}
-
-                {/* Camera Hover Overlay */}
-                <button 
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploadingAvatar || isRemovingAvatar}
-                  className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Upload Avatar"
-                >
-                  {isUploadingAvatar ? (
-                    <Loader2 className="animate-spin text-white mb-1" size={28} />
+          <div className="px-6 sm:px-8 pb-6 pt-0">
+            <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-5 -mt-14 sm:-mt-16 mb-4">
+              {/* Avatar Box with Hover Trigger */}
+              <div className="relative flex h-28 w-28 sm:h-32 sm:w-32 shrink-0 group/avatar">
+                <div className="relative z-10 flex h-full w-full items-center justify-center rounded-2xl overflow-hidden border-4 border-white dark:border-slate-900 shadow-xl bg-slate-100 dark:bg-slate-800 transition-transform duration-200 group-hover/avatar:scale-[1.02]">
+                  {currentUser.avatarUrl ? (
+                    <img src={getAvatarUrl(currentUser.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
                   ) : (
-                    <>
-                      <Camera size={28} className="mb-1" />
-                      <span className="text-xs font-semibold">Change avatar</span>
-                    </>
+                    <UserIcon size={56} className="text-teal-600 dark:text-teal-400" />
                   )}
-                </button>
+
+                  {/* Camera Hover Trigger */}
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingAvatar || isRemovingAvatar}
+                    className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 cursor-pointer disabled:opacity-50"
+                    title="Change avatar"
+                  >
+                    {isUploadingAvatar ? (
+                      <Loader2 className="animate-spin text-white mb-1" size={22} />
+                    ) : (
+                      <>
+                        <Camera size={22} className="mb-0.5" />
+                        <span className="text-[11px] font-bold">Edit</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Quick Remove Button */}
+                {currentUser.avatarUrl && (
+                  <button
+                    onClick={handleRemoveAvatar}
+                    disabled={isRemovingAvatar || isUploadingAvatar}
+                    className="absolute -top-1 -right-1 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-red-500 shadow-md opacity-0 group-hover/avatar:opacity-100 transition-opacity hover:bg-red-50"
+                    title="Remove avatar"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                )}
               </div>
 
-              {/* Remove Avatar Button */}
-              {currentUser.avatarUrl && (
-                <button
-                  onClick={handleRemoveAvatar}
-                  disabled={isRemovingAvatar || isUploadingAvatar}
-                  className="absolute top-2 right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-red-500 shadow-md opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Remove Avatar"
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5 w-full sm:w-auto">
+                {personalChannel && (
+                  <Link
+                    href={personalChannel.handle ? `/${personalChannel.handle}` : `/channels/${personalChannel.id}`}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors shadow-2xs"
+                  >
+                    <span>View Channel</span>
+                    <ChevronRight size={14} className="text-slate-400" />
+                  </Link>
+                )}
+
+                <button 
+                  onClick={() => setIsEditModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold px-4 py-2 text-xs hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer"
                 >
-                  {isRemovingAvatar ? (
-                    <Loader2 className="animate-spin" size={14} />
-                  ) : (
-                    <Trash2 size={14} />
-                  )}
+                  <Edit3 size={14} />
+                  <span>Edit Profile</span>
                 </button>
-              )}
+              </div>
             </div>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="hidden" 
-                accept="image/jpeg, image/png, image/webp" 
-                onChange={handleAvatarSelect}
-              />
 
-            {/* User Full Name & Role */}
-            <div className="text-center md:text-left">
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center justify-center md:justify-start gap-2">
-                {currentUser.fullName || (currentUser.firstName + (currentUser.lastName ? ' ' + currentUser.lastName : '')) || 'User'}
-                
-                {/*
-                  Real, granted badges — not a guess.
-
-                  This used to infer a "verified" tick from role-code substrings and, failing
-                  that, from whether the word "creator" appeared anywhere in the bio. That is not
-                  verification: it could not be granted, revoked, or explained to the person
-                  looking at it, and anyone could award themselves one by editing their bio.
-                  Badges now come from the backend's recognition context, which owns the grant
-                  lifecycle and the audit trail.
-                */}
+            {/* Profile Info Header */}
+            <div className="space-y-2 text-center sm:text-left">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                  {currentUser.fullName || (currentUser.firstName + (currentUser.lastName ? ' ' + currentUser.lastName : '')) || 'User'}
+                </h1>
                 <BadgeRow badges={(currentUser.badges ?? []) as ProfileBadge[]} size={22} />
-              </h1>
-
-              <div className="flex items-center justify-center md:justify-start gap-2 mt-1">
-                <span className="text-base font-normal text-slate-500 dark:text-slate-400">
-                  @{username}
-                </span>
-                {/*
-                  What this account actually is on Arcade, decided by the backend rather than by
-                  reading role names here. "Instructor" means they staff a channel or have
-                  published work; everyone else is a learner, which is what every account is to
-                  begin with.
-                */}
-                <span className="text-slate-400 font-medium">•</span>
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                  <Star size={13} className="fill-amber-500 text-amber-500" />
-                  {(currentUser.channelMemberships?.length ?? 0) > 0 ||
-                  (currentUser.courses?.length ?? 0) > 0
+                
+                <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 dark:bg-teal-950/60 border border-teal-200/60 dark:border-teal-800/60 px-2.5 py-0.5 text-[11px] font-bold text-teal-700 dark:text-teal-300">
+                  <Star size={11} className="fill-teal-500 text-teal-500" />
+                  {(currentUser.channelMemberships?.length ?? 0) > 0 || (currentUser.courses?.length ?? 0) > 0
                     ? 'Instructor'
                     : 'Learner'}
                 </span>
               </div>
-            </div>
 
-            {/* Bio */}
-            {currentUser.bio && (
-              <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed text-center md:text-left whitespace-pre-line break-words">
-                {currentUser.bio.includes('\n')
-                  ? currentUser.bio
-                  : currentUser.bio.split('|').map((part: string) => part.trim()).join('\n')}
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                <span className="font-semibold text-slate-700 dark:text-slate-300">@{username}</span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <MapPin size={13} className="text-slate-400" />
+                  {currentUser.address || 'India'}
+                </span>
+                {currentUser.createdAt && (
+                  <>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <Calendar size={13} className="text-slate-400" />
+                      Joined {new Date(currentUser.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                    </span>
+                  </>
+                )}
+                {currentUser.email && (
+                  <>
+                    <span>•</span>
+                    <span className="flex items-center gap-1 truncate max-w-[200px]">
+                      <Mail size={13} className="text-slate-400" />
+                      {currentUser.email}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {currentUser.bio && (
+                <p className="pt-2 text-sm text-slate-600 dark:text-slate-300 max-w-3xl leading-relaxed whitespace-pre-line">
+                  {currentUser.bio.includes('\n')
+                    ? currentUser.bio
+                    : currentUser.bio.split('|').map((part: string) => part.trim()).join('\n')}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+
+        {/* ── 3. Top Overview Section (Sidebar Profile Meta + Learning Activity) ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-8">
+
+          {/* ── LEFT COLUMN (Sidebar Panels - 4 of 12 cols) ── */}
+          <div className="lg:col-span-4 space-y-6">
+
+            {/* Social & Web Links */}
+            {(currentUser.linkedinUrl || currentUser.githubUrl) && (
+              <div className="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs space-y-3">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Social & Web</h3>
+                <div className="space-y-2 text-xs font-semibold">
+                  {currentUser.linkedinUrl && (
+                    <a
+                      href={currentUser.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 text-slate-700 dark:text-slate-200 hover:text-blue-600 transition-colors"
+                    >
+                      <FaLinkedin size={16} className="text-blue-600 shrink-0" />
+                      <span className="truncate">{currentUser.linkedinUrl.replace(/^https?:\/\//, '')}</span>
+                      <ExternalLink size={12} className="ml-auto text-slate-400 shrink-0" />
+                    </a>
+                  )}
+                  {currentUser.githubUrl && (
+                    <a
+                      href={currentUser.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 text-slate-700 dark:text-slate-200 hover:text-purple-600 transition-colors"
+                    >
+                      <Globe size={16} className="text-slate-500 shrink-0" />
+                      <span className="truncate">{currentUser.githubUrl.replace(/^https?:\/\//, '')}</span>
+                      <ExternalLink size={12} className="ml-auto text-slate-400 shrink-0" />
+                    </a>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* GitHub-style Full Width Edit Profile Button */}
-            <button 
-              onClick={() => setIsEditModalOpen(true)}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold px-4 py-2 text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shadow-xs cursor-pointer"
-            >
-              <Edit3 size={15} />
-              <span>Edit profile</span>
-            </button>
-
-            {/* GitHub Details List */}
-            <div className="space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium pt-1">
-              <div className="flex items-center gap-2">
-                <MapPin size={16} className="text-slate-400 shrink-0" />
-                <span>{currentUser.address || 'India'}</span>
-              </div>
-              {currentUser.createdAt && (
-                <div className="flex items-center gap-2">
-                  <Calendar size={16} className="text-slate-400 shrink-0" />
-                  <span>
-                    Joined{' '}
-                    {new Date(currentUser.createdAt).toLocaleDateString(undefined, {
-                      month: 'long',
-                      year: 'numeric',
-                    })}
-                  </span>
-                </div>
-              )}
-              {currentUser.email && (
-                <div className="flex items-center gap-2 truncate">
-                  <Mail size={16} className="text-slate-400 shrink-0" />
-                  <span className="truncate">{currentUser.email}</span>
-                </div>
-              )}
-              {currentUser.linkedinUrl && (
-                <div className="flex items-center gap-2">
-                  <FaLinkedin size={16} className="text-blue-600 shrink-0" />
-                  <a href={currentUser.linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-purple-600 dark:text-purple-400 truncate">
-                    {currentUser.linkedinUrl.replace(/^https?:\/\//, '')}
-                  </a>
-                </div>
-              )}
-              {currentUser.githubUrl && (
-                <div className="flex items-center gap-2">
-                  <Globe size={16} className="text-slate-500 shrink-0" />
-                  <a href={currentUser.githubUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-purple-600 dark:text-purple-400 truncate">
-                    {currentUser.githubUrl.replace(/^https?:\/\//, '')}
-                  </a>
-                </div>
-              )}
-            </div>
-
             {/* Achievements Section */}
-            <div className="border-t border-slate-200 dark:border-slate-800/80 pt-5">
-              <div className="flex items-center justify-between mb-3">
+            <div className="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs">
+              <div className="flex items-center justify-between mb-3.5">
                 <Link
                   href="/achievements"
-                  className="group inline-flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                  className="group inline-flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white hover:text-purple-600 transition-colors"
                 >
-                  <Trophy size={15} className="text-amber-500" />
+                  <Trophy size={16} className="text-amber-500" />
                   <span>Achievements</span>
                   {(myBadges?.earned?.length ?? 0) > 0 && (
                     <span className="rounded-full bg-purple-100 dark:bg-purple-950/60 px-2 py-0.5 text-[11px] font-bold text-purple-700 dark:text-purple-300">
@@ -625,71 +642,74 @@ function ProfilePageContent() {
                     </span>
                   )}
                 </Link>
-                <Link
-                  href="/achievements"
-                  className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline"
-                >
+                <Link href="/achievements" className="text-xs font-semibold text-purple-600 hover:underline">
                   View all
                 </Link>
               </div>
 
               {isLoadingBadges ? (
-                <div className="flex items-center gap-2 py-2 text-xs text-slate-400">
+                <div className="flex items-center gap-2 py-3 text-xs text-slate-400">
                   <Loader2 className="animate-spin" size={14} />
                   <span>Loading achievements...</span>
                 </div>
-              ) : (myBadges?.earned?.length ?? 0) === 0 ? (
-                <p className="text-xs text-slate-400 dark:text-slate-500 italic">
-                  No achievements unlocked yet.
-                </p>
-              ) : (
-                <div className="flex flex-wrap items-center gap-5 pt-2">
-                  {/* Live Issued Credential Badges */}
-                  {myBadges?.earned?.map((b) => (
+              ) : (myBadges?.earned?.length ?? 0) > 0 ? (
+                <div className="flex flex-wrap items-center gap-4 pt-1">
+                  {myBadges?.earned?.slice(0, 3).map((b) => (
                     <Link
                       key={b.credentialCode}
                       href={`/credentials/${encodeURIComponent(b.credentialCode)}`}
                       className="transition-transform hover:scale-105"
-                      title={`${b.name} (${b.badgeClass.tier.label}) - Issued by ${b.issuerName}`}
+                      title={`${b.name} (${b.badgeClass.tier.label})`}
                     >
                       <CredentialBadge
                         family={b.badgeClass.family.key}
                         level={b.badgeClass.tier.level}
                         title={b.name}
-                        className="w-24 h-24"
+                        className="w-16 h-16"
                       />
                     </Link>
                   ))}
                 </div>
+              ) : (
+                <p className="text-xs text-slate-400 dark:text-slate-500 italic py-2">
+                  No achievements unlocked yet.
+                </p>
               )}
             </div>
 
             {/* Organizations Section */}
-            <div className="border-t border-slate-200 dark:border-slate-800/80 pt-5">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Building2 size={15} className="text-purple-600 dark:text-purple-400" />
+            <div className="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs">
+              <div className="flex items-center justify-between mb-3.5">
+                <Link
+                  href="/manage-channels"
+                  className="group inline-flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white hover:text-indigo-600 transition-colors"
+                >
+                  <Building2 size={16} className="text-indigo-600 dark:text-indigo-400" />
                   <span>Organizations</span>
                   {organizationChannels.length > 0 && (
-                    <span className="ml-1 rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                    <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-bold text-slate-600 dark:text-slate-400">
                       {organizationChannels.length}
                     </span>
                   )}
-                </h2>
+                </Link>
+                <Link href="/manage-channels" className="text-xs font-semibold text-indigo-600 hover:underline">
+                  View all
+                </Link>
               </div>
 
               {isLoadingChannels ? (
-                <div className="flex items-center gap-2 py-2 text-xs text-slate-400">
+                <div className="flex items-center gap-2 py-3 text-xs text-slate-400">
                   <Loader2 className="animate-spin" size={14} />
                   <span>Loading organizations...</span>
                 </div>
               ) : organizationChannels.length === 0 ? (
-                <p className="text-xs text-slate-400 dark:text-slate-500 italic">
+                <p className="text-xs text-slate-400 dark:text-slate-500 italic py-2">
                   No organizations joined yet.
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {organizationChannels.map((channel) => {
+                  {/* Real Organizations (Latest 3) */}
+                  {organizationChannels.slice(0, 3).map((channel) => {
                     const channelHref = channel.handle
                       ? `/${channel.handle}`
                       : `/channels/${channel.id}`;
@@ -697,39 +717,24 @@ function ProfilePageContent() {
                       <Link
                         key={channel.id}
                         href={channelHref}
-                        className="group flex items-center justify-between gap-3 p-2 rounded-xl border border-slate-200/70 dark:border-slate-800/80 bg-white/60 dark:bg-slate-850/50 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-purple-300 dark:hover:border-purple-900/50 transition-all shadow-2xs"
+                        className="group flex items-center justify-between gap-3 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shadow-2xs"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50">
+                          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60">
                             {channel.iconUrl ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={getAvatarUrl(channel.iconUrl)}
-                                alt={channel.name}
-                                className="h-full w-full object-cover"
-                              />
+                              <img src={getAvatarUrl(channel.iconUrl)} alt={channel.name} className="h-full w-full object-cover" />
                             ) : (
                               <Building2 size={15} />
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                            <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate group-hover:text-indigo-600 transition-colors">
                               {channel.name}
                             </p>
-                            <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium">
-                              <span>Organization</span>
-                              {channel.status && channel.status !== 'ACTIVE' && (
-                                <>
-                                  <span>•</span>
-                                  <span className={channel.status === 'PENDING' ? 'text-amber-500 font-semibold' : 'text-rose-500 font-semibold'}>
-                                    {channel.status}
-                                  </span>
-                                </>
-                              )}
-                            </div>
+                            <p className="text-[10px] text-slate-400 font-medium">Organization</p>
                           </div>
                         </div>
-                        <ExternalLink size={13} className="text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <ExternalLink size={12} className="text-slate-400 group-hover:text-indigo-600 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </Link>
                     );
                   })}
@@ -739,203 +744,323 @@ function ProfilePageContent() {
 
           </div>
 
-          {/* ── RIGHT MAIN CONTENT (GitHub Profile Cards Column) ── */}
-          <div className="flex-1 min-w-0 w-full space-y-6">
-
-            {/* Toggle Switcher: Learning Activity vs Personal Channel Popular Content */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 dark:border-slate-800 pb-3.5">
-              <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800/80 p-1 border border-slate-200/70 dark:border-slate-700/60 shadow-2xs">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('activity')}
-                  className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
-                    viewMode === 'activity'
-                      ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  <Flame size={15} className={viewMode === 'activity' ? 'text-amber-500' : 'text-slate-400'} />
-                  <span>Learning Activity</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('content')}
-                  className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
-                    viewMode === 'content'
-                      ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  <Sparkles size={15} className={viewMode === 'content' ? 'text-purple-600 dark:text-purple-400' : 'text-slate-400'} />
-                  <span>Channel & Popular Content</span>
-                  {allPersonalContent.length > 0 && (
-                    <span className="rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 px-1.5 py-0.2 text-[10px] font-bold">
-                      {allPersonalContent.length}
-                    </span>
-                  )}
-                </button>
-              </div>
-
-              {viewMode === 'activity' && currentStreak > 0 && (
-                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
-                  <Flame size={15} className="text-amber-500" />
-                  <span>{currentStreak} day{currentStreak === 1 ? '' : 's'} in a row</span>
-                </div>
-              )}
-
-              {viewMode === 'content' && personalChannel && (
-                <Link
-                  href={personalChannel.handle ? `/${personalChannel.handle}` : `/channels/${personalChannel.id}`}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline"
-                >
-                  <span>Go to Personal Channel</span>
-                  <ChevronRight size={13} />
-                </Link>
-              )}
-            </div>
-
-            {/* View 1: Learning Streak & GitHub Contribution Matrix */}
-            {viewMode === 'activity' && (
-              <div className="py-2 animate-in fade-in duration-200">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-                  <div>
-                    <h3 className="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
-                      <Flame size={18} className="text-amber-500" />
-                      <span>Learning Streak & Activity</span>
-                    </h3>
+          {/* ── RIGHT TOP: Learning Heatmap Panel (8 of 12 cols) ── */}
+          <div className="lg:col-span-8">
+            <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs h-full flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-5">
+                  <div className="flex items-center gap-2">
+                    <Flame size={18} className="text-amber-500" />
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Annual Learning Activity</h3>
                   </div>
                   {currentStreak > 0 && (
-                    <div className="flex items-center gap-1.5 text-sm font-bold text-amber-600 dark:text-amber-400">
-                      <Flame size={16} className="text-amber-500" />
-                      <span>{currentStreak} day{currentStreak === 1 ? '' : 's'} in a row</span>
-                    </div>
+                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 px-2.5 py-1 rounded-full">
+                      {currentStreak} Day Streak 🔥
+                    </span>
                   )}
                 </div>
 
-                {/* Daily Streak Checks + Heatmap Grid */}
-                <div className="flex flex-col lg:flex-row items-center gap-6 pt-1">
-                  {/* Heatmap Grid */}
-                  <div className="flex-grow w-full overflow-hidden">
-                    <div className="flex gap-3 items-start">
-                      <div className="hidden sm:grid grid-rows-7 gap-[2px] text-[9px] text-slate-400 font-bold select-none shrink-0 pt-4">
-                        <div className="flex items-center h-[10px]">Sun</div>
-                        <div className="h-[10px]" />
-                        <div className="flex items-center h-[10px]">Wed</div>
-                        <div className="h-[10px]" />
-                        <div className="flex items-center h-[10px]">Fri</div>
-                        <div className="h-[10px]" />
-                      </div>
+                {/* Heatmap Grid */}
+                <div className="w-full overflow-hidden">
+                  <div className="flex gap-3 items-start">
+                    <div className="hidden sm:grid grid-rows-7 gap-[3px] text-[9px] text-slate-400 font-bold select-none shrink-0 pt-4">
+                      <div className="flex items-center h-[11px]">Sun</div>
+                      <div className="h-[11px]" />
+                      <div className="flex items-center h-[11px]">Wed</div>
+                      <div className="h-[11px]" />
+                      <div className="flex items-center h-[11px]">Fri</div>
+                      <div className="h-[11px]" />
+                    </div>
 
-                      <div className="flex-grow overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1">
-                        <div className="w-fit">
-                          <div className="flex text-[9px] text-slate-400 font-bold mb-1.5 h-3.5 relative select-none">
-                            {months.map((m, i) => (
-                              <span 
-                                key={`${m.name}-${m.col}-${i}`} 
-                                className="absolute" 
-                                style={{ left: `calc(${m.col} * (100% / ${totalWeeks || 53}))` }}
-                              >
-                                {m.name}
-                              </span>
-                            ))}
-                          </div>
+                    <div className="flex-grow overflow-x-auto scrollbar-none pb-1">
+                      <div className="w-fit">
+                        <div className="flex text-[9px] text-slate-400 font-bold mb-2 h-3.5 relative select-none">
+                          {months.map((m, i) => (
+                            <span 
+                              key={`${m.name}-${m.col}-${i}`} 
+                              className="absolute" 
+                              style={{ left: `calc(${m.col} * (100% / ${totalWeeks || 53}))` }}
+                            >
+                              {m.name}
+                            </span>
+                          ))}
+                        </div>
 
-                          <div className="grid grid-flow-col grid-rows-7 gap-[2px]">
-                            {contributionGrid.map((week, wIdx) => 
-                              week.map((cell, dIdx) => (
-                                <div 
-                                  key={`${wIdx}-${dIdx}`}
-                                  onMouseEnter={(e) => {
-                                    const rect = e.currentTarget.getBoundingClientRect();
-                                    setHoveredCell({
-                                      count: cell.count,
-                                      dateStr: cell.dateStr,
-                                      x: rect.left + rect.width / 2,
-                                      y: rect.top - 8
-                                    });
-                                  }}
-                                  onMouseLeave={() => setHoveredCell(null)}
-                                  className={`w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-xs transition-all duration-150 cursor-pointer ${
-                                    cell.level === 0 ? 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200' :
-                                    cell.level === 1 ? 'bg-purple-200 dark:bg-purple-900/60 hover:scale-110' :
-                                    cell.level === 2 ? 'bg-purple-400 dark:bg-purple-600 hover:scale-110' :
-                                    'bg-purple-600 dark:bg-purple-500 hover:scale-110 shadow-2xs'
-                                  }`}
-                                />
-                              ))
-                            )}
-                          </div>
+                        <div className="grid grid-flow-col grid-rows-7 gap-[3px]">
+                          {contributionGrid.map((week, wIdx) => 
+                            week.map((cell, dIdx) => (
+                              <div 
+                                key={`${wIdx}-${dIdx}`}
+                                onMouseEnter={(e) => {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setHoveredCell({
+                                    count: cell.count,
+                                    dateStr: cell.dateStr,
+                                    x: rect.left + rect.width / 2,
+                                    y: rect.top - 8
+                                  });
+                                }}
+                                onMouseLeave={() => setHoveredCell(null)}
+                                className={`w-[11px] h-[11px] rounded-xs transition-all duration-150 cursor-pointer ${
+                                  cell.level === 0 ? 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200' :
+                                  cell.level === 1 ? 'bg-teal-200 dark:bg-teal-900/60 hover:scale-110' :
+                                  cell.level === 2 ? 'bg-teal-400 dark:bg-teal-600 hover:scale-110' :
+                                  'bg-teal-600 dark:bg-teal-500 hover:scale-110 shadow-2xs'
+                                }`}
+                              />
+                            ))
+                          )}
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="flex items-center justify-end gap-2 mt-3 text-xs text-slate-400 font-medium">
-                      <span>Less</span>
-                      <div className="w-2.5 h-2.5 rounded-xs bg-slate-100 dark:bg-slate-800" />
-                      <div className="w-2.5 h-2.5 rounded-xs bg-purple-200 dark:bg-purple-900/60" />
-                      <div className="w-2.5 h-2.5 rounded-xs bg-purple-400 dark:bg-purple-600" />
-                      <div className="w-2.5 h-2.5 rounded-xs bg-purple-600 dark:bg-purple-500" />
-                      <span>More</span>
-                    </div>
+                  <div className="flex items-center justify-end gap-2 mt-4 text-xs text-slate-400 font-medium">
+                    <span>Less</span>
+                    <div className="w-2.5 h-2.5 rounded-xs bg-slate-100 dark:bg-slate-800" />
+                    <div className="w-2.5 h-2.5 rounded-xs bg-teal-200 dark:bg-teal-900/60" />
+                    <div className="w-2.5 h-2.5 rounded-xs bg-teal-400 dark:bg-teal-600" />
+                    <div className="w-2.5 h-2.5 rounded-xs bg-teal-600 dark:bg-teal-500" />
+                    <span>More</span>
                   </div>
                 </div>
               </div>
-            )}
 
-            {/* View 2: Personal Channel & Popular Content */}
-            {viewMode === 'content' && (
-              <div className="space-y-4 animate-in fade-in duration-200">
-                {/* Content Filter Pills */}
-                {allPersonalContent.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    {(['ALL', 'COURSE', 'EVENT'] as const).map((filter) => (
-                      <button
-                        key={filter}
-                        type="button"
-                        onClick={() => setContentFilter(filter)}
-                        className={`rounded-lg px-3 py-1 text-xs font-bold transition-colors cursor-pointer ${
-                          contentFilter === filter
-                            ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-2xs'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-                        }`}
-                      >
-                        {filter === 'ALL' ? 'All Content' : filter === 'COURSE' ? 'Courses' : 'Events & Workshops'}
-                      </button>
-                    ))}
+              {/* Quick Stat Bar inside Learning activity box */}
+              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-4 text-xs">
+                <div className="flex items-center gap-6">
+                  <div>
+                    <span className="text-slate-400 font-medium">Total Courses:</span>{' '}
+                    <strong className="text-slate-900 dark:text-white font-bold">{coursesList.length}</strong>
                   </div>
-                )}
+                  <div>
+                    <span className="text-slate-400 font-medium">Total Events:</span>{' '}
+                    <strong className="text-slate-900 dark:text-white font-bold">{eventsList.length}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-medium">Credentials:</span>{' '}
+                    <strong className="text-slate-900 dark:text-white font-bold">{myBadges?.earned?.length ?? 0}</strong>
+                  </div>
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  Updated in real-time
+                </div>
+              </div>
+            </div>
+          </div>
 
-                {/* Content Grid */}
-                {isLoadingContent ? (
-                  <div className="flex h-40 w-full flex-col items-center justify-center gap-2 text-slate-400">
-                    <Loader2 className="animate-spin text-purple-600" size={24} />
-                    <span className="text-xs font-medium">Loading channel content...</span>
-                  </div>
-                ) : filteredPersonalContent.length === 0 ? (
-                  <ProfileEmptyState
-                    icon={BookOpen}
-                    title="No published content yet"
-                    description="No published courses or events yet on this personal channel."
-                  />
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredPersonalContent.map((item) => {
-                      const isCourse = item.type?.toUpperCase() === 'COURSE';
-                      const href = isCourse ? `/courses/${item.id}` : `/events/${item.id}`;
-                      return (
-                        <ContentCard
-                          key={item.id}
-                          item={item}
-                          kind={isCourse ? 'COURSE' : 'EVENT'}
-                          href={href}
-                        />
-                      );
-                    })}
-                  </div>
+        </div>
+
+        {/* ── 4. Dynamic Full-Width Content Library Section (Spans Full 100% Width) ── */}
+        <div className="space-y-6">
+
+          {/* Hub Navigation Tabs Bar (Full Width Dynamic) */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs backdrop-blur-md">
+            <div className="flex items-center gap-1.5 p-1 bg-slate-100/80 dark:bg-slate-800/80 rounded-xl w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => { setActiveHubTab('overview'); setContentSearchQuery(''); }}
+                className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  activeHubTab === 'overview'
+                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                }`}
+              >
+                <Sparkles size={15} className={activeHubTab === 'overview' ? 'text-teal-500' : 'text-slate-400'} />
+                <span>Featured Showcase</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { setActiveHubTab('courses'); setContentSearchQuery(''); }}
+                className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  activeHubTab === 'courses'
+                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                }`}
+              >
+                <BookOpen size={15} className={activeHubTab === 'courses' ? 'text-teal-500' : 'text-slate-400'} />
+                <span>All Courses</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                  activeHubTab === 'courses'
+                    ? 'bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                }`}>
+                  {coursesList.length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { setActiveHubTab('events'); setContentSearchQuery(''); }}
+                className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  activeHubTab === 'events'
+                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                }`}
+              >
+                <CalendarDays size={15} className={activeHubTab === 'events' ? 'text-purple-500' : 'text-slate-400'} />
+                <span>Events & Workshops</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                  activeHubTab === 'events'
+                    ? 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                }`}>
+                  {eventsList.length}
+                </span>
+              </button>
+            </div>
+
+            {/* Quick Search Filter */}
+            <div className="relative w-full sm:w-72 px-1 sm:px-0">
+              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={contentSearchQuery}
+                onChange={(e) => setContentSearchQuery(e.target.value)}
+                placeholder="Search publications & courses..."
+                className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/30 text-slate-900 dark:text-white placeholder-slate-400 transition-all"
+              />
+              {contentSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setContentSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* TAB 1: FEATURED SHOWCASE (Full-Width 3-Column Responsive Grid) */}
+          {activeHubTab === 'overview' && (
+            <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs space-y-5">
+              <div className="flex items-center justify-between pb-1">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={16} className="text-teal-600 dark:text-teal-400" />
+                  <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Featured Publications</h3>
+                </div>
+                {allPersonalContent.length > 3 && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveHubTab('courses')}
+                    className="text-xs font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400 flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>View all library ({allPersonalContent.length})</span>
+                    <ChevronRight size={13} />
+                  </button>
                 )}
               </div>
-            )}
-          </div>
+
+              {isLoadingContent ? (
+                <div className="flex h-48 w-full flex-col items-center justify-center gap-2 text-slate-400">
+                  <Loader2 className="animate-spin text-teal-600" size={24} />
+                  <span className="text-xs font-medium">Loading publications...</span>
+                </div>
+              ) : displayedContent.length === 0 ? (
+                <ProfileEmptyState
+                  icon={BookOpen}
+                  title="No publications yet"
+                  description="Published courses and workshop sessions will appear here."
+                />
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {displayedContent.slice(0, 3).map((item) => {
+                    const isCourse = item.type?.toUpperCase() === 'COURSE';
+                    const href = isCourse ? `/courses/${item.id}` : `/events/${item.id}`;
+                    return (
+                      <ContentCard
+                        key={item.id}
+                        item={item}
+                        kind={isCourse ? 'COURSE' : 'EVENT'}
+                        href={href}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 2: ALL COURSES (Full-Width Responsive 3-Column Grid) */}
+          {activeHubTab === 'courses' && (
+            <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs space-y-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                    <BookOpen size={16} className="text-teal-600 dark:text-teal-400" />
+                    <span>All Courses ({coursesList.length})</span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">Comprehensive learning tracks and curriculum</p>
+                </div>
+              </div>
+
+              {isLoadingContent ? (
+                <div className="flex h-48 w-full flex-col items-center justify-center gap-2 text-slate-400">
+                  <Loader2 className="animate-spin text-teal-600" size={24} />
+                  <span className="text-xs font-medium">Loading courses...</span>
+                </div>
+              ) : displayedContent.length === 0 ? (
+                <ProfileEmptyState
+                  icon={BookOpen}
+                  title={contentSearchQuery ? "No matching courses found" : "No courses published yet"}
+                  description={contentSearchQuery ? `No courses matched "${contentSearchQuery}". Try clearing search.` : "Published course series will appear here."}
+                />
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {displayedContent.map((item) => (
+                    <ContentCard
+                      key={item.id}
+                      item={item}
+                      kind="COURSE"
+                      href={`/courses/${item.id}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: EVENTS & WORKSHOPS (Full-Width Responsive 3-Column Grid) */}
+          {activeHubTab === 'events' && (
+            <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs space-y-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                    <CalendarDays size={16} className="text-purple-600 dark:text-purple-400" />
+                    <span>Events & Workshops ({eventsList.length})</span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">Live sessions, webinars, and developer workshops</p>
+                </div>
+              </div>
+
+              {isLoadingContent ? (
+                <div className="flex h-48 w-full flex-col items-center justify-center gap-2 text-slate-400">
+                  <Loader2 className="animate-spin text-purple-600" size={24} />
+                  <span className="text-xs font-medium">Loading events...</span>
+                </div>
+              ) : displayedContent.length === 0 ? (
+                <ProfileEmptyState
+                  icon={CalendarDays}
+                  title={contentSearchQuery ? "No matching events found" : "No events hosted yet"}
+                  description={contentSearchQuery ? `No events matched "${contentSearchQuery}". Try clearing search.` : "Scheduled live workshops will appear here."}
+                />
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {displayedContent.map((item) => (
+                    <ContentCard
+                      key={item.id}
+                      item={item}
+                      kind="EVENT"
+                      href={`/events/${item.id}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
 
       </motion.div>
