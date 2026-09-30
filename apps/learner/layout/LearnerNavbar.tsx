@@ -526,7 +526,10 @@ export default function LearnerNavbar() {
             </MenuItem>
             <MenuItem 
               icon={<Compass className="text-slate-600" strokeWidth={2} />} 
-              onClick={() => router.push('/?public=true')} 
+              // Document navigation, not router.push: "/" is landing vs dashboard by middleware on
+              // the request, and a soft navigation that only changes the query string reuses the
+              // dashboard already rendered at "/" — the URL changes but the page never does.
+              onClick={() => window.location.assign('/?public=true')}
             >
               Website
             </MenuItem>
