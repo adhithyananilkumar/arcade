@@ -12,13 +12,11 @@ import {
   Clock,
   XCircle,
   UserCheck,
-  Eye,
-  Pencil,
   Trash2,
   CalendarCheck,
 } from "lucide-react";
 import { api } from "@/infrastructure/http/api";
-import { PhoneInput } from "@/shared/design-system/ui/phone-input";
+import { EventInvitationManager } from "@/domains/events";
 import type { FetchResult, EventParticipant } from "../../lib/fetchOverviewData";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -141,44 +139,19 @@ function ActionMenu({
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  async function markAttended() {
-    setBusy(true);
-    try {
-      await api.patch(`/api/v1/events/${eventId}/participants/${participant.id}`, { attendanceStatus: "ATTENDED" });
-      toast.success("Marked as attended");
-      onChanged();
-    } catch {
-      toast.error("Could not update attendance");
-    } finally {
-      setBusy(false);
-      setOpen(false);
-    }
-  }
-
-  async function cancelRegistration() {
-    if (!confirm(`Cancel registration for ${participant.name}?`)) return;
-    setBusy(true);
-    try {
-      await api.patch(`/api/v1/events/${eventId}/participants/${participant.id}`, { status: "CANCELLED" });
-      toast.success("Registration cancelled");
-      onChanged();
-    } catch {
-      toast.error("Could not cancel registration");
-    } finally {
-      setBusy(false);
-      setOpen(false);
-    }
-  }
-
+  // The only participant mutation the backend has: it revokes the enrollment, which cancels the
+  // registration and frees the seat. "Mark attended" / "Cancel registration" used to PATCH this
+  // participant — an endpoint that does not exist. Attendance is recorded by ticket check-in at the
+  // door (QR or ticket code), not by hand here.
   async function removeMember() {
-    if (!confirm(`Remove ${participant.name} from this event?`)) return;
+    if (!confirm(`Cancel ${participant.name}'s registration and remove them from this event?`)) return;
     setBusy(true);
     try {
       await api.delete(`/api/v1/events/${eventId}/participants/${participant.id}`);
-      toast.success("Member removed");
+      toast.success("Registration cancelled");
       onChanged();
-    } catch {
-      toast.error("Could not remove member");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not remove member");
     } finally {
       setBusy(false);
       setOpen(false);
@@ -201,10 +174,6 @@ function ActionMenu({
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div className="absolute right-0 z-20 mt-1 w-48 rounded-xl border border-slate-200 bg-white shadow-xl">
             {[
-              { icon: Eye, label: "View details", action: () => setOpen(false) },
-              { icon: UserCheck, label: "Mark attended", action: markAttended },
-              { icon: Pencil, label: "Edit registration", action: () => setOpen(false) },
-              { icon: XCircle, label: "Cancel registration", action: cancelRegistration },
               { icon: Trash2, label: "Remove member", action: removeMember },
             ].map(({ icon: Icon, label, action }) => (
               <button
@@ -228,145 +197,28 @@ function ActionMenu({
   );
 }
 
-// ── Add Member Modal ──────────────────────────────────────────────────────────
+// ── Invite Members Modal ──────────────────────────────────────────────────────
 
-function AddMemberModal({
-  eventId,
-  onAdded,
-  onClose,
-}: {
-  eventId: string;
-  onAdded: () => void;
-  onClose: () => void;
-}) {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    registrationType: "OPEN",
-    paymentStatus: "FREE",
-    notes: "",
-  });
-  const [isPhoneValid, setIsPhoneValid] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  function update(k: string, v: string) {
-    setForm((p) => ({ ...p, [k]: v }));
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!form.name.trim() || !form.email.trim()) return;
-    if (form.phone.trim() && !isPhoneValid) {
-      toast.error('Enter a valid phone number for the selected country.');
-      return;
-    }
-    setSaving(true);
-    try {
-      await api.post(`/api/v1/events/${eventId}/participants`, {
-        name: form.name.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim() || undefined,
-        registrationType: form.registrationType,
-        paymentStatus: form.paymentStatus,
-        notes: form.notes.trim() || undefined,
-      });
-      toast.success(`${form.name} added`);
-      onAdded();
-      onClose();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not add member");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  const labelCls = "mb-1.5 block text-[12px] font-semibold text-[#14142b]";
-  const inputCls =
-    "w-full rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm outline-none focus:border-[#14142b]/30 focus:bg-white focus:ring-2 focus:ring-slate-200/60";
-
+/**
+ * Organisers add people by inviting them. This used to be an "Add Member" form that POSTed a
+ * name/phone/payment status to /api/v1/events/{id}/participants — an endpoint that does not exist
+ * (every submit was a 405 "Something went wrong"), and one that could not exist as designed: an
+ * organiser cannot mark somebody as paid. The invitation emails them a link; they sign in or up with
+ * that address and register (and pay) the normal way, then appear in this list.
+ */
+function InviteMembersModal({ eventId, onClose }: { eventId: string; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
+      <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-          <h3 className="text-sm font-bold text-[#14142b]">Add Member</h3>
+          <h3 className="text-sm font-bold text-[#14142b]">Invite members</h3>
           <button type="button" onClick={onClose} className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 cursor-pointer">
             <X size={16} />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4 p-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label className={labelCls}>Full name *</label>
-              <input
-                type="text"
-                required
-                autoFocus
-                value={form.name}
-                onChange={(e) => update("name", e.target.value)}
-                className={inputCls}
-                placeholder="e.g. Aloshy Antony"
-              />
-            </div>
-            <div className="col-span-2">
-              <label className={labelCls}>Email *</label>
-              <input
-                type="email"
-                required
-                value={form.email}
-                onChange={(e) => update("email", e.target.value)}
-                className={inputCls}
-                placeholder="e.g. aloshy@example.com"
-              />
-            </div>
-            <div className="col-span-2 sm:col-span-1">
-              <label className={labelCls}>Phone (optional)</label>
-              <PhoneInput
-                value={form.phone}
-                onChange={(val, meta) => {
-                  update("phone", val);
-                  setIsPhoneValid(meta.isValid);
-                }}
-                onValidate={(valid) => setIsPhoneValid(valid)}
-              />
-            </div>
-            <div className="col-span-2 sm:col-span-1">
-              <label className={labelCls}>Payment status</label>
-              <select value={form.paymentStatus} onChange={(e) => update("paymentStatus", e.target.value)} className={inputCls}>
-                <option value="FREE">Free</option>
-                <option value="PAID">Paid</option>
-                <option value="PENDING">Pending</option>
-              </select>
-            </div>
-            <div className="col-span-2">
-              <label className={labelCls}>Notes (optional)</label>
-              <textarea
-                rows={2}
-                value={form.notes}
-                onChange={(e) => update("notes", e.target.value)}
-                className={inputCls + " resize-none"}
-                placeholder="Any notes about this registration…"
-              />
-            </div>
-          </div>
-          <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving || !form.name.trim() || !form.email.trim()}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#14142b] px-5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#232735] disabled:opacity-60 cursor-pointer"
-            >
-              <UserPlus size={13} />
-              {saving ? "Adding…" : "Add member"}
-            </button>
-          </div>
-        </form>
+        <div className="max-h-[70vh] overflow-y-auto p-4">
+          <EventInvitationManager eventId={eventId} className="border-0 p-2 shadow-none" />
+        </div>
       </div>
     </div>
   );
@@ -444,7 +296,7 @@ export function RegisteredMembersSection({
           className="inline-flex items-center gap-1.5 rounded-lg bg-[#14142b] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#232735] cursor-pointer"
         >
           <UserPlus size={13} />
-          Add member
+          Invite members
         </button>
       </div>
 
@@ -556,9 +408,9 @@ export function RegisteredMembersSection({
         </div>
       )}
 
-      {/* Add member modal */}
+      {/* Invite members modal */}
       {addModalOpen && (
-        <AddMemberModal eventId={eventId} onAdded={onChanged} onClose={() => setAddModalOpen(false)} />
+        <InviteMembersModal eventId={eventId} onClose={() => setAddModalOpen(false)} />
       )}
     </div>
   );
