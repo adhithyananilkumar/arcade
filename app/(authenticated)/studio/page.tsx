@@ -90,6 +90,17 @@ interface ContentSummary {
   collaborationRole?: string | null;
 }
 
+/**
+ * The collaborators API for a card. The backend's owner types are COURSE / EVENT / EXAM, while the
+ * dashboard calls events "WORKSHOP". This used to be `/api/v1/courses/{id}/collaborators`, an
+ * endpoint that no longer exists — so Accept and Decline always failed.
+ */
+function collaboratorsBase(item: ContentSummary): string {
+  const type = item.type?.toUpperCase();
+  const ownerType = type === "WORKSHOP" || type === "EVENT" ? "EVENT" : type;
+  return `/api/v1/content/${ownerType}/${item.id}/collaborators`;
+}
+
 // ── Content type menu items ─────────────────────────────────────────────────────
 
 const CONTENT_TYPES = [
@@ -855,7 +866,19 @@ function ContentCard({
       if (result) await result;
       toast.success("Archived");
     } else if (confirmAction === "delete") {
-      await deleteContent(segment, item.id, item.title);
+      // A null request means this type has no delete — never report one that did not happen.
+      const request = deleteContent(segment, item.id, item.title);
+      if (!request) {
+        toast.error("This content can't be deleted here.");
+        setConfirmAction(null);
+        return;
+      }
+      try {
+        await request;
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Could not delete");
+        return;
+      }
       toast.success("Deleted");
     }
     setConfirmAction(null);
@@ -918,7 +941,7 @@ function ContentCard({
           </div>
 
           <div className="flex items-center gap-1.5">
-            {segment && !channelSuspended && (
+            {segment && !channelSuspended && !isPendingInvitation && (
               <button
                 type="button"
                 onClick={() => router.push(editorHref(segment, item.id))}
@@ -939,11 +962,11 @@ function ContentCard({
                   type="button"
                   onClick={async () => {
                     try {
-                      await api.post(`/api/v1/courses/${item.id}/collaborators/accept`);
+                      await api.post(`${collaboratorsBase(item)}/accept`);
                       toast.success("Accepted invitation!");
                       onChanged();
-                    } catch {
-                      toast.error("Failed to accept");
+                    } catch (err) {
+                      toast.error(err instanceof Error ? err.message : "Failed to accept");
                     }
                   }}
                   className="rounded-lg bg-[#14142b] px-3 py-1 text-xs font-bold text-white hover:bg-[#232735] transition-colors cursor-pointer"
@@ -954,11 +977,11 @@ function ContentCard({
                   type="button"
                   onClick={async () => {
                     try {
-                      await api.post(`/api/v1/courses/${item.id}/collaborators/decline`);
+                      await api.post(`${collaboratorsBase(item)}/decline`);
                       toast.info("Declined invitation");
                       onChanged();
-                    } catch {
-                      toast.error("Failed to decline");
+                    } catch (err) {
+                      toast.error(err instanceof Error ? err.message : "Failed to decline");
                     }
                   }}
                   className="rounded-lg border border-amber-900/15 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-amber-50 transition-colors cursor-pointer"

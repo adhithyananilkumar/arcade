@@ -64,7 +64,7 @@ export default function GradeCardPage() {
   return (
     <main className="min-h-screen bg-white text-ink print:bg-white">
       <div className="arcade-wash w-full print:bg-none">
-        <div className="mx-auto w-full max-w-4xl px-5 pb-10 pt-28 sm:px-8 sm:pt-32 print:pt-6">
+        <div className="mx-auto w-full max-w-4xl px-5 pb-32 pt-28 sm:px-8 sm:pt-32 print:pb-6 print:pt-6">
           {error ? (
             <p className="py-24 text-center text-[14px] font-semibold text-rose-600">{error}</p>
           ) : !card ? (

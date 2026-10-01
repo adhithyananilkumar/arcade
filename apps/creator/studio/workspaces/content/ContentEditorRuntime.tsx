@@ -343,6 +343,21 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   const badgeContentType: BadgeContentType = adapter.terminology.root === "Course" ? "COURSE" : "EVENT";
   const [badgeAssignment, setBadgeAssignment] = useState<BadgeAssignment | null>(null);
   const [badgeDialogOpen, setBadgeDialogOpen] = useState(false);
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+  const addMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (addMenuRef.current && !addMenuRef.current.contains(event.target as Node)) {
+        setIsAddMenuOpen(false);
+      }
+    }
+    if (isAddMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isAddMenuOpen]);
+
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   // Which live-collaboration room's presence to show: the open lesson's, or — when no lesson is
   // open (viewing the course/event's own settings) — the metadata room's, so "Active now" is
@@ -1460,37 +1475,38 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                   container is what an author does constantly; adding a badge or an exam is
                   occasional, so those sit one click away instead of competing for the same
                   visual weight. */}
-              <div className="flex items-stretch gap-1.5">
+              <div className="flex flex-col gap-2">
                 <button
                   type="button"
                   onClick={addContainer}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/60 bg-white/80 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-xs backdrop-blur-md transition-all hover:bg-white/95 hover:shadow cursor-pointer"
                 >
-                  <Plus size={14} />
+                  <Plus size={15} className="text-[#14142b]" />
                   Add {adapter.terminology.container}
                 </button>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    title="Add something else to this content"
-                    className="flex w-10 shrink-0 items-center justify-center rounded-2xl border border-white/40 bg-white/70 text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow"
-                  >
-                    <ChevronDown size={14} />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="z-50 w-56 rounded-xl border border-slate-100 bg-white p-1.5 shadow-lg">
-                    <DropdownMenuItem onClick={() => setBadgeDialogOpen(true)} className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50">
-                      <Award size={14} className="text-amber-500" />
-                      {badgeAssignment?.tier ? "Change badge level" : "Add badge"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={addExam} className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50">
-                      {addingExam ? <Loader2 size={14} className="animate-spin text-indigo-500" /> : <GraduationCap size={14} className="text-indigo-500" />}
-                      {exams.length > 0 ? "Open exam" : "Set up exam"}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                <button
+                  type="button"
+                  onClick={() => setBadgeDialogOpen(true)}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/60 bg-white/80 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-xs backdrop-blur-md transition-all hover:bg-white/95 hover:shadow cursor-pointer"
+                >
+                  <Award size={15} className="text-amber-500 stroke-[2.2]" />
+                  Add badge
+                </button>
 
-              {sidebarExtras}
+                <button
+                  type="button"
+                  onClick={addExam}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/60 bg-white/80 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-xs backdrop-blur-md transition-all hover:bg-white/95 hover:shadow cursor-pointer"
+                >
+                  {addingExam ? (
+                    <Loader2 size={15} className="animate-spin text-indigo-500" />
+                  ) : (
+                    <GraduationCap size={15} className="text-indigo-500 stroke-[2.2]" />
+                  )}
+                  Set up exam
+                </button>
+              </div>
             </div>
           ) : undefined
         }

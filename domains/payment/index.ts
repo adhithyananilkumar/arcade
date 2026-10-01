@@ -29,4 +29,8 @@ export type {
   PaymentLedgerRow,
   PageResponse,
   PaymentLedgerFilters,
+  BillingLine,
+  BillingRefundLine,
+  BillingStatus,
+  BillingSummary,
 } from './types/payment.types';

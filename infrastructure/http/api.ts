@@ -26,6 +26,9 @@ import { API_ORIGIN } from "@/infrastructure/config/env";
 
 const BASE_URL = API_ORIGIN;
 
+/** Backend error codes on 5xx responses whose message is written for the user and safe to show. */
+const USER_FACING_SERVER_ERROR_CODES = new Set(["EMAIL_NOT_SENT"]);
+
 // Thrown instead of a plain Error so callers that need to branch on HTTP
 // status (e.g. distinguishing 404 from 403) don't have to string-match messages.
 /**
@@ -171,6 +174,7 @@ async function request<T>(
 
   if (!res.ok) {
     let message = `API error ${res.status}`;
+    let code: string | undefined;
     if (text) {
       if (!options?.expectedStatuses?.includes(res.status)) {
         console.error(`[API ERROR ${res.status}] Path: ${path}`, text);
@@ -178,6 +182,7 @@ async function request<T>(
       try {
         const err = JSON.parse(text);
         message = err.message ?? message;
+        code = typeof err.code === 'string' ? err.code : undefined;
       } catch {
         // If it's not JSON (like plain text "Too many requests"), use it directly if it's a short string
         if (text.length < 100 && !text.includes('<html')) {
@@ -193,7 +198,10 @@ async function request<T>(
     // app widely do `toast.error(error.message)` directly, so anything not
     // safe to show a user must be replaced here rather than at each of
     // those call sites individually.
-    if (res.status >= 500) {
+    // Except the 5xx errors the backend raises on purpose with a message written for the user
+    // (GlobalExceptionHandler), e.g. "We couldn't send the email to …" — hiding that behind the
+    // generic text would leave the user believing the email went out.
+    if (res.status >= 500 && !(code && USER_FACING_SERVER_ERROR_CODES.has(code))) {
       // The backend's catch-all handler ends its message with "Reference: <correlation id>" — an
       // id minted specifically to be quoted back, and the only way to find the matching server log
       // line. Keeping it is the difference between a user reporting "it broke" and reporting

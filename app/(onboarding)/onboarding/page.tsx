@@ -70,7 +70,9 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     if (user?.onboardingCompleted) {
-      router.push('/');
+      // Document navigation, not router.push: "/" is resolved to the dashboard by middleware on
+      // the request, and a soft navigation can replay the cached signed-out landing page instead.
+      window.location.replace('/');
     }
   }, [user, router]);
 
@@ -151,7 +153,7 @@ export default function OnboardingPage() {
         nickname.trim()
       );
       updateUser(profileRes);
-      router.push('/');
+      window.location.assign('/'); // see the onboardingCompleted effect above
     } catch (error) {
       console.error('Failed to complete onboarding', error);
       setIsSubmitting(false);

@@ -73,7 +73,7 @@ function ActionButton({
       {Icon && <Icon size={15} />} <span>{label}</span>
     </>
   );
-  const className = `inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-extrabold transition-all duration-200 cursor-pointer ${cls}`;
+  const className = `inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-extrabold transition-all duration-200 cursor-pointer ${cls}`;
   if (href) {
     return (
       <Link href={href} className={className}>
@@ -164,7 +164,20 @@ export function ContentOverviewHeader({
 
   async function handleConfirmedAction() {
     if (confirmAction === "delete") {
-      await deleteContent(segment, contentId, title);
+      // A null request means this type has no delete. It used to be awaited anyway and reported as
+      // "Deleted", which is how an exam "deleted" here was still on the dashboard afterwards.
+      const request = deleteContent(segment, contentId, title);
+      if (!request) {
+        toast.error("This content can't be deleted here.");
+        setConfirmAction(null);
+        return;
+      }
+      try {
+        await request;
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Could not delete");
+        return;
+      }
       toast.success("Deleted");
       setConfirmAction(null);
       router.push("/studio");
@@ -208,49 +221,23 @@ export function ContentOverviewHeader({
   const updatedParts = formatDateParts(updatedAt);
 
   return (
-    <div className="flex flex-col items-center justify-center py-4 w-full">
+    <div className="flex flex-col items-center justify-center pt-0 pb-1 w-full">
       {/* Main Centered Content Title & Metadata */}
-      <div className="flex flex-col items-center justify-center text-center gap-2 max-w-4xl mx-auto">
+      <div className="flex flex-col items-center justify-center text-center gap-1.5 max-w-4xl mx-auto">
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Satisfy&family=Alex+Brush&display=swap');`}</style>
 
         <h1
-          className="text-4xl font-bold tracking-wide bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 bg-clip-text text-transparent sm:text-5xl lg:text-6xl py-1 leading-snug text-center"
+          className="text-4xl font-bold tracking-wide bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 bg-clip-text text-transparent sm:text-5xl lg:text-6xl py-0.5 leading-tight text-center"
           style={{
             fontFamily: "'Dancing Script', 'Satisfy', 'Great Vibes', 'Alex Brush', cursive",
           }}
         >
           {title}
         </h1>
-        <p className="text-xs font-medium text-slate-500 text-center">
-          Created {formatDateLine(createdAt)} &nbsp;·&nbsp; Last edited {formatDateLine(updatedAt)}
-        </p>
 
-        {/* Combined Row: Channel Name, Content Type, and Published Status */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 text-xs font-black uppercase tracking-wider py-1">
-          <span className="inline-flex items-center gap-1.5 text-indigo-700">
-            <Tv size={13} className="text-indigo-600" />
-            {channelName || "Personal Channel"}
-          </span>
-          <span className="text-slate-300">·</span>
-          <span className="inline-flex items-center gap-1.5 text-blue-700">
-            <BookOpen size={13} className="text-blue-600" />
-            {CONTENT_TYPE_LABEL[segment]}
-          </span>
-          <span className="text-slate-300">·</span>
-          <span className="inline-flex items-center gap-1.5 font-black uppercase tracking-widest text-emerald-600">
-            <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
-            <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-              {status ? status.toLowerCase() : "published"}
-            </span>
-          </span>
-        </div>
-
-        {/* SINGLE ROW BELOW HEADING: Preview, Edit Content, 3-Dots Menu.
-            There used to be an "Active Learners N" badge here driven by a Math.random() ticker —
-            removed rather than kept as decoration. Real learner counts belong here only once a
-            live-activity endpoint exists to source them. */}
+        {/* SINGLE ROW BELOW HEADING: Preview, Edit Content, 3-Dots Menu. */}
         {showMetadataRail && (
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1.5">
             {/* Action Buttons: Preview & Edit Content */}
             {channelSuspended ? (
               <span

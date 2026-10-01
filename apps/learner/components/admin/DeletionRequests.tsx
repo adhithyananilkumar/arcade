@@ -82,8 +82,9 @@ export function DeletionRequests() {
       toast.success('Channel and all its content have been permanently deleted');
       setHardDeleteTarget(null);
       invalidateChannelAdmin();
-    } catch {
-      toast.error('Failed to permanently delete channel');
+    } catch (err) {
+      // The backend explains refusals (e.g. records that are kept permanently); show that reason.
+      toast.error(err instanceof Error && err.message ? err.message : 'Failed to permanently delete channel');
     } finally {
       setHardDeleteSubmitting(false);
     }
