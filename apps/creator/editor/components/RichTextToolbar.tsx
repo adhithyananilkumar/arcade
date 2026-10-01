@@ -55,6 +55,13 @@ localeActions.setMessage("en", {
 
 interface RichTextToolbarProps {
   editor: Editor | null;
+  /**
+   * Horizontal pixel the toolbar should center on — the editor card's own center, measured by
+   * the host (see `ArcadeEditor`). Omit to fall back to `FloatingToolbar`'s viewport-centered
+   * default, which only matches the card when nothing else on screen (e.g. a sidebar) shifts it
+   * off full-viewport center.
+   */
+  centerX?: number;
 }
 
 // The library's own icon buttons (RichTextBold, RichTextColor, …) render a Radix
@@ -112,7 +119,7 @@ function useForceTooltipsBelowToolbar() {
   }, []);
 }
 
-export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTextToolbarProps) {
+export const RichTextToolbar = memo(function RichTextToolbar({ editor, centerX }: RichTextToolbarProps) {
   useForceTooltipsBelowToolbar();
 
   // FloatingToolbar portals this to <body> — mounted inside the lesson card, whose
@@ -123,7 +130,7 @@ export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTex
   // <body> makes it a true floating island, positioned just under the lesson-name
   // pill regardless of where in the DOM tree the editor itself lives.
   return (
-    <FloatingToolbar>
+    <FloatingToolbar centerX={centerX}>
       {/* Groups are borderless and tightly packed — hairline separators carry the
           grouping instead, so the whole strip fits on one row without scrolling. */}
       <div className="flex items-center">

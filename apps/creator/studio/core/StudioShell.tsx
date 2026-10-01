@@ -202,25 +202,30 @@ export function StudioEditorBody({
   children: ReactNode;
 }) {
   return (
-    <div className="relative min-h-0 flex-1 flex flex-col overflow-hidden">
-      {/* ── Floating sidebar: content structure ─────────── */}
-      <aside className="absolute left-10 top-4 z-20 flex flex-col h-[calc(100%-2rem)] w-[268px] pointer-events-none">
-        <div className="pointer-events-auto flex flex-col w-full h-full overflow-visible">
-          {/* ── Sidebar header ───────────────── */}
-          <div className="flex flex-shrink-0 items-center justify-between mb-3">
-            <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#14142b]/60">
-              {sidebarTitle}
-            </span>
-          </div>
-
-          {/* ── Body ──────────────────────────────── */}
-          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4 pr-1 arcade-scrollbar-mini">
-            {sidebarTree}
-          </div>
-
-          {/* ── Sidebar actions (pinned at the bottom) ───────────────── */}
-          {sidebarActions}
+    <div className="relative min-h-0 flex-1 flex overflow-hidden">
+      {/*
+       * ── Sidebar: content structure ─────────────────────────────
+       * A real flex item (fixed width, no shrink) rather than absolutely positioned, so the
+       * canvas next to it is never unaware of its footprint: at full width the canvas simply
+       * starts right where the sidebar ends (no artificial gap), and as the viewport narrows
+       * the canvas's own flex-1 width shrinks around the sidebar's fixed width instead of ever
+       * drawing underneath it.
+       */}
+      <aside className="relative z-20 ml-10 mt-4 mb-4 flex flex-shrink-0 flex-col w-[268px] overflow-visible">
+        {/* ── Sidebar header ───────────────── */}
+        <div className="flex flex-shrink-0 items-center justify-between mb-3">
+          <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#14142b]/60">
+            {sidebarTitle}
+          </span>
         </div>
+
+        {/* ── Body ──────────────────────────────── */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4 pr-1 arcade-scrollbar-mini">
+          {sidebarTree}
+        </div>
+
+        {/* ── Sidebar actions (pinned at the bottom) ───────────────── */}
+        {sidebarActions}
       </aside>
 
       {/*
@@ -238,7 +243,7 @@ export function StudioEditorBody({
        * underlap or scroll behind the top bar.
        */}
       <main
-        className={`z-0 flex flex-col min-h-0 flex-1 items-center overflow-y-auto px-6 pb-6 sm:px-12 arcade-scrollbar-mini ${
+        className={`z-0 flex flex-col min-h-0 min-w-0 flex-1 overflow-y-auto pl-6 pr-6 pb-6 sm:pl-10 sm:pr-12 lg:pl-[1cm] arcade-scrollbar-mini ${
           toolbarClearance ? "pt-20" : "pt-6"
         }`}
       >
@@ -279,7 +284,7 @@ export const CANVAS_CARD_CLASS =
  * workspace can never misplace them the way earlier ad-hoc per-workspace variants did (padding
  * placed inside a differently-scrolled element let content render behind the header).
  */
-export const CANVAS_WRAPPER_CLASS = "w-full max-w-[1024px] flex-1 min-h-0";
+export const CANVAS_WRAPPER_CLASS = "w-full max-w-[640px] md:max-w-[768px] lg:max-w-[1024px] flex-1 min-h-0 min-w-0";
 
 
 // ── Shared canvas states ──────────────────────────────────────────────────────

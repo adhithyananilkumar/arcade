@@ -155,6 +155,39 @@ export const ArcadeEditor = memo(
     documentName,
   });
 
+  // The toolbar is a `position: fixed` portal (see RichTextToolbar), so it has no natural
+  // horizontal relationship to this card — without `centerX` it centers on the full viewport,
+  // which only matches the card by coincidence (e.g. breaks once a sidebar shifts the card off
+  // viewport-center). Measuring the wrapper's own rect keeps the toolbar aligned to wherever the
+  // card actually sits, the same pattern BadgeEditorWorkspace uses for BadgeToolbar.
+  //
+  // Depends on `editor`: the wrapper div below only exists once `editor` is non-null (the
+  // null-editor render returns an unrelated skeleton with no ref on it), so this must re-run
+  // on that transition rather than only once on mount, or `wrapperRef.current` would still be
+  // unset the one time this ever runs.
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [toolbarCenterX, setToolbarCenterX] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    const host = wrapperRef.current;
+    if (!host) return;
+
+    const recompute = () => {
+      const rect = host.getBoundingClientRect();
+      if (rect.width === 0) return;
+      setToolbarCenterX(rect.left + rect.width / 2);
+    };
+
+    recompute();
+    const observer = new ResizeObserver(recompute);
+    observer.observe(host);
+    window.addEventListener("resize", recompute);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", recompute);
+    };
+  }, [editor]);
+
   useEffect(() => {
     onCollabStateChange?.({ status: collabStatus, collaborators });
   }, [collabStatus, collaborators, onCollabStateChange]);
@@ -183,6 +216,7 @@ export const ArcadeEditor = memo(
 
   return (
     <div
+      ref={wrapperRef}
       className={
         chromeless
           ? `arcade-chromeless-editor relative flex flex-col !bg-transparent !shadow-none !border-none ${className}`
@@ -190,7 +224,7 @@ export const ArcadeEditor = memo(
       }
     >
       <RichTextProvider editor={editor}>
-        {!readOnly && <RichTextToolbar editor={editor} />}
+        {!readOnly && <RichTextToolbar editor={editor} centerX={toolbarCenterX} />}
         <EditorContent
           editor={editor}
           // Not a Tailwind arbitrary-value class: `minHeight` is a runtime prop, and Tailwind's
