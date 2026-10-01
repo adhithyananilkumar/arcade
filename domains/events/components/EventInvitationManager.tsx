@@ -11,11 +11,12 @@ import {
 import type { EventInvitation } from '../types/events.types';
 
 /**
- * Who may register for a private event.
+ * Invite people to an event by email.
  *
- * Only meaningful for an event whose visibility is PRIVATE — a public event ignores invitations
- * entirely, because `InvitationRequirement` only runs for private ones. The caller decides whether
- * to render this at all rather than having it guess from a field it would have to fetch.
+ * The email links to `/events/invite`, which signs the person in (or up) with the invited address
+ * and opens the event so they register the normal way — paying, if the event is paid. For a PRIVATE
+ * event the invitation is also what lets them register at all (`InvitationRequirement`); for a
+ * public one it is simply a personal invitation.
  */
 export interface EventInvitationManagerProps {
   eventId: string;

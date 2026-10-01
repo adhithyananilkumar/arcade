@@ -42,15 +42,27 @@ export function useStudioAccess(): StudioAccessState {
     staleTime: 5 * 60 * 1000,
   });
 
+  // A collaborator — including one whose invitation is still pending — qualifies too: the
+  // invitation email sends them to /studio, and the Accept button lives there. Without this an
+  // invited collaborator who owns no channel was bounced to "/" and could never accept.
+  const collaborations = useQuery({
+    queryKey: ['my-collaboration-count'],
+    queryFn: () => channelService.getMyCollaborationCount(),
+    enabled: !owned.isPending && !ownsChannel,
+    staleTime: 60 * 1000,
+  });
+
   const workspaceIds = (workspaces.data ?? []).map((w) => w.id);
 
   // Last resort: does any workspace grant content-authoring rights? Only reached when the user
-  // neither owns a channel nor has authored anything.
+  // neither owns a channel nor has authored or been invited to anything.
   const needsPermissionProbe =
     !owned.isPending &&
     !ownsChannel &&
     !authored.isPending &&
     (authored.data ?? 0) === 0 &&
+    !collaborations.isPending &&
+    (collaborations.data ?? 0) === 0 &&
     !workspaces.isPending &&
     workspaceIds.length > 0;
 
@@ -81,6 +93,12 @@ export function useStudioAccess(): StudioAccessState {
     return { hasAccess: false, loading: true };
   }
   if ((authored.data ?? 0) > 0) {
+    return { hasAccess: true, loading: false };
+  }
+  if (collaborations.isPending) {
+    return { hasAccess: false, loading: true };
+  }
+  if ((collaborations.data ?? 0) > 0) {
     return { hasAccess: true, loading: false };
   }
   if (workspaceIds.length === 0) {

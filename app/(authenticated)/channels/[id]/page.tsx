@@ -20,6 +20,9 @@ import {
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { getAvatarUrl } from '@/shared/utils/avatar';
 import { ChannelDoodleBanner } from './manage/ChannelDoodleBanner';
+import { UnifiedContentCard } from '@/shared/design-system/ui/cards';
+
+
 
 // Public channel page — YouTube/Instagram-style published grid.
 
@@ -43,50 +46,20 @@ function contentHref(item: ChannelContentItem) {
 
 function ContentTile({ item }: { item: ChannelContentItem }) {
   const href = contentHref(item);
-  const inner = (
-    <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-slate-100 sm:aspect-square">
-      {item.coverImageUrl ? (
-        <img
-          src={item.coverImageUrl}
-          alt={item.title}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-        />
-      ) : (
-        <div
-          className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-center"
-          style={{
-            background: 'linear-gradient(160deg, #EEF1F8 0%, #E4E8F2 100%)',
-          }}
-        >
-          <span className="grid size-10 place-items-center rounded-xl bg-white/80 text-[#14142b]/50 shadow-sm">
-            <TypeIcon type={item.type} />
-          </span>
-          <p className="line-clamp-2 text-[12px] font-bold text-[#14142b]/70">{item.title}</p>
-        </div>
-      )}
-      <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-[#14142b]/85 via-[#14142b]/20 to-transparent p-3 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
-        <p className="line-clamp-2 text-[13px] font-bold text-white">{item.title}</p>
-        {item.authorName && (
-          <p className="mt-0.5 flex items-center gap-1 text-[11px] font-medium text-white/70">
-            <User size={10} /> {item.authorName}
-          </p>
-        )}
-      </div>
-      <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-[#14142b]/70 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
-        <TypeIcon type={item.type} />
-        {typeLabel(item.type)}
-      </span>
-    </div>
-  );
-
-  if (!href) {
-    return <div className="cursor-default">{inner}</div>;
-  }
 
   return (
-    <Link href={href} className="block outline-none transition-transform hover:-translate-y-0.5">
-      {inner}
-    </Link>
+    <UnifiedContentCard
+      id={item.id}
+      title={item.title}
+      type={item.type}
+      typeLabel={typeLabel(item.type)}
+      coverImageUrl={item.coverImageUrl}
+      authorName={item.authorName}
+      actionHref={href || undefined}
+      actionLabel="View Details"
+      disabledAction={!href}
+      disabledActionLabel="Unavailable"
+    />
   );
 }
 

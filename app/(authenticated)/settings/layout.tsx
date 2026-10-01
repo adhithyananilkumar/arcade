@@ -26,7 +26,7 @@ const sidebarItems = [
     iconBg: 'bg-[#bae6fd] text-[#0c4a6e]',
   },
   { 
-    name: 'Payments & subscriptions', 
+    name: 'Payments & billing', 
     href: '/settings/payments', 
     icon: CreditCard, 
     iconBg: 'bg-[#e9d5ff] text-[#4c1d95]',

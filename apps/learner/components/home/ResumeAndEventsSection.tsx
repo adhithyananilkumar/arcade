@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import type { CourseSummaryResponse } from '@/shared/types/api.types';
 import { RubiksCube3D } from './RubiksCube3D';
+import { UnifiedContentCard } from '@/shared/design-system/ui/cards';
+
 
 export type EventCard = {
   id: string;
@@ -263,57 +265,18 @@ function EmptyRecommendedCard() {
 
 function RecommendedFeaturedCard({ course }: { course: CourseSummaryResponse }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="relative flex h-full flex-col justify-between overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white/95 p-4 sm:p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] backdrop-blur-sm"
-    >
-      <div className="relative z-10 flex flex-1 flex-col justify-between gap-4">
-        {/* Large Cover Image Banner */}
-        <div className="relative h-44 sm:h-48 w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 bg-slate-100 shadow-sm">
-          {course.coverImageUrl ? (
-            <img
-              src={course.coverImageUrl}
-              alt={course.title}
-              className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-            />
-          ) : (
-            <div
-              aria-hidden
-              className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#4C6FFF]/15 via-slate-100 to-[#9B5DE5]/10"
-            >
-              <span className="text-4xl font-black text-slate-400 select-none">
-                {(course.title || '?').trim().charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Title and Author */}
-        <div>
-          <span className="text-[11px] font-bold uppercase tracking-wider text-[#4C6FFF]">
-            {course.authorName || 'Featured Course'}
-          </span>
-          <h3 className="line-clamp-1 text-base sm:text-lg font-bold tracking-tight text-[#14142b] mt-0.5">
-            {course.title}
-          </h3>
-          <p className="mt-1 line-clamp-2 text-xs sm:text-[13px] font-medium leading-relaxed text-slate-500">
-            {course.description || `${course.moduleCount} modules · Self-paced learning`}
-          </p>
-        </div>
-
-        {/* CTA Button */}
-        <div className="pt-1">
-          <Link
-            href={courseRoutes.landing(course.id)}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#4C6FFF] px-5 py-3 text-[13px] font-semibold text-white transition-all shadow-sm hover:bg-[#3a5ae6] hover:shadow-md"
-          >
-            <BookOpen size={16} /> View Course
-          </Link>
-        </div>
-      </div>
-    </motion.div>
+    <UnifiedContentCard
+      id={course.id}
+      title={course.title}
+      description={course.description || `${course.moduleCount || 0} modules · Self-paced learning`}
+      type="COURSE"
+      typeLabel="Featured Course"
+      authorName={course.authorName}
+      coverImageUrl={course.coverImageUrl}
+      actionHref={courseRoutes.landing(course.id)}
+      actionLabel="View Course"
+      actionIcon={BookOpen}
+    />
   );
 }
 
@@ -328,132 +291,37 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
       : Math.max(0, Math.min(100, Math.round(course.progress)));
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="relative flex h-full flex-col justify-between overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white/95 p-4 sm:p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] backdrop-blur-sm"
-    >
-      {/* Decorative background ambient glow */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-12 -bottom-12 h-44 w-44 rounded-full bg-gradient-to-br from-[#4C6FFF]/10 via-[#1DB876]/8 to-transparent blur-2xl"
-      />
-
-      <div className="relative z-10 flex flex-1 flex-col justify-between gap-4">
-        {/* Prominent Large Course Cover Image Banner */}
-        <div className="relative h-44 sm:h-48 w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 bg-slate-100 shadow-sm">
-          {course.coverImageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={course.coverImageUrl}
-              alt=""
-              className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-            />
-          ) : (
-            <div
-              aria-hidden
-              className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200"
-            >
-              <span className="text-4xl font-black text-slate-400 select-none">
-                {(course.title || '?').trim().charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Title and Author details */}
-        <div>
-          <h3 className="line-clamp-1 text-base sm:text-lg font-bold tracking-tight text-[#14142b]">
-            {course.title}
-          </h3>
-          <p className="mt-0.5 truncate text-xs sm:text-[13px] font-medium text-slate-500">
-            {course.authorName || (pct && pct > 0 ? 'Pick up right where you left off' : 'Continue where you left off')}
-          </p>
-        </div>
-
-        {/* Course Progress Bar Section */}
-        <div>
-          <div className="mb-1.5 flex items-center justify-between text-xs font-semibold">
-            <span className="text-slate-500">Course Progress</span>
-            <span className="font-bold text-[#14142b]">
-              {pct === null ? 'Not tracked' : `${pct}%`}
-            </span>
-          </div>
-          {pct !== null && (
-            <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5">
-              <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-[#4C6FFF] via-[#0EA5E9] to-[#1DB876]"
-                initial={{ width: 0 }}
-                animate={{ width: `${pct}%` }}
-                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Bottom CTA Action Button */}
-        <div className="pt-1">
-          <Link
-            href={courseRoutes.overview(course.id)}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] px-5 py-3 text-[13px] font-semibold text-white transition-all shadow-sm hover:bg-[#232735] hover:shadow-md"
-          >
-            <Play size={15} className="fill-current" /> {pct && pct > 0 ? 'Continue Learning' : 'Start Learning'}
-          </Link>
-        </div>
-      </div>
-    </motion.div>
+    <UnifiedContentCard
+      id={course.id}
+      title={course.title}
+      description={course.authorName ? `Instructor: ${course.authorName}` : (pct && pct > 0 ? 'Pick up right where you left off' : 'Continue where you left off')}
+      type="COURSE"
+      authorName={course.authorName}
+      coverImageUrl={course.coverImageUrl}
+      progressPercent={pct}
+      actionHref={courseRoutes.overview(course.id)}
+      actionLabel={pct && pct > 0 ? 'Continue Learning' : 'Start Learning'}
+      actionIcon={Play}
+    />
   );
 }
 
 function EventRowItem({ event, index }: { event: EventCard; index: number }) {
-  const tone = TONE_CONFIG[event.tone];
-
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        duration: 0.4,
-        delay: 0.06 * index,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      className={`group relative flex flex-col justify-between overflow-hidden rounded-tr-[1.75rem] rounded-bl-[1.75rem] rounded-tl-lg rounded-br-lg border-l-4 ${tone.borderLeft} border-y border-r border-slate-200/80 bg-white/95 p-4 sm:p-5 shadow-[0_4px_16px_rgba(20,20,43,0.03)] transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(20,20,43,0.07)]`}
-    >
-      {/* Content details */}
-      <div className="min-w-0 flex-1">
-        <h3 className="text-[15px] font-bold tracking-tight text-[#14142b] transition-colors group-hover:text-[#4C6FFF]">
-          {event.title}
-        </h3>
-        <p className="mt-0.5 text-[13px] font-medium leading-relaxed text-slate-500 line-clamp-2">
-          {event.tagline}
-        </p>
-
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-2.5">
-          <div className="flex flex-wrap items-center gap-3 text-[11.5px] font-medium text-slate-500">
-            <span className="flex items-center gap-1">
-              <CalendarDays size={12} className="text-slate-400" />
-              {event.when}
-            </span>
-            <span className="flex items-center gap-1">
-              <MapPin size={12} className="text-slate-400" />
-              {event.where}
-            </span>
-            <span className="flex items-center gap-1">
-              <Users size={12} className="text-slate-400" />
-              {event.seats}
-            </span>
-          </div>
-
-          <Link
-            href={event.href}
-            className="inline-flex items-center gap-1 rounded-tr-lg rounded-bl-lg rounded-tl-xs rounded-br-xs bg-[#12141C] px-3.5 py-1.5 text-[12px] font-semibold text-white transition-all hover:bg-[#232735] hover:gap-1.5 shadow-sm"
-          >
-            Register <ArrowUpRight size={13} />
-          </Link>
-        </div>
-      </div>
-    </motion.article>
+    <UnifiedContentCard
+      id={event.id}
+      title={event.title}
+      description={event.tagline}
+      type="EVENT"
+      typeLabel="Event"
+      metaTags={[
+        event.when ? event.when : null,
+        event.where ? event.where : null,
+        event.seats ? event.seats : null,
+      ].filter(Boolean)}
+      actionHref={event.href}
+      actionLabel="Register"
+    />
   );
 }
 
