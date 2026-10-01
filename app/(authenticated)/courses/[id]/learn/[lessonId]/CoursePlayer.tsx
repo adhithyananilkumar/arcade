@@ -39,6 +39,7 @@ import {
   courseReviewService,
   useLessonEngagementTracker,
   NotesEditor,
+  useNoteAutosave,
   type CourseProgress,
 } from '@/domains/learning';
 import { toast } from 'sonner';
@@ -114,8 +115,28 @@ export function CoursePlayer({
   const toggleModule = (moduleId: string) =>
     setCollapsedModules((prev) => ({ ...prev, [moduleId]: !prev[moduleId] }));
   const [rightPanelTab, setRightPanelTab] = useState<'notes' | 'ai'>('notes');
-  const [notesDraft, setNotesDraft] = useState('');
   const [rightPanelWidth, setRightPanelWidth] = useState(380);
+
+  const noteAnchor = useMemo(
+    () => ({
+      id: selectedItem?.id ?? null,
+      label: selectedItem
+        ? selectedItem.kind === 'lesson'
+          ? selectedItem.lesson.title
+          : selectedItem.assessment.title
+        : null,
+      order: selectedItem?.position ?? null,
+    }),
+    [selectedItem],
+  );
+
+  const {
+    initialBody: noteInitialBody,
+    editorKey: noteEditorKey,
+    saveStatus: noteSaveStatus,
+    save: handleNoteSave,
+  } = useNoteAutosave('courses', courseId, noteAnchor);
+
   const [isDesktopViewport, setIsDesktopViewport] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches,
   );
@@ -741,7 +762,17 @@ export function CoursePlayer({
 
             <div className="flex h-full flex-1 flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/30 p-4 shadow-lg backdrop-blur-xl">
               {rightPanelTab === 'notes' ? (
-                <NotesEditor content={notesDraft} onChange={setNotesDraft} />
+                <NotesEditor
+                  key={noteEditorKey}
+                  content={noteInitialBody}
+                  onChange={handleNoteSave}
+                  saveStatus={noteSaveStatus}
+                  placeholder={
+                    selectedItem
+                      ? `Jot notes for ${selectedItem.kind === 'lesson' ? selectedItem.lesson.title : selectedItem.assessment.title}…`
+                      : 'Jot notes for this course…'
+                  }
+                />
               ) : (
                 <div className="flex h-full min-h-[50vh] flex-col items-center justify-center text-center">
                   <Sparkles size={28} className="mb-3 text-slate-300" />

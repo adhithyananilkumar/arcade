@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useEditor, useEditorState, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
@@ -20,7 +21,7 @@ interface NotesEditorProps {
   content: string;
   onChange: (json: string) => void;
   placeholder?: string;
-  saveStatus?: 'idle' | 'saving' | 'saved';
+  saveStatus?: 'idle' | 'saving' | 'saved' | 'error';
 }
 
 const FONT_FAMILIES: { label: string; value: string | null }[] = [
@@ -53,6 +54,16 @@ const toolbarButtonClass = (active: boolean, activeClassName = 'bg-[#14142b] tex
  * list markers — without that stylesheet a heading renders identically to a paragraph.
  */
 export function NotesEditor({ content, onChange, placeholder, saveStatus }: NotesEditorProps) {
+  const parsedContent = useMemo(() => {
+    if (!content) return '';
+    if (typeof content === 'object') return content;
+    try {
+      return JSON.parse(content);
+    } catch {
+      return content;
+    }
+  }, [content]);
+
   const editor = useEditor({
     extensions: [
       // Underline is NOT registered here — StarterKit v3 already bundles it, and registering it
@@ -62,7 +73,7 @@ export function NotesEditor({ content, onChange, placeholder, saveStatus }: Note
       TextStyleKit.configure({ color: false, backgroundColor: false, lineHeight: false }),
       Placeholder.configure({ placeholder: placeholder ?? 'Jot notes for this lesson…' }),
     ],
-    content: content ? JSON.parse(content) : '',
+    content: parsedContent,
     onUpdate: ({ editor }) => onChange(JSON.stringify(editor.getJSON())),
     editorProps: {
       attributes: {
@@ -92,11 +103,28 @@ export function NotesEditor({ content, onChange, placeholder, saveStatus }: Note
     },
   });
 
-  if (!editor || !toolbarState) return null;
+  if (!editor) {
+    return (
+      <div className="flex h-full min-h-[30vh] items-center justify-center text-xs text-slate-400">
+        Loading editor…
+      </div>
+    );
+  }
+
+  const boldActive = toolbarState?.bold ?? editor.isActive('bold');
+  const italicActive = toolbarState?.italic ?? editor.isActive('italic');
+  const underlineActive = toolbarState?.underline ?? editor.isActive('underline');
+  const highlightActive = toolbarState?.highlight ?? editor.isActive('highlight');
+  const bulletListActive = toolbarState?.bulletList ?? editor.isActive('bulletList');
+  const orderedListActive = toolbarState?.orderedList ?? editor.isActive('orderedList');
+  const currentFontFamily =
+    toolbarState?.fontFamily ?? (editor.getAttributes('textStyle').fontFamily as string | undefined) ?? null;
+  const currentFontSize =
+    toolbarState?.fontSize ?? (editor.getAttributes('textStyle').fontSize as string | undefined) ?? null;
 
   const currentFontLabel =
-    FONT_FAMILIES.find((f) => f.value === toolbarState.fontFamily)?.label ?? 'Sans';
-  const currentSizeLabel = FONT_SIZES.find((s) => s.value === toolbarState.fontSize)?.label ?? 'Normal';
+    FONT_FAMILIES.find((f) => f.value === currentFontFamily)?.label ?? 'Sans';
+  const currentSizeLabel = FONT_SIZES.find((s) => s.value === currentFontSize)?.label ?? 'Normal';
 
   const applyFontFamily = (value: string | null) => {
     if (value) editor.chain().focus().setFontFamily(value).run();
@@ -146,7 +174,7 @@ export function NotesEditor({ content, onChange, placeholder, saveStatus }: Note
           variant="ghost"
           size="icon-sm"
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={toolbarButtonClass(toolbarState.bold)}
+          className={toolbarButtonClass(boldActive)}
           title="Bold"
         >
           <Bold size={13} />
@@ -156,7 +184,7 @@ export function NotesEditor({ content, onChange, placeholder, saveStatus }: Note
           variant="ghost"
           size="icon-sm"
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={toolbarButtonClass(toolbarState.italic)}
+          className={toolbarButtonClass(italicActive)}
           title="Italic"
         >
           <Italic size={13} />
@@ -166,7 +194,7 @@ export function NotesEditor({ content, onChange, placeholder, saveStatus }: Note
           variant="ghost"
           size="icon-sm"
           onClick={() => editor.chain().focus().toggleUnderline().run()}
-          className={toolbarButtonClass(toolbarState.underline)}
+          className={toolbarButtonClass(underlineActive)}
           title="Underline"
         >
           <UnderlineIcon size={13} />
@@ -176,7 +204,7 @@ export function NotesEditor({ content, onChange, placeholder, saveStatus }: Note
           variant="ghost"
           size="icon-sm"
           onClick={() => editor.chain().focus().toggleHighlight().run()}
-          className={toolbarButtonClass(toolbarState.highlight, 'bg-amber-200 text-amber-900 hover:bg-amber-200')}
+          className={toolbarButtonClass(highlightActive, 'bg-amber-200 text-amber-900 hover:bg-amber-200')}
           title="Highlight"
         >
           <Highlighter size={13} />
@@ -189,7 +217,7 @@ export function NotesEditor({ content, onChange, placeholder, saveStatus }: Note
           variant="ghost"
           size="icon-sm"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={toolbarButtonClass(toolbarState.bulletList)}
+          className={toolbarButtonClass(bulletListActive)}
           title="Bullet list"
         >
           <List size={13} />
@@ -199,15 +227,25 @@ export function NotesEditor({ content, onChange, placeholder, saveStatus }: Note
           variant="ghost"
           size="icon-sm"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={toolbarButtonClass(toolbarState.orderedList)}
+          className={toolbarButtonClass(orderedListActive)}
           title="Numbered list"
         >
           <ListOrdered size={13} />
         </Button>
 
         {saveStatus && (
-          <span className="ml-auto pr-1.5 text-[10px] font-medium text-slate-400">
-            {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? 'Saved' : ''}
+          <span
+            className={`ml-auto pr-1.5 text-[10px] font-medium ${
+              saveStatus === 'error' ? 'text-rose-500' : 'text-slate-400'
+            }`}
+          >
+            {saveStatus === 'saving'
+              ? 'Saving…'
+              : saveStatus === 'saved'
+              ? 'Saved'
+              : saveStatus === 'error'
+              ? 'Failed to save'
+              : ''}
           </span>
         )}
       </div>
