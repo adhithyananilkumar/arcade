@@ -108,26 +108,30 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
   };
 
   const body = (
-    <>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="flex items-center gap-2 text-sm font-black tracking-tight text-[#14142b] dark:text-white">
-            <Award size={15} className="text-slate-400" /> Completion badge
-          </h3>
-          <p className="mt-1 max-w-xl text-xs leading-relaxed text-slate-500">
-            Arcade issues every badge to one central standard. You choose the level this {NOUN[contentType]} awards;
-            the design and criteria are the same across the platform, the badge carries this {NOUN[contentType]}&apos;s
-            name, and every badge is publicly verifiable.
-          </p>
+    <div className="flex flex-col gap-5 py-2">
+      {/* 02 Numbered Step Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3.5">
+          <div className="flex size-9 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 font-extrabold text-sm shrink-0 mt-0.5">
+            02
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+              Completion badge
+            </h3>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Choose the recognition learners receive after completing this course.
+            </p>
+          </div>
         </div>
         {assignment && (
           <span
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold",
-              savedLevel ? TIER_STYLE[savedLevel].chip : "border-slate-200 bg-slate-50 text-slate-500"
+              "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-extrabold shadow-2xs",
+              savedLevel ? TIER_STYLE[savedLevel].chip : "border-slate-200 bg-white text-slate-600 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800"
             )}
           >
-            {assignment.tier ? assignment.tier.label : "No badge"}
+            {assignment.tier ? assignment.tier.label : "Ribbon badge"}
           </span>
         )}
       </div>
@@ -137,18 +141,18 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
           <Loader2 size={16} className="animate-spin text-slate-400" />
         </div>
       ) : error || !catalogue || !assignment ? (
-        <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">{error ?? "Unavailable."}</p>
+        <p className="mt-2 rounded-xl bg-rose-50 px-3.5 py-2 text-xs font-medium text-rose-700">{error ?? "Unavailable."}</p>
       ) : (
         <>
           {assignment.lockedReason && (
-            <p className="mt-4 flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-medium text-amber-800">
+            <p className="mt-1 flex items-start gap-2 rounded-xl bg-amber-50 px-3.5 py-2 text-xs font-medium text-amber-800">
               <Lock size={12} className="mt-0.5 shrink-0" /> {assignment.lockedReason}
             </p>
           )}
 
-          <div className="mt-4 grid gap-5 lg:grid-cols-[220px_1fr]">
+          <div className="mt-1 grid gap-5 lg:grid-cols-[220px_1fr]">
             {/* Preview: exactly what learners will receive. */}
-            <div className="flex flex-col items-center rounded-2xl border border-slate-200/70 bg-gradient-to-b from-slate-50 to-white p-4 text-center dark:border-slate-800 dark:from-slate-900 dark:to-slate-950">
+            <div className="flex flex-col items-center rounded-2xl border border-slate-200/80 bg-gradient-to-b from-slate-50 to-white p-4 text-center dark:border-slate-800 dark:from-slate-900 dark:to-slate-950">
               {draft ? (
                 <CredentialBadge
                   family={contentType}
@@ -198,7 +202,7 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
           </div>
 
           {!locked && (
-            <div className="mt-4 flex flex-wrap justify-end gap-2">
+            <div className="mt-2 flex flex-wrap justify-end gap-2">
               {savedLevel != null && (
                 <button
                   type="button"
@@ -213,22 +217,17 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
                 type="button"
                 onClick={save}
                 disabled={!dirty || draft == null || saving}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#23234a] disabled:opacity-40"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#0B132B] hover:bg-blue-600 dark:bg-white dark:text-slate-900 px-6 py-2.5 text-xs font-extrabold text-white transition-all shadow-md cursor-pointer disabled:opacity-50"
               >
                 {saving ? <Loader2 size={13} className="animate-spin" /> : <Award size={13} />}
-                {savedLevel == null ? "Award this badge" : "Save level"}
+                {savedLevel == null ? "Save badge" : "Save level"}
               </button>
             </div>
           )}
         </>
       )}
-    </>
+    </div>
   );
 
-  if (variant === "plain") return <div>{body}</div>;
-  return (
-    <section className="rounded-2xl border border-white/50 bg-white/70 p-5 shadow-sm backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/70">
-      {body}
-    </section>
-  );
+  return body;
 }

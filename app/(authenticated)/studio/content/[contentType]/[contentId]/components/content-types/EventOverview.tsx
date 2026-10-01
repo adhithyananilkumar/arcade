@@ -37,6 +37,7 @@ import { BadgeTierPanel } from "@/apps/creator/studio/credentials/BadgeTierPanel
 import { ReadinessCard } from "../sections/ReadinessCard";
 import { EmptyState } from "../sections/EmptyState";
 import { editorHref } from "../../lib/contentTypeRouting";
+import { SettingsHeaderBanner } from "../sections/LearnersAnalyticsSection";
 
 function humanizeKey(key: string): string {
   const spaced = key.replace(/([a-z])([A-Z])/g, "$1 $2");
@@ -162,6 +163,13 @@ export function EventOverviewTab({
         />
         <SchedulePanel contentType="EVENT" contentId={contentId} enrollmentNoun="Registration" />
         <BadgeTierPanel contentType="EVENT" contentId={contentId} />
+        <EventPricingSection
+          eventId={contentId}
+          eventDetails={data.eventDetails}
+          participantCount={data.eventParticipants?.status === "ok" ? data.eventParticipants.data.length : 0}
+          onChanged={onChanged}
+        />
+        <EventCollaboratorsManager eventId={contentId} />
       </div>
     );
   }

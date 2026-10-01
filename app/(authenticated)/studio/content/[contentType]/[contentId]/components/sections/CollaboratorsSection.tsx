@@ -127,7 +127,7 @@ export function CollaboratorsSection({
   contentId,
   collaborators,
   unavailable,
-  canManage,
+  canManage = true,
   onChanged,
 }: {
   segment: ContentTypeSegment;
@@ -147,9 +147,26 @@ export function CollaboratorsSection({
     );
   }
 
-  if (!collaborators || collaborators.length === 0) {
-    if (adding) {
-      return (
+  return (
+    <div className="flex flex-col gap-5 py-2">
+      {/* 04 Numbered Step Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3.5">
+          <div className="flex size-9 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 font-extrabold text-sm shrink-0 mt-0.5">
+            04
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+              Collaborators
+            </h3>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Invite team members to manage or edit this course together.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {adding ? (
         <AddCollaboratorForm
           segment={segment}
           contentId={contentId}
@@ -159,38 +176,34 @@ export function CollaboratorsSection({
           }}
           onCancel={() => setAdding(false)}
         />
-      );
-    }
-    return (
-      <EmptyState
-        title="No collaborators added"
-        description="Invite team members to manage or edit this content together."
-        action={
-          canManage ? (
+      ) : !collaborators || collaborators.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-8 sm:p-10 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 text-center gap-2.5">
+          <div className="flex size-10 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
+            <Users size={18} />
+          </div>
+          <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">No collaborators added</h4>
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm">
+            Invite team members to manage or edit this course together.
+          </p>
+          {canManage && (
             <button
               type="button"
               onClick={() => setAdding(true)}
-              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white px-5 py-2.5 text-xs font-black tracking-wide shadow-md hover:opacity-95 transition-all cursor-pointer"
+              className="mt-1 inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 px-5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-2xs transition-all cursor-pointer"
             >
-              <Plus size={15} /> Add collaborator
+              <Plus size={14} /> Add collaborators
             </button>
-          ) : undefined
-        }
-      />
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-6">
-      {/* 3D Offset Pastel Card for Collaborators Roster */}
-      <div className="rounded-[24px] border-[1.5px] border-purple-400/80 bg-gradient-to-b from-purple-50/40 via-white to-white p-6 sm:p-7 shadow-[4px_-4px_0px_0px_#E9D5FF] flex flex-col gap-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-purple-100/80 pb-4">
+          )}
+        </div>
+      ) : (
+        <div className="rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md flex flex-col gap-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/70 dark:border-slate-800 pb-4">
           <div className="flex flex-col gap-1">
-            <h3 className="text-base font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <Users size={18} className="text-purple-600" />
+            <h3 className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+              <Users size={18} className="text-[#205ca8] dark:text-blue-400" />
               Collaborators & Team Access
             </h3>
-            <p className="text-xs font-semibold text-slate-500">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
               Active team members with authoring and management privileges
             </p>
           </div>
@@ -259,6 +272,7 @@ export function CollaboratorsSection({
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 }

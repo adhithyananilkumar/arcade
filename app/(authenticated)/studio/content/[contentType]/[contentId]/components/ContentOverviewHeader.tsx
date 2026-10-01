@@ -208,7 +208,7 @@ export function ContentOverviewHeader({
   const updatedParts = formatDateParts(updatedAt);
 
   return (
-    <div className="flex flex-col items-center justify-center pt-0 pb-1 w-full">
+    <div className="flex flex-col items-center justify-center pt-10 sm:pt-12 pb-1 w-full">
       {/* Main Centered Content Title & Metadata */}
       <div className="flex flex-col items-center justify-center text-center gap-1.5 max-w-4xl mx-auto">
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Satisfy&family=Alex+Brush&display=swap');`}</style>
