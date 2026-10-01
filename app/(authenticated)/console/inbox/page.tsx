@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
-import { courseRoutes } from '@/shared/routes/content.routes';
+import { courseRoutes, eventRoutes, examRoutes } from '@/shared/routes/content.routes';
 import Link from 'next/link';
 import { useSearchParams, notFound } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -32,6 +32,8 @@ export interface ContactMessage {
   subject: string;
   message: string;
   contentId?: string | null;
+  /** What `contentId` is (COURSE, EVENT, EXAM…); absent on reports filed before it was recorded. */
+  contentType?: string | null;
   status: 'UNREAD' | 'READ' | 'ARCHIVED';
   createdAt: string;
   updatedAt: string;
@@ -482,13 +484,22 @@ function ConsoleInboxContent() {
                           );
                         }
 
+                        // Every report used to link to /courses/{id}, so an event or exam report
+                        // opened a 404.
+                        const target =
+                          selectedMessage.contentType === 'EVENT'
+                            ? { href: eventRoutes.landing(selectedMessage.contentId), label: 'View Event Page' }
+                            : selectedMessage.contentType === 'EXAM'
+                              ? { href: examRoutes.landing(selectedMessage.contentId), label: 'View Exam Page' }
+                              : { href: courseRoutes.landing(selectedMessage.contentId), label: 'View Course Page' };
+
                         return (
                           <div>
                             <Link
-                              href={`/courses/${selectedMessage.contentId}`}
+                              href={target.href}
                               className="text-xs font-semibold text-indigo-600 hover:underline inline-flex items-center gap-1"
                             >
-                              <span>View Course Page</span>
+                              <span>{target.label}</span>
                               <ExternalLink size={12} />
                             </Link>
                           </div>
@@ -501,6 +512,8 @@ function ConsoleInboxContent() {
                         <span className="text-slate-300">•</span>
                         <a
                           href={`mailto:${selectedMessage.email}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="text-indigo-600 hover:underline font-medium inline-flex items-center gap-0.5"
                         >
                           {selectedMessage.email}
@@ -516,6 +529,8 @@ function ConsoleInboxContent() {
                         <span className="text-slate-300">•</span>
                         <a
                           href={`mailto:${selectedMessage.email}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="text-indigo-600 hover:underline font-medium inline-flex items-center gap-0.5"
                         >
                           {selectedMessage.email}
@@ -548,15 +563,34 @@ function ConsoleInboxContent() {
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5">
                 <div className="flex flex-wrap items-center gap-2">
+                  {/*
+                    Opened in a new tab: on a browser with no mail app registered, a mailto link
+                    replaced the Console with a blank "mailto:" page. The subject is encoded whole —
+                    lesson-report subjects carry a newline, which broke the link.
+                  */}
                   <a
-                    href={`mailto:${selectedMessage.email}?subject=Re: ${encodeURIComponent(
-                      selectedMessage.subject
+                    href={`mailto:${encodeURIComponent(selectedMessage.email)}?subject=${encodeURIComponent(
+                      `Re: ${selectedMessage.subject.replace(/\s*\n\s*/g, ' — ')}`
                     )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white hover:bg-slate-800 transition-colors"
                   >
                     <Mail size={14} />
                     Reply via Email
                   </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard
+                        .writeText(selectedMessage.email)
+                        .then(() => toast.success('Email address copied'))
+                        .catch(() => toast.error('Could not copy — the address is ' + selectedMessage.email));
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    Copy email
+                  </button>
 
                   {selectedMessage.status === 'READ' && (
                     <button

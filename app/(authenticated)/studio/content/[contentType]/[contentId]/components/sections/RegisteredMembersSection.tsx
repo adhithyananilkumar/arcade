@@ -22,7 +22,7 @@ import type { FetchResult, EventParticipant } from "../../lib/fetchOverviewData"
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type RegistrationStatus = "CONFIRMED" | "PENDING" | "CANCELLED" | "WAITLISTED";
-type PaymentStatus = "PAID" | "PENDING" | "REFUNDED" | "FAILED" | "FREE";
+type PaymentStatus = "PAID" | "PENDING" | "REFUNDED" | "PARTIAL_REFUND" | "FAILED" | "FREE" | "NOT_APPLICABLE";
 type AttendanceStatus = "ATTENDED" | "NOT_ATTENDED" | "UNKNOWN";
 
 interface EnrichedParticipant extends EventParticipant {
@@ -62,8 +62,10 @@ function formatDate(iso?: string): string {
 
 function normalizeStatus(raw: string): RegistrationStatus {
   const up = raw.toUpperCase();
-  if (up === "CONFIRMED" || up === "REGISTERED") return "CONFIRMED";
-  if (up === "CANCELLED" || up === "CANCELED") return "CANCELLED";
+  // The backend calls a confirmed registration APPROVED (COMPLETED once the event is over); only
+  // CONFIRMED/REGISTERED used to match, so every confirmed member was counted as Pending.
+  if (up === "APPROVED" || up === "COMPLETED" || up === "CONFIRMED" || up === "REGISTERED") return "CONFIRMED";
+  if (up === "CANCELLED" || up === "CANCELED" || up === "REJECTED") return "CANCELLED";
   if (up === "WAITLISTED" || up === "WAITLIST") return "WAITLISTED";
   return "PENDING";
 }
@@ -85,17 +87,19 @@ function RegBadge({ status }: { status: RegistrationStatus }) {
 }
 
 function PayBadge({ status }: { status?: PaymentStatus }) {
-  if (!status) return <span className="text-xs text-slate-400">—</span>;
+  if (!status || status === "NOT_APPLICABLE") return <span className="text-xs text-slate-400">—</span>;
   const map: Record<PaymentStatus, string> = {
     PAID: "bg-emerald-50 text-emerald-700",
     PENDING: "bg-amber-50 text-amber-700",
     REFUNDED: "bg-slate-100 text-slate-600",
+    PARTIAL_REFUND: "bg-slate-100 text-slate-600",
+    NOT_APPLICABLE: "",
     FAILED: "bg-red-50 text-red-600",
     FREE: "bg-indigo-50 text-indigo-600",
   };
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${map[status]}`}>
-      {status.charAt(0) + status.slice(1).toLowerCase()}
+      {status === "PARTIAL_REFUND" ? "Part refunded" : status.charAt(0) + status.slice(1).toLowerCase()}
     </span>
   );
 }
@@ -143,12 +147,18 @@ function ActionMenu({
   // registration and frees the seat. "Mark attended" / "Cancel registration" used to PATCH this
   // participant — an endpoint that does not exist. Attendance is recorded by ticket check-in at the
   // door (QR or ticket code), not by hand here.
+  // A cancelled registration has nothing left to revoke; removing it takes the row off this list.
+  const alreadyCancelled = normalizeStatus(participant.status) === "CANCELLED";
+
   async function removeMember() {
-    if (!confirm(`Cancel ${participant.name}'s registration and remove them from this event?`)) return;
+    const question = alreadyCancelled
+      ? `Remove ${participant.name} from this list? Their registration is already cancelled.`
+      : `Cancel ${participant.name}'s registration and remove them from this event?`;
+    if (!confirm(question)) return;
     setBusy(true);
     try {
       await api.delete(`/api/v1/events/${eventId}/participants/${participant.id}`);
-      toast.success("Registration cancelled");
+      toast.success(alreadyCancelled ? "Removed from list" : "Registration cancelled");
       onChanged();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not remove member");
@@ -174,7 +184,7 @@ function ActionMenu({
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div className="absolute right-0 z-20 mt-1 w-48 rounded-xl border border-slate-200 bg-white shadow-xl">
             {[
-              { icon: Trash2, label: "Remove member", action: removeMember },
+              { icon: Trash2, label: alreadyCancelled ? "Remove from list" : "Remove member", action: removeMember },
             ].map(({ icon: Icon, label, action }) => (
               <button
                 key={label}

@@ -164,7 +164,20 @@ export function ContentOverviewHeader({
 
   async function handleConfirmedAction() {
     if (confirmAction === "delete") {
-      await deleteContent(segment, contentId, title);
+      // A null request means this type has no delete. It used to be awaited anyway and reported as
+      // "Deleted", which is how an exam "deleted" here was still on the dashboard afterwards.
+      const request = deleteContent(segment, contentId, title);
+      if (!request) {
+        toast.error("This content can't be deleted here.");
+        setConfirmAction(null);
+        return;
+      }
+      try {
+        await request;
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Could not delete");
+        return;
+      }
       toast.success("Deleted");
       setConfirmAction(null);
       router.push("/studio");

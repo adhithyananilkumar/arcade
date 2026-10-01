@@ -44,8 +44,8 @@ export function deleteContent(
 ): Promise<void> | null {
   if (segment === "course") return api.delete<void>(`/api/courses/${contentId}`, { confirmTitle });
   if (segment === "event") return deleteEvent(contentId);
-  // Exam has no delete endpoint yet (DELETE /api/exams/{id} doesn't exist) — returning null keeps
-  // the action out of the menu rather than wiring a button to a 404.
+  // Soft delete of an untied exam; the backend refuses a tied one with a message saying why.
+  if (segment === "exam") return api.delete<void>(`/api/exams/${contentId}`);
   return null;
 }
 

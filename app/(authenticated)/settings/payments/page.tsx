@@ -1,85 +1,195 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { CreditCard, Check, Plus, ShieldCheck } from 'lucide-react';
+import { Receipt, Loader2, ChevronDown, ExternalLink, RotateCcw, Wallet } from 'lucide-react';
+import { PaymentService, type BillingLine, type BillingSummary } from '@/domains/payment';
+import { formatMoney } from '@/shared/utils/money';
+import { courseRoutes, eventRoutes, examRoutes } from '@/shared/routes/content.routes';
+
+/**
+ * What you have paid Arcade for. Arcade has no subscriptions or saved cards — every purchase is one
+ * order, and card details stay with the payment gateway — so this page is the order history and
+ * nothing else. It used to show an invented "Pro Learner Membership", a Visa ending 4242 and a $120
+ * invoice.
+ */
+
+const STATUS: Record<BillingLine['status'], { label: string; cls: string }> = {
+  PAID: { label: 'Paid', cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' },
+  PARTIALLY_REFUNDED: { label: 'Part refunded', cls: 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300' },
+  REFUNDED: { label: 'Refunded', cls: 'bg-slate-100 text-slate-600 dark:bg-neutral-800 dark:text-neutral-300' },
+  PENDING: { label: 'Processing', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300' },
+  FAILED: { label: 'Failed', cls: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' },
+};
+
+const KIND: Record<string, string> = { COURSE: 'Course', EVENT: 'Event', EXAM: 'Exam' };
+
+function hrefFor(line: BillingLine): string | null {
+  if (line.resourceType === 'COURSE') return courseRoutes.landing(line.resourceId);
+  if (line.resourceType === 'EVENT') return eventRoutes.landing(line.resourceId);
+  if (line.resourceType === 'EXAM') return examRoutes.landing(line.resourceId);
+  return null;
+}
+
+function formatDate(iso?: string | null): string {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function BillingRow({ line }: { line: BillingLine }) {
+  const [open, setOpen] = useState(false);
+  const status = STATUS[line.status] ?? STATUS.PENDING;
+  const href = hrefFor(line);
+  const title = line.resourceTitle || `${KIND[line.resourceType] ?? 'Item'} (no longer available)`;
+
+  return (
+    <li className="py-3.5">
+      <button type="button" onClick={() => setOpen((v) => !v)} className="w-full flex items-center justify-between gap-4 text-left">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{title}</p>
+          <p className="text-[11px] text-gray-500 mt-0.5">
+            {KIND[line.resourceType] ?? line.resourceType} · {formatDate(line.paidAt ?? line.createdAt)}
+          </p>
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="text-right">
+            <p className="text-xs font-bold text-gray-900 dark:text-white">{formatMoney(line.amount, line.currency)}</p>
+            {line.refundedAmount > 0 && (
+              <p className="text-[10px] text-sky-600">−{formatMoney(line.refundedAmount, line.currency)} refunded</p>
+            )}
+          </div>
+          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${status.cls}`}>{status.label}</span>
+          <ChevronDown size={14} className={`text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+        </div>
+      </button>
+
+      {open && (
+        <div className="mt-3 rounded-xl bg-slate-50 dark:bg-neutral-950 p-4 text-[11px] text-gray-600 dark:text-neutral-400 space-y-2">
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
+            <div className="flex justify-between gap-3"><dt>Order</dt><dd className="font-mono text-gray-900 dark:text-white">{line.orderId.slice(0, 8).toUpperCase()}</dd></div>
+            {line.paymentReference && (
+              <div className="flex justify-between gap-3"><dt>Payment reference</dt><dd className="font-mono text-gray-900 dark:text-white">{line.paymentReference}</dd></div>
+            )}
+            <div className="flex justify-between gap-3"><dt>Started</dt><dd className="text-gray-900 dark:text-white">{new Date(line.createdAt).toLocaleString()}</dd></div>
+            {line.paidAt && (
+              <div className="flex justify-between gap-3"><dt>Paid</dt><dd className="text-gray-900 dark:text-white">{new Date(line.paidAt).toLocaleString()}</dd></div>
+            )}
+          </dl>
+          {line.status === 'FAILED' && <p className="text-rose-600">This payment didn&apos;t go through. No money was taken; you can try again from the {KIND[line.resourceType]?.toLowerCase() ?? 'content'} page.</p>}
+          {line.status === 'PENDING' && <p className="text-amber-700">Still waiting for the payment provider to confirm. This usually takes a minute.</p>}
+          {line.refunds.length > 0 && (
+            <div className="pt-1">
+              <p className="font-semibold text-gray-900 dark:text-white flex items-center gap-1"><RotateCcw size={11} /> Refunds</p>
+              <ul className="mt-1 space-y-1">
+                {line.refunds.map((r) => (
+                  <li key={r.refundId} className="flex justify-between gap-3">
+                    <span>{formatDate(r.completedAt ?? r.requestedAt)} · {r.status === 'COMPLETED' ? 'Refunded' : r.status === 'FAILED' ? 'Refund failed' : 'Refund in progress'}</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">{formatMoney(r.amount, r.currency)}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-1 text-slate-400">Refunds reach your account in 5–7 working days, depending on your bank.</p>
+            </div>
+          )}
+          {href && line.resourceTitle && (
+            <Link href={href} className="inline-flex items-center gap-1 font-semibold text-sky-600 hover:underline">
+              Open {KIND[line.resourceType]?.toLowerCase() ?? 'item'} <ExternalLink size={11} />
+            </Link>
+          )}
+        </div>
+      )}
+    </li>
+  );
+}
 
 export default function PaymentsPage() {
+  const [lines, setLines] = useState<BillingLine[]>([]);
+  const [summary, setSummary] = useState<BillingSummary | null>(null);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+
+  const load = async (p: number) => {
+    setLoading(true);
+    setFailed(false);
+    try {
+      const [history, totals] = await Promise.all([
+        PaymentService.myBillingHistory(p),
+        p === 0 || !summary ? PaymentService.myBillingSummary() : Promise.resolve(summary),
+      ]);
+      setLines(history.content);
+      setTotalPages(Math.max(history.totalPages, 1));
+      setPage(p);
+      setSummary(totals);
+    } catch {
+      setFailed(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <motion.div 
-      className="space-y-6"
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      {/* Active Subscription Card */}
-      <div className="rounded-2xl border border-purple-200 dark:border-purple-900/50 bg-gradient-to-br from-purple-50/50 via-white to-indigo-50/30 dark:from-purple-950/20 dark:via-neutral-900 dark:to-neutral-900 p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-purple-100 dark:border-purple-900/30 pb-4 mb-4">
-          <div>
-            <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 mb-2">
-              ACTIVE PLAN
-            </span>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Pro Learner Membership</h2>
-            <p className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">Billed annually. Next billing date: August 15, 2027.</p>
+    <motion.div className="space-y-6" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+      {summary && summary.count > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Total paid</p>
+            <p className="mt-1 text-xl font-bold text-gray-900 dark:text-white">{formatMoney(summary.paidTotal, summary.currency)}</p>
           </div>
-          <button className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-sm transition-colors">
-            Manage Plan
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-          <div className="flex items-center gap-2 text-slate-700 dark:text-neutral-300">
-            <Check size={14} className="text-emerald-500" /> Unlimited Course Access
+          <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Refunded</p>
+            <p className="mt-1 text-xl font-bold text-gray-900 dark:text-white">{formatMoney(summary.refundedTotal, summary.currency)}</p>
           </div>
-          <div className="flex items-center gap-2 text-slate-700 dark:text-neutral-300">
-            <Check size={14} className="text-emerald-500" /> Premium Certificates
-          </div>
-          <div className="flex items-center gap-2 text-slate-700 dark:text-neutral-300">
-            <Check size={14} className="text-emerald-500" /> Priority Support
+          <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Payments</p>
+            <p className="mt-1 text-xl font-bold text-gray-900 dark:text-white">{summary.count}</p>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Payment Methods Section */}
-      <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm space-y-4">
+      <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm space-y-2">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <CreditCard size={18} className="text-purple-500" /> Payment Methods
+            <Receipt size={18} className="text-purple-500" /> Billing history
           </h3>
-          <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-neutral-800 text-xs font-semibold text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors">
-            <Plus size={14} /> Add Card
-          </button>
+          {totalPages > 1 && <span className="text-xs text-gray-500">Page {page + 1} of {totalPages}</span>}
         </div>
+        <p className="text-xs text-gray-500 dark:text-neutral-400">
+          Courses, events and exams you&apos;ve paid for. Card and UPI details are handled by Razorpay and never stored by Arcade.
+        </p>
 
-        <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-950">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-7 rounded bg-slate-200 dark:bg-neutral-800 flex items-center justify-center font-bold text-[10px] text-slate-600 dark:text-slate-300">
-              VISA
-            </div>
-            <div>
-              <p className="text-xs font-bold text-gray-900 dark:text-white">Visa ending in 4242</p>
-              <p className="text-[11px] text-gray-500">Expires 12/28 • Default method</p>
-            </div>
+        {loading ? (
+          <div className="p-10 flex justify-center"><Loader2 className="animate-spin text-purple-500" size={24} /></div>
+        ) : failed ? (
+          <div className="mt-3 flex items-center justify-between rounded-xl bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-xs font-medium text-amber-800 dark:text-amber-300">
+            Couldn&apos;t load your billing history.
+            <button onClick={() => load(page)} className="font-bold underline">Try again</button>
           </div>
-          <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">Default</span>
-        </div>
-      </div>
+        ) : lines.length === 0 ? (
+          <div className="py-10 text-center">
+            <Wallet className="mx-auto text-gray-300 dark:text-neutral-700 mb-3" size={36} />
+            <p className="text-sm font-medium text-gray-900 dark:text-white">No payments yet</p>
+            <p className="text-xs text-gray-500 mt-1">When you buy a course, event or exam, the receipt will appear here.</p>
+          </div>
+        ) : (
+          <ul className="divide-y divide-gray-100 dark:divide-neutral-800">
+            {lines.map((line) => <BillingRow key={line.orderId} line={line} />)}
+          </ul>
+        )}
 
-      {/* Invoices */}
-      <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm space-y-4">
-        <h3 className="text-base font-bold text-gray-900 dark:text-white">Billing History</h3>
-        
-        <div className="divide-y divide-gray-100 dark:divide-neutral-800">
-          <div className="py-3 flex items-center justify-between text-xs">
-            <div>
-              <p className="font-semibold text-gray-900 dark:text-white">Pro Learner (Annual)</p>
-              <p className="text-gray-500">Aug 15, 2026</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="font-bold text-gray-900 dark:text-white">$120.00</span>
-              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold">PAID</span>
-            </div>
+        {totalPages > 1 && !loading && (
+          <div className="pt-3 flex justify-between">
+            <button onClick={() => load(page - 1)} disabled={page === 0} className="rounded-lg border border-gray-200 dark:border-neutral-800 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-neutral-300 disabled:opacity-50">Previous</button>
+            <button onClick={() => load(page + 1)} disabled={page >= totalPages - 1} className="rounded-lg border border-gray-200 dark:border-neutral-800 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-neutral-300 disabled:opacity-50">Next</button>
           </div>
-        </div>
+        )}
       </div>
     </motion.div>
   );

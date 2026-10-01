@@ -866,7 +866,19 @@ function ContentCard({
       if (result) await result;
       toast.success("Archived");
     } else if (confirmAction === "delete") {
-      await deleteContent(segment, item.id, item.title);
+      // A null request means this type has no delete — never report one that did not happen.
+      const request = deleteContent(segment, item.id, item.title);
+      if (!request) {
+        toast.error("This content can't be deleted here.");
+        setConfirmAction(null);
+        return;
+      }
+      try {
+        await request;
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Could not delete");
+        return;
+      }
       toast.success("Deleted");
     }
     setConfirmAction(null);

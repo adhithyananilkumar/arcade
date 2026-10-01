@@ -63,3 +63,48 @@ export interface PaymentLedgerFilters {
   page?: number;
   size?: number;
 }
+
+// ── Billing history (Settings → Payments) ─────────────────────────────────────
+
+export type BillingStatus =
+  | 'PAID'
+  | 'PARTIALLY_REFUNDED'
+  | 'REFUNDED'
+  | 'PENDING'
+  | 'FAILED';
+
+export interface BillingRefundLine {
+  refundId: string;
+  /** Minor units. */
+  amount: number;
+  currency: string;
+  status: 'REQUESTED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  requestedAt: string;
+  completedAt?: string | null;
+}
+
+export interface BillingLine {
+  orderId: string;
+  resourceType: 'COURSE' | 'EVENT' | 'EXAM' | string;
+  resourceId: string;
+  resourceTitle?: string | null;
+  /** Minor units. */
+  amount: number;
+  currency: string;
+  status: BillingStatus;
+  /** The gateway's payment id (Razorpay "pay_…"). */
+  paymentReference?: string | null;
+  createdAt: string;
+  paidAt?: string | null;
+  /** Minor units, completed refunds only. */
+  refundedAmount: number;
+  refunds: BillingRefundLine[];
+}
+
+export interface BillingSummary {
+  /** Minor units. */
+  paidTotal: number;
+  refundedTotal: number;
+  currency: string;
+  count: number;
+}

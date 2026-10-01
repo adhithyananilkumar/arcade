@@ -41,33 +41,48 @@ function heading(result: VerifyResult) {
 export function VerifyCredentialOrchestrator() {
   const params = useSearchParams();
   const router = useRouter();
-  const initial = params.get("id") ?? "";
-  const [input, setInput] = useState(initial);
+  const fromUrl = params.get("id") ?? "";
+  const [input, setInput] = useState(fromUrl);
+  // Each lookup is its own request object, so checking the same ID twice still runs. The lookup
+  // used to be keyed on the URL alone: submitting the ID already in the address bar left the URL
+  // unchanged, the effect never re-ran, and the button spun forever.
+  const [request, setRequest] = useState<{ code: string } | null>(fromUrl ? { code: fromUrl } : null);
   const [result, setResult] = useState<VerifyResult | null>(null);
-  const [checking, setChecking] = useState(Boolean(initial));
   const [error, setError] = useState<string | null>(null);
+  const checking = request !== null && result === null && error === null;
+
+  // Back/forward or a link to another ID changes the URL without a submit.
+  useEffect(() => {
+    if (!fromUrl) return;
+    setInput(fromUrl);
+    setRequest((current) => (current?.code === fromUrl ? current : { code: fromUrl }));
+  }, [fromUrl]);
 
   useEffect(() => {
-    if (!initial) return;
+    if (!request) return;
     let cancelled = false;
+    setResult(null);
+    setError(null);
     credentialsApi
-      .verify(initial)
-      .then((r) => !cancelled && setResult(r))
-      .catch((e) => !cancelled && setError(e instanceof Error ? e.message : "Verification is unavailable right now."))
-      .finally(() => !cancelled && setChecking(false));
+      .verify(request.code)
+      .then((r) => {
+        if (!cancelled) setResult(r);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Verification is unavailable right now.");
+      });
     return () => {
       cancelled = true;
     };
-  }, [initial]);
+  }, [request]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const id = input.trim();
     if (!id) return;
-    setResult(null);
-    setError(null);
-    setChecking(true);
-    router.replace(`/credentials/verify?id=${encodeURIComponent(id)}`);
+    setRequest({ code: id });
+    // Keeps the address shareable; the lookup itself no longer depends on it.
+    router.replace(`/credentials/verify?id=${encodeURIComponent(id)}`, { scroll: false });
   };
 
   const look = result ? LOOK[result.status] : null;

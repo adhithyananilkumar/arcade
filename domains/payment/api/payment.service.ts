@@ -1,5 +1,12 @@
 import { api } from '@/infrastructure/http/api';
-import { CheckoutResponse, PaymentOrderResponse } from '../types/payment.types';
+import { BillingLine, BillingSummary, CheckoutResponse, PaymentOrderResponse } from '../types/payment.types';
+
+interface Page<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+}
 
 export class PaymentService {
   /**
@@ -16,5 +23,14 @@ export class PaymentService {
 
   static async getOrder(orderId: string): Promise<PaymentOrderResponse> {
     return api.get<PaymentOrderResponse>(`/api/v1/payments/orders/${orderId}`);
+  }
+
+  /** The signed-in learner's billing history, newest first. */
+  static async myBillingHistory(page = 0, size = 20): Promise<Page<BillingLine>> {
+    return api.get<Page<BillingLine>>(`/api/v1/payments/orders/mine?page=${page}&size=${size}`);
+  }
+
+  static async myBillingSummary(): Promise<BillingSummary> {
+    return api.get<BillingSummary>('/api/v1/payments/orders/mine/summary');
   }
 }

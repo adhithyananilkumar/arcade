@@ -336,23 +336,45 @@ export function EnrollmentButton({
         </button>
       );
     }
-    // No payment handle in this component instance — either the page was reloaded while a
-    // payment settles, or the enrollment is waiting on someone's approval. `pendingReason`
-    // tells the two apart; "Action required" on a payment that is merely settling would tell
-    // the learner to do something there is nothing to do about.
-    const isSettlingPayment = pendingReason === 'PAYMENT';
+    // No payment handle in this component instance — the page was reloaded with a checkout still
+    // open, or the enrollment is waiting on someone's approval. `pendingReason` tells them apart.
+    //
+    // An unpaid enrollment used to render a disabled "Processing…" spinner here. A learner who
+    // closed the checkout and reloaded then had no way to pay or back out — the enrollment stays
+    // PENDING until they do one or the other, so the spinner never went away. Enrolling again is
+    // how a checkout is resumed: the backend answers ENROLLMENT_PAYMENT_PENDING with the existing
+    // record, and handleEnroll reopens its checkout.
+    if (pendingReason === 'PAYMENT') {
+      return (
+        <div className="flex items-center gap-2.5 w-full">
+          <button
+            onClick={handleEnroll}
+            disabled={isProcessing}
+            className={`bg-[#4c6fff] hover:bg-[#3d5ce0] active:scale-[0.98] text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition-all flex-1 text-sm flex items-center justify-center gap-2 disabled:opacity-70 ${className}`}>
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                <span>Opening checkout…</span>
+              </>
+            ) : (
+              'Complete Payment'
+            )}
+          </button>
+          <button
+            onClick={handleRevoke}
+            disabled={isProcessing}
+            className="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 dark:bg-gray-800 dark:hover:bg-red-950/40 dark:text-gray-400 dark:hover:text-red-400 font-medium py-3 px-3.5 rounded-xl transition-colors border border-gray-200 dark:border-gray-700 disabled:opacity-50 text-xs shrink-0"
+            title="Cancel this registration">
+            Cancel
+          </button>
+        </div>
+      );
+    }
     return (
       <button
         disabled
-        className={`bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold py-3 px-4 rounded-xl shadow-sm opacity-90 cursor-default border border-blue-200 dark:border-blue-800 w-full text-sm ${isSettlingPayment ? 'flex items-center justify-center gap-2' : ''} ${className}`}>
-        {isSettlingPayment ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-            <span>Processing…</span>
-          </>
-        ) : (
-          'Action required'
-        )}
+        className={`bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold py-3 px-4 rounded-xl shadow-sm opacity-90 cursor-default border border-blue-200 dark:border-blue-800 w-full text-sm ${className}`}>
+        Action required
       </button>
     );
   }

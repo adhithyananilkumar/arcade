@@ -331,6 +331,7 @@ function CourseHero({
   pendingReason,
   pricingModel,
   priceAmount,
+  currency,
   courseId,
   onReportClick,
   channel,
@@ -351,6 +352,7 @@ function CourseHero({
   pendingReason?: "PAYMENT" | "REQUIREMENTS"
   pricingModel?: string
   priceAmount?: number
+  currency?: string
   courseId?: string
   onReportClick?: () => void
   channel?: CourseChannelSummary | null
@@ -450,7 +452,7 @@ function CourseHero({
             <div className="flex items-baseline gap-2 pr-1">
               {pricingModel === "PAID" ? (
                 <>
-                  <span className="font-serif text-3xl font-medium text-ink">{formatMoney(priceAmount ?? 0, "USD")}</span>
+                  <span className="font-serif text-3xl font-medium text-ink">{formatMoney(priceAmount ?? 0, currency ?? "INR")}</span>
                 </>
               ) : (
                 <span className="font-serif text-3xl font-medium text-ink">Free</span>
@@ -1006,6 +1008,7 @@ function EnrollCta({ onEnroll, initialState = "NOT_ENROLLED", pendingReason, pri
               resourceType="COURSE"
               resourceId={courseId}
               initialState={initialState}
+              pendingReason={pendingReason}
               className="!bg-white !text-ink hover:!bg-white/90"
               onStateChange={(state) => {
                 if (state === "ENROLLED" && onEnroll) {
@@ -1155,6 +1158,7 @@ export default function CoursePage() {
             authorId={course?.authorId}
             pricingModel={course?.pricingModel}
             priceAmount={course?.priceAmount}
+            currency={course?.currency}
             courseId={params?.id as string}
             onReportClick={() => setReportModalOpen(true)}
           />

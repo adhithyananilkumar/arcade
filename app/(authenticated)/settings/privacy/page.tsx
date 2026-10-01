@@ -1,16 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ToggleLeft, Download, Trash2, Activity, ExternalLink, Users } from 'lucide-react';
-import { toast } from 'sonner';
+import { Trash2, Activity, ExternalLink, Users } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PrivacyPage() {
-  const [analytics, setAnalytics] = useState(true);
-  const [marketing, setMarketing] = useState(false);
-  const [personalization, setPersonalization] = useState(true);
-
   return (
     <motion.div 
       className="space-y-6"
@@ -45,84 +39,25 @@ export default function PrivacyPage() {
         </div>
       </div>
 
-      {/* Privacy Toggles */}
-      <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm space-y-6">
-        <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <ToggleLeft size={18} className="text-orange-500" /> Data Preferences
-        </h3>
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-bold text-gray-900 dark:text-white">Usage Analytics</p>
-              <p className="text-[11px] text-gray-500">Allow Arcade to collect anonymous telemetry data to improve performance.</p>
-            </div>
-            <button
-              onClick={() => setAnalytics(!analytics)}
-              className={`w-11 h-6 rounded-full p-1 transition-colors ${analytics ? 'bg-orange-500' : 'bg-gray-300 dark:bg-neutral-700'}`}
-            >
-              <div className={`w-4 h-4 rounded-full bg-white transition-transform ${analytics ? 'translate-x-5' : 'translate-x-0'}`} />
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between border-t border-gray-100 dark:border-neutral-800 pt-4">
-            <div>
-              <p className="text-xs font-bold text-gray-900 dark:text-white">Personalized Recommendations</p>
-              <p className="text-[11px] text-gray-500">Use course history to personalize your learning dashboard.</p>
-            </div>
-            <button
-              onClick={() => setPersonalization(!personalization)}
-              className={`w-11 h-6 rounded-full p-1 transition-colors ${personalization ? 'bg-orange-500' : 'bg-gray-300 dark:bg-neutral-700'}`}
-            >
-              <div className={`w-4 h-4 rounded-full bg-white transition-transform ${personalization ? 'translate-x-5' : 'translate-x-0'}`} />
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between border-t border-gray-100 dark:border-neutral-800 pt-4">
-            <div>
-              <p className="text-xs font-bold text-gray-900 dark:text-white">Product Updates & Marketing</p>
-              <p className="text-[11px] text-gray-500">Receive announcements about new courses and features.</p>
-            </div>
-            <button
-              onClick={() => setMarketing(!marketing)}
-              className={`w-11 h-6 rounded-full p-1 transition-colors ${marketing ? 'bg-orange-500' : 'bg-gray-300 dark:bg-neutral-700'}`}
-            >
-              <div className={`w-4 h-4 rounded-full bg-white transition-transform ${marketing ? 'translate-x-5' : 'translate-x-0'}`} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Account Data Export */}
-      <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Download size={16} className="text-indigo-500" /> Export Personal Data
-          </h3>
-          <p className="text-xs text-gray-500 mt-0.5">Download a copy of your Arcade activity and certificate records.</p>
-        </div>
-        <button 
-          onClick={() => toast.success('Preparing your data archive...')}
-          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-800 text-xs font-semibold text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
-        >
-          Download ZIP
-        </button>
-      </div>
-
       {/* Danger Zone */}
       <div className="rounded-2xl border border-red-200 dark:border-red-900/30 bg-red-50/40 dark:bg-red-950/10 p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h3 className="text-sm font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
             <Trash2 size={16} /> Delete Account
           </h3>
-          <p className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">Permanently remove your account and all associated course data.</p>
+          <p className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">
+            Account deletion is handled by our support team, so certificates and payments can be settled first.
+            Email us from your account address and we&apos;ll take it from there.
+          </p>
         </div>
-        <button 
-          onClick={() => toast.error('Please contact support to initiate account deletion.')}
+        <a
+          href="mailto:arcade@amaljyothi.ac.in?subject=Delete%20my%20Arcade%20account"
+          target="_blank"
+          rel="noopener noreferrer"
           className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-sm transition-colors"
         >
-          Delete Account
-        </button>
+          Request deletion
+        </a>
       </div>
     </motion.div>
   );
