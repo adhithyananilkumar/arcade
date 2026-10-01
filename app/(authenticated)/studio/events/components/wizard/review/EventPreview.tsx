@@ -221,7 +221,7 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: E
   const heroContent = (
     <LearningHero
       breadcrumbs={[
-        { label: "Events", href: "/workshops" }
+        { label: "Events", href: "/events" }
       ]}
       category={basicInfo.category || 'Event'}
       title={title}
@@ -239,7 +239,6 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: E
       isWishlisted={isWishlisted}
       onWishlistToggle={() => setIsWishlisted(!isWishlisted)}
       onReportClick={() => setReportModalOpen(true)}
-      previewImageUrl={basicInfo.coverImageUrl}
       previewLabel="Event Preview"
       previewVideoDuration="0:15 / 1:30"
       accentColor="#4c6fff"

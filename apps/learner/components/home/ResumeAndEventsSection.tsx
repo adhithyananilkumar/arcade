@@ -37,7 +37,6 @@ export type EventCard = {
 export type ResumeCourse = {
   id: string;
   title: string;
-  coverImageUrl?: string | null;
   /**
    * Backend `progressPercent`. **Null is not zero** — it means the read model has no percentage
    * to report (unpublished course, or a course with no lessons). Rendering null as a 0% bar would
@@ -272,7 +271,7 @@ function RecommendedFeaturedCard({ course }: { course: CourseSummaryResponse }) 
       type="COURSE"
       typeLabel="Featured Course"
       authorName={course.authorName}
-      coverImageUrl={course.coverImageUrl}
+      categoryId={course.categoryId}
       actionHref={courseRoutes.landing(course.id)}
       actionLabel="View Course"
       actionIcon={BookOpen}
@@ -297,7 +296,6 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
       description={course.authorName ? `Instructor: ${course.authorName}` : (pct && pct > 0 ? 'Pick up right where you left off' : 'Continue where you left off')}
       type="COURSE"
       authorName={course.authorName}
-      coverImageUrl={course.coverImageUrl}
       progressPercent={pct}
       actionHref={courseRoutes.overview(course.id)}
       actionLabel={pct && pct > 0 ? 'Continue Learning' : 'Start Learning'}

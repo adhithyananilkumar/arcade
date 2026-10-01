@@ -191,6 +191,7 @@ export default function EventsView({
                 title={bootcamp.title}
                 description={bootcamp.desc || bootcamp.description}
                 type={bootcamp.type || 'WORKSHOP'}
+                category={bootcamp.category}
                 typeLabel={bootcamp.type || 'Bootcamp'}
                 status={bootcamp.type}
                 dateText={bootcamp.date ? `${itemCat} • ${bootcamp.date}` : itemCat}
@@ -299,6 +300,7 @@ export default function EventsView({
                 title={w.title}
                 description={w.desc}
                 type="WEBINAR"
+                category={w.category}
                 typeLabel="Webinar"
                 status={w.status}
                 authorName={w.host}

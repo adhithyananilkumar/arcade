@@ -16,7 +16,6 @@ export interface EventSummary {
   deliveryMode: string;
   visibility: string;
   language: string;
-  coverImageUrl: string;
   completionPercentage: number;
   sessionsCount: number;
   resourcesCount: number;
@@ -36,7 +35,6 @@ export interface EventListDto {
   category: string;
   status: string;
   eventType: string;
-  coverImageUrl: string;
   sessionsCount: number;
   resourcesCount: number;
   createdAt: string;

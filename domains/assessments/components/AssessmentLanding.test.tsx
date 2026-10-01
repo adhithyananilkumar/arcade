@@ -15,7 +15,6 @@ function mockLanding(
     examId: "exam-1",
     title: "Introduction to Microservices Quiz",
     description: null,
-    coverImageUrl: null,
     purpose: "Module assessment",
     instructions: null,
     tieType: "COURSE",

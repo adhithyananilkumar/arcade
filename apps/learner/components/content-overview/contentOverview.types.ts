@@ -81,7 +81,9 @@ export interface ContentOverviewModel {
   title: string;
   subtitle?: string | null;
   description?: string | null;
-  coverImageUrl?: string | null;
+  /** Theme for the generated header artwork: a category name, or the Console category id. */
+  category?: string | null;
+  categoryId?: string | null;
   /** "What you'll walk away with", already split into bullets. */
   outcomes: string[];
 

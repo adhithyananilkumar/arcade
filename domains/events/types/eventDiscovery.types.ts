@@ -31,8 +31,6 @@ export interface EventDto {
   status: EventStatus;
   category: string;
   tags: string[];
-  thumbnailUrl: string | null;
-  coverImageUrl: string | null;
   promoVideoUrl: string | null;
   eventType: EventTypeName | null;
   deliveryMode: EventDeliveryMode | null;
@@ -74,8 +72,6 @@ export interface PublishedEventCard {
   category: string;
   /** The owning channel. Never an invented person. */
   host: string | null;
-  coverImageUrl: string | null;
-  thumbnailUrl: string | null;
   eventType: EventTypeName | null;
   deliveryMode: EventDeliveryMode | null;
   difficulty: EventDifficulty | null;
@@ -110,7 +106,6 @@ export interface EventCardView {
   date: string;
   status: 'Live Today' | 'Upcoming' | 'Recorded Video' | 'Past';
   duration: string;
-  coverImageUrl: string | null;
 }
 
 /** One filter option and how many published events it actually has. */

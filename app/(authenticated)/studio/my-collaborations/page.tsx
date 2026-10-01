@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api } from '@/infrastructure/http/api';
+import { ContentArt } from '@/shared/design-system/art';
 import { Wrench, ArrowRight, Clock, User, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -13,7 +14,6 @@ interface EventCollaboratorDto {
   category: string;
   status: string;
   eventType: string;
-  coverImageUrl: string;
   sessionsCount: number;
   resourcesCount: number;
   createdAt: string;
@@ -76,13 +76,9 @@ export default function MyCollaborationsPage() {
               key={workshop.id}
               className="flex flex-col gap-4 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-900/50 shadow-xs hover:shadow-md transition-all hover:border-zinc-300 dark:hover:border-zinc-800"
             >
-              {workshop.coverImageUrl && (
-                <div className="aspect-video w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800 relative">
-                  <img 
-                    src={workshop.coverImageUrl} 
-                    alt={workshop.title} 
-                    className="h-full w-full object-cover" 
-                  />
+              {(
+                <div className="aspect-video w-full overflow-hidden rounded-xl relative">
+                  <ContentArt seed={workshop.id} kind="EVENT" category={workshop.category} title={workshop.title} />
                   <div className="absolute top-3 right-3">
                     <span className="inline-flex items-center text-[10px] font-bold px-2.5 py-0.5 rounded-full border bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-900/50">
                       {workshop.status}

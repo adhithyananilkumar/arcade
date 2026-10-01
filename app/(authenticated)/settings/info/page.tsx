@@ -857,7 +857,7 @@ export default function PersonalInfoPage() {
               <div className="flex-1 min-w-0">
                 <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Show learning activity on profile</h3>
                 <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
-                  Display certificates and course progress on your public profile.
+                  Show your achievements, certificates and learning heatmap on your public profile.
                 </p>
               </div>
             </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { ContentArt } from '@/shared/design-system/art';
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { courseRoutes } from '@/shared/routes/content.routes';
 import { useRouter } from 'next/navigation';
@@ -420,13 +421,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                   className="py-3 px-3.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors cursor-pointer group"
                 >
                   <div className="h-11 w-12 shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700">
-                    {course.coverImageUrl ? (
-                      <img src={course.coverImageUrl} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/60 dark:to-indigo-950/60 text-[#2962D6] dark:text-[#3B82F6]">
-                        <BookOpen size={17} />
-                      </div>
-                    )}
+                    <ContentArt seed={course.id} kind="COURSE" categoryId={course.categoryId} title={course.title} />
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6] transition-colors">{course.title}</span>

@@ -1,10 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { toast } from "sonner";
 import {
-  Camera,
   Layers,
   FileText,
   Users,
@@ -17,12 +14,10 @@ import {
   Calendar,
   Globe,
   Shield,
-  Loader2,
   Radio,
   Tv,
 } from "lucide-react";
-import { api } from "@/infrastructure/http/api";
-import { updateEvent } from "@/domains/events/api/event";
+import { ContentArt } from "@/shared/design-system/art";
 import type { OverviewData } from "../../lib/fetchOverviewData";
 import type { OverviewTab } from "../ContentOverviewNav";
 import type { Metric } from "../sections/MetricsGrid";
@@ -90,54 +85,9 @@ export function EventOverviewTab({
   submitting: boolean;
   onSelectTab?: (tab: OverviewTab) => void;
 }) {
-  const [isUploadingCover, setIsUploadingCover] = useState(false);
-
   const eventSummary = data.eventSummary?.status === "ok" ? data.eventSummary.data : null;
   const eventDetails = data.eventDetails?.status === "ok" ? data.eventDetails.data : null;
   const content = data.content;
-
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploadingCover(true);
-    try {
-      // 1. Presign
-      const { key, uploadUrl, publicUrl } = await api.post<any>("/api/media/presign", {
-        fileName: file.name,
-        contentType: file.type,
-      });
-
-      // 2. Upload via proxy
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("uploadUrl", uploadUrl);
-
-      const uploadRes = await fetch("/api/internal/media/upload", {
-        method: "POST",
-        body: formData,
-      });
-      if (!uploadRes.ok) throw new Error("Failed to upload file to storage");
-
-      // 3. Register metadata
-      await api.post("/api/media/metadata", {
-        key,
-        fileName: file.name,
-        contentType: file.type,
-        sizeBytes: file.size,
-      });
-
-      // 4. Update event
-      await updateEvent(contentId, { coverImageUrl: publicUrl });
-      toast.success("Cover image updated successfully");
-      onChanged();
-    } catch (error) {
-      console.error("Cover upload error:", error);
-      toast.error("Failed to upload cover image");
-    } finally {
-      setIsUploadingCover(false);
-    }
-  };
 
   // ── Pricing Tab ─────────────────────────────────────────────────────────────
   if (tab === "pricing") {
@@ -237,7 +187,6 @@ export function EventOverviewTab({
   }
 
   // ── Default: Overview Tab ───────────────────────────────────────────────────
-  const coverUrl = eventDetails?.coverImageUrl || content?.coverImageUrl;
   const sessionsCount = eventSummary?.sessionsCount ?? 0;
   const resourcesCount = eventSummary?.resourcesCount ?? 0;
   const registrationsCount = data.eventParticipants?.status === "ok" ? data.eventParticipants.data.length : 0;
@@ -257,45 +206,9 @@ export function EventOverviewTab({
 
   return (
     <div className="flex flex-col gap-8 w-full">
-      {/* Top Banner / Cover Image with hover change overlay */}
-      <div className="relative group overflow-hidden rounded-3xl border border-slate-200/80 bg-slate-900 shadow-[0_8px_30px_rgba(20,20,43,0.06)] h-56 sm:h-72 w-full transition-all">
-        {coverUrl ? (
-          <img
-            src={coverUrl}
-            alt={content?.title || "Event cover"}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-950 text-slate-400 p-6 text-center">
-            <Camera size={36} className="text-slate-500 mb-2" />
-            <p className="text-sm font-bold text-slate-200">No cover image uploaded</p>
-            <p className="text-xs text-slate-400 mt-1 max-w-sm">
-              Add a vibrant thumbnail to make your workshop and webinar stand out to learners.
-            </p>
-          </div>
-        )}
-
-        {/* Change Cover Hover Overlay */}
-        <label className="absolute inset-0 bg-black/50 backdrop-blur-xs flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer text-white">
-          {isUploadingCover ? (
-            <div className="flex flex-col items-center gap-2">
-              <Loader2 size={24} className="animate-spin text-white" />
-              <span className="text-xs font-bold uppercase tracking-wider">Uploading to R2...</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 rounded-xl bg-white/20 backdrop-blur-md px-5 py-2.5 border border-white/30 text-xs font-extrabold hover:bg-white/30 transition-all shadow-lg active:scale-95">
-              <Camera size={16} />
-              <span>{coverUrl ? "Change Cover Image" : "Upload Cover Image"}</span>
-            </div>
-          )}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleCoverUpload}
-            disabled={isUploadingCover}
-            className="hidden"
-          />
-        </label>
+      {/* Generated, category-themed artwork — uploaded covers were removed platform-wide */}
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 shadow-[0_8px_30px_rgba(20,20,43,0.06)] h-56 sm:h-72 w-full">
+        <ContentArt seed={contentId} kind="EVENT" category={eventDetails?.category} title={content?.title} />
       </div>
 
       {/* Readiness Check Card */}

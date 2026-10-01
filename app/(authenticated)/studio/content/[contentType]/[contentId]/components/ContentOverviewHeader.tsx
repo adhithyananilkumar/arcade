@@ -93,7 +93,6 @@ export function ContentOverviewHeader({
   contentId,
   title,
   status,
-  coverImageUrl,
   channelName,
   authorName,
   createdAt,
@@ -109,7 +108,6 @@ export function ContentOverviewHeader({
   contentId: string;
   title: string;
   status: string;
-  coverImageUrl?: string | null;
   channelName?: string | null;
   authorName?: string | null;
   createdAt: string;

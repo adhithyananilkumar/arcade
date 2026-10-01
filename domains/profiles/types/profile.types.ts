@@ -67,7 +67,6 @@ export interface ProfileCourse {
   id: string;
   title: string;
   description?: string | null;
-  coverImageUrl?: string | null;
   status: string;
   createdAt?: string | null;
 }
@@ -76,17 +75,18 @@ export interface ProfileWorkshop {
   id: string;
   title: string;
   description?: string | null;
-  coverImageUrl?: string | null;
   status: string;
   createdAt?: string | null;
 }
 
+/** Mirrors the backend's `ProfileResponse.CertificateDto`. */
 export interface ProfileCertificate {
-  id: string;
-  courseTitle?: string | null;
-  issuedAt?: string | null;
-  certificateNumber?: string | null;
-  [key: string]: unknown;
+  name: string;
+  issuer?: string | null;
+  /** ISO date (yyyy-mm-dd). */
+  date?: string | null;
+  /** The public credential code, verifiable at `/credentials/<code>`. */
+  idCode?: string | null;
 }
 
 /**
@@ -155,6 +155,27 @@ export interface UserProfile {
   stats: ProfileStats;
 }
 
+/**
+ * The current year's learning heatmap, served only when the owner shows their learning publicly.
+ * Mirrors `PublicActivityResponse`; `intensity` is the backend's 0–3 bucket, never re-derived here.
+ */
+export interface PublicActivity {
+  year: number;
+  currentStreak: number;
+  longestStreak: number;
+  days: { date: string; activityCount: number; intensity: number }[];
+}
+
+/**
+ * Where a channel's public page lives. A personal channel's is its owner's profile; an
+ * organization channel's is its own handle, or null when it has not claimed one yet.
+ */
+export interface ChannelAddress {
+  channelId: string;
+  personal: boolean;
+  handle?: string | null;
+}
+
 // ---------------------------------------------------------------------------
 // Channel profile
 // ---------------------------------------------------------------------------
@@ -175,7 +196,6 @@ export interface ChannelContentItem {
   type: string;
   title: string;
   description?: string | null;
-  coverImageUrl?: string | null;
   status: string;
   createdAt?: string | null;
   updatedAt?: string | null;

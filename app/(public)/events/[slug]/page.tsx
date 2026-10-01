@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { ContentArt } from "@/shared/design-system/art";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -349,7 +350,7 @@ export default function EventDetailPage() {
               <div className="mt-5 flex items-center gap-3">
                 <Avatar
                   name={hostName}
-                  imageUrl={event.thumbnailUrl || null}
+                  imageUrl={null}
                   accent="var(--color-purple)"
                   size={36}
                 />
@@ -453,16 +454,10 @@ export default function EventDetailPage() {
 
               <div className="relative overflow-hidden rounded-3xl border border-white/40 bg-slate-950/80 p-2 shadow-[0_20px_50px_rgba(15,23,42,0.25)] backdrop-blur-xl">
                 <div className="relative h-64 sm:h-72 w-full overflow-hidden rounded-2xl bg-slate-900">
-                  <img
-                    src={
-                      event.coverImageUrl ||
-                      event.thumbnailUrl ||
-                      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1000&auto=format&fit=crop&q=80"
-                    }
-                    alt={event.title}
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
+                  <div className="h-full w-full transition-transform duration-700 group-hover:scale-105">
+                    <ContentArt seed={event.id} kind="EVENT" category={event.category} title={event.title} />
+                  </div>
+                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-slate-950/70 to-transparent" />
 
                   <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-slate-950/80 px-3 py-1 text-[11px] font-bold text-white backdrop-blur-md border border-white/10">
                     <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -726,7 +721,7 @@ export default function EventDetailPage() {
                 <div className="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-6">
                   <Avatar
                     name={hostName}
-                    imageUrl={event.thumbnailUrl || null}
+                    imageUrl={null}
                     accent="var(--color-purple)"
                     size={64}
                   />

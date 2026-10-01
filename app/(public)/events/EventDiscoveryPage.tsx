@@ -46,7 +46,7 @@ export function EventDiscoveryPage() {
                 id={event.id}
                 title={event.title}
                 type={event.eventType || 'EVENT'}
-                coverImageUrl={event.coverImageUrl}
+                category={event.category}
                 metadataBadges={
                   <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
                     {event.deliveryMode && <span>{event.deliveryMode}</span>}
