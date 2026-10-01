@@ -18,7 +18,7 @@ import {
   Flame,
   Loader2, X, Camera, Globe,
   BadgeCheck, Lock, Trash2, Sparkles, Shield,
-  Building2, ExternalLink, BookOpen, ChevronRight,
+  Building2, ExternalLink, BookOpen, ChevronRight, ChevronDown, ChevronUp,
   Trophy, Search, LayoutGrid, CalendarDays, Award
 } from 'lucide-react';
 import { FaLinkedin } from 'react-icons/fa';
@@ -49,8 +49,12 @@ function ProfilePageContent() {
   const [isLoadingContent, setIsLoadingContent] = useState(false);
   const [myBadges, setMyBadges] = useState<MyBadges | null>(null);
   const [isLoadingBadges, setIsLoadingBadges] = useState(false);
-  const [activeHubTab, setActiveHubTab] = useState<'overview' | 'courses' | 'events'>('overview');
+  const [activeHubTab, setActiveHubTab] = useState<'courses' | 'events'>('courses');
   const [contentSearchQuery, setContentSearchQuery] = useState('');
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [isCoursesExpanded, setIsCoursesExpanded] = useState(false);
+  const [isEventsExpanded, setIsEventsExpanded] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -447,11 +451,7 @@ function ProfilePageContent() {
   return (
     <>
       {/* Page Background */}
-      <div className="fixed inset-0 pointer-events-none z-0 bg-slate-50 via-[#f8fafc] to-slate-100 dark:from-[#090d16] dark:via-[#0f172a] dark:to-[#090d16]"></div>
-      
-      {/* Ambient background glow orbs */}
-      <div className="fixed top-12 left-1/4 w-[500px] h-[500px] bg-indigo-200/20 dark:bg-indigo-900/10 rounded-full blur-[130px] pointer-events-none z-0" />
-      <div className="fixed top-96 right-1/4 w-[450px] h-[450px] bg-purple-200/20 dark:bg-purple-900/10 rounded-full blur-[130px] pointer-events-none z-0" />
+      <div className="fixed inset-0 pointer-events-none z-0 bg-[#f8fafc] dark:bg-[#0b0f19]"></div>
 
       <motion.div 
         className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-16 relative transition-colors z-10"
@@ -462,18 +462,18 @@ function ProfilePageContent() {
 
 
 
-        {/* ── 1. Hero Identity Banner (Grounded Header with Avatar & Actions) ── */}
-        <div className="relative mb-8 overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-sm backdrop-blur-md">
-          {/* Subtle Top Accent Banner Stripe */}
-          <div className="h-28 sm:h-36 w-full bg-gradient-to-r from-teal-500/15 via-indigo-500/15 to-purple-500/15 dark:from-teal-900/30 dark:via-indigo-900/30 dark:to-purple-900/30 relative border-b border-slate-100 dark:border-slate-800/80">
-            <div className="absolute inset-0 bg-[radial-gradient(#6366f1_1px,transparent_1px)] [background-size:16px_16px] opacity-20" />
+        {/* ── 1. Hero Identity Banner (Clean Minimal Surface) ── */}
+        <div className="relative mb-8 overflow-hidden rounded-3xl border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+          {/* Minimal Muted Header Stripe */}
+          <div className="h-24 sm:h-28 w-full bg-slate-100/70 dark:bg-slate-800/40 relative border-b border-slate-100 dark:border-slate-800/80">
+            <div className="absolute inset-0 bg-[radial-gradient(#94a3b8_1px,transparent_1px)] [background-size:16px_16px] opacity-15" />
           </div>
 
           <div className="px-6 sm:px-8 pb-6 pt-0">
-            <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-5 -mt-14 sm:-mt-16 mb-4">
+            <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-5 -mt-12 sm:-mt-14 mb-4">
               {/* Avatar Box with Hover Trigger */}
-              <div className="relative flex h-28 w-28 sm:h-32 sm:w-32 shrink-0 group/avatar">
-                <div className="relative z-10 flex h-full w-full items-center justify-center rounded-2xl overflow-hidden border-4 border-white dark:border-slate-900 shadow-xl bg-slate-100 dark:bg-slate-800 transition-transform duration-200 group-hover/avatar:scale-[1.02]">
+              <div className="relative flex h-24 w-24 sm:h-28 sm:w-28 shrink-0 group/avatar">
+                <div className="relative z-10 flex h-full w-full items-center justify-center rounded-2xl overflow-hidden border-4 border-white dark:border-slate-900 shadow-md bg-slate-100 dark:bg-slate-800 transition-transform duration-200 group-hover/avatar:scale-[1.02]">
                   {currentUser.avatarUrl ? (
                     <img src={getAvatarUrl(currentUser.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
                   ) : (
@@ -596,17 +596,17 @@ function ProfilePageContent() {
 
             {/* Social & Web Links */}
             {(currentUser.linkedinUrl || currentUser.githubUrl) && (
-              <div className="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs space-y-3">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Social & Web</h3>
+              <div className="p-5 rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Social & Web</h3>
                 <div className="space-y-2 text-xs font-semibold">
                   {currentUser.linkedinUrl && (
                     <a
                       href={currentUser.linkedinUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 text-slate-700 dark:text-slate-200 hover:text-blue-600 transition-colors"
+                      className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition-colors"
                     >
-                      <FaLinkedin size={16} className="text-blue-600 shrink-0" />
+                      <FaLinkedin size={15} className="text-slate-500 shrink-0" />
                       <span className="truncate">{currentUser.linkedinUrl.replace(/^https?:\/\//, '')}</span>
                       <ExternalLink size={12} className="ml-auto text-slate-400 shrink-0" />
                     </a>
@@ -616,9 +616,9 @@ function ProfilePageContent() {
                       href={currentUser.githubUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 text-slate-700 dark:text-slate-200 hover:text-purple-600 transition-colors"
+                      className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition-colors"
                     >
-                      <Globe size={16} className="text-slate-500 shrink-0" />
+                      <Globe size={15} className="text-slate-500 shrink-0" />
                       <span className="truncate">{currentUser.githubUrl.replace(/^https?:\/\//, '')}</span>
                       <ExternalLink size={12} className="ml-auto text-slate-400 shrink-0" />
                     </a>
@@ -628,21 +628,21 @@ function ProfilePageContent() {
             )}
 
             {/* Achievements Section */}
-            <div className="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs">
+            <div className="p-5 rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
               <div className="flex items-center justify-between mb-3.5">
                 <Link
                   href="/achievements"
-                  className="group inline-flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white hover:text-purple-600 transition-colors"
+                  className="group inline-flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white hover:text-slate-600 transition-colors"
                 >
                   <Trophy size={16} className="text-amber-500" />
                   <span>Achievements</span>
                   {(myBadges?.earned?.length ?? 0) > 0 && (
-                    <span className="rounded-full bg-purple-100 dark:bg-purple-950/60 px-2 py-0.5 text-[11px] font-bold text-purple-700 dark:text-purple-300">
+                    <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-bold text-slate-600 dark:text-slate-300">
                       {myBadges?.earned?.length ?? 0}
                     </span>
                   )}
                 </Link>
-                <Link href="/achievements" className="text-xs font-semibold text-purple-600 hover:underline">
+                <Link href="/achievements" className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:underline">
                   View all
                 </Link>
               </div>
@@ -678,13 +678,13 @@ function ProfilePageContent() {
             </div>
 
             {/* Organizations Section */}
-            <div className="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs">
+            <div className="p-5 rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
               <div className="flex items-center justify-between mb-3.5">
                 <Link
                   href="/manage-channels"
-                  className="group inline-flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white hover:text-indigo-600 transition-colors"
+                  className="group inline-flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white hover:text-slate-600 transition-colors"
                 >
-                  <Building2 size={16} className="text-indigo-600 dark:text-indigo-400" />
+                  <Building2 size={16} className="text-slate-600 dark:text-slate-300" />
                   <span>Organizations</span>
                   {organizationChannels.length > 0 && (
                     <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-bold text-slate-600 dark:text-slate-400">
@@ -692,7 +692,7 @@ function ProfilePageContent() {
                     </span>
                   )}
                 </Link>
-                <Link href="/manage-channels" className="text-xs font-semibold text-indigo-600 hover:underline">
+                <Link href="/manage-channels" className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:underline">
                   View all
                 </Link>
               </div>
@@ -717,7 +717,7 @@ function ProfilePageContent() {
                       <Link
                         key={channel.id}
                         href={channelHref}
-                        className="group flex items-center justify-between gap-3 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shadow-2xs"
+                        className="group flex items-center justify-between gap-3 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shadow-2xs"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60">
@@ -746,12 +746,12 @@ function ProfilePageContent() {
 
           {/* ── RIGHT TOP: Learning Heatmap Panel (8 of 12 cols) ── */}
           <div className="lg:col-span-8">
-            <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs h-full flex flex-col justify-between">
+            <div className="p-6 rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs h-full flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between gap-2 mb-5">
                   <div className="flex items-center gap-2">
                     <Flame size={18} className="text-amber-500" />
-                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Annual Learning Activity</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">Annual Learning Activity</h3>
                   </div>
                   {currentStreak > 0 && (
                     <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 px-2.5 py-1 rounded-full">
@@ -851,215 +851,247 @@ function ProfilePageContent() {
 
         </div>
 
-        {/* ── 4. Dynamic Full-Width Content Library Section (Spans Full 100% Width) ── */}
-        <div className="space-y-6">
+        {/* ── 4. Dynamic Full-Width Content Library Section (Clean Minimal Container) ── */}
+        <div className="rounded-3xl border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
 
-          {/* Hub Navigation Tabs Bar (Full Width Dynamic) */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs backdrop-blur-md">
-            <div className="flex items-center gap-1.5 p-1 bg-slate-100/80 dark:bg-slate-800/80 rounded-xl w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => { setActiveHubTab('overview'); setContentSearchQuery(''); }}
-                className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeHubTab === 'overview'
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                }`}
-              >
-                <Sparkles size={15} className={activeHubTab === 'overview' ? 'text-teal-500' : 'text-slate-400'} />
-                <span>Featured Showcase</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => { setActiveHubTab('courses'); setContentSearchQuery(''); }}
-                className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeHubTab === 'courses'
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                }`}
-              >
-                <BookOpen size={15} className={activeHubTab === 'courses' ? 'text-teal-500' : 'text-slate-400'} />
-                <span>All Courses</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
-                  activeHubTab === 'courses'
-                    ? 'bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
-                }`}>
-                  {coursesList.length}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => { setActiveHubTab('events'); setContentSearchQuery(''); }}
-                className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeHubTab === 'events'
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                }`}
-              >
-                <CalendarDays size={15} className={activeHubTab === 'events' ? 'text-purple-500' : 'text-slate-400'} />
-                <span>Events & Workshops</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
-                  activeHubTab === 'events'
-                    ? 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
-                }`}>
-                  {eventsList.length}
-                </span>
-              </button>
+          {/* Seamless Integrated Header with Title & Navigation Tabs */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-5 sm:p-6 pb-2">
+            {/* Title & Eyebrow */}
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                <Sparkles size={16} />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                  Content & Curriculum
+                </h3>
+                <p className="text-xs text-slate-400">
+                  {activeHubTab === 'courses' ? 'Comprehensive course catalog' : 'Interactive sessions & live events'}
+                </p>
+              </div>
             </div>
 
-            {/* Quick Search Filter */}
-            <div className="relative w-full sm:w-72 px-1 sm:px-0">
-              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                value={contentSearchQuery}
-                onChange={(e) => setContentSearchQuery(e.target.value)}
-                placeholder="Search publications & courses..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/30 text-slate-900 dark:text-white placeholder-slate-400 transition-all"
-              />
-              {contentSearchQuery && (
+            {/* Right: Tabs & Search Filter */}
+            <div className="flex items-center justify-end gap-2.5 w-full lg:w-auto">
+              <div className="flex h-9 items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl w-full sm:w-auto">
                 <button
                   type="button"
-                  onClick={() => setContentSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  onClick={() => { setActiveHubTab('courses'); setContentSearchQuery(''); }}
+                  className={`h-full flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    activeHubTab === 'courses'
+                      ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                  }`}
                 >
-                  <X size={12} />
+                  <BookOpen size={13} className={activeHubTab === 'courses' ? 'text-slate-900 dark:text-white' : 'text-slate-400'} />
+                  <span>Courses</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    activeHubTab === 'courses'
+                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200'
+                      : 'bg-slate-200/60 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                  }`}>
+                    {coursesList.length}
+                  </span>
                 </button>
-              )}
-            </div>
-          </div>
 
-          {/* TAB 1: FEATURED SHOWCASE (Full-Width 3-Column Responsive Grid) */}
-          {activeHubTab === 'overview' && (
-            <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs space-y-5">
-              <div className="flex items-center justify-between pb-1">
-                <div className="flex items-center gap-2">
-                  <Sparkles size={16} className="text-teal-600 dark:text-teal-400" />
-                  <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Featured Publications</h3>
-                </div>
-                {allPersonalContent.length > 3 && (
+                <button
+                  type="button"
+                  onClick={() => { setActiveHubTab('events'); setContentSearchQuery(''); }}
+                  className={`h-full flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    activeHubTab === 'events'
+                      ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                  }`}
+                >
+                  <CalendarDays size={13} className={activeHubTab === 'events' ? 'text-slate-900 dark:text-white' : 'text-slate-400'} />
+                  <span>Events</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    activeHubTab === 'events'
+                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200'
+                      : 'bg-slate-200/60 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                  }`}>
+                    {eventsList.length}
+                  </span>
+                </button>
+              </div>
+
+              {/* Dynamic Expandable Search with matching height h-9 */}
+              <div
+                className={`relative h-9 flex items-center transition-all duration-300 rounded-xl bg-slate-100 dark:bg-slate-800 p-1 ${
+                  isSearchExpanded || contentSearchQuery
+                    ? 'w-48 sm:w-60'
+                    : 'w-9 sm:w-9'
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSearchExpanded(true);
+                    setTimeout(() => searchInputRef.current?.focus(), 50);
+                  }}
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+                  title="Search publications"
+                >
+                  <Search size={14} />
+                </button>
+
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={contentSearchQuery}
+                  onFocus={() => setIsSearchExpanded(true)}
+                  onBlur={() => {
+                    if (!contentSearchQuery) setIsSearchExpanded(false);
+                  }}
+                  onChange={(e) => setContentSearchQuery(e.target.value)}
+                  placeholder="Search titles..."
+                  className={`h-full bg-transparent pr-7 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-all duration-200 ${
+                    isSearchExpanded || contentSearchQuery
+                      ? 'w-full pl-1 opacity-100'
+                      : 'w-0 pl-0 opacity-0 pointer-events-none'
+                  }`}
+                />
+
+                {(isSearchExpanded || contentSearchQuery) && (
                   <button
                     type="button"
-                    onClick={() => setActiveHubTab('courses')}
-                    className="text-xs font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400 flex items-center gap-1 cursor-pointer"
+                    onClick={() => {
+                      setContentSearchQuery('');
+                      setIsSearchExpanded(false);
+                    }}
+                    className="absolute right-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-0.5"
                   >
-                    <span>View all library ({allPersonalContent.length})</span>
-                    <ChevronRight size={13} />
+                    <X size={12} />
                   </button>
                 )}
               </div>
-
-              {isLoadingContent ? (
-                <div className="flex h-48 w-full flex-col items-center justify-center gap-2 text-slate-400">
-                  <Loader2 className="animate-spin text-teal-600" size={24} />
-                  <span className="text-xs font-medium">Loading publications...</span>
-                </div>
-              ) : displayedContent.length === 0 ? (
-                <ProfileEmptyState
-                  icon={BookOpen}
-                  title="No publications yet"
-                  description="Published courses and workshop sessions will appear here."
-                />
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {displayedContent.slice(0, 3).map((item) => {
-                    const isCourse = item.type?.toUpperCase() === 'COURSE';
-                    const href = isCourse ? `/courses/${item.id}` : `/events/${item.id}`;
-                    return (
-                      <ContentCard
-                        key={item.id}
-                        item={item}
-                        kind={isCourse ? 'COURSE' : 'EVENT'}
-                        href={href}
-                      />
-                    );
-                  })}
-                </div>
-              )}
             </div>
-          )}
+          </div>
 
-          {/* TAB 2: ALL COURSES (Full-Width Responsive 3-Column Grid) */}
-          {activeHubTab === 'courses' && (
-            <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs space-y-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                    <BookOpen size={16} className="text-teal-600 dark:text-teal-400" />
-                    <span>All Courses ({coursesList.length})</span>
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Comprehensive learning tracks and curriculum</p>
-                </div>
+          {/* Body Content Area */}
+          <div className="p-5 sm:p-6 pt-2">
+            {/* TAB 1: ALL COURSES (Full-Width Responsive 3-Column Grid with Smooth Expander) */}
+            {activeHubTab === 'courses' && (
+              <div>
+                {!contentSearchQuery && coursesList.length > 6 && (
+                  <div className="flex justify-end pb-3">
+                    <span className="text-xs font-semibold text-slate-400">
+                      Showing {isCoursesExpanded ? coursesList.length : 6} of {coursesList.length}
+                    </span>
+                  </div>
+                )}
+
+                {isLoadingContent ? (
+                  <div className="flex h-48 w-full flex-col items-center justify-center gap-2 text-slate-400">
+                    <Loader2 className="animate-spin text-teal-600" size={24} />
+                    <span className="text-xs font-medium">Loading courses...</span>
+                  </div>
+                ) : displayedContent.length === 0 ? (
+                  <ProfileEmptyState
+                    icon={BookOpen}
+                    title={contentSearchQuery ? "No matching courses found" : "No courses published yet"}
+                    description={contentSearchQuery ? `No courses matched "${contentSearchQuery}". Try clearing search.` : "Published course series will appear here."}
+                  />
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {(contentSearchQuery || isCoursesExpanded ? displayedContent : displayedContent.slice(0, 6)).map((item) => (
+                        <ContentCard
+                          key={item.id}
+                          item={item}
+                          kind="COURSE"
+                          href={`/courses/${item.id}`}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Smooth Expander for > 6 Courses */}
+                    {!contentSearchQuery && coursesList.length > 6 && (
+                      <div className="mt-8 flex justify-center">
+                        <button
+                          type="button"
+                          onClick={() => setIsCoursesExpanded((prev) => !prev)}
+                          className="group inline-flex items-center gap-2 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 px-6 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-teal-400 transition-all shadow-2xs hover:shadow-xs cursor-pointer"
+                        >
+                          <span>
+                            {isCoursesExpanded
+                              ? 'Show fewer courses'
+                              : `Show all courses (${coursesList.length - 6} more)`}
+                          </span>
+                          {isCoursesExpanded ? (
+                            <ChevronUp size={15} className="transition-transform group-hover:-translate-y-0.5" />
+                          ) : (
+                            <ChevronDown size={15} className="transition-transform group-hover:translate-y-0.5" />
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
+            )}
 
-              {isLoadingContent ? (
-                <div className="flex h-48 w-full flex-col items-center justify-center gap-2 text-slate-400">
-                  <Loader2 className="animate-spin text-teal-600" size={24} />
-                  <span className="text-xs font-medium">Loading courses...</span>
-                </div>
-              ) : displayedContent.length === 0 ? (
-                <ProfileEmptyState
-                  icon={BookOpen}
-                  title={contentSearchQuery ? "No matching courses found" : "No courses published yet"}
-                  description={contentSearchQuery ? `No courses matched "${contentSearchQuery}". Try clearing search.` : "Published course series will appear here."}
-                />
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {displayedContent.map((item) => (
-                    <ContentCard
-                      key={item.id}
-                      item={item}
-                      kind="COURSE"
-                      href={`/courses/${item.id}`}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+            {/* TAB 2: EVENTS & WORKSHOPS (Full-Width Responsive 3-Column Grid with Smooth Expander) */}
+            {activeHubTab === 'events' && (
+              <div>
+                {!contentSearchQuery && eventsList.length > 6 && (
+                  <div className="flex justify-end pb-3">
+                    <span className="text-xs font-semibold text-slate-400">
+                      Showing {isEventsExpanded ? eventsList.length : 6} of {eventsList.length}
+                    </span>
+                  </div>
+                )}
 
-          {/* TAB 3: EVENTS & WORKSHOPS (Full-Width Responsive 3-Column Grid) */}
-          {activeHubTab === 'events' && (
-            <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs space-y-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                    <CalendarDays size={16} className="text-purple-600 dark:text-purple-400" />
-                    <span>Events & Workshops ({eventsList.length})</span>
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Live sessions, webinars, and developer workshops</p>
-                </div>
+                {isLoadingContent ? (
+                  <div className="flex h-48 w-full flex-col items-center justify-center gap-2 text-slate-400">
+                    <Loader2 className="animate-spin text-purple-600" size={24} />
+                    <span className="text-xs font-medium">Loading events...</span>
+                  </div>
+                ) : displayedContent.length === 0 ? (
+                  <ProfileEmptyState
+                    icon={CalendarDays}
+                    title={contentSearchQuery ? "No matching events found" : "No events hosted yet"}
+                    description={contentSearchQuery ? `No events matched "${contentSearchQuery}". Try clearing search.` : "Scheduled live workshops will appear here."}
+                  />
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {(contentSearchQuery || isEventsExpanded ? displayedContent : displayedContent.slice(0, 6)).map((item) => (
+                        <ContentCard
+                          key={item.id}
+                          item={item}
+                          kind="EVENT"
+                          href={`/events/${item.id}`}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Smooth Expander for > 6 Events */}
+                    {!contentSearchQuery && eventsList.length > 6 && (
+                      <div className="mt-8 flex justify-center">
+                        <button
+                          type="button"
+                          onClick={() => setIsEventsExpanded((prev) => !prev)}
+                          className="group inline-flex items-center gap-2 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 px-6 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-purple-600 dark:hover:text-purple-400 transition-all shadow-2xs hover:shadow-xs cursor-pointer"
+                        >
+                          <span>
+                            {isEventsExpanded
+                              ? 'Show fewer events'
+                              : `Show all events (${eventsList.length - 6} more)`}
+                          </span>
+                          {isEventsExpanded ? (
+                            <ChevronUp size={15} className="transition-transform group-hover:-translate-y-0.5" />
+                          ) : (
+                            <ChevronDown size={15} className="transition-transform group-hover:translate-y-0.5" />
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
-
-              {isLoadingContent ? (
-                <div className="flex h-48 w-full flex-col items-center justify-center gap-2 text-slate-400">
-                  <Loader2 className="animate-spin text-purple-600" size={24} />
-                  <span className="text-xs font-medium">Loading events...</span>
-                </div>
-              ) : displayedContent.length === 0 ? (
-                <ProfileEmptyState
-                  icon={CalendarDays}
-                  title={contentSearchQuery ? "No matching events found" : "No events hosted yet"}
-                  description={contentSearchQuery ? `No events matched "${contentSearchQuery}". Try clearing search.` : "Scheduled live workshops will appear here."}
-                />
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {displayedContent.map((item) => (
-                    <ContentCard
-                      key={item.id}
-                      item={item}
-                      kind="EVENT"
-                      href={`/events/${item.id}`}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
 
         </div>
 

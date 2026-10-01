@@ -108,61 +108,24 @@ export interface ContentCardProps {
  * every card would be pure noise. (The previous profile page did show one — because it was
  * listing drafts too.)
  */
-import { DoodleCardArt } from '@/shared/design-system/ui/cards/DoodleCardArt';
+import { UnifiedContentCard } from '@/shared/design-system/ui/cards/UnifiedContentCard';
 
 export function ContentCard({ item, kind, href }: ContentCardProps) {
   const type = kind ?? (item as ChannelContentItem).type ?? 'COURSE';
-  const Icon = CONTENT_ICON[type.toUpperCase()] ?? GraduationCap;
-  const cover = item.coverImageUrl;
+  const isCourse = type.toUpperCase() === 'COURSE';
 
-  const body = (
-    <>
-      <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-50 dark:bg-neutral-950">
-        {cover ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={cover}
-            alt=""
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-            loading="lazy"
-          />
-        ) : (
-          <DoodleCardArt
-            id={item.id}
-            title={item.title}
-            type={type}
-            description={item.description}
-          />
-        )}
-      </div>
-
-      <div className="flex flex-1 flex-col p-5">
-        <span className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-400 dark:text-neutral-600">
-          {type.replace(/_/g, ' ')}
-        </span>
-        <h4 className="mt-2 line-clamp-2 text-[15px] font-extrabold leading-snug tracking-tight text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
-          {item.title}
-        </h4>
-        {item.description && (
-          <p className="mt-2 line-clamp-2 text-[12.5px] font-medium leading-relaxed text-slate-500 dark:text-neutral-400">
-            {item.description}
-          </p>
-        )}
-        <div className="mt-auto pt-4 text-[11px] font-bold text-slate-400 dark:text-neutral-600">
-          {formatMonth(item.createdAt)}
-        </div>
-      </div>
-    </>
+  return (
+    <UnifiedContentCard
+      id={item.id}
+      title={item.title}
+      description={item.description}
+      type={type}
+      coverImageUrl={item.coverImageUrl}
+      dateText={formatMonth(item.createdAt)}
+      actionHref={href}
+      actionLabel={isCourse ? 'View Course' : 'View Event'}
+    />
   );
-
-  if (href) {
-    return (
-      <Link href={href} className={CARD}>
-        {body}
-      </Link>
-    );
-  }
-  return <div className={CARD}>{body}</div>;
 }
 
 // ---------------------------------------------------------------------------
