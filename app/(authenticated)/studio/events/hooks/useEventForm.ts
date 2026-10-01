@@ -8,8 +8,6 @@ const initialData: EventFormData = {
   description: '',
   category: '',
   tags: [],
-  thumbnailUrl: '',
-  coverImageUrl: '',
   promoVideoUrl: '',
   eventType: EventType.WORKSHOP,
   deliveryMode: DeliveryMode.ONLINE,

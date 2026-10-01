@@ -969,11 +969,9 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
   const [description, setDescription] = useState("");
   const [learningOutcomes, setLearningOutcomes] = useState("");
   const [duration, setDuration] = useState("");
-  const [coverImageUrl, setCoverImageUrl] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -984,7 +982,6 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
         setDescription(data.description ?? "");
         setLearningOutcomes(data.learningOutcomes ?? "");
         setDuration(data.duration ?? "");
-        setCoverImageUrl(data.coverImageUrl ?? "");
         setIsLoading(false);
       })
       .catch(() => {
@@ -997,46 +994,6 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
     };
   }, [contentId]);
 
-  /**
-   * Three-step upload, matching the rest of the app: presign, PUT through the internal proxy
-   * (the storage origin does not allow browser CORS), then register the object's metadata.
-   * The URL is only held in form state — it is persisted by "Save overview" like every other
-   * field here.
-   */
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    try {
-      const { key, uploadUrl, publicUrl } = await api.post<{
-        key: string;
-        uploadUrl: string;
-        publicUrl: string;
-      }>("/api/media/presign", { fileName: file.name, contentType: file.type });
-
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("uploadUrl", uploadUrl);
-      const uploadRes = await fetch("/api/internal/media/upload", { method: "POST", body: formData });
-      if (!uploadRes.ok) throw new Error("Upload failed");
-
-      await api.post("/api/media/metadata", {
-        key,
-        fileName: file.name,
-        contentType: file.type,
-        sizeBytes: file.size,
-      });
-
-      setCoverImageUrl(publicUrl);
-      toast.success("Image uploaded. Save the overview to apply it.");
-    } catch {
-      toast.error("Could not upload that image");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -1046,7 +1003,6 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
         description,
         learningOutcomes,
         duration,
-        coverImageUrl,
       });
       toast.success("Course overview saved");
     } catch {
@@ -1082,33 +1038,6 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
       <p className="-mt-4 text-[11px] font-medium leading-relaxed text-slate-500">
         This is what learners read on the course page before they enrol.
       </p>
-
-      <div className="flex flex-col gap-2">
-        <label htmlFor="course-cover" className="text-sm font-bold text-slate-700">
-          Cover image
-        </label>
-        <div className="flex items-start gap-4">
-          <div className="flex-1">
-            <input
-              id="course-cover"
-              type="file"
-              accept="image/*"
-              onChange={handleCoverUpload}
-              disabled={isUploading}
-              className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-sm text-slate-800 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-slate-700 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10 disabled:opacity-60"
-            />
-            <span className="mt-1 block text-[11px] font-medium text-slate-400">
-              {isUploading ? "Uploading\u2026" : "Shown on the course card and the course page."}
-            </span>
-          </div>
-          {coverImageUrl && (
-            <div className="h-20 w-32 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={coverImageUrl} alt="Course cover preview" className="size-full object-cover" />
-            </div>
-          )}
-        </div>
-      </div>
 
       <div className="flex flex-col gap-2">
         <label htmlFor="course-duration" className="text-sm font-bold text-slate-700">

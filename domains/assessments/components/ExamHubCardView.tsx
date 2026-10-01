@@ -132,7 +132,7 @@ export function ExamHubCardView({ card, onOpen, onViewGrades, hideTypeAndFeeBadg
           {status.label}
         </span>
       }
-      coverImageUrl={card.coverImageUrl}
+      categoryId={card.categoryId}
       authorName={card.channelName}
       metaTags={metaTags}
       metadataBadges={metadataBadges}

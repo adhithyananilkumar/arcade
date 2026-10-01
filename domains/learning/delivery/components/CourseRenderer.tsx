@@ -1,5 +1,6 @@
 "use client";
 
+import { ContentArt } from '@/shared/design-system/art';
 import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
@@ -606,20 +607,9 @@ export function CourseRenderer({
               </div>
             ) : (
               <div className="flex flex-col items-center text-center">
-                {course.coverImageUrl ? (
-                  <div className="mb-8 aspect-video w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200/80 shadow-[0_12px_32px_rgba(20,20,43,0.1)]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={course.coverImageUrl}
-                      alt={course.title}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="mb-8 flex aspect-video w-full max-w-lg items-center justify-center rounded-2xl border border-slate-200 bg-slate-50">
-                    <span className="text-[13px] font-medium text-slate-400">No cover image</span>
-                  </div>
-                )}
+                <div className="mb-8 aspect-video w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200/80 shadow-[0_12px_32px_rgba(20,20,43,0.1)]">
+                  <ContentArt seed={course.id} kind="COURSE" title={course.title} />
+                </div>
                 <h2 className="mb-3 text-2xl font-bold tracking-tight text-[#14142b]">
                   {course.title}
                 </h2>

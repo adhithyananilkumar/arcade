@@ -29,19 +29,22 @@ export { useHandleAvailability } from './hooks/useHandleAvailability';
 export type { HandleAvailabilityState } from './hooks/useHandleAvailability';
 
 export { ProfileHero } from './components/ProfileHero';
-export type { ProfileHeroProps } from './components/ProfileHero';
-export { ChannelHero } from './components/ChannelHero';
-export type { ChannelHeroProps } from './components/ChannelHero';
-export { ProfileTabs } from './components/ProfileTabs';
-export type { ProfileTab, ProfileTabsProps } from './components/ProfileTabs';
+export type { ProfileHeroProps, ProfileKind } from './components/ProfileHero';
 export {
-  CertificateCard,
-  ChannelCard,
-  ContentCard,
-  MemberCard,
-  ProfileEmptyState,
-  ProfileStat,
-} from './components/ProfileCards';
+  AboutPanel,
+  AchievementsPanel,
+  ActivityPanel,
+  ContentLibrary,
+  LinksPanel,
+  OrganizationsPanel,
+  PeoplePanel,
+} from './components/ProfilePanels';
+export type {
+  AchievementsPanelProps,
+  ContentLibraryProps,
+  PanelStat,
+} from './components/ProfilePanels';
+export { ContentCard, ProfileEmptyState } from './components/ProfileCards';
 export { HandleField } from './components/HandleField';
 export type { HandleFieldProps } from './components/HandleField';
 export { HandleAppealForm } from './components/HandleAppealForm';
@@ -54,6 +57,7 @@ export type { HandleAppealListProps } from './components/HandleAppealList';
 export { ProfileSkeleton } from './components/ProfileSkeleton';
 
 export type {
+  ChannelAddress,
   ChannelContentItem,
   ChannelMember,
   ChannelProfile,
@@ -70,5 +74,6 @@ export type {
   ProfileCourse,
   ProfileStats,
   ProfileWorkshop,
+  PublicActivity,
   UserProfile,
 } from './types/profile.types';

@@ -10,6 +10,7 @@
 // Pure UI: every value — including whether the action is enabled and why not — comes from the
 // server's landing response.
 
+import { ContentArt } from '@/shared/design-system/art';
 import {
   AlertCircle,
   Award,
@@ -402,30 +403,13 @@ export function ExamOverview({
   );
 }
 
-/** The hero's right side: the exam's cover, or a composed card when it has none. */
+/** The hero's right side: the exam's generated blueprint artwork. */
 function ExamCover({ landing, kind }: { landing: AssessmentLandingResponse; kind: string }) {
   return (
     <div className="relative mx-auto w-full max-w-[560px]">
       <div className="overflow-hidden rounded-[1.6rem] border-[6px] border-[#2a2d3a] bg-[#2a2d3a] shadow-[0_30px_80px_rgba(20,22,28,0.22)]">
         <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[1.1rem]">
-          {landing.coverImageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={landing.coverImageUrl} alt="" className="absolute inset-0 size-full object-cover" />
-          ) : (
-            <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_20%_10%,#dff7ee_0%,#e6efff_45%,#efe9ff_100%)]">
-              <Award
-                aria-hidden="true"
-                strokeWidth={1}
-                className="absolute -bottom-6 -right-6 size-56 text-[#4f46e5]/10"
-              />
-              <div className="absolute inset-0 flex flex-col justify-end p-7">
-                <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-slate-500">{kind}</p>
-                <p className="mt-1 line-clamp-2 text-[1.6rem] font-bold leading-tight text-ink" style={HEADLINE_FONT}>
-                  {landing.title}
-                </p>
-              </div>
-            </div>
-          )}
+          <ContentArt seed={landing.examId} kind="EXAM" title={landing.title} />
           <span className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-black/55 px-3 py-1.5 text-[12px] font-semibold text-white backdrop-blur">
             <span className="size-2 rounded-full bg-emerald-400" />
             {landing.questionCount > 0 ? `${landing.questionCount} questions · ${landing.durationMinutes} min` : `${landing.durationMinutes} min`}

@@ -12,7 +12,7 @@ import {
   ArrowUpRight,
   LucideIcon,
 } from 'lucide-react';
-import { DoodleCardArt } from './DoodleCardArt';
+import { ContentArt } from '@/shared/design-system/art';
 import { cn } from '@/shared/utils/utils';
 
 export type UnifiedContentType =
@@ -34,7 +34,10 @@ export interface UnifiedContentCardProps {
   typeIcon?: LucideIcon;
   status?: string;
   statusNode?: React.ReactNode;
-  coverImageUrl?: string | null;
+  /** Category name; picks the artwork's theme. Falls back to words in the title. */
+  category?: string | null;
+  /** Console category id, when the name isn't to hand. */
+  categoryId?: string | null;
   authorName?: string | null;
   authorUsername?: string | null;
   authorSubtitle?: string | null;
@@ -72,7 +75,8 @@ export function UnifiedContentCard({
   typeIcon,
   status,
   statusNode,
-  coverImageUrl,
+  category,
+  categoryId,
   authorName,
   authorUsername,
   authorSubtitle,
@@ -108,22 +112,9 @@ export function UnifiedContentCard({
       />
 
       <div className="relative z-10 flex flex-1 flex-col justify-between gap-3 sm:gap-4">
-        {/* Vector Letter Banner or Cover Image */}
+        {/* Generated, category-themed artwork (uploaded covers were removed platform-wide) */}
         <div className="relative h-40 sm:h-44 w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 shadow-xs transition-transform duration-500 group-hover:scale-[1.02] dark:border-slate-800">
-          {coverImageUrl ? (
-            <img
-              src={coverImageUrl}
-              alt={title || 'Content thumbnail'}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <DoodleCardArt
-              id={id || title || 'default'}
-              title={title}
-              type={type}
-              description={description}
-            />
-          )}
+          <ContentArt seed={id || title || 'default'} kind={type} category={category} categoryId={categoryId} title={title} />
         </div>
 
         {/* Title, Description & Details */}

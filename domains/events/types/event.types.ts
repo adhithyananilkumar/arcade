@@ -46,8 +46,6 @@ export interface Event {
   status: EventStatus;
   category: string;
   tags?: string[];
-  thumbnailUrl?: string;
-  coverImageUrl?: string;
   promoVideoUrl?: string;
   eventType: EventType;
   meetingUrl?: string;

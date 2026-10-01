@@ -43,9 +43,9 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   const pathname = usePathname();
   const router = useRouter();
 
-  // If hitting root /settings or deprecated /settings/profile directly, redirect to /settings/info
+  // The bare /settings route has no page of its own; Personal info is its landing tab.
   useEffect(() => {
-    if (pathname === '/settings' || pathname === '/settings/profile') {
+    if (pathname === '/settings') {
       router.replace('/settings/info');
     }
   }, [pathname, router]);
@@ -59,7 +59,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   }));
 
   const activeItem = sidebarItems.find(
-    item => pathname === item.href || (pathname === '/settings' && item.href === '/settings/info') || (pathname === '/settings/profile' && item.href === '/settings/info')
+    item => pathname === item.href || (pathname === '/settings' && item.href === '/settings/info')
   );
 
   return (

@@ -281,7 +281,6 @@ function ContentOverviewPageContent() {
           contentId={contentId}
           title={content.title}
           status={content.status}
-          coverImageUrl={content.coverImageUrl}
           channelName={content.channelName}
           authorName={content.authorName}
           createdAt={content.createdAt}

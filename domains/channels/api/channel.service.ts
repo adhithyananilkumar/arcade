@@ -172,7 +172,6 @@ export interface ChannelContentItem {
   type: string;
   title: string;
   description?: string | null;
-  coverImageUrl?: string | null;
   status: string;
   createdAt: string;
   updatedAt: string;

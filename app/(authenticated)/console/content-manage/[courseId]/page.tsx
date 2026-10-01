@@ -38,7 +38,6 @@ interface CourseRenderResponse {
   id: string;
   title: string;
   description: string;
-  coverImageUrl: string;
   status: string;
   modules: Module[];
 }

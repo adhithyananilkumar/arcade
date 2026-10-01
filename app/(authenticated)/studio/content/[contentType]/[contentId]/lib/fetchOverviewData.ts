@@ -46,7 +46,6 @@ export interface ContentSummaryLite {
   type: string;
   title: string;
   description?: string | null;
-  coverImageUrl?: string | null;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -121,7 +120,6 @@ async function findExamSummary(contentId: string): Promise<ContentSummaryLite | 
     id: string;
     title: string;
     description: string | null;
-    coverImageUrl: string | null;
     status: string;
     createdAt: string;
     updatedAt: string;
@@ -135,7 +133,6 @@ async function findExamSummary(contentId: string): Promise<ContentSummaryLite | 
     type: "EXAM",
     title: exam.title,
     description: exam.description,
-    coverImageUrl: exam.coverImageUrl,
     status: exam.status,
     createdAt: exam.createdAt,
     updatedAt: exam.updatedAt,

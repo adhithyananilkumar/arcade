@@ -23,7 +23,6 @@ export function toEventCardView(event: PublishedEventCard): EventCardView {
     date: formatSchedule(event),
     status: deriveStatus(event),
     duration: formatDuration(event.durationMinutes),
-    coverImageUrl: event.coverImageUrl ?? event.thumbnailUrl,
   };
 }
 

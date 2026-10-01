@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ArrowLeft, Play, RotateCcw, Trophy } from 'lucide-react';
 import type { ContentOverviewModel } from '../contentOverview.types';
+import { ContentArt } from '@/shared/design-system/art';
 
 /**
  * The top of the hub: what this is, how far in you are, and the one button that matters.
@@ -18,20 +19,14 @@ export function OverviewHero({ model }: { model: ContentOverviewModel }) {
 
   return (
     <header className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/80 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70">
-      {model.coverImageUrl && (
-        <>
-          <img
-            src={model.coverImageUrl}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 h-full w-full object-cover opacity-20"
-          />
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/80 to-white/95 dark:from-slate-900/90 dark:via-slate-900/85 dark:to-slate-900/95"
-          />
-        </>
-      )}
+      {/* The content's generated artwork, washed back so the text stays the focus. */}
+      <div aria-hidden className="absolute inset-0 opacity-25">
+        <ContentArt seed={model.contentId} kind={model.contentType} category={model.category} categoryId={model.categoryId} title={model.title} />
+      </div>
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/75 to-white/95 dark:from-slate-900/90 dark:via-slate-900/85 dark:to-slate-900/95"
+      />
 
       <div className="relative p-6 sm:p-8">
         <Link

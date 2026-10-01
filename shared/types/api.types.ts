@@ -72,7 +72,6 @@ export interface CourseResponse {
   description?: string;
   /** Newline-separated "what you'll walk away with" bullets. */
   learningOutcomes?: string | null;
-  coverImageUrl?: string;
   pricingModel: PricingModel;
   /** Minor currency units (e.g. cents/paise). */
   priceAmount?: number;
@@ -146,7 +145,6 @@ export interface AuthoredCourseSummary {
   id: string;
   title: string;
   description?: string;
-  coverImageUrl?: string;
   authorName?: string;
   status: ContentStatus;
   moduleCount: number;
@@ -186,7 +184,6 @@ export interface CourseSummaryResponse {
   id: string;
   title: string;
   description?: string;
-  coverImageUrl?: string;
   duration?: string;
   categoryId?: string;
   pricingModel?: PricingModel;
@@ -318,7 +315,6 @@ export interface CourseRenderResponse {
   id: string;
   title: string;
   description?: string;
-  coverImageUrl?: string;
   status: ContentStatus;
   pricingModel: PricingModel;
   /** Minor currency units (e.g. cents/paise). */

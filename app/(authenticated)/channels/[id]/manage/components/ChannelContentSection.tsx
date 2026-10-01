@@ -20,6 +20,7 @@ import { Panel } from '@/shared/design-system/ui/panel';
 import { cn } from '@/shared/utils/utils';
 import { CONTENT_STATUSES, ContentStatusPill, contentHref, statusOf, typeLabel } from './contentStatus';
 import { UnifiedContentCard } from '@/shared/design-system/ui/cards';
+import { ContentArt } from '@/shared/design-system/art';
 
 
 interface CardProps {
@@ -40,7 +41,6 @@ export function ContentCard({ item, channelId, openReviews }: CardProps) {
       type={item.type}
       typeLabel={typeLabel(item.type)}
       statusNode={<ContentStatusPill status={item.status} />}
-      coverImageUrl={item.coverImageUrl}
       authorName={item.authorName}
       authorUsername={item.authorUsername}
       dateText={`Updated ${new Date(item.updatedAt).toLocaleDateString()}`}
@@ -70,13 +70,7 @@ export function ContentRow({ item, channelId, openReviews, compact }: RowProps) 
           compact ? 'h-10 w-14' : 'h-12 w-[4.5rem]',
         )}
       >
-        {item.coverImageUrl ? (
-          <img src={item.coverImageUrl} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-slate-300">
-            <FileText size={16} />
-          </div>
-        )}
+        <ContentArt seed={item.id} kind={item.type} title={item.title} />
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-[13.5px] font-semibold text-[#14142b] dark:text-white">{item.title || 'Untitled'}</p>

@@ -38,8 +38,8 @@ export interface User {
   // Do not re-add it here: a cached copy on the auth store cannot be invalidated when an
   // enrollment changes, which is exactly why My Learning used to need a full page reload.
   // "Body of work" — content the user authored (backend: ProfileResponse.CourseDto/AuthoredWorkshopDto/CertificateDto)
-  courses?: { id: string; title: string; description?: string; coverImageUrl?: string; status?: string; createdAt?: string }[];
-  workshops?: { id: string; title: string; description?: string; coverImageUrl?: string; status?: string; createdAt?: string }[];
+  courses?: { id: string; title: string; description?: string; status?: string; createdAt?: string }[];
+  workshops?: { id: string; title: string; description?: string; status?: string; createdAt?: string }[];
   certificates?: { name: string; issuer?: string; date?: string; idCode?: string }[];
   /**
    * Public-profile presentation, mirrored from the backend's `ProfileResponse`.

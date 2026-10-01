@@ -75,7 +75,6 @@ interface ContentSummary {
   type: "COURSE" | "ROADMAP" | string;
   title: string;
   description?: string | null;
-  coverImageUrl?: string | null;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -251,15 +250,6 @@ const TYPE_CONFIG: Record<
     border: "border-orange-500/20",
     badgeBg: "bg-orange-50 text-orange-800 border-orange-200",
   },
-};
-
-const TYPE_DEFAULT_COVERS: Record<string, string> = {
-  COURSE: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=80",
-  ROADMAP: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80",
-  EVENT: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=80",
-  WORKSHOP: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=80",
-  QUIZ: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800&auto=format&fit=crop&q=80",
-  EXAM: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800&auto=format&fit=crop&q=80",
 };
 
 // ── New Course creation modal ───────────────────────────────────────────────────
@@ -841,7 +831,6 @@ function ContentCard({
   const typeKey = item.type?.toUpperCase() || "COURSE";
   const typeInfo = TYPE_CONFIG[typeKey] ?? TYPE_CONFIG.COURSE;
   const TypeIcon = typeInfo.icon;
-  const coverImage = item.coverImageUrl || TYPE_DEFAULT_COVERS[typeKey] || TYPE_DEFAULT_COVERS.COURSE;
 
   async function handleDuplicateSegmentAware() {
     setMenuOpen(false);
