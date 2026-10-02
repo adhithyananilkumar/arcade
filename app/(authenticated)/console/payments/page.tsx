@@ -57,14 +57,14 @@ export default function PaymentsConsolePage() {
   return (
     <div className="flex h-full w-full flex-col space-y-5 pb-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-white/80 p-1 shadow-[0_2px_8px_rgba(20,20,43,0.04)] backdrop-blur-md">
+        <div className="flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-surface/80 p-1 shadow-[0_2px_8px_rgba(20,20,43,0.04)] backdrop-blur-md">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               type="button"
               onClick={() => update({ tab: id, channel: null })}
               className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
-                tab === id ? "bg-[#14142b] text-white shadow-xs" : "text-slate-500 hover:bg-slate-50 hover:text-[#14142b]"
+                tab === id ? "bg-ink text-on-ink shadow-xs" : "text-slate-500 hover:bg-slate-50 hover:text-ink"
               }`}
             >
               <Icon size={13} />
@@ -74,7 +74,7 @@ export default function PaymentsConsolePage() {
         </div>
 
         {(tab === "overview" || tab === "channels") && (
-          <div className="flex gap-1 rounded-full border border-slate-200/80 bg-white p-1">
+          <div className="flex gap-1 rounded-full border border-slate-200/80 bg-surface p-1">
             {PERIODS.map((p) => (
               <button
                 key={p.id}

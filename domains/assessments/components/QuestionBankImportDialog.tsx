@@ -241,7 +241,7 @@ export function QuestionBankImportDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative mx-4 flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="relative mx-4 flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl bg-surface p-6 shadow-2xl">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
@@ -265,9 +265,9 @@ export function QuestionBankImportDialog({
               <button
                 type="button"
                 onClick={copyPrompt}
-                className="flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:border-indigo-300 hover:text-indigo-600"
+                className="flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:border-indigo-300 hover:text-indigo-600 dark:hover:border-indigo-500/40 dark:hover:text-indigo-400"
               >
-                {copied ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
+                {copied ? <Check size={12} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={12} />}
                 {copied ? "Copied" : "Copy prompt"}
               </button>
             </div>
@@ -299,7 +299,7 @@ export function QuestionBankImportDialog({
                 if (file) readFile(file);
               }}
               className={`mb-2 flex items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-3 text-xs text-gray-400 transition-colors ${
-                dragOver ? "border-indigo-400 bg-indigo-50" : "border-gray-200"
+                dragOver ? "border-indigo-400 bg-indigo-50 dark:bg-indigo-500/10" : "border-gray-200"
               }`}
             >
               <UploadCloud size={14} />
@@ -307,7 +307,7 @@ export function QuestionBankImportDialog({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="font-medium text-indigo-600 hover:underline"
+                className="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
               >
                 choose a file
               </button>
@@ -328,7 +328,7 @@ export function QuestionBankImportDialog({
               onChange={(e) => setJsonText(e.target.value)}
               placeholder='{"questions": [...]}'
               rows={8}
-              className="w-full resize-y rounded-lg border border-gray-200 px-3 py-2 font-mono text-xs text-gray-800 outline-none placeholder:text-gray-300 focus:ring-1 focus:ring-indigo-200"
+              className="w-full resize-y rounded-lg border border-gray-200 px-3 py-2 font-mono text-xs text-gray-800 outline-none placeholder:text-gray-300 focus:ring-1 focus:ring-indigo-200 dark:focus:ring-indigo-500/25"
             />
           </div>
 
@@ -354,7 +354,7 @@ export function QuestionBankImportDialog({
           )}
 
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
+            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600 dark:border-red-500/25 dark:bg-red-500/10 dark:text-red-400">
               {error}
             </div>
           )}

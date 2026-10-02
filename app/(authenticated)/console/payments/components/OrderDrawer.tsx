@@ -142,8 +142,8 @@ export function OrderDrawer({
   return (
     <div className="fixed inset-0 z-[80] flex justify-end" role="dialog" aria-modal="true" aria-label="Payment order">
       <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 cursor-default bg-slate-900/30 backdrop-blur-[2px]" />
-      <aside className="relative flex h-full w-full max-w-[520px] flex-col overflow-y-auto bg-white shadow-2xl">
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-5 py-4 backdrop-blur">
+      <aside className="relative flex h-full w-full max-w-[520px] flex-col overflow-y-auto bg-surface shadow-2xl">
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-surface/95 px-5 py-4 backdrop-blur">
           <div className="min-w-0">
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Payment order</p>
             <button
@@ -162,7 +162,7 @@ export function OrderDrawer({
           </button>
         </header>
 
-        {error && <p className="m-5 rounded-xl bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">{error}</p>}
+        {error && <p className="m-5 rounded-xl bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">{error}</p>}
         {!detail && !error && (
           <div className="flex flex-1 items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
@@ -173,7 +173,7 @@ export function OrderDrawer({
           <div className="space-y-6 px-5 py-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-2xl font-bold tracking-tight text-[#14142b] tabular-nums">{formatMoney(order.amount, order.currency)}</p>
+                <p className="text-2xl font-bold tracking-tight text-ink tabular-nums">{formatMoney(order.amount, order.currency)}</p>
                 <p className="mt-0.5 truncate text-xs font-medium text-slate-500">{order.resourceTitle || "Untitled"}</p>
               </div>
               <PaymentStatusBadge status={order.status} />
@@ -208,8 +208,8 @@ export function OrderDrawer({
                   </span>
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-2 text-center">
-                  <div className="rounded-xl bg-amber-50/70 px-2 py-2">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700/70">Platform commission</p>
+                  <div className="rounded-xl bg-amber-50/70 px-2 py-2 dark:bg-amber-500/10">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700/70 dark:text-amber-300">Platform commission</p>
                     <p className="mt-0.5 text-xs font-bold tabular-nums text-slate-800">
                       {formatMoney(detail.commission.retainedMinor, order.currency)}
                     </p>
@@ -217,11 +217,11 @@ export function OrderDrawer({
                       <p className="text-[10.5px] text-slate-400">of {formatMoney(detail.commission.chargedMinor, order.currency)} charged</p>
                     )}
                   </div>
-                  <div className="rounded-xl bg-indigo-50/70 px-2 py-2">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-700/70">Owed to channel</p>
+                  <div className="rounded-xl bg-indigo-50/70 px-2 py-2 dark:bg-indigo-500/10">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-700/70 dark:text-indigo-300">Owed to channel</p>
                     <p
                       className={`mt-0.5 text-xs font-bold tabular-nums ${
-                        detail.commission.channelPayableMinor < 0 ? "text-rose-600" : "text-slate-800"
+                        detail.commission.channelPayableMinor < 0 ? "text-rose-600 dark:text-rose-400" : "text-slate-800"
                       }`}
                     >
                       {formatMoney(detail.commission.channelPayableMinor, order.currency)}
@@ -257,13 +257,13 @@ export function OrderDrawer({
                   <button
                     type="button"
                     onClick={() => setRefundOpen(true)}
-                    className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-700 hover:bg-rose-100"
+                    className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-700 hover:bg-rose-100 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15"
                   >
                     <RotateCcw size={14} /> Refund
                   </button>
                 ) : (
                   <div className="space-y-3">
-                    <h4 className="text-sm font-bold text-[#14142b]">Refund this order</h4>
+                    <h4 className="text-sm font-bold text-ink">Refund this order</h4>
                     <label className="block text-xs font-semibold text-slate-600">
                       Amount ({order.currency})
                       <input
@@ -275,11 +275,11 @@ export function OrderDrawer({
                         disabled={confirming}
                         className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-slate-400"
                       />
-                      <span className={`mt-1 block text-[11px] font-medium ${amountInvalid ? "text-rose-600" : "text-slate-400"}`}>
+                      <span className={`mt-1 block text-[11px] font-medium ${amountInvalid ? "text-rose-600 dark:text-rose-400" : "text-slate-400"}`}>
                         Up to {formatMoney(detail.refundableMinor, order.currency)} refundable.
                       </span>
                       {detail.commission.chargedMinor > 0 && (
-                        <span className="mt-0.5 block text-[11px] font-medium text-amber-700">
+                        <span className="mt-0.5 block text-[11px] font-medium text-amber-700 dark:text-amber-300">
                           {detail.commission.refundTreatment === "RETAINED"
                             ? "Arcade keeps its commission on this sale; the channel's payable drops by the full refund."
                             : "Arcade's commission is returned in proportion to the amount refunded."}
@@ -313,8 +313,8 @@ export function OrderDrawer({
                     </label>
 
                     {confirming ? (
-                      <div className="space-y-2 rounded-xl bg-rose-50 p-3">
-                        <p className="flex items-start gap-1.5 text-xs font-semibold text-rose-800">
+                      <div className="space-y-2 rounded-xl bg-rose-50 p-3 dark:bg-rose-500/10">
+                        <p className="flex items-start gap-1.5 text-xs font-semibold text-rose-800 dark:text-rose-200">
                           <AlertTriangle size={14} className="mt-px shrink-0" />
                           Send {amountMinor !== null ? formatMoney(amountMinor, order.currency) : ""} back to{" "}
                           {order.userName || "the learner"}
@@ -325,7 +325,7 @@ export function OrderDrawer({
                             type="button"
                             onClick={() => setConfirming(false)}
                             disabled={submitting}
-                            className="flex-1 cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"
+                            className="flex-1 cursor-pointer rounded-xl border border-slate-200 bg-surface px-3 py-2 text-xs font-semibold text-slate-700"
                           >
                             Back
                           </button>
@@ -352,7 +352,7 @@ export function OrderDrawer({
                           type="button"
                           disabled={amountInvalid || reason.trim().length < 3}
                           onClick={() => setConfirming(true)}
-                          className="flex-1 cursor-pointer rounded-xl bg-[#14142b] px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                          className="flex-1 cursor-pointer rounded-xl bg-ink px-3 py-2 text-xs font-bold text-on-ink disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           Review refund
                         </button>
@@ -378,7 +378,7 @@ export function OrderDrawer({
                         {r.requestedByName || "Operator"} · {when(r.requestedAt)}
                         {r.revokeAccess ? " · access withdrawn" : ""}
                       </p>
-                      {r.lastError && <p className="mt-1 text-[11px] font-medium text-rose-600">{r.lastError}</p>}
+                      {r.lastError && <p className="mt-1 text-[11px] font-medium text-rose-600 dark:text-rose-400">{r.lastError}</p>}
                     </div>
                   ))}
                 </div>
@@ -392,7 +392,7 @@ export function OrderDrawer({
                   {detail.transactions.map((t) => (
                     <div key={t.id} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-[11px]">
                       <span className="font-mono text-slate-600">{t.gatewayPaymentId || t.gatewayOrderId || "—"}</span>
-                      <span className={`font-bold ${t.status === "SUCCESS" ? "text-emerald-600" : t.status === "FAILED" ? "text-rose-600" : "text-slate-500"}`}>
+                      <span className={`font-bold ${t.status === "SUCCESS" ? "text-emerald-600 dark:text-emerald-400" : t.status === "FAILED" ? "text-rose-600 dark:text-rose-400" : "text-slate-500"}`}>
                         {t.status}
                       </span>
                     </div>
@@ -409,7 +409,7 @@ export function OrderDrawer({
                 <ol className="relative space-y-3 border-l border-slate-200 pl-4">
                   {detail.timeline.map((e, i) => (
                     <li key={i} className="relative text-xs">
-                      <span className={`absolute -left-[21px] top-1 size-2.5 rounded-full ring-2 ring-white ${TIMELINE_TONE[e.type] ?? "bg-slate-300"}`} />
+                      <span className={`absolute -left-[21px] top-1 size-2.5 rounded-full ring-2 ring-surface ${TIMELINE_TONE[e.type] ?? "bg-slate-300"}`} />
                       <p className="font-semibold text-slate-800">{TIMELINE_LABEL[e.type] ?? e.type}</p>
                       {e.detail && <p className="text-slate-500">{e.detail}</p>}
                       <p className="text-[11px] text-slate-400">

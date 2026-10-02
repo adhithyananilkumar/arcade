@@ -51,7 +51,7 @@ function CenteredState({
       <div className="grid size-12 place-items-center rounded-2xl bg-slate-100 text-slate-400">
         <Icon size={24} />
       </div>
-      <h2 className="text-base font-extrabold text-[#14142b]">{title}</h2>
+      <h2 className="text-base font-extrabold text-ink">{title}</h2>
       <p className="max-w-sm text-xs font-medium text-slate-500">{description}</p>
     </div>
   );
@@ -61,7 +61,7 @@ function OverviewSkeleton() {
   return (
     <div
       className="min-h-screen w-full relative"
-      style={{ background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)" }}
+      style={{ background: "var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%))" }}
     >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 pt-24 pb-28 sm:px-6">
         <Skeleton className="h-4 w-32 rounded-full" />
@@ -258,7 +258,7 @@ function ContentOverviewPageContent() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-1 flex-col overflow-hidden w-full bg-gradient-to-b from-blue-50/50 via-slate-50 to-indigo-50/40">
+    <div className="relative flex min-h-screen flex-1 flex-col overflow-hidden w-full bg-gradient-to-b from-blue-50/50 via-slate-50 to-indigo-50/40 dark:from-blue-500/10 dark:to-indigo-500/10">
       {/* Decorative ambient light glows */}
       <div className="absolute top-10 left-1/4 h-96 w-96 rounded-full bg-blue-400/15 blur-3xl pointer-events-none" />
       <div className="absolute top-1/3 right-1/4 h-96 w-96 rounded-full bg-indigo-400/15 blur-3xl pointer-events-none" />
@@ -268,9 +268,9 @@ function ContentOverviewPageContent() {
           <div className="-mb-4">
             <Link
               href={backNav.href}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white/90 px-3.5 py-2 text-xs font-extrabold text-slate-700 shadow-2xs backdrop-blur-md transition-all duration-200 hover:bg-white hover:text-blue-600 hover:border-blue-200 hover:shadow-xs active:scale-[0.98] cursor-pointer group"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-surface/90 px-3.5 py-2 text-xs font-extrabold text-slate-700 shadow-2xs backdrop-blur-md transition-all duration-200 hover:bg-surface hover:text-blue-600 hover:border-blue-200 hover:shadow-xs active:scale-[0.98] cursor-pointer group dark:hover:text-blue-400 dark:hover:border-blue-500/25"
             >
-              <ArrowLeft size={15} className="transition-transform duration-200 group-hover:-translate-x-1 text-slate-500 group-hover:text-blue-600" />
+              <ArrowLeft size={15} className="transition-transform duration-200 group-hover:-translate-x-1 text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
               <span>{backNav.label}</span>
             </Link>
           </div>
@@ -294,7 +294,7 @@ function ContentOverviewPageContent() {
 
         {segment === "event" && (
           <div className="flex justify-center -mt-2">
-            <div className="inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-white/95 p-1.5 shadow-[0_4px_20px_rgba(20,20,43,0.04)] backdrop-blur-md">
+            <div className="inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-surface/95 p-1.5 shadow-[0_4px_20px_rgba(20,20,43,0.04)] backdrop-blur-md">
               {[
                 { id: "OVERVIEW", label: "Overview", icon: LayoutGrid },
                 { id: "pricing", label: "Pricing", icon: Tag },

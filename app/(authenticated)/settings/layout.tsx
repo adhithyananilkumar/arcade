@@ -11,31 +11,31 @@ const sidebarItems = [
     name: 'Personal info', 
     href: '/settings/info', 
     icon: User, 
-    iconBg: 'bg-[#bbf7d0] text-[#14532d]',
+    iconBg: 'bg-[#bbf7d0] text-[#14532d] dark:bg-[#bbf7d0]/15 dark:text-[#8bc89c]',
   },
   { 
     name: 'Appearance', 
     href: '/settings/appearance', 
     icon: Palette, 
-    iconBg: 'bg-[#fef08a] text-[#854d0e]',
+    iconBg: 'bg-[#fef08a] text-[#854d0e] dark:bg-[#fef08a]/15 dark:text-[#e7a871]',
   },
   { 
     name: 'Security & sign-in', 
     href: '/settings/security', 
     icon: Shield, 
-    iconBg: 'bg-[#bae6fd] text-[#0c4a6e]',
+    iconBg: 'bg-[#bae6fd] text-[#0c4a6e] dark:text-[#85bfe9] dark:bg-[#bae6fd]/15',
   },
   { 
     name: 'Payments & billing', 
     href: '/settings/payments', 
     icon: CreditCard, 
-    iconBg: 'bg-[#e9d5ff] text-[#4c1d95]',
+    iconBg: 'bg-[#e9d5ff] text-[#4c1d95] dark:text-[#bda1ff] dark:bg-[#e9d5ff]/15',
   },
   { 
     name: 'Data & privacy', 
     href: '/settings/privacy', 
     icon: ToggleLeft, 
-    iconBg: 'bg-[#fed7aa] text-[#7c2d12]',
+    iconBg: 'bg-[#fed7aa] text-[#7c2d12] dark:bg-[#fed7aa]/15 dark:text-[#f79d80]',
   },
 ];
 
@@ -63,7 +63,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   );
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen pt-28 md:pt-32 pb-16 bg-white dark:bg-[#202124] gap-10 md:gap-14 px-6 md:px-12 items-start">
+    <div className="flex flex-col md:flex-row min-h-screen pt-28 md:pt-32 pb-16 bg-surface gap-10 md:gap-14 px-6 md:px-12 items-start">
       {/* Sticky Sidebar Navigation */}
       <aside className="w-full md:w-[240px] shrink-0 bg-transparent py-1 md:sticky md:top-28 self-start z-10">
         <SideNav
@@ -77,14 +77,14 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
       <main className="flex-1 bg-transparent w-full min-w-0">
         <div className="w-full">
           {/* Breadcrumb Header */}
-          <div className="pb-3.5 mb-6 border-b border-slate-200/80 dark:border-neutral-800 flex items-center gap-2 text-sm text-slate-500 dark:text-neutral-400 font-semibold">
+          <div className="pb-3.5 mb-6 border-b border-slate-200/80 flex items-center gap-2 text-sm text-slate-500 font-semibold">
             <Link href="/settings/info" className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-1.5">
               <SettingsIcon size={15} />
               <span>Settings</span>
             </Link>
             {activeItem && (
               <>
-                <ChevronRight size={15} className="text-slate-400 dark:text-neutral-600" />
+                <ChevronRight size={15} className="text-slate-400" />
                 <span className="text-sky-700 dark:text-sky-400 font-bold">{activeItem.name}</span>
               </>
             )}

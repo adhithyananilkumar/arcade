@@ -125,9 +125,9 @@ export function CredentialView({ data, tiers }: { data: PublicBadge; tiers: Badg
             </div>
             <ul className="grid gap-2 sm:grid-cols-3 lg:min-w-[560px]">
               {checks.map((c) => (
-                <li key={c.label} className="rounded-2xl bg-white/70 px-3 py-2 dark:bg-slate-950/40">
+                <li key={c.label} className="rounded-2xl bg-surface/70 px-3 py-2">
                   <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] opacity-70">
-                    {c.ok ? <Check size={11} strokeWidth={3} className="text-emerald-600" /> : <ShieldX size={11} className="text-rose-600" />}
+                    {c.ok ? <Check size={11} strokeWidth={3} className="text-emerald-600 dark:text-emerald-400" /> : <ShieldX size={11} className="text-rose-600 dark:text-rose-400" />}
                     {c.label}
                   </p>
                   <p className="mt-0.5 text-[11px] font-semibold leading-snug">{c.detail}</p>
@@ -138,9 +138,9 @@ export function CredentialView({ data, tiers }: { data: PublicBadge; tiers: Badg
         </section>
 
         {/* ── The credential ── */}
-        <section className="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/95 shadow-[0_20px_60px_rgba(20,20,43,0.08)] backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+        <section className="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-surface/95 shadow-[0_20px_60px_rgba(20,20,43,0.08)] backdrop-blur">
           <div className="grid lg:grid-cols-[400px_1fr]">
-            <div className="relative flex flex-col items-center justify-center border-b border-slate-100 bg-slate-50 px-8 py-10 dark:border-slate-800 dark:bg-slate-900/60 lg:border-b-0 lg:border-r">
+            <div className="relative flex flex-col items-center justify-center border-b border-slate-100 bg-slate-50 px-8 py-10 lg:border-b-0 lg:border-r">
               <motion.div
                 initial={{ opacity: 0, y: 12, scale: 0.94 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -157,7 +157,7 @@ export function CredentialView({ data, tiers }: { data: PublicBadge; tiers: Badg
                 <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">{badge.badgeClass.family.label}</span>
                 <span className={cn("rounded-full border px-2.5 py-0.5 text-xs font-semibold", style.chip)}>{badge.badgeClass.tier.label}</span>
               </div>
-              <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-[#14142b] dark:text-white sm:text-4xl">{badge.name}</h1>
+              <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">{badge.name}</h1>
 
               <dl className="mt-6 grid gap-4 sm:grid-cols-2">
                 <Fact icon={User} label="Awarded to">
@@ -194,10 +194,10 @@ export function CredentialView({ data, tiers }: { data: PublicBadge; tiers: Badg
                     <button
                       type="button"
                       onClick={() => copy(badge.credentialCode, "id")}
-                      className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
+                      className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
                       aria-label="Copy credential ID"
                     >
-                      {copied === "id" ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                      {copied === "id" ? <Check size={13} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={13} />}
                     </button>
                   </span>
                 </Fact>
@@ -217,7 +217,7 @@ export function CredentialView({ data, tiers }: { data: PublicBadge; tiers: Badg
                     href={linkedInShareUrl(url)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-surface px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
                   >
                     <Share2 size={14} /> Share post
                   </a>
@@ -225,22 +225,22 @@ export function CredentialView({ data, tiers }: { data: PublicBadge; tiers: Badg
                     href={xShareUrl(url, `I earned the Arcade Level ${level} badge for ${badge.name}`)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-surface px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
                   >
                     Post on X
                   </a>
                   <button
                     type="button"
                     onClick={() => copy(url, "link")}
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-surface px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
                   >
-                    {copied === "link" ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />} Copy link
+                    {copied === "link" ? <Check size={14} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={14} />} Copy link
                   </button>
                   <button
                     type="button"
                     onClick={download}
                     disabled={downloading}
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-surface px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
                   >
                     {downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />} Badge image
                   </button>
@@ -254,10 +254,10 @@ export function CredentialView({ data, tiers }: { data: PublicBadge; tiers: Badg
           <div className="space-y-6">
             {/* ── What it certifies ── */}
             <Card title="What this badge certifies" icon={BadgeCheck}>
-              <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{badge.criteria}</p>
-              <div className="mt-4 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+              <p className="text-sm leading-relaxed text-slate-700">{badge.criteria}</p>
+              <div className="mt-4 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4">
                 <p className="text-xs font-semibold text-slate-500">{tier.label}</p>
-                <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-200">{tier.meaning}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-800">{tier.meaning}</p>
                 <p className="mt-1 text-xs text-slate-500">{tier.guidance}</p>
               </div>
             </Card>
@@ -270,19 +270,19 @@ export function CredentialView({ data, tiers }: { data: PublicBadge; tiers: Badg
                   <img src={content.imageUrl} alt="" className="h-32 w-full rounded-2xl object-cover sm:w-48" />
                 )}
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-lg font-black tracking-tight text-[#14142b] dark:text-white">{content.title}</h3>
-                  {content.summary && <p className="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{content.summary}</p>}
+                  <h3 className="text-lg font-black tracking-tight text-ink">{content.title}</h3>
+                  {content.summary && <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{content.summary}</p>}
                   {content.highlights.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {content.highlights.map((h) => (
-                        <span key={h} className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[11px] font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                        <span key={h} className="rounded-full border border-slate-200 bg-surface px-2.5 py-0.5 text-[11px] font-bold text-slate-600">
                           {h}
                         </span>
                       ))}
                     </div>
                   )}
                   {content.available && content.path ? (
-                    <Link href={content.path} className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#2962D6] hover:underline">
+                    <Link href={content.path} className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#2962D6] hover:underline dark:text-[#7eb5ff]">
                       View on Arcade <ExternalLink size={11} />
                     </Link>
                   ) : (
@@ -294,21 +294,21 @@ export function CredentialView({ data, tiers }: { data: PublicBadge; tiers: Badg
 
             {/* ── How to verify ── */}
             <Card title="Verifying this credential" icon={ShieldCheck}>
-              <ol className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+              <ol className="space-y-2 text-sm text-slate-600">
                 <li>
-                  <strong className="text-slate-800 dark:text-slate-200">1.</strong> This page is served by Arcade, and every
+                  <strong className="text-slate-800">1.</strong> This page is served by Arcade, and every
                   fact on it is read from Arcade&apos;s record at the moment you open it.
                 </li>
                 <li>
-                  <strong className="text-slate-800 dark:text-slate-200">2.</strong> Anyone can check the ID{" "}
+                  <strong className="text-slate-800">2.</strong> Anyone can check the ID{" "}
                   <span className="font-mono font-bold">{badge.credentialCode}</span> at{" "}
-                  <Link href={`/credentials/verify?id=${encodeURIComponent(badge.credentialCode)}`} className="font-bold text-[#2962D6] hover:underline">
+                  <Link href={`/credentials/verify?id=${encodeURIComponent(badge.credentialCode)}`} className="font-bold text-[#2962D6] hover:underline dark:text-[#7eb5ff]">
                     arcade · verify
                   </Link>
                   .
                 </li>
                 <li>
-                  <strong className="text-slate-800 dark:text-slate-200">3.</strong> It is also published as an Open Badges 2.0
+                  <strong className="text-slate-800">3.</strong> It is also published as an Open Badges 2.0
                   assertion any compatible verifier can read.
                 </li>
               </ol>
@@ -316,7 +316,7 @@ export function CredentialView({ data, tiers }: { data: PublicBadge; tiers: Badg
                 href={openBadgesAssertionUrl(API_ORIGIN, badge.credentialCode)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-4 inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
               >
                 <FileJson size={13} /> Open Badges assertion (JSON)
               </a>
@@ -328,7 +328,7 @@ export function CredentialView({ data, tiers }: { data: PublicBadge; tiers: Badg
             <Card title="The Arcade level standard" icon={Award}>
               <p className="mb-3 text-xs leading-relaxed text-slate-500">
                 Every Arcade badge is issued at one of three levels, defined centrally and identical for every
-                channel. <Link href="/credentials/standards" className="font-bold text-[#2962D6] hover:underline">About the standard</Link>
+                channel. <Link href="/credentials/standards" className="font-bold text-[#2962D6] hover:underline dark:text-[#7eb5ff]">About the standard</Link>
               </p>
               {tiers.length > 0 ? (
                 <TierLadder tiers={tiers} family={family} current={level} compact />
@@ -346,12 +346,12 @@ export function CredentialView({ data, tiers }: { data: PublicBadge; tiers: Badg
 function Fact({ icon: Icon, label, children }: { icon: typeof User; label: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-3">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-800">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
         <Icon size={16} />
       </span>
       <div className="min-w-0">
         <dt className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">{label}</dt>
-        <dd className="mt-0.5 text-sm font-bold text-slate-900 dark:text-white">{children}</dd>
+        <dd className="mt-0.5 text-sm font-bold text-slate-900">{children}</dd>
       </div>
     </div>
   );
@@ -359,8 +359,8 @@ function Fact({ icon: Icon, label, children }: { icon: typeof User; label: strin
 
 function Card({ title, icon: Icon, children }: { title: string; icon: typeof User; children: React.ReactNode }) {
   return (
-    <section className="rounded-[1.75rem] border border-slate-200/80 bg-white/95 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/95 sm:p-6">
-      <h2 className="mb-3 flex items-center gap-2 text-sm font-black tracking-tight text-[#14142b] dark:text-white">
+    <section className="rounded-[1.75rem] border border-slate-200/80 bg-surface/95 p-5 shadow-sm sm:p-6">
+      <h2 className="mb-3 flex items-center gap-2 text-sm font-black tracking-tight text-ink">
         <Icon size={15} className="text-slate-400" /> {title}
       </h2>
       {children}

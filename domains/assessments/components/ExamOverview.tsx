@@ -121,7 +121,7 @@ export function ExamOverview({
   );
 
   return (
-    <main className="min-h-screen bg-white text-ink">
+    <main className="min-h-screen bg-surface text-ink">
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <div className="arcade-wash w-full">
         <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
@@ -148,12 +148,12 @@ export function ExamOverview({
                     {kind}
                   </span>
                   {landing.planType === "COMPLETION" && landing.tiedContentTitle && (
-                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-800">
+                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
                       Completes {landing.tiedContentTitle}
                     </span>
                   )}
                   {landing.proctoringRequired && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-600">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-600">
                       <ShieldCheck size={12} /> Proctored
                     </span>
                   )}
@@ -212,7 +212,7 @@ export function ExamOverview({
       </div>
 
       {/* ── Body ─────────────────────────────────────────────────────── */}
-      <div className="w-full bg-white">
+      <div className="w-full bg-surface">
         <div className="mx-auto max-w-6xl px-5 pb-28 pt-14 sm:px-8 sm:pb-36 sm:pt-16">
           {landing.plans.length > 1 && (
             <div className="mb-14 flex justify-center">
@@ -355,7 +355,7 @@ export function ExamOverview({
               <p className="mt-2 text-[14px] text-subtle">
                 Each finished attempt has a grade card with your full marks.
               </p>
-              <ul className="mt-6 divide-y divide-slate-100 overflow-hidden rounded-2xl border border-line bg-white">
+              <ul className="mt-6 divide-y divide-slate-100 overflow-hidden rounded-2xl border border-line bg-surface">
                 {landing.history.map((attempt) => (
                   <li key={attempt.attemptId} className="flex items-center justify-between gap-3 px-5 py-4">
                     <div className="min-w-0">
@@ -407,7 +407,7 @@ export function ExamOverview({
 function ExamCover({ landing, kind }: { landing: AssessmentLandingResponse; kind: string }) {
   return (
     <div className="relative mx-auto w-full max-w-[560px]">
-      <div className="overflow-hidden rounded-[1.6rem] border-[6px] border-[#2a2d3a] bg-[#2a2d3a] shadow-[0_30px_80px_rgba(20,22,28,0.22)]">
+      <div className="overflow-hidden rounded-[1.6rem] border-[6px] border-ink bg-ink shadow-[0_30px_80px_rgba(20,22,28,0.22)]">
         <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[1.1rem]">
           <ContentArt seed={landing.examId} kind="EXAM" title={landing.title} />
           <span className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-black/55 px-3 py-1.5 text-[12px] font-semibold text-white backdrop-blur">
@@ -423,7 +423,7 @@ function ExamCover({ landing, kind }: { landing: AssessmentLandingResponse; kind
 function Expect({ icon, title, sub }: { icon: ReactNode; title: string; sub: string }) {
   return (
     <li className="flex items-start gap-3.5">
-      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-emerald-50 text-emerald-700">
+      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
         {icon}
       </span>
       <div>
@@ -444,7 +444,7 @@ function AttemptOutcome({
 }) {
   if (attempt.awaitingReview) {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-amber-700">
+      <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-amber-700 dark:text-amber-300">
         <Hourglass size={13} /> Awaiting marking
       </span>
     );
@@ -456,7 +456,7 @@ function AttemptOutcome({
     return <span className="text-[12px] font-semibold text-slate-500">Completed</span>;
   }
   return attempt.passed ? (
-    <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-emerald-700">
+    <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-emerald-700 dark:text-emerald-300">
       <CheckCircle2 size={13} /> Passed
     </span>
   ) : (

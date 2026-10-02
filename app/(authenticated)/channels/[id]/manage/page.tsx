@@ -165,32 +165,32 @@ export default function ManageChannelPage() {
     return [
       {
         items: [
-          item('overview', 'Overview', LayoutGrid, 'bg-[#bae6fd] text-[#0c4a6e]'),
-          item('content', 'Content', BookOpen, 'bg-[#fbcfe8] text-[#831843]'),
+          item('overview', 'Overview', LayoutGrid, 'bg-[#bae6fd] text-[#0c4a6e] dark:text-[#85bfe9] dark:bg-[#bae6fd]/15'),
+          item('content', 'Content', BookOpen, 'bg-[#fbcfe8] text-[#831843] dark:text-[#ff8eaf] dark:bg-[#fbcfe8]/15'),
           ...(isOrg && (isOwner || canReview)
-            ? [item('reviews', 'Reviews', ClipboardCheck, 'bg-[#fef08a] text-[#854d0e]', { count: openCount })]
+            ? [item('reviews', 'Reviews', ClipboardCheck, 'bg-[#fef08a] text-[#854d0e] dark:bg-[#fef08a]/15 dark:text-[#e7a871]', { count: openCount })]
             : []),
-          ...(canEdit ? [item('analytics', 'Analytics', BarChart3, 'bg-[#bbf7d0] text-[#14532d]')] : []),
+          ...(canEdit ? [item('analytics', 'Analytics', BarChart3, 'bg-[#bbf7d0] text-[#14532d] dark:bg-[#bbf7d0]/15 dark:text-[#8bc89c]')] : []),
           // Every member: the backend narrows an instructor to their own sales.
-          item('payments', 'Payments', Wallet, 'bg-[#fed7aa] text-[#7c2d12]'),
+          item('payments', 'Payments', Wallet, 'bg-[#fed7aa] text-[#7c2d12] dark:bg-[#fed7aa]/15 dark:text-[#f79d80]'),
         ],
       },
       {
         title: 'Organization',
         items: isOrg
           ? [
-              item('identity', 'Identity & handle', AtSign, 'bg-[#c7d2fe] text-[#312e81]'),
-              item('staff', 'Staff & roles', Users, 'bg-[#e9d5ff] text-[#4c1d95]'),
+              item('identity', 'Identity & handle', AtSign, 'bg-[#c7d2fe] text-[#312e81] dark:text-[#a5adff] dark:bg-[#c7d2fe]/15'),
+              item('staff', 'Staff & roles', Users, 'bg-[#e9d5ff] text-[#4c1d95] dark:text-[#bda1ff] dark:bg-[#e9d5ff]/15'),
             ]
           : [],
       },
       {
         title: 'Records',
-        items: [item('activity', 'Activity log', Activity, 'bg-[#dbeafe] text-[#1e40af]')],
+        items: [item('activity', 'Activity log', Activity, 'bg-[#dbeafe] text-[#1e40af] dark:text-[#86b3ff] dark:bg-[#dbeafe]/15')],
       },
       {
         items: isOwner
-          ? [item('danger', 'Danger zone', ShieldAlert, 'bg-[#fecdd3] text-[#881337]', { danger: true })]
+          ? [item('danger', 'Danger zone', ShieldAlert, 'bg-[#fecdd3] text-[#881337] dark:text-[#ff8ca1] dark:bg-[#fecdd3]/15', { danger: true })]
           : [],
       },
     ];
@@ -202,7 +202,7 @@ export default function ManageChannelPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-[#202124]">
+      <div className="flex min-h-screen items-center justify-center bg-surface">
         <Loader2 className="h-7 w-7 animate-spin text-slate-400" />
       </div>
     );
@@ -212,7 +212,7 @@ export default function ManageChannelPage() {
 
   const isSuspended = channel.status === 'SUSPENDED';
   const primaryBtn =
-    'inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#14142b] px-3.5 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#232735]';
+    'inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-ink px-3.5 py-1.5 text-[12px] font-semibold text-on-ink transition-colors hover:bg-ink-hover';
 
   const headerActions =
     active === 'content' ? (
@@ -222,7 +222,7 @@ export default function ManageChannelPage() {
     ) : null;
 
   return (
-    <div className="min-h-screen bg-white px-4 pb-16 pt-24 sm:px-6 md:px-8 lg:px-10 md:pt-28 dark:bg-[#202124]">
+    <div className="min-h-screen bg-surface px-4 pb-16 pt-24 sm:px-6 md:px-8 lg:px-10 md:pt-28">
       <div className="flex w-full flex-col gap-6 md:flex-row md:items-start md:gap-8 lg:gap-10">
         <aside className="w-full shrink-0 md:sticky md:top-28 md:w-[220px] lg:w-[240px]">
           <SideNav sections={sections} activeKey={active} ariaLabel="Channel dashboard" className="hidden md:flex" />
@@ -256,12 +256,12 @@ export default function ManageChannelPage() {
                     <button
                       type="button"
                       aria-label={`${SECTION_COPY[active].title} information`}
-                      className="inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
+                      className="inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100/80 transition-colors cursor-pointer"
                     >
                       <Info size={16} className="stroke-[2.2]" />
                     </button>
                     <div className="pointer-events-none absolute left-full top-1/2 ml-2.5 -translate-y-1/2 z-50 w-72 sm:w-80 opacity-0 -translate-x-1 group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-all duration-200 ease-out">
-                      <div className="rounded-2xl border border-slate-200/80 bg-white/80 backdrop-blur-md p-3.5 shadow-[0_8px_30px_rgba(20,20,43,0.08)] text-[12.5px] font-medium leading-relaxed text-slate-900 dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-white">
+                      <div className="rounded-2xl border border-slate-200/80 bg-surface/80 backdrop-blur-md p-3.5 shadow-[0_8px_30px_rgba(20,20,43,0.08)] text-[12.5px] font-medium leading-relaxed text-slate-900">
                         {SECTION_COPY[active].description}
                       </div>
                     </div>
@@ -323,8 +323,8 @@ export default function ManageChannelPage() {
 function Notice({ tone, title, children }: { tone: 'amber' | 'rose'; title: string; children: React.ReactNode }) {
   const styles =
     tone === 'amber'
-      ? 'border-amber-200 bg-amber-50/80 text-amber-900'
-      : 'border-rose-200 bg-rose-50/80 text-rose-900';
+      ? 'border-amber-200 bg-amber-50/80 text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200'
+      : 'border-rose-200 bg-rose-50/80 text-rose-900 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-200';
   return (
     <div className={`flex items-start gap-3 rounded-2xl border px-4 py-3.5 ${styles}`}>
       <AlertTriangle size={17} className="mt-0.5 shrink-0" />

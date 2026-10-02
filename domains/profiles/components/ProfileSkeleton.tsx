@@ -20,7 +20,7 @@
 function Block({ className }: { className: string }) {
   return (
     <div
-      className={`animate-pulse rounded-xl bg-slate-100 dark:bg-neutral-900 ${className}`}
+      className={`animate-pulse rounded-xl bg-slate-100 ${className}`}
     />
   );
 }
@@ -30,10 +30,10 @@ export function ProfileSkeleton() {
     <div aria-busy="true" aria-live="polite" className="space-y-8">
       <span className="sr-only">Loading profile…</span>
 
-      <div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-surface">
         <Block className="h-24 w-full !rounded-none sm:h-28" />
         <div className="space-y-3 px-6 pb-6 sm:px-8">
-          <Block className="-mt-12 h-24 w-24 !rounded-2xl border-4 border-white sm:-mt-14 sm:h-28 sm:w-28 dark:border-slate-900" />
+          <Block className="-mt-12 h-24 w-24 !rounded-2xl border-4 border-surface sm:-mt-14 sm:h-28 sm:w-28" />
           <Block className="h-8 w-64" />
           <Block className="h-4 w-80 max-w-full" />
           <Block className="h-4 w-full max-w-xl" />

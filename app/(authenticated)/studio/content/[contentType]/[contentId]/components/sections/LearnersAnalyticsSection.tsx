@@ -426,7 +426,7 @@ export function LearnersAnalyticsSection({
             {/* Left Card: Enrollments (Clickable to view details) */}
             <div
               onClick={() => setIsLearnersModalOpen(true)}
-              className="lg:col-span-4 rounded-[32px] border-2 border-blue-300/80 bg-white p-7 shadow-xs flex flex-col justify-between min-h-[360px] cursor-pointer hover:border-blue-500 hover:shadow-md transition-all group relative"
+              className="lg:col-span-4 rounded-[32px] border-2 border-blue-300/80 bg-surface p-7 shadow-xs flex flex-col justify-between min-h-[360px] cursor-pointer hover:border-blue-500 hover:shadow-md transition-all group relative dark:border-blue-500/40"
             >
               {/* Top Header */}
               <div className="flex items-center justify-between gap-2.5">
@@ -434,17 +434,17 @@ export function LearnersAnalyticsSection({
                   <Users size={22} className="text-blue-500 group-hover:scale-110 transition-transform" />
                   <h3 className="text-xl font-black tracking-tight text-slate-900">Enrollments</h3>
                 </div>
-                <span className="text-[11px] font-bold text-blue-600 bg-blue-50 border border-blue-200/80 group-hover:bg-blue-600 group-hover:text-white px-2.5 py-1 rounded-full transition-all flex items-center gap-0.5 shadow-2xs">
+                <span className="text-[11px] font-bold text-blue-600 bg-blue-50 border border-blue-200/80 group-hover:bg-blue-600 group-hover:text-white px-2.5 py-1 rounded-full transition-all flex items-center gap-0.5 shadow-2xs dark:text-blue-400 dark:bg-blue-500/10 dark:border-blue-500/25">
                   View details <ChevronRight size={12} />
                 </span>
               </div>
 
               {/* Center Metric Count (Animated run from 0 to total enrollments) */}
               <div className="flex flex-col items-center justify-center my-6 text-center">
-                <span className="text-6xl font-black text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">
+                <span className="text-6xl font-black text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors dark:group-hover:text-blue-400">
                   {animatedLearnerCount}
                 </span>
-                <span className="text-base font-bold text-blue-600 mt-2">Active learners</span>
+                <span className="text-base font-bold text-blue-600 mt-2 dark:text-blue-400">Active learners</span>
               </div>
 
               {/* Bottom Rating Info */}
@@ -477,7 +477,7 @@ export function LearnersAnalyticsSection({
             </div>
 
             {/* Right Card: Student Reviews & Feedback (Clickable to view full feedbacks) */}
-            <div className="lg:col-span-8 rounded-[32px] border-2 border-amber-300/90 bg-white p-7 shadow-xs flex flex-col justify-between min-h-[360px]">
+            <div className="lg:col-span-8 rounded-[32px] border-2 border-amber-300/90 bg-surface p-7 shadow-xs flex flex-col justify-between min-h-[360px] dark:border-amber-500/40">
               {/* Header with Title, View All button, and Search */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
                 <div className="flex items-center gap-2.5">
@@ -494,12 +494,12 @@ export function LearnersAnalyticsSection({
                       placeholder="Search reviews..."
                       value={reviewSearchQuery}
                       onChange={(e) => setReviewSearchQuery(e.target.value)}
-                      className="w-full rounded-full border border-slate-200 bg-white py-1.5 pl-9 pr-3 text-xs font-medium text-slate-700 placeholder-slate-400 focus:border-amber-400 focus:outline-none"
+                      className="w-full rounded-full border border-slate-200 bg-surface py-1.5 pl-9 pr-3 text-xs font-medium text-slate-700 placeholder-slate-400 focus:border-amber-400 focus:outline-none"
                     />
                   </div>
                   <button
                     onClick={() => setIsReviewsModalOpen(true)}
-                    className="shrink-0 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-500 hover:text-white border border-amber-200/80 px-3 py-1.5 rounded-full transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
+                    className="shrink-0 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-500 hover:text-white border border-amber-200/80 px-3 py-1.5 rounded-full transition-all flex items-center gap-1 shadow-2xs cursor-pointer dark:text-amber-300 dark:bg-amber-500/10 dark:border-amber-500/25"
                   >
                     View all ({sortedReviews.length}) <ChevronRight size={12} />
                   </button>
@@ -517,10 +517,10 @@ export function LearnersAnalyticsSection({
                     <div
                       key={review.id}
                       onClick={() => setIsReviewsModalOpen(true)}
-                      className="flex items-center justify-between py-3.5 px-2 hover:bg-amber-50/40 rounded-xl transition-colors group cursor-pointer"
+                      className="flex items-center justify-between py-3.5 px-2 hover:bg-amber-50/40 rounded-xl transition-colors group cursor-pointer dark:hover:bg-amber-500/10"
                     >
                       <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                        <div className="size-10 rounded-full bg-blue-50 border border-blue-200/80 flex items-center justify-center shrink-0">
+                        <div className="size-10 rounded-full bg-blue-50 border border-blue-200/80 flex items-center justify-center shrink-0 dark:bg-blue-500/10 dark:border-blue-500/25">
                           {review.userAvatarUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -572,7 +572,7 @@ export function LearnersAnalyticsSection({
                   ))
                 ) : (
                   <div className="flex flex-col items-center justify-center py-10 text-center my-auto">
-                    <div className="size-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-3">
+                    <div className="size-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-3 dark:bg-amber-500/10 dark:border-amber-500/25">
                       <MessageSquare size={20} className="text-amber-500" />
                     </div>
                     <p className="text-sm font-bold text-slate-700">
@@ -597,7 +597,7 @@ export function LearnersAnalyticsSection({
             onClick={() => setIsLearnersModalOpen(false)}
           >
             <div
-              className="flex flex-col w-full max-w-3xl max-h-[85vh] bg-white rounded-[28px] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+              className="flex flex-col w-full max-w-3xl max-h-[85vh] bg-surface rounded-[28px] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
@@ -626,18 +626,18 @@ export function LearnersAnalyticsSection({
               {/* Status Breakdown & Search */}
               <div className="p-6 pb-3 flex flex-col gap-4">
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-2xl border border-blue-200 bg-blue-50/40 p-3 flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Total Enrolled</span>
+                  <div className="rounded-2xl border border-blue-200 bg-blue-50/40 p-3 flex flex-col dark:border-blue-500/25 dark:bg-blue-500/10">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Total Enrolled</span>
                     <span className="text-xl font-black text-slate-900 mt-0.5">{effectiveLearners.length}</span>
                   </div>
-                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-3 flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">In Progress</span>
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-3 flex flex-col dark:border-emerald-500/25 dark:bg-emerald-500/10">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">In Progress</span>
                     <span className="text-xl font-black text-slate-900 mt-0.5">
                       {effectiveLearners.filter((l) => l.status === "Ongoing").length}
                     </span>
                   </div>
-                  <div className="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-3 flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">Completed</span>
+                  <div className="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-3 flex flex-col dark:border-indigo-500/25 dark:bg-indigo-500/10">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Completed</span>
                     <span className="text-xl font-black text-slate-900 mt-0.5">
                       {effectiveLearners.filter((l) => l.status === "Completed").length}
                     </span>
@@ -651,7 +651,7 @@ export function LearnersAnalyticsSection({
                     placeholder="Search student by name or email..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:outline-hidden shadow-2xs"
+                    className="w-full rounded-xl border border-slate-200 bg-surface py-2 pl-9 pr-3 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:outline-hidden shadow-2xs"
                   />
                 </div>
               </div>
@@ -665,7 +665,7 @@ export function LearnersAnalyticsSection({
                       className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3.5 hover:bg-slate-50/80 px-2 rounded-xl transition-colors"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="grid size-10 shrink-0 place-items-center rounded-full bg-slate-900 text-white font-black text-xs shadow-2xs">
+                        <div className="grid size-10 shrink-0 place-items-center rounded-full bg-slate-900 text-on-ink font-black text-xs shadow-2xs">
                           {learner.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex flex-col min-w-0">
@@ -681,12 +681,12 @@ export function LearnersAnalyticsSection({
                       <div className="flex items-center gap-4 shrink-0 sm:ml-auto">
                         <div>
                           {learner.status === "Completed" ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200 px-2.5 py-0.5 text-[10px] font-black uppercase">
-                              <CheckCircle2 size={10} className="text-blue-600" /> Completed
+                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200 px-2.5 py-0.5 text-[10px] font-black uppercase dark:bg-blue-500/15 dark:text-blue-200 dark:border-blue-500/25">
+                              <CheckCircle2 size={10} className="text-blue-600 dark:text-blue-400" /> Completed
                             </span>
                           ) : learner.status === "Ongoing" ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 text-[10px] font-black uppercase">
-                              <Radio size={10} className="text-emerald-600" /> In Progress
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 text-[10px] font-black uppercase dark:bg-emerald-500/15 dark:text-emerald-200 dark:border-emerald-500/40">
+                              <Radio size={10} className="text-emerald-600 dark:text-emerald-400" /> In Progress
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-0.5 text-[10px] font-black uppercase">
@@ -721,7 +721,7 @@ export function LearnersAnalyticsSection({
                   ))
                 ) : (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <div className="size-12 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center mb-2 text-blue-500">
+                    <div className="size-12 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center mb-2 text-blue-500 dark:bg-blue-500/10 dark:border-blue-500/25">
                       <Users size={20} />
                     </div>
                     <p className="text-sm font-bold text-slate-700">
@@ -743,7 +743,7 @@ export function LearnersAnalyticsSection({
                 </span>
                 <button
                   onClick={() => setIsLearnersModalOpen(false)}
-                  className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
+                  className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-on-ink hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
                 >
                   Close
                 </button>
@@ -759,11 +759,11 @@ export function LearnersAnalyticsSection({
             onClick={() => setIsReviewsModalOpen(false)}
           >
             <div
-              className="flex flex-col w-full max-w-4xl max-h-[88vh] bg-white rounded-[32px] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+              className="flex flex-col w-full max-w-4xl max-h-[88vh] bg-surface rounded-[32px] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="flex items-center justify-between px-7 py-5 border-b border-slate-100 bg-amber-50/30">
+              <div className="flex items-center justify-between px-7 py-5 border-b border-slate-100 bg-amber-50/30 dark:bg-amber-500/10">
                 <div className="flex items-center gap-3">
                   <div className="grid size-11 place-items-center rounded-2xl bg-amber-500 text-white shadow-sm">
                     <MessageSquare size={22} />
@@ -789,7 +789,7 @@ export function LearnersAnalyticsSection({
               <div className="p-6 pb-3 flex flex-col gap-4 border-b border-slate-100 bg-slate-50/40">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="flex flex-col items-center justify-center bg-white border border-amber-200/80 rounded-2xl px-5 py-2.5 shadow-2xs">
+                    <div className="flex flex-col items-center justify-center bg-surface border border-amber-200/80 rounded-2xl px-5 py-2.5 shadow-2xs dark:border-amber-500/25">
                       <span className="text-3xl font-black text-slate-900">{avgRating ?? "0.0"}</span>
                       <div className="flex items-center gap-0.5 mt-0.5">
                         {[1, 2, 3, 4, 5].map((s) => (
@@ -813,7 +813,7 @@ export function LearnersAnalyticsSection({
                         className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                           modalStarFilter === null
                             ? "bg-amber-500 text-white shadow-xs"
-                            : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                            : "bg-surface border border-slate-200 text-slate-600 hover:bg-slate-100"
                         }`}
                       >
                         All ({sortedReviews.length})
@@ -827,7 +827,7 @@ export function LearnersAnalyticsSection({
                             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                               modalStarFilter === stars
                                 ? "bg-amber-500 text-white shadow-xs"
-                                : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                                : "bg-surface border border-slate-200 text-slate-600 hover:bg-slate-100"
                             }`}
                           >
                             <span>{stars} ★</span>
@@ -845,7 +845,7 @@ export function LearnersAnalyticsSection({
                       placeholder="Search feedback text or student..."
                       value={reviewSearchQuery}
                       onChange={(e) => setReviewSearchQuery(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs font-medium text-slate-700 placeholder-slate-400 focus:border-amber-400 focus:outline-none shadow-2xs"
+                      className="w-full rounded-xl border border-slate-200 bg-surface py-2 pl-9 pr-3 text-xs font-medium text-slate-700 placeholder-slate-400 focus:border-amber-400 focus:outline-none shadow-2xs"
                     />
                   </div>
                 </div>
@@ -857,7 +857,7 @@ export function LearnersAnalyticsSection({
                   modalFilteredReviews.map((review) => (
                     <div
                       key={review.id}
-                      className="pt-3.5 first:pt-0 flex flex-col gap-2 p-4 rounded-2xl border border-amber-100/90 bg-white hover:border-amber-300/80 transition-all shadow-2xs"
+                      className="pt-3.5 first:pt-0 flex flex-col gap-2 p-4 rounded-2xl border border-amber-100/90 bg-surface hover:border-amber-300/80 transition-all shadow-2xs dark:border-amber-500/25 dark:hover:border-amber-500/40"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -886,7 +886,7 @@ export function LearnersAnalyticsSection({
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1 bg-amber-50/80 border border-amber-200/80 px-2.5 py-1 rounded-full">
+                        <div className="flex items-center gap-1 bg-amber-50/80 border border-amber-200/80 px-2.5 py-1 rounded-full dark:bg-amber-500/10 dark:border-amber-500/25">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
                               key={star}
@@ -898,7 +898,7 @@ export function LearnersAnalyticsSection({
                               }
                             />
                           ))}
-                          <span className="text-xs font-black text-amber-900 ml-1">{review.rating}.0</span>
+                          <span className="text-xs font-black text-amber-900 ml-1 dark:text-amber-200">{review.rating}.0</span>
                         </div>
                       </div>
 
@@ -911,7 +911,7 @@ export function LearnersAnalyticsSection({
                   ))
                 ) : (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <div className="size-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-2 text-amber-500">
+                    <div className="size-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-2 text-amber-500 dark:bg-amber-500/10 dark:border-amber-500/25">
                       <MessageSquare size={20} />
                     </div>
                     <p className="text-sm font-bold text-slate-700">No reviews match your filter.</p>
@@ -929,7 +929,7 @@ export function LearnersAnalyticsSection({
                 </span>
                 <button
                   onClick={() => setIsReviewsModalOpen(false)}
-                  className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
+                  className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-on-ink hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
                 >
                   Close
                 </button>
@@ -1014,7 +1014,7 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center rounded-[24px] border-[1.5px] border-purple-400/80 bg-gradient-to-b from-purple-50/30 via-white to-white py-10 shadow-[4px_-4px_0px_0px_#E9D5FF]">
+      <div className="flex items-center justify-center rounded-[24px] border-[1.5px] border-purple-400/80 bg-gradient-to-b from-purple-50/30 via-surface to-surface py-10 shadow-[4px_-4px_0px_0px_#E9D5FF] dark:from-purple-500/10">
         <Loader2 size={24} className="animate-spin text-purple-400" />
       </div>
     );
@@ -1023,16 +1023,16 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
   // Saving from a form that never loaded would write blanks over the real values.
   if (loadFailed) {
     return (
-      <div className="rounded-[24px] border-[1.5px] border-purple-400/80 bg-gradient-to-b from-purple-50/30 via-white to-white p-6 text-center text-xs font-semibold text-slate-500 shadow-[4px_-4px_0px_0px_#E9D5FF]">
+      <div className="rounded-[24px] border-[1.5px] border-purple-400/80 bg-gradient-to-b from-purple-50/30 via-surface to-surface p-6 text-center text-xs font-semibold text-slate-500 shadow-[4px_-4px_0px_0px_#E9D5FF] dark:from-purple-500/10">
         Couldn&rsquo;t load this course&rsquo;s overview. Reload the page to try again.
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6 rounded-[24px] border-[1.5px] border-purple-400/80 bg-gradient-to-b from-purple-50/30 via-white to-white p-6 shadow-[4px_-4px_0px_0px_#E9D5FF]">
+    <div className="flex flex-col gap-6 rounded-[24px] border-[1.5px] border-purple-400/80 bg-gradient-to-b from-purple-50/30 via-surface to-surface p-6 shadow-[4px_-4px_0px_0px_#E9D5FF] dark:from-purple-500/10">
       <h3 className="flex items-center gap-2 text-base font-black tracking-tight text-slate-900">
-        <BookOpen size={18} className="text-purple-600" />
+        <BookOpen size={18} className="text-purple-600 dark:text-purple-400" />
         Course Overview
       </h3>
       <p className="-mt-4 text-[11px] font-medium leading-relaxed text-slate-500">
@@ -1049,7 +1049,7 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
           value={duration}
           onChange={(e) => setDuration(e.target.value)}
           placeholder="e.g. 4h 30m"
-          className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10"
+          className="w-full rounded-xl border border-slate-200 bg-surface p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10"
         />
         <span className="text-[11px] font-medium text-slate-400">
           Shown as-is on the course page. Leave blank to show &ldquo;Self-paced&rdquo;.
@@ -1065,7 +1065,7 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Write a brief overview of what this course is about..."
-          className="min-h-[120px] w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10"
+          className="min-h-[120px] w-full rounded-xl border border-slate-200 bg-surface p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10"
         />
       </div>
 
@@ -1078,7 +1078,7 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
           value={learningOutcomes}
           onChange={(e) => setLearningOutcomes(e.target.value)}
           placeholder={"One outcome per line, e.g.\nA working design system in Figma\nA recorded portfolio case study"}
-          className="min-h-[120px] w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10"
+          className="min-h-[120px] w-full rounded-xl border border-slate-200 bg-surface p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10"
         />
         <span className="text-[11px] font-medium text-slate-400">
           One per line. Each line becomes a ticked bullet on the course page.
@@ -1174,7 +1174,7 @@ function CoursePricingEditor({ contentId }: { contentId: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center rounded-[24px] border-[1.5px] border-emerald-400/80 bg-gradient-to-b from-emerald-50/30 via-white to-white py-10 shadow-[4px_-4px_0px_0px_#A7F3D0]">
+      <div className="flex items-center justify-center rounded-[24px] border-[1.5px] border-emerald-400/80 bg-gradient-to-b from-emerald-50/30 via-surface to-surface py-10 shadow-[4px_-4px_0px_0px_#A7F3D0] dark:from-emerald-500/10">
         <Loader2 size={24} className="animate-spin text-emerald-400" />
       </div>
     );
@@ -1183,16 +1183,16 @@ function CoursePricingEditor({ contentId }: { contentId: string }) {
   // Saving from a form that never loaded would write blanks over the real values.
   if (loadFailed) {
     return (
-      <div className="rounded-[24px] border-[1.5px] border-emerald-400/80 bg-gradient-to-b from-emerald-50/30 via-white to-white p-6 text-center text-xs font-semibold text-slate-500 shadow-[4px_-4px_0px_0px_#A7F3D0]">
+      <div className="rounded-[24px] border-[1.5px] border-emerald-400/80 bg-gradient-to-b from-emerald-50/30 via-surface to-surface p-6 text-center text-xs font-semibold text-slate-500 shadow-[4px_-4px_0px_0px_#A7F3D0] dark:from-emerald-500/10">
         Couldn&rsquo;t load this course&rsquo;s pricing. Reload the page to try again.
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6 rounded-[24px] border-[1.5px] border-emerald-400/80 bg-gradient-to-b from-emerald-50/30 via-white to-white p-6 shadow-[4px_-4px_0px_0px_#A7F3D0]">
+    <div className="flex flex-col gap-6 rounded-[24px] border-[1.5px] border-emerald-400/80 bg-gradient-to-b from-emerald-50/30 via-surface to-surface p-6 shadow-[4px_-4px_0px_0px_#A7F3D0] dark:from-emerald-500/10">
       <h3 className="flex items-center gap-2 text-base font-black tracking-tight text-slate-900">
-        <IndianRupee size={18} className="text-emerald-600" />
+        <IndianRupee size={18} className="text-emerald-600 dark:text-emerald-400" />
         Course Pricing
       </h3>
 
@@ -1205,7 +1205,7 @@ function CoursePricingEditor({ contentId }: { contentId: string }) {
             id="pricing-model"
             value={pricingModel}
             onChange={(e) => setPricingModel(e.target.value as "FREE" | "PAID")}
-            className="h-[46px] w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10"
+            className="h-[46px] w-full rounded-xl border border-slate-200 bg-surface p-3 text-sm text-slate-800 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10"
           >
             <option value="FREE">Free</option>
             <option value="PAID">Paid</option>
@@ -1229,7 +1229,7 @@ function CoursePricingEditor({ contentId }: { contentId: string }) {
                 value={priceAmount}
                 onChange={(e) => setPriceAmount(e.target.value ? parseFloat(e.target.value) : "")}
                 placeholder="e.g. 499.00"
-                className="h-[46px] w-full rounded-xl border border-slate-200 bg-white p-3 pl-10 text-sm text-slate-800 placeholder-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10"
+                className="h-[46px] w-full rounded-xl border border-slate-200 bg-surface p-3 pl-10 text-sm text-slate-800 placeholder-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10"
               />
             </div>
           </div>
@@ -1237,7 +1237,7 @@ function CoursePricingEditor({ contentId }: { contentId: string }) {
       </div>
 
       {pricingModel === "PAID" && (
-        <p className="flex items-start gap-1.5 rounded border border-slate-200 bg-slate-50 p-2 text-xs font-medium text-[#14142b]">
+        <p className="flex items-start gap-1.5 rounded border border-slate-200 bg-slate-50 p-2 text-xs font-medium text-ink">
           <span className="mt-[1px] text-[10px]">💡</span> A 20% platform fee applies to all
           paid courses.
         </p>
@@ -1256,10 +1256,10 @@ function CoursePricingEditor({ contentId }: { contentId: string }) {
 
       {history && history.length > 0 && (
         <div className="mt-2">
-          <h4 className="mb-3 border-b border-emerald-100 pb-2 text-sm font-bold text-slate-800">
+          <h4 className="mb-3 border-b border-emerald-100 pb-2 text-sm font-bold text-slate-800 dark:border-emerald-500/25">
             Pricing history
           </h4>
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-surface shadow-sm">
             <table className="w-full text-left text-sm text-slate-600">
               <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
                 <tr>
@@ -1348,7 +1348,7 @@ function CourseCategoryEditor({ contentId }: { contentId: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center rounded-[24px] border-[1.5px] border-rose-400/80 bg-gradient-to-b from-rose-50/30 via-white to-white py-10 shadow-[4px_-4px_0px_0px_#FECDD3]">
+      <div className="flex items-center justify-center rounded-[24px] border-[1.5px] border-rose-400/80 bg-gradient-to-b from-rose-50/30 via-surface to-surface py-10 shadow-[4px_-4px_0px_0px_#FECDD3] dark:from-rose-500/10">
         <Loader2 size={24} className="animate-spin text-rose-400" />
       </div>
     );
@@ -1356,7 +1356,7 @@ function CourseCategoryEditor({ contentId }: { contentId: string }) {
 
   if (loadFailed) {
     return (
-      <div className="rounded-[24px] border-[1.5px] border-rose-400/80 bg-gradient-to-b from-rose-50/30 via-white to-white p-6 text-center text-xs font-semibold text-slate-500 shadow-[4px_-4px_0px_0px_#FECDD3]">
+      <div className="rounded-[24px] border-[1.5px] border-rose-400/80 bg-gradient-to-b from-rose-50/30 via-surface to-surface p-6 text-center text-xs font-semibold text-slate-500 shadow-[4px_-4px_0px_0px_#FECDD3] dark:from-rose-500/10">
         Couldn&rsquo;t load this course&rsquo;s category. Reload the page to try again.
       </div>
     );
@@ -1365,9 +1365,9 @@ function CourseCategoryEditor({ contentId }: { contentId: string }) {
   const selectedCategory = publicCategories.find((c) => c.id === categoryId);
 
   return (
-    <div className="flex flex-col gap-6 rounded-[24px] border-[1.5px] border-rose-400/80 bg-gradient-to-b from-rose-50/30 via-white to-white p-6 shadow-[4px_-4px_0px_0px_#FECDD3]">
+    <div className="flex flex-col gap-6 rounded-[24px] border-[1.5px] border-rose-400/80 bg-gradient-to-b from-rose-50/30 via-surface to-surface p-6 shadow-[4px_-4px_0px_0px_#FECDD3] dark:from-rose-500/10">
       <h3 className="flex items-center gap-2 text-base font-black tracking-tight text-slate-900">
-        <Tag size={18} className="text-rose-600" />
+        <Tag size={18} className="text-rose-600 dark:text-rose-400" />
         Course Category
       </h3>
       <p className="-mt-4 text-[11px] font-medium leading-relaxed text-slate-500">
@@ -1382,7 +1382,7 @@ function CourseCategoryEditor({ contentId }: { contentId: string }) {
           id="course-category-select"
           value={categoryId ?? "OTHER"}
           onChange={(e) => setCategoryId(e.target.value === "OTHER" ? null : e.target.value)}
-          className="h-[46px] w-full max-w-md rounded-xl border border-slate-200 bg-white p-3 text-sm font-semibold text-slate-800 focus:border-rose-400 focus:outline-none focus:ring-4 focus:ring-rose-400/10"
+          className="h-[46px] w-full max-w-md rounded-xl border border-slate-200 bg-surface p-3 text-sm font-semibold text-slate-800 focus:border-rose-400 focus:outline-none focus:ring-4 focus:ring-rose-400/10"
         >
           {publicCategories.map((cat) => (
             <option key={cat.id} value={cat.id}>
@@ -1393,7 +1393,7 @@ function CourseCategoryEditor({ contentId }: { contentId: string }) {
         </select>
 
         {selectedCategory && selectedCategory.description && (
-          <p className="text-xs text-slate-600 bg-rose-50/60 border border-rose-100/80 rounded-xl p-3 max-w-md">
+          <p className="text-xs text-slate-600 bg-rose-50/60 border border-rose-100/80 rounded-xl p-3 max-w-md dark:bg-rose-500/10 dark:border-rose-500/25">
             {selectedCategory.description}
           </p>
         )}

@@ -4,8 +4,21 @@ import React, { useId, useMemo } from 'react';
 import { cn } from '@/shared/utils/utils';
 import { usePublicCategoriesStatus } from '@/shared/hooks/usePublicCategories';
 import { createRng, type Rng } from './rng';
-import { INK, paletteFor, resolveArtTheme, type ArtPalette, type ArtTheme } from './themes';
+import { paletteFor, resolveArtTheme, type ArtPalette, type ArtTheme } from './themes';
 import { MOTIFS, type Motif, type MotifPaint } from './motifs';
+
+/**
+ * Theme-aware colours. Each resolves to the palette's own light value in light mode (see
+ * `.content-art` in app/themes.css), and to a dark, hue-tinted ground with light line work in dark
+ * themes — so the picture is the same drawing in every theme, never a light block on a dark page.
+ */
+const ART = {
+  ink: 'var(--a-ink)',
+  white: 'var(--a-white)',
+  paper: 'var(--a-paper)',
+  soft: 'var(--a-soft)',
+  blank: 'var(--a-blank)',
+} as const;
 
 /**
  * Generated artwork for courses, events and exams — Arcade's replacement for uploaded banners.
@@ -102,10 +115,10 @@ export function ContentArt({ seed, kind, category, categoryId, title, className,
   // (search, recommendations). The element's own background is the scene's ground colour, so the
   // spare space reads as more of the same flat ground rather than as letterbox bars.
   const ground = waiting
-    ? '#FBFBFD'
+    ? ART.blank
     : family === 'EXAM'
-      ? `color-mix(in srgb, ${scene.pal.paper} 60%, white)`
-      : scene.pal.paper;
+      ? `color-mix(in srgb, ${ART.paper} 60%, ${ART.white})`
+      : ART.paper;
 
   return (
     <svg
@@ -114,11 +127,18 @@ export function ContentArt({ seed, kind, category, categoryId, title, className,
       role="img"
       aria-label={description}
       overflow="visible"
-      style={{ background: ground }}
-      className={cn('block h-full w-full select-none', className)}
+      style={
+        {
+          background: ground,
+          '--p-paper': scene.pal.paper,
+          '--p-soft': scene.pal.soft,
+          '--p-main': scene.pal.main,
+        } as React.CSSProperties
+      }
+      className={cn('content-art block h-full w-full select-none', className)}
     >
       {waiting ? (
-        <rect width={W} height={H} fill="#FBFBFD" />
+        <rect width={W} height={H} fill={ART.blank} />
       ) : family === 'EVENT' ? (
         <Celebration {...s} />
       ) : family === 'EXAM' ? (
@@ -134,12 +154,12 @@ export function ContentArt({ seed, kind, category, categoryId, title, className,
 
 function paint(pal: ArtPalette): MotifPaint {
   return {
-    ink: INK,
+    ink: ART.ink,
     main: pal.main,
     accent: pal.accent,
     spark: pal.spark,
-    soft: pal.soft,
-    paper: '#FFFFFF',
+    soft: ART.soft,
+    paper: ART.white,
     weight: LINE_WEIGHT,
     tint: FILL_TINT,
   };
@@ -155,13 +175,13 @@ function Ground({ pal, uid, x, y }: { pal: ArtPalette; uid: string; x: number; y
     <>
       <defs>
         <radialGradient id={id} gradientUnits="userSpaceOnUse" cx={x} cy={y} r={230}>
-          <stop offset="0" stopColor={pal.soft} stopOpacity={0.75} />
-          <stop offset="0.55" stopColor={pal.soft} stopOpacity={0.22} />
-          <stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
+          <stop offset="0" stopColor={ART.soft} stopOpacity={0.75} />
+          <stop offset="0.55" stopColor={ART.soft} stopOpacity={0.22} />
+          <stop offset="1" stopColor={ART.white} stopOpacity={0} />
         </radialGradient>
       </defs>
-      <rect width={W} height={H} fill="#FFFFFF" />
-      <rect width={W} height={H} fill={pal.paper} opacity={0.6} />
+      <rect width={W} height={H} fill={ART.white} />
+      <rect width={W} height={H} fill={ART.paper} opacity={0.6} />
       <rect width={W} height={H} fill={`url(#${id})`} />
     </>
   );
@@ -245,7 +265,7 @@ function Accents({ rng, pal, avoid }: { rng: Rng; pal: ArtPalette; avoid: { x: n
 // ── Doodle vocabulary (courses and events) ──────────────────────────────────
 
 /** Doodle line: thin, round, softened ink. */
-const DOODLE = { stroke: INK, strokeWidth: 1.6, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none', strokeOpacity: 0.7 };
+const DOODLE = { stroke: ART.ink, strokeWidth: 1.6, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none', strokeOpacity: 0.7 };
 
 /** Flat, light ground — nothing else, so nothing reads as cut off at the edges. */
 function LightGround({ rng, pal }: { rng: Rng; pal: ArtPalette }) {
@@ -255,8 +275,8 @@ function LightGround({ rng, pal }: { rng: Rng; pal: ArtPalette }) {
   rng.chance(0.6);
   return (
     <g>
-      <rect width={W} height={H} fill="#FFFFFF" />
-      <rect width={W} height={H} fill={pal.paper} />
+      <rect width={W} height={H} fill={ART.white} />
+      <rect width={W} height={H} fill={ART.paper} />
     </g>
   );
 }
@@ -356,11 +376,11 @@ function Confetti({ rng, pal, count, avoid }: { rng: Rng; pal: ArtPalette; count
 function CalendarPage({ x, y, pal }: { x: number; y: number; pal: ArtPalette }) {
   return (
     <g transform={`translate(${x} ${y}) rotate(-6)`}>
-      <rect x={-22} y={-20} width={44} height={42} rx={6} {...DOODLE} fill="#FFFFFF" />
+      <rect x={-22} y={-20} width={44} height={42} rx={6} {...DOODLE} fill={ART.white} />
       <rect x={-22} y={-20} width={44} height={12} rx={6} fill={pal.main} opacity={0.3} />
       <path d="M-22 -8 H22" {...DOODLE} />
       <path d="M-12 -25 V-15 M12 -25 V-15" {...DOODLE} strokeWidth={2} />
-      {[-12, 0, 12].flatMap((cx) => [2, 13].map((cy) => <circle key={`${cx}:${cy}`} cx={cx} cy={cy} r={1.8} fill={INK} opacity={0.35} />))}
+      {[-12, 0, 12].flatMap((cx) => [2, 13].map((cy) => <circle key={`${cx}:${cy}`} cx={cx} cy={cy} r={1.8} fill={ART.ink} opacity={0.35} />))}
       <circle cx={12} cy={13} r={5.5} fill="none" stroke={pal.spark} strokeWidth={1.6} />
     </g>
   );
@@ -430,7 +450,7 @@ function Sheet({ rng, pal, motif, uid }: Scene) {
   const bubbleX = sealRight ? cx + 96 : cx - 120;
   const bubbleY = sealY === 76 ? 146 : 64;
   const chosen = rng.int(0, 2);
-  const hair = { stroke: INK, strokeOpacity: 0.28, strokeWidth: 1.1 };
+  const hair = { stroke: ART.ink, strokeOpacity: 0.28, strokeWidth: 1.1 };
 
   return (
     <g>
@@ -438,7 +458,7 @@ function Sheet({ rng, pal, motif, uid }: Scene) {
       <FadingTexture rng={rng} pal={pal} uid={uid} x={cx} y={cy} kind="grid" />
 
       {/* Hairline frame with corner ticks */}
-      <rect x={cx - 62} y={cy - 62} width={124} height={124} rx={10} fill="#FFFFFF" fillOpacity={0.7} {...hair} strokeDasharray="4 4" />
+      <rect x={cx - 62} y={cy - 62} width={124} height={124} rx={10} fill={ART.white} fillOpacity={0.7} {...hair} strokeDasharray="4 4" />
       {[[-62, -62], [62, -62], [-62, 62], [62, 62]].map(([dx, dy], i) => (
         <path key={i} d={`M${cx + dx - 5} ${cy + dy} H${cx + dx + 5} M${cx + dx} ${cy + dy - 5} V${cy + dy + 5}`} stroke={pal.main} strokeOpacity={0.6} strokeWidth={1.2} />
       ))}
@@ -448,8 +468,8 @@ function Sheet({ rng, pal, motif, uid }: Scene) {
       <g transform={`translate(${bubbleX} ${bubbleY})`}>
         {[0, 1, 2].map((i) => (
           <g key={i} transform={`translate(0 ${i * 13})`}>
-            <circle r={3.6} fill={i === chosen ? pal.main : '#FFFFFF'} fillOpacity={i === chosen ? 0.7 : 1} {...(i === chosen ? {} : hair)} />
-            <rect x={9} y={-2} width={rng.int(16, 26)} height={4} rx={2} fill={INK} opacity={0.1} />
+            <circle r={3.6} fill={i === chosen ? pal.main : ART.white} fillOpacity={i === chosen ? 0.7 : 1} {...(i === chosen ? {} : hair)} />
+            <rect x={9} y={-2} width={rng.int(16, 26)} height={4} rx={2} fill={ART.ink} opacity={0.1} />
           </g>
         ))}
       </g>
@@ -464,7 +484,7 @@ function Sheet({ rng, pal, motif, uid }: Scene) {
               return `${i ? 'L' : 'M'}${(Math.cos(a) * r).toFixed(1)} ${(Math.sin(a) * r).toFixed(1)}`;
             }).join(' ') + ' Z'
           }
-          fill={pal.soft}
+          fill={ART.soft}
           fillOpacity={0.6}
           stroke={pal.main}
           strokeOpacity={0.6}

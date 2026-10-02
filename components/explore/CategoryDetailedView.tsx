@@ -76,10 +76,10 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
       </svg>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
-        <div style={{ display: "inline-block", padding: "4px 10px", background: "#FFFFFF", borderRadius: "20px", fontSize: "0.7rem", fontWeight: "800", color: getAccentColor(), boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
+        <div style={{ display: "inline-block", padding: "4px 10px", background: "var(--theme-surface, #FFFFFF)", borderRadius: "20px", fontSize: "0.7rem", fontWeight: "800", color: getAccentColor(), boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
           {category}
         </div>
-        <div style={{ display: "inline-block", padding: "4px 8px", background: isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#6B7280"), borderRadius: "6px", fontSize: "0.7rem", fontWeight: "700", color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        <div style={{ display: "inline-block", padding: "4px 8px", background: isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "var(--theme-n-500, #6B7280)"), borderRadius: "6px", fontSize: "0.7rem", fontWeight: "700", color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.05em" }}>
           {status}
         </div>
       </div>
@@ -259,7 +259,7 @@ const RocketJourney: React.FC<{ activeColor: string; progress: MotionValue<numbe
               {/* Lighting fold */}
               <path d="M 0,0 L 16,0 L 16,22 L 0,22 Z" fill="white" opacity="0.12" />
               {/* Right shadow */}
-              <path d="M 32,0 L 40,0 L 40,22 L 32,22 Z" fill="#000" opacity="0.15" />
+              <path d="M 32,0 L 40,0 L 40,22 L 32,22 Z" fill="var(--theme-ink, #000)" opacity="0.15" />
               <text x="3" y="14" fill="white" fontSize="8.5" fontWeight="900"
                 fontFamily="'Inter','Outfit',sans-serif" letterSpacing="-0.5">arcade.</text>
             </g>
@@ -501,24 +501,24 @@ const HoneycombIllustration: React.FC<{ animate?: boolean }> = ({ animate = true
 
         {/* Small floating elements like badminton shuttles or balls */}
         <g className={animate ? "animate-shuttle" : undefined} transform={animate ? undefined : "translate(350, 45) rotate(-30)"}>
-          <path d="M 0,0 L -8,-15 L 8,-15 Z" fill="none" stroke="#1E293B" strokeWidth="1.2" />
-          <path d="M -6,-11 L 6,-11 M -4,-7 L 4,-7" stroke="#1E293B" strokeWidth="1.2" />
-          <circle cx="0" cy="1" r="3.5" fill="#1E293B" />
+          <path d="M 0,0 L -8,-15 L 8,-15 Z" fill="none" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.2" />
+          <path d="M -6,-11 L 6,-11 M -4,-7 L 4,-7" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.2" />
+          <circle cx="0" cy="1" r="3.5" fill="var(--theme-ink, #1E293B)" />
         </g>
 
         {/* Sparkles / star outlines */}
         <g className={animate ? "animate-sparkle-right" : undefined} transform={animate ? undefined : "translate(380, 210) scale(0.8)"}>
-          <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="#1E293B" strokeWidth="1.2" />
+          <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.2" />
         </g>
         <g className={animate ? "animate-sparkle-left" : undefined} transform={animate ? undefined : "translate(60, 60) scale(0.6)"}>
-          <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="#1E293B" strokeWidth="1.2" />
+          <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.2" />
         </g>
 
         {/* Diagonal Expand Arrows in bottom-right */}
         <g className={animate ? "animate-expand-arrows" : undefined} transform={animate ? undefined : "translate(390, 250)"}>
-          <line x1="-8" y1="8" x2="8" y2="-8" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" />
-          <polyline points="0,8 -8,8 -8,0" fill="none" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <polyline points="0,-8 8,-8 8,0" fill="none" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <line x1="-8" y1="8" x2="8" y2="-8" stroke="var(--theme-ink, #1E293B)" strokeWidth="2" strokeLinecap="round" />
+          <polyline points="0,8 -8,8 -8,0" fill="none" stroke="var(--theme-ink, #1E293B)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <polyline points="0,-8 8,-8 8,0" fill="none" stroke="var(--theme-ink, #1E293B)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </g>
 
         {/* Center Hexagon: Girl with Clipboard (Center: 210, 150, radius: 52) */}
@@ -530,17 +530,17 @@ const HoneycombIllustration: React.FC<{ animate?: boolean }> = ({ animate = true
             strokeWidth="1.8"
           />
           {/* Sketch: Girl with Clipboard */}
-          <path d="M-18,-2 C-22,12 -16,28 -14,38 M18,-2 C22,12 16,28 14,38" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-13,-8 C-13,8 13,8 13,-8 C13,-18 -13,-18 -13,-8" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M-14,-10 Q0,-22 14,-10 M-14,-10 C-18,-5 -15,10 -15,10 M14,-10 C18,-5 15,10 15,10" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <ellipse cx="-5" cy="-8" rx="1.2" ry="1.8" fill="#1E293B" />
-          <ellipse cx="5" cy="-8" rx="1.2" ry="1.8" fill="#1E293B" />
-          <path d="M-3,-2 Q0,1 3,-2" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-4,4 L-4,10 M4,4 L4,10" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <rect x="-14" y="10" width="28" height="30" rx="3" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M-6,10 L-6,7 C-6,6 -5,5 -4,5 H4 C5,5 6,6 6,7 L6,10 Z" fill="#E2E8F0" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M-18,22 Q-13,20 -12,23" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M18,22 Q13,20 12,23" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-18,-2 C-22,12 -16,28 -14,38 M18,-2 C22,12 16,28 14,38" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-13,-8 C-13,8 13,8 13,-8 C13,-18 -13,-18 -13,-8" fill="#FFFFFF" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M-14,-10 Q0,-22 14,-10 M-14,-10 C-18,-5 -15,10 -15,10 M14,-10 C18,-5 15,10 15,10" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <ellipse cx="-5" cy="-8" rx="1.2" ry="1.8" fill="var(--theme-ink, #1E293B)" />
+          <ellipse cx="5" cy="-8" rx="1.2" ry="1.8" fill="var(--theme-ink, #1E293B)" />
+          <path d="M-3,-2 Q0,1 3,-2" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-4,4 L-4,10 M4,4 L4,10" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" />
+          <rect x="-14" y="10" width="28" height="30" rx="3" fill="#FFFFFF" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" />
+          <path d="M-6,10 L-6,7 C-6,6 -5,5 -4,5 H4 C5,5 6,6 6,7 L6,10 Z" fill="#E2E8F0" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" />
+          <path d="M-18,22 Q-13,20 -12,23" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M18,22 Q13,20 12,23" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
           <line x1="-8" y1="18" x2="8" y2="18" stroke="#CBD5E1" strokeWidth="1.5" strokeLinecap="round" />
           <line x1="-8" y1="24" x2="4" y2="24" stroke="#CBD5E1" strokeWidth="1.5" strokeLinecap="round" />
           <line x1="-8" y1="30" x2="0" y2="30" stroke="#CBD5E1" strokeWidth="1.5" strokeLinecap="round" />
@@ -554,20 +554,20 @@ const HoneycombIllustration: React.FC<{ animate?: boolean }> = ({ animate = true
             stroke="#F59E0B"
             strokeWidth="1.8"
           />
-          <path d="M-15,-6 C-15,10 15,10 15,-6 C15,-16 -15,-16 -15,-6" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M-22,-12 C-15,-28 15,-28 22,-12 Z" fill="#F1F5F9" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <path d="M-26,-10 C-10,-2 10,-2 26,-10" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-10,8 C-5,22 5,22 10,8" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-10,3 Q0,-1 10,3 Q5,7 0,5 Q-5,7 -10,3" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
-          <circle cx="-6" cy="-6" r="4.5" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <circle cx="6" cy="-6" r="4.5" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <line x1="-1.5" y1="-6" x2="1.5" y2="-6" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M-10.5,-6 L-15,-8" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M10.5,-6 L15,-8" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M0,-4 Q2,0 -1,2" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <path d="M-25,32 Q-12,18 0,22 Q12,18 25,32" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <line x1="0" y1="22" x2="0" y2="35" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M-10,24 L-5,32 M10,24 L5,32" stroke="#1E293B" strokeWidth="1.6" />
+          <path d="M-15,-6 C-15,10 15,10 15,-6 C15,-16 -15,-16 -15,-6" fill="none" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M-22,-12 C-15,-28 15,-28 22,-12 Z" fill="#F1F5F9" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M-26,-10 C-10,-2 10,-2 26,-10" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-10,8 C-5,22 5,22 10,8" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-10,3 Q0,-1 10,3 Q5,7 0,5 Q-5,7 -10,3" fill="#FFFFFF" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" />
+          <circle cx="-6" cy="-6" r="4.5" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" />
+          <circle cx="6" cy="-6" r="4.5" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" />
+          <line x1="-1.5" y1="-6" x2="1.5" y2="-6" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" />
+          <path d="M-10.5,-6 L-15,-8" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" />
+          <path d="M10.5,-6 L15,-8" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" />
+          <path d="M0,-4 Q2,0 -1,2" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" />
+          <path d="M-25,32 Q-12,18 0,22 Q12,18 25,32" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <line x1="0" y1="22" x2="0" y2="35" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" />
+          <path d="M-10,24 L-5,32 M10,24 L5,32" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" />
         </g>
 
         {/* Top-Right Hexagon: Badminton Player (Center: 288, 105, radius: 52) */}
@@ -578,23 +578,23 @@ const HoneycombIllustration: React.FC<{ animate?: boolean }> = ({ animate = true
             stroke="#E2E8F0"
             strokeWidth="1.8"
           />
-          <circle cx="-6" cy="-5" r="7" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <path d="M1,-5 L4,-4 L1,-3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <circle cx="-4" cy="-7" r="1" fill="#1E293B" />
-          <path d="M-13,-5 C-12,-15 -2,-15 -2,-12 M-13,-5 C-16,-3 -13,4 -13,4" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <circle cx="-6" cy="-5" r="7" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" />
+          <path d="M1,-5 L4,-4 L1,-3" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <circle cx="-4" cy="-7" r="1" fill="var(--theme-ink, #1E293B)" />
+          <path d="M-13,-5 C-12,-15 -2,-15 -2,-12 M-13,-5 C-16,-3 -13,4 -13,4" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
           <g className="animate-racket">
-            <path d="M-2,2 Q10,-10 18,-20" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-            <circle cx="18" cy="-20" r="2.5" fill="#1E293B" stroke="#1E293B" />
-            <line x1="18" y1="-20" x2="25" y2="-28" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+            <path d="M-2,2 Q10,-10 18,-20" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+            <circle cx="18" cy="-20" r="2.5" fill="var(--theme-ink, #1E293B)" stroke="var(--theme-ink, #1E293B)" />
+            <line x1="18" y1="-20" x2="25" y2="-28" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" strokeLinecap="round" />
             <g transform="translate(28, -32) rotate(45)">
-              <ellipse cx="0" cy="0" rx="6" ry="8" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-              <line x1="-6" y1="0" x2="6" y2="0" stroke="#1E293B" strokeWidth="1" />
-              <line x1="0" y1="-8" x2="0" y2="8" stroke="#1E293B" strokeWidth="1" />
-              <line x1="-4" y1="-4" x2="4" y2="4" stroke="#1E293B" strokeWidth="0.8" />
-              <line x1="4" y1="-4" x2="-4" y2="4" stroke="#1E293B" strokeWidth="0.8" />
+              <ellipse cx="0" cy="0" rx="6" ry="8" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" />
+              <line x1="-6" y1="0" x2="6" y2="0" stroke="var(--theme-ink, #1E293B)" strokeWidth="1" />
+              <line x1="0" y1="-8" x2="0" y2="8" stroke="var(--theme-ink, #1E293B)" strokeWidth="1" />
+              <line x1="-4" y1="-4" x2="4" y2="4" stroke="var(--theme-ink, #1E293B)" strokeWidth="0.8" />
+              <line x1="4" y1="-4" x2="-4" y2="4" stroke="var(--theme-ink, #1E293B)" strokeWidth="0.8" />
             </g>
           </g>
-          <path d="M-10,5 C-8,18 -15,38 -15,38 M-4,5 C-2,15 5,30 8,38" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-10,5 C-8,18 -15,38 -15,38 M-4,5 C-2,15 5,30 8,38" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
         </g>
 
         {/* Middle-Left Hexagon: Spiky Hair waving`,StartLine:24,TargetContent: (Center: 54, 150, radius: 52) */}
@@ -605,14 +605,14 @@ const HoneycombIllustration: React.FC<{ animate?: boolean }> = ({ animate = true
             stroke="#F87171"
             strokeWidth="1.8"
           />
-          <path d="M-18,-8 L-14,-22 L-6,-16 L2,-25 L8,-15 L16,-20 L18,-6 L14,4 L-15,4 Z" fill="#1E293B" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <path d="M-13,-6 C-13,10 13,10 13,-6 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <circle cx="-5" cy="-2" r="1.2" fill="#1E293B" />
-          <circle cx="5" cy="-2" r="1.2" fill="#1E293B" />
-          <path d="M-3,3 Q0,6 3,3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-13,6 C-22,-2 -26,-12 -28,-18" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-28,-18 Q-32,-21 -29,-23 M-28,-18 Q-28,-22 -26,-22 M-28,-18 Q-24,-20 -24,-18" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-10,12 L-14,35 M10,12 L14,35" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-18,-8 L-14,-22 L-6,-16 L2,-25 L8,-15 L16,-20 L18,-6 L14,4 L-15,4 Z" fill="var(--theme-ink, #1E293B)" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M-13,-6 C-13,10 13,10 13,-6 Z" fill="#FFFFFF" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" strokeLinejoin="round" />
+          <circle cx="-5" cy="-2" r="1.2" fill="var(--theme-ink, #1E293B)" />
+          <circle cx="5" cy="-2" r="1.2" fill="var(--theme-ink, #1E293B)" />
+          <path d="M-3,3 Q0,6 3,3" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-13,6 C-22,-2 -26,-12 -28,-18" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-28,-18 Q-32,-21 -29,-23 M-28,-18 Q-28,-22 -26,-22 M-28,-18 Q-24,-20 -24,-18" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-10,12 L-14,35 M10,12 L14,35" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
         </g>
 
         {/* Middle-Right Hexagon: Child pointing to target (Center: 366, 150, radius: 52) */}
@@ -628,13 +628,13 @@ const HoneycombIllustration: React.FC<{ animate?: boolean }> = ({ animate = true
             <circle cx="0" cy="0" r="7" stroke="#FFFFFF" strokeWidth="1.5" fill="none" />
             <circle cx="0" cy="0" r="2.5" fill="#FFFFFF" />
           </g>
-          <circle cx="-10" cy="-6" r="8" stroke="#1E293B" strokeWidth="1.6" fill="#FFFFFF" />
-          <path d="M-18,-8 C-21,-12 -16,-17 -12,-14 C-10,-19 -4,-18 -4,-14 C-1,-17 3,-12 1,-8 M-18,-8 C-21,-5 -20,2 -18,4" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <circle cx="-5" cy="-7" r="1" fill="#1E293B" />
-          <path d="M-7,-3 Q-5,-1 -3,-3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-2,2 Q8,-2 18,-2" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M18,-2 C20,-2 22,-2 24,-2 M18,-2 L17,1 L15,1" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-14,7 C-12,20 -18,36 -18,36 M-6,7 C-4,18 -2,30 -1,36" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <circle cx="-10" cy="-6" r="8" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="#FFFFFF" />
+          <path d="M-18,-8 C-21,-12 -16,-17 -12,-14 C-10,-19 -4,-18 -4,-14 C-1,-17 3,-12 1,-8 M-18,-8 C-21,-5 -20,2 -18,4" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <circle cx="-5" cy="-7" r="1" fill="var(--theme-ink, #1E293B)" />
+          <path d="M-7,-3 Q-5,-1 -3,-3" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-2,2 Q8,-2 18,-2" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M18,-2 C20,-2 22,-2 24,-2 M18,-2 L17,1 L15,1" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-14,7 C-12,20 -18,36 -18,36 M-6,7 C-4,18 -2,30 -1,36" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
         </g>
 
         {/* Bottom-Left Hexagon: Girl clinking glass (Center: 132, 195, radius: 52) */}
@@ -645,15 +645,15 @@ const HoneycombIllustration: React.FC<{ animate?: boolean }> = ({ animate = true
             stroke="#10B981"
             strokeWidth="1.8"
           />
-          <path d="M-12,-8 C-12,8 12,8 12,-8 C12,-18 -12,-18 -12,-8" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
-          <path d="M-15,-6 C-17,-18 17,-18 15,-6 C16,4 12,12 12,12 L-12,12 C-12,12 -16,4 -15,-6" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="-4" cy="-8" r="1.2" fill="#1E293B" />
-          <circle cx="4" cy="-8" r="1.2" fill="#1E293B" />
-          <path d="M-2.5,-3 Q0,-1 2.5,-3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M6,10 Q14,8 18,13" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M18,10 L24,11 L22,20 L16,19 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <path d="M22,13 Q25,14 24,16 Q23,17 21,16" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <path d="M-12,14 L-15,35 M6,14 L4,35" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-12,-8 C-12,8 12,8 12,-8 C12,-18 -12,-18 -12,-8" fill="#FFFFFF" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M-15,-6 C-17,-18 17,-18 15,-6 C16,4 12,12 12,12 L-12,12 C-12,12 -16,4 -15,-6" fill="none" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="-4" cy="-8" r="1.2" fill="var(--theme-ink, #1E293B)" />
+          <circle cx="4" cy="-8" r="1.2" fill="var(--theme-ink, #1E293B)" />
+          <path d="M-2.5,-3 Q0,-1 2.5,-3" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M6,10 Q14,8 18,13" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M18,10 L24,11 L22,20 L16,19 Z" fill="#FFFFFF" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M22,13 Q25,14 24,16 Q23,17 21,16" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" />
+          <path d="M-12,14 L-15,35 M6,14 L4,35" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
         </g>
 
         {/* Bottom-Right Hexagon: Man clinking glass (Center: 288, 195, radius: 52) */}
@@ -664,21 +664,21 @@ const HoneycombIllustration: React.FC<{ animate?: boolean }> = ({ animate = true
             stroke="#475569"
             strokeWidth="1.8"
           />
-          <path d="M-12,-6 C-12,8 12,8 12,-6 C12,-16 -12,-16 -12,-6" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
-          <path d="M-15,-10 C-10,-22 10,-22 15,-10 L-15,-10" fill="#E2E8F0" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <path d="M-18,-8 L-22,-6 L-16,-6" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <rect x="-9" y="-8" width="7" height="5" rx="1" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <rect x="2" y="-8" width="7" height="5" rx="1" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <line x1="-2" y1="-6" x2="2" y2="-6" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M-3,1 Q0,3 3,1" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-6,10 Q-14,8 -18,13" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-18,10 L-24,11 L-22,20 L-16,19 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <path d="M-22,13 Q-25,14 -24,16 Q-23,17 -21,16" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <path d="M-6,14 L-4,35 M12,14 L15,35" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-12,-6 C-12,8 12,8 12,-6 C12,-16 -12,-16 -12,-6" fill="#FFFFFF" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M-15,-10 C-10,-22 10,-22 15,-10 L-15,-10" fill="#E2E8F0" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M-18,-8 L-22,-6 L-16,-6" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <rect x="-9" y="-8" width="7" height="5" rx="1" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" />
+          <rect x="2" y="-8" width="7" height="5" rx="1" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" />
+          <line x1="-2" y1="-6" x2="2" y2="-6" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" />
+          <path d="M-3,1 Q0,3 3,1" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-6,10 Q-14,8 -18,13" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-18,10 L-24,11 L-22,20 L-16,19 Z" fill="#FFFFFF" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M-22,13 Q-25,14 -24,16 Q-23,17 -21,16" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" />
+          <path d="M-6,14 L-4,35 M12,14 L15,35" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
         </g>
 
         {/* Clink sparks between bottom left & right cups */}
-        <g className="animate-clink-sparks" transform="translate(210, 208)" stroke="#1E293B" strokeWidth="1.5" strokeLinecap="round">
+        <g className="animate-clink-sparks" transform="translate(210, 208)" stroke="var(--theme-ink, #1E293B)" strokeWidth="1.5" strokeLinecap="round">
           <line x1="-8" y1="-8" x2="-3" y2="-3" />
           <line x1="8" y1="-8" x2="3" y2="-3" />
           <line x1="-8" y1="8" x2="-3" y2="3" />
@@ -1186,10 +1186,10 @@ const CategoryPillButton: React.FC<CategoryPillButtonProps> = ({
         gap: "6px",
         padding: "8px 16px",
         borderRadius: "20px",
-        background: isActive ? "#EEF4FE" : "rgba(255, 255, 255, 0.85)",
+        background: isActive ? "var(--theme-n-100, #EEF4FE)" : "var(--theme-surface, rgba(255, 255, 255, 0.85))",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
-        color: isActive ? "#1A73E8" : "#3C4043",
+        color: isActive ? "#1A73E8" : "var(--theme-n-700, #3C4043)",
         fontSize: "0.85rem",
         fontWeight: isActive ? "700" : "500",
         cursor: "pointer",
@@ -1562,8 +1562,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
     <div
       className="landing-root"
       style={{
-        background: mode === "events" ? "linear-gradient(135deg, #FDF4FF 0%, #F5F3FF 50%, #E0F2FE 100%)" : // Pastel lavender-violet-blue sunset mix
-            "#f8fafc",
+        background: mode === "events" ? "var(--theme-wash, linear-gradient(135deg, #FDF4FF 0%, #F5F3FF 50%, #E0F2FE 100%))" : // Pastel lavender-violet-blue sunset mix
+            "var(--theme-n-50, #f8fafc)",
         minHeight: "100vh",
         paddingBottom: "110px",
         color: "inherit"
@@ -1884,11 +1884,11 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
               gap: "8px",
               fontSize: "0.85rem",
               fontWeight: "600",
-              color: "rgba(20, 20, 43, 0.55)",
-              background: "rgba(255, 255, 255, 0.75)",
+              color: "var(--theme-ink, rgba(20, 20, 43, 0.55))",
+              background: "var(--theme-surface, rgba(255, 255, 255, 0.75))",
               backdropFilter: "blur(8px)",
               WebkitBackdropFilter: "blur(8px)",
-              border: "1px solid rgba(20, 23, 31, 0.08)",
+              border: "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
               padding: "9px 16px",
               borderRadius: "20px",
               boxShadow: "0 2px 8px -2px rgba(0, 0, 0, 0.03)"
@@ -1920,10 +1920,10 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
             style={{
               display: "inline-flex",
               alignItems: "center",
-              background: "rgba(255, 255, 255, 0.9)",
+              background: "var(--theme-surface, rgba(255, 255, 255, 0.9))",
               backdropFilter: "blur(12px)",
               WebkitBackdropFilter: "blur(12px)",
-              border: "1px solid rgba(60, 64, 67, 0.12)",
+              border: "1px solid var(--theme-n-700, rgba(60, 64, 67, 0.12))",
               borderRadius: "24px",
               padding: "4px",
               boxShadow: "0 1px 3px rgba(60, 64, 67, 0.08)",
@@ -1976,7 +1976,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                     alignItems: "center",
                     gap: "7px",
                     background: isSelected ? activeData.colors.primary : "transparent",
-                    color: isSelected ? "#FFFFFF" : "#5F6368",
+                    color: isSelected ? "#FFFFFF" : "var(--theme-n-600, #5F6368)",
                     border: "none",
                     borderRadius: "20px",
                     padding: "7px 15px",
@@ -2059,7 +2059,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
               <p
                 style={{
                   fontSize: "0.98rem",
-                  color: "rgba(20, 20, 43, 0.65)",
+                  color: "var(--theme-ink, rgba(20, 20, 43, 0.65))",
                   lineHeight: "1.65",
                   maxWidth: "580px",
                   marginBottom: "28px",
@@ -2087,9 +2087,9 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                     height: "48px",
                     padding: courseSearchQuery ? "0 46px 0 52px" : "0 22px 0 52px",
                     borderRadius: "24px",
-                    border: "1.5px solid rgba(60, 64, 67, 0.18)",
-                    background: "#FFFFFF",
-                    color: "#202124",
+                    border: "1.5px solid var(--theme-n-700, rgba(60, 64, 67, 0.18))",
+                    background: "var(--theme-surface, #FFFFFF)",
+                    color: "var(--theme-ink, #202124)",
                     fontSize: "0.94rem",
                     fontWeight: "500",
                     outline: "none",
@@ -2119,8 +2119,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                       height: "24px",
                       borderRadius: "50%",
                       border: "none",
-                      background: "rgba(60, 64, 67, 0.08)",
-                      color: "#5F6368",
+                      background: "var(--theme-n-700, rgba(60, 64, 67, 0.08))",
+                      color: "var(--theme-n-600, #5F6368)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -2207,7 +2207,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
               <p
                 style={{
                   fontSize: "0.95rem",
-                  color: "rgba(20, 20, 43, 0.6)",
+                  color: "var(--theme-ink, rgba(20, 20, 43, 0.6))",
                   lineHeight: "1.6",
                   maxWidth: "600px",
                   marginBottom: "28px",
@@ -2241,9 +2241,9 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                     height: "48px",
                     padding: courseSearchQuery ? "0 46px 0 52px" : "0 22px 0 52px",
                     borderRadius: "24px",
-                    border: "1.5px solid rgba(60, 64, 67, 0.18)",
-                    background: "#FFFFFF",
-                    color: "#202124",
+                    border: "1.5px solid var(--theme-n-700, rgba(60, 64, 67, 0.18))",
+                    background: "var(--theme-surface, #FFFFFF)",
+                    color: "var(--theme-ink, #202124)",
                     fontSize: "0.94rem",
                     fontWeight: "500",
                     outline: "none",
@@ -2273,8 +2273,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                       height: "24px",
                       borderRadius: "50%",
                       border: "none",
-                      background: "rgba(60, 64, 67, 0.08)",
-                      color: "#5F6368",
+                      background: "var(--theme-n-700, rgba(60, 64, 67, 0.08))",
+                      color: "var(--theme-n-600, #5F6368)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -2330,14 +2330,14 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                 width: "32px",
                 height: "32px",
                 borderRadius: "50%",
-                background: "#FFFFFF",
-                border: "1px solid rgba(20, 23, 31, 0.12)",
+                background: "var(--theme-surface, #FFFFFF)",
+                border: "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.12))",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
-                color: "#374151",
+                color: "var(--theme-n-700, #374151)",
                 transition: "all 0.2s"
               }}
             >
@@ -2362,14 +2362,14 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                 width: "32px",
                 height: "32px",
                 borderRadius: "50%",
-                background: "#FFFFFF",
-                border: "1px solid rgba(20, 23, 31, 0.12)",
+                background: "var(--theme-surface, #FFFFFF)",
+                border: "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.12))",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
-                color: "#374151",
+                color: "var(--theme-n-700, #374151)",
                 transition: "all 0.2s"
               }}
             >
@@ -2485,8 +2485,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
             width: "44px",
             height: "44px",
             borderRadius: "50%",
-            background: "#FFFFFF",
-            border: "1px solid rgba(60, 64, 67, 0.16)",
+            background: "var(--theme-surface, #FFFFFF)",
+            border: "1px solid var(--theme-n-700, rgba(60, 64, 67, 0.16))",
             color: "#1A73E8",
             display: "flex",
             alignItems: "center",

@@ -45,7 +45,7 @@ export function ContentWorkspaceDock({
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: "spring", bounce: 0.3, duration: 0.8 }}
       aria-label="Content workspace navigation"
-      className="fixed bottom-6 left-1/2 z-50 flex max-w-[95vw] -translate-x-1/2 items-center gap-1.5 overflow-x-auto rounded-full border border-slate-200/80 bg-white/90 p-2 shadow-[0_16px_40px_rgba(20,20,43,0.15)] backdrop-blur-xl ring-1 ring-black/[0.04] scrollbar-none"
+      className="fixed bottom-6 left-1/2 z-50 flex max-w-[95vw] -translate-x-1/2 items-center gap-1.5 overflow-x-auto rounded-full border border-slate-200/80 bg-surface/90 p-2 shadow-[0_16px_40px_rgba(20,20,43,0.15)] backdrop-blur-xl ring-1 ring-slate-950/[0.04] scrollbar-none"
     >
       <Tooltip>
         <TooltipTrigger
@@ -54,13 +54,13 @@ export function ContentWorkspaceDock({
               type="button"
               onClick={() => router.push(backHref)}
               aria-label={`Back to ${backLabel}`}
-              className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-slate-500 transition-all duration-300 hover:bg-slate-100/90 hover:text-[#14142b] cursor-pointer"
+              className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-slate-500 transition-all duration-300 hover:bg-slate-100/90 hover:text-ink cursor-pointer"
             >
               <ArrowLeft size={19} />
             </button>
           }
         />
-        <TooltipContent side="top" sideOffset={8} className="bg-white text-slate-800 border border-slate-200 shadow-xl font-extrabold text-xs px-3.5 py-2 rounded-2xl [&_.fill-foreground]:hidden">
+        <TooltipContent side="top" sideOffset={8} className="bg-surface text-slate-800 border border-slate-200 shadow-xl font-extrabold text-xs px-3.5 py-2 rounded-2xl [&_.fill-foreground]:hidden">
           {backLabel}
         </TooltipContent>
       </Tooltip>
@@ -81,15 +81,15 @@ export function ContentWorkspaceDock({
                   aria-current={active ? "page" : undefined}
                   className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-colors duration-300 cursor-pointer ${
                     active
-                      ? "text-blue-600 bg-blue-50/90 font-black"
-                      : "text-slate-500 hover:bg-slate-100/90 hover:text-[#14142b]"
+                      ? "text-blue-600 bg-blue-50/90 font-black dark:text-blue-400 dark:bg-blue-500/10"
+                      : "text-slate-500 hover:bg-slate-100/90 hover:text-ink"
                   }`}
                 >
                   <Icon size={19} className={active ? "scale-110" : "transition-transform"} />
                 </button>
               }
             />
-            <TooltipContent side="top" sideOffset={8} className="bg-white text-slate-800 border border-slate-200 shadow-xl font-extrabold text-xs px-3.5 py-2 rounded-2xl [&_.fill-foreground]:hidden">
+            <TooltipContent side="top" sideOffset={8} className="bg-surface text-slate-800 border border-slate-200 shadow-xl font-extrabold text-xs px-3.5 py-2 rounded-2xl [&_.fill-foreground]:hidden">
               {item.label}
             </TooltipContent>
           </Tooltip>

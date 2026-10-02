@@ -410,11 +410,11 @@ const FilterPillButton: React.FC<FilterPillButtonProps> = ({
         gap: "8px",
         padding: "8px 16px",
         borderRadius: "10px",
-        border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1.5px solid rgba(20, 23, 31, 0.06)",
-        background: isActive ? activeData.colors.secondary : "rgba(255, 255, 255, 0.65)",
+        border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1.5px solid var(--theme-n-900, rgba(20, 23, 31, 0.06))",
+        background: isActive ? activeData.colors.secondary : "var(--theme-surface, rgba(255, 255, 255, 0.65))",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
-        color: isActive ? activeData.colors.primary : "#5E606A",
+        color: isActive ? activeData.colors.primary : "var(--theme-n-600, #5E606A)",
         fontSize: "0.82rem",
         fontWeight: "700",
         cursor: "pointer",
@@ -533,9 +533,9 @@ export const CourseCard: React.FC<CourseCardProps> = ({
       ].filter(Boolean)}
       metadataBadges={
         realReviewsCount > 0 ? (
-          <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-500">
             <span className="text-amber-500">★</span>
-            <span className="font-bold text-slate-800 dark:text-slate-200">{realRating.toFixed(1)}</span>
+            <span className="font-bold text-slate-800">{realRating.toFixed(1)}</span>
             <span className="text-slate-400">({realReviewsCount} {realReviewsCount === 1 ? 'Review' : 'Reviews'})</span>
           </div>
         ) : null
@@ -629,7 +629,7 @@ export default function CoursesView({
           </h2>
         </div>
         {sortedCourses.length > 0 && (
-          <span style={{ fontSize: "0.82rem", fontWeight: "600", color: "#6B7280" }}>
+          <span style={{ fontSize: "0.82rem", fontWeight: "600", color: "var(--theme-n-500, #6B7280)" }}>
             {sortedCourses.length} {sortedCourses.length === 1 ? "course available" : "courses available"}
           </span>
         )}
@@ -645,11 +645,11 @@ export default function CoursesView({
           flexWrap: "wrap",
           marginBottom: "28px",
           padding: "10px 16px",
-          background: "rgba(255, 255, 255, 0.75)",
+          background: "var(--theme-surface, rgba(255, 255, 255, 0.75))",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
           borderRadius: "14px",
-          border: "1px solid rgba(20, 23, 31, 0.08)",
+          border: "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.02)"
         }}
       >
@@ -662,7 +662,7 @@ export default function CoursesView({
               gap: "6px",
               fontSize: "0.82rem",
               fontWeight: "800",
-              color: "#4B5563",
+              color: "var(--theme-n-600, #4B5563)",
               textTransform: "uppercase",
               letterSpacing: "0.04em",
               paddingRight: "4px"
@@ -686,9 +686,9 @@ export default function CoursesView({
                     borderRadius: "8px",
                     fontSize: "0.82rem",
                     fontWeight: isActive ? "700" : "600",
-                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid rgba(20, 23, 31, 0.08)",
-                    background: isActive ? `${activeData.colors.primary}18` : "#FFFFFF",
-                    color: isActive ? activeData.colors.primary : "#4B5563",
+                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
+                    background: isActive ? `${activeData.colors.primary}18` : "var(--theme-surface, #FFFFFF)",
+                    color: isActive ? activeData.colors.primary : "var(--theme-n-600, #4B5563)",
                     cursor: "pointer",
                     transition: "all 0.2s ease"
                   }}
@@ -709,7 +709,7 @@ export default function CoursesView({
               gap: "6px",
               fontSize: "0.82rem",
               fontWeight: "800",
-              color: "#4B5563",
+              color: "var(--theme-n-600, #4B5563)",
               textTransform: "uppercase",
               letterSpacing: "0.04em"
             }}
@@ -738,9 +738,9 @@ export default function CoursesView({
                     borderRadius: "8px",
                     fontSize: "0.82rem",
                     fontWeight: isActive ? "700" : "600",
-                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid rgba(20, 23, 31, 0.08)",
-                    background: isActive ? `${activeData.colors.primary}18` : "#FFFFFF",
-                    color: isActive ? activeData.colors.primary : "#4B5563",
+                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
+                    background: isActive ? `${activeData.colors.primary}18` : "var(--theme-surface, #FFFFFF)",
+                    color: isActive ? activeData.colors.primary : "var(--theme-n-600, #4B5563)",
                     cursor: "pointer",
                     transition: "all 0.2s ease"
                   }}

@@ -49,7 +49,7 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
       </svg>
 
       <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
-        <div style={{ display: "inline-block", padding: "4px 8px", background: isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#6B7280"), borderRadius: "6px", fontSize: "0.7rem", fontWeight: "700", color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        <div style={{ display: "inline-block", padding: "4px 8px", background: isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "var(--theme-n-500, #6B7280)"), borderRadius: "6px", fontSize: "0.7rem", fontWeight: "700", color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.05em" }}>
           {status}
         </div>
       </div>
@@ -173,7 +173,7 @@ export default function EventsView({
               {title}
             </h3>
           </div>
-          <span style={{ fontSize: "0.8rem", fontWeight: "600", color: "#6B7280" }}>
+          <span style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--theme-n-500, #6B7280)" }}>
             {filteredBootcamps.length} bootcamps
           </span>
         </div>
@@ -211,7 +211,7 @@ export default function EventsView({
 
         {filteredBootcamps.length > CARDS_PER_PAGE && (
           <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "16px", marginTop: "24px" }}>
-            <span style={{ fontSize: "0.85rem", color: "#6B7280", fontWeight: "600" }}>
+            <span style={{ fontSize: "0.85rem", color: "var(--theme-n-500, #6B7280)", fontWeight: "600" }}>
               {startIndex + 1} - {endIndex} of {filteredBootcamps.length}
             </span>
             <div style={{ display: "flex", gap: "8px" }}>
@@ -222,9 +222,9 @@ export default function EventsView({
                   width: "36px",
                   height: "36px",
                   borderRadius: "50%",
-                  border: "1px solid #E5E7EB",
-                  background: currentPage === 0 ? "#F3F4F6" : "#FFFFFF",
-                  color: currentPage === 0 ? "#9CA3AF" : "#1F2937",
+                  border: "1px solid var(--theme-n-200, #E5E7EB)",
+                  background: currentPage === 0 ? "var(--theme-n-100, #F3F4F6)" : "var(--theme-surface, #FFFFFF)",
+                  color: currentPage === 0 ? "var(--theme-n-400, #9CA3AF)" : "var(--theme-ink, #1F2937)",
                   cursor: currentPage === 0 ? "not-allowed" : "pointer",
                   display: "flex",
                   alignItems: "center",
@@ -243,9 +243,9 @@ export default function EventsView({
                   width: "36px",
                   height: "36px",
                   borderRadius: "50%",
-                  border: "1px solid #E5E7EB",
-                  background: endIndex >= filteredBootcamps.length ? "#F3F4F6" : "#FFFFFF",
-                  color: endIndex >= filteredBootcamps.length ? "#9CA3AF" : "#1F2937",
+                  border: "1px solid var(--theme-n-200, #E5E7EB)",
+                  background: endIndex >= filteredBootcamps.length ? "var(--theme-n-100, #F3F4F6)" : "var(--theme-surface, #FFFFFF)",
+                  color: endIndex >= filteredBootcamps.length ? "var(--theme-n-400, #9CA3AF)" : "var(--theme-ink, #1F2937)",
                   cursor: endIndex >= filteredBootcamps.length ? "not-allowed" : "pointer",
                   display: "flex",
                   alignItems: "center",
@@ -281,7 +281,7 @@ export default function EventsView({
               {title}
             </h3>
           </div>
-          <span style={{ fontSize: "0.8rem", fontWeight: "600", color: "#6B7280" }}>
+          <span style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--theme-n-500, #6B7280)" }}>
             {filteredWebinars.length} webinars
           </span>
         </div>
@@ -321,7 +321,7 @@ export default function EventsView({
 
         {filteredWebinars.length > CARDS_PER_PAGE && (
           <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "16px", marginTop: "24px" }}>
-            <span style={{ fontSize: "0.85rem", color: "#6B7280", fontWeight: "600" }}>
+            <span style={{ fontSize: "0.85rem", color: "var(--theme-n-500, #6B7280)", fontWeight: "600" }}>
               {startIndex + 1} - {endIndex} of {filteredWebinars.length}
             </span>
             <div style={{ display: "flex", gap: "8px" }}>
@@ -332,9 +332,9 @@ export default function EventsView({
                   width: "36px",
                   height: "36px",
                   borderRadius: "50%",
-                  border: "1px solid #E5E7EB",
-                  background: webinarsPage === 0 ? "#F3F4F6" : "#FFFFFF",
-                  color: webinarsPage === 0 ? "#9CA3AF" : "#1F2937",
+                  border: "1px solid var(--theme-n-200, #E5E7EB)",
+                  background: webinarsPage === 0 ? "var(--theme-n-100, #F3F4F6)" : "var(--theme-surface, #FFFFFF)",
+                  color: webinarsPage === 0 ? "var(--theme-n-400, #9CA3AF)" : "var(--theme-ink, #1F2937)",
                   cursor: webinarsPage === 0 ? "not-allowed" : "pointer",
                   display: "flex",
                   alignItems: "center",
@@ -353,9 +353,9 @@ export default function EventsView({
                   width: "36px",
                   height: "36px",
                   borderRadius: "50%",
-                  border: "1px solid #E5E7EB",
-                  background: endIndex >= filteredWebinars.length ? "#F3F4F6" : "#FFFFFF",
-                  color: endIndex >= filteredWebinars.length ? "#9CA3AF" : "#1F2937",
+                  border: "1px solid var(--theme-n-200, #E5E7EB)",
+                  background: endIndex >= filteredWebinars.length ? "var(--theme-n-100, #F3F4F6)" : "var(--theme-surface, #FFFFFF)",
+                  color: endIndex >= filteredWebinars.length ? "var(--theme-n-400, #9CA3AF)" : "var(--theme-ink, #1F2937)",
                   cursor: endIndex >= filteredWebinars.length ? "not-allowed" : "pointer",
                   display: "flex",
                   alignItems: "center",
@@ -399,7 +399,7 @@ export default function EventsView({
           </h2>
         </div>
         {totalCount > 0 && (
-          <span style={{ fontSize: "0.82rem", fontWeight: "600", color: "#6B7280" }}>
+          <span style={{ fontSize: "0.82rem", fontWeight: "600", color: "var(--theme-n-500, #6B7280)" }}>
             {totalCount} {totalCount === 1 ? "event available" : "events available"}
           </span>
         )}
@@ -415,11 +415,11 @@ export default function EventsView({
           flexWrap: "wrap",
           marginBottom: "28px",
           padding: "10px 16px",
-          background: "rgba(255, 255, 255, 0.75)",
+          background: "var(--theme-surface, rgba(255, 255, 255, 0.75))",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
           borderRadius: "14px",
-          border: "1px solid rgba(20, 23, 31, 0.08)",
+          border: "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.02)"
         }}
       >
@@ -432,7 +432,7 @@ export default function EventsView({
               gap: "6px",
               fontSize: "0.82rem",
               fontWeight: "800",
-              color: "#4B5563",
+              color: "var(--theme-n-600, #4B5563)",
               textTransform: "uppercase",
               letterSpacing: "0.04em",
               paddingRight: "4px"
@@ -460,9 +460,9 @@ export default function EventsView({
                     borderRadius: "8px",
                     fontSize: "0.82rem",
                     fontWeight: isActive ? "700" : "600",
-                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid rgba(20, 23, 31, 0.08)",
-                    background: isActive ? `${activeData.colors.primary}18` : "#FFFFFF",
-                    color: isActive ? activeData.colors.primary : "#4B5563",
+                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
+                    background: isActive ? `${activeData.colors.primary}18` : "var(--theme-surface, #FFFFFF)",
+                    color: isActive ? activeData.colors.primary : "var(--theme-n-600, #4B5563)",
                     cursor: "pointer",
                     transition: "all 0.2s ease"
                   }}
@@ -483,7 +483,7 @@ export default function EventsView({
               gap: "6px",
               fontSize: "0.82rem",
               fontWeight: "800",
-              color: "#4B5563",
+              color: "var(--theme-n-600, #4B5563)",
               textTransform: "uppercase",
               letterSpacing: "0.04em"
             }}
@@ -511,9 +511,9 @@ export default function EventsView({
                     borderRadius: "8px",
                     fontSize: "0.82rem",
                     fontWeight: isActive ? "700" : "600",
-                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid rgba(20, 23, 31, 0.08)",
-                    background: isActive ? `${activeData.colors.primary}18` : "#FFFFFF",
-                    color: isActive ? activeData.colors.primary : "#4B5563",
+                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
+                    background: isActive ? `${activeData.colors.primary}18` : "var(--theme-surface, #FFFFFF)",
+                    color: isActive ? activeData.colors.primary : "var(--theme-n-600, #4B5563)",
                     cursor: "pointer",
                     transition: "all 0.2s ease"
                   }}

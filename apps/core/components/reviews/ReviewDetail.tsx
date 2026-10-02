@@ -201,25 +201,25 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="size-8 animate-spin rounded-full border-2 border-[#14142b] border-t-transparent" />
+        <div className="size-8 animate-spin rounded-full border-2 border-ink border-t-transparent" />
       </div>
     );
   }
 
   if (error || !review) {
-    return <p className="text-rose-600">{error ?? "Not found"}</p>;
+    return <p className="text-rose-600 dark:text-rose-400">{error ?? "Not found"}</p>;
   }
 
   const examStatusBadge = (status: string) => {
     switch (status) {
       case "PUBLISHED":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+        return "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25";
       case "SUBMITTED":
-        return "bg-amber-50 text-amber-800 border-amber-200";
+        return "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:border-amber-500/25";
       case "REJECTED":
-        return "bg-rose-50 text-rose-700 border-rose-200";
+        return "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/25";
       case "APPROVED":
-        return "bg-sky-50 text-sky-700 border-sky-200";
+        return "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:border-sky-500/25";
       default:
         return "bg-slate-100 text-slate-700 border-slate-200";
     }
@@ -229,26 +229,26 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
     <div className="mx-auto max-w-4xl space-y-6">
       <Link
         href={backHref}
-        className="inline-flex items-center gap-1 text-[13px] font-semibold text-slate-500 hover:text-[#14142b]"
+        className="inline-flex items-center gap-1 text-[13px] font-semibold text-slate-500 hover:text-ink"
       >
         <ChevronLeft size={16} /> {backLabel}
       </Link>
 
-      <header className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_24px_rgba(20,20,43,0.05)]">
+      <header className="rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_8px_24px_rgba(20,20,43,0.05)]">
         <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
           {review.contentType}
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-[1.35rem] font-bold tracking-tight text-[#14142b]">
+          <h1 className="text-[1.35rem] font-bold tracking-tight text-ink">
             Review &middot; Round {review.currentRound}
           </h1>
           <div className="flex flex-wrap items-center gap-2">
             <span
               className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider ${
                 review.stage === "ORG_REVIEW"
-                  ? "bg-sky-100 text-sky-800"
-                  : "bg-violet-100 text-violet-800"
+                  ? "bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-200"
+                  : "bg-violet-100 text-violet-800 dark:bg-violet-500/15 dark:text-violet-200"
               }`}
             >
               {review.stage === "ORG_REVIEW" ? "Organization review" : "Platform review"}
@@ -256,13 +256,13 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
             <span
               className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider ${
                 review.status === "OPEN"
-                  ? "bg-amber-100 text-amber-800"
+                  ? "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200"
                   : review.status === "COMPLETED"
-                    ? "bg-emerald-100 text-emerald-800"
+                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200"
                     : review.status === "REJECTED"
-                      ? "bg-rose-100 text-rose-800"
+                      ? "bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-200"
                       : review.status === "CHANGES_REQUESTED"
-                        ? "bg-orange-100 text-orange-800"
+                        ? "bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-200"
                         : "bg-slate-100 text-slate-700"
               }`}
             >
@@ -278,7 +278,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
         */}
         <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
           <FileCheck size={15} className="text-slate-500" />
-          <span className="text-[13px] font-bold text-[#14142b]">
+          <span className="text-[13px] font-bold text-ink">
             {review.versionNumber != null
               ? `Reviewing version ${review.versionNumber}`
               : "No resolvable version"}
@@ -290,7 +290,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
           <Link
             href={`/studio/published/${review.contentId}`}
             target="_blank"
-            className="inline-flex items-center gap-2 text-[13px] font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+            className="inline-flex items-center gap-2 text-[13px] font-semibold text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
           >
             Preview {review.contentType.toLowerCase()} content <ExternalLink size={13} />
           </Link>
@@ -302,7 +302,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
           an approve button on escalated reviews the API would reject.
         */}
         {review.actions.blockedReason ? (
-          <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-[13px] font-medium text-blue-800">
+          <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-[13px] font-medium text-blue-800 dark:border-blue-500/25 dark:bg-blue-500/10 dark:text-blue-200">
             {review.actions.blockedReason}
           </div>
         ) : (
@@ -315,7 +315,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                   setNote("");
                   setDialog("approve");
                 }}
-                className="rounded-full bg-[#14142b] px-4 py-2.5 text-[12px] font-semibold text-white shadow-[0_6px_14px_rgba(20,20,43,0.16)] hover:bg-[#232735] disabled:opacity-50"
+                className="rounded-full bg-ink px-4 py-2.5 text-[12px] font-semibold text-on-ink shadow-[0_6px_14px_rgba(20,20,43,0.16)] hover:bg-ink-hover disabled:opacity-50"
               >
                 {review.actions.approvalPublishes ? "Approve & publish" : "Approve & send onward"}
               </button>
@@ -328,7 +328,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                   setReason("");
                   setDialog("changes");
                 }}
-                className="rounded-full border border-orange-200 bg-orange-50 px-4 py-2.5 text-[12px] font-semibold text-orange-700 hover:bg-orange-100 disabled:opacity-50"
+                className="rounded-full border border-orange-200 bg-orange-50 px-4 py-2.5 text-[12px] font-semibold text-orange-700 hover:bg-orange-100 disabled:opacity-50 dark:border-orange-500/25 dark:bg-orange-500/10 dark:text-orange-300 dark:hover:bg-orange-500/15"
               >
                 Request changes
               </button>
@@ -341,7 +341,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                   setReason("");
                   setDialog("reject");
                 }}
-                className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2.5 text-[12px] font-semibold text-rose-600 hover:bg-rose-100 disabled:opacity-50"
+                className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2.5 text-[12px] font-semibold text-rose-600 hover:bg-rose-100 disabled:opacity-50 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/15"
               >
                 Reject
               </button>
@@ -364,11 +364,11 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
 
       {/* Associated Assessments & Exams Section */}
       {(review.contentType === "COURSE" || review.contentType === "EVENT" || review.contentType === "EXAM") && (
-        <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_24px_rgba(20,20,43,0.05)]">
+        <section className="rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_8px_24px_rgba(20,20,43,0.05)]">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div>
-              <h2 className="text-[14px] font-bold text-[#14142b] flex items-center gap-2">
-                <Award size={17} className="text-amber-600" />
+              <h2 className="text-[14px] font-bold text-ink flex items-center gap-2">
+                <Award size={17} className="text-amber-600 dark:text-amber-400" />
                 Associated Assessments & Exams
               </h2>
               <p className="text-[12px] text-slate-500 mt-0.5">
@@ -393,11 +393,11 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
               {exams.map((ex) => (
                 <div
                   key={ex.examId}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 transition-colors hover:border-slate-300 hover:bg-white"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 transition-colors hover:border-slate-300 hover:bg-surface"
                 >
                   <div className="space-y-1.5 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[14px] font-semibold text-[#14142b] truncate">
+                      <span className="text-[14px] font-semibold text-ink truncate">
                         {ex.title}
                       </span>
                       <span
@@ -408,12 +408,12 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                         {ex.status}
                       </span>
                       {ex.plans.some((pl) => pl.proctoringRequired) && (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
+                        <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 dark:border-indigo-500/25 dark:bg-indigo-500/10 dark:text-indigo-300">
                           <Shield size={11} /> Proctored
                         </span>
                       )}
                       {Array.from(new Set(ex.plans.map((pl) => pl.planType))).map((t) => (
-                        <span key={t} className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                        <span key={t} className="rounded-full border border-slate-200 bg-surface px-2 py-0.5 text-[10px] font-medium text-slate-600">
                           {t}
                         </span>
                       ))}
@@ -434,7 +434,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                     <Link
                       href={`/studio/exam/${ex.examId}/edit`}
                       target="_blank"
-                      className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50 transition-colors"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3 py-1.5 text-[12px] font-semibold text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50 transition-colors"
                     >
                       <ExternalLink size={13} />
                       Question Bank ↗
@@ -445,7 +445,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                         setInspectingExam(ex);
                         setExamTab("overview");
                       }}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-3.5 py-1.5 text-[12px] font-semibold text-white shadow-sm hover:bg-[#232735] transition-colors"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-ink px-3.5 py-1.5 text-[12px] font-semibold text-on-ink shadow-sm hover:bg-ink-hover transition-colors"
                     >
                       <Eye size={14} />
                       Inspect Exam
@@ -466,7 +466,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
         The old page showed only the third and called it "Timeline", which is why nobody could
         answer "which version was published" from the console.
       */}
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_24px_rgba(20,20,43,0.05)]">
+      <section className="rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_8px_24px_rgba(20,20,43,0.05)]">
         <nav className="mb-4 flex gap-1 border-b border-slate-100" aria-label="History views">
           {(
             [
@@ -482,7 +482,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
               aria-current={historyTab === tab.id ? "true" : undefined}
               className={`border-b-2 px-3 pb-2 text-[12px] font-semibold transition-colors ${
                 historyTab === tab.id
-                  ? "border-[#14142b] text-[#14142b]"
+                  ? "border-ink text-ink"
                   : "border-transparent text-slate-400 hover:text-slate-600"
               }`}
             >
@@ -514,7 +514,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                   #{e.sequenceNumber}
                 </span>
                 <div>
-                  <div className="font-semibold text-[#14142b]">{e.eventType}</div>
+                  <div className="font-semibold text-ink">{e.eventType}</div>
                   {e.note && <div className="text-slate-500">{e.note}</div>}
                   <div className="text-[11px] text-slate-400">
                     {new Date(e.createdAt).toLocaleString()}
@@ -567,11 +567,11 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
 
       {/* Decision Dialog */}
       {dialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#14142b]/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_24px_60px_rgba(20,20,43,0.22)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface shadow-[0_24px_60px_rgba(20,20,43,0.22)]">
             <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
               <div>
-                <h2 className="text-[16px] font-bold tracking-tight text-[#14142b]">
+                <h2 className="text-[16px] font-bold tracking-tight text-ink">
                   {dialog === "approve"
                     ? review.actions.approvalPublishes
                       ? "Approve & publish"
@@ -594,7 +594,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                 type="button"
                 onClick={closeDialog}
                 disabled={busy}
-                className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-[#14142b]"
+                className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-ink"
               >
                 <X size={18} />
               </button>
@@ -607,7 +607,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                   onChange={(e) => setNote(e.target.value)}
                   rows={4}
                   placeholder="Approval notes (required)…"
-                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 text-[13px] text-[#14142b] outline-none placeholder:text-slate-400 focus:border-[#14142b]/25 focus:bg-white focus:ring-4 focus:ring-slate-200/70"
+                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 text-[13px] text-ink outline-none placeholder:text-slate-400 focus:border-ink/25 focus:bg-surface focus:ring-4 focus:ring-slate-200/70"
                 />
               ) : (
                 <textarea
@@ -615,7 +615,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                   onChange={(e) => setReason(e.target.value)}
                   rows={4}
                   placeholder="Reason for requesting changes…"
-                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 text-[13px] text-[#14142b] outline-none placeholder:text-slate-400 focus:border-[#14142b]/25 focus:bg-white focus:ring-4 focus:ring-slate-200/70"
+                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 text-[13px] text-ink outline-none placeholder:text-slate-400 focus:border-ink/25 focus:bg-surface focus:ring-4 focus:ring-slate-200/70"
                 />
               )}
             </div>
@@ -635,7 +635,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                 disabled={busy || (dialog === "changes" && !reason.trim())}
                 className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-semibold text-white disabled:opacity-40 ${
                   dialog === "approve"
-                    ? "bg-[#14142b] hover:bg-[#232735]"
+                    ? "bg-ink hover:bg-ink-hover"
                     : "bg-rose-600 hover:bg-rose-700"
                 }`}
               >
@@ -649,13 +649,13 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
 
       {/* Inspect Exam Modal Dialog */}
       {inspectingExam && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#14142b]/50 p-4 backdrop-blur-sm">
-          <div className="flex h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_60px_rgba(20,20,43,0.25)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4 backdrop-blur-sm">
+          <div className="flex h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-surface shadow-[0_24px_60px_rgba(20,20,43,0.25)]">
             {/* Header */}
             <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-6 py-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-[17px] font-bold text-[#14142b] truncate">
+                  <h2 className="text-[17px] font-bold text-ink truncate">
                     {inspectingExam.title}
                   </h2>
                   <span
@@ -674,7 +674,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                 <Link
                   href={`/studio/exam/${inspectingExam.examId}/edit`}
                   target="_blank"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-[#14142b] hover:bg-slate-50 transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3 py-1.5 text-[12px] font-semibold text-ink hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   <ExternalLink size={13} />
                   Question Bank ↗
@@ -682,7 +682,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                 <button
                   type="button"
                   onClick={() => setInspectingExam(null)}
-                  className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-[#14142b]"
+                  className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-ink"
                 >
                   <X size={20} />
                 </button>
@@ -696,7 +696,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                 onClick={() => setExamTab("overview")}
                 className={`border-b-2 px-3 py-2.5 text-[13px] font-semibold transition-colors ${
                   examTab === "overview"
-                    ? "border-[#14142b] text-[#14142b]"
+                    ? "border-ink text-ink"
                     : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -707,7 +707,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                 onClick={() => setExamTab("questions")}
                 className={`border-b-2 px-3 py-2.5 text-[13px] font-semibold transition-colors flex items-center gap-1.5 ${
                   examTab === "questions"
-                    ? "border-[#14142b] text-[#14142b]"
+                    ? "border-ink text-ink"
                     : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -719,7 +719,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                 onClick={() => setExamTab("plans")}
                 className={`border-b-2 px-3 py-2.5 text-[13px] font-semibold transition-colors ${
                   examTab === "plans"
-                    ? "border-[#14142b] text-[#14142b]"
+                    ? "border-ink text-ink"
                     : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -730,7 +730,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                 onClick={() => setExamTab("placements")}
                 className={`border-b-2 px-3 py-2.5 text-[13px] font-semibold transition-colors ${
                   examTab === "placements"
-                    ? "border-[#14142b] text-[#14142b]"
+                    ? "border-ink text-ink"
                     : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -741,7 +741,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                 onClick={() => setExamTab("comments")}
                 className={`border-b-2 px-3 py-2.5 text-[13px] font-semibold transition-colors flex items-center gap-1.5 ${
                   examTab === "comments"
-                    ? "border-[#14142b] text-[#14142b]"
+                    ? "border-ink text-ink"
                     : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -766,9 +766,9 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                     ) : (
                       <div className="grid grid-cols-1 gap-3">
                         {inspectingExam.plans.map((pl) => (
-                          <div key={pl.planId} className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm">
+                          <div key={pl.planId} className="rounded-xl border border-slate-200/80 bg-surface p-4 shadow-sm">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-[14px] font-bold text-[#14142b]">{pl.name}</span>
+                              <span className="text-[14px] font-bold text-ink">{pl.name}</span>
                               <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-600">
                                 {pl.planType}
                               </span>
@@ -786,11 +786,11 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                             </div>
                             <div className="mt-2 flex flex-wrap gap-3 text-[11px]">
                               <span className="inline-flex items-center gap-1">
-                                <Shield size={12} className={pl.proctoringRequired ? "text-indigo-600" : "text-slate-300"} />
+                                <Shield size={12} className={pl.proctoringRequired ? "text-indigo-600 dark:text-indigo-400" : "text-slate-300"} />
                                 Proctoring {pl.proctoringRequired ? "on" : "off"}
                               </span>
                               <span className="inline-flex items-center gap-1">
-                                <FileCheck size={12} className={pl.identityVerificationRequired ? "text-indigo-600" : "text-slate-300"} />
+                                <FileCheck size={12} className={pl.identityVerificationRequired ? "text-indigo-600 dark:text-indigo-400" : "text-slate-300"} />
                                 Identity check {pl.identityVerificationRequired ? "on" : "off"}
                               </span>
                             </div>
@@ -821,20 +821,20 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                     inspectingExam.plans.map((pl) => (
                       <div
                         key={pl.planId}
-                        className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm space-y-3"
+                        className="rounded-xl border border-slate-200/80 bg-surface p-4 shadow-sm space-y-3"
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="text-[14px] font-bold text-[#14142b]">{pl.name}</span>
+                            <span className="text-[14px] font-bold text-ink">{pl.name}</span>
                             <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-600">
                               {pl.planType}
                             </span>
                             {pl.valid ? (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300">
                                 <CheckCircle2 size={11} /> Valid
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700">
+                              <span className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
                                 <AlertCircle size={11} /> Invalid Plan
                               </span>
                             )}
@@ -852,7 +852,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                         </div>
 
                         {!pl.valid && pl.validationErrors.length > 0 && (
-                          <div className="rounded-lg border border-rose-200 bg-rose-50/70 p-3 text-[12px] text-rose-800 space-y-1">
+                          <div className="rounded-lg border border-rose-200 bg-rose-50/70 p-3 text-[12px] text-rose-800 space-y-1 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-200">
                             <div className="font-semibold">Plan Validation Issues:</div>
                             <ul className="list-disc pl-4 space-y-0.5">
                               {pl.validationErrors.map((err, i) => (
@@ -877,11 +877,11 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                     inspectingExam.placements.map((plc) => (
                       <div
                         key={plc.placementId}
-                        className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm"
+                        className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-surface p-4 shadow-sm"
                       >
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-2">
-                            <span className="text-[13px] font-bold text-[#14142b]">
+                            <span className="text-[13px] font-bold text-ink">
                               {plc.title || "Assessment Placement"}
                             </span>
                             <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-600">
@@ -895,7 +895,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
 
                         <div>
                           {inspectingExam.plans.find((pl) => pl.planId === plc.planId)?.planType === "COMPLETION" ? (
-                            <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
+                            <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
                               Completes the content
                             </span>
                           ) : (
@@ -913,7 +913,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
               {examTab === "comments" && (
                 <div className="space-y-5">
                   <div className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-4 space-y-3">
-                    <div className="text-[12px] font-bold text-[#14142b]">
+                    <div className="text-[12px] font-bold text-ink">
                       Add Assessment Review Feedback
                     </div>
                     <textarea
@@ -921,14 +921,14 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                       onChange={(e) => setNewCommentBody(e.target.value)}
                       placeholder="Comment on assessment question quality, pass marks, or proctoring settings…"
                       rows={3}
-                      className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-[13px] text-[#14142b] outline-none placeholder:text-slate-400 focus:border-[#14142b]/25 focus:ring-2 focus:ring-slate-200"
+                      className="w-full resize-none rounded-xl border border-slate-200 bg-surface p-3 text-[13px] text-ink outline-none placeholder:text-slate-400 focus:border-ink/25 focus:ring-2 focus:ring-slate-200"
                     />
                     <div className="flex justify-end">
                       <button
                         type="button"
                         disabled={postingComment || !newCommentBody.trim()}
                         onClick={handlePostExamComment}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-4 py-1.5 text-[12px] font-semibold text-white hover:bg-[#232735] disabled:opacity-40"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-1.5 text-[12px] font-semibold text-on-ink hover:bg-ink-hover disabled:opacity-40"
                       >
                         {postingComment ? (
                           <Loader2 size={13} className="animate-spin" />
@@ -957,10 +957,10 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                         {examComments.map((cm) => (
                           <div
                             key={cm.id}
-                            className="rounded-xl border border-slate-200/80 bg-white p-3.5 space-y-1 shadow-sm"
+                            className="rounded-xl border border-slate-200/80 bg-surface p-3.5 space-y-1 shadow-sm"
                           >
                             <div className="flex items-center justify-between text-[11px]">
-                              <span className="font-semibold text-[#14142b]">{cm.authorName}</span>
+                              <span className="font-semibold text-ink">{cm.authorName}</span>
                               <span className="text-slate-400">
                                 {new Date(cm.createdAt).toLocaleString()}
                               </span>
@@ -982,7 +982,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
               <button
                 type="button"
                 onClick={() => setInspectingExam(null)}
-                className="rounded-full bg-[#14142b] px-4 py-1.5 text-[12px] font-semibold text-white hover:bg-[#232735]"
+                className="rounded-full bg-ink px-4 py-1.5 text-[12px] font-semibold text-on-ink hover:bg-ink-hover"
               >
                 Done
               </button>

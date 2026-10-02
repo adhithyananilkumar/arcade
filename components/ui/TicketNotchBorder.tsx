@@ -9,7 +9,7 @@ export interface TicketNotchBorderProps {
 }
 
 export const TicketNotchBorder: React.FC<TicketNotchBorderProps> = ({
-  className = 'text-slate-400 dark:text-slate-600',
+  className = 'text-slate-400',
   strokeWidth = 1.5,
   speed = 1.8
 }) => {

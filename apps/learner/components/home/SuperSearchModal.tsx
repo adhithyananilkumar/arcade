@@ -286,12 +286,12 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
       onOpenChange={onOpenChange}
       title="Search Arcade"
       description="Search courses, events and pages"
-      className="top-[8%] sm:top-[12%] translate-y-0 w-[95vw] sm:max-w-2xl! md:max-w-3xl! gap-0 overflow-hidden rounded-3xl! border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-0 shadow-2xl"
+      className="top-[8%] sm:top-[12%] translate-y-0 w-[95vw] sm:max-w-2xl! md:max-w-3xl! gap-0 overflow-hidden rounded-3xl! border border-slate-200/90 bg-surface p-0 shadow-2xl"
       showCloseButton={false}
     >
       <Command shouldFilter={false} className="bg-transparent">
         {/* Top Input Header */}
-        <div className="relative flex items-center gap-2.5 sm:gap-3 border-b border-slate-100 dark:border-slate-800/80 px-4 sm:px-6 py-4.5 bg-white dark:bg-slate-900">
+        <div className="relative flex items-center gap-2.5 sm:gap-3 border-b border-slate-100 px-4 sm:px-6 py-4.5 bg-surface">
           {/* Search Glass Doodle */}
           <div className="relative flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center select-none">
             <svg
@@ -306,7 +306,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                 cx="15.5"
                 cy="15.5"
                 r="9"
-                className="fill-slate-50 dark:fill-slate-800 stroke-slate-800 dark:stroke-slate-200"
+                className="fill-slate-50 stroke-slate-800"
                 strokeWidth="2.2"
               />
               {/* Glass inner reflection stroke */}
@@ -319,7 +319,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
               {/* Handle */}
               <path
                 d="M22 22L29 29"
-                className="stroke-slate-800 dark:stroke-slate-200"
+                className="stroke-slate-800"
                 strokeWidth="2.8"
                 strokeLinecap="round"
               />
@@ -330,12 +330,12 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
 
           {/* Active Selected Topic Pill Chip */}
           {selectedTopic && (
-            <div className="inline-flex items-center gap-1.5 rounded-tl-[1rem] rounded-br-[1rem] rounded-tr-xs rounded-bl-xs border border-slate-200/90 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1 text-xs sm:text-[13px] font-bold text-slate-800 dark:text-slate-100 shrink-0 select-none animate-in fade-in zoom-in-95 duration-150">
+            <div className="inline-flex items-center gap-1.5 rounded-tl-[1rem] rounded-br-[1rem] rounded-tr-xs rounded-bl-xs border border-slate-200/90 bg-slate-50 px-3 py-1 text-xs sm:text-[13px] font-bold text-slate-800 shrink-0 select-none animate-in fade-in zoom-in-95 duration-150">
               <span>{selectedTopic}</span>
               <button
                 type="button"
                 onClick={removeTopic}
-                className="flex size-4 items-center justify-center rounded-full text-slate-400 hover:bg-slate-200/70 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
+                className="flex size-4 items-center justify-center rounded-full text-slate-400 hover:bg-slate-200/70 hover:text-slate-700 transition-colors cursor-pointer"
                 aria-label={`Remove ${selectedTopic}`}
               >
                 <X size={12} strokeWidth={2.4} />
@@ -355,7 +355,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
             }}
             placeholder={selectedTopic ? 'Filter within topic…' : 'Search courses, events, settings, topics…'}
             autoFocus
-            className="h-auto flex-1 border-0 bg-transparent p-0 text-[15px] sm:text-[16.5px] font-semibold text-slate-900 dark:text-white shadow-none outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:font-normal focus-visible:ring-0"
+            className="h-auto flex-1 border-0 bg-transparent p-0 text-[15px] sm:text-[16.5px] font-semibold text-slate-900 shadow-none outline-none placeholder:text-slate-400 placeholder:font-normal focus-visible:ring-0"
           />
 
           <div className="flex items-center gap-1.5 shrink-0">
@@ -363,7 +363,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
               type="button"
               onClick={() => onOpenChange(false)}
               aria-label="Close search"
-              className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/60 text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-all cursor-pointer"
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50/80 text-slate-400 hover:border-slate-300 hover:bg-slate-100 hover:text-slate-700 transition-all cursor-pointer"
             >
               <X size={16} strokeWidth={2.2} />
             </button>
@@ -371,7 +371,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
         </div>
 
         <CommandList
-          className="max-h-[65vh] min-h-[320px] overflow-x-hidden px-3 sm:px-4 py-3 bg-white dark:bg-slate-900 divide-y divide-slate-100/60 dark:divide-slate-800/60"
+          className="max-h-[65vh] min-h-[320px] overflow-x-hidden px-3 sm:px-4 py-3 bg-surface divide-y divide-slate-100/60"
         >
           {isSearching && (
             <div className="flex items-center gap-2 px-3 py-3 text-xs font-semibold text-[#2962D6] dark:text-[#3B82F6]">
@@ -381,7 +381,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
 
           {!hasQuery && (
             <div className="mb-3 px-2 pt-2 pb-1">
-              <p className="mb-2.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              <p className="mb-2.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
                 Popular topics
               </p>
               <div className="flex flex-wrap gap-2">
@@ -390,7 +390,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                     key={tag}
                     type="button"
                     onClick={() => selectTopic(tag)}
-                    className="inline-flex items-center gap-1.5 rounded-tl-[1rem] rounded-br-[1rem] rounded-tr-xs rounded-bl-xs border border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-800/90 px-3 py-1 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-[#2962D6] dark:hover:border-[#3B82F6] hover:text-[#2962D6] dark:hover:text-[#3B82F6] hover:bg-[#2962D6]/5 dark:hover:bg-[#3B82F6]/10 transition-all cursor-pointer select-none"
+                    className="inline-flex items-center gap-1.5 rounded-tl-[1rem] rounded-br-[1rem] rounded-tr-xs rounded-bl-xs border border-slate-200/90 bg-surface/95 px-3 py-1 text-xs font-bold text-slate-700 hover:border-[#2962D6] dark:hover:border-[#3B82F6] hover:text-[#2962D6] dark:hover:text-[#3B82F6] hover:bg-[#2962D6]/5 dark:hover:bg-[#3B82F6]/10 transition-all cursor-pointer select-none"
                   >
                     <span>{tag}</span>
                   </button>
@@ -401,11 +401,11 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
 
           {!isSearching && !hasAnyResults && (
             <CommandEmpty className="flex flex-col items-center gap-2.5 py-16 text-center">
-              <span className="flex h-13 w-13 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200/80 dark:border-slate-700 shadow-xs">
+              <span className="flex h-13 w-13 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 border border-slate-200/80 shadow-xs">
                 <SearchX size={24} />
               </span>
-              <span className="text-base font-bold text-slate-800 dark:text-white">No results for “{debouncedQuery}”</span>
-              <span className="text-xs font-medium text-slate-400 dark:text-slate-500 max-w-xs">
+              <span className="text-base font-bold text-slate-800">No results for “{debouncedQuery}”</span>
+              <span className="text-xs font-medium text-slate-400 max-w-xs">
                 Try searching with a different keyword, course, event, or page title.
               </span>
             </CommandEmpty>
@@ -418,14 +418,14 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                   key={course.id}
                   value={`course-${course.id}`}
                   onSelect={() => go(courseRoutes.landing(course.id))}
-                  className="py-3 px-3.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors cursor-pointer group"
+                  className="py-3 px-3.5 rounded-2xl hover:bg-slate-50 transition-colors cursor-pointer group"
                 >
-                  <div className="h-11 w-12 shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700">
+                  <div className="h-11 w-12 shrink-0 overflow-hidden rounded-xl bg-slate-100 border border-slate-200/60">
                     <ContentArt seed={course.id} kind="COURSE" categoryId={course.categoryId} title={course.title} />
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6] transition-colors">{course.title}</span>
-                    <span className="truncate text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">
+                    <span className="truncate text-sm font-bold text-slate-900 group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6] transition-colors">{course.title}</span>
+                    <span className="truncate text-xs font-medium text-slate-400 mt-0.5">
                       {course.channel?.name ? `${course.channel.name} · ` : ''}{course.moduleCount || 0} modules
                     </span>
                   </div>
@@ -434,14 +434,14 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                   </span>
                   <ArrowRight
                     size={15}
-                    className="shrink-0 text-slate-300 dark:text-slate-600 transition-transform group-hover:translate-x-0.5 group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6]"
+                    className="shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6]"
                   />
                 </CommandItem>
               ))}
               <CommandItem
                 value="course-view-all"
                 onSelect={() => go(`/search?q=${encodeURIComponent(debouncedQuery)}`)}
-                className="py-2.5 px-3.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors cursor-pointer"
+                className="py-2.5 px-3.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-[#2962D6] dark:text-[#3B82F6]">
                   <ArrowRight size={15} />
@@ -458,14 +458,14 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                   key={event.id}
                   value={`event-${event.id}`}
                   onSelect={() => go(`/events/${event.slug || event.id}`)}
-                  className="py-3 px-3.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors cursor-pointer group"
+                  className="py-3 px-3.5 rounded-2xl hover:bg-slate-50 transition-colors cursor-pointer group"
                 >
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-violet-800/60">
                     <CalendarDays size={18} />
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate text-sm font-bold text-slate-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{event.title}</span>
-                    <span className="truncate text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">
+                    <span className="truncate text-sm font-bold text-slate-900 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{event.title}</span>
+                    <span className="truncate text-xs font-medium text-slate-400 mt-0.5">
                       {event.eventType || 'Event'} {event.deliveryMode ? `· ${event.deliveryMode}` : ''}
                     </span>
                   </div>
@@ -474,7 +474,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                   </span>
                   <ArrowRight
                     size={15}
-                    className="shrink-0 text-slate-300 dark:text-slate-600 transition-transform group-hover:translate-x-0.5 group-hover:text-violet-600 dark:group-hover:text-violet-400"
+                    className="shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-violet-600 dark:group-hover:text-violet-400"
                   />
                 </CommandItem>
               ))}
@@ -488,20 +488,20 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                   key={item.id}
                   value={item.id}
                   onSelect={() => go(item.href)}
-                  className="py-3 px-3.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors cursor-pointer group flex items-center gap-3.5"
+                  className="py-3 px-3.5 rounded-2xl hover:bg-slate-50 transition-colors cursor-pointer group flex items-center gap-3.5"
                 >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-all group-hover:scale-105 group-hover:bg-[#2962D6]/10 dark:group-hover:bg-[#3B82F6]/20 group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6]">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-all group-hover:scale-105 group-hover:bg-[#2962D6]/10 dark:group-hover:bg-[#3B82F6]/20 group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6]">
                     <item.icon size={18} strokeWidth={2.2} />
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6] transition-colors">{item.label}</span>
+                    <span className="truncate text-sm font-bold text-slate-900 group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6] transition-colors">{item.label}</span>
                     {item.subtitle && (
-                      <span className="truncate text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">{item.subtitle}</span>
+                      <span className="truncate text-xs font-medium text-slate-400 mt-0.5">{item.subtitle}</span>
                     )}
                   </div>
                   <ArrowRight
                     size={15}
-                    className="shrink-0 text-slate-300 dark:text-slate-600 transition-transform group-hover:translate-x-0.5 group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6]"
+                    className="shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6]"
                   />
                 </CommandItem>
               ))}
@@ -513,17 +513,17 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
               <CommandItem
                 value="search-everything"
                 onSelect={() => go(`/search?q=${encodeURIComponent(debouncedQuery)}`)}
-                className="py-3 px-3.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors cursor-pointer group"
+                className="py-3 px-3.5 rounded-2xl hover:bg-slate-50 transition-colors cursor-pointer group"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-[#2962D6]/10 dark:group-hover:bg-[#3B82F6]/20 group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6] transition-colors">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 group-hover:bg-[#2962D6]/10 dark:group-hover:bg-[#3B82F6]/20 group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6] transition-colors">
                   <Search size={17} strokeWidth={2.2} />
                 </div>
-                <span className="truncate text-sm font-medium text-slate-500 dark:text-slate-400">
-                  Search everything for <span className="font-bold text-slate-900 dark:text-white">“{debouncedQuery}”</span>
+                <span className="truncate text-sm font-medium text-slate-500">
+                  Search everything for <span className="font-bold text-slate-900">“{debouncedQuery}”</span>
                 </span>
                 <ArrowRight
                   size={15}
-                  className="ml-auto shrink-0 text-slate-300 dark:text-slate-600 transition-transform group-hover:translate-x-0.5 group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6]"
+                  className="ml-auto shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6]"
                 />
               </CommandItem>
             </CommandGroup>

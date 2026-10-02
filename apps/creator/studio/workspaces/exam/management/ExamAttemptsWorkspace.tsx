@@ -27,15 +27,15 @@ function formatDate(iso: string | null) {
 function StatusBadge({ attempt }: { attempt: ExamAttemptSummaryResponse }) {
   const [label, cls] =
     attempt.status === "IN_PROGRESS"
-      ? ["In progress", "bg-orange-50 text-orange-700"]
+      ? ["In progress", "bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300"]
       : attempt.status === "CANCELLED"
-      ? [attempt.terminationReason === "PROCTORING_VIOLATIONS" ? "Ended: violations" : "Cancelled", "bg-rose-50 text-rose-700"]
+      ? [attempt.terminationReason === "PROCTORING_VIOLATIONS" ? "Ended: violations" : "Cancelled", "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300"]
       : attempt.awaitingMarking
-      ? ["Awaiting marking", "bg-amber-50 text-amber-700"]
+      ? ["Awaiting marking", "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"]
       : attempt.terminationReason === "PROCTORING_VIOLATIONS"
-      ? ["Ended: violations", "bg-rose-50 text-rose-700"]
+      ? ["Ended: violations", "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300"]
       : attempt.passed === true
-      ? ["Passed", "bg-emerald-50 text-emerald-700"]
+      ? ["Passed", "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"]
       : attempt.passed === false
       ? ["Not passed", "bg-slate-100 text-slate-600"]
       : ["Submitted", "bg-slate-100 text-slate-600"];
@@ -66,7 +66,7 @@ function IdentityCell({
             type="button"
             title="Approve identity"
             onClick={() => onReview(true)}
-            className="rounded-md border border-emerald-200 bg-emerald-50 p-1 text-emerald-700 hover:bg-emerald-100"
+            className="rounded-md border border-emerald-200 bg-emerald-50 p-1 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/15"
           >
             <Check size={12} />
           </button>
@@ -74,7 +74,7 @@ function IdentityCell({
             type="button"
             title="Reject identity"
             onClick={() => onReview(false)}
-            className="rounded-md border border-rose-200 bg-rose-50 p-1 text-rose-700 hover:bg-rose-100"
+            className="rounded-md border border-rose-200 bg-rose-50 p-1 text-rose-700 hover:bg-rose-100 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15"
           >
             <X size={12} />
           </button>
@@ -82,7 +82,7 @@ function IdentityCell({
       ) : (
         <span
           className={`text-[11px] font-bold ${
-            attempt.identityStatus === "APPROVED" ? "text-emerald-700" : "text-rose-700"
+            attempt.identityStatus === "APPROVED" ? "text-emerald-700 dark:text-emerald-300" : "text-rose-700 dark:text-rose-300"
           }`}
         >
           {attempt.identityStatus === "APPROVED" ? "Approved" : "Rejected"}
@@ -127,7 +127,7 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
     }
   };
 
-  if (error) return <p className="text-sm text-rose-600">Failed to load attempts.</p>;
+  if (error) return <p className="text-sm text-rose-600 dark:text-rose-400">Failed to load attempts.</p>;
   if (attempts === null) {
     return (
       <div className="flex justify-center py-12">
@@ -137,8 +137,8 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
   }
   if (attempts.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-14 text-center">
-        <p className="text-sm font-semibold text-[#14142b]">No attempts yet</p>
+      <div className="rounded-2xl border border-dashed border-slate-200 bg-surface px-6 py-14 text-center">
+        <p className="text-sm font-semibold text-ink">No attempts yet</p>
         <p className="mt-1 text-xs text-slate-500">Attempts appear here as soon as a learner starts.</p>
       </div>
     );
@@ -152,7 +152,7 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
         <select
           value={planFilter}
           onChange={(e) => setPlanFilter(e.target.value)}
-          className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700"
+          className="rounded-xl border border-slate-200 bg-surface px-3 py-1.5 text-xs font-semibold text-slate-700"
         >
           <option value="">All plans</option>
           {plans.map((p) => (
@@ -162,13 +162,13 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
           ))}
         </select>
         {pendingIdentity > 0 && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-800">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
             <ShieldAlert size={12} /> {pendingIdentity} identity photo{pendingIdentity === 1 ? "" : "s"} to review
           </span>
         )}
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-surface">
         <table className="w-full min-w-[760px] text-left text-sm">
           <thead>
             <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wide text-slate-400">
@@ -186,7 +186,7 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
             {visible.map((a) => (
               <tr key={a.attemptId}>
                 <td className="px-4 py-3">
-                  <span className="font-semibold text-[#14142b]">{a.userName}</span>
+                  <span className="font-semibold text-ink">{a.userName}</span>
                   <span className="block text-[11px] text-slate-400">Attempt {a.attemptNumber}</span>
                 </td>
                 <td className="px-4 py-3 text-xs text-slate-600">{a.planName ?? "—"}</td>
@@ -216,13 +216,13 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
                   <button
                     type="button"
                     onClick={() => setMenuFor(menuFor === a.attemptId ? null : a.attemptId)}
-                    className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-[#14142b]"
+                    className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-ink"
                     aria-label="Attempt actions"
                   >
                     <MoreHorizontal size={15} />
                   </button>
                   {menuFor === a.attemptId && (
-                    <div className="absolute right-4 z-20 mt-1 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 text-left shadow-lg">
+                    <div className="absolute right-4 z-20 mt-1 w-56 overflow-hidden rounded-xl border border-slate-200 bg-surface py-1 text-left shadow-lg">
                       {a.status === "IN_PROGRESS" && (
                         <>
                           <MenuItem
@@ -290,7 +290,7 @@ function MenuItem({
       type="button"
       onClick={onClick}
       className={`flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold transition-colors ${
-        danger ? "text-rose-600 hover:bg-rose-50" : "text-slate-700 hover:bg-slate-50"
+        danger ? "text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10" : "text-slate-700 hover:bg-slate-50"
       }`}
     >
       {icon}

@@ -34,7 +34,7 @@ function renderMarks(text: string, marks: TiptapMark[] | undefined, key: number)
             href={typeof mark.attrs?.href === "string" ? mark.attrs.href : "#"}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-indigo-600 underline hover:text-indigo-800"
+            className="text-indigo-600 underline hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200"
           >
             {acc}
           </a>
@@ -45,7 +45,7 @@ function renderMarks(text: string, marks: TiptapMark[] | undefined, key: number)
           <mark
             key={key}
             style={color ? { backgroundColor: color } : undefined}
-            className={color ? undefined : "rounded bg-yellow-200/70 px-0.5"}
+            className={color ? undefined : "rounded bg-yellow-200/70 px-0.5 dark:bg-yellow-500/20"}
           >
             {acc}
           </mark>
@@ -224,7 +224,7 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
       return (
         <blockquote
           key={key}
-          className="mb-4 border-l-4 border-indigo-200 pl-4 italic text-gray-600"
+          className="mb-4 border-l-4 border-indigo-200 pl-4 italic text-gray-600 dark:border-indigo-500/25"
         >
           {children}
         </blockquote>
@@ -329,7 +329,7 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
           href={src}
           target="_blank"
           rel="noopener noreferrer"
-          className="mb-4 block rounded-lg border border-gray-200 px-4 py-3 text-sm text-indigo-600 underline hover:text-indigo-800"
+          className="mb-4 block rounded-lg border border-gray-200 px-4 py-3 text-sm text-indigo-600 underline hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200"
         >
           {src}
         </a>
@@ -347,7 +347,7 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
           target="_blank"
           rel="noopener noreferrer"
           download={fileName}
-          className="mb-4 flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-indigo-200 hover:text-indigo-700"
+          className="mb-4 flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-indigo-200 hover:text-indigo-700 dark:hover:border-indigo-500/25 dark:hover:text-indigo-300"
         >
           📎 {fileName}
         </a>
@@ -409,7 +409,7 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
       const title = typeof node.attrs?.title === "string" ? node.attrs.title : "";
       const body = typeof node.attrs?.body === "string" ? node.attrs.body : "";
       return (
-        <div key={key} className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-gray-800">
+        <div key={key} className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-gray-800 dark:border-indigo-500/25 dark:bg-indigo-500/10">
           {title && <p className="mb-1 font-semibold">{title}</p>}
           {body && <p>{body}</p>}
           {children}
@@ -427,7 +427,7 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
             ? node.attrs.id
             : "user";
       return (
-        <span key={key} className="rounded bg-indigo-50 px-1 py-0.5 font-medium text-indigo-700">
+        <span key={key} className="rounded bg-indigo-50 px-1 py-0.5 font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
           @{label}
         </span>
       );
@@ -496,7 +496,7 @@ export function TiptapContentView({
             return (
               <div
                 key={i}
-                className="my-3 rounded-xl border-2 border-emerald-400 bg-emerald-50/50 p-3.5 shadow-sm relative transition-all animate-in fade-in"
+                className="my-3 rounded-xl border-2 border-emerald-400 bg-emerald-50/50 p-3.5 shadow-sm relative transition-all animate-in fade-in dark:bg-emerald-500/10"
               >
                 <div className="absolute -top-2.5 right-3 bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1">
                   <span>✨ Updated Portion</span>

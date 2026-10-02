@@ -147,7 +147,7 @@ export function ContentSubmitDialog({ course, contentType = 'course', open, onCl
                   {/* A warning, not a block: a reviewer may still be the right person to
                       decide, and the backend owns what is actually publishable. */}
                   {unmet.length > 0 && (
-                    <p className="rounded-md border border-amber-200 bg-amber-50 p-2.5 text-xs font-medium text-amber-900">
+                    <p className="rounded-md border border-amber-200 bg-amber-50 p-2.5 text-xs font-medium text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
                       {unmet.length === 1
                         ? "1 item isn't ready yet."
                         : `${unmet.length} items aren't ready yet.`}{" "}

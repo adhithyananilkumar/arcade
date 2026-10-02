@@ -101,7 +101,7 @@ export default function ExamsView({
           </h2>
         </div>
         {!exams.isLoading && sortedCards.length > 0 && (
-          <span style={{ fontSize: "0.82rem", fontWeight: "600", color: "#6B7280" }}>
+          <span style={{ fontSize: "0.82rem", fontWeight: "600", color: "var(--theme-n-500, #6B7280)" }}>
             {sortedCards.length} {sortedCards.length === 1 ? "exam available" : "exams available"}
           </span>
         )}
@@ -117,11 +117,11 @@ export default function ExamsView({
           flexWrap: "wrap",
           marginBottom: "28px",
           padding: "10px 16px",
-          background: "rgba(255, 255, 255, 0.75)",
+          background: "var(--theme-surface, rgba(255, 255, 255, 0.75))",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
           borderRadius: "14px",
-          border: "1px solid rgba(20, 23, 31, 0.08)",
+          border: "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.02)"
         }}
       >
@@ -134,7 +134,7 @@ export default function ExamsView({
               gap: "6px",
               fontSize: "0.82rem",
               fontWeight: "800",
-              color: "#4B5563",
+              color: "var(--theme-n-600, #4B5563)",
               textTransform: "uppercase",
               letterSpacing: "0.04em",
               paddingRight: "4px"
@@ -162,9 +162,9 @@ export default function ExamsView({
                     borderRadius: "8px",
                     fontSize: "0.82rem",
                     fontWeight: isActive ? "700" : "600",
-                    border: isActive ? `1.5px solid ${activeColor}` : "1px solid rgba(20, 23, 31, 0.08)",
-                    background: isActive ? `${activeColor}18` : "#FFFFFF",
-                    color: isActive ? activeColor : "#4B5563",
+                    border: isActive ? `1.5px solid ${activeColor}` : "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
+                    background: isActive ? `${activeColor}18` : "var(--theme-surface, #FFFFFF)",
+                    color: isActive ? activeColor : "var(--theme-n-600, #4B5563)",
                     cursor: "pointer",
                     transition: "all 0.2s ease"
                   }}
@@ -185,7 +185,7 @@ export default function ExamsView({
               gap: "6px",
               fontSize: "0.82rem",
               fontWeight: "800",
-              color: "#4B5563",
+              color: "var(--theme-n-600, #4B5563)",
               textTransform: "uppercase",
               letterSpacing: "0.04em"
             }}
@@ -213,9 +213,9 @@ export default function ExamsView({
                     borderRadius: "8px",
                     fontSize: "0.82rem",
                     fontWeight: isActive ? "700" : "600",
-                    border: isActive ? `1.5px solid ${activeColor}` : "1px solid rgba(20, 23, 31, 0.08)",
-                    background: isActive ? `${activeColor}18` : "#FFFFFF",
-                    color: isActive ? activeColor : "#4B5563",
+                    border: isActive ? `1.5px solid ${activeColor}` : "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
+                    background: isActive ? `${activeColor}18` : "var(--theme-surface, #FFFFFF)",
+                    color: isActive ? activeColor : "var(--theme-n-600, #4B5563)",
                     cursor: "pointer",
                     transition: "all 0.2s ease"
                   }}

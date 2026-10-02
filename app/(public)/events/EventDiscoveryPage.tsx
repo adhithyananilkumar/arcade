@@ -21,8 +21,8 @@ export function EventDiscoveryPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-background">
       <div className="max-w-7xl mx-auto px-4 py-12">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Events</h1>
-        <p className="text-gray-500 dark:text-gray-400 mb-8">
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">Events</h1>
+        <p className="text-gray-500 mb-8">
           Discover workshops, webinars, bootcamps, and more.
         </p>
 
@@ -31,7 +31,7 @@ export function EventDiscoveryPage() {
           placeholder="Search events..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-md px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white mb-8"
+          className="w-full max-w-md px-4 py-3 rounded-xl border border-gray-200 bg-surface text-gray-900 mb-8"
         />
 
         {loading ? (
@@ -51,7 +51,7 @@ export function EventDiscoveryPage() {
                 channelName={event.channelName}
                 channelIconUrl={event.channelIconUrl}
                 metadataBadges={
-                  <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
                     {event.deliveryMode && <span>{event.deliveryMode}</span>}
                     {event.difficulty && (
                       <>

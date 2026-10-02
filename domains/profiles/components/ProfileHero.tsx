@@ -85,7 +85,7 @@ export function ProfileHero({
   const meta: React.ReactNode[] = [];
   if (handle) {
     meta.push(
-      <span key="handle" className="font-semibold text-slate-700 dark:text-slate-300">
+      <span key="handle" className="font-semibold text-slate-700">
         @{handle}
       </span>,
     );
@@ -113,7 +113,7 @@ export function ProfileHero({
         href={websiteUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex max-w-[220px] items-center gap-1 truncate hover:text-slate-900 hover:underline dark:hover:text-white"
+        className="flex max-w-[220px] items-center gap-1 truncate hover:text-slate-900 hover:underline"
       >
         <Globe size={13} className="shrink-0 text-slate-400" />
         {websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
@@ -122,8 +122,8 @@ export function ProfileHero({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-      <div className="relative h-24 w-full border-b border-slate-100 bg-slate-100/70 sm:h-28 dark:border-slate-800/80 dark:bg-slate-800/40">
+    <div className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-surface shadow-xs">
+      <div className="relative h-24 w-full border-b border-slate-100 bg-slate-100/70 sm:h-28">
         {bannerUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={getAvatarUrl(bannerUrl)} alt="" className="h-full w-full object-cover" />
@@ -134,7 +134,7 @@ export function ProfileHero({
 
       <div className="px-6 pb-6 pt-0 sm:px-8">
         <div className="-mt-12 mb-4 flex flex-col items-center justify-between gap-5 sm:-mt-14 sm:flex-row sm:items-end">
-          <div className="relative z-10 flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-slate-100 shadow-md sm:h-28 sm:w-28 dark:border-slate-900 dark:bg-slate-800">
+          <div className="relative z-10 flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-surface bg-slate-100 shadow-md sm:h-28 sm:w-28">
             {avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -157,7 +157,7 @@ export function ProfileHero({
 
         <div className="space-y-2 text-center sm:text-left">
           <div className="flex flex-wrap items-center justify-center gap-2.5 sm:justify-start">
-            <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+            <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
               {name}
             </h1>
             <BadgeRow badges={badges} size={22} />
@@ -170,11 +170,11 @@ export function ProfileHero({
           </div>
 
           {headline && (
-            <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">{headline}</p>
+            <p className="text-sm font-semibold text-slate-600">{headline}</p>
           )}
 
           {meta.length > 0 && (
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs font-medium text-slate-500 sm:justify-start dark:text-slate-400">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs font-medium text-slate-500 sm:justify-start">
               {meta.flatMap((node, index) =>
                 index === 0 ? [node] : [<span key={`dot-${index}`}>•</span>, node],
               )}
@@ -182,7 +182,7 @@ export function ProfileHero({
           )}
 
           {bio && (
-            <p className="max-w-3xl whitespace-pre-line pt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+            <p className="max-w-3xl whitespace-pre-line pt-2 text-sm leading-relaxed text-slate-600">
               {bio}
             </p>
           )}

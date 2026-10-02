@@ -21,10 +21,10 @@ import { formatMoney, toMinorUnits } from "@/shared/utils/money";
 const CURRENCIES = ["INR", "USD"];
 
 const STATE_STYLE: Record<CommissionState, string> = {
-  ACTIVE: "bg-emerald-50 text-emerald-700",
-  SCHEDULED: "bg-indigo-50 text-indigo-700",
+  ACTIVE: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+  SCHEDULED: "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300",
   SUPERSEDED: "bg-slate-100 text-slate-500",
-  CANCELLED: "bg-rose-50 text-rose-600",
+  CANCELLED: "bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400",
 };
 
 const STATE_LABEL: Record<CommissionState, string> = {
@@ -107,7 +107,7 @@ export function CommissionTab({ canManage }: { canManage: boolean }) {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-medium text-rose-700">
+      <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-medium text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
         {error}{" "}
         <button type="button" onClick={load} className="cursor-pointer font-bold underline">
           Retry
@@ -133,15 +133,15 @@ export function CommissionTab({ canManage }: { canManage: boolean }) {
   return (
     <div className="space-y-5">
       {/* Platform rate */}
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_2px_10px_rgba(20,20,43,0.03)]">
+      <section className="rounded-2xl border border-slate-200/80 bg-surface p-5 shadow-[0_2px_10px_rgba(20,20,43,0.03)]">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
               <Percent size={18} />
             </span>
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Platform commission</p>
-              <p className="mt-0.5 text-2xl font-bold tracking-tight text-[#14142b]">{describeCommission(current)}</p>
+              <p className="mt-0.5 text-2xl font-bold tracking-tight text-ink">{describeCommission(current)}</p>
               <p className="mt-1 text-xs font-medium text-slate-500">
                 {current.source === "NONE"
                   ? "Channels currently receive everything learners pay, less refunds."
@@ -158,7 +158,7 @@ export function CommissionTab({ canManage }: { canManage: boolean }) {
             <button
               type="button"
               onClick={() => setTarget({ kind: "global" })}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white hover:bg-black"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink hover:bg-ink-hover"
             >
               Change platform rate
             </button>
@@ -194,10 +194,10 @@ export function CommissionTab({ canManage }: { canManage: boolean }) {
       )}
 
       {/* Channel overrides */}
-      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white">
+      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-surface">
         <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
           <div>
-            <h3 className="flex items-center gap-2 text-sm font-bold text-[#14142b]">
+            <h3 className="flex items-center gap-2 text-sm font-bold text-ink">
               <Store size={15} className="text-slate-400" /> Channel rates
             </h3>
             <p className="mt-0.5 text-[11.5px] font-medium text-slate-500">
@@ -274,9 +274,9 @@ export function CommissionTab({ canManage }: { canManage: boolean }) {
       </section>
 
       {/* History */}
-      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white">
+      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-surface">
         <div className="border-b border-slate-100 px-5 py-4">
-          <h3 className="flex items-center gap-2 text-sm font-bold text-[#14142b]">
+          <h3 className="flex items-center gap-2 text-sm font-bold text-ink">
             <History size={15} className="text-slate-400" /> History
           </h3>
           <p className="mt-0.5 text-[11.5px] font-medium text-slate-500">
@@ -342,8 +342,8 @@ function ScheduledRow({
   onCancel: () => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-indigo-100 bg-indigo-50/50 px-3 py-2 text-xs">
-      <span className="flex items-center gap-1.5 text-indigo-900">
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-indigo-100 bg-indigo-50/50 px-3 py-2 text-xs dark:border-indigo-500/25 dark:bg-indigo-500/10">
+      <span className="flex items-center gap-1.5 text-indigo-900 dark:text-indigo-200">
         <CalendarClock size={13} />
         Changes to <span className="font-bold">{terms(policy)}</span>
         {!policy.inherit && <> · {REFUND_TREATMENT_LABEL[policy.refundTreatment].toLowerCase()}</>} on{" "}
@@ -353,7 +353,7 @@ function ScheduledRow({
         <button
           type="button"
           onClick={onCancel}
-          className="cursor-pointer rounded-lg px-2 py-0.5 text-[11.5px] font-semibold text-rose-600 hover:bg-rose-50"
+          className="cursor-pointer rounded-lg px-2 py-0.5 text-[11.5px] font-semibold text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10"
         >
           Cancel
         </button>
@@ -448,16 +448,16 @@ function ChannelPicker({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Find a channel by name"
-            className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-8 pr-3 text-sm outline-none focus:border-slate-400"
+            className="w-full rounded-xl border border-slate-200 bg-surface py-2 pl-8 pr-3 text-sm outline-none focus:border-slate-400"
           />
         </div>
-        <button type="button" onClick={onClose} className="cursor-pointer rounded-lg p-1.5 text-slate-400 hover:bg-white" aria-label="Close">
+        <button type="button" onClick={onClose} className="cursor-pointer rounded-lg p-1.5 text-slate-400 hover:bg-surface" aria-label="Close">
           <X size={15} />
         </button>
       </div>
       {loading && <Loader2 className="mx-auto mt-3 h-4 w-4 animate-spin text-slate-400" />}
       {!loading && results.length > 0 && (
-        <ul className="mt-2 divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <ul className="mt-2 divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-surface">
           {results.map((c) => (
             <li key={c.id}>
               <button
@@ -556,9 +556,9 @@ function CommissionForm({
     "mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-50";
 
   return (
-    <section className="rounded-2xl border border-slate-300 bg-white p-5 shadow-[0_8px_30px_rgba(20,20,43,0.08)]">
+    <section className="rounded-2xl border border-slate-300 bg-surface p-5 shadow-[0_8px_30px_rgba(20,20,43,0.08)]">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-bold text-[#14142b]">{title}</h3>
+        <h3 className="text-sm font-bold text-ink">{title}</h3>
         <button type="button" onClick={onClose} className="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-slate-50" aria-label="Close">
           <X size={16} />
         </button>
@@ -579,9 +579,9 @@ function CommissionForm({
                 onChange={(e) => setRateText(e.target.value)}
                 className={input}
               />
-              {!rateValid && <span className="mt-1 block text-[11px] text-rose-600">Between 0 and 100.</span>}
+              {!rateValid && <span className="mt-1 block text-[11px] text-rose-600 dark:text-rose-400">Between 0 and 100.</span>}
               {rateValid && rate > 50 && (
-                <span className="mt-1 block text-[11px] text-amber-700">That is more than half of every sale.</span>
+                <span className="mt-1 block text-[11px] text-amber-700 dark:text-amber-300">That is more than half of every sale.</span>
               )}
             </label>
             <label className="block text-xs font-semibold text-slate-600">
@@ -619,7 +619,7 @@ function CommissionForm({
                 <label
                   key={t}
                   className={`cursor-pointer rounded-xl border px-3 py-2.5 ${
-                    treatment === t ? "border-[#14142b] bg-slate-50" : "border-slate-200 hover:bg-slate-50"
+                    treatment === t ? "border-ink bg-slate-50" : "border-slate-200 hover:bg-slate-50"
                   }`}
                 >
                   <span className="flex items-center gap-2 text-xs font-bold text-slate-800">
@@ -648,7 +648,7 @@ function CommissionForm({
                   disabled={confirming}
                   onClick={() => setTiming(t)}
                   className={`cursor-pointer rounded-full px-3 py-1 text-xs font-semibold ${
-                    timing === t ? "bg-[#14142b] text-white" : "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                    timing === t ? "bg-ink text-on-ink" : "border border-slate-200 text-slate-600 hover:bg-slate-50"
                   }`}
                 >
                   {t === "now" ? "Immediately" : "Schedule"}
@@ -665,7 +665,7 @@ function CommissionForm({
               )}
             </div>
             {timing === "later" && !startValid && (
-              <span className="mt-1 block text-[11px] text-rose-600">Choose a time in the future.</span>
+              <span className="mt-1 block text-[11px] text-rose-600 dark:text-rose-400">Choose a time in the future.</span>
             )}
           </fieldset>
 
@@ -691,11 +691,11 @@ function CommissionForm({
           <div className="space-y-1.5 text-xs">
             <div className="flex justify-between">
               <span className="text-slate-500">Arcade keeps</span>
-              <span className="font-bold tabular-nums text-amber-700">{formatMoney(sampleCommission, "INR")}</span>
+              <span className="font-bold tabular-nums text-amber-700 dark:text-amber-300">{formatMoney(sampleCommission, "INR")}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Channel is owed</span>
-              <span className="font-bold tabular-nums text-[#14142b]">{formatMoney(sampleMinor - sampleCommission, "INR")}</span>
+              <span className="font-bold tabular-nums text-ink">{formatMoney(sampleMinor - sampleCommission, "INR")}</span>
             </div>
           </div>
           <p className="text-[11px] leading-snug text-slate-400">
@@ -716,14 +716,14 @@ function CommissionForm({
               type="button"
               disabled={!valid}
               onClick={() => setConfirming(true)}
-              className="cursor-pointer rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white hover:bg-black disabled:cursor-not-allowed disabled:opacity-40"
+              className="cursor-pointer rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-40"
             >
               Review change
             </button>
           </div>
         ) : (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <p className="text-xs font-medium text-amber-900">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/25 dark:bg-amber-500/10">
+            <p className="text-xs font-medium text-amber-900 dark:text-amber-200">
               {target.kind === "global" ? "Every channel without its own rate" : target.channel.name} will be charged{" "}
               <span className="font-bold">
                 {describeCommission({ rateBps, fixedFeeMinor: feeMinor, fixedFeeCurrency: feeCurrency })}
@@ -735,7 +735,7 @@ function CommissionForm({
                 type="button"
                 disabled={saving}
                 onClick={() => setConfirming(false)}
-                className="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-white"
+                className="cursor-pointer rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-surface"
               >
                 Back
               </button>
@@ -743,7 +743,7 @@ function CommissionForm({
                 type="button"
                 disabled={saving}
                 onClick={save}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-1.5 text-xs font-bold text-white hover:bg-black disabled:opacity-50"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-ink px-4 py-1.5 text-xs font-bold text-on-ink hover:bg-ink-hover disabled:opacity-50"
               >
                 {saving && <Loader2 size={12} className="animate-spin" />}
                 Confirm

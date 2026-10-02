@@ -82,21 +82,21 @@ export function ContentStatusHistoryModal({
   return (
     <>
       <div
-        className="fixed inset-0 z-40 bg-[#14142b]/40 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 z-40 bg-ink/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
-      <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-slate-200/80 bg-white shadow-[0_0_48px_rgba(20,20,43,0.18)]">
+      <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-slate-200/80 bg-surface shadow-[0_0_48px_rgba(20,20,43,0.18)]">
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
           <div className="flex items-center gap-2.5">
             <span className="grid size-9 place-items-center rounded-xl bg-slate-100">
-              <History size={17} className="text-[#14142b]" />
+              <History size={17} className="text-ink" />
             </span>
-            <h2 className="text-[15px] font-bold tracking-tight text-[#14142b]">Status history</h2>
+            <h2 className="text-[15px] font-bold tracking-tight text-ink">Status history</h2>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink"
           >
             <X size={18} />
           </button>
@@ -109,7 +109,7 @@ export function ContentStatusHistoryModal({
               <p className="text-sm">Loading history…</p>
             </div>
           ) : error ? (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-400">
               {error}
             </div>
           ) : history.length === 0 ? (
@@ -117,7 +117,7 @@ export function ContentStatusHistoryModal({
               <span className="grid size-14 place-items-center rounded-2xl bg-slate-50">
                 <AlertCircle className="h-7 w-7 text-slate-300" />
               </span>
-              <p className="text-sm font-semibold text-[#14142b]">No status history yet</p>
+              <p className="text-sm font-semibold text-ink">No status history yet</p>
               <p className="max-w-[220px] text-xs text-slate-400">
                 Submits, approvals, and rejections will show up here.
               </p>
@@ -126,11 +126,11 @@ export function ContentStatusHistoryModal({
             <div className="relative ml-3 space-y-8 border-l-2 border-slate-100">
               {history.map((event, idx) => (
                 <div key={idx} className="relative pl-6">
-                  <div className="absolute -left-[11px] top-1 rounded-full bg-white">
+                  <div className="absolute -left-[11px] top-1 rounded-full bg-surface">
                     {getIcon(event.label)}
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-[#14142b]">
+                    <span className="text-sm font-semibold text-ink">
                       {event.label.split(":")[0]}
                     </span>
                     {event.label.includes(":") && (

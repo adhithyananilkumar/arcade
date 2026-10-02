@@ -58,7 +58,7 @@ export function PublishingWorkflow({
   if (review?.status === "OPEN") {
     body = (
       <>
-        <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-[#14142b]">
+        <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-ink">
           <StateDot tone="review" /> Platform Review
         </p>
         <p className="mb-3 text-xs text-slate-500">
@@ -70,17 +70,17 @@ export function PublishingWorkflow({
   } else if (review?.status === "CHANGES_REQUESTED") {
     body = (
       <>
-        <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-[#14142b]">
+        <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-ink">
           <StateDot tone="changes" /> Changes Requested
         </p>
         {review.currentRoundDetail?.decisionReason && (
-          <p className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700">
+          <p className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
             {review.currentRoundDetail.decisionReason}
           </p>
         )}
         <Link
           href={editHref}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-[#14142b] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#232735]"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-2 text-xs font-semibold text-on-ink transition-colors hover:bg-ink-hover"
         >
           <Pencil size={13} /> Continue Editing
         </Link>
@@ -113,7 +113,7 @@ export function PublishingWorkflow({
 
     body = previewUnavailable ? (
       <div className="mb-4">
-        <p className="mb-1 text-sm font-bold text-amber-600">Draft</p>
+        <p className="mb-1 text-sm font-bold text-amber-600 dark:text-amber-400">Draft</p>
         <p className="mb-3 text-xs text-slate-500">
           This content has not been submitted for platform review.
         </p>

@@ -42,8 +42,8 @@ function TabButton({
       onClick={onClick}
       className={`relative px-5 sm:px-6 py-2 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm font-black tracking-tight transition-all duration-200 select-none cursor-pointer min-w-[120px] text-center ${
         active
-          ? 'bg-white dark:bg-slate-900 text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6] shadow-xs'
-          : 'bg-slate-100/80 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700/60 hover:bg-slate-200/70 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white'
+          ? 'bg-surface text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6] shadow-xs'
+          : 'bg-slate-100/80 text-slate-700 border border-slate-200/70 hover:bg-slate-200/70 hover:text-slate-900'
       }`}
     >
       <span className="relative z-10">{label}</span>
@@ -136,13 +136,13 @@ export default function AchievementsPage() {
   }, [certificates, searchQuery]);
 
   return (
-    <div className="relative min-h-screen w-full text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/40">
+    <div className="relative min-h-screen w-full text-slate-900 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/40">
       {/* Background — celebratory ambient gradient matching Home and Explore pages */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 dark:hidden -z-10"
         style={{
-          background: `
+          background: `var(--theme-wash, 
             radial-gradient(ellipse 55% 40% at 8% 12%, rgba(76, 111, 255, 0.16) 0%, transparent 60%),
             radial-gradient(ellipse 50% 35% at 92% 20%, rgba(245, 158, 11, 0.16) 0%, transparent 60%),
             radial-gradient(ellipse 45% 35% at 5% 50%, rgba(147, 51, 234, 0.11) 0%, transparent 60%),
@@ -151,7 +151,7 @@ export default function AchievementsPage() {
             radial-gradient(ellipse 50% 35% at 94% 80%, rgba(251, 191, 36, 0.13) 0%, transparent 60%),
             radial-gradient(ellipse 40% 30% at 50% 95%, rgba(244, 63, 94, 0.08) 0%, transparent 60%),
             linear-gradient(to bottom, #E9EEFB 0%, #FAF7FE 25%, #FFFFFF 50%, #FFFFFF 75%, #FEF5E7 100%)
-          `,
+          )`,
         }}
       />
       <div
@@ -219,7 +219,7 @@ export default function AchievementsPage() {
                 >
                   <Search
                     size={16}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
                   />
                   <input
                     ref={(el) => {
@@ -237,7 +237,7 @@ export default function AchievementsPage() {
                       }
                     }}
                     placeholder={activeTab === 'certificates' ? 'Search certificates...' : 'Search badges...'}
-                    className="w-full pl-9 pr-8 py-2 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm bg-transparent border border-slate-200/80 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-300 dark:focus:ring-slate-700 transition-all font-medium"
+                    className="w-full pl-9 pr-8 py-2 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm bg-transparent border border-slate-200/80 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-300 transition-all font-medium"
                   />
                   <button
                     type="button"
@@ -245,7 +245,7 @@ export default function AchievementsPage() {
                       setSearchQuery('');
                       setIsSearchOpen(false);
                     }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-0.5 rounded-full hover:bg-slate-100 transition"
                     aria-label="Close search"
                     title="Close search"
                   >
@@ -261,7 +261,7 @@ export default function AchievementsPage() {
                   transition={{ duration: 0.15 }}
                   type="button"
                   onClick={() => setIsSearchOpen(true)}
-                  className="p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors flex items-center justify-center cursor-pointer"
+                  className="p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors flex items-center justify-center cursor-pointer"
                   aria-label="Open search"
                   title="Search"
                 >
@@ -277,11 +277,11 @@ export default function AchievementsPage() {
           badges ? (
             <BadgeWallet data={badges} tiers={tiers} search={searchQuery} onOpen={setSelectedBadge} />
           ) : badgesError ? (
-            <p className="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">{badgesError}</p>
+            <p className="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">{badgesError}</p>
           ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4" aria-busy>
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="h-80 animate-pulse rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl bg-slate-200/60 dark:bg-slate-800/60" />
+                <div key={i} className="h-80 animate-pulse rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl bg-slate-200/60" />
               ))}
             </div>
           )
@@ -291,26 +291,26 @@ export default function AchievementsPage() {
         {activeTab === 'certificates' && (
           <section aria-label="Certificates" className="space-y-6">
             {certificatesError && (
-              <p className="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">{certificatesError}</p>
+              <p className="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">{certificatesError}</p>
             )}
             {!certificates && !certificatesError && (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-busy>
                 {[0, 1, 2].map((i) => (
-                  <div key={i} className="h-80 animate-pulse rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl bg-slate-200/60 dark:bg-slate-800/60" />
+                  <div key={i} className="h-80 animate-pulse rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl bg-slate-200/60" />
                 ))}
               </div>
             )}
             {certificates && certificates.length === 0 && (
-              <div className="flex flex-col items-center rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-dashed border-slate-300 bg-white/70 px-6 py-14 text-center dark:border-slate-700 dark:bg-slate-900/60">
+              <div className="flex flex-col items-center rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-dashed border-slate-300 bg-surface/70 px-6 py-14 text-center">
                 <Award className="h-10 w-10 text-slate-300" />
-                <h3 className="mt-3 text-lg font-black tracking-tight text-[#14142b] dark:text-white">No certificates yet</h3>
+                <h3 className="mt-3 text-lg font-black tracking-tight text-ink">No certificates yet</h3>
                 <p className="mt-1.5 max-w-md text-sm text-slate-500">
                   Certificates are awarded when you pass a certification exam. Each one is sealed by Arcade, verifiable by its ID,
                   and downloadable as a PDF.
                 </p>
                 <Link
                   href={examRoutes.catalogue}
-                  className="mt-5 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#232735] dark:bg-white dark:text-slate-900"
+                  className="mt-5 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-ink px-5 py-2.5 text-xs font-bold text-on-ink hover:bg-ink-hover"
                 >
                   Browse exams
                 </Link>
@@ -336,7 +336,7 @@ export default function AchievementsPage() {
                     viewport={{ once: true, amount: 0.1 }}
                     exit={{ opacity: 0, y: 8 }}
                     transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: Math.min(idx * 0.04, 0.2) }}
-                    className="group relative flex h-full flex-col justify-between overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-4 sm:p-5 text-left shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] hover:-translate-y-1 backdrop-blur-sm cursor-pointer"
+                    className="group relative flex h-full flex-col justify-between overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-4 sm:p-5 text-left shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] hover:-translate-y-1 backdrop-blur-sm cursor-pointer"
                   >
                     {/* Ambient Glow */}
                     <div
@@ -346,7 +346,7 @@ export default function AchievementsPage() {
 
                     <div className="relative z-10 flex flex-1 flex-col justify-between gap-4">
                       {/* The certificate itself, in miniature */}
-                      <div className="relative w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-3 transition-transform duration-500 group-hover:scale-[1.02]">
+                      <div className="relative w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 bg-slate-50/70 p-3 transition-transform duration-500 group-hover:scale-[1.02]">
                         <CertificateFace certificate={cert} className="shadow-md" />
                       </div>
 
@@ -366,21 +366,21 @@ export default function AchievementsPage() {
                             </span>
                           )}
                           {!cert.publicVisible && !inactive && (
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 border-slate-200 dark:border-slate-700 text-slate-500">
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 border-slate-200 text-slate-500">
                               <EyeOff size={11} />
                               Private
                             </span>
                           )}
-                          <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                             {cert.issuerName}
                           </span>
                         </div>
 
-                        <h3 className="line-clamp-1 text-base sm:text-lg font-bold tracking-tight text-[#14142b] dark:text-white">
+                        <h3 className="line-clamp-1 text-base sm:text-lg font-bold tracking-tight text-ink">
                           {cert.title}
                         </h3>
 
-                        <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
                           <Calendar className="w-3.5 h-3.5 text-slate-400" />
                           <span>Awarded {shortDate(cert.achievedAt)}</span>
                           <span className="ml-auto font-mono text-[11px] tracking-wider text-slate-400">{cert.credentialCode}</span>

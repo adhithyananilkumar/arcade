@@ -59,7 +59,7 @@ import type {
 } from '../types/profile.types';
 
 const SURFACE =
-  'rounded-2xl border border-slate-200/70 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900';
+  'rounded-2xl border border-slate-200/70 bg-surface shadow-xs';
 
 // ---------------------------------------------------------------------------
 // Panel shell
@@ -83,11 +83,11 @@ function Panel({
   return (
     <section className={`${SURFACE} p-5`}>
       <div className="mb-3.5 flex items-center justify-between">
-        <h3 className="inline-flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+        <h3 className="inline-flex items-center gap-2 text-sm font-bold text-slate-900">
           <Icon size={16} className={iconClass} />
           <span>{title}</span>
           {!!count && (
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600">
               {count}
             </span>
           )}
@@ -101,7 +101,7 @@ function Panel({
 
 function Muted({ children }: { children: React.ReactNode }) {
   return (
-    <p className="py-2 text-xs italic text-slate-400 dark:text-slate-500">{children}</p>
+    <p className="py-2 text-xs italic text-slate-400">{children}</p>
   );
 }
 
@@ -109,7 +109,7 @@ function ViewAll({ href }: { href: string }) {
   return (
     <Link
       href={href}
-      className="text-xs font-semibold text-slate-500 hover:underline dark:text-slate-400"
+      className="text-xs font-semibold text-slate-500 hover:underline"
     >
       View all
     </Link>
@@ -141,7 +141,7 @@ export function LinksPanel({ links }: { links: (string | null | undefined)[] }) 
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2.5 rounded-xl bg-slate-50 p-2 text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:bg-slate-800/60 dark:text-slate-200 dark:hover:text-white"
+            className="flex items-center gap-2.5 rounded-xl bg-slate-50 p-2 text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
           >
             {linkIcon(url)}
             <span className="truncate">{url.replace(/^https?:\/\//, '')}</span>
@@ -204,7 +204,7 @@ export function AchievementsPanel({ badges, certificates, viewAllHref }: Achieve
                   <>
                     <Award size={15} className="shrink-0 text-amber-500" />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-xs font-bold text-slate-800 dark:text-slate-200">
+                      <span className="block truncate text-xs font-bold text-slate-800">
                         {certificate.name}
                       </span>
                       {certificate.issuer && (
@@ -216,12 +216,12 @@ export function AchievementsPanel({ badges, certificates, viewAllHref }: Achieve
                   </>
                 );
                 const className =
-                  'flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 dark:border-slate-800/80 dark:bg-slate-800/40';
+                  'flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2.5';
                 return certificate.idCode ? (
                   <Link
                     key={certificate.idCode}
                     href={`/credentials/${encodeURIComponent(certificate.idCode)}`}
-                    className={`${className} transition-colors hover:bg-slate-100 dark:hover:bg-slate-800`}
+                    className={`${className} transition-colors hover:bg-slate-100`}
                   >
                     {body}
                   </Link>
@@ -259,7 +259,7 @@ export function OrganizationsPanel({
   return (
     <Panel
       icon={Building2}
-      iconClass="text-slate-600 dark:text-slate-300"
+      iconClass="text-slate-600"
       title="Organizations"
       count={organizations.length}
       action={viewAllHref ? <ViewAll href={viewAllHref} /> : undefined}
@@ -274,10 +274,10 @@ export function OrganizationsPanel({
               // An organization that has not claimed a handle is still reachable by id; that
               // route resolves to the same profile view.
               href={channel.handle ? `/${channel.handle}` : `/channels/${channel.id}`}
-              className="group flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 shadow-2xs transition-all hover:bg-slate-100 dark:border-slate-800/80 dark:bg-slate-800/40 dark:hover:bg-slate-800"
+              className="group flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 shadow-2xs transition-all hover:bg-slate-100"
             >
               <div className="flex min-w-0 items-center gap-2.5">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200/60 bg-white text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200/60 bg-surface text-slate-600">
                   {channel.iconUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={getAvatarUrl(channel.iconUrl)} alt="" className="h-full w-full object-cover" />
@@ -286,7 +286,7 @@ export function OrganizationsPanel({
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="flex items-center gap-1 truncate text-xs font-bold text-slate-800 transition-colors group-hover:text-indigo-600 dark:text-slate-200">
+                  <p className="flex items-center gap-1 truncate text-xs font-bold text-slate-800 transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
                     <span className="truncate">{channel.name}</span>
                     <BadgeRow badges={channel.badges} size={13} max={1} />
                   </p>
@@ -295,7 +295,7 @@ export function OrganizationsPanel({
               </div>
               <ExternalLink
                 size={12}
-                className="shrink-0 text-slate-400 opacity-0 transition-opacity group-hover:text-indigo-600 group-hover:opacity-100"
+                className="shrink-0 text-slate-400 opacity-0 transition-opacity group-hover:text-indigo-600 group-hover:opacity-100 dark:group-hover:text-indigo-400"
               />
             </Link>
           ))}
@@ -311,7 +311,7 @@ export function OrganizationsPanel({
 
 export function PeoplePanel({ members }: { members: ChannelMember[] }) {
   return (
-    <Panel icon={Users} iconClass="text-slate-600 dark:text-slate-300" title="People" count={members.length}>
+    <Panel icon={Users} iconClass="text-slate-600" title="People" count={members.length}>
       {members.length === 0 ? (
         <Muted>No public members yet.</Muted>
       ) : (
@@ -319,7 +319,7 @@ export function PeoplePanel({ members }: { members: ChannelMember[] }) {
           {members.map((member) => {
             const body = (
               <>
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200/60 bg-white dark:bg-slate-800">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200/60 bg-surface">
                   {member.avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -333,7 +333,7 @@ export function PeoplePanel({ members }: { members: ChannelMember[] }) {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="flex items-center gap-1 truncate text-xs font-bold text-slate-800 dark:text-slate-200">
+                  <p className="flex items-center gap-1 truncate text-xs font-bold text-slate-800">
                     <span className="truncate">{member.name}</span>
                     <BadgeRow badges={member.badges} size={13} max={1} />
                   </p>
@@ -349,12 +349,12 @@ export function PeoplePanel({ members }: { members: ChannelMember[] }) {
               </>
             );
             const className =
-              'flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 dark:border-slate-800/80 dark:bg-slate-800/40';
+              'flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2.5';
             return member.handle ? (
               <Link
                 key={member.userId}
                 href={`/${member.handle}`}
-                className={`${className} transition-colors hover:bg-slate-100 dark:hover:bg-slate-800`}
+                className={`${className} transition-colors hover:bg-slate-100`}
               >
                 {body}
               </Link>
@@ -381,11 +381,11 @@ export interface PanelStat {
 
 function StatFooter({ stats }: { stats: PanelStat[] }) {
   return (
-    <div className="mt-6 flex flex-wrap items-center gap-6 border-t border-slate-100 pt-4 text-xs dark:border-slate-800/80">
+    <div className="mt-6 flex flex-wrap items-center gap-6 border-t border-slate-100 pt-4 text-xs">
       {stats.map((stat) => (
         <div key={stat.label}>
           <span className="font-medium text-slate-400">{stat.label}:</span>{' '}
-          <strong className="font-bold text-slate-900 dark:text-white">{stat.value}</strong>
+          <strong className="font-bold text-slate-900">{stat.value}</strong>
         </div>
       ))}
     </div>
@@ -397,7 +397,7 @@ function StatFooter({ stats }: { stats: PanelStat[] }) {
 // ---------------------------------------------------------------------------
 
 const LEVEL_CLASS = [
-  'bg-slate-100 dark:bg-slate-800',
+  'bg-slate-100',
   'bg-teal-200 dark:bg-teal-900/60',
   'bg-teal-400 dark:bg-teal-600',
   'bg-teal-600 dark:bg-teal-500',
@@ -466,12 +466,12 @@ export function ActivityPanel({
         <div className="mb-5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Flame size={18} className="text-amber-500" />
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            <h3 className="text-sm font-bold text-slate-900">
               {activity.year} Learning Activity
             </h3>
           </div>
           {activity.currentStreak > 0 && (
-            <span className="rounded-full border border-amber-200/60 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
+            <span className="rounded-full border border-amber-200/60 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-500/25">
               {activity.currentStreak} day streak
             </span>
           )}
@@ -544,7 +544,7 @@ export function ActivityPanel({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.1 }}
-            className="pointer-events-none fixed z-50 flex -translate-x-1/2 -translate-y-full items-center gap-1.5 whitespace-nowrap rounded-xl bg-slate-900 px-4 py-2.5 text-[12px] font-bold text-white shadow-xl"
+            className="pointer-events-none fixed z-50 flex -translate-x-1/2 -translate-y-full items-center gap-1.5 whitespace-nowrap rounded-xl bg-slate-900 px-4 py-2.5 text-[12px] font-bold text-on-ink shadow-xl"
             style={{ left: hovered.x, top: hovered.y }}
           >
             <span>
@@ -575,11 +575,11 @@ export function AboutPanel({
     <section className={`${SURFACE} flex h-full flex-col justify-between p-6`}>
       <div>
         <div className="mb-4 flex items-center gap-2">
-          <Building2 size={18} className="text-slate-600 dark:text-slate-300" />
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white">About</h3>
+          <Building2 size={18} className="text-slate-600" />
+          <h3 className="text-sm font-bold text-slate-900">About</h3>
         </div>
         {description ? (
-          <p className="whitespace-pre-line text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+          <p className="whitespace-pre-line text-sm leading-relaxed text-slate-600">
             {description}
           </p>
         ) : (
@@ -639,8 +639,8 @@ export function ContentLibrary({ courses, events, emptyAction }: ContentLibraryP
         onClick={() => switchTo(id)}
         className={`flex h-full flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3.5 text-xs font-bold transition-all sm:flex-initial ${
           active
-            ? 'bg-white text-slate-900 shadow-xs dark:bg-slate-900 dark:text-white'
-            : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+            ? 'bg-surface text-slate-900 shadow-xs'
+            : 'text-slate-500 hover:text-slate-900'
         }`}
       >
         <Icon size={13} className={active ? '' : 'text-slate-400'} />
@@ -648,8 +648,8 @@ export function ContentLibrary({ courses, events, emptyAction }: ContentLibraryP
         <span
           className={`rounded-full px-1.5 text-[10px] font-bold ${
             active
-              ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-200'
-              : 'bg-slate-200/60 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+              ? 'bg-slate-100 text-slate-900'
+              : 'bg-slate-200/60 text-slate-600'
           }`}
         >
           {count}
@@ -662,14 +662,14 @@ export function ContentLibrary({ courses, events, emptyAction }: ContentLibraryP
   const noun = tab === 'courses' ? 'courses' : 'events';
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+    <section className="overflow-hidden rounded-3xl border border-slate-200/70 bg-surface shadow-xs">
       <div className="flex flex-col justify-between gap-4 p-5 pb-2 sm:p-6 lg:flex-row lg:items-center">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
             <Sparkles size={16} />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-900 sm:text-base dark:text-white">
+            <h3 className="text-sm font-bold text-slate-900 sm:text-base">
               Content & Curriculum
             </h3>
             <p className="text-xs text-slate-400">
@@ -679,13 +679,13 @@ export function ContentLibrary({ courses, events, emptyAction }: ContentLibraryP
         </div>
 
         <div className="flex w-full items-center justify-end gap-2.5 lg:w-auto">
-          <div className="flex h-9 w-full items-center gap-1 rounded-xl bg-slate-100 p-1 sm:w-auto dark:bg-slate-800">
+          <div className="flex h-9 w-full items-center gap-1 rounded-xl bg-slate-100 p-1 sm:w-auto">
             {tabButton('courses', 'Courses', BookOpen, courses.length)}
             {tabButton('events', 'Events', CalendarDays, events.length)}
           </div>
 
           <div
-            className={`relative flex h-9 items-center rounded-xl bg-slate-100 p-1 transition-all duration-300 dark:bg-slate-800 ${
+            className={`relative flex h-9 items-center rounded-xl bg-slate-100 p-1 transition-all duration-300 ${
               searchOpen || query ? 'w-48 sm:w-60' : 'w-9'
             }`}
           >
@@ -695,7 +695,7 @@ export function ContentLibrary({ courses, events, emptyAction }: ContentLibraryP
                 setSearchOpen(true);
                 setTimeout(() => inputRef.current?.focus(), 50);
               }}
-              className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition-colors hover:text-slate-900"
               aria-label={`Search ${noun}`}
             >
               <Search size={14} />
@@ -710,7 +710,7 @@ export function ContentLibrary({ courses, events, emptyAction }: ContentLibraryP
               }}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search titles..."
-              className={`h-full bg-transparent pr-7 text-xs text-slate-900 placeholder-slate-400 transition-all duration-200 focus:outline-none dark:text-white ${
+              className={`h-full bg-transparent pr-7 text-xs text-slate-900 placeholder-slate-400 transition-all duration-200 focus:outline-none ${
                 searchOpen || query ? 'w-full pl-1 opacity-100' : 'pointer-events-none w-0 pl-0 opacity-0'
               }`}
             />
@@ -721,7 +721,7 @@ export function ContentLibrary({ courses, events, emptyAction }: ContentLibraryP
                   setQuery('');
                   setSearchOpen(false);
                 }}
-                className="absolute right-2 cursor-pointer p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                className="absolute right-2 cursor-pointer p-0.5 text-slate-400 hover:text-slate-600"
                 aria-label="Clear search"
               >
                 <X size={12} />
@@ -761,7 +761,7 @@ export function ContentLibrary({ courses, events, emptyAction }: ContentLibraryP
                 <button
                   type="button"
                   onClick={() => setExpanded((value) => !value)}
-                  className="group inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-slate-200/80 bg-slate-50 px-6 py-2.5 text-xs font-bold text-slate-700 shadow-2xs transition-all hover:bg-slate-100 hover:text-teal-600 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-teal-400"
+                  className="group inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-slate-200/80 bg-slate-50 px-6 py-2.5 text-xs font-bold text-slate-700 shadow-2xs transition-all hover:bg-slate-100 hover:text-teal-600 dark:hover:text-teal-400"
                 >
                   <span>
                     {expanded ? `Show fewer ${noun}` : `Show all ${noun} (${filtered.length - PAGE} more)`}

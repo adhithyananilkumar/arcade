@@ -245,7 +245,7 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
               key={selectedId}
               readOnly
               initialContent={previewDoc}
-              className="bg-white"
+              className="bg-surface"
             />
           )}
         />

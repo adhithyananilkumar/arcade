@@ -263,14 +263,14 @@ export default function EventDetailPage() {
 
   if (!event) {
     return (
-      <main className="min-h-screen bg-white flex flex-col items-center justify-center px-4 text-center">
+      <main className="min-h-screen bg-surface flex flex-col items-center justify-center px-4 text-center">
         <h1 className="text-2xl font-bold text-ink">Event not found</h1>
         <p className="mt-2 text-sm text-subtle">
           This event may have been unpublished or removed.
         </p>
         <Link
           href="/events"
-          className="mt-6 rounded-xl bg-ink px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition"
+          className="mt-6 rounded-xl bg-ink px-6 py-2.5 text-sm font-semibold text-on-ink hover:bg-slate-800 transition"
         >
           Browse All Events
         </Link>
@@ -312,12 +312,12 @@ export default function EventDetailPage() {
         <div className="max-w-4xl">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-3">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/20 bg-violet-50/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-violet-700 backdrop-blur-sm">
-                <Sparkles size={12} className="text-violet-600" />
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/20 bg-violet-50/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-violet-700 backdrop-blur-sm dark:bg-violet-500/10 dark:text-violet-300">
+                <Sparkles size={12} className="text-violet-600 dark:text-violet-400" />
                 {event.eventType || "Workshop"}
               </span>
               {event.category && (
-                <span className="inline-flex items-center rounded-full border border-slate-200/80 bg-white/70 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
+                <span className="inline-flex items-center rounded-full border border-slate-200/80 bg-surface/70 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
                   {event.category}
                 </span>
               )}
@@ -418,7 +418,7 @@ export default function EventDetailPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Watch promo video"
-                    className="grid size-12 place-items-center rounded-full bg-black/5 hover:bg-black/10 active:scale-[0.98] border border-black/10 dark:border-white/10 text-slate-700 hover:text-ink dark:text-slate-300 backdrop-blur-md transition-all"
+                    className="grid size-12 place-items-center rounded-full bg-slate-950/5 hover:bg-slate-950/10 active:scale-[0.98] border border-slate-950/10 text-slate-700 hover:text-ink backdrop-blur-md transition-all"
                   >
                     <Play size={18} />
                   </a>
@@ -427,7 +427,7 @@ export default function EventDetailPage() {
                 <button
                   onClick={handleShare}
                   aria-label="Share event"
-                  className="grid size-12 place-items-center rounded-full bg-black/5 hover:bg-black/10 active:scale-[0.98] border border-black/10 dark:border-white/10 text-slate-700 hover:text-blue dark:text-slate-300 backdrop-blur-md transition-all"
+                  className="grid size-12 place-items-center rounded-full bg-slate-950/5 hover:bg-slate-950/10 active:scale-[0.98] border border-slate-950/10 text-slate-700 hover:text-blue backdrop-blur-md transition-all"
                 >
                   <Share2 size={18} />
                 </button>
@@ -435,7 +435,7 @@ export default function EventDetailPage() {
                 <button
                   onClick={() => setReportModalOpen(true)}
                   aria-label="Report event"
-                  className="grid size-12 place-items-center rounded-full bg-black/5 hover:bg-black/10 active:scale-[0.98] border border-black/10 dark:border-white/10 text-slate-700 hover:text-red-500 dark:text-slate-300 backdrop-blur-md transition-all"
+                  className="grid size-12 place-items-center rounded-full bg-slate-950/5 hover:bg-slate-950/10 active:scale-[0.98] border border-slate-950/10 text-slate-700 hover:text-red-500 backdrop-blur-md transition-all"
                 >
                   <Flag size={18} />
                 </button>
@@ -457,8 +457,8 @@ export default function EventDetailPage() {
                   onClick={() => setTab(t)}
                   className={`rounded-full px-5 py-2 text-xs sm:text-[13.5px] font-semibold transition-all ${
                     tab === t
-                      ? "bg-ink text-white shadow-sm"
-                      : "text-subtle hover:text-ink hover:bg-white/50"
+                      ? "bg-ink text-on-ink shadow-sm"
+                      : "text-subtle hover:text-ink hover:bg-surface/50"
                   }`}
                 >
                   {t}
@@ -490,7 +490,7 @@ export default function EventDetailPage() {
                   {/* What you'll experience */}
                   <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-6 sm:p-7">
                     <h3 className="text-base font-bold text-ink mb-4 flex items-center gap-2">
-                      <Sparkles size={18} className="text-violet-600" />
+                      <Sparkles size={18} className="text-violet-600 dark:text-violet-400" />
                       Key Highlights & Takeaways
                     </h3>
                     <ul className="grid gap-3 sm:grid-cols-2">
@@ -505,7 +505,7 @@ export default function EventDetailPage() {
                         "Networking opportunities with fellow participants",
                       ].map((hl, i) => (
                         <li key={i} className="flex items-start gap-2.5 text-sm text-slate-700">
-                          <Check size={16} className="mt-0.5 shrink-0 text-emerald-600 font-bold" />
+                          <Check size={16} className="mt-0.5 shrink-0 text-emerald-600 font-bold dark:text-emerald-400" />
                           <span>{hl}</span>
                         </li>
                       ))}
@@ -515,7 +515,7 @@ export default function EventDetailPage() {
 
                 {/* Event Specifications Card */}
                 <div className="space-y-6">
-                  <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+                  <div className="rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-sm">
                     <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-5">
                       Event Details
                     </h3>
@@ -550,14 +550,14 @@ export default function EventDetailPage() {
                       </div>
                       <div className="flex justify-between items-center py-1">
                         <dt className="text-subtle font-medium">Access Window</dt>
-                        <dd className="font-semibold text-emerald-600">Immediate upon enrolling</dd>
+                        <dd className="font-semibold text-emerald-600 dark:text-emerald-400">Immediate upon enrolling</dd>
                       </div>
                     </dl>
                   </div>
 
                   {/* Tags */}
                   {event.tags && event.tags.length > 0 && (
-                    <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+                    <div className="rounded-2xl border border-slate-200/80 bg-surface p-5 shadow-sm">
                       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
                         Tags & Topics
                       </h4>
@@ -602,7 +602,7 @@ export default function EventDetailPage() {
                     {sessions.map((session, idx) => (
                       <div
                         key={session.id || idx}
-                        className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm transition hover:shadow-md"
+                        className="rounded-2xl border border-slate-200/90 bg-surface p-6 shadow-sm transition hover:shadow-md"
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                           <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
@@ -642,7 +642,7 @@ export default function EventDetailPage() {
                             </span>
                           </span>
 
-                          <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                          <span className="text-emerald-600 font-semibold flex items-center gap-1 dark:text-emerald-400">
                             <Check size={13} />
                             Join link available in Learning Hub for enrolled attendees
                           </span>
@@ -664,10 +664,10 @@ export default function EventDetailPage() {
                 </div>
 
                 {/* Primary Organizer / Channel */}
-                <div className="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                <div className="rounded-2xl border border-slate-200/90 bg-surface p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-6">
                   <ChannelAvatar name={hostName} iconUrl={event.channelIconUrl} size={64} />
                   <div className="flex-1 text-center sm:text-left">
-                    <span className="text-xs font-bold uppercase tracking-wider text-violet-600">
+                    <span className="text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400">
                       Organizer & Host
                     </span>
                     <h3 className="text-xl font-bold text-ink mt-0.5">{hostName}</h3>
@@ -689,7 +689,7 @@ export default function EventDetailPage() {
                       {collaborators.map((c) => (
                         <div
                           key={c.id}
-                          className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs flex items-center gap-4"
+                          className="rounded-xl border border-slate-200 bg-surface p-5 shadow-xs flex items-center gap-4"
                         >
                           <Avatar
                             name={c.name}
@@ -720,9 +720,9 @@ export default function EventDetailPage() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-6">
+                <div className="rounded-2xl border border-slate-200 bg-surface p-6 sm:p-8 shadow-sm space-y-6">
                   <div className="flex items-start gap-4">
-                    <div className="size-10 rounded-xl bg-violet-50 text-violet-600 grid place-items-center shrink-0">
+                    <div className="size-10 rounded-xl bg-violet-50 text-violet-600 grid place-items-center shrink-0 dark:bg-violet-500/10 dark:text-violet-400">
                       <DeliveryIcon size={20} />
                     </div>
                     <div>
@@ -741,25 +741,25 @@ export default function EventDetailPage() {
                     <h4 className="text-sm font-bold text-ink mb-3">Attendance Requirements</h4>
                     <ul className="space-y-2 text-sm text-slate-600">
                       <li className="flex items-center gap-2">
-                        <Check size={15} className="text-emerald-600 shrink-0" />
+                        <Check size={15} className="text-emerald-600 shrink-0 dark:text-emerald-400" />
                         <span>Registered Arcade user account with verified email</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <Check size={15} className="text-emerald-600 shrink-0" />
+                        <Check size={15} className="text-emerald-600 shrink-0 dark:text-emerald-400" />
                         <span>A laptop or desktop with internet access for practical exercises</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <Check size={15} className="text-emerald-600 shrink-0" />
+                        <Check size={15} className="text-emerald-600 shrink-0 dark:text-emerald-400" />
                         <span>Active participation during interactive Q&A and breakout segments</span>
                       </li>
                     </ul>
                   </div>
 
                   {isEnrolled && (
-                    <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 flex items-center justify-between gap-4">
+                    <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 flex items-center justify-between gap-4 dark:bg-emerald-500/10 dark:border-emerald-500/25">
                       <div>
-                        <p className="text-sm font-bold text-emerald-900">You are registered!</p>
-                        <p className="text-xs text-emerald-700 mt-0.5">
+                        <p className="text-sm font-bold text-emerald-900 dark:text-emerald-200">You are registered!</p>
+                        <p className="text-xs text-emerald-700 mt-0.5 dark:text-emerald-300">
                           Head to your Event Learning Hub to access session links and materials.
                         </p>
                       </div>
@@ -777,7 +777,7 @@ export default function EventDetailPage() {
           </div>
 
           {/* Bottom CTA Banner */}
-          <div className="mt-16 rounded-3xl bg-[#14161c] text-white p-8 sm:p-12 shadow-xl relative overflow-hidden">
+          <div className="mt-16 rounded-3xl bg-ink text-on-ink p-8 sm:p-12 shadow-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 -mt-12 -mr-12 size-64 rounded-full bg-violet-600/20 blur-3xl pointer-events-none" />
             <div className="absolute bottom-0 left-0 -mb-12 -ml-12 size-64 rounded-full bg-teal-500/20 blur-3xl pointer-events-none" />
 

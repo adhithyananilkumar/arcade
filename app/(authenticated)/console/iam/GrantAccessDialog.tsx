@@ -66,12 +66,12 @@ export function GrantAccessDialog({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden"
+        className="w-full max-w-md rounded-2xl bg-surface shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50/60">
           <div className="flex items-center gap-2">
-            <UserPlus size={16} className="text-[#14142b]" />
+            <UserPlus size={16} className="text-ink" />
             <h2 className="text-sm font-bold text-gray-900">Grant Platform Access</h2>
           </div>
           <button
@@ -91,7 +91,7 @@ export function GrantAccessDialog({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by name, username, or email…"
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-sm font-medium focus:border-[#14142b]/30 focus:bg-white focus:ring-1 focus:ring-slate-300 outline-none"
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-sm font-medium focus:border-ink/30 focus:bg-surface focus:ring-1 focus:ring-slate-300 outline-none"
             />
           </div>
 
@@ -123,7 +123,7 @@ export function GrantAccessDialog({
                         className="object-cover"
                         referrerPolicy="no-referrer"
                       />
-                      <AvatarFallback className="bg-slate-100 text-[#14142b] font-semibold text-xs">
+                      <AvatarFallback className="bg-slate-100 text-ink font-semibold text-xs">
                         {user.firstName ? user.firstName.charAt(0) : 'U'}
                         {user.lastName ? user.lastName.charAt(0) : ''}
                       </AvatarFallback>

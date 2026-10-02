@@ -80,7 +80,7 @@ export function IntroProvider({ children, enabled = true }: IntroProviderProps) 
           position: "fixed",
           inset: 0,
           background:
-            "radial-gradient(ellipse 90% 70% at 50% 42%, #f6f6f6 0%, #ffffff 65%)",
+            "var(--theme-wash, radial-gradient(ellipse 90% 70% at 50% 42%, #f6f6f6 0%, #ffffff 65%))",
           zIndex: 9999,
           pointerEvents: "none",
         }}

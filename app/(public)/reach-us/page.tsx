@@ -60,13 +60,13 @@ export default function ReachUsPage() {
   };
 
   return (
-    <div className="landing-root min-h-[calc(100vh-140px)] flex flex-col justify-center relative text-[#0f172a] font-sans pt-28 sm:pt-32 lg:pt-36 pb-16 lg:pb-20 px-6 sm:px-12 lg:px-20 selection:bg-blue-100 selection:text-blue-900">
+    <div className="landing-root min-h-[calc(100vh-140px)] flex flex-col justify-center relative text-ink font-sans pt-28 sm:pt-32 lg:pt-36 pb-16 lg:pb-20 px-6 sm:px-12 lg:px-20 selection:bg-blue-100 selection:text-blue-900 dark:selection:bg-blue-500/15 dark:selection:text-blue-200">
       {/* EXTREMELY SUBTLE PASTEL ATMOSPHERIC BACKGROUND */}
       <div
         className="fixed inset-0 pointer-events-none -z-10"
         style={{
-          backgroundColor: "#FAFBFD",
-          backgroundImage: `
+          backgroundColor: "var(--theme-surface, #FAFBFD)",
+          backgroundImage: `var(--theme-wash, 
             radial-gradient(ellipse 70% 40% at 50% 0%, rgba(224, 236, 255, 0.25) 0%, transparent 70%),
             radial-gradient(ellipse 60% 40% at 10% 25%, rgba(233, 225, 254, 0.20) 0%, transparent 65%),
             radial-gradient(ellipse 60% 40% at 90% 75%, rgba(253, 232, 240, 0.18) 0%, transparent 65%),
@@ -77,7 +77,7 @@ export default function ReachUsPage() {
               #F8F6FD 70%,
               #FAF9FB 100%
             )
-          `,
+          )`,
         }}
       />
 
@@ -94,10 +94,10 @@ export default function ReachUsPage() {
               animate="visible"
               custom={0}
               variants={fadeInUp as any}
-              className="text-4xl sm:text-5xl lg:text-[56px] tracking-tight text-[#0B132B] leading-[1.08] font-serif whitespace-nowrap mb-8"
+              className="text-4xl sm:text-5xl lg:text-[56px] tracking-tight text-ink leading-[1.08] font-serif whitespace-nowrap mb-8"
             >
-              <span className="font-bold text-[#0B132B]">Let's</span>{" "}
-              <span className="italic font-normal text-[#205ca8]">talk.</span>
+              <span className="font-bold text-ink">Let's</span>{" "}
+              <span className="italic font-normal text-[#205ca8] dark:text-[#7cbaff]">talk.</span>
             </motion.h1>
 
             {/* INTRO PARAGRAPH */}
@@ -132,10 +132,10 @@ export default function ReachUsPage() {
               >
                 <a
                   href="mailto:arcade@amaljyothi.ac.in"
-                  className="text-base sm:text-lg font-bold text-[#0B132B] hover:text-[#205ca8] hover:-translate-y-0.5 transition-all inline-flex items-center gap-2 font-bricolage leading-snug"
+                  className="text-base sm:text-lg font-bold text-ink hover:text-[#205ca8] hover:-translate-y-0.5 transition-all inline-flex items-center gap-2 font-bricolage leading-snug dark:hover:text-[#7cbaff]"
                 >
                   <span>arcade@amaljyothi.ac.in</span>
-                  <ArrowUpRight className="w-4.5 h-4.5 text-slate-400 group-hover:text-[#205ca8] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
+                  <ArrowUpRight className="w-4.5 h-4.5 text-slate-400 group-hover:text-[#205ca8] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 dark:group-hover:text-[#7cbaff]" />
                 </a>
               </motion.div>
 
@@ -149,10 +149,10 @@ export default function ReachUsPage() {
               >
                 <a
                   href="tel:+914828251661"
-                  className="text-base sm:text-lg font-bold text-[#0B132B] hover:text-[#205ca8] hover:-translate-y-0.5 transition-all inline-flex items-center gap-2 font-bricolage leading-snug"
+                  className="text-base sm:text-lg font-bold text-ink hover:text-[#205ca8] hover:-translate-y-0.5 transition-all inline-flex items-center gap-2 font-bricolage leading-snug dark:hover:text-[#7cbaff]"
                 >
                   <span>+91 (04828) 251661</span>
-                  <ArrowUpRight className="w-4.5 h-4.5 text-slate-400 group-hover:text-[#205ca8] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
+                  <ArrowUpRight className="w-4.5 h-4.5 text-slate-400 group-hover:text-[#205ca8] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 dark:group-hover:text-[#7cbaff]" />
                 </a>
               </motion.div>
             </div>
@@ -172,9 +172,9 @@ export default function ReachUsPage() {
                 rel="noopener noreferrer"
                 className="group block transition-all hover:-translate-y-0.5 cursor-pointer space-y-0.5 mb-[30px]"
               >
-                <p className="text-base sm:text-lg font-bold text-[#0B132B] group-hover:text-[#205ca8] font-bricolage leading-snug transition-colors inline-flex items-center gap-1.5">
+                <p className="text-base sm:text-lg font-bold text-ink group-hover:text-[#205ca8] font-bricolage leading-snug transition-colors inline-flex items-center gap-1.5 dark:group-hover:text-[#7cbaff]">
                   <span>Amal Jyothi College of Engineering</span>
-                  <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#205ca8] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
+                  <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#205ca8] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 dark:group-hover:text-[#7cbaff]" />
                 </p>
                 <p className="text-sm text-slate-500 leading-relaxed">
                   Kanjirappally, Kottayam, Kerala 686518
@@ -200,7 +200,7 @@ export default function ReachUsPage() {
             >
               {/* FORM HEADING & SHORT SUPPORTING TEXT */}
               <div className="space-y-2.5 pb-5 border-b border-slate-200/70">
-                <h2 className="text-3xl sm:text-4xl font-normal font-serif italic text-[#0B132B] tracking-tight leading-snug">
+                <h2 className="text-3xl sm:text-4xl font-normal font-serif italic text-ink tracking-tight leading-snug">
                   Tell us what's on your mind.
                 </h2>
                 <span className="block h-0.5 w-10 bg-[#205ca8]/60 rounded-full" />
@@ -216,10 +216,10 @@ export default function ReachUsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   className="py-12 space-y-4"
                 >
-                  <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                  <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/25">
                     <CheckCircle2 className="w-6 h-6" />
                   </div>
-                  <h3 className="text-2xl font-normal font-serif italic text-[#0B132B]">
+                  <h3 className="text-2xl font-normal font-serif italic text-ink">
                     Message Received.
                   </h3>
                   <p className="text-slate-600 text-sm max-w-sm leading-relaxed">
@@ -228,7 +228,7 @@ export default function ReachUsPage() {
                   <div className="pt-2">
                     <button
                       onClick={() => setIsSubmitted(false)}
-                      className="text-xs font-mono uppercase tracking-wider text-[#205ca8] font-bold hover:underline"
+                      className="text-xs font-mono uppercase tracking-wider text-[#205ca8] font-bold hover:underline dark:text-[#7cbaff]"
                     >
                       ← Send another message
                     </button>
@@ -249,7 +249,7 @@ export default function ReachUsPage() {
                         htmlFor="name"
                         className="block text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold"
                       >
-                        YOUR NAME <span className="text-blue-600">*</span>
+                        YOUR NAME <span className="text-blue-600 dark:text-blue-400">*</span>
                       </label>
                       <input
                         type="text"
@@ -272,7 +272,7 @@ export default function ReachUsPage() {
                         htmlFor="email"
                         className="block text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold"
                       >
-                        EMAIL ADDRESS <span className="text-blue-600">*</span>
+                        EMAIL ADDRESS <span className="text-blue-600 dark:text-blue-400">*</span>
                       </label>
                       <input
                         type="email"
@@ -297,7 +297,7 @@ export default function ReachUsPage() {
                       htmlFor="subject"
                       className="block text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold"
                     >
-                      SUBJECT <span className="text-blue-600">*</span>
+                      SUBJECT <span className="text-blue-600 dark:text-blue-400">*</span>
                     </label>
                     <select
                       id="subject"
@@ -330,7 +330,7 @@ export default function ReachUsPage() {
                       htmlFor="message"
                       className="block text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold"
                     >
-                      MESSAGE <span className="text-blue-600">*</span>
+                      MESSAGE <span className="text-blue-600 dark:text-blue-400">*</span>
                     </label>
                     <textarea
                       id="message"
@@ -340,7 +340,7 @@ export default function ReachUsPage() {
                       value={formState.message}
                       onChange={handleChange}
                       placeholder="Tell us about your query or proposal..."
-                      className="w-full px-4 py-3 bg-white/50 border border-slate-300/80 rounded-xl text-slate-900 text-base placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#205ca8]/15 focus:border-[#205ca8] transition-all resize-none min-h-[160px] h-[160px]"
+                      className="w-full px-4 py-3 bg-surface/50 border border-slate-300/80 rounded-xl text-slate-900 text-base placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#205ca8]/15 focus:border-[#205ca8] transition-all resize-none min-h-[160px] h-[160px]"
                     />
                   </motion.div>
 
@@ -353,11 +353,11 @@ export default function ReachUsPage() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="relative inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-[#0B132B] hover:bg-[#205ca8] text-white font-medium text-sm tracking-wide shadow-sm hover:shadow-md transition-all duration-300 ease-out group disabled:opacity-70 disabled:cursor-not-allowed"
+                      className="relative inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-ink hover:bg-[#205ca8] text-on-ink font-medium text-sm tracking-wide shadow-sm hover:shadow-md transition-all duration-300 ease-out group disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                       {isSubmitting ? (
                         <>
-                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-surface rounded-full animate-spin" />
                           <span>Sending...</span>
                         </>
                       ) : (

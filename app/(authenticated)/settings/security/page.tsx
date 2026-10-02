@@ -53,7 +53,7 @@ function DeviceIcon({ type }: { type: Session['deviceType'] }) {
 }
 
 const inputCls =
-  'w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:opacity-60';
+  'w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-surface text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:opacity-60';
 
 // ── Signed-in devices ─────────────────────────────────────────────────────────
 
@@ -112,13 +112,13 @@ function SessionsCard() {
   const others = sessions.filter((s) => !s.current).length;
 
   return (
-    <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm space-y-4">
+    <div className="rounded-2xl border border-gray-200 bg-surface p-6 shadow-sm space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
             <Monitor size={18} className="text-sky-500" /> Where you&apos;re signed in
           </h3>
-          <p className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">
+          <p className="text-xs text-gray-500 mt-0.5">
             Locations are approximate, based on the network. Don&apos;t recognise a device? Sign it out and change your password.
           </p>
         </div>
@@ -146,16 +146,16 @@ function SessionsCard() {
       ) : sessions.length === 0 ? (
         <p className="py-3 text-xs text-gray-500">No active sessions.</p>
       ) : (
-        <div className="divide-y divide-gray-100 dark:divide-neutral-800">
+        <div className="divide-y divide-gray-100">
           {sessions.map((s) => (
             <div key={s.familyId} className="py-3.5 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
-                <div className={`p-2 rounded-xl ${s.current ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300'}`}>
+                <div className={`p-2 rounded-xl ${s.current ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-600'}`}>
                   <DeviceIcon type={s.deviceType} />
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-xs font-bold text-gray-900 dark:text-white">{s.device}</p>
+                    <p className="text-xs font-bold text-gray-900">{s.device}</p>
                     {s.current && (
                       <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 rounded-full">
                         THIS DEVICE
@@ -270,22 +270,22 @@ function PasswordCard() {
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm space-y-4">
+    <div className="rounded-2xl border border-gray-200 bg-surface p-6 shadow-sm space-y-4">
       <div
         onClick={() => setExpanded((v) => !v)}
         className="flex items-center justify-between cursor-pointer select-none group"
       >
         <div>
-          <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
             <Lock size={18} className="text-sky-500" /> {verb} password
           </h3>
           {status && !status.hasPassword && (
-            <p className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">
+            <p className="text-xs text-gray-500 mt-0.5">
               You sign in with Google. Set a password to also sign in with your email.
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-neutral-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
           <span>{expanded ? 'Hide' : 'Open'}</span>
           <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
             <ChevronDown size={18} />
@@ -300,7 +300,7 @@ function PasswordCard() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="overflow-hidden pt-3 border-t border-gray-100 dark:border-neutral-800 space-y-4"
+            className="overflow-hidden pt-3 border-t border-gray-100 space-y-4"
           >
             {/* Steps */}
             <ol className="flex flex-wrap gap-2 text-[11px] font-semibold">
@@ -310,7 +310,7 @@ function PasswordCard() {
                 return (
                   <li
                     key={label}
-                    className={`rounded-full px-2.5 py-1 ${done ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : active ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300' : 'bg-slate-100 text-slate-500 dark:bg-neutral-800'}`}
+                    className={`rounded-full px-2.5 py-1 ${done ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : active ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300' : 'bg-slate-100 text-slate-500'}`}
                   >
                     {i + 1}. {label}
                   </li>
@@ -326,7 +326,7 @@ function PasswordCard() {
               <form onSubmit={sendCode} className="space-y-4">
                 {hasPassword ? (
                   <div className="max-w-sm">
-                    <label className="block text-xs font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">Current password</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Current password</label>
                     <input
                       type="password"
                       value={currentPassword}
@@ -338,7 +338,7 @@ function PasswordCard() {
                     />
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-600 dark:text-neutral-300">
+                  <p className="text-xs text-gray-600">
                     We&apos;ll email a code to {status?.email ?? 'your address'} to confirm it&apos;s you.
                   </p>
                 )}
@@ -357,13 +357,13 @@ function PasswordCard() {
 
             {step === 'code' && challenge && (
               <form onSubmit={confirmChange} className="space-y-4">
-                <p className="text-xs text-gray-600 dark:text-neutral-300">
+                <p className="text-xs text-gray-600">
                   We emailed a 6-digit code to <b>{challenge.sentTo}</b>. It expires at{' '}
                   {new Date(challenge.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">Code</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Code</label>
                     <input
                       inputMode="numeric"
                       autoComplete="one-time-code"
@@ -375,7 +375,7 @@ function PasswordCard() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">New password</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">New password</label>
                     <div className="relative">
                       <input
                         type={show ? 'text' : 'password'}
@@ -394,10 +394,10 @@ function PasswordCard() {
                         {show ? <EyeOff size={15} /> : <Eye size={15} />}
                       </button>
                     </div>
-                    {tooShort && <p className="mt-1 text-[11px] text-rose-600">At least 8 characters.</p>}
+                    {tooShort && <p className="mt-1 text-[11px] text-rose-600 dark:text-rose-400">At least 8 characters.</p>}
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">Confirm new password</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Confirm new password</label>
                     <input
                       type={show ? 'text' : 'password'}
                       value={confirmPassword}
@@ -406,7 +406,7 @@ function PasswordCard() {
                       placeholder="••••••••"
                       className={inputCls}
                     />
-                    {mismatch && <p className="mt-1 text-[11px] text-rose-600">Doesn&apos;t match.</p>}
+                    {mismatch && <p className="mt-1 text-[11px] text-rose-600 dark:text-rose-400">Doesn&apos;t match.</p>}
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -414,7 +414,7 @@ function PasswordCard() {
                     <button type="button" onClick={reset} className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-700">
                       <ArrowLeft size={13} /> Start over
                     </button>
-                    <button type="button" onClick={() => (hasPassword ? reset() : sendCode())} disabled={busy} className="text-sky-600 hover:underline disabled:opacity-50">
+                    <button type="button" onClick={() => (hasPassword ? reset() : sendCode())} disabled={busy} className="text-sky-600 hover:underline disabled:opacity-50 dark:text-sky-400">
                       Didn&apos;t get it? Send a new code
                     </button>
                   </div>
@@ -480,9 +480,9 @@ export default function SecuritySettingsPage() {
   };
 
   const getActionColor = (action: string) => {
-    if (action.includes('FAILED') || action.includes('REVOKE')) return 'text-red-600 bg-red-100 dark:bg-red-950/50';
-    if (action.includes('SUCCESS') || action.includes('CREATE') || action.includes('CHANGED') || action.includes('SET')) return 'text-emerald-600 bg-emerald-100 dark:bg-emerald-950/50';
-    return 'text-indigo-600 bg-indigo-100 dark:bg-indigo-950/50';
+    if (action.includes('FAILED') || action.includes('REVOKE')) return 'text-red-600 bg-red-100 dark:bg-red-950/50 dark:text-red-400';
+    if (action.includes('SUCCESS') || action.includes('CREATE') || action.includes('CHANGED') || action.includes('SET')) return 'text-emerald-600 bg-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-400';
+    return 'text-indigo-600 bg-indigo-100 dark:bg-indigo-950/50 dark:text-indigo-400';
   };
 
   return (
@@ -491,12 +491,12 @@ export default function SecuritySettingsPage() {
       <PasswordCard />
 
       {/* Audit Logs Section */}
-      <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm overflow-hidden">
-        <div className="border-b border-gray-200 dark:border-neutral-800 p-6 flex justify-between items-center">
-          <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+      <div className="rounded-2xl border border-gray-200 bg-surface shadow-sm overflow-hidden">
+        <div className="border-b border-gray-200 p-6 flex justify-between items-center">
+          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
             <Shield className="text-indigo-500" size={18} /> Security activity
           </h3>
-          <span className="text-xs text-gray-500 dark:text-neutral-400">Page {page + 1} of {totalPages === 0 ? 1 : totalPages}</span>
+          <span className="text-xs text-gray-500">Page {page + 1} of {totalPages === 0 ? 1 : totalPages}</span>
         </div>
 
         {isLoading ? (
@@ -505,22 +505,22 @@ export default function SecuritySettingsPage() {
           </div>
         ) : logs.length === 0 ? (
           <div className="p-12 text-center">
-            <Clock className="mx-auto text-gray-300 dark:text-neutral-700 mb-3" size={40} />
-            <h3 className="text-sm font-medium text-gray-900 dark:text-white">No activity recorded yet</h3>
-            <p className="text-xs text-gray-500 dark:text-neutral-400 mt-1">Sign-ins, password changes and similar events will appear here.</p>
+            <Clock className="mx-auto text-gray-300 mb-3" size={40} />
+            <h3 className="text-sm font-medium text-gray-900">No activity recorded yet</h3>
+            <p className="text-xs text-gray-500 mt-1">Sign-ins, password changes and similar events will appear here.</p>
           </div>
         ) : (
-          <ul className="divide-y divide-gray-100 dark:divide-neutral-800">
+          <ul className="divide-y divide-gray-100">
             {logs.map((log) => (
-              <li key={log.id} className="p-5 hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors">
+              <li key={log.id} className="p-5 hover:bg-gray-50 transition-colors">
                 <div className="flex items-start gap-3.5">
                   <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${getActionColor(log.action)}`}>
                     {getActionIcon(log.action)}
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-semibold text-gray-900 dark:text-white">{log.action.replace(/_/g, ' ')}</p>
-                    <p className="text-xs text-gray-600 dark:text-neutral-400 mt-0.5">{log.details || `Performed on ${log.entityType}`}</p>
-                    <div className="flex items-center gap-4 mt-1.5 text-[11px] text-gray-400 dark:text-neutral-500">
+                    <p className="text-xs font-semibold text-gray-900">{log.action.replace(/_/g, ' ')}</p>
+                    <p className="text-xs text-gray-600 mt-0.5">{log.details || `Performed on ${log.entityType}`}</p>
+                    <div className="flex items-center gap-4 mt-1.5 text-[11px] text-gray-400">
                       <span className="flex items-center gap-1"><Clock size={11} /> {new Date(log.createdAt).toLocaleString()}</span>
                       {log.ipAddress && <span>IP: {log.ipAddress}</span>}
                     </div>
@@ -532,18 +532,18 @@ export default function SecuritySettingsPage() {
         )}
 
         {totalPages > 1 && (
-          <div className="border-t border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950 px-6 py-3 flex justify-between items-center">
+          <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 flex justify-between items-center">
             <button
               onClick={() => loadLogs(page - 1)}
               disabled={page === 0}
-              className="rounded-lg border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-neutral-300 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              className="rounded-lg border border-gray-200 bg-surface px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
             >
               Previous
             </button>
             <button
               onClick={() => loadLogs(page + 1)}
               disabled={page >= totalPages - 1}
-              className="rounded-lg border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-neutral-300 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              className="rounded-lg border border-gray-200 bg-surface px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
             >
               Next
             </button>

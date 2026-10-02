@@ -115,20 +115,20 @@ export function ChannelBalancesTab({
               setPage(0);
             }}
             placeholder="Search channels…"
-            className="w-full rounded-xl border border-slate-200/90 bg-white py-2 pl-9 pr-3 text-xs font-medium outline-none focus:border-slate-400"
+            className="w-full rounded-xl border border-slate-200/90 bg-surface py-2 pl-9 pr-3 text-xs font-medium outline-none focus:border-slate-400"
           />
         </div>
         <button
           type="button"
           disabled={rows.length === 0}
           onClick={() => downloadCsv(rows, period)}
-          className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-surface px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
         >
           <Download size={13} /> Export this page
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white">
+      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-surface">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[820px] text-left text-xs">
             <thead>
@@ -173,7 +173,7 @@ export function ChannelBalancesTab({
                       {r.refundInFlightMinor ? formatMoney(r.refundInFlightMinor, r.currency) : "—"}
                     </td>
                     <td className="px-3 py-3 text-right tabular-nums text-slate-500">{r.commissionMinor ? formatMoney(r.commissionMinor, r.currency) : "—"}</td>
-                    <td className={`px-3 py-3 text-right text-sm font-bold tabular-nums ${r.payableMinor < 0 ? "text-rose-600" : "text-[#14142b]"}`}>
+                    <td className={`px-3 py-3 text-right text-sm font-bold tabular-nums ${r.payableMinor < 0 ? "text-rose-600 dark:text-rose-400" : "text-ink"}`}>
                       {formatMoney(r.payableMinor, r.currency)}
                     </td>
                     <td className="px-5 py-3 text-right text-slate-500">{r.lastPaidAt ? new Date(r.lastPaidAt).toLocaleDateString() : "—"}</td>
@@ -248,7 +248,7 @@ function ChannelDrillDown({
       <button type="button" onClick={onBack} className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900">
         <ArrowLeft size={14} /> All channels
       </button>
-      {channelName && <h2 className="text-lg font-bold text-[#14142b]">{channelName}</h2>}
+      {channelName && <h2 className="text-lg font-bold text-ink">{channelName}</h2>}
       {!detail ? (
         <div className="flex justify-center py-16">
           <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
@@ -257,7 +257,7 @@ function ChannelDrillDown({
         <ChannelPaymentsReport detail={detail} fullAccess personal={personal} commission={commission} />
       )}
       <div>
-        <h3 className="mb-3 text-sm font-bold text-[#14142b]">Orders</h3>
+        <h3 className="mb-3 text-sm font-bold text-ink">Orders</h3>
         <PaymentLedgerTab channelId={channelId} onOpenOrder={onOpenOrder} />
       </div>
     </div>

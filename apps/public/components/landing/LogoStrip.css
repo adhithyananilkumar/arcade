@@ -45,7 +45,7 @@
   font-family: 'Space Grotesk', 'Inter', sans-serif;
   font-weight: 700;
   font-size: 1.6rem; /* Increased font-size for larger icons */
-  color: #3a3d4a;
+  color: var(--theme-n-700, #3a3d4a);
   white-space: nowrap;
   user-select: none;
 }
@@ -53,7 +53,7 @@
 .logo-item .sub {
   font-size: 0.65rem;
   font-weight: 500;
-  color: #9a9daa;
+  color: var(--theme-n-400, #9a9daa);
   display: block;
   letter-spacing: 0.01em;
 }

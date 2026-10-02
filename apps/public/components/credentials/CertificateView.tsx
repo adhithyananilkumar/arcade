@@ -57,7 +57,7 @@ const STATUS = {
 } as const;
 
 const secondary =
-  "inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200";
+  "inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-surface px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50";
 
 export function CertificateView({ data }: { data: PublicCertificate }) {
   const { certificate: c, verification } = data;
@@ -130,9 +130,9 @@ export function CertificateView({ data }: { data: PublicCertificate }) {
             </div>
             <ul className="grid gap-2 sm:grid-cols-3 lg:min-w-[560px]">
               {checks.map((k) => (
-                <li key={k.label} className="rounded-2xl bg-white/70 px-3 py-2 dark:bg-slate-950/40">
+                <li key={k.label} className="rounded-2xl bg-surface/70 px-3 py-2">
                   <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] opacity-70">
-                    {k.ok ? <Check size={11} strokeWidth={3} className="text-emerald-600" /> : <ShieldX size={11} className="text-rose-600" />}
+                    {k.ok ? <Check size={11} strokeWidth={3} className="text-emerald-600 dark:text-emerald-400" /> : <ShieldX size={11} className="text-rose-600 dark:text-rose-400" />}
                     {k.label}
                   </p>
                   <p className="mt-0.5 text-[11px] font-semibold leading-snug">{k.detail}</p>
@@ -143,14 +143,14 @@ export function CertificateView({ data }: { data: PublicCertificate }) {
         </section>
 
         {/* ── The certificate ── */}
-        <section className="rounded-[2rem] border border-slate-200/80 bg-slate-50 p-3 shadow-[0_20px_60px_rgba(20,20,43,0.08)] dark:border-slate-800 dark:bg-slate-900/60 sm:p-6">
+        <section className="rounded-[2rem] border border-slate-200/80 bg-slate-50 p-3 shadow-[0_20px_60px_rgba(20,20,43,0.08)] sm:p-6">
           <CertificateFace certificate={c} className="mx-auto max-w-4xl shadow-xl" />
         </section>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-          <section className="rounded-[1.75rem] border border-slate-200/80 bg-white/95 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/95 sm:p-6">
+          <section className="rounded-[1.75rem] border border-slate-200/80 bg-surface/95 p-5 shadow-sm sm:p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">{c.documentTitle}</p>
-            <h1 className="mt-2 text-2xl font-bold leading-tight tracking-tight text-[#14142b] dark:text-white sm:text-3xl">{c.title}</h1>
+            <h1 className="mt-2 text-2xl font-bold leading-tight tracking-tight text-ink sm:text-3xl">{c.title}</h1>
             {c.programme && <p className="mt-1 text-sm text-slate-500">{c.programme}</p>}
 
             <dl className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -190,16 +190,16 @@ export function CertificateView({ data }: { data: PublicCertificate }) {
                   <button
                     type="button"
                     onClick={() => copy(c.credentialCode, "id")}
-                    className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
+                    className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
                     aria-label="Copy credential ID"
                   >
-                    {copied === "id" ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                    {copied === "id" ? <Check size={13} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={13} />}
                   </button>
                 </span>
               </Fact>
             </dl>
 
-            <p className="mt-6 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{c.criteria}</p>
+            <p className="mt-6 text-sm leading-relaxed text-slate-600">{c.criteria}</p>
 
             <div className="mt-6 flex flex-wrap gap-2">
               {valid && (
@@ -218,7 +218,7 @@ export function CertificateView({ data }: { data: PublicCertificate }) {
                 </>
               )}
               <button type="button" onClick={() => copy(url, "link")} className={secondary}>
-                {copied === "link" ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />} Copy link
+                {copied === "link" ? <Check size={14} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={14} />} Copy link
               </button>
               <button type="button" onClick={download} disabled={downloading} className={secondary}>
                 {downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />} Download PDF
@@ -226,24 +226,24 @@ export function CertificateView({ data }: { data: PublicCertificate }) {
             </div>
           </section>
 
-          <section className="rounded-[1.75rem] border border-slate-200/80 bg-white/95 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/95 sm:p-6">
-            <h2 className="mb-3 flex items-center gap-2 text-sm font-black tracking-tight text-[#14142b] dark:text-white">
+          <section className="rounded-[1.75rem] border border-slate-200/80 bg-surface/95 p-5 shadow-sm sm:p-6">
+            <h2 className="mb-3 flex items-center gap-2 text-sm font-black tracking-tight text-ink">
               <ShieldCheck size={15} className="text-slate-400" /> Verifying this certificate
             </h2>
-            <ol className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+            <ol className="space-y-2 text-sm text-slate-600">
               <li>
-                <strong className="text-slate-800 dark:text-slate-200">1.</strong> This page is served by Arcade, and every fact on
+                <strong className="text-slate-800">1.</strong> This page is served by Arcade, and every fact on
                 it is read from Arcade&apos;s record at the moment you open it.
               </li>
               <li>
-                <strong className="text-slate-800 dark:text-slate-200">2.</strong> The record was sealed when it was issued; any
+                <strong className="text-slate-800">2.</strong> The record was sealed when it was issued; any
                 later edit to it shows here as a failed verification.
               </li>
               <li>
-                <strong className="text-slate-800 dark:text-slate-200">3.</strong> A printed or PDF copy carries the ID{" "}
+                <strong className="text-slate-800">3.</strong> A printed or PDF copy carries the ID{" "}
                 <span className="font-mono font-bold">{c.credentialCode}</span> and a QR code leading back here. Anyone can check
                 the ID at{" "}
-                <Link href={verifyPath(c.credentialCode)} className="font-bold text-[#2962D6] hover:underline">
+                <Link href={verifyPath(c.credentialCode)} className="font-bold text-[#2962D6] hover:underline dark:text-[#7eb5ff]">
                   arcade · verify
                 </Link>
                 . If a copy disagrees with this page, trust this page.
@@ -259,12 +259,12 @@ export function CertificateView({ data }: { data: PublicCertificate }) {
 function Fact({ icon: Icon, label, children }: { icon: typeof User; label: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-3">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-800">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
         <Icon size={16} />
       </span>
       <div className="min-w-0">
         <dt className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">{label}</dt>
-        <dd className="mt-0.5 text-sm font-bold text-slate-900 dark:text-white">{children}</dd>
+        <dd className="mt-0.5 text-sm font-bold text-slate-900">{children}</dd>
       </div>
     </div>
   );

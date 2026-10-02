@@ -38,13 +38,13 @@ export function ConfirmDialog({
       onClick={busy ? undefined : onCancel}
     >
       <div
-        className="w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden"
+        className="w-full max-w-md rounded-2xl bg-surface shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-5 space-y-3">
           <div className="flex items-start gap-3">
             {danger && (
-              <div className="shrink-0 w-9 h-9 rounded-full bg-rose-50 flex items-center justify-center">
+              <div className="shrink-0 w-9 h-9 rounded-full bg-rose-50 flex items-center justify-center dark:bg-rose-500/10">
                 <TriangleAlert size={16} className="text-rose-500" />
               </div>
             )}
@@ -73,7 +73,7 @@ export function ConfirmDialog({
             disabled={busy}
             onClick={onConfirm}
             className={`flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-              danger ? 'bg-rose-600 hover:bg-rose-700' : 'bg-[#14142b] hover:bg-[#232735]'
+              danger ? 'bg-rose-600 hover:bg-rose-700' : 'bg-ink hover:bg-ink-hover'
             }`}
           >
             {busy && <Loader2 size={12} className="animate-spin" />}

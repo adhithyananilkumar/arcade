@@ -16,17 +16,17 @@ const META: Record<ExamPlanType, PlanTypeMeta> = {
   CERTIFICATION: {
     label: "Certification",
     effect: "Passing issues a certificate.",
-    chip: "bg-violet-100/80 text-violet-800",
+    chip: "bg-violet-100/80 text-violet-800 dark:bg-violet-500/15 dark:text-violet-200",
   },
   COMPLETION: {
     label: "Completion",
     effect: "Passing completes the course or event it belongs to.",
-    chip: "bg-amber-50 text-amber-800",
+    chip: "bg-amber-50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-200",
   },
   ASSESSMENT: {
     label: "Assessment",
     effect: "A check on your progress.",
-    chip: "bg-[#14142b]/[0.06] text-[#14142b]",
+    chip: "bg-ink/[0.06] text-ink",
   },
 };
 

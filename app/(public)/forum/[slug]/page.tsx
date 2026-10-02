@@ -86,7 +86,7 @@ export default function PostDetailPage({ params }: Props) {
         {/* Post card header */}
         <div
           style={{
-            backgroundColor: '#fff',
+            backgroundColor: 'var(--theme-surface, #fff)',
             border: '1px solid var(--border)',
             borderRadius: 'var(--radius-md)',
             padding: '32px',
@@ -178,7 +178,7 @@ export default function PostDetailPage({ params }: Props) {
                   alignItems: 'center',
                   gap: 6,
                   padding: '4px 12px',
-                  backgroundColor: '#ECFDF5',
+                  backgroundColor: 'var(--theme-n-50, #ECFDF5)',
                   border: '1px solid #86EFAC',
                   borderRadius: 'var(--radius-full)',
                   fontSize: 12,
@@ -245,7 +245,7 @@ export default function PostDetailPage({ params }: Props) {
         {/* Comments */}
         <div
           style={{
-            backgroundColor: '#fff',
+            backgroundColor: 'var(--theme-surface, #fff)',
             border: '1px solid var(--border)',
             borderRadius: 'var(--radius-md)',
             padding: '32px',

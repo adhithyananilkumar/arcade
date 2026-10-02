@@ -14,10 +14,10 @@ export function ReadinessCard({
   continueHref: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-none border border-slate-900 bg-white p-6 sm:p-7 shadow-[3.5px_3.5px_0px_0px_#D97706] transition-all duration-300 hover:shadow-[5px_5px_0px_0px_#D97706]">
+    <div className="overflow-hidden rounded-none border border-slate-900 bg-surface p-6 sm:p-7 shadow-[3.5px_3.5px_0px_0px_#D97706] transition-all duration-300 hover:shadow-[5px_5px_0px_0px_#D97706]">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="flex items-center gap-2 text-sm font-extrabold text-[#14142b]">
-          <span className="grid size-7 place-items-center rounded-xl bg-amber-50 text-amber-600 border border-amber-100">
+        <h2 className="flex items-center gap-2 text-sm font-extrabold text-ink">
+          <span className="grid size-7 place-items-center rounded-xl bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/25">
             <CheckCircle2 size={15} />
           </span>
           <span>Content readiness</span>
@@ -30,21 +30,21 @@ export function ReadinessCard({
       {readiness.issues.length > 0 && (
         <ul className="mb-4 flex flex-col gap-2">
           {readiness.issues.map((issue, i) => (
-            <li key={i} className="flex items-start gap-2.5 text-xs text-slate-600 bg-amber-50/60 border border-amber-200/60 p-3 rounded-2xl">
-              <AlertCircle size={15} className="mt-0.5 shrink-0 text-amber-600" />
+            <li key={i} className="flex items-start gap-2.5 text-xs text-slate-600 bg-amber-50/60 border border-amber-200/60 p-3 rounded-2xl dark:bg-amber-500/10 dark:border-amber-500/25">
+              <AlertCircle size={15} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
               <span>
-                <span className="font-extrabold text-amber-900">{issue.section}:</span> {issue.issue}
+                <span className="font-extrabold text-amber-900 dark:text-amber-200">{issue.section}:</span> {issue.issue}
               </span>
             </li>
           ))}
         </ul>
       )}
       {readiness.isReady && (
-        <p className="mb-4 flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50/80 border border-emerald-200/60 p-3 rounded-2xl">
-          <CheckCircle2 size={15} className="text-emerald-600" /> All requirements are met. Ready for review!
+        <p className="mb-4 flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50/80 border border-emerald-200/60 p-3 rounded-2xl dark:text-emerald-300 dark:bg-emerald-500/10 dark:border-emerald-500/25">
+          <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400" /> All requirements are met. Ready for review!
         </p>
       )}
-      <Link href={continueHref} className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors">
+      <Link href={continueHref} className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors dark:text-indigo-400 dark:hover:text-indigo-200">
         Continue editing <ArrowRight size={13} />
       </Link>
     </div>

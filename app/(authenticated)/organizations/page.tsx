@@ -71,7 +71,7 @@ export default function OrganizationsPage() {
         {/* Organization List */}
         <div className="lg:col-span-2 space-y-4">
           {isLoading ? (
-            <div className="flex h-40 items-center justify-center rounded-2xl border border-gray-100 bg-white">
+            <div className="flex h-40 items-center justify-center rounded-2xl border border-gray-100 bg-surface">
               <Loader2 className="animate-spin text-indigo-500" size={32} />
             </div>
           ) : organizations.length === 0 ? (
@@ -89,19 +89,19 @@ export default function OrganizationsPage() {
                 transition={{ delay: i * 0.1 }}
               >
                 <Link href={`/organizations/${org.id}`}>
-                  <div className="group flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-indigo-200 hover:shadow-md cursor-pointer">
+                  <div className="group flex items-center justify-between rounded-2xl border border-gray-200 bg-surface p-5 shadow-sm transition-all hover:border-indigo-200 hover:shadow-md cursor-pointer dark:hover:border-indigo-500/25">
                     <div className="flex items-center gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition-colors group-hover:bg-indigo-600 group-hover:text-white">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition-colors group-hover:bg-indigo-600 group-hover:text-white dark:bg-indigo-500/10 dark:text-indigo-400">
                         <Building2 size={24} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{org.name}</h3>
+                        <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors dark:group-hover:text-indigo-400">{org.name}</h3>
                         <p className="text-sm text-gray-500 flex items-center gap-2">
                           Created {new Date(org.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
-                    <div className="text-gray-400 group-hover:text-indigo-600 transition-colors">
+                    <div className="text-gray-400 group-hover:text-indigo-600 transition-colors dark:group-hover:text-indigo-400">
                       <ChevronRight />
                     </div>
                   </div>
@@ -116,7 +116,7 @@ export default function OrganizationsPage() {
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sticky top-24"
+            className="rounded-2xl border border-gray-200 bg-surface p-6 shadow-sm sticky top-24"
           >
             <h3 className="text-lg font-bold text-gray-900 mb-2">Create Organization</h3>
             <p className="text-sm text-gray-500 mb-6">Create a new workspace to invite members and assign roles.</p>
@@ -138,7 +138,7 @@ export default function OrganizationsPage() {
               </div>
 
               {error && (
-                <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 font-medium">
+                <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 font-medium dark:bg-red-500/10 dark:text-red-400">
                   {error}
                 </div>
               )}

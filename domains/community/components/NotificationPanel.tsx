@@ -32,7 +32,7 @@ export function NotificationPanel() {
       <button
         type="button"
         onClick={() => setOpen((isOpen) => !isOpen)}
-        className="relative flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 cursor-pointer text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+        className="relative flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 bg-surface cursor-pointer text-slate-600 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
         title="Notifications"
       >
         <Bell size={16} />
@@ -51,18 +51,18 @@ export function NotificationPanel() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-2xl shadow-xl overflow-hidden z-50"
+            className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-surface border border-slate-200 rounded-2xl shadow-xl overflow-hidden z-50"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-neutral-800">
-              <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+              <span className="text-sm font-bold text-slate-900">
                 Notifications
               </span>
               {unreadCount > 0 && (
                 <button
                   type="button"
                   onClick={markAllRead}
-                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors"
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors dark:hover:text-indigo-300"
                 >
                   Mark all read
                 </button>
@@ -85,11 +85,11 @@ export function NotificationPanel() {
             </div>
 
             {/* Footer */}
-            <div className="border-t border-slate-100 dark:border-neutral-800 p-2.5 text-center bg-slate-50/50 dark:bg-neutral-950/40">
+            <div className="border-t border-slate-100 p-2.5 text-center bg-slate-50/50">
               <Link
                 href="/notifications"
                 onClick={() => setOpen(false)}
-                className="text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors"
+                className="text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors dark:hover:text-indigo-300"
               >
                 See more
               </Link>

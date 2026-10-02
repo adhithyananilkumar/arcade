@@ -26,7 +26,7 @@ export function ExamOverviewSections({
 }) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-surface px-5 py-4">
         <div>
           <h3 className="text-sm font-black tracking-tight text-slate-900">Questions</h3>
           <p className="mt-0.5 text-xs font-medium text-slate-500">

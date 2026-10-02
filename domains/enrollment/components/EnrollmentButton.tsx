@@ -303,7 +303,7 @@ export function EnrollmentButton({
         <button
           onClick={handleRevoke}
           disabled={isProcessing}
-          className="bg-black/5 hover:bg-black/10 active:scale-[0.98] text-slate-700 hover:text-red-600 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/15 backdrop-blur-md border border-black/10 dark:border-white/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 flex items-center gap-1.5 disabled:opacity-50"
+          className="bg-slate-950/5 hover:bg-slate-950/10 active:scale-[0.98] text-slate-700 hover:text-red-600 backdrop-blur-md border border-slate-950/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 flex items-center gap-1.5 disabled:opacity-50 dark:hover:text-red-400"
           title="Unenroll">
           <LogOut className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Unenroll</span>
@@ -323,7 +323,7 @@ export function EnrollmentButton({
         <button
           onClick={handleRevoke}
           disabled={isProcessing}
-          className="bg-black/5 hover:bg-black/10 active:scale-[0.98] text-slate-700 hover:text-red-600 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/15 backdrop-blur-md border border-black/10 dark:border-white/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 disabled:opacity-50"
+          className="bg-slate-950/5 hover:bg-slate-950/10 active:scale-[0.98] text-slate-700 hover:text-red-600 backdrop-blur-md border border-slate-950/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 disabled:opacity-50 dark:hover:text-red-400"
           title="Leave waitlist">
           Leave
         </button>
@@ -338,7 +338,7 @@ export function EnrollmentButton({
         <button
           onClick={() => startPayment(pendingPaymentEnrollmentId)}
           disabled={isPaying}
-          className={`bg-[#14161c] hover:bg-[#232733] active:scale-[0.98] text-white font-bold py-3.5 px-8 rounded-full shadow-[0_8px_25px_rgba(20,22,28,0.22),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15 transition-all w-full text-sm flex items-center justify-center gap-2 disabled:opacity-70 ${className}`}>
+          className={`bg-ink hover:bg-ink active:scale-[0.98] text-on-ink font-bold py-3.5 px-8 rounded-full shadow-[0_8px_25px_rgba(20,22,28,0.22),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15 transition-all w-full text-sm flex items-center justify-center gap-2 disabled:opacity-70 ${className}`}>
           {isPaying ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin shrink-0" />
@@ -362,7 +362,7 @@ export function EnrollmentButton({
           <button
             onClick={handleEnroll}
             disabled={isProcessing}
-            className={`bg-[#14161c] hover:bg-[#232733] active:scale-[0.98] text-white font-bold py-3.5 px-8 rounded-full shadow-[0_8px_25px_rgba(20,22,28,0.22),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15 transition-all flex-1 text-sm flex items-center justify-center gap-2 disabled:opacity-70 ${className}`}>
+            className={`bg-ink hover:bg-ink active:scale-[0.98] text-on-ink font-bold py-3.5 px-8 rounded-full shadow-[0_8px_25px_rgba(20,22,28,0.22),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15 transition-all flex-1 text-sm flex items-center justify-center gap-2 disabled:opacity-70 ${className}`}>
             {isProcessing ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin shrink-0" />
@@ -375,7 +375,7 @@ export function EnrollmentButton({
           <button
             onClick={handleRevoke}
             disabled={isProcessing}
-            className="bg-black/5 hover:bg-black/10 active:scale-[0.98] text-slate-700 hover:text-red-600 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/15 backdrop-blur-md border border-black/10 dark:border-white/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 disabled:opacity-50"
+            className="bg-slate-950/5 hover:bg-slate-950/10 active:scale-[0.98] text-slate-700 hover:text-red-600 backdrop-blur-md border border-slate-950/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 disabled:opacity-50 dark:hover:text-red-400"
             title="Cancel this registration">
             Cancel
           </button>
@@ -396,7 +396,7 @@ export function EnrollmentButton({
     <button
       onClick={handleEnroll}
       disabled={isProcessing}
-      className={`bg-[#14161c] hover:bg-[#232733] active:scale-[0.98] text-white font-bold py-3.5 px-8 rounded-full shadow-[0_8px_25px_rgba(20,22,28,0.22),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed w-full text-sm ${className}`}>
+      className={`bg-ink hover:bg-ink active:scale-[0.98] text-on-ink font-bold py-3.5 px-8 rounded-full shadow-[0_8px_25px_rgba(20,22,28,0.22),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed w-full text-sm ${className}`}>
       {isProcessing ? (
         <>
           <Loader2 className="w-4 h-4 animate-spin shrink-0" />

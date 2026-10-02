@@ -52,10 +52,10 @@ export function CheckoutHoldStatus({ enrollmentId, refreshKey }: { enrollmentId:
 
   return (
     <div className="mt-2 space-y-1 text-[12px] font-medium" aria-live="polite">
-      <p className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+      <p className="flex items-center gap-1.5 text-slate-500">
         <Clock size={13} className="shrink-0" />
         <span>
-          Your place is held for <span className="tabular-nums font-semibold text-slate-700 dark:text-slate-200">{left}</span>
+          Your place is held for <span className="tabular-nums font-semibold text-slate-700">{left}</span>
         </span>
       </p>
       {order.attemptCount > 0 && order.lastFailureReason && (

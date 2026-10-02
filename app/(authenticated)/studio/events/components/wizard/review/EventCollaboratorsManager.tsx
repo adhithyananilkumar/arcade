@@ -101,7 +101,7 @@ export function EventCollaboratorsManager({ eventId }: Props) {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600 dark:text-indigo-400" />
       </div>
     );
   }
@@ -110,12 +110,12 @@ export function EventCollaboratorsManager({ eventId }: Props) {
     <div className="space-y-8 max-w-5xl mx-auto p-4">
       {/* Invite collaborator box - Only visible to OWNER or MANAGER */}
       {canManage && (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 mb-2">
-            <Users className="w-5 h-5 text-indigo-600" />
+        <div className="bg-surface border border-zinc-200 rounded-2xl p-6 shadow-sm">
+          <h2 className="text-lg font-bold text-zinc-900 flex items-center gap-2 mb-2">
+            <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             Add Event Collaborators
           </h2>
-          <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
+          <p className="text-zinc-500 text-sm mb-6">
             Grant other users edit or view access to this workshop and webinar contents under role-based policies.
           </p>
 
@@ -133,7 +133,7 @@ export function EventCollaboratorsManager({ eventId }: Props) {
             </div>
             <div className="w-full sm:w-48">
               <select
-                className="w-full h-10 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full h-10 px-3 rounded-lg border border-zinc-200 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value as any)}
                 disabled={!isOwner}
@@ -157,13 +157,13 @@ export function EventCollaboratorsManager({ eventId }: Props) {
       )}
 
       {/* Collaborator roster */}
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm">
-        <div className="p-6 border-b border-zinc-200 dark:border-zinc-800">
-          <h3 className="font-bold text-zinc-900 dark:text-zinc-100">Collaborator Roster</h3>
+      <div className="bg-surface border border-zinc-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="p-6 border-b border-zinc-200">
+          <h3 className="font-bold text-zinc-900">Collaborator Roster</h3>
         </div>
         
         {collaborators.length === 0 ? (
-          <div className="p-12 text-center text-zinc-500 dark:text-zinc-400">
+          <div className="p-12 text-center text-zinc-500">
             No collaborators added yet.
           </div>
         ) : (
@@ -182,16 +182,16 @@ export function EventCollaboratorsManager({ eventId }: Props) {
                   <TableCell className="flex items-center gap-3">
                     <Avatar className="w-9 h-9">
                       {c.avatarUrl && <AvatarImage src={c.avatarUrl} alt={c.name} />}
-                      <AvatarFallback className="bg-indigo-100 text-indigo-700 font-bold">
+                      <AvatarFallback className="bg-indigo-100 text-indigo-700 font-bold dark:bg-indigo-500/15 dark:text-indigo-300">
                         {c.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm flex items-center gap-1.5">
+                      <div className="font-semibold text-zinc-900 text-sm flex items-center gap-1.5">
                         {c.name}
                         {c.role === 'OWNER' && <Shield className="w-3.5 h-3.5 text-amber-500" />}
                       </div>
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400">{c.email}</div>
+                      <div className="text-xs text-zinc-500">{c.email}</div>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -199,7 +199,7 @@ export function EventCollaboratorsManager({ eventId }: Props) {
                       <Badge variant="secondary" className="bg-zinc-100 text-zinc-700">{c.role}</Badge>
                     ) : (
                       <select
-                        className="h-8 px-2 rounded border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="h-8 px-2 rounded border border-zinc-200 bg-surface text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         value={c.role}
                         onChange={(e) => handleRoleChange(c.id || c.userId, e.target.value as any)}
                         disabled={c.userId === user?.id || !canManage}
@@ -221,7 +221,7 @@ export function EventCollaboratorsManager({ eventId }: Props) {
                       <Button
                         variant="ghost"
                         onClick={() => handleRemove(c.id || c.userId)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/10 p-2 rounded-lg"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/10 p-2 rounded-lg dark:text-red-400 dark:hover:text-red-300"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

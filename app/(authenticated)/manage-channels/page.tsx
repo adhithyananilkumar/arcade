@@ -104,13 +104,13 @@ export default function ManageChannelsPage() {
   }, [tabRows, query]);
 
   return (
-    <div className="relative min-h-screen w-full text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/40">
+    <div className="relative min-h-screen w-full text-slate-900 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/40">
       {/* Background — vibrant ambient gradient matching Home, My Learning, and Exams */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 dark:hidden -z-10"
         style={{
-          background: `
+          background: `var(--theme-wash, 
             radial-gradient(ellipse 55% 40% at 8% 12%, rgba(41, 98, 214, 0.16) 0%, transparent 60%),
             radial-gradient(ellipse 50% 35% at 92% 20%, rgba(39, 197, 216, 0.14) 0%, transparent 60%),
             radial-gradient(ellipse 45% 35% at 5% 50%, rgba(99, 102, 241, 0.09) 0%, transparent 60%),
@@ -119,7 +119,7 @@ export default function ManageChannelsPage() {
             radial-gradient(ellipse 50% 35% at 94% 80%, rgba(20, 184, 166, 0.11) 0%, transparent 60%),
             radial-gradient(ellipse 40% 30% at 50% 95%, rgba(44, 131, 245, 0.08) 0%, transparent 60%),
             linear-gradient(to bottom, #E9EEFB 0%, #F5F9FD 25%, #FFFFFF 50%, #FFFFFF 75%, #E8F7F8 100%)
-          `,
+          )`,
         }}
       />
       <div
@@ -154,7 +154,7 @@ export default function ManageChannelsPage() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="inline-block text-slate-900 dark:text-white font-extrabold text-4xl sm:text-5xl lg:text-6xl"
+              className="inline-block text-slate-900 font-extrabold text-4xl sm:text-5xl lg:text-6xl"
             >
               Manage
             </motion.span>
@@ -204,7 +204,7 @@ export default function ManageChannelsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
                 transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold leading-relaxed text-center w-full px-4"
+                className="absolute text-xs sm:text-sm text-slate-600 font-semibold leading-relaxed text-center w-full px-4"
               >
                 {CHANNELS_MESSAGES[msgIndex]}
               </motion.p>
@@ -252,7 +252,7 @@ export default function ManageChannelsPage() {
 
           {/* RIGHT: Search Toggle / Input */}
           <div className="w-full md:w-auto flex items-center justify-start md:justify-end shrink-0 gap-3">
-            <p className="hidden lg:block text-xs font-medium text-slate-400 dark:text-slate-500">
+            <p className="hidden lg:block text-xs font-medium text-slate-400">
               Channel creation is invite-only
             </p>
             <div className="w-full sm:w-64 flex items-center justify-start sm:justify-end shrink-0">
@@ -268,7 +268,7 @@ export default function ManageChannelsPage() {
                   >
                     <Search
                       size={16}
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none"
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
                     />
                     <input
                       ref={(el) => {
@@ -286,7 +286,7 @@ export default function ManageChannelsPage() {
                         }
                       }}
                       placeholder="Search channels..."
-                      className="w-full pl-9 pr-8 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm bg-transparent border border-slate-200/80 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-300 dark:focus:ring-slate-700 transition-all font-medium"
+                      className="w-full pl-9 pr-8 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm bg-transparent border border-slate-200/80 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-300 transition-all font-medium"
                     />
                     <button
                       type="button"
@@ -294,7 +294,7 @@ export default function ManageChannelsPage() {
                         setQuery('');
                         setIsSearchOpen(false);
                       }}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-0.5 rounded-full hover:bg-slate-100 transition cursor-pointer"
                       aria-label="Close search"
                       title="Close search"
                     >
@@ -310,7 +310,7 @@ export default function ManageChannelsPage() {
                     transition={{ duration: 0.15 }}
                     type="button"
                     onClick={() => setIsSearchOpen(true)}
-                    className="p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors flex items-center justify-center cursor-pointer"
+                    className="p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors flex items-center justify-center cursor-pointer"
                     aria-label="Open search"
                     title="Search channels"
                   >
@@ -325,7 +325,7 @@ export default function ManageChannelsPage() {
         {/* ── SECTION: CHANNELS CONTENT ── */}
         <section aria-label="Manage Channels Content" className="relative space-y-4 sm:space-y-5 pt-0">
           <div className="flex items-center justify-between pb-1">
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
               {tab === 'all'
                 ? 'Your Channels & Communities'
                 : tab === 'owner'
@@ -342,7 +342,7 @@ export default function ManageChannelsPage() {
             ) : filteredChannels.length === 0 ? (
               <EmptyChannelsState searching={Boolean(query.trim())} tab={tab} />
             ) : (
-              <div className="overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] divide-y divide-slate-100 dark:divide-slate-800/80">
+              <div className="overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] divide-y divide-slate-100">
                 {filteredChannels.map((channel) => (
                   <ChannelRowItem key={channel.id} channel={channel} />
                 ))}
@@ -374,8 +374,8 @@ function TabButton({
       onClick={onClick}
       className={`relative px-5 sm:px-6 py-2 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm font-black tracking-tight transition-all duration-200 select-none cursor-pointer min-w-[96px] text-center inline-flex items-center justify-center gap-2 ${
         active
-          ? 'bg-white dark:bg-slate-900 text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6]'
-          : 'bg-slate-100/80 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700/60 hover:bg-slate-200/70 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white'
+          ? 'bg-surface text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6]'
+          : 'bg-slate-100/80 text-slate-700 border border-slate-200/70 hover:bg-slate-200/70 hover:text-slate-900'
       }`}
     >
       <span className="relative z-10">{label}</span>
@@ -384,7 +384,7 @@ function TabButton({
           className={`relative z-10 text-[11px] px-1.5 py-0.2 rounded-full font-bold tabular-nums ${
             active
               ? 'bg-[#2962D6]/10 dark:bg-[#3B82F6]/20 text-[#2962D6] dark:text-[#3B82F6]'
-              : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+              : 'bg-slate-200 text-slate-600'
           }`}
         >
           {count}
@@ -396,9 +396,9 @@ function TabButton({
 
 function ChannelRowItem({ channel }: { channel: Row }) {
   return (
-    <div className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 sm:px-6 py-4.5 transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/50">
+    <div className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 sm:px-6 py-4.5 transition-colors hover:bg-slate-50/80">
       <div className="flex min-w-0 items-center gap-4">
-        <div className="relative flex h-13 w-13 shrink-0 items-center justify-center overflow-hidden rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-500 dark:text-slate-400 group-hover:scale-105 transition-transform">
+        <div className="relative flex h-13 w-13 shrink-0 items-center justify-center overflow-hidden rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-slate-100 border border-slate-200/80 text-slate-500 group-hover:scale-105 transition-transform">
           {channel.iconUrl ? (
             <img src={getAvatarUrl(channel.iconUrl)} alt={channel.name} className="h-full w-full object-cover" />
           ) : (
@@ -451,16 +451,16 @@ function ChannelRowItem({ channel }: { channel: Row }) {
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h4 className="truncate text-base font-bold text-[#14142b] dark:text-white group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6] transition-colors">
+            <h4 className="truncate text-base font-bold text-ink group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6] transition-colors">
               {channel.name}
             </h4>
             {channel.handle && (
-              <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
+              <span className="text-xs font-medium text-slate-400">
                 @{channel.handle}
               </span>
             )}
           </div>
-          <p className="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <p className="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
             {channel.status === 'PENDING' && (
               <>
                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 font-bold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
@@ -480,7 +480,7 @@ function ChannelRowItem({ channel }: { channel: Row }) {
             {channel.status === 'REJECTED' && (
               <>
                 <span
-                  className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 font-bold text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700"
+                  className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 font-bold text-slate-600 border border-slate-200"
                   title={channel.rejectionReason || undefined}
                 >
                   <XCircle size={11} /> Rejected
@@ -529,7 +529,7 @@ function ChannelRowItem({ channel }: { channel: Row }) {
         {channel.status !== 'PENDING' && channel.status !== 'REJECTED' && (
           <Link
             href={`/channels/${channel.id}/manage`}
-            className="inline-flex items-center gap-1 rounded-full bg-[#12141C] dark:bg-white text-white dark:text-slate-900 px-4 py-2 text-xs sm:text-sm font-bold shadow-sm hover:opacity-90 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1 rounded-full bg-ink text-on-ink px-4 py-2 text-xs sm:text-sm font-bold shadow-sm hover:opacity-90 transition-all cursor-pointer"
           >
             Dashboard
             <ChevronRight size={15} />
@@ -566,20 +566,20 @@ function ChannelsDoodle() {
           width="58"
           height="44"
           rx="10"
-          className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200"
+          className="fill-white stroke-slate-800"
           strokeWidth="2"
         />
 
         {/* TV Antennas */}
-        <path d="M42 16L52 28" className="stroke-slate-800 dark:stroke-slate-200" strokeWidth="2" strokeLinecap="round" />
-        <path d="M68 16L58 28" className="stroke-slate-800 dark:stroke-slate-200" strokeWidth="2" strokeLinecap="round" />
+        <path d="M42 16L52 28" className="stroke-slate-800" strokeWidth="2" strokeLinecap="round" />
+        <path d="M68 16L58 28" className="stroke-slate-800" strokeWidth="2" strokeLinecap="round" />
         <circle cx="42" cy="16" r="2" className="fill-amber-400" />
         <circle cx="68" cy="16" r="2" className="fill-amber-400" />
 
         {/* Play Icon / Broadcast wave */}
         <path
           d="M51 44L63 50L51 56V44Z"
-          className="fill-[#2962D6] stroke-[#2962D6]"
+          className="fill-[#2962D6] stroke-[#2962D6] dark:fill-[#7eb5ff] dark:stroke-[#7eb5ff]"
           strokeWidth="1.5"
           strokeLinejoin="round"
         />
@@ -599,7 +599,7 @@ function EmptyChannelsState({ searching, tab }: { searching: boolean; tab: Tab }
   return (
     <div className="py-12 px-4 text-center flex flex-col items-center justify-center">
       <ChannelsDoodle />
-      <p className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+      <p className="text-base sm:text-lg font-bold text-slate-900">
         {searching
           ? 'No channels matched your search'
           : tab === 'owner'
@@ -608,7 +608,7 @@ function EmptyChannelsState({ searching, tab }: { searching: boolean; tab: Tab }
           ? "You aren't a staff member in any channels"
           : 'No channels yet'}
       </p>
-      <p className="mt-1 max-w-sm text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
+      <p className="mt-1 max-w-sm text-xs sm:text-sm font-medium text-slate-500 leading-relaxed">
         {searching
           ? 'Try searching with a different channel name or handle.'
           : 'A channel is where your content lives. Channel creation is invite-only — ask a platform admin to invite you.'}

@@ -26,10 +26,10 @@ import {
 
 function StatusBadge({ status }: { status: ReviewStatus }) {
   const map: Record<ReviewStatus, { badge: string; dot: string }> = {
-    OPEN: { badge: "bg-amber-50 text-amber-700 border-amber-200/80", dot: "bg-amber-500 animate-pulse" },
-    CHANGES_REQUESTED: { badge: "bg-orange-50 text-orange-700 border-orange-200/80", dot: "bg-orange-500" },
-    REJECTED: { badge: "bg-red-50 text-red-700 border-red-200/80", dot: "bg-red-500" },
-    COMPLETED: { badge: "bg-emerald-50 text-emerald-700 border-emerald-200/80", dot: "bg-emerald-500" },
+    OPEN: { badge: "bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/25", dot: "bg-amber-500 animate-pulse" },
+    CHANGES_REQUESTED: { badge: "bg-orange-50 text-orange-700 border-orange-200/80 dark:bg-orange-500/10 dark:text-orange-300 dark:border-orange-500/25", dot: "bg-orange-500" },
+    REJECTED: { badge: "bg-red-50 text-red-700 border-red-200/80 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/25", dot: "bg-red-500" },
+    COMPLETED: { badge: "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25", dot: "bg-emerald-500" },
     CANCELLED: { badge: "bg-slate-100 text-slate-500 border-slate-200/80", dot: "bg-slate-400" },
   };
   const config = map[status] || { badge: "bg-slate-100 text-slate-500 border-slate-200", dot: "bg-slate-400" };
@@ -149,7 +149,7 @@ export default function PlatformReviewsPage() {
       {/* Top Standard Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Status Segmented Tabs */}
-        <div className="flex items-center gap-1 overflow-x-auto rounded-2xl border border-slate-200/90 bg-white p-1 shadow-2xs">
+        <div className="flex items-center gap-1 overflow-x-auto rounded-2xl border border-slate-200/90 bg-surface p-1 shadow-2xs">
           {TABS.map((tab) => {
             const isActive = statusFilter === tab.id;
             return (
@@ -162,7 +162,7 @@ export default function PlatformReviewsPage() {
                 }}
                 className={`inline-flex items-center gap-2 whitespace-nowrap rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all ${
                   isActive
-                    ? "bg-[#14142b] text-white shadow-xs"
+                    ? "bg-ink text-on-ink shadow-xs"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 }`}
               >
@@ -193,7 +193,7 @@ export default function PlatformReviewsPage() {
                 setSearchQuery(e.target.value);
                 setPage(1);
               }}
-              className="w-full rounded-xl border border-slate-200/90 bg-white py-1.5 pl-8 pr-7 text-xs font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100 transition-all"
+              className="w-full rounded-xl border border-slate-200/90 bg-surface py-1.5 pl-8 pr-7 text-xs font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100 transition-all"
             />
             {searchQuery && (
               <button
@@ -210,7 +210,7 @@ export default function PlatformReviewsPage() {
             type="button"
             onClick={fetchReviews}
             title="Refresh reviews"
-            className="flex size-8 items-center justify-center rounded-xl border border-slate-200/90 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-800 shadow-2xs transition-colors"
+            className="flex size-8 items-center justify-center rounded-xl border border-slate-200/90 bg-surface text-slate-500 hover:bg-slate-50 hover:text-slate-800 shadow-2xs transition-colors"
           >
             <RefreshCw size={13} className={loading ? "animate-spin text-slate-800" : ""} />
           </button>
@@ -218,21 +218,21 @@ export default function PlatformReviewsPage() {
       </div>
 
       {loadError && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-medium text-rose-700">
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-medium text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
           {loadError}
         </div>
       )}
 
       {/* Main Table View */}
       {loading ? (
-        <div className="rounded-2xl border border-slate-200/80 bg-white py-20 text-center shadow-2xs">
+        <div className="rounded-2xl border border-slate-200/80 bg-surface py-20 text-center shadow-2xs">
           <div className="flex flex-col items-center justify-center gap-2.5">
             <div className="size-6 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
             <span className="text-xs font-medium text-slate-500">Loading reviews queue...</span>
           </div>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200/80 bg-white py-16 text-center shadow-2xs">
+        <div className="rounded-2xl border border-slate-200/80 bg-surface py-16 text-center shadow-2xs">
           <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
             <div className="flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
               <Inbox size={22} />
@@ -255,7 +255,7 @@ export default function PlatformReviewsPage() {
           </div>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
+        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-surface shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[960px] text-left border-collapse">
               <thead>
@@ -280,11 +280,11 @@ export default function PlatformReviewsPage() {
                       {/* Title Column */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3.5">
-                          <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 via-slate-50 to-indigo-100/70 text-indigo-600 overflow-hidden shrink-0 border border-indigo-200/50 shadow-2xs font-bold text-sm group-hover:scale-105 group-hover:border-indigo-300 transition-all">
-                            <BookOpen size={17} className="text-indigo-600" />
+                          <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 via-slate-50 to-indigo-100/70 text-indigo-600 overflow-hidden shrink-0 border border-indigo-200/50 shadow-2xs font-bold text-sm group-hover:scale-105 group-hover:border-indigo-300 transition-all dark:from-indigo-500/10 dark:to-indigo-500/15 dark:text-indigo-400 dark:border-indigo-500/25 dark:group-hover:border-indigo-500/40">
+                            <BookOpen size={17} className="text-indigo-600 dark:text-indigo-400" />
                           </div>
                           <div className="min-w-0 max-w-[280px]">
-                            <p className="truncate text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">
+                            <p className="truncate text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight dark:group-hover:text-indigo-400">
                               {item.title}
                             </p>
                             <p className="truncate text-[11px] text-slate-400 font-normal mt-0.5">
@@ -301,7 +301,7 @@ export default function PlatformReviewsPage() {
                             {item.contentType}
                           </span>
                           {item.submissionKind === "UPDATE" && item.status === "OPEN" && (
-                            <span className="inline-flex items-center gap-1 rounded-md bg-orange-50 border border-orange-200 px-1.5 py-0.5 text-[10px] font-bold text-orange-700">
+                            <span className="inline-flex items-center gap-1 rounded-md bg-orange-50 border border-orange-200 px-1.5 py-0.5 text-[10px] font-bold text-orange-700 dark:bg-orange-500/10 dark:border-orange-500/25 dark:text-orange-300">
                               <Sparkles size={10} /> Update
                             </span>
                           )}
@@ -342,7 +342,7 @@ export default function PlatformReviewsPage() {
                       <td className="py-4 px-6 text-right whitespace-nowrap">
                         <Link
                           href={detailHref(item)}
-                          className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#14142b] hover:bg-[#232735] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:scale-[1.02] active:scale-[0.98] transition-all"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-ink hover:bg-ink-hover px-3.5 py-1.5 text-xs font-semibold text-on-ink shadow-xs hover:scale-[1.02] active:scale-[0.98] transition-all"
                         >
                           <ClipboardCheck size={13} className="text-emerald-400" />
                           <span>Review</span>
@@ -360,7 +360,7 @@ export default function PlatformReviewsPage() {
 
       {/* Clean Footer Pagination */}
       {filtered.length > 0 && (
-        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white px-5 py-3 sm:flex-row sm:items-center sm:justify-between text-xs text-slate-500 shadow-2xs">
+        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-surface px-5 py-3 sm:flex-row sm:items-center sm:justify-between text-xs text-slate-500 shadow-2xs">
           <div>
             Showing <span className="font-semibold text-slate-800">{(page - 1) * pageSize + 1}</span>–
             <span className="font-semibold text-slate-800">
@@ -375,7 +375,7 @@ export default function PlatformReviewsPage() {
                 type="button"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-surface px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft size={13} />
                 <span>Prev</span>
@@ -389,7 +389,7 @@ export default function PlatformReviewsPage() {
                 type="button"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-surface px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <span>Next</span>
                 <ChevronRight size={13} />

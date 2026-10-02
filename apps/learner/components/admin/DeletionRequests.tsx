@@ -141,7 +141,7 @@ export function DeletionRequests() {
                 type="button"
                 onClick={() => setFilter('ALL')}
                 className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                  filter === 'ALL' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  filter === 'ALL' ? 'bg-surface text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 All
@@ -150,7 +150,7 @@ export function DeletionRequests() {
                 type="button"
                 onClick={() => setFilter('PERSONAL')}
                 className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                  filter === 'PERSONAL' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  filter === 'PERSONAL' ? 'bg-surface text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 Personal
@@ -159,7 +159,7 @@ export function DeletionRequests() {
                 type="button"
                 onClick={() => setFilter('ORGANIZATION')}
                 className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                  filter === 'ORGANIZATION' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  filter === 'ORGANIZATION' ? 'bg-surface text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 Organization
@@ -173,14 +173,14 @@ export function DeletionRequests() {
                 placeholder="Search requests..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white py-1.5 pl-8 pr-3 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100"
+                className="w-full rounded-xl border border-slate-200 bg-surface py-1.5 pl-8 pr-3 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100"
               />
             </div>
           </div>
         </div>
 
         {/* Requests Table */}
-        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
+        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-surface shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-left border-collapse">
               <thead>
@@ -207,7 +207,7 @@ export function DeletionRequests() {
                   <tr>
                     <td colSpan={6} className="py-14 text-center">
                       <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
-                        <div className="flex size-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 border border-rose-100">
+                        <div className="flex size-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 border border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/25">
                           <AlertTriangle size={20} />
                         </div>
                         <p className="text-sm font-bold text-slate-800">No deletion requests awaiting review</p>
@@ -220,14 +220,14 @@ export function DeletionRequests() {
                     <tr
                       key={req.id}
                       onClick={() => openReview(req)}
-                      className="group cursor-pointer hover:bg-rose-50/40 transition-all duration-150"
+                      className="group cursor-pointer hover:bg-rose-50/40 transition-all duration-150 dark:hover:bg-rose-500/10"
                     >
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3.5">
-                          <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-rose-50 via-slate-50 to-rose-100/70 text-rose-600 overflow-hidden shrink-0 border border-rose-200/50 shadow-2xs group-hover:scale-105 transition-transform font-bold text-sm">
+                          <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-rose-50 via-slate-50 to-rose-100/70 text-rose-600 overflow-hidden shrink-0 border border-rose-200/50 shadow-2xs group-hover:scale-105 transition-transform font-bold text-sm dark:from-rose-500/10 dark:to-rose-500/15 dark:text-rose-400 dark:border-rose-500/25">
                             {req.channelName ? req.channelName.charAt(0).toUpperCase() : 'C'}
                           </div>
-                          <span className="font-bold text-xs text-slate-900 group-hover:text-rose-600 transition-colors">
+                          <span className="font-bold text-xs text-slate-900 group-hover:text-rose-600 transition-colors dark:group-hover:text-rose-400">
                             {req.channelName}
                           </span>
                         </div>
@@ -236,8 +236,8 @@ export function DeletionRequests() {
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold border ${
                             req.isPersonal
-                              ? 'border-sky-200/80 bg-sky-50 text-sky-700'
-                              : 'border-purple-200/80 bg-purple-50 text-purple-700'
+                              ? 'border-sky-200/80 bg-sky-50 text-sky-700 dark:border-sky-500/25 dark:bg-sky-500/10 dark:text-sky-300'
+                              : 'border-purple-200/80 bg-purple-50 text-purple-700 dark:border-purple-500/25 dark:bg-purple-500/10 dark:text-purple-300'
                           }`}
                         >
                           {req.isPersonal ? <User size={11} className="text-sky-500" /> : <Building2 size={11} className="text-purple-500" />}
@@ -271,7 +271,7 @@ export function DeletionRequests() {
                           <button
                             type="button"
                             onClick={() => openReview(req)}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-[#14142b] hover:bg-[#232735] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:scale-[1.02] active:scale-[0.98] transition-all"
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-ink hover:bg-ink-hover px-3.5 py-1.5 text-xs font-semibold text-on-ink shadow-xs hover:scale-[1.02] active:scale-[0.98] transition-all"
                             title="Review request"
                           >
                             <Check size={12} className="text-emerald-400" strokeWidth={3} />
@@ -280,7 +280,7 @@ export function DeletionRequests() {
                           <button
                             type="button"
                             onClick={() => handleReview(req.id, 'REJECT')}
-                            className="inline-flex items-center gap-1 rounded-xl border border-rose-200/90 bg-white hover:bg-rose-50 hover:border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-600 shadow-2xs hover:scale-[1.02] active:scale-[0.98] transition-all"
+                            className="inline-flex items-center gap-1 rounded-xl border border-rose-200/90 bg-surface hover:bg-rose-50 hover:border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-600 shadow-2xs hover:scale-[1.02] active:scale-[0.98] transition-all dark:border-rose-500/25 dark:hover:bg-rose-500/10 dark:hover:border-rose-500/40 dark:text-rose-400"
                             title="Reject request"
                           >
                             <X size={12} strokeWidth={2.5} />
@@ -301,11 +301,11 @@ export function DeletionRequests() {
       <div className="space-y-4 pt-6 border-t border-slate-200">
         <div>
           <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <span className="flex size-7 items-center justify-center rounded-xl bg-amber-50 text-amber-600 border border-amber-200/60 shadow-2xs">
+            <span className="flex size-7 items-center justify-center rounded-xl bg-amber-50 text-amber-600 border border-amber-200/60 shadow-2xs dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/25">
               <Clock size={15} />
             </span>
             Channels in Deletion Pipeline
-            <span className="rounded-full bg-amber-50 text-amber-700 border border-amber-200/70 px-2 py-0.5 text-xs font-bold">
+            <span className="rounded-full bg-amber-50 text-amber-700 border border-amber-200/70 px-2 py-0.5 text-xs font-bold dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/25">
               {pipelineChannels.length}
             </span>
           </h3>
@@ -315,7 +315,7 @@ export function DeletionRequests() {
         </div>
 
         {/* Pipeline Table */}
-        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
+        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-surface shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-left border-collapse">
               <thead>
@@ -342,7 +342,7 @@ export function DeletionRequests() {
                         <div className="flex items-center gap-3">
                           <span className="font-bold text-xs text-slate-900">{channel.name}</span>
                           {channel.forcedSuspension && (
-                            <span className="inline-flex items-center rounded-md bg-rose-50 border border-rose-200 px-1.5 py-0.5 text-[10px] font-bold uppercase text-rose-700">
+                            <span className="inline-flex items-center rounded-md bg-rose-50 border border-rose-200 px-1.5 py-0.5 text-[10px] font-bold uppercase text-rose-700 dark:bg-rose-500/10 dark:border-rose-500/25 dark:text-rose-300">
                               Forced
                             </span>
                           )}
@@ -352,8 +352,8 @@ export function DeletionRequests() {
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold border ${
                             channel.isPersonal
-                              ? 'border-sky-200/80 bg-sky-50 text-sky-700'
-                              : 'border-purple-200/80 bg-purple-50 text-purple-700'
+                              ? 'border-sky-200/80 bg-sky-50 text-sky-700 dark:border-sky-500/25 dark:bg-sky-500/10 dark:text-sky-300'
+                              : 'border-purple-200/80 bg-purple-50 text-purple-700 dark:border-purple-500/25 dark:bg-purple-500/10 dark:text-purple-300'
                           }`}
                         >
                           {channel.isPersonal ? <User size={11} className="text-sky-500" /> : <Building2 size={11} className="text-purple-500" />}
@@ -370,9 +370,9 @@ export function DeletionRequests() {
                       </td>
                       <td className="py-4 px-4 whitespace-nowrap text-[11px]">
                         {channel.forcedSuspension ? (
-                          <span className="font-semibold text-rose-600">Unlisted immediately</span>
+                          <span className="font-semibold text-rose-600 dark:text-rose-400">Unlisted immediately</span>
                         ) : channel.contentUnlistDate ? (
-                          <span className="font-medium text-amber-700">
+                          <span className="font-medium text-amber-700 dark:text-amber-300">
                             Unlists on {new Date(channel.contentUnlistDate).toLocaleDateString()}
                           </span>
                         ) : (
@@ -393,7 +393,7 @@ export function DeletionRequests() {
                           <button
                             type="button"
                             onClick={() => openHardDeleteDialog(channel)}
-                            className="inline-flex items-center gap-1 rounded-lg border border-rose-300 bg-rose-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-rose-700 transition-colors shadow-xs"
+                            className="inline-flex items-center gap-1 rounded-lg border border-rose-300 bg-rose-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-rose-700 transition-colors shadow-xs dark:border-rose-500/40"
                             title="Force hard delete"
                           >
                             <Trash2 size={13} />
@@ -414,7 +414,7 @@ export function DeletionRequests() {
       <Dialog open={!!selectedRequest} onOpenChange={(open) => !open && setSelectedRequest(null)}>
         <DialogContent className="max-w-md p-6 sm:p-7">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-rose-700 flex items-center gap-2">
+            <DialogTitle className="text-lg font-bold text-rose-700 flex items-center gap-2 dark:text-rose-300">
               <AlertTriangle size={18} />
               Review Deletion Request
             </DialogTitle>
@@ -450,7 +450,7 @@ export function DeletionRequests() {
                 </div>
               </div>
 
-              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-rose-200 bg-rose-50/50 cursor-pointer">
+              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-rose-200 bg-rose-50/50 cursor-pointer dark:border-rose-500/25 dark:bg-rose-500/10">
                 <input
                   type="checkbox"
                   checked={approveForce}
@@ -458,7 +458,7 @@ export function DeletionRequests() {
                   className="mt-0.5 h-4 w-4 accent-rose-600 rounded"
                 />
                 <span className="text-xs text-slate-700">
-                  <span className="font-bold text-rose-700">Force immediate unlisting</span> — removes content immediately instead of waiting the 6-month grace period.
+                  <span className="font-bold text-rose-700 dark:text-rose-300">Force immediate unlisting</span> — removes content immediately instead of waiting the 6-month grace period.
                 </span>
               </label>
 
@@ -487,16 +487,16 @@ export function DeletionRequests() {
       <Dialog open={!!hardDeleteTarget} onOpenChange={(open) => !open && setHardDeleteTarget(null)}>
         <DialogContent className="max-w-md p-6 sm:p-7">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-rose-700 flex items-center gap-2">
+            <DialogTitle className="text-lg font-bold text-rose-700 flex items-center gap-2 dark:text-rose-300">
               <AlertTriangle size={18} /> Permanently Delete Channel
             </DialogTitle>
           </DialogHeader>
 
           {hardDeleteTarget && (
             <div className="space-y-4 mt-3">
-              <div className="space-y-1.5 p-3.5 rounded-xl border border-rose-200 bg-rose-50">
-                <p className="text-xs font-bold text-rose-800">Irreversible Action</p>
-                <ul className="text-xs text-rose-700 space-y-1 list-disc list-inside">
+              <div className="space-y-1.5 p-3.5 rounded-xl border border-rose-200 bg-rose-50 dark:border-rose-500/25 dark:bg-rose-500/10">
+                <p className="text-xs font-bold text-rose-800 dark:text-rose-200">Irreversible Action</p>
+                <ul className="text-xs text-rose-700 space-y-1 list-disc list-inside dark:text-rose-300">
                   <li>Every course, roadmap, and workshop is deleted immediately.</li>
                   <li>Learners already enrolled in content lose access permanently.</li>
                   <li>Staff, roles, and pending invitations are removed.</li>
@@ -524,7 +524,7 @@ export function DeletionRequests() {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-800" htmlFor="pipeline-hard-delete-confirm">
-                  Type <span className="font-mono text-rose-700 select-all">{hardDeleteTarget.name}</span> to confirm
+                  Type <span className="font-mono text-rose-700 select-all dark:text-rose-300">{hardDeleteTarget.name}</span> to confirm
                 </label>
                 <input
                   id="pipeline-hard-delete-confirm"
@@ -536,7 +536,7 @@ export function DeletionRequests() {
                 />
               </div>
 
-              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-rose-200 bg-rose-50/50 cursor-pointer">
+              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-rose-200 bg-rose-50/50 cursor-pointer dark:border-rose-500/25 dark:bg-rose-500/10">
                 <input
                   type="checkbox"
                   checked={hardDeleteAcknowledged}

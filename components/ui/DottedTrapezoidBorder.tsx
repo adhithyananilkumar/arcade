@@ -10,7 +10,7 @@ export interface DottedTrapezoidBorderProps {
 }
 
 export const DottedTrapezoidBorder: React.FC<DottedTrapezoidBorderProps> = ({
-  className = 'text-slate-400 dark:text-slate-500',
+  className = 'text-slate-400',
   strokeWidth = 2.5,
   dashArray = '6 5',
   speed = 1.2

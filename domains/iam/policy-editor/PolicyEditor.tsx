@@ -103,12 +103,12 @@ export function PolicyEditor({
   };
 
   return (
-    <div className="flex flex-col max-h-[90vh] w-full bg-white rounded-2xl overflow-hidden font-sans">
+    <div className="flex flex-col max-h-[90vh] w-full bg-surface rounded-2xl overflow-hidden font-sans">
 
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/70 shrink-0">
         <div>
-          <h2 className="text-lg font-bold text-[#14142b]">
+          <h2 className="text-lg font-bold text-ink">
             {mode === 'create' ? 'Create Policy' : 'Edit Policy'}
           </h2>
           <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5">
@@ -141,12 +141,12 @@ export function PolicyEditor({
                 placeholder="e.g. Content Operations Manager"
                 className={`w-full rounded-xl border px-4 py-2.5 text-sm font-medium outline-none transition-all ${
                   nameError
-                    ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/50'
-                    : 'border-slate-200 bg-slate-50/80 focus:border-[#14142b]/30 focus:bg-white focus:ring-2 focus:ring-slate-200'
+                    ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/50 dark:bg-rose-500/10'
+                    : 'border-slate-200 bg-slate-50/80 focus:border-ink/30 focus:bg-surface focus:ring-2 focus:ring-slate-200'
                 }`}
               />
               {nameError && (
-                <p className="mt-1 text-xs text-rose-600">Policy name is required.</p>
+                <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">Policy name is required.</p>
               )}
             </div>
             <div>
@@ -158,7 +158,7 @@ export function PolicyEditor({
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Briefly describe what this policy allows…"
                 rows={2}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-2.5 text-sm font-medium focus:border-[#14142b]/30 focus:bg-white focus:ring-2 focus:ring-slate-200 outline-none resize-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-2.5 text-sm font-medium focus:border-ink/30 focus:bg-surface focus:ring-2 focus:ring-slate-200 outline-none resize-none"
               />
             </div>
           </section>
@@ -170,7 +170,7 @@ export function PolicyEditor({
                 Permissions
               </h3>
               {selectedIds.length > 0 && (
-                <span className="text-xs font-semibold text-[#14142b] bg-slate-100 px-2 py-0.5 rounded-full ring-1 ring-inset ring-slate-200">
+                <span className="text-xs font-semibold text-ink bg-slate-100 px-2 py-0.5 rounded-full ring-1 ring-inset ring-slate-200">
                   {selectedIds.length} selected
                 </span>
               )}
@@ -181,9 +181,9 @@ export function PolicyEditor({
                 <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
               </div>
             ) : loadError ? (
-              <div className="flex flex-col items-center gap-2 text-center py-10 border border-dashed border-rose-200 bg-rose-50/40 rounded-xl">
+              <div className="flex flex-col items-center gap-2 text-center py-10 border border-dashed border-rose-200 bg-rose-50/40 rounded-xl dark:border-rose-500/25 dark:bg-rose-500/10">
                 <ShieldAlert size={20} className="text-rose-400" />
-                <p className="text-sm text-rose-600 font-medium">Couldn&apos;t load the permission catalog.</p>
+                <p className="text-sm text-rose-600 font-medium dark:text-rose-400">Couldn&apos;t load the permission catalog.</p>
                 <p className="text-xs text-rose-400">Close this dialog and try again.</p>
               </div>
             ) : allPermissions.length === 0 ? (
@@ -246,7 +246,7 @@ export function PolicyEditor({
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-[#14142b] rounded-xl hover:bg-[#232735] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-[0.98]"
+          className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-on-ink bg-ink rounded-xl hover:bg-ink-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-[0.98]"
         >
           {saving && <Loader2 size={14} className="animate-spin" />}
           {saving ? 'Saving…' : mode === 'edit' ? 'Update Policy' : 'Create Policy'}

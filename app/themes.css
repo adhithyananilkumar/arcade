@@ -1,0 +1,475 @@
+/*
+ * ------------------------------------------------------------------
+ * Arcade theme tokens
+ *
+ * One appearance is the combination of three attributes on <html>, written
+ * before first paint by the inline script in app/layout.tsx and kept in sync
+ * by apps/core/components/AppearanceController:
+ *
+ *   class="dark"              light or dark tone (also drives `dark:` variants)
+ *   data-contrast="high"      high-contrast ramp (either tone)
+ *   data-material="glass"     translucent surfaces over a wallpaper
+ *
+ * How the UI follows the theme
+ * ----------------------------
+ * The UI is written in Tailwind's neutral families (slate/gray/zinc/neutral/
+ * stone) plus a few semantic tokens (surface, ink, on-ink). Light mode uses
+ * Tailwind's own values untouched. Every other appearance re-points those
+ * families at one theme ramp (--n-*), so `text-slate-900` means "strongest
+ * text" and `bg-slate-50` means "subtle panel" in every theme without a
+ * single `dark:` override. That is why neutral `dark:` variants are NOT used
+ * in this codebase: they would flip a colour that has already been flipped.
+ *
+ * Coloured hues (indigo, emerald, amber…) keep their values; components add
+ * `dark:` variants for tints (see docs/design/theming.md).
+ * ------------------------------------------------------------------
+ */
+
+/* ── Semantic tokens: light, standard contrast (the default) ─────────── */
+:root {
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --ink: #14142b;
+  --ink-hover: #232735;
+  --on-ink: #ffffff;
+  --page: oklch(0.97 0.02 245);
+  --page-wash: linear-gradient(180deg, #e9eefb 0%, #f7f9fc 32%, #ffffff 70%);
+  --art-ground: #fbfcfe;
+  --art-ink: #14142b;
+  --art-paper: #ffffff;
+  --glass-a: 0.5;
+  --glass-blur: 22px;
+  --focus-ring: 0 0 0 3px rgba(32, 92, 168, 0.15);
+}
+
+/*
+ * Every non-default appearance routes the neutral families through the
+ * --n-* ramp. Declared once here; each appearance below only defines the ramp.
+ */
+:root.dark,
+:root[data-contrast="high"],
+:root[data-material="glass"] {
+  --color-slate-50: var(--n-50);
+  --color-slate-100: var(--n-100);
+  --color-slate-200: var(--n-200);
+  --color-slate-300: var(--n-300);
+  --color-slate-400: var(--n-400);
+  --color-slate-500: var(--n-500);
+  --color-slate-600: var(--n-600);
+  --color-slate-700: var(--n-700);
+  --color-slate-800: var(--n-800);
+  --color-slate-900: var(--n-900);
+  --color-slate-950: var(--n-950);
+  --color-gray-50: var(--n-50);
+  --color-gray-100: var(--n-100);
+  --color-gray-200: var(--n-200);
+  --color-gray-300: var(--n-300);
+  --color-gray-400: var(--n-400);
+  --color-gray-500: var(--n-500);
+  --color-gray-600: var(--n-600);
+  --color-gray-700: var(--n-700);
+  --color-gray-800: var(--n-800);
+  --color-gray-900: var(--n-900);
+  --color-gray-950: var(--n-950);
+  --color-zinc-50: var(--n-50);
+  --color-zinc-100: var(--n-100);
+  --color-zinc-200: var(--n-200);
+  --color-zinc-300: var(--n-300);
+  --color-zinc-400: var(--n-400);
+  --color-zinc-500: var(--n-500);
+  --color-zinc-600: var(--n-600);
+  --color-zinc-700: var(--n-700);
+  --color-zinc-800: var(--n-800);
+  --color-zinc-900: var(--n-900);
+  --color-zinc-950: var(--n-950);
+  --color-neutral-50: var(--n-50);
+  --color-neutral-100: var(--n-100);
+  --color-neutral-200: var(--n-200);
+  --color-neutral-300: var(--n-300);
+  --color-neutral-400: var(--n-400);
+  --color-neutral-500: var(--n-500);
+  --color-neutral-600: var(--n-600);
+  --color-neutral-700: var(--n-700);
+  --color-neutral-800: var(--n-800);
+  --color-neutral-900: var(--n-900);
+  --color-neutral-950: var(--n-950);
+  --color-stone-50: var(--n-50);
+  --color-stone-100: var(--n-100);
+  --color-stone-200: var(--n-200);
+  --color-stone-300: var(--n-300);
+  --color-stone-400: var(--n-400);
+  --color-stone-500: var(--n-500);
+  --color-stone-600: var(--n-600);
+  --color-stone-700: var(--n-700);
+  --color-stone-800: var(--n-800);
+  --color-stone-900: var(--n-900);
+  --color-stone-950: var(--n-950);
+
+  /* shadcn primitives follow the same ramp */
+  --background: var(--page);
+  --foreground: var(--n-900);
+  --card: var(--surface);
+  --card-foreground: var(--n-900);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--n-900);
+  --primary: var(--ink);
+  --primary-foreground: var(--on-ink);
+  --secondary: var(--n-100);
+  --secondary-foreground: var(--n-900);
+  --muted: var(--n-100);
+  --muted-foreground: var(--n-500);
+  --accent: var(--n-100);
+  --accent-foreground: var(--n-900);
+  --border: var(--n-200);
+  --input: var(--n-200);
+  --ring: var(--n-400);
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--n-900);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: var(--on-ink);
+  --sidebar-accent: var(--n-100);
+  --sidebar-accent-foreground: var(--n-900);
+  --sidebar-border: var(--n-200);
+  --sidebar-ring: var(--n-400);
+
+  /*
+   * Theme switches for inline styles: `var(--theme-surface, #ffffff)`. Undefined
+   * in light, so the inline fallback (the original light value) renders there
+   * untouched; every other appearance supplies its own.
+   */
+  --theme-surface: var(--surface);
+  --theme-ink: var(--ink);
+  --theme-on-ink: var(--on-ink);
+  --theme-wash: var(--page-wash);
+  --theme-n-50: var(--n-50);
+  --theme-n-100: var(--n-100);
+  --theme-n-200: var(--n-200);
+  --theme-n-300: var(--n-300);
+  --theme-n-400: var(--n-400);
+  --theme-n-500: var(--n-500);
+  --theme-n-600: var(--n-600);
+  --theme-n-700: var(--n-700);
+  --theme-n-800: var(--n-800);
+  --theme-n-900: var(--n-900);
+  --theme-n-950: var(--n-950);
+
+  /* legacy brand tokens */
+  --surface-hover: var(--n-100);
+  --border-strong: var(--n-300);
+  --text-primary: var(--n-900);
+  --text-secondary: var(--n-600);
+  --text-muted: var(--n-400);
+  --paper: var(--page);
+  --mist: var(--n-100);
+  --line: var(--n-200);
+  --subtle: var(--n-500);
+}
+
+/* ── Light · high contrast ───────────────────────────────────────────── */
+:root[data-contrast="high"]:not(.dark) {
+  --page: #ffffff;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --ink: #000000;
+  --ink-hover: #1f1f29;
+  --on-ink: #ffffff;
+  --page-wash: #ffffff;
+  --art-ground: #ffffff;
+  --art-ink: #000000;
+  --n-50: oklch(0.975 0.003 255);
+  --n-100: oklch(0.945 0.006 255);
+  --n-200: oklch(0.52 0.02 258);
+  --n-300: oklch(0.45 0.02 258);
+  --n-400: oklch(0.38 0.025 258);
+  --n-500: oklch(0.33 0.025 258);
+  --n-600: oklch(0.27 0.025 258);
+  --n-700: oklch(0.2 0.02 258);
+  --n-800: oklch(0.15 0.015 258);
+  --n-900: oklch(0.1 0.01 258);
+  --n-950: oklch(0 0 0);
+  --focus-ring: 0 0 0 3px #000000;
+  --arcade-blue: #0b3d82;
+}
+
+/* ── Dark · standard ("Night") ───────────────────────────────────────── */
+:root.dark {
+  color-scheme: dark;
+  /* minimum lightness for deep coloured inline text (see theme-codemod-styles) */
+  --fg-lift: 0.74;
+  --page: oklch(0.155 0.012 262);
+  --surface: oklch(0.195 0.013 262);
+  --surface-raised: oklch(0.225 0.014 262);
+  --ink: oklch(0.94 0.006 262);
+  --ink-hover: oklch(0.86 0.01 262);
+  --on-ink: oklch(0.17 0.015 262);
+  --page-wash: linear-gradient(180deg, oklch(0.2 0.03 262) 0%, oklch(0.165 0.015 262) 38%, oklch(0.155 0.012 262) 72%);
+  --art-ground: oklch(0.205 0.014 262);
+  --art-ink: oklch(0.9 0.01 262);
+  --art-paper: oklch(0.24 0.014 262);
+  --n-50: oklch(0.215 0.013 262);
+  --n-100: oklch(0.245 0.014 262);
+  --n-200: oklch(0.295 0.015 262);
+  --n-300: oklch(0.375 0.016 262);
+  --n-400: oklch(0.585 0.018 262);
+  --n-500: oklch(0.665 0.018 262);
+  --n-600: oklch(0.745 0.016 262);
+  --n-700: oklch(0.825 0.012 262);
+  --n-800: oklch(0.885 0.01 262);
+  --n-900: oklch(0.94 0.006 262);
+  --n-950: oklch(0.975 0.004 262);
+  --destructive: oklch(0.704 0.191 22.216);
+  --focus-ring: 0 0 0 3px rgba(129, 161, 255, 0.35);
+
+  --arcade-blue: #6b9cf0;
+  --arcade-blue-hover: #8ab2f5;
+  --arcade-blue-light: oklch(0.28 0.05 262);
+  --success: #34d399;
+  --warning: #fbbf24;
+  --destructive-hex: #f87171;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Dark · high contrast ────────────────────────────────────────────── */
+:root.dark[data-contrast="high"] {
+  --page: oklch(0.08 0 0);
+  --surface: oklch(0.13 0 0);
+  --surface-raised: oklch(0.16 0 0);
+  --ink: #ffffff;
+  --ink-hover: oklch(0.88 0 0);
+  --on-ink: #000000;
+  --page-wash: oklch(0.08 0 0);
+  --art-ground: oklch(0.13 0 0);
+  --art-ink: #ffffff;
+  --art-paper: oklch(0.16 0 0);
+  --n-50: oklch(0.16 0 0);
+  --n-100: oklch(0.2 0 0);
+  --n-200: oklch(0.56 0 0);
+  --n-300: oklch(0.66 0 0);
+  --n-400: oklch(0.84 0 0);
+  --n-500: oklch(0.88 0 0);
+  --n-600: oklch(0.92 0 0);
+  --n-700: oklch(0.96 0 0);
+  --n-800: oklch(0.98 0 0);
+  --n-900: oklch(1 0 0);
+  --n-950: oklch(1 0 0);
+  --focus-ring: 0 0 0 3px #ffd84d;
+  --arcade-blue: #9cc2ff;
+}
+
+/* ── Glass · light ───────────────────────────────────────────────────── */
+:root[data-material="glass"] {
+  --page: transparent;
+  --page-wash: transparent;
+  --surface: oklch(1 0 0 / var(--glass-a));
+  --surface-raised: oklch(1 0 0 / calc(var(--glass-a) + 0.2));
+  --n-50: oklch(0.985 0.003 248 / calc(var(--glass-a) * 0.6));
+  --n-100: oklch(0.955 0.008 250 / calc(var(--glass-a) * 0.8));
+  --n-200: oklch(0.25 0.03 262 / 0.12);
+  --n-300: oklch(0.25 0.03 262 / 0.22);
+  --n-400: oklch(0.5 0.035 258);
+  --n-500: oklch(0.44 0.04 258);
+  --n-600: oklch(0.38 0.04 258);
+  --n-700: oklch(0.31 0.04 258);
+  --n-800: oklch(0.25 0.04 260);
+  --n-900: oklch(0.19 0.04 264);
+  --n-950: oklch(0.13 0.04 264);
+  --wallpaper-scrim: oklch(1 0 0 / 0.08);
+}
+
+/* ── Glass · dark ────────────────────────────────────────────────────── */
+:root.dark[data-material="glass"] {
+  --surface: oklch(0.17 0.015 262 / var(--glass-a));
+  --surface-raised: oklch(0.2 0.015 262 / calc(var(--glass-a) + 0.22));
+  --n-50: oklch(0.22 0.014 262 / calc(var(--glass-a) * 0.6));
+  --n-100: oklch(0.27 0.015 262 / calc(var(--glass-a) * 0.8));
+  --n-200: oklch(1 0 0 / 0.12);
+  --n-300: oklch(1 0 0 / 0.2);
+  --n-400: oklch(0.7 0.016 262);
+  --n-500: oklch(0.76 0.016 262);
+  --n-600: oklch(0.82 0.014 262);
+  --n-700: oklch(0.87 0.012 262);
+  --n-800: oklch(0.92 0.008 262);
+  --n-900: oklch(0.96 0.005 262);
+  --n-950: oklch(0.985 0.003 262);
+  --wallpaper-scrim: oklch(0.12 0.02 262 / 0.28);
+}
+
+/* High contrast always wins over translucency: glass stays nearly opaque. */
+:root[data-material="glass"][data-contrast="high"] {
+  --glass-a: 0.9;
+}
+
+/* ── Generated content art (shared/design-system/art) ────────────────── */
+/*
+ * Each artwork exposes its palette as --p-paper / --p-soft / --p-main and
+ * draws with --a-*. Light uses the palette verbatim. Dark derives the same
+ * picture on a dark ground tinted by the palette's hue, with light line work,
+ * so a card's art never reads as a light block on a dark page.
+ */
+.content-art {
+  --a-ink: #14142b;
+  --a-white: #ffffff;
+  --a-paper: var(--p-paper, #f7f8fc);
+  --a-soft: var(--p-soft, #e2e8f0);
+  --a-blank: #fbfbfd;
+}
+
+:root.dark .content-art {
+  --a-ink: var(--art-ink);
+  --a-white: var(--art-paper);
+  --a-paper: color-mix(in oklab, var(--p-main, #4c6fff) 13%, var(--art-ground));
+  --a-soft: color-mix(in oklab, var(--p-main, #4c6fff) 30%, var(--art-ground));
+  --a-blank: var(--art-ground);
+}
+
+:root.dark[data-contrast="high"] .content-art {
+  --a-paper: color-mix(in oklab, var(--p-main, #4c6fff) 18%, #000000);
+  --a-soft: color-mix(in oklab, var(--p-main, #4c6fff) 42%, #000000);
+}
+
+/* ── Wallpaper ───────────────────────────────────────────────────────── */
+/*
+ * The wallpaper is painted on a fixed layer behind the app (see
+ * AppearanceController). The image comes from --wallpaper-image (set inline
+ * on <html> for an uploaded image) or from a built-in preset below.
+ */
+.arcade-wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--wallpaper-color, #6b7fa8);
+  background-image: var(--wallpaper-image, none);
+  background-size: cover;
+  background-position: center;
+  transition: background-image 0.4s ease;
+}
+
+.arcade-wallpaper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--wallpaper-scrim, transparent);
+}
+
+:root:not([data-material="glass"]) .arcade-wallpaper {
+  display: none;
+}
+
+/* Built-in presets: pure CSS, so glass works before any admin uploads an image. */
+:root[data-wallpaper="aurora"] {
+  --wallpaper-color: #1b2a4a;
+  --wallpaper-image:
+    radial-gradient(60% 70% at 15% 20%, #3fd5c3 0%, transparent 60%),
+    radial-gradient(55% 60% at 85% 15%, #7a5af8 0%, transparent 60%),
+    radial-gradient(70% 70% at 70% 90%, #2962d6 0%, transparent 62%),
+    linear-gradient(160deg, #10203f, #1d2f5c);
+}
+:root[data-wallpaper="dawn"] {
+  --wallpaper-color: #f6d6c8;
+  --wallpaper-image:
+    radial-gradient(60% 60% at 10% 10%, #ffd6a5 0%, transparent 60%),
+    radial-gradient(60% 70% at 90% 20%, #fbb1c8 0%, transparent 62%),
+    radial-gradient(70% 70% at 50% 100%, #a0c4ff 0%, transparent 65%),
+    linear-gradient(180deg, #fff1e6, #e9eefb);
+}
+:root[data-wallpaper="lagoon"] {
+  --wallpaper-color: #cdeee8;
+  --wallpaper-image:
+    radial-gradient(55% 60% at 20% 80%, #8be0d0 0%, transparent 62%),
+    radial-gradient(60% 60% at 85% 25%, #9ec5ff 0%, transparent 60%),
+    radial-gradient(50% 50% at 50% 40%, #e0fbf6 0%, transparent 70%),
+    linear-gradient(180deg, #eaf8f6, #dfeafc);
+}
+:root[data-wallpaper="ember"] {
+  --wallpaper-color: #2a1420;
+  --wallpaper-image:
+    radial-gradient(60% 60% at 80% 20%, #ff6b4a 0%, transparent 60%),
+    radial-gradient(60% 70% at 15% 85%, #b0306a 0%, transparent 62%),
+    radial-gradient(45% 45% at 45% 45%, #f2b23c55 0%, transparent 70%),
+    linear-gradient(200deg, #2a1420, #170d1f);
+}
+:root[data-wallpaper="graphite"] {
+  --wallpaper-color: #15171d;
+  --wallpaper-image:
+    radial-gradient(70% 60% at 20% 0%, #3a4256 0%, transparent 60%),
+    radial-gradient(60% 60% at 100% 100%, #2b3140 0%, transparent 60%),
+    linear-gradient(180deg, #1a1d25, #0f1115);
+}
+:root[data-wallpaper="meadow"] {
+  --wallpaper-color: #dff3e4;
+  --wallpaper-image:
+    radial-gradient(60% 60% at 15% 15%, #c7f2a4 0%, transparent 60%),
+    radial-gradient(55% 60% at 90% 30%, #9be7c4 0%, transparent 60%),
+    radial-gradient(70% 60% at 60% 100%, #fff3b0 0%, transparent 65%),
+    linear-gradient(180deg, #f3fbef, #e3f5ee);
+}
+
+/* ── Glass surfaces ──────────────────────────────────────────────────── */
+/*
+ * Surfaces are translucent through their tokens; the frost comes from a
+ * backdrop blur on the surface classes themselves. Opacity-modified variants
+ * (`bg-surface/80`) are matched at a class boundary so `hover:bg-surface`
+ * does not pick up a permanent blur.
+ */
+:root[data-material="glass"] :is(
+  .bg-surface, .bg-card, .bg-popover, .bg-sidebar,
+  [class^="bg-surface/"], [class*=" bg-surface/"],
+  .bg-slate-50, .bg-gray-50, .bg-zinc-50, .bg-neutral-50
+) {
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(165%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(165%);
+}
+
+:root[data-material="glass"] :is(.bg-surface, .bg-card, .bg-popover, [class^="bg-surface/"], [class*=" bg-surface/"]) {
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.35), var(--tw-shadow, 0 0 #0000);
+}
+
+:root.dark[data-material="glass"] :is(.bg-surface, .bg-card, .bg-popover, [class^="bg-surface/"], [class*=" bg-surface/"]) {
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.08), var(--tw-shadow, 0 0 #0000);
+}
+
+/* Respect the OS "reduce transparency" preference: glass becomes near-solid. */
+@media (prefers-reduced-transparency: reduce) {
+  :root[data-material="glass"] {
+    --glass-a: 0.94;
+  }
+  :root[data-material="glass"] :is(.bg-surface, .bg-card, .bg-popover, .bg-sidebar, .bg-slate-50, .bg-gray-50, .bg-zinc-50, .bg-neutral-50) {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* ── High contrast extras ────────────────────────────────────────────── */
+:root[data-contrast="high"] :focus-visible {
+  outline: 3px solid var(--n-900) !important;
+  outline-offset: 2px;
+}
+
+:root.dark[data-contrast="high"] :focus-visible {
+  outline-color: #ffd84d !important;
+}
+
+:root[data-contrast="high"] a:not([class*="no-underline"]):hover {
+  text-decoration: underline;
+}
+
+/* Theme switches cross-fade instead of snapping. Added only for the switch. */
+:root.theme-transition,
+:root.theme-transition *,
+:root.theme-transition *::before,
+:root.theme-transition *::after {
+  transition:
+    background-color 0.28s ease,
+    border-color 0.28s ease,
+    color 0.2s ease,
+    fill 0.2s ease,
+    stroke 0.2s ease !important;
+  transition-delay: 0s !important;
+}
+
+::selection {
+  background: color-mix(in oklab, #4c6fff 28%, transparent);
+}

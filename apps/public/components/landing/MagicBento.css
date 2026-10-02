@@ -6,7 +6,7 @@
   --purple-glow: rgba(132, 0, 255, 0.2);
   --purple-border: rgba(132, 0, 255, 0.8);
   --border-color: #2b3054;
-  --background-dark: #0d0e1c;
+  --background-dark: var(--theme-ink, #0d0e1c);
   color-scheme: light dark;
 }
 
@@ -218,20 +218,20 @@
 
 /* Light themed cards overrides */
 .magic-bento-card--light {
-  color: #1e293b;
-  border-color: #cbd5e1;
+  color: var(--theme-ink, #1e293b);
+  border-color: var(--theme-n-300, #cbd5e1);
 }
 
 .magic-bento-card--light .magic-bento-card__title {
-  color: #0f172a;
+  color: var(--theme-ink, #0f172a);
 }
 
 .magic-bento-card--light .magic-bento-card__description {
-  color: #475569;
+  color: var(--theme-n-600, #475569);
   opacity: 0.85;
 }
 
 .magic-bento-card--light .magic-bento-card__label {
-  color: #64748b;
+  color: var(--theme-n-500, #64748b);
   font-weight: 500;
 }

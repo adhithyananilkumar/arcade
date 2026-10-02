@@ -206,9 +206,9 @@ function DockLabel({ children, className, ...rest }: DockLabelProps) {
           className={cn(
             // Glassmorphic tooltip
             'absolute -top-8 left-1/2 w-fit whitespace-nowrap rounded-lg px-2.5 py-1',
-            'bg-white/75 dark:bg-neutral-900/75 backdrop-blur-md',
-            'border border-white/50 dark:border-white/[0.08]',
-            'text-[11px] font-medium text-neutral-700 dark:text-neutral-200',
+            'bg-surface/75 backdrop-blur-md',
+            'border border-white/50',
+            'text-[11px] font-medium text-neutral-700',
             'shadow-[0_2px_8px_rgba(0,0,0,0.08)]',
             className
           )}

@@ -108,7 +108,7 @@ export function PostCreatorDialog({ isOpen, onClose, editPost }: Props) {
               width: 600,
               maxWidth: '95vw',
               maxHeight: '90vh',
-              backgroundColor: '#fff',
+              backgroundColor: 'var(--theme-surface, #fff)',
               borderRadius: 'var(--radius-lg)',
               boxShadow: 'var(--shadow-md)',
               zIndex: 101,

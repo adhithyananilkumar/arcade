@@ -879,7 +879,7 @@ function CategoryHeaderIllustration({ category, activeTab }: { category: string;
 
 function WebinarCardHeader({ title, status, duration, category }: { title: string; status: string; duration: string; category: string }) {
   return (
-    <div style={{ position: "relative", width: "100%", height: "150px", overflow: "hidden", background: "#FAF8F5", borderBottom: "2px solid #1A1A1A" }}>
+    <div style={{ position: "relative", width: "100%", height: "150px", overflow: "hidden", background: "var(--theme-n-50, #FAF8F5)", borderBottom: "2px solid var(--theme-ink, #1A1A1A)" }}>
       {/* Blueprint grid background */}
       <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 320 150">
         <defs>
@@ -897,8 +897,8 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
           <line x1="260" y1="35" x2="160" y2="75" stroke="#4B6189" strokeWidth="1.5" />
           <line x1="80" y1="115" x2="160" y2="75" stroke="#4B6189" strokeWidth="1.5" />
           <line x1="240" y1="115" x2="160" y2="75" stroke="#4B6189" strokeWidth="1.5" />
-          <line x1="60" y1="35" x2="30" y2="75" stroke="#1A1A1A" strokeWidth="1" strokeDasharray="2 2" />
-          <line x1="260" y1="35" x2="290" y2="75" stroke="#1A1A1A" strokeWidth="1" strokeDasharray="2 2" />
+          <line x1="60" y1="35" x2="30" y2="75" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="1" strokeDasharray="2 2" />
+          <line x1="260" y1="35" x2="290" y2="75" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="1" strokeDasharray="2 2" />
 
           {/* Dotted concentric outer ring */}
           <circle cx="160" cy="75" r="32" stroke="#4B6189" strokeWidth="1.5" strokeDasharray="3 3" fill="none" />
@@ -906,10 +906,10 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
           <circle cx="160" cy="75" r="4" fill="#FFFFFF" />
 
           {/* Nodes */}
-          <circle cx="60" cy="35" r="6" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2" />
-          <circle cx="260" cy="35" r="6" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2" />
-          <circle cx="80" cy="115" r="6" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2" />
-          <circle cx="240" cy="115" r="6" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2" />
+          <circle cx="60" cy="35" r="6" fill="#FFFFFF" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="2" />
+          <circle cx="260" cy="35" r="6" fill="#FFFFFF" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="2" />
+          <circle cx="80" cy="115" r="6" fill="#FFFFFF" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="2" />
+          <circle cx="240" cy="115" r="6" fill="#FFFFFF" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="2" />
           <circle cx="30" cy="75" r="4" fill="#FFFFFF" stroke="#4B6189" strokeWidth="1.5" />
           <circle cx="290" cy="75" r="4" fill="#FFFFFF" stroke="#4B6189" strokeWidth="1.5" />
         </svg>
@@ -918,15 +918,15 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
       {title.includes("React & Next.js") && (
         <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
           <g transform="translate(100, 75)">
-            <path d="M -35,15 A 35,35 0 0,1 35,15" stroke="#1A1A1A" strokeWidth="3" strokeLinecap="round" fill="none" />
+            <path d="M -35,15 A 35,35 0 0,1 35,15" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="3" strokeLinecap="round" fill="none" />
             <path d="M -35,15 A 35,35 0 0,1 15,-30" stroke="#4B6189" strokeWidth="4" strokeLinecap="round" fill="none" />
-            <line x1="0" y1="10" x2="22" y2="-20" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" />
-            <circle cx="0" cy="10" r="4" fill="#4B6189" stroke="#1A1A1A" strokeWidth="1.5" />
+            <line x1="0" y1="10" x2="22" y2="-20" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="2.5" strokeLinecap="round" />
+            <circle cx="0" cy="10" r="4" fill="#4B6189" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="1.5" />
           </g>
           <g transform="translate(220, 75)">
             <ellipse cx="0" cy="0" rx="36" ry="13" stroke="#4B6189" strokeWidth="2" fill="none" transform="rotate(30)" />
-            <ellipse cx="0" cy="0" rx="36" ry="13" stroke="#1A1A1A" strokeWidth="1.5" strokeDasharray="3 3" fill="none" transform="rotate(-30)" />
-            <circle cx="0" cy="0" r="6" fill="#4B6189" stroke="#1A1A1A" strokeWidth="1.5" />
+            <ellipse cx="0" cy="0" rx="36" ry="13" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="1.5" strokeDasharray="3 3" fill="none" transform="rotate(-30)" />
+            <circle cx="0" cy="0" r="6" fill="#4B6189" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="1.5" />
           </g>
         </svg>
       )}
@@ -939,31 +939,31 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
 
           <g transform="translate(160, 85)">
             {/* Outline shield */}
-            <path d="M-18,-15 L18,-15 V5 C18,17 0,27 0,31 C0,27 -18,17 -18,5 Z" fill="none" stroke="#1A1A1A" strokeWidth="2.5" />
+            <path d="M-18,-15 L18,-15 V5 C18,17 0,27 0,31 C0,27 -18,17 -18,5 Z" fill="none" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="2.5" />
             <path d="M-12,-10 L12,-10 V5 C12,14 0,22 0,25 C0,22 -12,14 -12,5 Z" fill="none" stroke="#4B6189" strokeWidth="1.5" />
-            <circle cx="0" cy="-2" r="3.5" fill="#1A1A1A" />
-            <polygon points="-2.5,-2 2.5,-2 3.5,10 -3.5,10" fill="#1A1A1A" />
+            <circle cx="0" cy="-2" r="3.5" fill="var(--theme-ink, #1A1A1A)" />
+            <polygon points="-2.5,-2 2.5,-2 3.5,10 -3.5,10" fill="var(--theme-ink, #1A1A1A)" />
           </g>
-          <text x="160" y="132" fill="#1A1A1A" fontSize="9" fontFamily="monospace" fontWeight="800" textAnchor="middle" letterSpacing="0.08em">SECURE LAYER ACTIVE</text>
+          <text x="160" y="132" fill="var(--theme-ink, #1A1A1A)" fontSize="9" fontFamily="monospace" fontWeight="800" textAnchor="middle" letterSpacing="0.08em">SECURE LAYER ACTIVE</text>
         </svg>
       )}
 
       {title.includes("Cloud Computing") && (
         <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
           <g transform="translate(60, 40)">
-            <rect x="0" y="0" width="48" height="68" rx="6" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2" />
+            <rect x="0" y="0" width="48" height="68" rx="6" fill="#FFFFFF" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="2" />
             <rect x="5" y="7" width="38" height="12" rx="2.5" fill="none" stroke="#4B6189" strokeWidth="1.5" />
-            <circle cx="12" cy="13" r="2" fill="#1A1A1A" />
+            <circle cx="12" cy="13" r="2" fill="var(--theme-ink, #1A1A1A)" />
             <rect x="5" y="27" width="38" height="12" rx="2.5" fill="none" stroke="#4B6189" strokeWidth="1.5" />
-            <circle cx="12" cy="33" r="2" fill="#1A1A1A" />
+            <circle cx="12" cy="33" r="2" fill="var(--theme-ink, #1A1A1A)" />
             <rect x="5" y="47" width="38" height="12" rx="2.5" fill="none" stroke="#4B6189" strokeWidth="1.5" />
-            <circle cx="12" cy="53" r="2" fill="#1A1A1A" />
+            <circle cx="12" cy="53" r="2" fill="var(--theme-ink, #1A1A1A)" />
           </g>
 
-          <path d="M 125,70 Q 140,60 155,70" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" />
-          <polygon points="155,70 149,66 153,74" fill="#1A1A1A" />
-          <path d="M 155,80 Q 140,90 125,80" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" />
-          <polygon points="125,80 131,84 127,76" fill="#1A1A1A" />
+          <path d="M 125,70 Q 140,60 155,70" fill="none" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="1.5" strokeLinecap="round" />
+          <polygon points="155,70 149,66 153,74" fill="var(--theme-ink, #1A1A1A)" />
+          <path d="M 155,80 Q 140,90 125,80" fill="none" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="1.5" strokeLinecap="round" />
+          <polygon points="125,80 131,84 127,76" fill="var(--theme-ink, #1A1A1A)" />
 
           <g transform="translate(195, 45)">
             <path d="M 10,35 A 11,11 0 0,1 18,16 A 17,17 0 0,1 48,13 A 13,13 0 0,1 60,35 Z" fill="none" stroke="#4B6189" strokeWidth="2.5" />
@@ -975,17 +975,17 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
       {title.includes("Product Management") && (
         <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
           <g transform="translate(60, 45)">
-            <rect x="0" y="0" width="18" height="18" rx="1.5" fill="none" stroke="#1A1A1A" strokeWidth="2" transform="rotate(-6, 0, 0)" />
+            <rect x="0" y="0" width="18" height="18" rx="1.5" fill="none" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="2" transform="rotate(-6, 0, 0)" />
             <line x1="3" y1="5" x2="15" y2="5" stroke="#4B6189" strokeWidth="1.5" transform="rotate(-6, 0, 0)" />
-            <rect x="25" y="2" width="18" height="18" rx="1.5" fill="none" stroke="#1A1A1A" strokeWidth="2" transform="rotate(8, 25, 2)" />
+            <rect x="25" y="2" width="18" height="18" rx="1.5" fill="none" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="2" transform="rotate(8, 25, 2)" />
             <line x1="28" y1="7" x2="40" y2="7" stroke="#4B6189" strokeWidth="1.5" transform="rotate(8, 25, 2)" />
           </g>
           <g transform="translate(210, 75)">
             <circle cx="0" cy="0" r="28" fill="none" stroke="#4B6189" strokeWidth="1.5" strokeDasharray="3 3" />
-            <circle cx="0" cy="0" r="18" fill="none" stroke="#1A1A1A" strokeWidth="2" />
+            <circle cx="0" cy="0" r="18" fill="none" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="2" />
             <circle cx="0" cy="0" r="8" fill="#4B6189" />
-            <line x1="28" y1="-28" x2="5" y2="-5" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" />
-            <polygon points="3,-3 5,-10 10,-5" fill="#1A1A1A" />
+            <line x1="28" y1="-28" x2="5" y2="-5" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="2.5" strokeLinecap="round" />
+            <polygon points="3,-3 5,-10 10,-5" fill="var(--theme-ink, #1A1A1A)" />
           </g>
         </svg>
       )}
@@ -993,18 +993,18 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
       {title.includes("Structural Analysis") && (
         <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
           <g transform="translate(0, 10)">
-            <line x1="50" y1="95" x2="270" y2="95" stroke="#1A1A1A" strokeWidth="2" />
+            <line x1="50" y1="95" x2="270" y2="95" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="2" />
             <polyline points="50,95 105,35 160,95 215,35 270,95" fill="none" stroke="#4B6189" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-            <line x1="105" y1="35" x2="105" y2="95" stroke="#1A1A1A" strokeWidth="1.5" strokeDasharray="2 2" />
-            <line x1="160" y1="35" x2="160" y2="95" stroke="#1A1A1A" strokeWidth="1.5" strokeDasharray="2 2" />
-            <line x1="215" y1="35" x2="215" y2="95" stroke="#1A1A1A" strokeWidth="1.5" strokeDasharray="2 2" />
+            <line x1="105" y1="35" x2="105" y2="95" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="1.5" strokeDasharray="2 2" />
+            <line x1="160" y1="35" x2="160" y2="95" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="1.5" strokeDasharray="2 2" />
+            <line x1="215" y1="35" x2="215" y2="95" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="1.5" strokeDasharray="2 2" />
 
             {/* Force load arrows */}
-            <line x1="105" y1="8" x2="105" y2="28" stroke="#1A1A1A" strokeWidth="2.5" />
-            <polygon points="105,31 101,24 109,24" fill="#1A1A1A" />
+            <line x1="105" y1="8" x2="105" y2="28" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="2.5" />
+            <polygon points="105,31 101,24 109,24" fill="var(--theme-ink, #1A1A1A)" />
 
-            <line x1="215" y1="8" x2="215" y2="28" stroke="#1A1A1A" strokeWidth="2.5" />
-            <polygon points="215,31 211,24 219,24" fill="#1A1A1A" />
+            <line x1="215" y1="8" x2="215" y2="28" stroke="var(--theme-ink, #1A1A1A)" strokeWidth="2.5" />
+            <polygon points="215,31 211,24 219,24" fill="var(--theme-ink, #1A1A1A)" />
           </g>
         </svg>
       )}
@@ -1220,7 +1220,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
   return (
     <div
       style={{
-        background: `
+        background: `var(--theme-wash, 
           radial-gradient(ellipse 55% 40% at 8% 12%, rgba(59, 130, 246, 0.16) 0%, transparent 60%),
           radial-gradient(ellipse 50% 35% at 92% 24%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
           radial-gradient(ellipse 45% 35% at 5% 52%, rgba(155, 93, 229, 0.08) 0%, transparent 60%),
@@ -1228,9 +1228,9 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
           radial-gradient(ellipse 50% 35% at 94% 76%, rgba(14, 165, 233, 0.11) 0%, transparent 60%),
           radial-gradient(ellipse 40% 30% at 48% 94%, rgba(249, 200, 70, 0.07) 0%, transparent 60%),
           linear-gradient(to bottom, #E9EEFB 0%, #F8FAFC 25%, #FFFFFF 50%, #FFFFFF 75%, #EAF7EF 100%)
-        `,
+        )`,
         minHeight: "100vh",
-        color: "#000000",
+        color: "var(--theme-ink, #000000)",
         fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif'
       }}
     >
@@ -1284,7 +1284,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
           style={{
             fontSize: "clamp(2rem, 5vw, 3.2rem)",
             fontWeight: 900,
-            color: "#1A1A1A",
+            color: "var(--theme-ink, #1A1A1A)",
             letterSpacing: "-0.04em",
             marginBottom: "12px",
             lineHeight: "1.15",
@@ -1297,10 +1297,10 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               position: "relative",
               display: "inline-block",
               padding: "4px 16px",
-              border: "2px solid #4B6189",
+              border: "2px solid oklch(from #4B6189 max(l, var(--fg-lift, 0)) c h)",
               borderRadius: "6px",
               marginLeft: "8px",
-              background: "#FFFFFF"
+              background: "var(--theme-surface, #FFFFFF)"
             }}
           >
             <GradientText
@@ -1318,15 +1318,15 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               <span style={{ position: "absolute", right: "-3px", bottom: "-6px", width: "8px", height: "8px", borderRadius: "50%", background: "#4B6189" }} />
             </span>
             {/* Top-right corner handle */}
-            <span style={{ position: "absolute", right: "-4px", top: "-4px", width: "8px", height: "8px", border: "1px solid #FFFFFF", background: "#4B6189" }} />
+            <span style={{ position: "absolute", right: "-4px", top: "-4px", width: "8px", height: "8px", border: "1px solid var(--theme-n-50, #FFFFFF)", background: "#4B6189" }} />
             {/* Bottom-left corner handle */}
-            <span style={{ position: "absolute", left: "-4px", bottom: "-4px", width: "8px", height: "8px", border: "1px solid #FFFFFF", background: "#4B6189" }} />
+            <span style={{ position: "absolute", left: "-4px", bottom: "-4px", width: "8px", height: "8px", border: "1px solid var(--theme-n-50, #FFFFFF)", background: "#4B6189" }} />
           </span>
         </h1>
         <p
           style={{
             fontSize: "0.92rem",
-            color: "#4B5563",
+            color: "var(--theme-n-600, #4B5563)",
             maxWidth: "600px",
             margin: "18px auto 0",
             lineHeight: "1.6",
@@ -1365,8 +1365,8 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             style={{
               position: "relative",
-              background: activeTab === "courses" ? "#EFF6FF" : "#FFFFFF",
-              border: activeTab === "courses" ? "3px solid #3B82F6" : "2px solid #E5E7EB",
+              background: activeTab === "courses" ? "var(--theme-n-100, #EFF6FF)" : "var(--theme-surface, #FFFFFF)",
+              border: activeTab === "courses" ? "3px solid #3B82F6" : "2px solid var(--theme-n-200, #E5E7EB)",
               borderRadius: "20px",
               padding: "24px 20px",
               cursor: "pointer",
@@ -1384,7 +1384,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               <div style={{
                 fontSize: "0.68rem",
                 fontWeight: "800",
-                color: activeTab === "courses" ? "#2563EB" : "#6B7280",
+                color: activeTab === "courses" ? "oklch(from #2563EB max(l, var(--fg-lift, 0)) c h)" : "var(--theme-n-500, #6B7280)",
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 marginBottom: "10px",
@@ -1395,14 +1395,14 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               <h3 style={{
                 fontSize: "1.15rem",
                 fontWeight: "800",
-                color: activeTab === "courses" ? "#1E40AF" : "#1A1A1A",
+                color: activeTab === "courses" ? "oklch(from #1E40AF max(l, var(--fg-lift, 0)) c h)" : "var(--theme-ink, #1A1A1A)",
                 margin: "0 0 8px",
                 lineHeight: "1.2",
                 transition: "color 0.3s"
               }}>
                 Self-Paced Courses
               </h3>
-              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
+              <p style={{ fontSize: "0.78rem", color: "var(--theme-n-600, #4B5563)", margin: "0 0 16px", lineHeight: "1.5" }}>
                 Explore available categories and select department tracks to see individual courses.
               </p>
             </div>
@@ -1416,15 +1416,15 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               style={{ width: "100%", height: "65px" }}
             >
               <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <rect x="30" y="30" width="100" height="60" rx="8" fill="none" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s" }} />
-                <rect x="36" y="36" width="88" height="48" rx="4" fill={activeTab === "courses" ? "rgba(59, 130, 246, 0.05)" : "none"} stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="1.5" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 16,98 L 144,98 L 132,106 L 28,106 Z" fill="none" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
-                <rect x="68" y="100" width="24" height="4" rx="1" fill="none" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="1.5" style={{ transition: "stroke 0.3s" }} />
-                <motion.line x1="44" y1="44" x2="72" y2="44" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, 4, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-                <motion.line x1="44" y1="52" x2="88" y2="52" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, 6, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-                <motion.line x1="44" y1="60" x2="64" y2="60" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, -3, 3, 0] } : {}} transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-                <motion.line x1="52" y1="68" x2="96" y2="68" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, 5, 0] } : {}} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-                <motion.line x1="52" y1="76" x2="80" y2="76" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, -2, 2, 0] } : {}} transition={{ repeat: Infinity, duration: 2.1, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <rect x="30" y="30" width="100" height="60" rx="8" fill="none" stroke={activeTab === "courses" ? "#3B82F6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" style={{ transition: "stroke 0.3s" }} />
+                <rect x="36" y="36" width="88" height="48" rx="4" fill={activeTab === "courses" ? "rgba(59, 130, 246, 0.05)" : "none"} stroke={activeTab === "courses" ? "#3B82F6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="1.5" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 16,98 L 144,98 L 132,106 L 28,106 Z" fill="none" stroke={activeTab === "courses" ? "#3B82F6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
+                <rect x="68" y="100" width="24" height="4" rx="1" fill="none" stroke={activeTab === "courses" ? "#3B82F6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="1.5" style={{ transition: "stroke 0.3s" }} />
+                <motion.line x1="44" y1="44" x2="72" y2="44" stroke={activeTab === "courses" ? "#3B82F6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, 4, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.line x1="44" y1="52" x2="88" y2="52" stroke={activeTab === "courses" ? "#3B82F6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, 6, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.line x1="44" y1="60" x2="64" y2="60" stroke={activeTab === "courses" ? "#3B82F6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, -3, 3, 0] } : {}} transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.line x1="52" y1="68" x2="96" y2="68" stroke={activeTab === "courses" ? "#3B82F6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, 5, 0] } : {}} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.line x1="52" y1="76" x2="80" y2="76" stroke={activeTab === "courses" ? "#3B82F6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, -2, 2, 0] } : {}} transition={{ repeat: Infinity, duration: 2.1, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
                 <path d="M 12,28 Q 20,20 18,12" stroke={activeTab === "courses" ? "#3B82F6" : "#4B6189"} strokeWidth="1.5" strokeLinecap="round" fill="none" style={{ transition: "stroke 0.3s" }} />
                 <motion.circle cx="140" cy="24" r="3" fill={activeTab === "courses" ? "#3B82F6" : "#4B6189"} animate={activeTab === "courses" ? { scale: [1, 1.4, 1] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "fill 0.3s" }} />
                 <motion.circle cx="148" cy="40" r="1.5" fill={activeTab === "courses" ? "#3B82F6" : "#4B6189"} animate={activeTab === "courses" ? { scale: [1, 1.6, 1] } : {}} transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "fill 0.3s" }} />
@@ -1444,8 +1444,8 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             style={{
               position: "relative",
-              background: activeTab === "bootcamps" ? "#F5F3FF" : "#FFFFFF",
-              border: activeTab === "bootcamps" ? "3px solid #8B5CF6" : "2px solid #E5E7EB",
+              background: activeTab === "bootcamps" ? "var(--theme-n-100, #F5F3FF)" : "var(--theme-surface, #FFFFFF)",
+              border: activeTab === "bootcamps" ? "3px solid #8B5CF6" : "2px solid var(--theme-n-200, #E5E7EB)",
               borderRadius: "20px",
               padding: "24px 20px",
               cursor: "pointer",
@@ -1463,7 +1463,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               <div style={{
                 fontSize: "0.68rem",
                 fontWeight: "800",
-                color: activeTab === "bootcamps" ? "#7C3AED" : "#6B7280",
+                color: activeTab === "bootcamps" ? "oklch(from #7C3AED max(l, var(--fg-lift, 0)) c h)" : "var(--theme-n-500, #6B7280)",
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 marginBottom: "10px",
@@ -1474,14 +1474,14 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               <h3 style={{
                 fontSize: "1.15rem",
                 fontWeight: "800",
-                color: activeTab === "bootcamps" ? "#5B21B6" : "#1A1A1A",
+                color: activeTab === "bootcamps" ? "oklch(from #5B21B6 max(l, var(--fg-lift, 0)) c h)" : "var(--theme-ink, #1A1A1A)",
                 margin: "0 0 8px",
                 lineHeight: "1.2",
                 transition: "color 0.3s"
               }}>
                 Events
               </h3>
-              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
+              <p style={{ fontSize: "0.78rem", color: "var(--theme-n-600, #4B5563)", margin: "0 0 16px", lineHeight: "1.5" }}>
                 Join live mentor-led programs, interactive bootcamps, and expert webinars designed for technical skill development.
               </p>
             </div>
@@ -1495,18 +1495,18 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               style={{ width: "100%", height: "65px" }}
             >
               <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <rect x="25" y="85" width="22" height="20" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <rect x="47" y="65" width="22" height="40" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <rect x="69" y="45" width="22" height="60" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <motion.rect x="91" y="25" width="22" height="80" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "bootcamps" ? { height: [80, 85, 80], y: [25, 20, 25] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <rect x="25" y="85" width="22" height="20" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <rect x="47" y="65" width="22" height="40" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <rect x="69" y="45" width="22" height="60" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <motion.rect x="91" y="25" width="22" height="80" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" animate={activeTab === "bootcamps" ? { height: [80, 85, 80], y: [25, 20, 25] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
                 <motion.path d="M 125,25 L 128,31 L 135,32 L 130,36 L 132,43 L 125,39 L 118,43 L 120,36 L 115,32 L 122,31 Z" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.2)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#4B6189"} strokeWidth="1.5" strokeLinejoin="round" animate={activeTab === "bootcamps" ? { scale: [1, 1.25, 1], rotate: [0, 15, -15, 0] } : {}} transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }} style={{ transformOrigin: "125px 34px", transition: "stroke 0.3s, fill 0.3s" }} />
-                <circle cx="58" cy="28" r="7" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 58,35 C 58,45 52,50 62,55" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 54,42 Q 68,36 82,30" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 82,30 L 102,15 Q 104,13 107,16 L 109,19 Q 111,22 108,24 L 88,39 Z" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="1.5" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 102,15 L 108,24" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="1.5" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 55,50 L 48,65" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 60,51 L 69,45" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <circle cx="58" cy="28" r="7" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 58,35 C 58,45 52,50 62,55" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 54,42 Q 68,36 82,30" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 82,30 L 102,15 Q 104,13 107,16 L 109,19 Q 111,22 108,24 L 88,39 Z" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="1.5" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 102,15 L 108,24" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="1.5" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 55,50 L 48,65" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 60,51 L 69,45" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
               </svg>
             </motion.div>
           </motion.div>
@@ -1522,8 +1522,8 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             style={{
               position: "relative",
-              background: activeTab === "exams" ? "#EFF4FC" : "#FFFFFF",
-              border: activeTab === "exams" ? "3px solid #0A1931" : "2px solid #E5E7EB",
+              background: activeTab === "exams" ? "var(--theme-n-100, #EFF4FC)" : "var(--theme-surface, #FFFFFF)",
+              border: activeTab === "exams" ? "3px solid var(--theme-ink, #0A1931)" : "2px solid var(--theme-n-200, #E5E7EB)",
               borderRadius: "20px",
               padding: "24px 20px",
               cursor: "pointer",
@@ -1541,7 +1541,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               <div style={{
                 fontSize: "0.68rem",
                 fontWeight: "800",
-                color: activeTab === "exams" ? "#1E3A8A" : "#6B7280",
+                color: activeTab === "exams" ? "oklch(from #1E3A8A max(l, var(--fg-lift, 0)) c h)" : "var(--theme-n-500, #6B7280)",
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 marginBottom: "10px",
@@ -1552,14 +1552,14 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               <h3 style={{
                 fontSize: "1.15rem",
                 fontWeight: "800",
-                color: activeTab === "exams" ? "#0F172A" : "#1A1A1A",
+                color: activeTab === "exams" ? "var(--theme-ink, #0F172A)" : "var(--theme-ink, #1A1A1A)",
                 margin: "0 0 8px",
                 lineHeight: "1.2",
                 transition: "color 0.3s"
               }}>
                 Exams
               </h3>
-              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
+              <p style={{ fontSize: "0.78rem", color: "var(--theme-n-600, #4B5563)", margin: "0 0 16px", lineHeight: "1.5" }}>
                 Earn certifications and prove your skills with proctored, graded exams and practice assessments.
               </p>
             </div>
@@ -1573,23 +1573,23 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               style={{ width: "100%", height: "65px" }}
             >
               <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <motion.circle cx="45" cy="40" r="7" fill={activeTab === "exams" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "exams" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 45,47 L 45,75" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,55 L 30,65" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,52 L 65,38" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,75 L 35,95" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,75 L 55,95" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <motion.circle cx="45" cy="40" r="7" fill={activeTab === "exams" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "exams" ? "var(--theme-ink, #0A1931)" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" animate={activeTab === "exams" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 45,47 L 45,75" stroke={activeTab === "exams" ? "var(--theme-ink, #0A1931)" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,55 L 30,65" stroke={activeTab === "exams" ? "var(--theme-ink, #0A1931)" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,52 L 65,38" stroke={activeTab === "exams" ? "var(--theme-ink, #0A1931)" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,75 L 35,95" stroke={activeTab === "exams" ? "var(--theme-ink, #0A1931)" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,75 L 55,95" stroke={activeTab === "exams" ? "var(--theme-ink, #0A1931)" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
 
-                <motion.circle cx="115" cy="40" r="7" fill={activeTab === "exams" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "exams" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 115,47 L 115,75" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,52 L 95,38" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,55 L 130,65" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,75 L 105,95" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,75 L 125,95" stroke={activeTab === "exams" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <motion.circle cx="115" cy="40" r="7" fill={activeTab === "exams" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "exams" ? "var(--theme-ink, #0A1931)" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" animate={activeTab === "exams" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 115,47 L 115,75" stroke={activeTab === "exams" ? "var(--theme-ink, #0A1931)" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,52 L 95,38" stroke={activeTab === "exams" ? "var(--theme-ink, #0A1931)" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,55 L 130,65" stroke={activeTab === "exams" ? "var(--theme-ink, #0A1931)" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,75 L 105,95" stroke={activeTab === "exams" ? "var(--theme-ink, #0A1931)" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,75 L 125,95" stroke={activeTab === "exams" ? "var(--theme-ink, #0A1931)" : "var(--theme-ink, #1A1A1A)"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
 
-                <motion.path d="M 80,30 L 80,24" stroke={activeTab === "exams" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "exams" ? { scaleY: [1, 1.5, 1], y: [0, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transformOrigin: "80px 30px", transition: "stroke 0.3s" }} />
-                <motion.path d="M 75,34 L 69,30" stroke={activeTab === "exams" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "exams" ? { x: [0, -2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-                <motion.path d="M 85,34 L 91,30" stroke={activeTab === "exams" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "exams" ? { x: [0, 2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.path d="M 80,30 L 80,24" stroke={activeTab === "exams" ? "var(--theme-ink, #0A1931)" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "exams" ? { scaleY: [1, 1.5, 1], y: [0, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transformOrigin: "80px 30px", transition: "stroke 0.3s" }} />
+                <motion.path d="M 75,34 L 69,30" stroke={activeTab === "exams" ? "var(--theme-ink, #0A1931)" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "exams" ? { x: [0, -2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.path d="M 85,34 L 91,30" stroke={activeTab === "exams" ? "var(--theme-ink, #0A1931)" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "exams" ? { x: [0, 2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
               </svg>
             </motion.div>
           </motion.div>
@@ -1602,8 +1602,8 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
             gap: "16px",
             alignItems: "center",
             width: "100%",
-            background: "#FFFFFF",
-            border: isSearchFocused ? "2px solid #4B6189" : "1px solid #E5E7EB",
+            background: "var(--theme-surface, #FFFFFF)",
+            border: isSearchFocused ? "2px solid oklch(from #4B6189 max(l, var(--fg-lift, 0)) c h)" : "1px solid var(--theme-n-200, #E5E7EB)",
             borderRadius: "16px",
             padding: isSearchFocused ? "14px 22px" : "15px 23px",
             marginBottom: "40px",
@@ -1642,7 +1642,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               outline: "none",
               fontSize: "1rem",
               fontWeight: "500",
-              color: "#111827",
+              color: "var(--theme-ink, #111827)",
               background: "transparent"
             }}
           />
@@ -1657,7 +1657,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: "#9CA3AF",
+                color: "var(--theme-n-400, #9CA3AF)",
                 borderRadius: "50%",
                 transition: "background 0.2s, color 0.2s"
               }}
@@ -1727,14 +1727,14 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
             return (
             <div className="tab-content-panel">
               {searchQuery && (
-                 <div style={{ marginBottom: "24px", fontSize: "1.1rem", fontWeight: "600", color: "#4B5563" }}>
+                 <div style={{ marginBottom: "24px", fontSize: "1.1rem", fontWeight: "600", color: "var(--theme-n-600, #4B5563)" }}>
                   Found {filteredCategories.length} department{filteredCategories.length === 1 ? '' : 's'} and {searchResults.length} item{searchResults.length !== 1 ? 's' : ''} for "{searchQuery}"
                  </div>
               )}
               
               {(currentCategories.length > 0 || !searchQuery) && (
                 <>
-                  {searchQuery && <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "#111827" }}>Departments</h3>}
+                  {searchQuery && <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "var(--theme-ink, #111827)" }}>Departments</h3>}
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
                     {currentCategories
                       .map((cat) => {
@@ -1748,8 +1748,8 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                             style={{
                               position: "relative",
                               borderRadius: "16px",
-                              background: "#FFFFFF",
-                              border: "1px solid #E5E7EB",
+                              background: "var(--theme-surface, #FFFFFF)",
+                              border: "1px solid var(--theme-n-200, #E5E7EB)",
                               overflow: "hidden",
                               minHeight: "380px",
                               cursor: "pointer",
@@ -1766,8 +1766,8 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                               style={{
                                 height: "160px",
                                 width: "100%",
-                                background: "#F8FAFC", // soft light slate background for illustration
-                                borderBottom: "1px solid #F1F5F9",
+                                background: "var(--theme-n-50, #F8FAFC)", // soft light slate background for illustration
+                                borderBottom: "1px solid var(--theme-n-100, #F1F5F9)",
                                 position: "relative",
                                 display: "flex",
                                 alignItems: "center",
@@ -1783,12 +1783,12 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                               <div>
                                 {/* Title and Pill Row */}
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px", marginBottom: "12px" }}>
-                                  <h3 style={{ fontSize: "1.15rem", fontWeight: "800", color: "#1F2937", margin: 0, letterSpacing: "-0.01em", lineHeight: "1.3" }}>
+                                  <h3 style={{ fontSize: "1.15rem", fontWeight: "800", color: "var(--theme-ink, #1F2937)", margin: 0, letterSpacing: "-0.01em", lineHeight: "1.3" }}>
                                     {cat}
                                   </h3>
                                 </div>
 
-                                <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.6", margin: "0 0 16px" }}>
+                                <p style={{ fontSize: "0.85rem", color: "var(--theme-n-600, #4B5563)", lineHeight: "1.6", margin: "0 0 16px" }}>
                                   {data.desc}
                                 </p>
                               </div>
@@ -1827,7 +1827,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               {/* Individual exams: matched by the server across every category */}
               {searchQuery && activeTab === "exams" && (
                 <div style={{ marginTop: "40px" }}>
-                  <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "#111827" }}>Individual Exams</h3>
+                  <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "var(--theme-ink, #111827)" }}>Individual Exams</h3>
                   <ExamsView searchQuery={searchQuery} onClearSearch={() => setSearchQuery("")} />
                 </div>
               )}
@@ -1835,7 +1835,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               {/* Individual Items Grid */}
               {searchQuery && searchResults.length > 0 && (
                 <div style={{ marginTop: "40px" }}>
-                  <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "#111827" }}>Individual {activeTab === "courses" ? "Courses" : "Bootcamps"}</h3>
+                  <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "var(--theme-ink, #111827)" }}>Individual {activeTab === "courses" ? "Courses" : "Bootcamps"}</h3>
                   <div style={{ display: "grid", gridTemplateColumns: activeTab === "courses" ? "repeat(auto-fill, minmax(350px, 1fr))" : "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
                     {searchResults.map((item, idx) => {
                        if (activeTab === "courses") {
@@ -1856,8 +1856,8 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                        const catColor = getCategoryData(item.category)?.colors?.primary || "#3B82F6";
                        return (
                         <div key={idx} style={{
-                          background: "#FFFFFF",
-                          border: "1px solid #E5E7EB",
+                          background: "var(--theme-surface, #FFFFFF)",
+                          border: "1px solid var(--theme-n-200, #E5E7EB)",
                           borderRadius: "16px",
                           padding: "24px",
                           display: "flex",
@@ -1877,17 +1877,17 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                         }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: catColor }} />
-                            <span style={{ fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "#6B7280" }}>
+                            <span style={{ fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--theme-n-500, #6B7280)" }}>
                               {item.category} • {item.type}
                             </span>
                           </div>
-                          <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: "700", color: "#111827", lineHeight: 1.3 }}>{item.title}</h3>
-                          {item.desc && <p style={{ margin: 0, fontSize: "0.875rem", color: "#4B5563", lineHeight: 1.5, flexGrow: 1 }}>{item.desc}</p>}
-                          <div style={{ marginTop: "8px", display: "flex", gap: "12px", fontSize: "0.8rem", fontWeight: "600", color: "#374151", flexWrap: "wrap" }}>
-                            {item.duration && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>⏱ {item.duration}</span>}
-                            {item.level && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>📊 {item.level}</span>}
-                            {item.date && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>📅 {item.date}</span>}
-                            {item.readTime && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>📖 {item.readTime}</span>}
+                          <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: "700", color: "var(--theme-ink, #111827)", lineHeight: 1.3 }}>{item.title}</h3>
+                          {item.desc && <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--theme-n-600, #4B5563)", lineHeight: 1.5, flexGrow: 1 }}>{item.desc}</p>}
+                          <div style={{ marginTop: "8px", display: "flex", gap: "12px", fontSize: "0.8rem", fontWeight: "600", color: "var(--theme-n-700, #374151)", flexWrap: "wrap" }}>
+                            {item.duration && <span style={{ background: "var(--theme-n-100, #F3F4F6)", padding: "4px 8px", borderRadius: "4px" }}>⏱ {item.duration}</span>}
+                            {item.level && <span style={{ background: "var(--theme-n-100, #F3F4F6)", padding: "4px 8px", borderRadius: "4px" }}>📊 {item.level}</span>}
+                            {item.date && <span style={{ background: "var(--theme-n-100, #F3F4F6)", padding: "4px 8px", borderRadius: "4px" }}>📅 {item.date}</span>}
+                            {item.readTime && <span style={{ background: "var(--theme-n-100, #F3F4F6)", padding: "4px 8px", borderRadius: "4px" }}>📖 {item.readTime}</span>}
                           </div>
                         </div>
                       );
@@ -1898,13 +1898,13 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               
               {/* No Results Fallback */}
               {searchQuery && filteredCategories.length === 0 && searchResults.length === 0 && (
-                 <div style={{ textAlign: "center", padding: "64px 24px", background: "#FFFFFF", borderRadius: "16px", border: "1px dashed #E5E7EB", marginTop: "40px" }}>
+                 <div style={{ textAlign: "center", padding: "64px 24px", background: "var(--theme-surface, #FFFFFF)", borderRadius: "16px", border: "1px dashed var(--theme-n-200, #E5E7EB)", marginTop: "40px" }}>
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "0 auto 16px" }}>
                       <circle cx="11" cy="11" r="8" />
                       <line x1="21" y1="21" x2="16.65" y2="16.65" />
                     </svg>
-                    <h3 style={{ margin: "0 0 8px 0", fontSize: "1.25rem", color: "#111827" }}>No results found</h3>
-                    <p style={{ margin: 0, color: "#6B7280" }}>We couldn't find any departments or items matching "{searchQuery}".</p>
+                    <h3 style={{ margin: "0 0 8px 0", fontSize: "1.25rem", color: "var(--theme-ink, #111827)" }}>No results found</h3>
+                    <p style={{ margin: 0, color: "var(--theme-n-500, #6B7280)" }}>We couldn't find any departments or items matching "{searchQuery}".</p>
                   </div>
               )}
 
@@ -1916,9 +1916,9 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                     style={{
                       padding: "8px 16px",
                       borderRadius: "8px",
-                      border: "1px solid #E5E7EB",
-                      background: currentPage === 1 ? "#F9FAFB" : "#FFFFFF",
-                      color: currentPage === 1 ? "#9CA3AF" : "#374151",
+                      border: "1px solid var(--theme-n-200, #E5E7EB)",
+                      background: currentPage === 1 ? "var(--theme-n-50, #F9FAFB)" : "var(--theme-surface, #FFFFFF)",
+                      color: currentPage === 1 ? "var(--theme-n-400, #9CA3AF)" : "var(--theme-n-700, #374151)",
                       cursor: currentPage === 1 ? "not-allowed" : "pointer",
                       fontWeight: "500",
                       transition: "all 0.2s"
@@ -1926,7 +1926,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                   >
                     Previous
                   </button>
-                  <span style={{ fontSize: "0.9rem", color: "#6B7280", fontWeight: "500" }}>
+                  <span style={{ fontSize: "0.9rem", color: "var(--theme-n-500, #6B7280)", fontWeight: "500" }}>
                     Page {currentPage} of {totalPages}
                   </span>
                   <button
@@ -1935,9 +1935,9 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                     style={{
                       padding: "8px 16px",
                       borderRadius: "8px",
-                      border: "1px solid #E5E7EB",
-                      background: currentPage === totalPages ? "#F9FAFB" : "#FFFFFF",
-                      color: currentPage === totalPages ? "#9CA3AF" : "#374151",
+                      border: "1px solid var(--theme-n-200, #E5E7EB)",
+                      background: currentPage === totalPages ? "var(--theme-n-50, #F9FAFB)" : "var(--theme-surface, #FFFFFF)",
+                      color: currentPage === totalPages ? "var(--theme-n-400, #9CA3AF)" : "var(--theme-n-700, #374151)",
                       cursor: currentPage === totalPages ? "not-allowed" : "pointer",
                       fontWeight: "500",
                       transition: "all 0.2s"
@@ -1976,7 +1976,7 @@ function ExploreHubInner({ hubBasePath }: { hubBasePath?: string } = {}) {
 
 export default function ExploreHubPage({ hubBasePath }: { hubBasePath?: string } = {}) {
   return (
-    <Suspense fallback={<div style={{ padding: "100px", textAlign: "center", color: "#6B7280" }}>Loading explore hub...</div>}>
+    <Suspense fallback={<div style={{ padding: "100px", textAlign: "center", color: "var(--theme-n-500, #6B7280)" }}>Loading explore hub...</div>}>
       <ExploreHubInner hubBasePath={hubBasePath} />
     </Suspense>
   );

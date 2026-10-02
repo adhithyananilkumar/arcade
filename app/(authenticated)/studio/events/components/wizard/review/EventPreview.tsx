@@ -283,7 +283,7 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: E
             <div className="mx-auto max-w-3xl">
               <div className="mb-6 flex flex-wrap items-center justify-center gap-2.5">
                 <span className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink">
-                  <BookOpen size={14} className="text-[#4c6fff]" /> {schedule?.length || 0} session
+                  <BookOpen size={14} className="text-[#4c6fff] dark:text-[#8db1ff]" /> {schedule?.length || 0} session
                   {schedule?.length !== 1 ? 's' : ''}
                 </span>
               </div>

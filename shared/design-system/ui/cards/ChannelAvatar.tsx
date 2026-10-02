@@ -47,7 +47,7 @@ export function ChannelAvatar({ name, iconUrl, size = 20, className }: ChannelAv
       aria-hidden
       style={{ ...style, fontSize: Math.max(8, Math.round(size * 0.4)) }}
       className={cn(
-        'flex shrink-0 items-center justify-center rounded-full border border-indigo-100 bg-indigo-50 font-bold text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-indigo-300',
+        'flex shrink-0 items-center justify-center rounded-full border border-indigo-100 bg-indigo-50 font-bold text-indigo-600 dark:text-indigo-300 dark:border-indigo-500/25 dark:bg-indigo-500/10',
         className
       )}
     >

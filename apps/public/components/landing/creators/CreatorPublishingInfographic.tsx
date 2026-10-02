@@ -39,31 +39,31 @@ export default function CreatorPublishingInfographic() {
       num: "01",
       title: "Personal Brand",
       desc: "Publish and verify courses under your own name to build industry authority.",
-      hoverTitle: "group-hover:text-[#7A5AF8]",
-      nodeBorder: "border-[#CDB8FF]",
+      hoverTitle: "group-hover:text-[#7A5AF8] dark:group-hover:text-[#b1a6ff]",
+      nodeBorder: "border-[#CDB8FF] dark:border-[#cdb8ff]/30",
       nodeShadow: "shadow-[0_4px_16px_rgba(205,184,255,0.35)]",
-      badgeBg: "bg-[#F9F5FF]",
-      badgeText: "text-[#7A5AF8]"
+      badgeBg: "bg-slate-50",
+      badgeText: "text-[#7A5AF8] dark:text-[#b1a6ff]"
     },
     {
       num: "02",
       title: "Creative Control",
       desc: "Structure lessons, customize layouts, and configure browser terminals your way.",
       hoverTitle: "group-hover:text-[#E8368F]",
-      nodeBorder: "border-[#FFC8D8]",
+      nodeBorder: "border-[#FFC8D8] dark:border-[#ffc8d8]/30",
       nodeShadow: "shadow-[0_4px_16px_rgba(255,200,216,0.35)]",
-      badgeBg: "bg-[#FFF0F4]",
+      badgeBg: "bg-slate-100",
       badgeText: "text-[#E8368F]"
     },
     {
       num: "03",
       title: "Set Your Own Pricing",
       desc: "Configure pricing tiers, promotions, and receive direct Stripe payouts.",
-      hoverTitle: "group-hover:text-[#0D9488]",
-      nodeBorder: "border-[#BFF3E3]",
+      hoverTitle: "group-hover:text-[#0D9488] dark:group-hover:text-[#5ecdc0]",
+      nodeBorder: "border-[#BFF3E3] dark:border-[#bff3e3]/30",
       nodeShadow: "shadow-[0_4px_16px_rgba(191,243,227,0.35)]",
-      badgeBg: "bg-[#F0FDF8]",
-      badgeText: "text-[#0D9488]"
+      badgeBg: "bg-slate-50",
+      badgeText: "text-[#0D9488] dark:text-[#5ecdc0]"
     }
   ];
 
@@ -73,31 +73,31 @@ export default function CreatorPublishingInfographic() {
       num: "01",
       title: "Brand Identity",
       desc: "Brand certificates and syllabi with your corporate logo and color systems.",
-      hoverTitle: "group-hover:text-[#7A5AF8]",
-      nodeBorder: "border-[#CDB8FF]",
+      hoverTitle: "group-hover:text-[#7A5AF8] dark:group-hover:text-[#b1a6ff]",
+      nodeBorder: "border-[#CDB8FF] dark:border-[#cdb8ff]/30",
       nodeShadow: "shadow-[0_4px_16px_rgba(205,184,255,0.35)]",
-      badgeBg: "bg-[#F9F5FF]",
-      badgeText: "text-[#7A5AF8]"
+      badgeBg: "bg-slate-50",
+      badgeText: "text-[#7A5AF8] dark:text-[#b1a6ff]"
     },
     {
       num: "02",
       title: "Shared Authors",
       desc: "Invite teammates, manage writer permissions, and review draft edits collaboratively.",
       hoverTitle: "group-hover:text-[#E8368F]",
-      nodeBorder: "border-[#FFC8D8]",
+      nodeBorder: "border-[#FFC8D8] dark:border-[#ffc8d8]/30",
       nodeShadow: "shadow-[0_4px_16px_rgba(255,200,216,0.35)]",
-      badgeBg: "bg-[#FFF0F4]",
+      badgeBg: "bg-slate-100",
       badgeText: "text-[#E8368F]"
     },
     {
       num: "03",
       title: "Custom Domains",
       desc: "Host your custom workspace cockpit under a unique corporate subdomain.",
-      hoverTitle: "group-hover:text-[#0D9488]",
-      nodeBorder: "border-[#BFF3E3]",
+      hoverTitle: "group-hover:text-[#0D9488] dark:group-hover:text-[#5ecdc0]",
+      nodeBorder: "border-[#BFF3E3] dark:border-[#bff3e3]/30",
       nodeShadow: "shadow-[0_4px_16px_rgba(191,243,227,0.35)]",
-      badgeBg: "bg-[#F0FDF8]",
-      badgeText: "text-[#0D9488]"
+      badgeBg: "bg-slate-50",
+      badgeText: "text-[#0D9488] dark:text-[#5ecdc0]"
     }
   ];
 
@@ -114,7 +114,7 @@ export default function CreatorPublishingInfographic() {
 
       {/* Header (Section title) */}
       <div className="text-center max-w-3xl mx-auto mb-16 space-y-3.5">
-        <span className="text-xs font-bold tracking-widest text-[#7A5AF8] uppercase flex items-center justify-center gap-2">
+        <span className="text-xs font-bold tracking-widest text-[#7A5AF8] uppercase flex items-center justify-center gap-2 dark:text-[#b1a6ff]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#7A5AF8] animate-pulse" />
           Infographic Pathway
         </span>
@@ -212,7 +212,7 @@ export default function CreatorPublishingInfographic() {
             cx="640"
             cy="95"
             r="5.5"
-            className="fill-[#7A5AF8]"
+            className="fill-[#7A5AF8] dark:fill-[#b1a6ff]"
             initial={{ scale: 0.8 }}
             animate={{ scale: [1, 1.45, 1] }}
             transition={{ duration: 0.35, delay: 0.0 }}
@@ -232,7 +232,7 @@ export default function CreatorPublishingInfographic() {
             cx="640"
             cy="485"
             r="5.5"
-            className="fill-[#0D9488]"
+            className="fill-[#0D9488] dark:fill-[#5ecdc0]"
             initial={{ scale: 0.8 }}
             animate={{ scale: [1, 1.45, 1] }}
             transition={{ duration: 0.35, delay: 0.24 }}
@@ -249,7 +249,7 @@ export default function CreatorPublishingInfographic() {
           transition={{
             y: { duration: 7, repeat: Infinity, ease: "easeInOut" },
           }}
-          className="absolute left-[20px] top-[50px] w-[480px] h-[480px] rounded-full bg-white border border-slate-200/80 shadow-lg p-12 flex flex-col items-center justify-center text-center z-10"
+          className="absolute left-[20px] top-[50px] w-[480px] h-[480px] rounded-full bg-surface border border-slate-200/80 shadow-lg p-12 flex flex-col items-center justify-center text-center z-10"
         >
           {/* Curved Soft Pastel Banner at top of circle (Rotates 12–15° during mode switch) */}
           <motion.div

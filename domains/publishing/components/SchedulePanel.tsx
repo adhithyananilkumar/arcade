@@ -15,10 +15,10 @@ import {
 } from "../api/contentSchedule";
 
 const STATE_LABEL: Record<ScheduleState, { text: string; cls: string }> = {
-  OPEN: { text: "Open now", cls: "bg-emerald-50 text-emerald-700" },
-  NOT_YET_OPEN: { text: "Not open yet", cls: "bg-sky-50 text-sky-700" },
+  OPEN: { text: "Open now", cls: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300" },
+  NOT_YET_OPEN: { text: "Not open yet", cls: "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300" },
   CLOSED: { text: "Closed", cls: "bg-slate-100 text-slate-600" },
-  NEVER: { text: "Never opens", cls: "bg-rose-50 text-rose-700" },
+  NEVER: { text: "Never opens", cls: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300" },
 };
 
 /** `<input type="datetime-local">` speaks local wall time; the API speaks instants. */
@@ -166,10 +166,10 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
   };
 
   return (
-    <section className="rounded-2xl border border-white/50 bg-white/70 p-5 shadow-sm backdrop-blur-md">
+    <section className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="flex items-center gap-2 text-sm font-black tracking-tight text-[#14142b]">
+          <h3 className="flex items-center gap-2 text-sm font-black tracking-tight text-ink">
             <CalendarClock size={15} className="text-slate-400" /> Schedule
           </h3>
           <p className="mt-1 max-w-xl text-xs leading-relaxed text-slate-500">
@@ -217,13 +217,13 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
           </div>
 
           {schedule && schedule.origins.some((o) => o !== "CREATOR") && (
-            <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-[11px] font-medium text-amber-800">
+            <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-[11px] font-medium text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
               A platform rule also applies, so the effective window may be narrower than what you set.
             </p>
           )}
 
           {!readOnly && orderProblem && !hasProblems && (
-            <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-[11px] font-medium text-rose-700">{orderProblem}</p>
+            <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-[11px] font-medium text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">{orderProblem}</p>
           )}
 
           {!readOnly && (
@@ -232,7 +232,7 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
                 type="button"
                 onClick={clear}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-surface px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
               >
                 <RotateCcw size={13} /> Always open
               </button>
@@ -240,7 +240,7 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
                 type="button"
                 onClick={save}
                 disabled={!dirty || saving || hasProblems || !!orderProblem}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white hover:bg-black disabled:opacity-40"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink hover:bg-ink-hover disabled:opacity-40"
               >
                 {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
                 {hasProblems ? "Fix the dates above" : dirty ? "Save schedule" : "Saved"}
@@ -284,12 +284,12 @@ function WindowFields({
   onCloses: (v: string, problem: string | null) => void;
 }) {
   const inputCls = (problem?: string) =>
-    `mt-1 w-full rounded-lg border px-2 py-1.5 text-xs font-semibold text-[#14142b] outline-none disabled:bg-slate-50 ${
-      problem ? "border-rose-300 focus:border-rose-400" : "border-slate-200 focus:border-indigo-300"
+    `mt-1 w-full rounded-lg border px-2 py-1.5 text-xs font-semibold text-ink outline-none disabled:bg-slate-50 ${
+      problem ? "border-rose-300 focus:border-rose-400 dark:border-rose-500/40" : "border-slate-200 focus:border-indigo-300 dark:focus:border-indigo-500/40"
     }`;
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
-      <p className="text-xs font-bold text-[#14142b]">{title}</p>
+    <div className="rounded-xl border border-slate-200 bg-surface p-4">
+      <p className="text-xs font-bold text-ink">{title}</p>
       <p className="mb-3 text-[11px] text-slate-500">{hint}</p>
       <div className="grid gap-2 sm:grid-cols-2">
         <label className="text-[11px] font-semibold text-slate-500">
@@ -305,7 +305,7 @@ function WindowFields({
             onBlur={(e) => onOpens(e.target.value, problemOf(e.target))}
             className={inputCls(opensProblem)}
           />
-          {opensProblem && <span className="mt-1 block text-[10px] font-medium text-rose-600">{opensProblem}</span>}
+          {opensProblem && <span className="mt-1 block text-[10px] font-medium text-rose-600 dark:text-rose-400">{opensProblem}</span>}
         </label>
         <label className="text-[11px] font-semibold text-slate-500">
           Closes
@@ -320,7 +320,7 @@ function WindowFields({
             onBlur={(e) => onCloses(e.target.value, problemOf(e.target))}
             className={inputCls(closesProblem)}
           />
-          {closesProblem && <span className="mt-1 block text-[10px] font-medium text-rose-600">{closesProblem}</span>}
+          {closesProblem && <span className="mt-1 block text-[10px] font-medium text-rose-600 dark:text-rose-400">{closesProblem}</span>}
         </label>
       </div>
     </div>

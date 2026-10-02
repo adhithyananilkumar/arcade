@@ -20,16 +20,16 @@ export interface TierStyle {
 
 export const TIER_STYLE: Record<BadgeLevel, TierStyle> = {
   1: {
-    chip: "bg-[#FBF8F5] text-[#7A5A45] border-[#E6D6C8] dark:bg-[#3A2A1E] dark:text-[#E7C4A3] dark:border-[#6B4B33]",
-    swatch: "bg-gradient-to-br from-[#DCC3AE] to-[#9C7A62]",
+    chip: "bg-slate-50 text-[#7A5A45] border-[#E6D6C8] dark:text-[#d3af98] dark:border-[#e6d6c8]/30",
+    swatch: "bg-gradient-to-br from-[#DCC3AE] to-[#9C7A62] dark:from-slate-300",
   },
   2: {
-    chip: "bg-[#F5F7F9] text-[#4B5563] border-[#CBD2DA] dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600",
-    swatch: "bg-gradient-to-br from-[#DDE1E6] to-[#6C7582]",
+    chip: "bg-slate-100 text-slate-600 border-slate-300",
+    swatch: "bg-gradient-to-br from-slate-200 to-slate-500",
   },
   3: {
-    chip: "bg-[#FBF7EC] text-[#7A5C1C] border-[#E6D29C] dark:bg-[#3A3018] dark:text-[#EBD28E] dark:border-[#6E5A27]",
-    swatch: "bg-gradient-to-br from-[#E8CF8C] to-[#86651F]",
+    chip: "bg-slate-50 text-[#7A5C1C] border-[#E6D29C] dark:text-[#EBD28E] dark:border-[#6E5A27]",
+    swatch: "bg-gradient-to-br from-[#E8CF8C] to-[#86651F] dark:from-[#e8cf8c]/15",
   },
 };
 

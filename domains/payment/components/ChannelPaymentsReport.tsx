@@ -41,19 +41,19 @@ function Stat({
 }) {
   const box =
     tone === 'primary'
-      ? 'border-indigo-200/80 bg-gradient-to-br from-indigo-50 to-white dark:border-indigo-900/60 dark:from-indigo-950/40 dark:to-slate-900'
-      : 'border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900';
+      ? 'border-indigo-200/80 bg-gradient-to-br from-indigo-50 to-surface dark:border-indigo-900/60 dark:from-indigo-950/40'
+      : 'border-slate-200/80 bg-surface';
   return (
     <div className={`rounded-2xl border p-4 shadow-[0_2px_10px_rgba(20,20,43,0.03)] ${box}`}>
       <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{label}</p>
       <p
         className={`mt-1.5 text-xl font-bold tracking-tight tabular-nums ${
-          tone === 'muted' ? 'text-slate-500' : 'text-[#14142b] dark:text-white'
+          tone === 'muted' ? 'text-slate-500' : 'text-ink'
         }`}
       >
         {value}
       </p>
-      {hint && <p className="mt-1 text-[11.5px] font-medium leading-snug text-slate-500 dark:text-slate-400">{hint}</p>}
+      {hint && <p className="mt-1 text-[11.5px] font-medium leading-snug text-slate-500">{hint}</p>}
     </div>
   );
 }
@@ -126,14 +126,14 @@ export function ChannelPaymentsReport({
   return (
     <div className="space-y-6">
       {currencies.length > 1 && (
-        <div className="flex items-center gap-1 rounded-full border border-slate-200/80 bg-white p-1 w-fit">
+        <div className="flex items-center gap-1 rounded-full border border-slate-200/80 bg-surface p-1 w-fit">
           {currencies.map((c) => (
             <button
               key={c}
               type="button"
               onClick={() => setCurrency(c)}
               className={`cursor-pointer rounded-full px-3 py-1 text-xs font-semibold ${
-                c === active ? 'bg-[#14142b] text-white' : 'text-slate-500 hover:text-slate-900'
+                c === active ? 'bg-ink text-on-ink' : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               {c}
@@ -144,10 +144,10 @@ export function ChannelPaymentsReport({
 
       {commission && (
         <div className="flex flex-wrap items-start gap-3 rounded-2xl border border-amber-200/80 bg-amber-50/60 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/20">
-          <Percent size={15} className="mt-0.5 shrink-0 text-amber-600" />
-          <div className="min-w-0 flex-1 text-[12.5px] leading-relaxed text-slate-700 dark:text-slate-300">
+          <Percent size={15} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <div className="min-w-0 flex-1 text-[12.5px] leading-relaxed text-slate-700">
             <p>
-              <span className="font-bold text-[#14142b] dark:text-white">
+              <span className="font-bold text-ink">
                 Platform commission: {describeCommission(commission.current)}
               </span>
               {commission.current.source === 'CHANNEL' && <span className="text-slate-500"> · rate agreed for this channel</span>}
@@ -157,7 +157,7 @@ export function ChannelPaymentsReport({
             </p>
             {commission.next && commission.nextFrom && (
               <p className="mt-0.5 text-slate-500">
-                Changes to <span className="font-semibold text-slate-700 dark:text-slate-200">{describeCommission(commission.next)}</span>{' '}
+                Changes to <span className="font-semibold text-slate-700">{describeCommission(commission.next)}</span>{' '}
                 on {new Date(commission.nextFrom).toLocaleString()}. Sales already made keep the rate they were charged.
               </p>
             )}
@@ -199,9 +199,9 @@ export function ChannelPaymentsReport({
         />
       </div>
 
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <section className="rounded-2xl border border-slate-200/80 bg-surface p-5">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm font-bold text-[#14142b] dark:text-white">Last 12 months</h3>
+          <h3 className="text-sm font-bold text-ink">Last 12 months</h3>
           {totals.lastPaidAt && (
             <span className="text-[11.5px] font-medium text-slate-400">
               Last payment {new Date(totals.lastPaidAt).toLocaleDateString()}
@@ -232,10 +232,10 @@ export function ChannelPaymentsReport({
       </section>
 
       {showPayees && (
-        <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+        <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-surface">
+          <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
             <div>
-              <h3 className="flex items-center gap-2 text-sm font-bold text-[#14142b] dark:text-white">
+              <h3 className="flex items-center gap-2 text-sm font-bold text-ink">
                 <Users size={15} className="text-slate-400" /> Who is owed
               </h3>
               <p className="mt-0.5 text-[11.5px] font-medium text-slate-500">
@@ -247,7 +247,7 @@ export function ChannelPaymentsReport({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] text-left text-xs">
               <thead>
-                <tr className="bg-slate-50/80 text-[10.5px] font-bold uppercase tracking-wider text-slate-400 dark:bg-slate-800/40">
+                <tr className="bg-slate-50/80 text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
                   <th className="px-5 py-2.5">Instructor</th>
                   <th className="px-3 py-2.5 text-right">Orders</th>
                   <th className="px-3 py-2.5 text-right">Collected</th>
@@ -257,7 +257,7 @@ export function ChannelPaymentsReport({
                   <th className="px-5 py-2.5 text-right">Share</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-slate-100">
                 {instructors.length === 0 && (
                   <tr>
                     <td colSpan={7} className="px-5 py-8 text-center text-slate-400">No sales yet.</td>
@@ -271,14 +271,14 @@ export function ChannelPaymentsReport({
                       key={`${row.instructorId ?? 'none'}-${row.currency}`}
                       onClick={() => onSelectInstructor?.(selected ? null : row.instructorId ?? null)}
                       className={`${onSelectInstructor ? 'cursor-pointer' : ''} ${
-                        selected ? 'bg-indigo-50/70 dark:bg-indigo-950/30' : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'
+                        selected ? 'bg-indigo-50/70 dark:bg-indigo-950/30' : 'hover:bg-slate-50/80'
                       }`}
                     >
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2.5">
                           <ChannelAvatar name={name} iconUrl={row.avatarUrl} size={28} />
                           <div className="min-w-0">
-                            <p className="truncate font-semibold text-slate-900 dark:text-white">{name}</p>
+                            <p className="truncate font-semibold text-slate-900">{name}</p>
                             {row.username && <p className="truncate text-[11px] text-slate-400">@{row.username}</p>}
                           </div>
                         </div>
@@ -291,7 +291,7 @@ export function ChannelPaymentsReport({
                       <td className="px-3 py-3 text-right tabular-nums text-slate-500">
                         {row.commissionMinor !== 0 ? money(row.commissionMinor) : '—'}
                       </td>
-                      <td className="px-3 py-3 text-right font-bold tabular-nums text-[#14142b] dark:text-white">
+                      <td className="px-3 py-3 text-right font-bold tabular-nums text-ink">
                         {money(row.payableMinor)}
                       </td>
                       <td className="px-5 py-3 text-right tabular-nums text-slate-500">
@@ -306,14 +306,14 @@ export function ChannelPaymentsReport({
         </section>
       )}
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <div className="border-b border-slate-100 px-5 py-4 dark:border-slate-800">
-          <h3 className="text-sm font-bold text-[#14142b] dark:text-white">By content</h3>
+      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-surface">
+        <div className="border-b border-slate-100 px-5 py-4">
+          <h3 className="text-sm font-bold text-ink">By content</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[680px] text-left text-xs">
             <thead>
-              <tr className="bg-slate-50/80 text-[10.5px] font-bold uppercase tracking-wider text-slate-400 dark:bg-slate-800/40">
+              <tr className="bg-slate-50/80 text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
                 <th className="px-5 py-2.5">Content</th>
                 <th className="px-3 py-2.5 text-right">Orders</th>
                 <th className="px-3 py-2.5 text-right">Collected</th>
@@ -322,7 +322,7 @@ export function ChannelPaymentsReport({
                 <th className="px-5 py-2.5 text-right">Payable</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-slate-100">
               {resources.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-5 py-8 text-center text-slate-400">No paid content yet.</td>
@@ -331,18 +331,18 @@ export function ChannelPaymentsReport({
               {resources.map((row) => {
                 const Icon = TYPE_ICON[row.resourceType] ?? BookOpen;
                 return (
-                  <tr key={`${row.resourceId}-${row.currency}`} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+                  <tr key={`${row.resourceId}-${row.currency}`} className="hover:bg-slate-50/80">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-2">
                         <Icon size={13} className="shrink-0 text-slate-400" />
-                        <span className="truncate font-semibold text-slate-900 dark:text-white">{row.title || 'Untitled'}</span>
+                        <span className="truncate font-semibold text-slate-900">{row.title || 'Untitled'}</span>
                       </div>
                     </td>
                     <td className="px-3 py-3 text-right tabular-nums text-slate-600">{row.paidOrders}</td>
                     <td className="px-3 py-3 text-right tabular-nums text-slate-600">{money(row.grossMinor)}</td>
                     <td className="px-3 py-3 text-right tabular-nums text-slate-500">{row.refundedMinor > 0 ? money(row.refundedMinor) : '—'}</td>
                     <td className="px-3 py-3 text-right tabular-nums text-slate-500">{row.commissionMinor !== 0 ? money(row.commissionMinor) : '—'}</td>
-                    <td className="px-5 py-3 text-right font-semibold tabular-nums text-[#14142b] dark:text-white">{money(row.payableMinor)}</td>
+                    <td className="px-5 py-3 text-right font-semibold tabular-nums text-ink">{money(row.payableMinor)}</td>
                   </tr>
                 );
               })}

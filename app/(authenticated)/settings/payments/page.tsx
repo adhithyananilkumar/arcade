@@ -18,7 +18,7 @@ import { courseRoutes, eventRoutes, examRoutes } from '@/shared/routes/content.r
 const STATUS: Record<BillingLine['status'], { label: string; cls: string }> = {
   PAID: { label: 'Paid', cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' },
   PARTIALLY_REFUNDED: { label: 'Part refunded', cls: 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300' },
-  REFUNDED: { label: 'Refunded', cls: 'bg-slate-100 text-slate-600 dark:bg-neutral-800 dark:text-neutral-300' },
+  REFUNDED: { label: 'Refunded', cls: 'bg-slate-100 text-slate-600' },
   PENDING: { label: 'Processing', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300' },
   FAILED: { label: 'Failed', cls: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' },
 };
@@ -47,16 +47,16 @@ function BillingRow({ line }: { line: BillingLine }) {
     <li className="py-3.5">
       <button type="button" onClick={() => setOpen((v) => !v)} className="w-full flex items-center justify-between gap-4 text-left">
         <div className="min-w-0">
-          <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{title}</p>
+          <p className="text-xs font-semibold text-gray-900 truncate">{title}</p>
           <p className="text-[11px] text-gray-500 mt-0.5">
             {KIND[line.resourceType] ?? line.resourceType} · {formatDate(line.paidAt ?? line.createdAt)}
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <div className="text-right">
-            <p className="text-xs font-bold text-gray-900 dark:text-white">{formatMoney(line.amount, line.currency)}</p>
+            <p className="text-xs font-bold text-gray-900">{formatMoney(line.amount, line.currency)}</p>
             {line.refundedAmount > 0 && (
-              <p className="text-[10px] text-sky-600">−{formatMoney(line.refundedAmount, line.currency)} refunded</p>
+              <p className="text-[10px] text-sky-600 dark:text-sky-400">−{formatMoney(line.refundedAmount, line.currency)} refunded</p>
             )}
           </div>
           <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${status.cls}`}>{status.label}</span>
@@ -65,27 +65,27 @@ function BillingRow({ line }: { line: BillingLine }) {
       </button>
 
       {open && (
-        <div className="mt-3 rounded-xl bg-slate-50 dark:bg-neutral-950 p-4 text-[11px] text-gray-600 dark:text-neutral-400 space-y-2">
+        <div className="mt-3 rounded-xl bg-slate-50 p-4 text-[11px] text-gray-600 space-y-2">
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
-            <div className="flex justify-between gap-3"><dt>Order</dt><dd className="font-mono text-gray-900 dark:text-white">{line.orderId.slice(0, 8).toUpperCase()}</dd></div>
+            <div className="flex justify-between gap-3"><dt>Order</dt><dd className="font-mono text-gray-900">{line.orderId.slice(0, 8).toUpperCase()}</dd></div>
             {line.paymentReference && (
-              <div className="flex justify-between gap-3"><dt>Payment reference</dt><dd className="font-mono text-gray-900 dark:text-white">{line.paymentReference}</dd></div>
+              <div className="flex justify-between gap-3"><dt>Payment reference</dt><dd className="font-mono text-gray-900">{line.paymentReference}</dd></div>
             )}
-            <div className="flex justify-between gap-3"><dt>Started</dt><dd className="text-gray-900 dark:text-white">{new Date(line.createdAt).toLocaleString()}</dd></div>
+            <div className="flex justify-between gap-3"><dt>Started</dt><dd className="text-gray-900">{new Date(line.createdAt).toLocaleString()}</dd></div>
             {line.paidAt && (
-              <div className="flex justify-between gap-3"><dt>Paid</dt><dd className="text-gray-900 dark:text-white">{new Date(line.paidAt).toLocaleString()}</dd></div>
+              <div className="flex justify-between gap-3"><dt>Paid</dt><dd className="text-gray-900">{new Date(line.paidAt).toLocaleString()}</dd></div>
             )}
           </dl>
-          {line.status === 'FAILED' && <p className="text-rose-600">This payment didn&apos;t go through. No money was taken; you can try again from the {KIND[line.resourceType]?.toLowerCase() ?? 'content'} page.</p>}
-          {line.status === 'PENDING' && <p className="text-amber-700">Still waiting for the payment provider to confirm. This usually takes a minute.</p>}
+          {line.status === 'FAILED' && <p className="text-rose-600 dark:text-rose-400">This payment didn&apos;t go through. No money was taken; you can try again from the {KIND[line.resourceType]?.toLowerCase() ?? 'content'} page.</p>}
+          {line.status === 'PENDING' && <p className="text-amber-700 dark:text-amber-300">Still waiting for the payment provider to confirm. This usually takes a minute.</p>}
           {line.refunds.length > 0 && (
             <div className="pt-1">
-              <p className="font-semibold text-gray-900 dark:text-white flex items-center gap-1"><RotateCcw size={11} /> Refunds</p>
+              <p className="font-semibold text-gray-900 flex items-center gap-1"><RotateCcw size={11} /> Refunds</p>
               <ul className="mt-1 space-y-1">
                 {line.refunds.map((r) => (
                   <li key={r.refundId} className="flex justify-between gap-3">
                     <span>{formatDate(r.completedAt ?? r.requestedAt)} · {r.status === 'COMPLETED' ? 'Refunded' : r.status === 'FAILED' ? 'Refund failed' : 'Refund in progress'}</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">{formatMoney(r.amount, r.currency)}</span>
+                    <span className="font-semibold text-gray-900">{formatMoney(r.amount, r.currency)}</span>
                   </li>
                 ))}
               </ul>
@@ -93,7 +93,7 @@ function BillingRow({ line }: { line: BillingLine }) {
             </div>
           )}
           {href && line.resourceTitle && (
-            <Link href={href} className="inline-flex items-center gap-1 font-semibold text-sky-600 hover:underline">
+            <Link href={href} className="inline-flex items-center gap-1 font-semibold text-sky-600 hover:underline dark:text-sky-400">
               Open {KIND[line.resourceType]?.toLowerCase() ?? 'item'} <ExternalLink size={11} />
             </Link>
           )}
@@ -139,29 +139,29 @@ export default function PaymentsPage() {
     <motion.div className="space-y-6" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
       {summary && summary.count > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+          <div className="rounded-2xl border border-gray-200 bg-surface p-5">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Total paid</p>
-            <p className="mt-1 text-xl font-bold text-gray-900 dark:text-white">{formatMoney(summary.paidTotal, summary.currency)}</p>
+            <p className="mt-1 text-xl font-bold text-gray-900">{formatMoney(summary.paidTotal, summary.currency)}</p>
           </div>
-          <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+          <div className="rounded-2xl border border-gray-200 bg-surface p-5">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Refunded</p>
-            <p className="mt-1 text-xl font-bold text-gray-900 dark:text-white">{formatMoney(summary.refundedTotal, summary.currency)}</p>
+            <p className="mt-1 text-xl font-bold text-gray-900">{formatMoney(summary.refundedTotal, summary.currency)}</p>
           </div>
-          <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+          <div className="rounded-2xl border border-gray-200 bg-surface p-5">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Payments</p>
-            <p className="mt-1 text-xl font-bold text-gray-900 dark:text-white">{summary.count}</p>
+            <p className="mt-1 text-xl font-bold text-gray-900">{summary.count}</p>
           </div>
         </div>
       )}
 
-      <div className="rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm space-y-2">
+      <div className="rounded-2xl border border-gray-200 bg-surface p-6 shadow-sm space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
             <Receipt size={18} className="text-purple-500" /> Billing history
           </h3>
           {totalPages > 1 && <span className="text-xs text-gray-500">Page {page + 1} of {totalPages}</span>}
         </div>
-        <p className="text-xs text-gray-500 dark:text-neutral-400">
+        <p className="text-xs text-gray-500">
           Courses, events and exams you&apos;ve paid for. Card and UPI details are handled by Razorpay and never stored by Arcade.
         </p>
 
@@ -174,20 +174,20 @@ export default function PaymentsPage() {
           </div>
         ) : lines.length === 0 ? (
           <div className="py-10 text-center">
-            <Wallet className="mx-auto text-gray-300 dark:text-neutral-700 mb-3" size={36} />
-            <p className="text-sm font-medium text-gray-900 dark:text-white">No payments yet</p>
+            <Wallet className="mx-auto text-gray-300 mb-3" size={36} />
+            <p className="text-sm font-medium text-gray-900">No payments yet</p>
             <p className="text-xs text-gray-500 mt-1">When you buy a course, event or exam, the receipt will appear here.</p>
           </div>
         ) : (
-          <ul className="divide-y divide-gray-100 dark:divide-neutral-800">
+          <ul className="divide-y divide-gray-100">
             {lines.map((line) => <BillingRow key={line.orderId} line={line} />)}
           </ul>
         )}
 
         {totalPages > 1 && !loading && (
           <div className="pt-3 flex justify-between">
-            <button onClick={() => load(page - 1)} disabled={page === 0} className="rounded-lg border border-gray-200 dark:border-neutral-800 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-neutral-300 disabled:opacity-50">Previous</button>
-            <button onClick={() => load(page + 1)} disabled={page >= totalPages - 1} className="rounded-lg border border-gray-200 dark:border-neutral-800 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-neutral-300 disabled:opacity-50">Next</button>
+            <button onClick={() => load(page - 1)} disabled={page === 0} className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 disabled:opacity-50">Previous</button>
+            <button onClick={() => load(page + 1)} disabled={page >= totalPages - 1} className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 disabled:opacity-50">Next</button>
           </div>
         )}
       </div>

@@ -28,7 +28,7 @@ function AuthTransition({ label }: { label: string }) {
       className="flex h-screen w-full flex-col items-center justify-center gap-2"
       style={{
         background:
-          'linear-gradient(to bottom, #E9EEFB 0%, #F8FAFC 35%, #FFFFFF 70%, #EAF7EF 100%)',
+          'var(--theme-wash, linear-gradient(to bottom, #E9EEFB 0%, #F8FAFC 35%, #FFFFFF 70%, #EAF7EF 100%))',
       }}
     >
       <PebbleLoader label={label} />

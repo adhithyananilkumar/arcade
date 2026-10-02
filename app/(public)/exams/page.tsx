@@ -8,7 +8,7 @@ import CategoryDetailedView from "@/components/explore/CategoryDetailedView";
 
 export default function ExamsCataloguePage() {
   return (
-    <Suspense fallback={<div style={{ padding: "100px", textAlign: "center", color: "#6B7280" }}>Loading category...</div>}>
+    <Suspense fallback={<div style={{ padding: "100px", textAlign: "center", color: "var(--theme-n-500, #6B7280)" }}>Loading category...</div>}>
       <CategoryDetailedView mode="exams" />
     </Suspense>
   );

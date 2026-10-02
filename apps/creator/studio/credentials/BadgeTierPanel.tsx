@@ -111,7 +111,7 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
     <>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="flex items-center gap-2 text-sm font-black tracking-tight text-[#14142b] dark:text-white">
+          <h3 className="flex items-center gap-2 text-sm font-black tracking-tight text-ink">
             <Award size={15} className="text-slate-400" /> Completion badge
           </h3>
           <p className="mt-1 max-w-xl text-xs leading-relaxed text-slate-500">
@@ -137,18 +137,18 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
           <Loader2 size={16} className="animate-spin text-slate-400" />
         </div>
       ) : error || !catalogue || !assignment ? (
-        <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">{error ?? "Unavailable."}</p>
+        <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">{error ?? "Unavailable."}</p>
       ) : (
         <>
           {assignment.lockedReason && (
-            <p className="mt-4 flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-medium text-amber-800">
+            <p className="mt-4 flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-medium text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
               <Lock size={12} className="mt-0.5 shrink-0" /> {assignment.lockedReason}
             </p>
           )}
 
           <div className="mt-4 grid gap-5 lg:grid-cols-[220px_1fr]">
             {/* Preview: exactly what learners will receive. */}
-            <div className="flex flex-col items-center rounded-2xl border border-slate-200/70 bg-gradient-to-b from-slate-50 to-white p-4 text-center dark:border-slate-800 dark:from-slate-900 dark:to-slate-950">
+            <div className="flex flex-col items-center rounded-2xl border border-slate-200/70 bg-gradient-to-b from-slate-50 to-surface p-4 text-center">
               {draft ? (
                 <CredentialBadge
                   family={contentType}
@@ -167,12 +167,12 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
               <p className="mt-3 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                 {assignment.family.label}
               </p>
-              <p className="text-sm font-extrabold text-slate-900 dark:text-white">
+              <p className="text-sm font-extrabold text-slate-900">
                 {draftTier ? draftTier.label : "Choose a level"}
               </p>
               <p className="mt-2 text-[11px] leading-relaxed text-slate-500">{EARNED_BY[contentType]}</p>
               {assignment.awardedCount > 0 && (
-                <p className="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+                <p className="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
                   <ShieldCheck size={12} /> {assignment.awardedCount} issued
                 </p>
               )}
@@ -189,7 +189,7 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
                 disabled={locked || saving}
               />
               {assignment.awardedCount > 0 && dirty && (
-                <p className="mt-3 rounded-lg bg-sky-50 px-3 py-2 text-[11px] font-medium text-sky-800">
+                <p className="mt-3 rounded-lg bg-sky-50 px-3 py-2 text-[11px] font-medium text-sky-800 dark:bg-sky-500/10 dark:text-sky-200">
                   The {assignment.awardedCount} badge{assignment.awardedCount === 1 ? "" : "s"} already issued keep the level
                   they were earned at. The new level applies to learners who finish from now on.
                 </p>
@@ -204,7 +204,7 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
                   type="button"
                   onClick={remove}
                   disabled={saving}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-surface px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
                 >
                   <Trash2 size={13} /> Award no badge
                 </button>
@@ -213,7 +213,7 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
                 type="button"
                 onClick={save}
                 disabled={!dirty || draft == null || saving}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#23234a] disabled:opacity-40"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink shadow-sm hover:bg-[#23234a] disabled:opacity-40"
               >
                 {saving ? <Loader2 size={13} className="animate-spin" /> : <Award size={13} />}
                 {savedLevel == null ? "Award this badge" : "Save level"}
@@ -227,7 +227,7 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
 
   if (variant === "plain") return <div>{body}</div>;
   return (
-    <section className="rounded-2xl border border-white/50 bg-white/70 p-5 shadow-sm backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/70">
+    <section className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
       {body}
     </section>
   );

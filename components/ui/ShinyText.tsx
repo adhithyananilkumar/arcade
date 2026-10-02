@@ -26,7 +26,7 @@ export default function ShinyText({
         disabled
           ? {}
           : ({
-              backgroundImage: `linear-gradient(120deg, rgba(20, 20, 43, 0.9) 0%, rgba(20, 20, 43, 0.9) 35%, ${shimmerColor} 50%, rgba(20, 20, 43, 0.9) 65%, rgba(20, 20, 43, 0.9) 100%)`,
+              backgroundImage: `linear-gradient(120deg, color-mix(in oklab, var(--theme-ink, #14142b) 90%, transparent) 0%, color-mix(in oklab, var(--theme-ink, #14142b) 90%, transparent) 35%, ${shimmerColor} 50%, color-mix(in oklab, var(--theme-ink, #14142b) 90%, transparent) 65%, color-mix(in oklab, var(--theme-ink, #14142b) 90%, transparent) 100%)`,
               backgroundSize: '250% 100%',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',

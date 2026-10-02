@@ -54,7 +54,7 @@ export function Menu({ trigger, children, align = "left", showChevron = true }: 
       >
         {trigger}
         {showChevron && (
-          <ChevronDown className="ml-2 -mr-1 h-4 w-4 text-gray-500 dark:text-gray-400" aria-hidden="true" />
+          <ChevronDown className="ml-2 -mr-1 h-4 w-4 text-gray-500" aria-hidden="true" />
         )}
       </div>
 
@@ -62,7 +62,7 @@ export function Menu({ trigger, children, align = "left", showChevron = true }: 
         <div
           className={`absolute ${
             align === "right" ? "right-0" : "left-0"
-          } mt-2 w-56 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black dark:ring-gray-700 ring-opacity-9 focus:outline-none z-50`}
+          } mt-2 w-56 rounded-md bg-surface shadow-lg ring-1 ring-black ring-opacity-9 focus:outline-none z-50`}
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="menu-button"
@@ -97,8 +97,8 @@ export function MenuItem({
     <button
       type="button"
       className={`relative flex h-full w-full items-center justify-between gap-2 whitespace-nowrap rounded-full px-3.5
-        ${disabled ? "cursor-not-allowed text-slate-300" : danger ? "text-rose-600" : "text-[#14142b]"}
-        ${isActive ? "bg-black/[0.03]" : ""}
+        ${disabled ? "cursor-not-allowed text-slate-300" : danger ? "text-rose-600 dark:text-rose-400" : "text-ink"}
+        ${isActive ? "bg-slate-950/[0.03]" : ""}
       `}
       role="menuitem"
       onClick={onClick}
@@ -177,7 +177,7 @@ export function MenuContainer({ children }: { children: React.ReactNode }) {
         {/* Trigger — always on top */}
         <button
           type="button"
-          className={`absolute inset-x-0 top-0 z-[60] flex h-12 w-full items-center justify-between overflow-hidden rounded-full border bg-white pl-3 pr-1.5 shadow-[0_4px_14px_rgba(20,20,43,0.1)] transition-all duration-300 will-change-transform group ${
+          className={`absolute inset-x-0 top-0 z-[60] flex h-12 w-full items-center justify-between overflow-hidden rounded-full border bg-surface pl-3 pr-1.5 shadow-[0_4px_14px_rgba(20,20,43,0.1)] transition-all duration-300 will-change-transform group ${
             isExpanded
               ? "border-slate-300 shadow-[0_6px_18px_rgba(20,20,43,0.14)]"
               : "border-slate-200/90 hover:border-slate-300 active:scale-[0.98]"
@@ -216,7 +216,7 @@ export function MenuContainer({ children }: { children: React.ReactNode }) {
               }}
             >
               <div
-                className="group flex h-full w-full items-center rounded-full border border-slate-200/90 bg-white shadow-[0_4px_14px_rgba(20,20,43,0.08)] transition-[transform,box-shadow,border-color] duration-300 hover:z-50 hover:scale-[1.03] hover:border-slate-300 hover:shadow-[0_8px_22px_rgba(20,20,43,0.12)]"
+                className="group flex h-full w-full items-center rounded-full border border-slate-200/90 bg-surface shadow-[0_4px_14px_rgba(20,20,43,0.08)] transition-[transform,box-shadow,border-color] duration-300 hover:z-50 hover:scale-[1.03] hover:border-slate-300 hover:shadow-[0_8px_22px_rgba(20,20,43,0.12)]"
                 onClick={close}
               >
                 {child}

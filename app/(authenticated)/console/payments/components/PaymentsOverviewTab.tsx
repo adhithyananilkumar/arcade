@@ -30,11 +30,11 @@ function Kpi({ label, value, hint, accent }: { label: string; value: string; hin
   return (
     <div
       className={`rounded-2xl border p-4 shadow-[0_2px_10px_rgba(20,20,43,0.03)] ${
-        accent ? "border-indigo-200/80 bg-gradient-to-br from-indigo-50 to-white" : "border-slate-200/80 bg-white"
+        accent ? "border-indigo-200/80 bg-gradient-to-br from-indigo-50 to-surface dark:border-indigo-500/25 dark:from-indigo-500/10" : "border-slate-200/80 bg-surface"
       }`}
     >
       <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{label}</p>
-      <p className="mt-1.5 text-xl font-bold tracking-tight text-[#14142b] tabular-nums">{value}</p>
+      <p className="mt-1.5 text-xl font-bold tracking-tight text-ink tabular-nums">{value}</p>
       {hint && <p className="mt-1 text-[11.5px] font-medium text-slate-500">{hint}</p>}
     </div>
   );
@@ -81,7 +81,7 @@ export function PaymentsOverviewTab({
     [data, currency],
   );
 
-  if (error) return <p className="rounded-2xl bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-700">{error}</p>;
+  if (error) return <p className="rounded-2xl bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">{error}</p>;
   if (!data) {
     return (
       <div className="flex justify-center py-20">
@@ -134,9 +134,9 @@ export function PaymentsOverviewTab({
         <button
           type="button"
           onClick={onOpenIssues}
-          className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-left"
+          className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-left dark:border-amber-500/25 dark:bg-amber-500/10"
         >
-          <span className="flex items-start gap-2 text-xs font-semibold text-amber-900">
+          <span className="flex items-start gap-2 text-xs font-semibold text-amber-900 dark:text-amber-200">
             <AlertTriangle size={15} className="mt-px shrink-0" />
             <span>
               {[
@@ -150,13 +150,13 @@ export function PaymentsOverviewTab({
               need a decision.
             </span>
           </span>
-          <ArrowRight size={15} className="shrink-0 text-amber-700" />
+          <ArrowRight size={15} className="shrink-0 text-amber-700 dark:text-amber-300" />
         </button>
       )}
 
       <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
-        <section className="rounded-2xl border border-slate-200/80 bg-white p-5">
-          <h3 className="mb-4 text-sm font-bold text-[#14142b]">Collected per day</h3>
+        <section className="rounded-2xl border border-slate-200/80 bg-surface p-5">
+          <h3 className="mb-4 text-sm font-bold text-ink">Collected per day</h3>
           {series.length === 0 ? (
             <p className="py-16 text-center text-xs font-medium text-slate-400">No payments in this period.</p>
           ) : (
@@ -186,9 +186,9 @@ export function PaymentsOverviewTab({
         </section>
 
         <div className="space-y-5">
-          <section className="rounded-2xl border border-slate-200/80 bg-white p-5">
-            <h3 className="text-sm font-bold text-[#14142b]">Checkout conversion</h3>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-[#14142b] tabular-nums">
+          <section className="rounded-2xl border border-slate-200/80 bg-surface p-5">
+            <h3 className="text-sm font-bold text-ink">Checkout conversion</h3>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-ink tabular-nums">
               {funnel.conversionPercent === null ? "—" : `${funnel.conversionPercent}%`}
             </p>
             <p className="text-[11.5px] font-medium text-slate-500">of checkouts opened ended paid</p>
@@ -196,16 +196,16 @@ export function PaymentsOverviewTab({
               <dt className="text-slate-500">Opened</dt>
               <dd className="text-right font-semibold tabular-nums">{funnel.ordersOpened}</dd>
               <dt className="text-slate-500">Paid</dt>
-              <dd className="text-right font-semibold tabular-nums text-emerald-600">{funnel.ordersPaid}</dd>
+              <dd className="text-right font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">{funnel.ordersPaid}</dd>
               <dt className="text-slate-500">Expired or abandoned</dt>
               <dd className="text-right font-semibold tabular-nums">{funnel.ordersExpired}</dd>
               <dt className="text-slate-500">Declined attempts</dt>
-              <dd className="text-right font-semibold tabular-nums text-rose-600">{funnel.failedAttempts}</dd>
+              <dd className="text-right font-semibold tabular-nums text-rose-600 dark:text-rose-400">{funnel.failedAttempts}</dd>
             </dl>
           </section>
 
-          <section className="rounded-2xl border border-slate-200/80 bg-white p-5">
-            <h3 className="mb-3 text-sm font-bold text-[#14142b]">By content type</h3>
+          <section className="rounded-2xl border border-slate-200/80 bg-surface p-5">
+            <h3 className="mb-3 text-sm font-bold text-ink">By content type</h3>
             {data.byType.filter((t) => t.currency === currency).length === 0 ? (
               <p className="text-xs text-slate-400">Nothing yet.</p>
             ) : (
@@ -234,9 +234,9 @@ export function PaymentsOverviewTab({
         </div>
       </div>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white">
+      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-surface">
         <div className="border-b border-slate-100 px-5 py-4">
-          <h3 className="text-sm font-bold text-[#14142b]">Largest balances owed</h3>
+          <h3 className="text-sm font-bold text-ink">Largest balances owed</h3>
         </div>
         <ul className="divide-y divide-slate-100">
           {data.topChannels.length === 0 && <li className="px-5 py-8 text-center text-xs text-slate-400">No channel has collected anything yet.</li>}
@@ -254,7 +254,7 @@ export function PaymentsOverviewTab({
                   </span>
                 </span>
                 <span className="text-right">
-                  <span className="block text-sm font-bold tabular-nums text-[#14142b]">{formatMoney(c.payableMinor, c.currency)}</span>
+                  <span className="block text-sm font-bold tabular-nums text-ink">{formatMoney(c.payableMinor, c.currency)}</span>
                   <span className="text-[11px] tabular-nums text-slate-400">of {formatMoney(c.grossMinor, c.currency)} collected</span>
                 </span>
               </button>

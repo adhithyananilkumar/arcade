@@ -233,11 +233,11 @@ export default function OrganizationDetailsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 pb-6">
         <div>
-          <Link href="/organizations" className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-indigo-600 mb-3 transition-colors">
+          <Link href="/organizations" className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-indigo-600 mb-3 transition-colors dark:hover:text-indigo-400">
             <ArrowLeft size={16} /> Back to Organizations
           </Link>
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 overflow-hidden border border-gray-100">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 overflow-hidden border border-gray-100 dark:bg-indigo-500/10 dark:text-indigo-400">
               {org.logoUrl ? (
                 <img src={getLogoUrl(org.logoUrl)} alt="" className="h-full w-full object-cover" />
               ) : (
@@ -259,7 +259,7 @@ export default function OrganizationDetailsPage() {
           <button 
             onClick={handleLeave}
             disabled={isLeaving}
-            className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50"
+            className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50 dark:border-red-500/25 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/15"
           >
             {isLeaving ? 'Leaving...' : 'Leave Organization'}
           </button>
@@ -274,7 +274,7 @@ export default function OrganizationDetailsPage() {
               onClick={() => setActiveTab('members')}
               className={`border-b-2 py-4 px-1 text-sm font-semibold transition-all ${
                 activeTab === 'members'
-                  ? 'border-indigo-600 text-indigo-600'
+                  ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                   : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
               }`}
             >
@@ -284,7 +284,7 @@ export default function OrganizationDetailsPage() {
               onClick={() => setActiveTab('settings')}
               className={`border-b-2 py-4 px-1 text-sm font-semibold transition-all ${
                 activeTab === 'settings'
-                  ? 'border-indigo-600 text-indigo-600'
+                  ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                   : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
               }`}
             >
@@ -300,7 +300,7 @@ export default function OrganizationDetailsPage() {
         
         {/* Members List */}
         <div className="lg:col-span-2">
-          <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <div className="rounded-2xl border border-gray-200 bg-surface shadow-sm overflow-hidden">
             <div className="border-b border-gray-200 px-6 py-5">
               <h3 className="text-lg font-bold text-gray-900">Members</h3>
             </div>
@@ -320,7 +320,7 @@ export default function OrganizationDetailsPage() {
                       <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                         {member.user.fullName}
                         {member.user.id === user?.id && (
-                          <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-600 uppercase tracking-wider">You</span>
+                          <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-600 uppercase tracking-wider dark:bg-indigo-500/10 dark:text-indigo-400">You</span>
                         )}
                       </p>
                       <p className="text-xs text-gray-500">{member.user.email}</p>
@@ -333,7 +333,7 @@ export default function OrganizationDetailsPage() {
                         <select
                           value={member.role}
                           onChange={(e) => handleRoleChange(member.user.id, e.target.value)}
-                          className="text-xs rounded-xl border-gray-200 border bg-white px-2.5 py-1.5 font-semibold text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm transition-all"
+                          className="text-xs rounded-xl border-gray-200 border bg-surface px-2.5 py-1.5 font-semibold text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm transition-all"
                         >
                           <option value="MEMBER">Member</option>
                           <option value="ADMIN">Admin</option>
@@ -345,7 +345,7 @@ export default function OrganizationDetailsPage() {
                         
                         <button
                           onClick={() => handleRemoveMember(member.user.id)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-xl transition-all"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-xl transition-all dark:hover:text-red-300 dark:hover:bg-red-500/10"
                           title="Remove Member"
                         >
                           <Trash2 size={16} />
@@ -353,11 +353,11 @@ export default function OrganizationDetailsPage() {
                       </div>
                     ) : (
                       <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider ${
-                        member.role === 'OWNER' ? 'bg-purple-100 text-purple-700' :
-                        member.role === 'ADMIN' ? 'bg-indigo-100 text-indigo-700' :
-                        member.role === 'CONTENT_CREATOR' ? 'bg-amber-100 text-amber-700' :
-                        member.role === 'STAFF' ? 'bg-blue-100 text-blue-700' :
-                        member.role === 'STUDENT' ? 'bg-emerald-100 text-emerald-700' :
+                        member.role === 'OWNER' ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300' :
+                        member.role === 'ADMIN' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300' :
+                        member.role === 'CONTENT_CREATOR' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
+                        member.role === 'STAFF' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300' :
+                        member.role === 'STUDENT' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
                         'bg-gray-100 text-gray-600'
                       }`}>
                         {member.role === 'OWNER' && <Shield size={12} />}
@@ -377,10 +377,10 @@ export default function OrganizationDetailsPage() {
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sticky top-24"
+              className="rounded-2xl border border-gray-200 bg-surface p-6 shadow-sm sticky top-24"
             >
               <div className="flex items-center gap-3 mb-2">
-                <div className="rounded-lg bg-indigo-50 p-2 text-indigo-600">
+                <div className="rounded-lg bg-indigo-50 p-2 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
                   <Mail size={20} />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900">Invite Team Member</h3>
@@ -411,7 +411,7 @@ export default function OrganizationDetailsPage() {
                     id="role"
                     value={inviteRole}
                     onChange={(e) => setInviteRole(e.target.value)}
-                    className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2.5 border bg-white"
+                    className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2.5 border bg-surface"
                   >
                     <option value="MEMBER">Member</option>
                     <option value="ADMIN">Admin</option>
@@ -422,13 +422,13 @@ export default function OrganizationDetailsPage() {
                 </div>
 
                 {inviteError && (
-                  <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 font-medium">
+                  <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 font-medium dark:bg-red-500/10 dark:text-red-400">
                     {inviteError}
                   </div>
                 )}
                 
                 {inviteSuccess && (
-                  <div className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700 font-medium flex items-center gap-2">
+                  <div className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700 font-medium flex items-center gap-2 dark:bg-emerald-500/10 dark:text-emerald-300">
                     <CheckCircle2 size={18} className="text-emerald-500" />
                     Invitation sent successfully! Check backend console for raw token.
                   </div>
@@ -468,7 +468,7 @@ export default function OrganizationDetailsPage() {
     >
       {/* Left side: Logo upload */}
       <div className="lg:col-span-1 space-y-6">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-gray-200 bg-surface p-6 shadow-sm">
           <h3 className="text-lg font-bold text-gray-900 mb-4">Organization Logo</h3>
           <div className="flex flex-col items-center gap-4">
             <div className="relative flex h-32 w-32 items-center justify-center rounded-2xl border border-gray-200 bg-gray-50 overflow-hidden group shadow-inner">
@@ -495,14 +495,14 @@ export default function OrganizationDetailsPage() {
             <button
               onClick={() => logoInputRef.current?.click()}
               disabled={isUploadingLogo}
-              className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-all disabled:opacity-50"
+              className="flex items-center gap-2 rounded-xl border border-gray-200 bg-surface px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-all disabled:opacity-50"
             >
               <Camera size={16} />
               {logoUrl ? 'Change Logo' : 'Upload Logo'}
             </button>
             
             {logoError && (
-              <p className="text-xs text-red-600 font-medium text-center">{logoError}</p>
+              <p className="text-xs text-red-600 font-medium text-center dark:text-red-400">{logoError}</p>
             )}
           </div>
         </div>
@@ -510,7 +510,7 @@ export default function OrganizationDetailsPage() {
 
       {/* Right side: Settings Form */}
       <div className="lg:col-span-2">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-gray-200 bg-surface p-6 shadow-sm">
           <h3 className="text-lg font-bold text-gray-900 mb-6">Profile Details</h3>
           
           <form onSubmit={handleSettingsSubmit} className="space-y-6">
@@ -576,7 +576,7 @@ export default function OrganizationDetailsPage() {
                   placeholder="e.g. Principal, Chairman, Director"
                   value={adminTitle}
                   onChange={(e) => setAdminTitle(e.target.value)}
-                  className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2.5 border bg-white"
+                  className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2.5 border bg-surface"
                 />
               </div>
 
@@ -602,13 +602,13 @@ export default function OrganizationDetailsPage() {
             </div>
 
             {settingsError && (
-              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 font-medium">
+              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 font-medium dark:bg-red-500/10 dark:text-red-400">
                 {settingsError}
               </div>
             )}
             
             {settingsSuccess && (
-              <div className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700 font-medium flex items-center gap-2">
+              <div className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700 font-medium flex items-center gap-2 dark:bg-emerald-500/10 dark:text-emerald-300">
                 <CheckCircle2 size={18} className="text-emerald-500" />
                 Settings updated successfully!
               </div>
@@ -658,7 +658,7 @@ function OrgActivityLog({ orgId }: { orgId: string }) {
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+    <div className="rounded-2xl border border-gray-200 bg-surface shadow-sm overflow-hidden">
       <div className="border-b border-gray-200 px-6 py-5 flex justify-between items-center">
         <h3 className="text-lg font-bold text-gray-900">Activity Log</h3>
         <span className="text-sm text-gray-500">Page {page + 1} of {totalPages === 0 ? 1 : totalPages}</span>
@@ -687,14 +687,14 @@ function OrgActivityLog({ orgId }: { orgId: string }) {
           <button
             onClick={() => loadLogs(page - 1)}
             disabled={page === 0}
-            className="rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            className="rounded border border-gray-200 bg-surface px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
             Previous
           </button>
           <button
             onClick={() => loadLogs(page + 1)}
             disabled={page >= totalPages - 1}
-            className="rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            className="rounded border border-gray-200 bg-surface px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
             Next
           </button>

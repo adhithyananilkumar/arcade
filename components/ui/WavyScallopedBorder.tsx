@@ -8,7 +8,7 @@ export interface WavyScallopedBorderProps {
 }
 
 export const WavyScallopedBorder: React.FC<WavyScallopedBorderProps> = ({
-  className = 'text-slate-400 dark:text-slate-500',
+  className = 'text-slate-400',
   strokeWidth = 2.5
 }) => {
   // Smooth continuous wavy/scalloped bezier curve around all 4 sides matching reference image

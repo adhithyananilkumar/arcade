@@ -36,6 +36,7 @@ const bricolage = Bricolage_Grotesque({
 
 
 import Providers from "@/apps/core/Providers";
+import { APPEARANCE_BOOT_SCRIPT } from "@/infrastructure/state/theme.store";
 import { TooltipProvider } from "@/shared/design-system/ui/tooltip";
 
 
@@ -57,6 +58,8 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* Applies the saved theme before first paint — no flash of light theme for dark/glass users. */}
+        <script dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT_SCRIPT }} />
         <link rel="preload" href="/ajce.svg" as="image" type="image/svg+xml" />
         <link rel="preload" href="/arcade.svg" as="image" type="image/svg+xml" />
       </head>

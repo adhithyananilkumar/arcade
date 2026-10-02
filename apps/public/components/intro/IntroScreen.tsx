@@ -119,7 +119,7 @@ export function IntroScreen({ onAppReady, onDone }: IntroScreenProps) {
         pointerEvents: "none",
         userSelect: "none",
         background:
-          "radial-gradient(ellipse 90% 70% at 50% 42%, #f6f6f6 0%, #ffffff 65%)",
+          "var(--theme-wash, radial-gradient(ellipse 90% 70% at 50% 42%, #f6f6f6 0%, #ffffff 65%))",
       }}
     >
       {/* ── Scene 1 — AJCE Identity ───────────────────────────────────── */}
@@ -187,7 +187,7 @@ export function IntroScreen({ onAppReady, onDone }: IntroScreenProps) {
             fontFamily: '"Welcome", "Amira Grace", cursive',
             fontSize: "clamp(46px, 6vw, 62px)",
             lineHeight: 1.15,
-            color: "#205CA8",
+            color: "oklch(from #205CA8 max(l, var(--fg-lift, 0)) c h)",
             whiteSpace: "nowrap",
             letterSpacing: "0.02em",
             marginTop: 10,

@@ -60,7 +60,7 @@ export function SideNav({ sections, activeKey, ariaLabel, className }: SideNavPr
         .map((section, idx) => (
           <div key={section.title ?? idx} className="flex flex-col gap-1.5">
             {section.title && (
-              <p className="px-4 pb-0.5 text-[10.5px] font-bold uppercase tracking-[0.08em] text-slate-400 dark:text-neutral-500">
+              <p className="px-4 pb-0.5 text-[10.5px] font-bold uppercase tracking-[0.08em] text-slate-400">
                 {section.title}
               </p>
             )}
@@ -87,7 +87,7 @@ function SideNavLink({ item, active }: { item: SideNavItem; active: boolean }) {
             : 'border border-sky-200 bg-sky-100/90 font-bold text-sky-950 shadow-xs dark:border-sky-800/60 dark:bg-sky-950/70 dark:text-sky-200'
           : item.danger
             ? 'text-rose-700 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-950/40'
-            : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-neutral-800',
+            : 'text-slate-700 hover:bg-slate-100',
       )}
     >
       <span
@@ -100,7 +100,7 @@ function SideNavLink({ item, active }: { item: SideNavItem; active: boolean }) {
       </span>
       <span className="truncate text-xs font-semibold">{item.label}</span>
       {!!item.count && (
-        <span className="ml-auto rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-bold text-white dark:bg-white dark:text-slate-900">
+        <span className="ml-auto rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-bold text-on-ink">
           {item.count}
         </span>
       )}
@@ -133,7 +133,7 @@ export function SideNavTabs({ items, activeKey, ariaLabel, className }: SideNavT
                 ? item.danger
                   ? 'border border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-900/60 dark:bg-rose-950/50 dark:text-rose-200'
                   : 'border border-sky-200 bg-sky-100/90 text-sky-950 dark:border-sky-800/60 dark:bg-sky-950/70 dark:text-sky-200'
-                : 'border border-slate-200 bg-white/90 text-slate-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-slate-300',
+                : 'border border-slate-200 bg-surface/90 text-slate-600',
             )}
           >
             <span
@@ -146,7 +146,7 @@ export function SideNavTabs({ items, activeKey, ariaLabel, className }: SideNavT
             </span>
             {item.label}
             {!!item.count && (
-              <span className="rounded-full bg-slate-900 px-1.5 text-[10px] font-bold text-white dark:bg-white dark:text-slate-900">
+              <span className="rounded-full bg-slate-900 px-1.5 text-[10px] font-bold text-on-ink">
                 {item.count}
               </span>
             )}

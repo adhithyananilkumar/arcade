@@ -47,16 +47,16 @@ export default function AdminChannelsPage() {
           <button
             type="button"
             onClick={() => setActiveTab('DELETION_REQUESTS')}
-            className="flex w-full items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3.5 text-left transition-colors hover:bg-rose-100/80"
+            className="flex w-full items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3.5 text-left transition-colors hover:bg-rose-100/80 dark:border-rose-500/25 dark:bg-rose-500/10 dark:hover:bg-rose-500/15"
           >
-            <span className="grid size-10 place-items-center rounded-lg bg-rose-100 text-rose-600">
+            <span className="grid size-10 place-items-center rounded-lg bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400">
               <AlertTriangle size={18} />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-lg font-bold tabular-nums text-rose-700">
+              <span className="block text-lg font-bold tabular-nums text-rose-700 dark:text-rose-300">
                 {deletionRequestCount}
               </span>
-              <span className="text-[12px] font-medium text-rose-700/80">
+              <span className="text-[12px] font-medium text-rose-700/80 dark:text-rose-300">
                 deletion {deletionRequestCount === 1 ? 'request' : 'requests'} awaiting review
               </span>
             </span>
@@ -65,7 +65,7 @@ export default function AdminChannelsPage() {
       )}
 
       <div className="flex-none flex flex-wrap items-center justify-between gap-3 sm:sticky sm:top-0 sm:z-20">
-        <div className="flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-white/80 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
+        <div className="flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-surface/80 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
           {tabs.map((tab) => {
             const active = activeTab === tab.id;
             return (
@@ -77,10 +77,10 @@ export default function AdminChannelsPage() {
                   active
                     ? tab.danger
                       ? 'bg-rose-600 text-white shadow-sm'
-                      : 'bg-[#14142b] text-white shadow-sm'
+                      : 'bg-ink text-on-ink shadow-sm'
                     : tab.danger
-                      ? 'text-slate-500 hover:bg-rose-50 hover:text-rose-600'
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-[#14142b]'
+                      ? 'text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400'
+                      : 'text-slate-500 hover:bg-slate-50 hover:text-ink'
                 }`}
               >
                 <tab.icon size={14} />
@@ -102,7 +102,7 @@ export default function AdminChannelsPage() {
         <button
           type="button"
           onClick={() => setIsInviteOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-4 py-2 text-[12px] font-semibold text-white shadow-sm transition-colors hover:bg-[#14142b]/90"
+          className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink/90"
         >
           <UserPlus size={14} />
           Invite User

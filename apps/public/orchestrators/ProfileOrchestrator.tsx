@@ -158,7 +158,7 @@ export function ProfileOrchestrator({ handle }: { handle: string }) {
 export function ProfileFrame({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <div className="pointer-events-none fixed inset-0 z-0 bg-[#f8fafc] dark:bg-[#0b0f19]" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-slate-50" />
       <motion.div
         className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-16 pt-20 sm:px-6 sm:pt-24 lg:px-8"
         initial={{ opacity: 0, y: 15 }}
@@ -172,7 +172,7 @@ export function ProfileFrame({ children }: { children: React.ReactNode }) {
 }
 
 const PRIMARY_ACTION =
-  'inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white shadow-2xs transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100';
+  'inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-on-ink shadow-2xs transition-colors hover:bg-slate-800';
 
 function ShareButton() {
   const [copied, setCopied] = useState(false);
@@ -193,7 +193,7 @@ function ShareButton() {
     <button
       type="button"
       onClick={copy}
-      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-surface px-4 py-2 text-xs font-bold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50"
     >
       {copied ? <Check size={14} /> : <Link2 size={14} />}
       {copied ? 'Copied' : 'Share'}

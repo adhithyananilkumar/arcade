@@ -29,21 +29,21 @@ export const PricingSummary: React.FC<Props> = ({ form }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 sticky top-6">
-      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Summary</h3>
+    <div className="bg-surface rounded-lg shadow-sm border border-gray-200 p-6 sticky top-6">
+      <h3 className="text-lg font-medium text-gray-900 mb-4">Summary</h3>
       
       <div className="space-y-4">
         {/* Pricing Summary */}
-        <div className="border-b border-gray-100 dark:border-gray-700 pb-4">
+        <div className="border-b border-gray-100 pb-4">
           <div className="flex justify-between items-start mb-1">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Pricing</span>
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <span className="text-sm text-gray-500">Pricing</span>
+            <span className="text-sm font-medium text-gray-900">
               {isFree ? 'Free' : formatCurrency(pricing.price || 0, pricing.currency || 'USD')}
             </span>
           </div>
           {pricing.pricingModel !== PricingModel.PAID && (
             <div className="flex justify-end">
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              <span className="text-xs text-gray-500">
                 Model: {pricing.pricingModel?.replace('_', ' ')}
               </span>
             </div>
@@ -52,18 +52,18 @@ export const PricingSummary: React.FC<Props> = ({ form }) => {
 
         {/* Early Bird Summary */}
         {!isFree && pricing.earlyBirdEnabled && (
-          <div className="border-b border-gray-100 dark:border-gray-700 pb-4">
+          <div className="border-b border-gray-100 pb-4">
             <div className="flex justify-between items-start mb-1">
               <span className="text-sm text-violet-600 dark:text-violet-400 flex items-center">
                 Early Bird
               </span>
-              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              <span className="text-sm font-medium text-gray-900">
                 {formatCurrency(pricing.earlyBirdPrice || 0, pricing.currency || 'USD')}
               </span>
             </div>
             {pricing.earlyBirdEndDate && (
               <div className="flex justify-end">
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-gray-500">
                   Ends {new Date(pricing.earlyBirdEndDate).toLocaleDateString()}
                 </span>
               </div>
@@ -72,16 +72,16 @@ export const PricingSummary: React.FC<Props> = ({ form }) => {
         )}
 
         {/* Registration Summary */}
-        <div className="border-b border-gray-100 dark:border-gray-700 pb-4">
+        <div className="border-b border-gray-100 pb-4">
           <div className="flex justify-between items-start mb-1">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Registration</span>
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <span className="text-sm text-gray-500">Registration</span>
+            <span className="text-sm font-medium text-gray-900">
               {pricing.registrationType?.replace('_', ' ')}
             </span>
           </div>
           <div className="flex justify-between items-start mt-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Window</span>
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[150px]">
+            <span className="text-sm text-gray-500">Window</span>
+            <span className="text-sm font-medium text-gray-900 text-right max-w-[150px]">
               {formatDateRange(pricing.registrationStart, pricing.registrationEnd)}
             </span>
           </div>
@@ -90,8 +90,8 @@ export const PricingSummary: React.FC<Props> = ({ form }) => {
         {/* Seats Summary */}
         <div className="pt-2">
           <div className="flex justify-between items-start mb-1">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Seats</span>
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <span className="text-sm text-gray-500">Seats</span>
+            <span className="text-sm font-medium text-gray-900">
               {isUnlimited ? 'Unlimited' : pricing.seatLimit}
             </span>
           </div>

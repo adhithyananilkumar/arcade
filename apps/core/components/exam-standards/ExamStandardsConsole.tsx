@@ -114,7 +114,7 @@ export function ExamStandardsConsole() {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-16">
       <header className="mb-5">
-        <h1 className="text-[1.5rem] font-bold tracking-tight text-[#14142b]">Exam standards</h1>
+        <h1 className="text-[1.5rem] font-bold tracking-tight text-ink">Exam standards</h1>
         <p className="mt-1 max-w-2xl text-[13px] font-medium text-slate-500">
           The rules every exam of a type follows. <b>Locked</b> settings are forced on exams tied to a
           course or event; <b>Default</b> settings are pre-filled and creators may change them within
@@ -132,8 +132,8 @@ export function ExamStandardsConsole() {
               onClick={() => setActive(s.planType)}
               className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-[13px] font-semibold transition-colors ${
                 active === s.planType
-                  ? 'border-[#14142b] bg-[#14142b] text-white'
-                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                  ? 'border-ink bg-ink text-on-ink'
+                  : 'border-slate-200 bg-surface text-slate-600 hover:border-slate-300'
               }`}
             >
               <Icon size={14} />
@@ -145,14 +145,14 @@ export function ExamStandardsConsole() {
 
       {draft && (
         <div className="space-y-5">
-          <section className="rounded-2xl border border-slate-200/80 bg-white p-5">
+          <section className="rounded-2xl border border-slate-200/80 bg-surface p-5">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
                 <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Name</span>
                 <input
                   value={draft.displayName}
                   onChange={(e) => setDraft({ ...draft, displayName: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-[14px] outline-none focus:border-[#14142b]"
+                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-[14px] outline-none focus:border-ink"
                 />
               </label>
               <label className="block">
@@ -163,7 +163,7 @@ export function ExamStandardsConsole() {
                   value={draft.description ?? ''}
                   onChange={(e) => setDraft({ ...draft, description: e.target.value })}
                   placeholder={planTypeMeta(draft.planType).effect}
-                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-[14px] outline-none focus:border-[#14142b]"
+                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-[14px] outline-none focus:border-ink"
                 />
               </label>
             </div>
@@ -175,7 +175,7 @@ export function ExamStandardsConsole() {
                 className="mt-0.5 size-4 rounded border-slate-300"
               />
               <span>
-                <span className="block text-[13px] font-semibold text-[#14142b]">Apply locks to standalone exams</span>
+                <span className="block text-[13px] font-semibold text-ink">Apply locks to standalone exams</span>
                 <span className="block text-[12px] font-medium text-slate-500">
                   Off: exams not tied to a course or event get these values as defaults and may change them freely.
                 </span>
@@ -189,7 +189,7 @@ export function ExamStandardsConsole() {
               .filter((s): s is ExamStandardSetting => !!s);
             if (rows.length === 0) return null;
             return (
-              <section key={group.title} className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white">
+              <section key={group.title} className="overflow-hidden rounded-2xl border border-slate-200/80 bg-surface">
                 <h2 className="border-b border-slate-100 bg-slate-50/60 px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                   {group.title}
                 </h2>
@@ -202,12 +202,12 @@ export function ExamStandardsConsole() {
             );
           })}
 
-          <div className="sticky bottom-0 flex justify-end gap-2 bg-gradient-to-t from-white via-white/90 to-transparent pt-4">
+          <div className="sticky bottom-0 flex justify-end gap-2 bg-gradient-to-t from-surface via-surface/90 to-transparent pt-4">
             <button
               type="button"
               disabled={!dirty || saving}
               onClick={() => setDraft(current ? structuredClone(current) : null)}
-              className="cursor-pointer rounded-full border border-slate-200 bg-white px-5 py-2.5 text-[13px] font-semibold text-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="cursor-pointer rounded-full border border-slate-200 bg-surface px-5 py-2.5 text-[13px] font-semibold text-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Discard
             </button>
@@ -215,7 +215,7 @@ export function ExamStandardsConsole() {
               type="button"
               disabled={!dirty || saving}
               onClick={save}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-on-ink hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
               Save standard
@@ -248,7 +248,7 @@ function SettingRow({
   return (
     <div className="grid grid-cols-1 items-center gap-3 px-5 py-3.5 md:grid-cols-[1.4fr_auto_1fr_1.4fr]">
       <div>
-        <p className="text-[13px] font-semibold text-[#14142b]">{minor ? 'Registration fee' : setting.label}</p>
+        <p className="text-[13px] font-semibold text-ink">{minor ? 'Registration fee' : setting.label}</p>
         {setting.key === 'MIN_QUESTIONS' && (
           <p className="text-[11px] font-medium text-slate-400">Publishing is refused below this.</p>
         )}
@@ -264,7 +264,7 @@ function SettingRow({
             type="button"
             onClick={() => setMode(m)}
             className={`inline-flex cursor-pointer items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold transition-colors ${
-              setting.mode === m ? 'bg-white text-[#14142b] shadow-xs' : 'text-slate-500'
+              setting.mode === m ? 'bg-surface text-ink shadow-xs' : 'text-slate-500'
             }`}
           >
             {m === 'LOCKED' ? <Lock size={11} /> : <Unlock size={11} />}
@@ -290,7 +290,7 @@ function SettingRow({
             step={setting.kind === 'DECIMAL' || minor ? '0.01' : '1'}
             value={toInput(setting.value)}
             onChange={(e) => onChange({ value: fromInput(e.target.value) })}
-            className="w-28 rounded-xl border border-slate-200 px-3 py-1.5 text-[13px] tabular-nums outline-none focus:border-[#14142b]"
+            className="w-28 rounded-xl border border-slate-200 px-3 py-1.5 text-[13px] tabular-nums outline-none focus:border-ink"
             aria-label={`${setting.label} value`}
           />
         )}
@@ -305,7 +305,7 @@ function SettingRow({
               value={toInput(setting.min)}
               placeholder="min"
               onChange={(e) => onChange({ min: fromInput(e.target.value) })}
-              className="w-20 rounded-lg border border-slate-200 px-2 py-1 text-[12px] tabular-nums outline-none focus:border-[#14142b]"
+              className="w-20 rounded-lg border border-slate-200 px-2 py-1 text-[12px] tabular-nums outline-none focus:border-ink"
               aria-label={`${setting.label} minimum`}
             />
             <span>to</span>
@@ -314,7 +314,7 @@ function SettingRow({
               value={toInput(setting.max)}
               placeholder="max"
               onChange={(e) => onChange({ max: fromInput(e.target.value) })}
-              className="w-20 rounded-lg border border-slate-200 px-2 py-1 text-[12px] tabular-nums outline-none focus:border-[#14142b]"
+              className="w-20 rounded-lg border border-slate-200 px-2 py-1 text-[12px] tabular-nums outline-none focus:border-ink"
               aria-label={`${setting.label} maximum`}
             />
           </>

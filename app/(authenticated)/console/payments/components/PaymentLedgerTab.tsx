@@ -59,7 +59,7 @@ function GatewayBadge({ gateway }: { gateway: string }) {
   const normalized = gateway?.toUpperCase() || "";
   if (normalized === "RAZORPAY") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-md border border-sky-200 bg-sky-50 px-2 py-0.5 text-[11px] font-semibold text-sky-700">
+      <span className="inline-flex items-center gap-1 rounded-md border border-sky-200 bg-sky-50 px-2 py-0.5 text-[11px] font-semibold text-sky-700 dark:border-sky-500/25 dark:bg-sky-500/10 dark:text-sky-300">
         <CreditCard size={11} className="text-sky-500" />
         Razorpay
       </span>
@@ -67,7 +67,7 @@ function GatewayBadge({ gateway }: { gateway: string }) {
   }
   if (normalized === "STRIPE") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-md border border-purple-200 bg-purple-50 px-2 py-0.5 text-[11px] font-semibold text-purple-700">
+      <span className="inline-flex items-center gap-1 rounded-md border border-purple-200 bg-purple-50 px-2 py-0.5 text-[11px] font-semibold text-purple-700 dark:border-purple-500/25 dark:bg-purple-500/10 dark:text-purple-300">
         <CreditCard size={11} className="text-purple-500" />
         Stripe
       </span>
@@ -205,7 +205,7 @@ export function PaymentLedgerTab({
     <div className="flex w-full flex-col h-full space-y-4 pb-6">
       {/* Top Segmented Status Pill Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-white/80 p-1 shadow-[0_2px_8px_rgba(20,20,43,0.04)] backdrop-blur-md">
+        <div className="flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-surface/80 p-1 shadow-[0_2px_8px_rgba(20,20,43,0.04)] backdrop-blur-md">
           {STATUS_FILTERS.map((tab) => {
             const isSelected = tab.id === "ALL" ? status === "" : status === tab.id;
             return (
@@ -218,8 +218,8 @@ export function PaymentLedgerTab({
                 }}
                 className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
                   isSelected
-                    ? "bg-[#14142b] text-white shadow-xs"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-[#14142b]"
+                    ? "bg-ink text-on-ink shadow-xs"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-ink"
                 }`}
               >
                 {tab.label}
@@ -235,7 +235,7 @@ export function PaymentLedgerTab({
           <button
             type="button"
             onClick={handleResetFilters}
-            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-2xs"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-2xs"
           >
             <RotateCcw size={12} />
             <span>Reset filters</span>
@@ -256,7 +256,7 @@ export function PaymentLedgerTab({
               setOrderIdSearch(e.target.value);
               setPage(0);
             }}
-            className="w-full rounded-xl border border-slate-200/90 bg-white py-2 pl-9 pr-8 text-xs font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition-all"
+            className="w-full rounded-xl border border-slate-200/90 bg-surface py-2 pl-9 pr-8 text-xs font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition-all"
           />
           {orderIdSearch && (
             <button
@@ -281,13 +281,13 @@ export function PaymentLedgerTab({
               setResourceOpen(false);
               setDateRangeOpen(false);
             }}
-            className={`inline-flex items-center gap-2 rounded-xl border bg-white px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all ${
+            className={`inline-flex items-center gap-2 rounded-xl border bg-surface px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all ${
               gatewayOpen || gateway
                 ? "border-slate-400 ring-2 ring-slate-100 text-slate-900"
                 : "border-slate-200/90 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
             }`}
           >
-            <CreditCard size={13} className={gateway ? "text-indigo-600" : "text-slate-400"} />
+            <CreditCard size={13} className={gateway ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400"} />
             <span>{GATEWAYS.find((g) => g.id === gateway)?.label || "All Gateways"}</span>
             <ChevronDown
               size={13}
@@ -298,7 +298,7 @@ export function PaymentLedgerTab({
           </button>
 
           {gatewayOpen && (
-            <div className="absolute left-0 top-full z-50 mt-1.5 min-w-[180px] rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-[0_12px_30px_rgba(20,20,43,0.12)] backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-100">
+            <div className="absolute left-0 top-full z-50 mt-1.5 min-w-[180px] rounded-2xl border border-slate-200/90 bg-surface p-1.5 shadow-[0_12px_30px_rgba(20,20,43,0.12)] backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-100">
               <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                 Payment Gateway
               </div>
@@ -339,13 +339,13 @@ export function PaymentLedgerTab({
               setGatewayOpen(false);
               setDateRangeOpen(false);
             }}
-            className={`inline-flex items-center gap-2 rounded-xl border bg-white px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all ${
+            className={`inline-flex items-center gap-2 rounded-xl border bg-surface px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all ${
               resourceOpen || resourceType
                 ? "border-slate-400 ring-2 ring-slate-100 text-slate-900"
                 : "border-slate-200/90 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
             }`}
           >
-            <Layers size={13} className={resourceType ? "text-indigo-600" : "text-slate-400"} />
+            <Layers size={13} className={resourceType ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400"} />
             <span>{RESOURCE_TYPES.find((r) => r.id === resourceType)?.label || "All Resources"}</span>
             <ChevronDown
               size={13}
@@ -356,7 +356,7 @@ export function PaymentLedgerTab({
           </button>
 
           {resourceOpen && (
-            <div className="absolute left-0 top-full z-50 mt-1.5 min-w-[180px] rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-[0_12px_30px_rgba(20,20,43,0.12)] backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-100">
+            <div className="absolute left-0 top-full z-50 mt-1.5 min-w-[180px] rounded-2xl border border-slate-200/90 bg-surface p-1.5 shadow-[0_12px_30px_rgba(20,20,43,0.12)] backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-100">
               <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                 Resource Type
               </div>
@@ -397,13 +397,13 @@ export function PaymentLedgerTab({
               setGatewayOpen(false);
               setResourceOpen(false);
             }}
-            className={`inline-flex items-center gap-2 rounded-xl border bg-white px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all ${
+            className={`inline-flex items-center gap-2 rounded-xl border bg-surface px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all ${
               dateRangeOpen || createdFrom || createdTo
                 ? "border-slate-400 ring-2 ring-slate-100 text-slate-900"
                 : "border-slate-200/90 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
             }`}
           >
-            <Calendar size={13} className={createdFrom || createdTo ? "text-indigo-600" : "text-slate-400"} />
+            <Calendar size={13} className={createdFrom || createdTo ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400"} />
             <span>
               {createdFrom || createdTo
                 ? `${createdFrom || "Start"} → ${createdTo || "End"}`
@@ -418,7 +418,7 @@ export function PaymentLedgerTab({
           </button>
 
           {dateRangeOpen && (
-            <div className="absolute left-0 top-full z-50 mt-1.5 min-w-[280px] rounded-2xl border border-slate-200/90 bg-white p-3.5 shadow-[0_12px_30px_rgba(20,20,43,0.12)] backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-100">
+            <div className="absolute left-0 top-full z-50 mt-1.5 min-w-[280px] rounded-2xl border border-slate-200/90 bg-surface p-3.5 shadow-[0_12px_30px_rgba(20,20,43,0.12)] backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-100">
               <div className="text-[11px] font-bold text-slate-900 mb-2.5">Filter by Created Date</div>
               <div className="space-y-2">
                 <div>
@@ -430,7 +430,7 @@ export function PaymentLedgerTab({
                       setCreatedFrom(e.target.value);
                       setPage(0);
                     }}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-1.5 text-xs text-slate-800 outline-none focus:border-slate-400 focus:bg-white"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-1.5 text-xs text-slate-800 outline-none focus:border-slate-400 focus:bg-surface"
                   />
                 </div>
                 <div>
@@ -442,7 +442,7 @@ export function PaymentLedgerTab({
                       setCreatedTo(e.target.value);
                       setPage(0);
                     }}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-1.5 text-xs text-slate-800 outline-none focus:border-slate-400 focus:bg-white"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-1.5 text-xs text-slate-800 outline-none focus:border-slate-400 focus:bg-surface"
                   />
                 </div>
               </div>
@@ -461,7 +461,7 @@ export function PaymentLedgerTab({
                 <button
                   type="button"
                   onClick={() => setDateRangeOpen(false)}
-                  className="rounded-lg bg-[#14142b] px-3 py-1 text-[11px] font-semibold text-white hover:bg-[#232735]"
+                  className="rounded-lg bg-ink px-3 py-1 text-[11px] font-semibold text-on-ink hover:bg-ink-hover"
                 >
                   Apply
                 </button>
@@ -472,7 +472,7 @@ export function PaymentLedgerTab({
       </div>
 
       {/* Enterprise Data Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
+      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-surface shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[960px] text-left border-collapse">
             <thead>
@@ -491,7 +491,7 @@ export function PaymentLedgerTab({
                 <tr>
                   <td colSpan={7} className="py-16 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <Loader2 className="size-6 animate-spin text-[#14142b]" />
+                      <Loader2 className="size-6 animate-spin text-ink" />
                       <span className="text-xs font-semibold text-slate-500">Loading payment ledger…</span>
                     </div>
                   </td>
@@ -548,7 +548,7 @@ export function PaymentLedgerTab({
                       >
                         <span>{row.paymentOrderId.slice(0, 10)}…</span>
                         {copiedOrderId === row.paymentOrderId ? (
-                          <CheckCheck size={12} className="text-emerald-600 shrink-0" />
+                          <CheckCheck size={12} className="text-emerald-600 shrink-0 dark:text-emerald-400" />
                         ) : (
                           <Copy size={11} className="text-slate-400 group-hover:text-slate-700 shrink-0" />
                         )}
@@ -588,11 +588,11 @@ export function PaymentLedgerTab({
 
                     {/* Amount */}
                     <td className="py-4 px-4">
-                      <span className="font-bold text-xs text-[#14142b] tracking-tight">
+                      <span className="font-bold text-xs text-ink tracking-tight">
                         {formatMoney(row.amount, row.currency)}
                       </span>
                       {row.paidAt && row.commissionMinor > 0 && (
-                        <p className="text-[10.5px] font-medium text-amber-700" title="Platform commission charged on this sale">
+                        <p className="text-[10.5px] font-medium text-amber-700 dark:text-amber-300" title="Platform commission charged on this sale">
                           {formatMoney(row.commissionMinor, row.currency)} commission
                         </p>
                       )}
@@ -635,11 +635,11 @@ export function PaymentLedgerTab({
 
       {/* Pagination Footer */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-5 py-3 text-xs text-slate-500 shadow-2xs">
+        <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-surface px-5 py-3 text-xs text-slate-500 shadow-2xs">
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
-            className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-2xs"
+            className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-surface px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-2xs"
           >
             <ChevronLeft size={13} /> Previous
           </button>
@@ -650,7 +650,7 @@ export function PaymentLedgerTab({
           <button
             onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             disabled={page >= totalPages - 1}
-            className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-2xs"
+            className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-surface px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-2xs"
           >
             Next <ChevronRight size={13} />
           </button>

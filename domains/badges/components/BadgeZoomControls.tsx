@@ -33,31 +33,31 @@ export function BadgeZoomControls({ zoom, fitPercent, onZoomChange }: BadgeZoomC
   };
 
   return (
-    <div className="flex items-center gap-1 rounded-full border border-white/40 bg-white/60 px-1.5 py-1.5 backdrop-blur-md shadow-sm">
+    <div className="flex items-center gap-1 rounded-full border border-white/40 bg-surface/60 px-1.5 py-1.5 backdrop-blur-md shadow-sm">
       <button
         type="button"
         title="Zoom out"
         onClick={() => step(-1)}
-        className="flex h-7 w-7 items-center justify-center rounded-full text-[#14142b]/60 hover:bg-[#14142b]/10 hover:text-[#14142b]"
+        className="flex h-7 w-7 items-center justify-center rounded-full text-ink/60 hover:bg-ink/10 hover:text-ink"
       >
         <Minus size={14} />
       </button>
-      <span className="w-11 text-center text-xs font-semibold text-[#14142b]/70 tabular-nums">{Math.round(displayPercent)}%</span>
+      <span className="w-11 text-center text-xs font-semibold text-ink/70 tabular-nums">{Math.round(displayPercent)}%</span>
       <button
         type="button"
         title="Zoom in"
         onClick={() => step(1)}
-        className="flex h-7 w-7 items-center justify-center rounded-full text-[#14142b]/60 hover:bg-[#14142b]/10 hover:text-[#14142b]"
+        className="flex h-7 w-7 items-center justify-center rounded-full text-ink/60 hover:bg-ink/10 hover:text-ink"
       >
         <Plus size={14} />
       </button>
-      <div className="mx-0.5 h-5 w-px bg-[#14142b]/10" />
+      <div className="mx-0.5 h-5 w-px bg-ink/10" />
       <button
         type="button"
         title="Fit to workspace"
         onClick={() => onZoomChange("fit")}
         className={`flex h-7 items-center gap-1 rounded-full px-2.5 text-xs font-semibold transition-colors ${
-          zoom === "fit" ? "bg-[#14142b] text-white" : "text-[#14142b]/60 hover:bg-[#14142b]/10 hover:text-[#14142b]"
+          zoom === "fit" ? "bg-ink text-on-ink" : "text-ink/60 hover:bg-ink/10 hover:text-ink"
         }`}
       >
         <Maximize2 size={12} />

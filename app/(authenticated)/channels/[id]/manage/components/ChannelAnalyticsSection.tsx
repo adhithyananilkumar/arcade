@@ -56,8 +56,8 @@ export function ChannelAnalyticsSection({ channelId }: { channelId: string }) {
             className={cn(
               'cursor-pointer rounded-full px-4 py-1.5 text-[12px] font-semibold transition-colors',
               timeframe === t.id
-                ? 'bg-[#14142b] text-white'
-                : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50',
+                ? 'bg-ink text-on-ink'
+                : 'border border-slate-200 bg-surface text-slate-600 hover:bg-slate-50',
             )}
           >
             {t.label}
@@ -66,7 +66,7 @@ export function ChannelAnalyticsSection({ channelId }: { channelId: string }) {
       </div>
 
       {error ? (
-        <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] font-medium text-rose-700">{error}</p>
+        <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] font-medium text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">{error}</p>
       ) : !data ? (
         <div className="flex justify-center py-16">
           <Loader2 className="animate-spin text-slate-400" size={22} />
@@ -117,12 +117,12 @@ export function ChannelAnalyticsSection({ channelId }: { channelId: string }) {
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-[13px] font-semibold text-[#14142b]">{r.learnerName}</p>
+                          <p className="truncate text-[13px] font-semibold text-ink">{r.learnerName}</p>
                           <p className="truncate text-[11.5px] font-medium text-slate-500">
                             {r.courseName} · {r.date}
                           </p>
                         </div>
-                        <span className="flex shrink-0 items-center gap-0.5 text-[12px] font-bold text-amber-600">
+                        <span className="flex shrink-0 items-center gap-0.5 text-[12px] font-bold text-amber-600 dark:text-amber-400">
                           <Star size={12} className="fill-amber-400 text-amber-400" />
                           {r.rating}
                         </span>
@@ -150,9 +150,9 @@ export function ChannelAnalyticsSection({ channelId }: { channelId: string }) {
 
 function Stat({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
   return (
-    <div className="rounded-[20px] border border-slate-200/80 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
+    <div className="rounded-[20px] border border-slate-200/80 bg-surface p-4">
       <p className="text-[12px] font-semibold text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-bold tabular-nums text-[#14142b] dark:text-white">
+      <p className="mt-2 text-2xl font-bold tabular-nums text-ink">
         {value}
         {suffix && <span className="ml-1 text-sm font-semibold text-slate-400">{suffix}</span>}
       </p>

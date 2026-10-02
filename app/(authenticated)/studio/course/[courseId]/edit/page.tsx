@@ -16,7 +16,7 @@ export default async function EditCoursePage({ params }: Props) {
   return (
     // Removes negative margins since the global layout doesn't use padding anymore.
     // Ensure height works within the new flex layout.
-    <div className="flex flex-col flex-1 bg-white">
+    <div className="flex flex-col flex-1 bg-surface">
       <CourseWorkspace courseId={courseId} />
     </div>
   );

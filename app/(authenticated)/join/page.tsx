@@ -45,7 +45,7 @@ function JoinOrganizationContent() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md rounded-3xl border border-gray-200 bg-white p-8 text-center shadow-xl shadow-indigo-100/50"
+        className="w-full max-w-md rounded-3xl border border-gray-200 bg-surface p-8 text-center shadow-xl shadow-indigo-100/50"
       >
         {status === 'loading' && (
           <div className="flex flex-col items-center">
@@ -59,7 +59,7 @@ function JoinOrganizationContent() {
 
         {status === 'success' && (
           <div className="flex flex-col items-center">
-            <div className="mb-4 rounded-full bg-emerald-50 p-4 text-emerald-500">
+            <div className="mb-4 rounded-full bg-emerald-50 p-4 text-emerald-500 dark:bg-emerald-500/10">
               <CheckCircle2 size={48} />
             </div>
             <h2 className="text-2xl font-bold text-gray-900">Invitation Accepted!</h2>
@@ -69,7 +69,7 @@ function JoinOrganizationContent() {
 
         {status === 'error' && (
           <div className="flex flex-col items-center">
-            <div className="mb-4 rounded-full bg-red-50 p-4 text-red-500">
+            <div className="mb-4 rounded-full bg-red-50 p-4 text-red-500 dark:bg-red-500/10">
               <XCircle size={48} />
             </div>
             <h2 className="text-2xl font-bold text-gray-900">Invitation Failed</h2>

@@ -48,13 +48,13 @@ export default function NewExamPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-8">
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-surface p-8 shadow-sm">
         <div className="mb-6 flex items-center gap-3">
-          <span className="grid size-10 place-items-center rounded-xl bg-[#14142b]/[0.06] text-[#14142b]">
+          <span className="grid size-10 place-items-center rounded-xl bg-ink/[0.06] text-ink">
             <GraduationCap size={20} />
           </span>
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-[#14142b]">Create a new exam</h1>
+            <h1 className="text-lg font-bold tracking-tight text-ink">Create a new exam</h1>
             <p className="text-xs text-slate-500">
               Starts standalone. Attach it to a course or event later, or leave it standalone.
             </p>
@@ -71,7 +71,7 @@ export default function NewExamPage() {
           )}
 
           <div>
-            <label htmlFor="exam-title" className="mb-1.5 block text-sm font-semibold text-[#14142b]">
+            <label htmlFor="exam-title" className="mb-1.5 block text-sm font-semibold text-ink">
               Title
             </label>
             <input
@@ -85,7 +85,7 @@ export default function NewExamPage() {
           </div>
 
           <div>
-            <label htmlFor="exam-purpose" className="mb-1.5 block text-sm font-semibold text-[#14142b]">
+            <label htmlFor="exam-purpose" className="mb-1.5 block text-sm font-semibold text-ink">
               Purpose <span className="font-normal text-slate-400">(optional)</span>
             </label>
             <input
@@ -106,7 +106,7 @@ export default function NewExamPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+            className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink"
           >
             Cancel
           </button>
@@ -114,7 +114,7 @@ export default function NewExamPage() {
             type="button"
             onClick={handleCreate}
             disabled={creating || loadingChannels || (channels.length > 1 && !channelId)}
-            className="flex items-center gap-2 rounded-xl bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black disabled:opacity-60"
+            className="flex items-center gap-2 rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink transition-colors hover:bg-ink-hover disabled:opacity-60"
           >
             {creating && <Loader2 size={14} className="animate-spin" />}
             Create exam

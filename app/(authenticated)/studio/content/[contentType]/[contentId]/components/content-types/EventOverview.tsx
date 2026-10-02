@@ -186,7 +186,7 @@ export function EventOverviewTab({
   if (tab === "analytics") {
     if (data.eventAnalytics?.status === "error") {
       return (
-        <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700">
+        <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-300">
           <AlertTriangle size={14} /> Analytics temporarily unavailable — try again shortly.
         </div>
       );
@@ -244,16 +244,16 @@ export function EventOverviewTab({
         {/* Left Column (2 cols): Details & Stats */}
         <div className="lg:col-span-2 space-y-6">
           {/* Key Details Card */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+          <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-              <h3 className="text-sm font-bold text-[#14142b] flex items-center gap-2">
-                <Sparkles size={16} className="text-blue-600" />
+              <h3 className="text-sm font-bold text-ink flex items-center gap-2">
+                <Sparkles size={16} className="text-blue-600 dark:text-blue-400" />
                 Event Details
               </h3>
               <button
                 type="button"
                 onClick={() => onSelectTab?.("settings")}
-                className="text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
+                className="text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer dark:text-blue-400 dark:hover:text-blue-300"
               >
                 Edit in Settings →
               </button>
@@ -264,7 +264,7 @@ export function EventOverviewTab({
                 <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                   Visibility
                 </div>
-                <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-700">
+                <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
                   {eventDetails?.visibility || "PUBLIC"}
                 </span>
               </div>
@@ -273,7 +273,7 @@ export function EventOverviewTab({
                 <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                   Delivery Mode
                 </div>
-                <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-700">
+                <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
                   {eventDetails?.deliveryMode || "ONLINE"}
                 </span>
               </div>
@@ -282,7 +282,7 @@ export function EventOverviewTab({
                 <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                   Language
                 </div>
-                <span className="inline-flex items-center rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-bold text-violet-700">
+                <span className="inline-flex items-center rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-bold text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
                   {formatLanguage(eventDetails?.language)}
                 </span>
               </div>
@@ -291,7 +291,7 @@ export function EventOverviewTab({
                 <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                   Event Type
                 </div>
-                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
+                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
                   {eventDetails?.eventType || "WORKSHOP"}
                 </span>
               </div>
@@ -299,45 +299,45 @@ export function EventOverviewTab({
           </div>
 
           {/* Statistics Grid Card */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
-            <h3 className="text-sm font-bold text-[#14142b] border-b border-slate-100 pb-3 mb-4">
+          <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+            <h3 className="text-sm font-bold text-ink border-b border-slate-100 pb-3 mb-4">
               Event Metrics
             </h3>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-white border border-slate-200/60 shadow-2xs">
+              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-surface border border-slate-200/60 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   <Calendar size={13} className="text-blue-500" />
                   Sessions
                 </div>
-                <div className="text-2xl font-black text-[#14142b]">{sessionsCount}</div>
+                <div className="text-2xl font-black text-ink">{sessionsCount}</div>
                 <div className="text-[11px] text-slate-400 mt-0.5">Workshop days</div>
               </div>
 
-              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-white border border-slate-200/60 shadow-2xs">
+              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-surface border border-slate-200/60 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   <FileText size={13} className="text-indigo-500" />
                   Resources
                 </div>
-                <div className="text-2xl font-black text-[#14142b]">{resourcesCount}</div>
+                <div className="text-2xl font-black text-ink">{resourcesCount}</div>
                 <div className="text-[11px] text-slate-400 mt-0.5">Attached files</div>
               </div>
 
-              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-white border border-slate-200/60 shadow-2xs">
+              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-surface border border-slate-200/60 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   <Users size={13} className="text-emerald-500" />
                   Registrations
                 </div>
-                <div className="text-2xl font-black text-[#14142b]">{registrationsCount}</div>
+                <div className="text-2xl font-black text-ink">{registrationsCount}</div>
                 <div className="text-[11px] text-slate-400 mt-0.5">Joined attendees</div>
               </div>
 
-              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-white border border-slate-200/60 shadow-2xs">
+              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-surface border border-slate-200/60 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   <DollarSign size={13} className="text-amber-500" />
                   Revenue
                 </div>
-                <div className="text-2xl font-black text-[#14142b]">{formattedRevenue}</div>
+                <div className="text-2xl font-black text-ink">{formattedRevenue}</div>
                 <div className="text-[11px] text-slate-400 mt-0.5">
                   {earnings != null && revenue > 0
                     ? `Gross · you earn ${money(earnings)} after refunds${commission > 0 ? ` and ${money(commission)} platform commission` : ""}`
@@ -348,8 +348,8 @@ export function EventOverviewTab({
           </div>
 
           {/* Setup Checklist */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
-            <h3 className="text-sm font-bold text-[#14142b] border-b border-slate-100 pb-3 mb-4">
+          <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+            <h3 className="text-sm font-bold text-ink border-b border-slate-100 pb-3 mb-4">
               Complete Your Setup
             </h3>
 
@@ -359,9 +359,9 @@ export function EventOverviewTab({
                   key={item.name}
                   type="button"
                   onClick={item.action}
-                  className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200/80 bg-white hover:border-blue-400 hover:bg-blue-50/40 transition-all text-left group cursor-pointer shadow-2xs"
+                  className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200/80 bg-surface hover:border-blue-400 hover:bg-blue-50/40 transition-all text-left group cursor-pointer shadow-2xs dark:hover:bg-blue-500/10"
                 >
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
+                  <span className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors dark:group-hover:text-blue-400">
                     {item.name}
                   </span>
                   {item.complete ? (
@@ -378,11 +378,11 @@ export function EventOverviewTab({
         {/* Right Column (1 col): Progress & Recent Activity */}
         <div className="space-y-6">
           {/* Progress Card */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
-            <h3 className="text-sm font-bold text-[#14142b] mb-3">Setup Progress</h3>
+          <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+            <h3 className="text-sm font-bold text-ink mb-3">Setup Progress</h3>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-slate-500">Readiness</span>
-              <span className="text-sm font-extrabold text-blue-600">{completionPct}%</span>
+              <span className="text-sm font-extrabold text-blue-600 dark:text-blue-400">{completionPct}%</span>
             </div>
             <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
               <div
@@ -393,8 +393,8 @@ export function EventOverviewTab({
           </div>
 
           {/* Recent Activity Card */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
-            <h3 className="text-sm font-bold text-[#14142b] flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
+          <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+            <h3 className="text-sm font-bold text-ink flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
               <Clock size={16} className="text-slate-500" />
               Recent Activity
             </h3>
@@ -403,7 +403,7 @@ export function EventOverviewTab({
               <div className="relative border-l-2 border-slate-100 ml-2 space-y-5 pb-1">
                 {eventSummary.recentActivity.slice(0, 5).map((log, idx) => (
                   <div key={idx} className="relative pl-5">
-                    <div className="absolute -left-[5px] mt-1 size-2 rounded-full bg-blue-600 ring-4 ring-white" />
+                    <div className="absolute -left-[5px] mt-1 size-2 rounded-full bg-blue-600 ring-4 ring-surface" />
                     <div className="text-xs font-bold text-slate-900 leading-snug">{log.action}</div>
                     {log.description && (
                       <div className="text-[11px] text-slate-500 mt-0.5">{log.description}</div>
@@ -423,7 +423,7 @@ export function EventOverviewTab({
               <div className="relative border-l-2 border-slate-100 ml-2 space-y-5 pb-1">
                 {data.statusHistory.data.slice(0, 5).map((entry, idx) => (
                   <div key={idx} className="relative pl-5">
-                    <div className="absolute -left-[5px] mt-1 size-2 rounded-full bg-blue-600 ring-4 ring-white" />
+                    <div className="absolute -left-[5px] mt-1 size-2 rounded-full bg-blue-600 ring-4 ring-surface" />
                     <div className="text-xs font-bold text-slate-900 leading-snug">{entry.label}</div>
                     {entry.actorName && (
                       <div className="text-[11px] text-slate-500 mt-0.5">by {entry.actorName}</div>

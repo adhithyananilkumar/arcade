@@ -79,8 +79,8 @@ export function ExamSettingsWorkspace({
 
   return (
     <div className="flex flex-col gap-4">
-      <section className="rounded-2xl border border-white/50 bg-white/70 p-5 shadow-sm backdrop-blur-md">
-        <h3 className="text-sm font-black tracking-tight text-[#14142b]">About this exam</h3>
+      <section className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
+        <h3 className="text-sm font-black tracking-tight text-ink">About this exam</h3>
         <p className="mt-1 text-xs leading-relaxed text-slate-500">
           How the examination is described wherever it appears.
         </p>
@@ -92,7 +92,7 @@ export function ExamSettingsWorkspace({
               value={title}
               disabled={readOnly}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#14142b] outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+              className="w-full rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/25"
             />
           </Field>
 
@@ -107,7 +107,7 @@ export function ExamSettingsWorkspace({
               value={description}
               disabled={readOnly}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-[#14142b] outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+              className="w-full resize-y rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/25"
             />
           </Field>
 
@@ -122,7 +122,7 @@ export function ExamSettingsWorkspace({
               disabled={readOnly}
               placeholder="e.g. Entrance test, Final assessment"
               onChange={(e) => setPurpose(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-[#14142b] outline-none placeholder:text-slate-300 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+              className="w-full rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-slate-300 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/25"
             />
           </Field>
         </div>
@@ -133,7 +133,7 @@ export function ExamSettingsWorkspace({
               type="button"
               onClick={save}
               disabled={!dirty || saving}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-black disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink transition-colors hover:bg-ink-hover disabled:opacity-40"
             >
               {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
               {dirty ? "Save changes" : "Saved"}
@@ -142,8 +142,8 @@ export function ExamSettingsWorkspace({
         )}
       </section>
 
-      <section className="rounded-2xl border border-white/50 bg-white/70 p-5 shadow-sm backdrop-blur-md">
-        <h3 className="text-sm font-black tracking-tight text-[#14142b]">Tied content</h3>
+      <section className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
+        <h3 className="text-sm font-black tracking-tight text-ink">Tied content</h3>
         {placement ? (
           <>
             <p className="mt-1 text-xs leading-relaxed text-slate-500">
@@ -155,7 +155,7 @@ export function ExamSettingsWorkspace({
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Link
                 href={placement.href}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-[#14142b] transition-colors hover:bg-slate-50"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-surface px-3.5 py-2 text-xs font-bold text-ink transition-colors hover:bg-slate-50"
               >
                 <placement.icon size={14} className="text-slate-400" />
                 {placement.label}
@@ -183,8 +183,8 @@ export function ExamSettingsWorkspace({
       {/* A tied exam completes its course or event, and that content's badge is the one earned. */}
       {!exam.tieType && <BadgeTierPanel contentType="EXAM" contentId={exam.id} readOnly={readOnly} />}
       {exam.tieType && (
-        <section className="rounded-2xl border border-white/50 bg-white/50 p-5 shadow-sm backdrop-blur-md">
-          <h3 className="text-sm font-black tracking-tight text-[#14142b]">Schedule</h3>
+        <section className="rounded-2xl border border-white/50 bg-surface/50 p-5 shadow-sm backdrop-blur-md">
+          <h3 className="text-sm font-black tracking-tight text-ink">Schedule</h3>
           <p className="mt-1 text-xs leading-relaxed text-slate-500">
             Assessments inside the {exam.tieType === "COURSE" ? "course" : "event"} follow its schedule. The
             schedule below applies only to this exam&apos;s certification: when learners can register for it
@@ -196,11 +196,11 @@ export function ExamSettingsWorkspace({
         </section>
       )}
 
-      <section className="rounded-2xl border border-white/50 bg-white/50 p-5 shadow-sm backdrop-blur-md">
-        <h3 className="text-sm font-black tracking-tight text-[#14142b]">Conducting this exam</h3>
+      <section className="rounded-2xl border border-white/50 bg-surface/50 p-5 shadow-sm backdrop-blur-md">
+        <h3 className="text-sm font-black tracking-tight text-ink">Conducting this exam</h3>
         <p className="mt-1 text-xs leading-relaxed text-slate-500">
           Duration, attempts, pass mark and security are set on each{" "}
-          <strong className="font-bold text-[#14142b]">exam plan</strong>, within the platform&apos;s
+          <strong className="font-bold text-ink">exam plan</strong>, within the platform&apos;s
           standard for its type. Open the Plans tab to configure them.
         </p>
       </section>
@@ -248,7 +248,7 @@ function TiePicker({ exam, onChange }: { exam: ExamResponse; onChange: (exam: Ex
           setTarget("");
           setType(e.target.value as ExamTieType);
         }}
-        className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-[#14142b]"
+        className="rounded-xl border border-slate-200 bg-surface px-3 py-2 text-xs font-semibold text-ink"
       >
         <option value="COURSE">Course</option>
         <option value="EVENT">Event</option>
@@ -257,7 +257,7 @@ function TiePicker({ exam, onChange }: { exam: ExamResponse; onChange: (exam: Ex
         value={target}
         onChange={(e) => setTarget(e.target.value)}
         disabled={!options || options.length === 0}
-        className="min-w-[220px] flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-[#14142b] disabled:bg-slate-50"
+        className="min-w-[220px] flex-1 rounded-xl border border-slate-200 bg-surface px-3 py-2 text-xs font-semibold text-ink disabled:bg-slate-50"
       >
         <option value="">
           {options === null ? "Loading…" : options.length === 0 ? `You have no ${type.toLowerCase()}s` : `Choose a ${type.toLowerCase()}`}
@@ -272,7 +272,7 @@ function TiePicker({ exam, onChange }: { exam: ExamResponse; onChange: (exam: Ex
         type="button"
         onClick={tie}
         disabled={!target || busy}
-        className="inline-flex items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white hover:bg-black disabled:opacity-40"
+        className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink hover:bg-ink-hover disabled:opacity-40"
       >
         {busy ? <Loader2 size={13} className="animate-spin" /> : <Link2 size={13} />} Tie
       </button>
@@ -303,7 +303,7 @@ function UntieButton({ exam, onChange }: { exam: ExamResponse; onChange: (exam: 
           setBusy(false);
         }
       }}
-      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
+      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-surface px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
     >
       {busy ? <Loader2 size={13} className="animate-spin" /> : <Unlink size={13} />} Untie
     </button>
@@ -343,8 +343,8 @@ function CategorySection({
   };
 
   return (
-    <section className="rounded-2xl border border-white/50 bg-white/70 p-5 shadow-sm backdrop-blur-md">
-      <h3 className="text-sm font-black tracking-tight text-[#14142b]">Category</h3>
+    <section className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
+      <h3 className="text-sm font-black tracking-tight text-ink">Category</h3>
       <p className="mt-1 text-xs leading-relaxed text-slate-500">
         Where learners find this exam in Explore &gt; Exams.
       </p>
@@ -352,7 +352,7 @@ function CategorySection({
         value={exam.categoryId ?? ""}
         disabled={readOnly || saving}
         onChange={(e) => save(e.target.value)}
-        className="mt-3 w-64 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#14142b] outline-none focus:border-indigo-300 disabled:bg-slate-50"
+        className="mt-3 w-64 rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-indigo-300 disabled:bg-slate-50 dark:focus:border-indigo-500/40"
       >
         {categories.map((cat) => (
           <option key={cat.id} value={cat.id}>
@@ -397,12 +397,12 @@ function PricingSection({
   };
 
   return (
-    <section className="rounded-2xl border border-white/50 bg-white/70 p-5 shadow-sm backdrop-blur-md">
-      <h3 className="text-sm font-black tracking-tight text-[#14142b]">Registration fee</h3>
+    <section className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
+      <h3 className="text-sm font-black tracking-tight text-ink">Registration fee</h3>
       {exam.tieType ? (
         <p className="mt-1 text-xs leading-relaxed text-slate-500">
           The certification fee for a tied exam is set by the platform&apos;s exam standard:{" "}
-          <b className="text-[#14142b]">
+          <b className="text-ink">
             {exam.registrationFeeMinor > 0 ? formatMoney(exam.registrationFeeMinor, currency) : "free"}
           </b>
           . Assessments inside the {exam.tieType === "COURSE" ? "course" : "event"} are included with enrolment.
@@ -424,14 +424,14 @@ function PricingSection({
               disabled={readOnly}
               onChange={(e) => setPrice(e.target.value)}
               placeholder="Free"
-              className="w-32 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#14142b] outline-none focus:border-indigo-300 disabled:bg-slate-50"
+              className="w-32 rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-indigo-300 disabled:bg-slate-50 dark:focus:border-indigo-500/40"
             />
             {!readOnly && (
               <button
                 type="button"
                 onClick={save}
                 disabled={saving || price === current}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white hover:bg-black disabled:opacity-40"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink hover:bg-ink-hover disabled:opacity-40"
               >
                 {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />} Save
               </button>

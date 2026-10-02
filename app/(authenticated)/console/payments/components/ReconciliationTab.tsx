@@ -9,17 +9,17 @@ import { formatMoney } from "@/shared/utils/money";
 const KIND: Record<ReconciliationKind, { label: string; tone: string; advice: string }> = {
   PAID_NOT_GRANTED: {
     label: "Paid, no access",
-    tone: "bg-amber-50 text-amber-800 border-amber-200",
+    tone: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:border-amber-500/25",
     advice: "Paid, but the learner has no access. Access is retried automatically for about half an hour; if it stays here, grant the place manually or refund.",
   },
   DUPLICATE_PAYMENT: {
     label: "Duplicate payment",
-    tone: "bg-rose-50 text-rose-800 border-rose-200",
+    tone: "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:border-rose-500/25",
     advice: "The learner already paid for this enrollment in an earlier order. Refund this one.",
   },
   AMOUNT_MISMATCH: {
     label: "Amount mismatch",
-    tone: "bg-rose-50 text-rose-800 border-rose-200",
+    tone: "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:border-rose-500/25",
     advice: "The gateway captured a different amount from the order. Check the gateway dashboard before acting.",
   },
 };
@@ -43,7 +43,7 @@ export function ReconciliationTab({ onOpenOrder, refreshKey }: { onOpenOrder: (o
     };
   }, [refreshKey]);
 
-  if (error) return <p className="rounded-2xl bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-700">{error}</p>;
+  if (error) return <p className="rounded-2xl bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">{error}</p>;
   if (!rows) {
     return (
       <div className="flex justify-center py-16">
@@ -53,7 +53,7 @@ export function ReconciliationTab({ onOpenOrder, refreshKey }: { onOpenOrder: (o
   }
   if (rows.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200/80 bg-white py-16 text-center">
+      <div className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200/80 bg-surface py-16 text-center">
         <CheckCircle2 className="h-8 w-8 text-emerald-500" />
         <p className="text-sm font-bold text-slate-800">Nothing to reconcile</p>
         <p className="max-w-sm text-xs text-slate-500">
@@ -72,7 +72,7 @@ export function ReconciliationTab({ onOpenOrder, refreshKey }: { onOpenOrder: (o
             key={r.orderId}
             type="button"
             onClick={() => onOpenOrder(r.orderId)}
-            className="flex w-full cursor-pointer flex-col gap-2 rounded-2xl border border-slate-200/80 bg-white p-4 text-left hover:border-slate-300 sm:flex-row sm:items-center sm:justify-between"
+            className="flex w-full cursor-pointer flex-col gap-2 rounded-2xl border border-slate-200/80 bg-surface p-4 text-left hover:border-slate-300 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="min-w-0 space-y-1">
               <div className="flex flex-wrap items-center gap-2">
@@ -85,7 +85,7 @@ export function ReconciliationTab({ onOpenOrder, refreshKey }: { onOpenOrder: (o
                 {r.grantAttempts > 0 ? ` · ${r.grantAttempts} automatic retr${r.grantAttempts === 1 ? "y" : "ies"}` : ""}
               </p>
             </div>
-            <span className="shrink-0 text-base font-bold tabular-nums text-[#14142b]">{formatMoney(r.amount, r.currency)}</span>
+            <span className="shrink-0 text-base font-bold tabular-nums text-ink">{formatMoney(r.amount, r.currency)}</span>
           </button>
         );
       })}

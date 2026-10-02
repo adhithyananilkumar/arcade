@@ -50,7 +50,7 @@ export function ForumLayout({ children }: Props) {
           position: 'sticky',
           top: 0,
           zIndex: 40,
-          backgroundColor: 'rgba(255,255,255,0.95)',
+          backgroundColor: 'var(--theme-surface, rgba(255,255,255,0.95))',
           backdropFilter: 'blur(12px)',
           borderBottom: '1px solid var(--border)',
           padding: '0 24px',

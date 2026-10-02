@@ -3,7 +3,7 @@ import type { ArtThemeKey } from './themes';
 
 /**
  * The drawn subjects of generated artwork, five per theme. Each is a line illustration in Arcade's
- * style — ink outline (#14142b), flat fills from the palette — drawn centred on (0, 0) inside a
+ * style — ink outline (#14142b in light, theme-aware via ContentArt), flat fills from the palette — drawn centred on (0, 0) inside a
  * 100 × 100 box so any composition can place, scale and rotate it.
  */
 
@@ -40,7 +40,7 @@ const fill = (p: MotifPaint, c: string) => {
   if (p.tint !== undefined && c !== p.paper) {
     // Ink fills (the vinyl disc) would be the one heavy shape left; keep them a whisper.
     const share = c === p.ink ? Math.min(p.tint, 0.14) : p.tint;
-    return `color-mix(in srgb, ${c} ${Math.round(share * 100)}%, white)`;
+    return `color-mix(in srgb, ${c} ${Math.round(share * 100)}%, var(--a-white, white))`;
   }
   return c;
 };

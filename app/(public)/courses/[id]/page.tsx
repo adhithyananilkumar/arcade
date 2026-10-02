@@ -474,7 +474,7 @@ function CourseHero({
             <button
               onClick={onReportClick}
               aria-label="Report course"
-              className="grid size-12 place-items-center rounded-full bg-black/5 hover:bg-black/10 active:scale-[0.98] border border-black/10 dark:border-white/10 text-slate-700 hover:text-red-500 dark:text-slate-300 backdrop-blur-md transition-all"
+              className="grid size-12 place-items-center rounded-full bg-slate-950/5 hover:bg-slate-950/10 active:scale-[0.98] border border-slate-950/10 text-slate-700 hover:text-red-500 backdrop-blur-md transition-all"
             >
               <Flag size={18} />
             </button>
@@ -639,7 +639,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
                 return (
                   <div
                     key={m.id}
-                    className="overflow-hidden rounded-2xl border border-line bg-paper transition-all duration-200 hover:border-slate-300 hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/40"
+                    className="overflow-hidden rounded-2xl border border-line bg-paper transition-all duration-200 hover:border-slate-300 hover:shadow-xs"
                   >
                     <button
                       type="button"
@@ -648,7 +648,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
                       className="flex w-full items-center gap-4 px-5 py-4 text-left"
                     >
                       <span
-                        className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-lg font-bold border border-line bg-slate-50 text-ink dark:border-slate-800 dark:bg-slate-800"
+                        className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-lg font-bold border border-line bg-slate-50 text-ink"
                       >
                         {idx + 1}
                       </span>
@@ -669,12 +669,12 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
                     </button>
                     {open && moduleLessons.length > 0 && (
                       <ul
-                        className="flex flex-col gap-1 border-t border-line px-3 pb-3 pt-2 dark:border-slate-800"
+                        className="flex flex-col gap-1 border-t border-line px-3 pb-3 pt-2"
                       >
                         {moduleLessons.map((lesson, li) => (
                           <li
                             key={lesson.id}
-                            className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-slate-100/60 dark:hover:bg-black/20"
+                            className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-slate-100/60"
                           >
                             <span className="w-5 text-center text-[12px] font-medium text-subtle/70">{li + 1}</span>
                             <PlayCircle size={16} className="text-subtle shrink-0" />
@@ -700,7 +700,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
             {(course?.collaborators ?? []).map((person) => (
               <div
                 key={person.id}
-                className="w-full rounded-3xl border border-line bg-paper p-8 shadow-sm transition-all dark:border-slate-800 dark:bg-slate-900/50"
+                className="w-full rounded-3xl border border-line bg-paper p-8 shadow-sm transition-all"
               >
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
                   <Avatar
@@ -745,7 +745,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
                     {person.specialities!.map((e) => (
                       <span
                         key={e}
-                        className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[12px] font-semibold text-ink transition-all hover:border-ink hover:scale-105 dark:border-slate-800"
+                        className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[12px] font-semibold text-ink transition-all hover:border-ink hover:scale-105"
                       >
                         {e}
                       </span>
@@ -753,7 +753,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
                   </div>
                 )}
 
-                <div className="mt-7 grid grid-cols-2 gap-6 border-t border-line pt-6 text-center dark:border-slate-800">
+                <div className="mt-7 grid grid-cols-2 gap-6 border-t border-line pt-6 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <BookOpen size={18} className="text-subtle" />
                     <p className="mt-2 font-serif text-xl font-medium text-ink">{person.courseCount ?? 0}</p>
@@ -773,7 +773,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
             ))}
 
             {(course?.collaborators?.length ?? 0) === 0 && (
-              <div className="w-full rounded-3xl border border-line bg-paper p-8 text-center text-[15px] italic text-subtle/75 dark:border-slate-800 dark:bg-slate-900/50">
+              <div className="w-full rounded-3xl border border-line bg-paper p-8 text-center text-[15px] italic text-subtle/75">
                 No instructor information available for this course.
               </div>
             )}
@@ -784,7 +784,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
           <div className="flex w-full flex-col gap-8 max-w-3xl mx-auto">
             {/* Badge Section (if course has badge) */}
             {hasBadge && (
-              <div className="rounded-3xl border border-line bg-paper p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900/50">
+              <div className="rounded-3xl border border-line bg-paper p-8 shadow-sm">
                 <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-center">
                   <CourseBadge type={badgeInfo.type} />
                   <div>
@@ -814,7 +814,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
 
             {/* Certification & Exam Section (if certification / exam is available) */}
             {hasCertification && (
-              <div className="flex w-full flex-col items-center gap-5 rounded-3xl border border-line bg-paper p-8 text-center shadow-sm sm:p-10 dark:border-slate-800 dark:bg-slate-900/50">
+              <div className="flex w-full flex-col items-center gap-5 rounded-3xl border border-line bg-paper p-8 text-center shadow-sm sm:p-10">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wide text-ink">
                   <Award size={14} className="text-ink" /> Official Certification
                 </span>
@@ -1008,7 +1008,7 @@ function EnrollCta({ onEnroll, initialState = "NOT_ENROLLED", pendingReason, pri
               resourceId={courseId}
               initialState={initialState}
               pendingReason={pendingReason}
-              className="!bg-white !text-ink hover:!bg-white/90"
+              className="!bg-surface !text-ink hover:!bg-surface/90"
               onStateChange={(state) => {
                 if (state === "ENROLLED" && onEnroll) {
                   onEnroll();

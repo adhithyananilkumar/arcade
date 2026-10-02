@@ -5,7 +5,7 @@
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  background-color: #F8FAFC;
+  background-color: var(--theme-n-50, #F8FAFC);
 }
 
 .global-bg-gradient-layer {

@@ -40,7 +40,7 @@ function Toggle({
     <div className="flex items-start justify-between gap-4 py-3">
       <div className="min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className="text-[13px] font-semibold text-[#14142b]">{label}</span>
+          <span className="text-[13px] font-semibold text-ink">{label}</span>
           {disabled ? <Lock size={11} className="text-slate-400" /> : null}
         </div>
         {hint ? <p className="mt-0.5 text-[12px] text-slate-500">{hint}</p> : null}
@@ -56,11 +56,11 @@ function Toggle({
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-          checked ? "bg-[#14142b]" : "bg-slate-300"
+          checked ? "bg-ink" : "bg-slate-300"
         }`}
       >
         <span
-          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+          className={`absolute top-0.5 h-5 w-5 rounded-full bg-surface shadow transition-transform ${
             checked ? "translate-x-[22px]" : "translate-x-0.5"
           }`}
         />
@@ -107,17 +107,17 @@ export function ChannelGovernanceCard({
   };
 
   return (
-    <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_24px_rgba(20,20,43,0.05)]">
+    <article className="rounded-2xl border border-slate-200/80 bg-surface p-5 shadow-[0_8px_24px_rgba(20,20,43,0.05)]">
       <header className="flex items-start justify-between gap-3 pb-3">
         <div className="min-w-0">
-          <h3 className="truncate text-[15px] font-bold text-[#14142b]">{policy.channelName}</h3>
+          <h3 className="truncate text-[15px] font-bold text-ink">{policy.channelName}</h3>
           <p className="mt-0.5 text-[11px] font-medium uppercase tracking-wide text-slate-400">
             {policy.personalChannel ? "Personal channel" : "Organization channel"}
           </p>
         </div>
         <div className="flex shrink-0 gap-1.5">
           {!platformRequired ? (
-            <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-800">
+            <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
               Platform waived
             </span>
           ) : null}
@@ -172,11 +172,11 @@ export function ChannelGovernanceCard({
       </div>
 
       {pendingWaiver ? (
-        <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <p className="text-[13px] font-semibold text-amber-900">
+        <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/25 dark:bg-amber-500/10">
+          <p className="text-[13px] font-semibold text-amber-900 dark:text-amber-200">
             Waive platform review for {policy.channelName}?
           </p>
-          <p className="mt-1 text-[12px] leading-relaxed text-amber-800">
+          <p className="mt-1 text-[12px] leading-relaxed text-amber-800 dark:text-amber-200">
             Content from this channel will reach learners without platform oversight. This is
             recorded permanently in the governance audit trail.
           </p>
@@ -185,7 +185,7 @@ export function ChannelGovernanceCard({
             onChange={(e) => setReason(e.target.value)}
             rows={2}
             placeholder="Reason (required)"
-            className="mt-3 w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-[13px] outline-none focus:border-amber-500"
+            className="mt-3 w-full rounded-lg border border-amber-300 bg-surface px-3 py-2 text-[13px] outline-none focus:border-amber-500 dark:border-amber-500/40"
           />
           <div className="mt-3 flex gap-2">
             <button
@@ -206,7 +206,7 @@ export function ChannelGovernanceCard({
                 setPendingWaiver(false);
                 setReason("");
               }}
-              className="rounded-full border border-amber-300 px-4 py-2 text-[12px] font-semibold text-amber-900"
+              className="rounded-full border border-amber-300 px-4 py-2 text-[12px] font-semibold text-amber-900 dark:border-amber-500/40 dark:text-amber-200"
             >
               Cancel
             </button>
@@ -243,7 +243,7 @@ export function ChannelGovernanceCard({
               type="button"
               onClick={onManageExemptions}
               disabled={!canGovernChannel}
-              className="rounded-full border border-slate-300 px-3 py-1.5 text-[11px] font-semibold text-[#14142b] hover:bg-slate-50 disabled:opacity-40"
+              className="rounded-full border border-slate-300 px-3 py-1.5 text-[11px] font-semibold text-ink hover:bg-slate-50 disabled:opacity-40"
             >
               Manage
             </button>
@@ -259,7 +259,7 @@ export function ChannelGovernanceCard({
       <button
         type="button"
         onClick={onViewAudit}
-        className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-semibold text-slate-500 hover:text-[#14142b]"
+        className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-semibold text-slate-500 hover:text-ink"
       >
         <History size={13} /> Governance history
       </button>

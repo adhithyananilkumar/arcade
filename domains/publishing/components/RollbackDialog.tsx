@@ -39,11 +39,11 @@ export function RollbackDialog({
       aria-modal="true"
       aria-labelledby="rollback-title"
     >
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-lg rounded-2xl bg-surface p-6 shadow-xl">
         <header className="flex items-start justify-between gap-4 pb-3">
           <div className="flex items-center gap-2">
-            <History size={18} className="text-[#14142b]" />
-            <h2 id="rollback-title" className="text-[16px] font-bold text-[#14142b]">
+            <History size={18} className="text-ink" />
+            <h2 id="rollback-title" className="text-[16px] font-bold text-ink">
               Roll back to version {target.versionNumber}?
             </h2>
           </div>
@@ -76,7 +76,7 @@ export function RollbackDialog({
           </p>
 
           {publishesImmediately ? (
-            <p className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[12px] text-amber-900">
+            <p className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[12px] text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
               <AlertTriangle size={14} className="mt-0.5 shrink-0" />
               Your channel is exempt from review, so this will go live immediately.
             </p>
@@ -88,7 +88,7 @@ export function RollbackDialog({
         </div>
 
         <label className="mt-4 block">
-          <span className="text-[12px] font-semibold text-[#14142b]">
+          <span className="text-[12px] font-semibold text-ink">
             Why are you rolling back?
           </span>
           <textarea
@@ -96,7 +96,7 @@ export function RollbackDialog({
             onChange={(e) => setReason(e.target.value)}
             rows={2}
             placeholder="Recorded in the content's history"
-            className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-[13px] outline-none focus:border-[#14142b]"
+            className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-[13px] outline-none focus:border-ink"
           />
         </label>
 
@@ -105,7 +105,7 @@ export function RollbackDialog({
             type="button"
             disabled={busy}
             onClick={() => onConfirm(reason.trim())}
-            className="rounded-full bg-[#14142b] px-4 py-2.5 text-[12px] font-semibold text-white hover:bg-[#232735] disabled:opacity-40"
+            className="rounded-full bg-ink px-4 py-2.5 text-[12px] font-semibold text-on-ink hover:bg-ink-hover disabled:opacity-40"
           >
             {busy ? "Rolling back…" : `Roll back to version ${target.versionNumber}`}
           </button>
@@ -113,7 +113,7 @@ export function RollbackDialog({
             type="button"
             disabled={busy}
             onClick={onCancel}
-            className="rounded-full border border-slate-300 px-4 py-2.5 text-[12px] font-semibold text-[#14142b] hover:bg-slate-50 disabled:opacity-40"
+            className="rounded-full border border-slate-300 px-4 py-2.5 text-[12px] font-semibold text-ink hover:bg-slate-50 disabled:opacity-40"
           >
             Cancel
           </button>

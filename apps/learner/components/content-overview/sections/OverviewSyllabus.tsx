@@ -72,7 +72,7 @@ export function OverviewSyllabus({
 
   if (sections.length === 0) {
     return (
-      <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+      <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
         There is no published content here yet.
       </p>
     );
@@ -87,19 +87,19 @@ export function OverviewSyllabus({
         return (
           <section
             key={section.id}
-            className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/70 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/60"
+            className="overflow-hidden rounded-2xl border border-slate-200/80 bg-surface/70 backdrop-blur-sm"
           >
             <button
               type="button"
               onClick={() => toggle(section.id)}
               aria-expanded={!isCollapsed}
-              className="flex w-full items-center gap-3 px-5 py-4 text-left transition hover:bg-slate-50/70 dark:hover:bg-slate-800/40"
+              className="flex w-full items-center gap-3 px-5 py-4 text-left transition hover:bg-slate-50/70"
             >
               <ChevronDown
                 size={16}
                 className={`shrink-0 text-slate-400 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
               />
-              <span className="flex-1 text-[15px] font-semibold text-slate-900 dark:text-slate-100">
+              <span className="flex-1 text-[15px] font-semibold text-slate-900">
                 {section.title}
               </span>
               <span className="shrink-0 text-xs font-medium tabular-nums text-slate-400">
@@ -108,7 +108,7 @@ export function OverviewSyllabus({
             </button>
 
             {!isCollapsed && (
-              <ul className="border-t border-slate-100 dark:border-slate-800">
+              <ul className="border-t border-slate-100">
                 {section.items.map((item) => (
                   <SyllabusRow
                     key={item.id}
@@ -145,7 +145,7 @@ function SyllabusRow({
             <Check size={12} strokeWidth={3} />
           </span>
         ) : item.locked ? (
-          <Lock size={14} className="text-slate-300 dark:text-slate-600" />
+          <Lock size={14} className="text-slate-300" />
         ) : (
           <Icon size={16} className="text-slate-400" />
         )}
@@ -157,8 +157,8 @@ function SyllabusRow({
             isCurrent
               ? 'font-semibold text-indigo-600 dark:text-indigo-400'
               : item.completed
-                ? 'text-slate-500 dark:text-slate-400'
-                : 'text-slate-800 dark:text-slate-200'
+                ? 'text-slate-500'
+                : 'text-slate-800'
           }`}
         >
           {item.title}
@@ -180,10 +180,10 @@ function SyllabusRow({
 
   const className = `flex w-full items-center gap-3 px-5 py-2.5 text-left transition ${
     isCurrent ? 'bg-indigo-50/60 dark:bg-indigo-950/30' : ''
-  } ${item.href && !item.locked ? 'hover:bg-slate-50 dark:hover:bg-slate-800/40' : 'cursor-default opacity-70'}`;
+  } ${item.href && !item.locked ? 'hover:bg-slate-50' : 'cursor-default opacity-70'}`;
 
   return (
-    <li className="border-b border-slate-50 last:border-0 dark:border-slate-800/50">
+    <li className="border-b border-slate-50 last:border-0">
       {item.href && !item.locked ? (
         <Link href={item.href} className={className}>
           {inner}
