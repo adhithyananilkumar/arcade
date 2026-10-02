@@ -32,6 +32,8 @@ export type EventCard = {
   tone: 'coral' | 'blue' | 'emerald' | 'violet';
   href: string;
   statusLabel?: string;
+  channelName?: string | null;
+  channelIconUrl?: string | null;
 };
 
 export type ResumeCourse = {
@@ -43,7 +45,9 @@ export type ResumeCourse = {
    * assert "you have completed none of it", which is a different and unverified claim.
    */
   progress: number | null;
-  authorName?: string | null;
+  /** The publishing channel — the only thing a card credits. */
+  channelName?: string | null;
+  channelIconUrl?: string | null;
 };
 
 const TONE_CONFIG: Record<
@@ -270,7 +274,8 @@ function RecommendedFeaturedCard({ course }: { course: CourseSummaryResponse }) 
       description={course.description || `${course.moduleCount || 0} modules · Self-paced learning`}
       type="COURSE"
       typeLabel="Featured Course"
-      authorName={course.authorName}
+      channelName={course.channel?.name}
+      channelIconUrl={course.channel?.iconUrl}
       categoryId={course.categoryId}
       actionHref={courseRoutes.landing(course.id)}
       actionLabel="View Course"
@@ -293,9 +298,10 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
     <UnifiedContentCard
       id={course.id}
       title={course.title}
-      description={course.authorName ? `Instructor: ${course.authorName}` : (pct && pct > 0 ? 'Pick up right where you left off' : 'Continue where you left off')}
+      description={pct && pct > 0 ? 'Pick up right where you left off' : 'Continue where you left off'}
       type="COURSE"
-      authorName={course.authorName}
+      channelName={course.channelName}
+      channelIconUrl={course.channelIconUrl}
       progressPercent={pct}
       actionHref={courseRoutes.overview(course.id)}
       actionLabel={pct && pct > 0 ? 'Continue Learning' : 'Start Learning'}
@@ -312,6 +318,8 @@ function EventRowItem({ event, index }: { event: EventCard; index: number }) {
       description={event.tagline}
       type="EVENT"
       typeLabel="Event"
+      channelName={event.channelName}
+      channelIconUrl={event.channelIconUrl}
       metaTags={[
         event.when ? event.when : null,
         event.where ? event.where : null,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ContentArt } from "@/shared/design-system/art";
+import { ChannelAvatar } from "@/shared/design-system/ui/cards";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -19,7 +19,6 @@ import {
   Flag,
   Share2,
   Sparkles,
-  Radio,
   Ticket,
   Play,
   ArrowRight,
@@ -308,26 +307,39 @@ export default function EventDetailPage() {
   const targetOverviewHref = eventRoutes.overview(event.slug || event.id);
 
   return (
-    <main className="min-h-screen bg-white text-ink">
-      {/* Hero section with dynamic gradient wash */}
-      <div className="w-full arcade-wash">
-        <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
-          <Breadcrumb title={event.title} />
-
-          <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
-            {/* Left Column — Event Metadata & CTA */}
-            <div>
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/20 bg-violet-50/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-violet-700 backdrop-blur-sm">
-                  <Sparkles size={12} className="text-violet-600" />
-                  {event.eventType || "Workshop"}
+    <main className="min-h-screen w-full arcade-wash text-ink">
+      <div className="mx-auto max-w-6xl px-5 pt-28 pb-28 sm:px-8 sm:pt-32 sm:pb-36">
+        <div className="max-w-4xl">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/20 bg-violet-50/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-violet-700 backdrop-blur-sm">
+                <Sparkles size={12} className="text-violet-600" />
+                {event.eventType || "Workshop"}
+              </span>
+              {event.category && (
+                <span className="inline-flex items-center rounded-full border border-slate-200/80 bg-white/70 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
+                  {event.category}
                 </span>
-                {event.category && (
-                  <span className="inline-flex items-center rounded-full border border-slate-200/80 bg-white/70 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
-                    {event.category}
-                  </span>
-                )}
-              </div>
+              )}
+            </div>
+
+            {/* The publishing channel, named in full, above the event name */}
+            {event.channelName && (
+              <Link
+                href={event.channelId ? `/channels/${event.channelId}` : "#"}
+                className="group mb-3 inline-flex max-w-full items-center gap-3 transition-opacity hover:opacity-85"
+              >
+                <ChannelAvatar
+                  name={event.channelName}
+                  iconUrl={event.channelIconUrl}
+                  size={42}
+                  className="bg-transparent border-0 shadow-none ring-0"
+                />
+                <span className="text-base sm:text-lg font-bold tracking-tight text-ink group-hover:text-blue transition-colors">
+                  {event.channelName}
+                </span>
+              </Link>
+            )}
 
               {/* Title with radiant gradient on last word */}
               <h1
@@ -345,23 +357,6 @@ export default function EventDetailPage() {
                   {event.subtitle}
                 </p>
               )}
-
-              {/* Host / Channel Byline */}
-              <div className="mt-5 flex items-center gap-3">
-                <Avatar
-                  name={hostName}
-                  imageUrl={null}
-                  accent="var(--color-purple)"
-                  size={36}
-                />
-                <div>
-                  <p className="text-sm font-semibold text-ink">{hostName}</p>
-                  <p className="flex items-center gap-1 text-[11.5px] font-medium text-subtle">
-                    <Radio size={12} className="text-violet-600" />
-                    <span>Host & Organizer</span>
-                  </p>
-                </div>
-              </div>
 
               {/* Meta Pills */}
               <div className="mt-6 flex flex-wrap items-center gap-2">
@@ -417,23 +412,22 @@ export default function EventDetailPage() {
                   />
                 </div>
 
-                <button
-                  onClick={() => setSaved((s) => !s)}
-                  aria-pressed={saved}
-                  aria-label={saved ? "Remove from saved events" : "Save event"}
-                  className="grid size-11 place-items-center rounded-full border border-line bg-paper text-subtle transition-colors hover:text-coral"
-                >
-                  <Heart
-                    size={18}
-                    fill={saved ? "var(--color-coral)" : "none"}
-                    color={saved ? "var(--color-coral)" : "currentColor"}
-                  />
-                </button>
+                {event.promoVideoUrl && (
+                  <a
+                    href={event.promoVideoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Watch promo video"
+                    className="grid size-12 place-items-center rounded-full bg-black/5 hover:bg-black/10 active:scale-[0.98] border border-black/10 dark:border-white/10 text-slate-700 hover:text-ink dark:text-slate-300 backdrop-blur-md transition-all"
+                  >
+                    <Play size={18} />
+                  </a>
+                )}
 
                 <button
                   onClick={handleShare}
                   aria-label="Share event"
-                  className="grid size-11 place-items-center rounded-full border border-line bg-paper text-subtle transition-colors hover:text-blue"
+                  className="grid size-12 place-items-center rounded-full bg-black/5 hover:bg-black/10 active:scale-[0.98] border border-black/10 dark:border-white/10 text-slate-700 hover:text-blue dark:text-slate-300 backdrop-blur-md transition-all"
                 >
                   <Share2 size={18} />
                 </button>
@@ -441,64 +435,16 @@ export default function EventDetailPage() {
                 <button
                   onClick={() => setReportModalOpen(true)}
                   aria-label="Report event"
-                  className="grid size-11 place-items-center rounded-full border border-line bg-paper text-subtle transition-colors hover:text-red-500"
+                  className="grid size-12 place-items-center rounded-full bg-black/5 hover:bg-black/10 active:scale-[0.98] border border-black/10 dark:border-white/10 text-slate-700 hover:text-red-500 dark:text-slate-300 backdrop-blur-md transition-all"
                 >
                   <Flag size={18} />
                 </button>
               </div>
             </div>
-
-            {/* Right Column — Futuristic Preview Card */}
-            <div className="relative group w-full max-w-md mx-auto select-none">
-              <div className="absolute -inset-2 rounded-3xl bg-gradient-to-tr from-[#00C4B4]/25 via-violet-500/25 to-pink-500/25 blur-2xl opacity-60 group-hover:opacity-90 transition duration-700 pointer-events-none" />
-
-              <div className="relative overflow-hidden rounded-3xl border border-white/40 bg-slate-950/80 p-2 shadow-[0_20px_50px_rgba(15,23,42,0.25)] backdrop-blur-xl">
-                <div className="relative h-64 sm:h-72 w-full overflow-hidden rounded-2xl bg-slate-900">
-                  <div className="h-full w-full transition-transform duration-700 group-hover:scale-105">
-                    <ContentArt seed={event.id} kind="EVENT" category={event.category} title={event.title} />
-                  </div>
-                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-slate-950/70 to-transparent" />
-
-                  <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-slate-950/80 px-3 py-1 text-[11px] font-bold text-white backdrop-blur-md border border-white/10">
-                    <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
-                    {event.eventType || "Event"} Preview
-                  </span>
-
-                  {event.promoVideoUrl && (
-                    <a
-                      href={event.promoVideoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="absolute inset-0 flex items-center justify-center"
-                    >
-                      <div className="size-14 rounded-full bg-white/90 text-slate-950 flex items-center justify-center shadow-lg transition-transform hover:scale-110">
-                        <Play size={22} className="ml-1 fill-current" />
-                      </div>
-                    </a>
-                  )}
-
-                  <div className="absolute bottom-4 inset-x-4 flex items-center justify-between text-white text-xs font-semibold">
-                    <span className="flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-md">
-                      <Clock size={13} className="text-violet-400" />
-                      {firstSession?.startTime
-                        ? `${formatTime(firstSession.startTime)}`
-                        : "Scheduled"}
-                    </span>
-                    <span className="flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-md">
-                      <Ticket size={13} className="text-emerald-400" />
-                      {(event.priceAmount ?? 0) > 0 ? "Ticketed" : "Free Admission"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Tabs and Tab Content Section */}
-      <div className="w-full bg-white">
-        <div className="mx-auto max-w-6xl px-5 pt-12 pb-28 sm:px-8 sm:pt-16 sm:pb-36">
+        {/* Tabs and Tab Content Section */}
+        <div className="mt-16 sm:mt-20">
           {/* Floating Pill Nav Tabs */}
           <div className="flex justify-center">
             <nav
@@ -719,12 +665,7 @@ export default function EventDetailPage() {
 
                 {/* Primary Organizer / Channel */}
                 <div className="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-6">
-                  <Avatar
-                    name={hostName}
-                    imageUrl={null}
-                    accent="var(--color-purple)"
-                    size={64}
-                  />
+                  <ChannelAvatar name={hostName} iconUrl={event.channelIconUrl} size={64} />
                   <div className="flex-1 text-center sm:text-left">
                     <span className="text-xs font-bold uppercase tracking-wider text-violet-600">
                       Organizer & Host

@@ -38,6 +38,7 @@ import {
 } from "@/domains/enrollment"
 import { toast } from "sonner"
 import { ReportModal } from "@/shared/design-system/ui/ReportModal"
+import { getContentCertification, type ContentCertificationView } from "@/domains/assessments"
 import {
   Dialog,
   DialogContent,
@@ -47,7 +48,7 @@ import {
   DialogFooter,
 } from "@/shared/design-system/ui/dialog"
 import CourseReviewsSection from "@/components/course/CourseReviewsSection"
-import CourseVideoPreviewCard from "@/components/course/CourseVideoPreviewCard"
+import { ChannelAvatar } from "@/shared/design-system/ui/cards"
 import { AnimatedList, AnimatedItem } from "@/components/ui/AnimatedList"
 import BadgeGraphic, { getBadgeForCourse } from "@/components/ui/BadgeGraphic"
 import FoldText from "@/components/ui/FoldText"
@@ -60,9 +61,6 @@ import PartyPopper, { PartyPopperRef } from "@/components/ui/PartyPopper"
 
 
 const COURSE_TITLE = "Design interfaces people actually love"
-
-const TABS = ["Overview", "Syllabus", "Instructor", "Certificate", "Exam"] as const
-type Tab = (typeof TABS)[number]
 
 const NAV_LINKS = ["Explore", "Forums", "For Colleges", "Docs"]
 
@@ -365,16 +363,14 @@ function CourseHero({
   const lastWord = words.pop() || ''
   const firstPart = words.join(' ')
   
-  const displayAuthor = authorName || "Unknown author";
-  const displayUsername = authorUsername || displayAuthor.toLowerCase().replace(/\s+/g, '');
-  const authorInitials = displayAuthor.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-
-  const isOrgChannel = Boolean(channel && !channel.isPersonal && channel.name);
-  // Filter by author id so an author without a profile username is not listed as their own
-  // collaborator; the backend's "Author" role is the fallback when no id is passed.
-  const coAuthors = (collaborators ?? []).filter(
-    (c) => (authorId ? c.id !== authorId : c.role !== "Author")
-  );
+  // Everyone who teaches the course: the backend lists the author first (role "Author"), then
+  // accepted collaborators. With no collaborator rows the author alone is the instructor.
+  const instructors: Array<Pick<CourseCollaboratorSummary, "id" | "name" | "username" | "avatarUrl">> =
+    (collaborators?.length ?? 0) > 0
+      ? collaborators!
+      : authorName
+        ? [{ id: authorId ?? "author", name: authorName, username: authorUsername, avatarUrl: authorAvatarUrl }]
+        : []
 
   const metaData = [
     { icon: Clock, label: duration || "Self-paced", dot: "var(--color-blue)" },
@@ -384,14 +380,30 @@ function CourseHero({
 
   return (
     <section className="arcade-fade">
-      <Breadcrumb title={title} />
-
-      <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-        {/* Left — editorial copy */}
+      <div className="max-w-4xl">
         <div>
+          {/* The publishing channel, named in full, sits above the course name. A personal
+              channel's picture is its owner's profile picture (sent that way by the backend). */}
+          {channel?.name && (
+            <Link
+              href={`/channels/${channel.id}`}
+              className="group inline-flex max-w-full items-center gap-3 transition-opacity hover:opacity-85"
+            >
+              <ChannelAvatar
+                name={channel.name}
+                iconUrl={channel.iconUrl}
+                size={42}
+                className="bg-transparent border-0 shadow-none ring-0"
+              />
+              <span className="text-base sm:text-lg font-bold tracking-tight text-ink group-hover:text-blue transition-colors">
+                {channel.name}
+              </span>
+            </Link>
+          )}
+
           {/* Course name as the headline */}
           <h1
-            className="mt-6 text-[2.75rem] font-bold leading-[1.05] tracking-tight text-ink text-balance sm:text-[4rem]"
+            className="mt-4 text-[2.75rem] font-bold leading-[1.05] tracking-tight text-ink text-balance sm:text-[4rem]"
             style={{ fontFamily: '"Clash Display", var(--font-sora), sans-serif' }}
           >
             {firstPart}{" "}
@@ -400,39 +412,25 @@ function CourseHero({
             </span>
           </h1>
 
-          {/* Instructor: an organization channel publishes on the author's behalf, so it is
-              credited first; a personal channel is just the author. */}
-          <div className="mt-5 flex items-center gap-2.5">
-            <Avatar
-              name={isOrgChannel ? channel!.name : displayAuthor}
-              imageUrl={isOrgChannel ? channel!.iconUrl : authorAvatarUrl}
-              accent={INSTRUCTOR_ACCENT}
-              size={34}
-            />
-            <div>
-              <p className="text-sm font-semibold text-ink">
-                {isOrgChannel ? channel!.name : displayAuthor}
-              </p>
-              <p className="flex items-center gap-1 text-[11.5px] font-medium text-subtle">
-                <Radio size={12} className="text-blue" />{" "}
-                {isOrgChannel ? `by @${displayUsername}` : `@${displayUsername}`}
-              </p>
-            </div>
-          </div>
-
-          {/* Collaborators, excluding the author — a solo course shows nothing here. */}
-          {coAuthors.length > 0 && (
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-subtle">Collaborators:</span>
-              {coAuthors.map((collab) => (
-                <span
-                  key={collab.id}
-                  className="flex items-center gap-1.5 rounded-full border border-line bg-paper px-2 py-0.5"
-                >
-                  <Avatar name={collab.name} imageUrl={collab.avatarUrl} size={18} />
-                  <span className="text-xs text-ink">{collab.name}</span>
+          {/* Instructors after the name */}
+          {instructors.length > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-x-1.5 text-[14px] text-subtle">
+              <span className="font-medium">{instructors.length === 1 ? "Instructor" : "Instructors"}</span>
+              {instructors.slice(0, 2).map((person, i) => (
+                <span key={person.id}>
+                  {i > 0 && (instructors.length === 2 ? " and " : ", ")}
+                  {person.username ? (
+                    <Link href={`/${person.username}`} className="font-bold text-ink hover:underline">
+                      {person.name}
+                    </Link>
+                  ) : (
+                    <span className="font-bold text-ink">{person.name}</span>
+                  )}
                 </span>
               ))}
+              {instructors.length > 2 && (
+                <span> and {instructors.length - 2} more</span>
+              )}
             </div>
           )}
 
@@ -474,36 +472,15 @@ function CourseHero({
               </div>
             )}
             <button
-              onClick={() => setSaved((s) => !s)}
-              aria-pressed={saved}
-              aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
-              className="grid size-11 place-items-center rounded-full border border-line bg-paper text-subtle transition-colors hover:text-coral"
-            >
-              <Heart
-                size={18}
-                fill={saved ? "var(--color-coral)" : "none"}
-                color={saved ? "var(--color-coral)" : "currentColor"}
-              />
-            </button>
-            <button
               onClick={onReportClick}
               aria-label="Report course"
-              className="grid size-11 place-items-center rounded-full border border-line bg-paper text-subtle transition-colors hover:text-red-500"
+              className="grid size-12 place-items-center rounded-full bg-black/5 hover:bg-black/10 active:scale-[0.98] border border-black/10 dark:border-white/10 text-slate-700 hover:text-red-500 dark:text-slate-300 backdrop-blur-md transition-all"
             >
               <Flag size={18} />
             </button>
           </div>
         </div>
 
-        {/* Right — Futuristic glassmorphic video preview card */}
-        <CourseVideoPreviewCard
-          authorAvatarUrl={authorAvatarUrl}
-          displayAuthor={displayAuthor}
-          displayUsername={displayUsername}
-          authorInitials={authorInitials}
-          videoSrc="/boradingui.mp4"
-          posterUrl="/ink-dome-bg.jpg"
-        />
       </div>
     </section>
   )
@@ -514,8 +491,46 @@ function CourseHero({
 /* ------------------------------------------------------------------ */
 
 function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: CourseResponse | null }) {
-  const [tab, setTab] = useState<Tab>("Overview")
   const [openMod, setOpenMod] = useState(0)
+  const [certification, setCertification] = useState<ContentCertificationView | null>(null)
+  const params = useParams<{ id?: string }>()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    if (!course?.id) return
+    let cancelled = false
+    getContentCertification('COURSE', course.id)
+      .then((c) => {
+        if (!cancelled) setCertification(c && c.published ? c : null)
+      })
+      .catch(() => {
+        if (!cancelled) setCertification(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [course?.id])
+
+  const hasBadge = (course?.badges && course.badges.length > 0) || false
+  const hasCertification = Boolean(course?.hasExam || (certification && certification.published))
+  const hasCredentials = hasBadge || hasCertification
+
+  const tabs = [
+    "Overview",
+    "Syllabus",
+    "Instructor",
+    ...(hasCredentials ? (["Credentials"] as const) : []),
+  ] as const
+  type Tab = (typeof tabs)[number]
+
+  const [tab, setTab] = useState<Tab>("Overview")
+
+  useEffect(() => {
+    if (!tabs.includes(tab as any)) {
+      setTab("Overview")
+    }
+  }, [tabs, tab])
+
   const modules = course?.modules ?? []
   const lessonTotal = modules.reduce((sum, m) => sum + (m.lessons?.length ?? 0), 0)
   const learningOutcomes = (course?.learningOutcomes ?? "")
@@ -523,8 +538,6 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
     .map((line) => line.trim())
     .filter(Boolean)
   const orgName = course?.channel && !course.channel.isPersonal ? course.channel.name : null
-  const params = useParams<{ id?: string }>()
-  const searchParams = useSearchParams()
   const titleFromQuery = searchParams?.get('title')
   const badgeInfo = getBadgeForCourse(courseTitle || titleFromQuery || params?.id)
 
@@ -533,14 +546,13 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
       {/* Segmented tab control */}
       <div className="flex justify-center">
         <div className="inline-flex flex-wrap justify-center gap-1 rounded-full border border-line bg-paper p-1.5 shadow-sm">
-          {TABS.map((t) => {
+          {tabs.map((t) => {
             const isActive = tab === t
             return (
               <button
                 key={t}
+                type="button"
                 onClick={() => setTab(t)}
-                onMouseEnter={() => setTab(t)}
-                onFocus={() => setTab(t)}
                 aria-pressed={isActive}
                 className={`relative rounded-full px-4 py-2 text-[13px] font-semibold transition-colors duration-200 sm:px-5 ${
                   isActive ? "text-paper" : "text-subtle hover:text-ink"
@@ -607,15 +619,15 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
             {/* Structured summary of the course layout */}
             <div className="mb-6 flex flex-wrap items-center justify-center gap-2.5">
               {[
-                { icon: BookOpen, label: `${modules.length} ${modules.length === 1 ? "module" : "modules"}`, c: "var(--color-blue)" },
-                { icon: PlayCircle, label: `${lessonTotal} ${lessonTotal === 1 ? "lesson" : "lessons"}`, c: "var(--color-amber)" },
-                ...(course?.duration ? [{ icon: Clock, label: `${course.duration} total`, c: "var(--color-teal)" }] : []),
-              ].map(({ icon: Icon, label, c }) => (
+                { icon: BookOpen, label: `${modules.length} ${modules.length === 1 ? "module" : "modules"}` },
+                { icon: PlayCircle, label: `${lessonTotal} ${lessonTotal === 1 ? "lesson" : "lessons"}` },
+                ...(course?.duration ? [{ icon: Clock, label: `${course.duration} total` }] : []),
+              ].map(({ icon: Icon, label }) => (
                 <span
                   key={label}
-                  className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink"
+                  className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink shadow-2xs"
                 >
-                  <Icon size={14} style={{ color: c }} /> {label}
+                  <Icon size={14} className="text-subtle" /> {label}
                 </span>
               ))}
             </div>
@@ -623,27 +635,20 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
             <div className="flex flex-col gap-3">
               {modules.map((m, idx) => {
                 const open = openMod === idx
-                const bgGradient = MODULE_LIGHT_GRADIENTS[idx % MODULE_LIGHT_GRADIENTS.length]
-                const borderColor = MODULE_BORDER_COLORS[idx % MODULE_BORDER_COLORS.length]
-                const accent = MODULE_ACCENTS[idx % MODULE_ACCENTS.length]
                 const moduleLessons = m.lessons ?? []
                 return (
                   <div
                     key={m.id}
-                    className="overflow-hidden rounded-2xl border transition-all duration-200 hover:shadow-sm"
-                    style={{
-                      background: bgGradient,
-                      borderColor: borderColor,
-                    }}
+                    className="overflow-hidden rounded-2xl border border-line bg-paper transition-all duration-200 hover:border-slate-300 hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/40"
                   >
                     <button
+                      type="button"
                       onClick={() => setOpenMod(open ? -1 : idx)}
                       aria-expanded={open}
                       className="flex w-full items-center gap-4 px-5 py-4 text-left"
                     >
                       <span
-                        className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-lg font-bold border"
-                        style={{ color: accent, borderColor: borderColor }}
+                        className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-lg font-bold border border-line bg-slate-50 text-ink dark:border-slate-800 dark:bg-slate-800"
                       >
                         {idx + 1}
                       </span>
@@ -658,22 +663,21 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
                       </span>
                       <ChevronDown
                         size={17}
-                        className="text-subtle transition-transform"
+                        className="text-subtle transition-transform duration-200"
                         style={{ transform: open ? "rotate(180deg)" : "none" }}
                       />
                     </button>
                     {open && moduleLessons.length > 0 && (
                       <ul
-                        className="flex flex-col gap-1 border-t px-3 pb-3 pt-2"
-                        style={{ borderColor: borderColor }}
+                        className="flex flex-col gap-1 border-t border-line px-3 pb-3 pt-2 dark:border-slate-800"
                       >
                         {moduleLessons.map((lesson, li) => (
                           <li
                             key={lesson.id}
-                            className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-white/60 dark:hover:bg-black/20"
+                            className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-slate-100/60 dark:hover:bg-black/20"
                           >
                             <span className="w-5 text-center text-[12px] font-medium text-subtle/70">{li + 1}</span>
-                            <PlayCircle size={16} style={{ color: accent }} className="shrink-0" />
+                            <PlayCircle size={16} className="text-subtle shrink-0" />
                             <span className="flex-1 text-[14px] text-ink">{lesson.title}</span>
                           </li>
                         ))}
@@ -692,39 +696,35 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
         )}
 
         {tab === "Instructor" && (
-          <div className="flex w-full flex-col gap-8">
+          <div className="flex w-full flex-col gap-6">
             {(course?.collaborators ?? []).map((person) => (
               <div
                 key={person.id}
-                className="w-full rounded-3xl border p-8 transition-all"
-                style={{
-                  background: "linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
-                  borderColor: "rgba(139, 92, 246, 0.28)",
-                }}
+                className="w-full rounded-3xl border border-line bg-paper p-8 shadow-sm transition-all dark:border-slate-800 dark:bg-slate-900/50"
               >
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
                   <Avatar
                     name={person.name || "Unknown"}
                     imageUrl={person.avatarUrl}
-                    accent={INSTRUCTOR_ACCENT}
+                    accent="var(--color-ink)"
                     size={72}
                   />
                   <div className="flex-1">
                     {orgName && (
-                      <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-purple/10 px-2.5 py-1 text-[12px] font-medium text-purple">
-                        <BadgeCheck size={13} /> {orgName}
+                      <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-line bg-paper/60 px-2.5 py-1 text-[12px] font-medium text-subtle">
+                        <BadgeCheck size={13} className="text-ink" /> {orgName}
                       </div>
                     )}
                     <h3 className="font-serif text-2xl font-light text-ink">{person.name || "Unknown"}</h3>
                     <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-subtle">
-                      <span className="inline-flex items-center gap-1.5">
-                        <Briefcase size={13} /> {formatCollaboratorRole(person.role)}
+                      <span className="inline-flex items-center gap-1.5 font-medium text-ink">
+                        <Briefcase size={13} className="text-subtle" /> {formatCollaboratorRole(person.role)}
                       </span>
                       {person.username && (
                         <>
                           <span className="text-subtle/40">·</span>
                           <span className="inline-flex items-center gap-1.5">
-                            <Radio size={13} className="text-blue" /> @{person.username}
+                            <Radio size={13} className="text-subtle" /> @{person.username}
                           </span>
                         </>
                       )}
@@ -742,38 +742,27 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
 
                 {(person.specialities?.length ?? 0) > 0 && (
                   <div className="mt-6 flex flex-wrap gap-2">
-                    {person.specialities!.map((e, idx) => {
-                      const style = EXPERTISE_TAG_STYLES[idx % EXPERTISE_TAG_STYLES.length]
-                      return (
-                        <span
-                          key={e}
-                          className="rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all hover:scale-105"
-                          style={{
-                            background: style.bg,
-                            borderColor: style.border,
-                            color: style.text,
-                          }}
-                        >
-                          {e}
-                        </span>
-                      )
-                    })}
+                    {person.specialities!.map((e) => (
+                      <span
+                        key={e}
+                        className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[12px] font-semibold text-ink transition-all hover:border-ink hover:scale-105 dark:border-slate-800"
+                      >
+                        {e}
+                      </span>
+                    ))}
                   </div>
                 )}
 
-                <div
-                  className="mt-7 grid grid-cols-2 gap-6 border-t pt-6 text-center"
-                  style={{ borderColor: "rgba(139, 92, 246, 0.28)" }}
-                >
+                <div className="mt-7 grid grid-cols-2 gap-6 border-t border-line pt-6 text-center dark:border-slate-800">
                   <div className="flex flex-col items-center justify-center">
-                    <BookOpen size={18} style={{ color: "var(--color-blue)" }} />
+                    <BookOpen size={18} className="text-subtle" />
                     <p className="mt-2 font-serif text-xl font-medium text-ink">{person.courseCount ?? 0}</p>
                     <p className="text-[12px] text-subtle">
                       {person.courseCount === 1 ? "course" : "courses"}
                     </p>
                   </div>
                   <div className="flex flex-col items-center justify-center">
-                    <GraduationCap size={18} style={{ color: "var(--color-purple)" }} />
+                    <GraduationCap size={18} className="text-subtle" />
                     <p className="mt-2 font-serif text-xl font-medium text-ink">
                       {person.experienceYears != null ? `${person.experienceYears} yrs` : "—"}
                     </p>
@@ -784,62 +773,72 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
             ))}
 
             {(course?.collaborators?.length ?? 0) === 0 && (
-              <div className="w-full rounded-3xl border border-line bg-paper p-8 text-center text-[15px] italic text-subtle/75">
+              <div className="w-full rounded-3xl border border-line bg-paper p-8 text-center text-[15px] italic text-subtle/75 dark:border-slate-800 dark:bg-slate-900/50">
                 No instructor information available for this course.
               </div>
             )}
           </div>
         )}
 
-        {tab === "Certificate" && (
-          <div className="mx-auto flex max-w-2xl flex-col items-center gap-8 sm:flex-row sm:items-center">
-            <CourseBadge type={badgeInfo.type} />
-            <div>
-              <h3 className="font-serif text-2xl font-light text-ink">
-                <FoldText
-                  text={`Earn the ${badgeInfo.title}`}
-                  splitBy="char"
-                  hinge="top"
-                  trigger="mount"
-                  duration={0.65}
-                  stagger={0.03}
-                  fontSize="inherit"
-                  fontWeight="inherit"
-                  color="currentColor"
-                />
-              </h3>
-              <p className="mt-3 text-[15px] leading-relaxed text-subtle">
-                Master the core principles and practical skills of this curriculum with real feedback from working product designers. Finish all four core modules and your final case study to unlock the exclusive <span className="font-semibold text-ink">{badgeInfo.badgeName}</span> badge on your profile alongside an official verifiable certificate of completion.
-              </p>
-            </div>
-          </div>
-        )}
+        {tab === "Credentials" && (
+          <div className="flex w-full flex-col gap-8 max-w-3xl mx-auto">
+            {/* Badge Section (if course has badge) */}
+            {hasBadge && (
+              <div className="rounded-3xl border border-line bg-paper p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900/50">
+                <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-center">
+                  <CourseBadge type={badgeInfo.type} />
+                  <div>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-ink mb-2">
+                      <Sparkles size={13} className="text-amber" /> Verifiable Badge
+                    </span>
+                    <h3 className="font-serif text-2xl font-light text-ink">
+                      <FoldText
+                        text={`Earn the ${course?.badges?.[0]?.title || badgeInfo.title}`}
+                        splitBy="char"
+                        hinge="top"
+                        trigger="mount"
+                        duration={0.65}
+                        stagger={0.03}
+                        fontSize="inherit"
+                        fontWeight="inherit"
+                        color="currentColor"
+                      />
+                    </h3>
+                    <p className="mt-3 text-[15px] leading-relaxed text-subtle">
+                      Complete the course syllabus and modules to unlock the official digital <span className="font-semibold text-ink">{course?.badges?.[0]?.title || badgeInfo.badgeName}</span> badge on your profile.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
-        {tab === "Exam" && (
-          <div
-            className="flex w-full flex-col items-center gap-6 rounded-3xl border p-8 text-center sm:p-10"
-            style={{
-              background: "linear-gradient(135deg, rgba(16, 185, 129, 0.14) 0%, rgba(20, 184, 166, 0.04) 100%)",
-              borderColor: "rgba(16, 185, 129, 0.28)",
-            }}
-          >
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-white/70 dark:bg-black/20 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-ink">
-              <BadgeCheck size={14} className="text-teal" /> Final assessment
-            </span>
-            <div>
-              <h3 className="text-[1.5rem] font-bold tracking-tight text-ink">
-                Take the final exam
-              </h3>
-              <p className="mx-auto mt-2 max-w-md text-[13px] font-medium leading-relaxed text-subtle">
-                25 questions · 60 minutes · secure fullscreen session. Pass to earn your certificate.
-              </p>
-            </div>
-            <Link
-              href={examRoutes.landing(params.id as string)}
-              className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-7 py-3 text-[13px] font-semibold text-white shadow-[0_8px_16px_rgba(20,20,43,0.16)] transition-colors hover:bg-[#232735]"
-            >
-              Proceed to exam <ChevronRight size={16} />
-            </Link>
+            {/* Certification & Exam Section (if certification / exam is available) */}
+            {hasCertification && (
+              <div className="flex w-full flex-col items-center gap-5 rounded-3xl border border-line bg-paper p-8 text-center shadow-sm sm:p-10 dark:border-slate-800 dark:bg-slate-900/50">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wide text-ink">
+                  <Award size={14} className="text-ink" /> Official Certification
+                </span>
+                <div>
+                  <h3 className="font-serif text-2xl font-light text-ink sm:text-3xl">
+                    {certification?.title || "Course Certification Exam"}
+                  </h3>
+                  <p className="mx-auto mt-3 max-w-lg text-[14px] font-medium leading-relaxed text-subtle">
+                    <span className="font-semibold text-ink">Completion of this course makes you eligible for the Certification Exam.</span> Pass the exam to earn your verified credential and certificate.
+                  </p>
+                  {certification?.feeMinor && certification.feeMinor > 0 && (
+                    <p className="mt-1 text-xs text-subtle">
+                      Exam registration fee: {formatMoney(certification.feeMinor, certification.currency ?? 'INR')}
+                    </p>
+                  )}
+                </div>
+                <Link
+                  href={examRoutes.landing(certification?.examId || (params?.id as string))}
+                  className="mt-2 inline-flex items-center gap-2 rounded-full bg-ink px-7 py-3 text-[13px] font-semibold text-paper shadow-sm transition-all hover:bg-ink/90 active:scale-[0.98]"
+                >
+                  View Exam Details <ChevronRight size={16} />
+                </Link>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1067,7 +1066,6 @@ export default function CoursePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user } = useAuthStore()
-  const [tab, setTab] = useState<Tab>("Overview")
   const [course, setCourse] = useState<CourseResponse | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -1137,37 +1135,31 @@ export default function CoursePage() {
   const pendingReason = myEnrollment?.enrollment?.requiresPayment ? "PAYMENT" : "REQUIREMENTS";
 
   return (
-    <main className="min-h-screen bg-white text-ink">
-      {/* Hero section with gradient background */}
-      <div className="w-full arcade-wash">
-        <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
-          <CourseHero 
-            title={displayTitle} 
-            authorName={authorName}
-            authorUsername={authorUsername}
-            authorAvatarUrl={authorAvatarUrl}
-            lessonCount={lessonCount}
-            duration={course?.duration}
-            enrollmentCount={course?.enrollmentCount}
-            onEnroll={handleEnrollSuccess}
-            isEnrolled={isEnrolled}
-            initialState={enrollButtonState}
-            pendingReason={pendingReason}
-            channel={course?.channel}
-            collaborators={course?.collaborators}
-            authorId={course?.authorId}
-            pricingModel={course?.pricingModel}
-            priceAmount={course?.priceAmount}
-            currency={course?.currency}
-            courseId={params?.id as string}
-            onReportClick={() => setReportModalOpen(true)}
-          />
-        </div>
-      </div>
+    <main className="min-h-screen w-full arcade-wash text-ink">
+      <div className="mx-auto max-w-6xl px-5 pt-28 pb-28 sm:px-8 sm:pt-32 sm:pb-36">
+        <CourseHero 
+          title={displayTitle} 
+          authorName={authorName}
+          authorUsername={authorUsername}
+          authorAvatarUrl={authorAvatarUrl}
+          lessonCount={lessonCount}
+          duration={course?.duration}
+          enrollmentCount={course?.enrollmentCount}
+          onEnroll={handleEnrollSuccess}
+          isEnrolled={isEnrolled}
+          initialState={enrollButtonState}
+          pendingReason={pendingReason}
+          channel={course?.channel}
+          collaborators={course?.collaborators}
+          authorId={course?.authorId}
+          pricingModel={course?.pricingModel}
+          priceAmount={course?.priceAmount}
+          currency={course?.currency}
+          courseId={params?.id as string}
+          onReportClick={() => setReportModalOpen(true)}
+        />
 
-      {/* Body below hero with pure white background */}
-      <div className="w-full bg-white">
-        <div className="mx-auto max-w-6xl px-5 pt-16 pb-28 sm:px-8 sm:pt-20 sm:pb-36">
+        <div className="mt-16 sm:mt-20">
           <CourseTabs courseTitle={displayTitle} course={course} />
           <div className="mt-20">
             <ReviewsBlock courseId={params?.id as string} />

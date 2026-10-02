@@ -6,7 +6,7 @@ import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
-import { getCourseAttribution, type AttributableCourse } from "./courseAttribution";
+import { getCourseChannel, type AttributableCourse, type CardChannel } from "./courseAttribution";
 import ExploreEmptyState from "./ExploreEmptyState";
 import { UnifiedContentCard } from "@/shared/design-system/ui/cards";
 
@@ -63,11 +63,7 @@ interface EnrichedCourse {
   rating: number;
   reviewsCount: number;
   categoryTag: string;
-  instructor: {
-    name: string;
-    role: string;
-    avatarUrl: string;
-  };
+  channel: CardChannel | null;
 }
 
 function getEnrichedCourse(course: { title: string; duration: string; level: string; desc: string; category?: string } & AttributableCourse, index: number, categoryName: string): EnrichedCourse {
@@ -103,14 +99,14 @@ function getEnrichedCourse(course: { title: string; duration: string; level: str
     categoryTag = course.category || "General";
   }
 
-  const instructor = getCourseAttribution(course as AttributableCourse);
+  const channel = getCourseChannel(course as AttributableCourse);
 
   return {
     ...course,
     rating,
     reviewsCount,
     categoryTag,
-    instructor
+    channel
   };
 }
 
@@ -528,9 +524,8 @@ export const CourseCard: React.FC<CourseCardProps> = ({
       type="COURSE"
       typeLabel={enriched.categoryTag || 'Course'}
       category={course.category || activeCategoryName}
-      authorName={enriched.instructor?.name}
-      authorSubtitle={enriched.instructor?.role}
-      authorAvatarUrl={enriched.instructor?.avatarUrl}
+      channelName={enriched.channel?.name}
+      channelIconUrl={enriched.channel?.iconUrl}
       metaTags={[
         course.duration ? course.duration : null,
         course.level ? course.level : null,
@@ -774,7 +769,7 @@ export default function CoursesView({
           accentColor={activeData.colors.primary}
         />
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
           {sortedCourses.map((course: any, index: number) => {
             const stats = courseStats[course.id] || { averageRating: 0.0, reviewsCount: 0 };
             return (

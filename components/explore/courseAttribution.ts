@@ -1,62 +1,26 @@
 /**
- * Who a course card credits, derived from what the backend actually sends.
+ * Who a content card credits: the channel it was published on, and nothing else.
  *
- * A course published under an organization channel is the organization's work, so the card
- * shows the org's name and logo; a course on a personal channel is the person's, so it shows
- * them. Anything with no attribution at all falls back to a generated monogram rather than to a
- * stock photo of someone who does not exist — a placeholder should look like a placeholder.
+ * Every course, event and exam is published by a channel. An organization channel shows its own
+ * name and logo; a personal channel shows its name and its owner's profile picture — the backend
+ * already sends the owner's picture as a personal channel's `iconUrl`, so no person-vs-channel
+ * branching happens here. Cards never show an author, instructor or role tag.
  */
 
-import type { CourseChannelSummary, CourseCollaboratorSummary } from "@/shared/types/api.types";
+import type { CourseChannelSummary } from "@/shared/types/api.types";
 
-export interface CourseAttribution {
+export interface CardChannel {
   name: string;
-  role: string;
-  avatarUrl: string;
+  iconUrl: string | null;
 }
 
-/** Fields a course card needs to attribute itself; all optional so partial rows are safe. */
+/** Fields a course row may carry; all optional so partial rows are safe. */
 export interface AttributableCourse {
   channel?: CourseChannelSummary | null;
-  authorName?: string | null;
-  authorAvatarUrl?: string | null;
-  collaborators?: CourseCollaboratorSummary[] | null;
 }
 
-/** A deterministic monogram for someone with no uploaded avatar. Never a photo of a real person. */
-export function monogramAvatar(name: string): string {
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=EEF2FF&color=4338CA&bold=true`;
-}
-
-export function getCourseAttribution(course: AttributableCourse): CourseAttribution {
+export function getCourseChannel(course: AttributableCourse): CardChannel | null {
   const channel = course.channel;
-  if (channel && !channel.isPersonal && channel.name) {
-    return {
-      name: channel.name,
-      role: "Organization",
-      avatarUrl: channel.iconUrl || monogramAvatar(channel.name),
-    };
-  }
-
-  if (course.authorName) {
-    return {
-      name: course.authorName,
-      role: "Course Author",
-      avatarUrl: course.authorAvatarUrl || monogramAvatar(course.authorName),
-    };
-  }
-
-  // No author on the row (the author FK is ON DELETE SET NULL) — fall back to whoever is
-  // credited, preferring the one the backend marked as the author.
-  const credited = course.collaborators ?? [];
-  const primary = credited.find((c) => c.role === "Author") ?? credited[0];
-  if (primary?.name) {
-    return {
-      name: primary.name,
-      role: primary.role === "Author" ? "Course Author" : "Instructor",
-      avatarUrl: primary.avatarUrl || monogramAvatar(primary.name),
-    };
-  }
-
-  return { name: "Arcade", role: "Course Author", avatarUrl: monogramAvatar("Arcade") };
+  if (!channel?.name) return null;
+  return { name: channel.name, iconUrl: channel.iconUrl ?? null };
 }

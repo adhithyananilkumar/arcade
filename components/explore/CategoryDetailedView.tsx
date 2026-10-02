@@ -20,7 +20,7 @@ import WindmillAnimation from "./WindmillAnimation";
 import CoursesView, { CourseCard } from "./CoursesView";
 import EventsView from "./EventsView";
 
-import { getCourseAttribution, type AttributableCourse } from "./courseAttribution";
+import { getCourseChannel, type AttributableCourse, type CardChannel } from "./courseAttribution";
 import { courseReviewService } from "@/domains/learning";
 export { CourseCard };
 
@@ -734,11 +734,7 @@ interface EnrichedCourse {
   rating: number;
   reviewsCount: number;
   categoryTag: string;
-  instructor: {
-    name: string;
-    role: string;
-    avatarUrl: string;
-  };
+  channel: CardChannel | null;
 }
 
 function getEnrichedCourse(course: { title: string; duration: string; level: string; desc: string } & AttributableCourse, index: number, categoryName: string): EnrichedCourse {
@@ -771,14 +767,14 @@ function getEnrichedCourse(course: { title: string; duration: string; level: str
     categoryTag = tags[index % tags.length];
   }
 
-  const instructor = getCourseAttribution(course as AttributableCourse);
+  const channel = getCourseChannel(course as AttributableCourse);
 
   return {
     ...course,
     rating,
     reviewsCount,
     categoryTag,
-    instructor
+    channel
   };
 }
 

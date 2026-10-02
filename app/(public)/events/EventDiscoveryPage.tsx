@@ -47,6 +47,9 @@ export function EventDiscoveryPage() {
                 title={event.title}
                 type={event.eventType || 'EVENT'}
                 category={event.category}
+                description={event.subtitle}
+                channelName={event.channelName}
+                channelIconUrl={event.channelIconUrl}
                 metadataBadges={
                   <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
                     {event.deliveryMode && <span>{event.deliveryMode}</span>}

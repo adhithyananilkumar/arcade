@@ -231,7 +231,9 @@ export function EditOrganizationModal({
 
               {/* 2. Logo Avatar & Channel Name Section */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:items-center">
-                {/* Logo Crop Preview */}
+                {/* Logo Crop Preview — organizations only. A personal channel's picture is always
+                    its owner's profile picture, so it has no logo to upload. */}
+                {!channel.isPersonal && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
@@ -312,9 +314,10 @@ export function EditOrganizationModal({
                     </div>
                   </div>
                 </div>
+                )}
 
                 {/* Name Input */}
-                <div className="sm:col-span-2 space-y-2">
+                <div className={`${channel.isPersonal ? 'sm:col-span-3' : 'sm:col-span-2'} space-y-2`}>
                   <label className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
                     Organization Channel Name
                   </label>

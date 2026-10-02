@@ -194,6 +194,8 @@ export default function EventsView({
                 category={bootcamp.category}
                 typeLabel={bootcamp.type || 'Bootcamp'}
                 status={bootcamp.type}
+                channelName={bootcamp.host}
+                channelIconUrl={bootcamp.hostIconUrl}
                 dateText={bootcamp.date ? `${itemCat} • ${bootcamp.date}` : itemCat}
                 metaTags={[
                   bootcamp.duration ? bootcamp.duration.toUpperCase() : null,
@@ -303,7 +305,8 @@ export default function EventsView({
                 category={w.category}
                 typeLabel="Webinar"
                 status={w.status}
-                authorName={w.host}
+                channelName={w.host}
+                channelIconUrl={w.hostIconUrl}
                 dateText={w.date ? `${w.category} • ${w.date}` : w.category}
                 metaTags={[
                   w.duration ? w.duration.toUpperCase() : null,

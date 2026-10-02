@@ -69,6 +69,10 @@ export interface ProfileCourse {
   description?: string | null;
   status: string;
   createdAt?: string | null;
+  /** The publishing channel — what a content card credits. */
+  channelName?: string | null;
+  /** Its picture; for a personal channel, the owner's profile picture. */
+  channelIconUrl?: string | null;
 }
 
 export interface ProfileWorkshop {
@@ -77,6 +81,10 @@ export interface ProfileWorkshop {
   description?: string | null;
   status: string;
   createdAt?: string | null;
+  /** The publishing channel — what a content card credits. */
+  channelName?: string | null;
+  /** Its picture; for a personal channel, the owner's profile picture. */
+  channelIconUrl?: string | null;
 }
 
 /** Mirrors the backend's `ProfileResponse.CertificateDto`. */
@@ -201,6 +209,7 @@ export interface ChannelContentItem {
   updatedAt?: string | null;
   channelId?: string | null;
   channelName?: string | null;
+  channelIconUrl?: string | null;
   authorId?: string | null;
   authorName?: string | null;
   authorUsername?: string | null;

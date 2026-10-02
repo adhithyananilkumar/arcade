@@ -168,6 +168,8 @@ function eventToCard(e: EventDto, index: number): EventCard {
     tone: EVENT_TONES[index % EVENT_TONES.length],
     href: `/events/${e.slug || e.id}`,
     statusLabel: typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1),
+    channelName: e.channelName,
+    channelIconUrl: e.channelIconUrl,
   };
 }
 
@@ -298,7 +300,8 @@ export default function LearnerHomePage() {
       title: pick.title ?? 'Your course',
       // Passed through verbatim: null stays null and renders as "Not tracked", never as 0%.
       progress: pick.progressPercent,
-      authorName: null,
+      channelName: pick.channelName,
+      channelIconUrl: pick.channelIconUrl,
     };
   }, [myCourses]);
 
@@ -576,11 +579,13 @@ export default function LearnerHomePage() {
                       </div>
 
                       <div className="flex min-w-0 flex-1 flex-col justify-center pl-3.5 pr-2 sm:pl-4">
-                        <div className="mb-0.5 flex items-center gap-2">
-                          <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                            {course.authorName || 'Instructor'}
-                          </span>
-                        </div>
+                        {course.channel?.name && (
+                          <div className="mb-1 flex min-w-0 items-center">
+                            <span className="truncate text-[11.5px] font-semibold text-slate-500">
+                              {course.channel.name}
+                            </span>
+                          </div>
+                        )}
                         <h3 className="truncate text-[15px] font-bold tracking-tight text-[#14142b]">
                           {course.title}
                         </h3>

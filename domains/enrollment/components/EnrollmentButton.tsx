@@ -283,14 +283,14 @@ export function EnrollmentButton({
       <div className="flex items-center gap-2.5 w-full">
         <button
           onClick={handleGoToResource}
-          className={`bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold py-3 px-5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 flex-1 text-sm ${className}`}>
+          className={`bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold py-3.5 px-7 rounded-full shadow-[0_4px_20px_rgba(16,185,129,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_6px_24px_rgba(16,185,129,0.35)] transition-all text-sm flex items-center justify-center gap-2 flex-1 ${className}`}>
           <span>Go to {resourceLabel}</span>
-          <ArrowRight className="w-4 h-4 shrink-0" />
+          <ArrowRight className="w-4 h-4 shrink-0 text-white" />
         </button>
         <button
           onClick={handleRevoke}
           disabled={isProcessing}
-          className="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 dark:bg-gray-800 dark:hover:bg-red-950/40 dark:text-gray-400 dark:hover:text-red-400 font-medium py-3 px-3.5 rounded-xl transition-colors border border-gray-200 dark:border-gray-700 disabled:opacity-50 text-xs shrink-0 flex items-center gap-1.5"
+          className="bg-black/5 hover:bg-black/10 active:scale-[0.98] text-slate-700 hover:text-red-600 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/15 backdrop-blur-md border border-black/10 dark:border-white/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 flex items-center gap-1.5 disabled:opacity-50"
           title="Unenroll">
           <LogOut className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Unenroll</span>
@@ -304,13 +304,13 @@ export function EnrollmentButton({
       <div className="flex items-center gap-2.5 w-full">
         <button
           disabled
-          className={`bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 font-semibold py-3 px-4 rounded-xl shadow-sm opacity-90 cursor-default border border-amber-200 dark:border-amber-700 flex-1 text-center text-sm ${className}`}>
+          className={`bg-amber-500/15 text-amber-900 dark:text-amber-200 backdrop-blur-md font-bold py-3.5 px-6 rounded-full border border-amber-500/20 shadow-xs opacity-90 cursor-default flex-1 text-center text-sm ${className}`}>
           Waitlisted
         </button>
         <button
           onClick={handleRevoke}
           disabled={isProcessing}
-          className="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 dark:bg-gray-800 dark:hover:bg-red-950/40 dark:text-gray-400 dark:hover:text-red-400 font-medium py-3 px-3.5 rounded-xl transition-colors border border-gray-200 dark:border-gray-700 disabled:opacity-50 text-xs shrink-0"
+          className="bg-black/5 hover:bg-black/10 active:scale-[0.98] text-slate-700 hover:text-red-600 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/15 backdrop-blur-md border border-black/10 dark:border-white/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 disabled:opacity-50"
           title="Leave waitlist">
           Leave
         </button>
@@ -324,7 +324,7 @@ export function EnrollmentButton({
         <button
           onClick={() => startPayment(pendingPaymentEnrollmentId)}
           disabled={isPaying}
-          className={`bg-[#4c6fff] hover:bg-[#3d5ce0] active:scale-[0.98] text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition-all w-full text-sm flex items-center justify-center gap-2 disabled:opacity-70 ${className}`}>
+          className={`bg-[#14161c] hover:bg-[#232733] active:scale-[0.98] text-white font-bold py-3.5 px-8 rounded-full shadow-[0_8px_25px_rgba(20,22,28,0.22),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15 transition-all w-full text-sm flex items-center justify-center gap-2 disabled:opacity-70 ${className}`}>
           {isPaying ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin shrink-0" />
@@ -338,19 +338,13 @@ export function EnrollmentButton({
     }
     // No payment handle in this component instance — the page was reloaded with a checkout still
     // open, or the enrollment is waiting on someone's approval. `pendingReason` tells them apart.
-    //
-    // An unpaid enrollment used to render a disabled "Processing…" spinner here. A learner who
-    // closed the checkout and reloaded then had no way to pay or back out — the enrollment stays
-    // PENDING until they do one or the other, so the spinner never went away. Enrolling again is
-    // how a checkout is resumed: the backend answers ENROLLMENT_PAYMENT_PENDING with the existing
-    // record, and handleEnroll reopens its checkout.
     if (pendingReason === 'PAYMENT') {
       return (
         <div className="flex items-center gap-2.5 w-full">
           <button
             onClick={handleEnroll}
             disabled={isProcessing}
-            className={`bg-[#4c6fff] hover:bg-[#3d5ce0] active:scale-[0.98] text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition-all flex-1 text-sm flex items-center justify-center gap-2 disabled:opacity-70 ${className}`}>
+            className={`bg-[#14161c] hover:bg-[#232733] active:scale-[0.98] text-white font-bold py-3.5 px-8 rounded-full shadow-[0_8px_25px_rgba(20,22,28,0.22),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15 transition-all flex-1 text-sm flex items-center justify-center gap-2 disabled:opacity-70 ${className}`}>
             {isProcessing ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin shrink-0" />
@@ -363,7 +357,7 @@ export function EnrollmentButton({
           <button
             onClick={handleRevoke}
             disabled={isProcessing}
-            className="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 dark:bg-gray-800 dark:hover:bg-red-950/40 dark:text-gray-400 dark:hover:text-red-400 font-medium py-3 px-3.5 rounded-xl transition-colors border border-gray-200 dark:border-gray-700 disabled:opacity-50 text-xs shrink-0"
+            className="bg-black/5 hover:bg-black/10 active:scale-[0.98] text-slate-700 hover:text-red-600 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/15 backdrop-blur-md border border-black/10 dark:border-white/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 disabled:opacity-50"
             title="Cancel this registration">
             Cancel
           </button>
@@ -373,7 +367,7 @@ export function EnrollmentButton({
     return (
       <button
         disabled
-        className={`bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold py-3 px-4 rounded-xl shadow-sm opacity-90 cursor-default border border-blue-200 dark:border-blue-800 w-full text-sm ${className}`}>
+        className={`bg-blue-500/15 text-blue-900 dark:text-blue-200 backdrop-blur-md font-bold py-3.5 px-6 rounded-full border border-blue-500/20 shadow-xs opacity-90 cursor-default w-full text-sm ${className}`}>
         Action required
       </button>
     );
@@ -384,7 +378,7 @@ export function EnrollmentButton({
     <button
       onClick={handleEnroll}
       disabled={isProcessing}
-      className={`bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold py-3 px-5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed w-full text-sm ${className}`}>
+      className={`bg-[#14161c] hover:bg-[#232733] active:scale-[0.98] text-white font-bold py-3.5 px-8 rounded-full shadow-[0_8px_25px_rgba(20,22,28,0.22),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed w-full text-sm ${className}`}>
       {isProcessing ? (
         <>
           <Loader2 className="w-4 h-4 animate-spin shrink-0" />
@@ -393,7 +387,7 @@ export function EnrollmentButton({
       ) : (
         <>
           <span>{resourceType === 'EXAM' ? 'Register' : 'Enroll Now'}</span>
-          <ArrowRight className="w-4 h-4 shrink-0" />
+          <ArrowRight className="w-4 h-4 shrink-0 text-white" />
         </>
       )}
     </button>

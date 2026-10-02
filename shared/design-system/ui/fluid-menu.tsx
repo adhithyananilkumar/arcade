@@ -96,7 +96,7 @@ export function MenuItem({
   return (
     <button
       type="button"
-      className={`relative flex h-full w-full items-center justify-between gap-3 whitespace-nowrap rounded-full px-4
+      className={`relative flex h-full w-full items-center justify-between gap-2 whitespace-nowrap rounded-full px-3.5
         ${disabled ? "cursor-not-allowed text-slate-300" : danger ? "text-rose-600" : "text-[#14142b]"}
         ${isActive ? "bg-black/[0.03]" : ""}
       `}
@@ -159,7 +159,7 @@ export function MenuContainer({ children }: { children: React.ReactNode }) {
   return (
     <div
       ref={containerRef}
-      className="relative h-12 w-[158px]"
+      className="relative h-12 w-[124px]"
       data-expanded={isExpanded}
       onMouseEnter={open}
       onMouseLeave={scheduleClose}
@@ -177,7 +177,7 @@ export function MenuContainer({ children }: { children: React.ReactNode }) {
         {/* Trigger — always on top */}
         <button
           type="button"
-          className={`absolute inset-x-0 top-0 z-[60] flex h-12 w-full items-center justify-between overflow-hidden rounded-full border bg-white px-1.5 pl-3 shadow-[0_4px_14px_rgba(20,20,43,0.1)] transition-all duration-300 will-change-transform group ${
+          className={`absolute inset-x-0 top-0 z-[60] flex h-12 w-full items-center justify-between overflow-hidden rounded-full border bg-white pl-3 pr-1.5 shadow-[0_4px_14px_rgba(20,20,43,0.1)] transition-all duration-300 will-change-transform group ${
             isExpanded
               ? "border-slate-300 shadow-[0_6px_18px_rgba(20,20,43,0.14)]"
               : "border-slate-200/90 hover:border-slate-300 active:scale-[0.98]"

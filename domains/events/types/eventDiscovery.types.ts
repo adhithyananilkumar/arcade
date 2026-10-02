@@ -45,6 +45,7 @@ export interface EventDto {
   /** The owning channel — the actual publisher, and what belongs on a byline. */
   channelName: string | null;
   channelId: string | null;
+  channelIconUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -72,6 +73,8 @@ export interface PublishedEventCard {
   category: string;
   /** The owning channel. Never an invented person. */
   host: string | null;
+  /** The owning channel's picture; for a personal channel, its owner's profile picture. */
+  hostIconUrl: string | null;
   eventType: EventTypeName | null;
   deliveryMode: EventDeliveryMode | null;
   difficulty: EventDifficulty | null;
@@ -102,7 +105,9 @@ export interface EventCardView {
   eventType: EventTypeName | null;
   /** The event's own blurb. Empty when the author wrote none — never invented copy. */
   desc: string;
+  /** The publishing channel's name, or empty when the event has none. */
   host: string;
+  hostIconUrl: string | null;
   date: string;
   status: 'Live Today' | 'Upcoming' | 'Recorded Video' | 'Past';
   duration: string;

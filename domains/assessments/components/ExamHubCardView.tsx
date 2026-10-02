@@ -133,7 +133,9 @@ export function ExamHubCardView({ card, onOpen, onViewGrades, hideTypeAndFeeBadg
         </span>
       }
       categoryId={card.categoryId}
-      authorName={card.channelName}
+      description={card.description}
+      channelName={card.channelName}
+      channelIconUrl={card.channelIconUrl}
       metaTags={metaTags}
       metadataBadges={metadataBadges}
       actionLabel={actionLabel}

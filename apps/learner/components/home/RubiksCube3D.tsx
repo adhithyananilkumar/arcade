@@ -1224,7 +1224,7 @@ function getCameraAwareMove(
 
       {/* 3D Cube Card */}
       <div className="min-h-0 flex-1 flex flex-col justify-center">
-        <div className="relative w-full h-full min-h-[380px] overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white/95 p-4 sm:p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] backdrop-blur-sm select-none flex flex-col justify-between items-center">
+        <div className="relative w-full h-full min-h-[340px] overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white/95 p-4 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] backdrop-blur-sm select-none flex flex-col justify-between items-center">
           {/* Decorative background ambient glow matching Resume Learning */}
           <div
             aria-hidden

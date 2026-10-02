@@ -61,11 +61,12 @@ export interface Event {
   /** The owning channel's display name — the publisher shown on the byline. */
   channelName?: string | null;
   channelId?: string | null;
+  channelIconUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-export type CreateEventRequest = Omit<Event, 'id' | 'createdBy' | 'channelName' | 'channelId' | 'createdAt' | 'updatedAt' | 'status'>;
+export type CreateEventRequest = Omit<Event, 'id' | 'createdBy' | 'channelName' | 'channelId' | 'channelIconUrl' | 'createdAt' | 'updatedAt' | 'status'>;
 
 export interface EventFormData extends Partial<CreateEventRequest> {
   title: string;

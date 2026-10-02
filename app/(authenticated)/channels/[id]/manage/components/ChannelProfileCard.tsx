@@ -317,8 +317,9 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
                   </svg>
                 )}
 
-                {/* Logo / Profile Avatar hover camera button */}
-                {canEdit && (
+                {/* Logo / Profile Avatar hover camera button. A personal channel has no logo of its
+                    own — it always shows the owner's profile picture — so there is nothing to change. */}
+                {canEdit && !channel.isPersonal && (
                   <button
                     type="button"
                     onClick={() => iconInputRef.current?.click()}

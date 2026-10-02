@@ -94,6 +94,8 @@ export function ContentCard({ item, kind, href }: ContentCardProps) {
       title={item.title}
       description={item.description}
       type={type}
+      channelName={item.channelName}
+      channelIconUrl={item.channelIconUrl}
       dateText={formatMonth(item.createdAt)}
       actionHref={href}
       actionLabel={isCourse ? 'View Course' : 'View Event'}

@@ -231,6 +231,28 @@ export default function LearnerNavbar() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // The public course detail page breadcrumb
+  const isCoursePublic = pathname.startsWith('/courses/') && !pathname.includes('/learn');
+  const coursePublicId = isCoursePublic ? pathname.split('/')[2] : null;
+
+  const { data: coursePublicData } = useQuery({
+    queryKey: ['course-public-title', coursePublicId],
+    queryFn: () => api.get<{ title: string }>(`/api/v1/public/courses/${coursePublicId}`),
+    enabled: Boolean(coursePublicId),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // The public event detail page breadcrumb
+  const isEventPublic = pathname.startsWith('/events/') && pathname !== '/events';
+  const eventPublicSlug = isEventPublic ? pathname.split('/')[2] : null;
+
+  const { data: eventPublicData } = useQuery({
+    queryKey: ['event-public-title', eventPublicSlug],
+    queryFn: () => api.get<{ title: string }>(`/api/v1/events/public/${eventPublicSlug}`),
+    enabled: Boolean(eventPublicSlug),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const channelTabLabel = (() => {
     if (!isChannelManage) return 'Overview';
     const tab = (searchParams.get('tab') || 'OVERVIEW').toUpperCase();
@@ -294,6 +316,38 @@ export default function LearnerNavbar() {
           </button>
         )}
       </div>
+
+      {/* Center: Course Public page breadcrumbs */}
+      {isCoursePublic && (
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center gap-2 text-[13.5px]">
+          <Link
+            href="/courses"
+            className="font-bold text-slate-700 dark:text-slate-300 hover:text-ink dark:hover:text-white transition-colors"
+          >
+            Courses
+          </Link>
+          <span className="text-slate-400 dark:text-slate-600">/</span>
+          <span className="max-w-[180px] sm:max-w-[300px] truncate font-bold text-ink dark:text-white whitespace-nowrap">
+            {coursePublicData?.title ?? 'Course'}
+          </span>
+        </div>
+      )}
+
+      {/* Center: Event Public page breadcrumbs */}
+      {isEventPublic && (
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center gap-2 text-[13.5px]">
+          <Link
+            href="/events"
+            className="font-bold text-slate-700 dark:text-slate-300 hover:text-ink dark:hover:text-white transition-colors"
+          >
+            Events
+          </Link>
+          <span className="text-slate-400 dark:text-slate-600">/</span>
+          <span className="max-w-[180px] sm:max-w-[300px] truncate font-bold text-ink dark:text-white whitespace-nowrap">
+            {eventPublicData?.title ?? 'Event'}
+          </span>
+        </div>
+      )}
 
       {/* Center: Channel Manage breadcrumbs */}
       {isChannelManage && (
@@ -458,8 +512,8 @@ export default function LearnerNavbar() {
         <div className="pointer-events-auto relative z-50 flex items-center">
           <MenuContainer>
             {/* Trigger (Profile Picture and Name) */}
-            <div className="flex h-full w-full items-center justify-between gap-2">
-              <span className="max-w-[100px] truncate text-sm font-bold text-[#14142b]">
+            <div className="flex h-full w-full items-center justify-between gap-1.5">
+              <span className="max-w-[66px] truncate text-sm font-bold text-[#14142b]">
                 {navPillName(user)}
               </span>
               <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-black/5 shadow-xs">

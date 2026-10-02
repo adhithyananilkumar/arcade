@@ -426,7 +426,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#2962D6] dark:group-hover:text-[#3B82F6] transition-colors">{course.title}</span>
                     <span className="truncate text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">
-                      {course.authorName || 'Instructor'} · {course.moduleCount || 0} modules
+                      {course.channel?.name ? `${course.channel.name} · ` : ''}{course.moduleCount || 0} modules
                     </span>
                   </div>
                   <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 px-2.5 py-0.5 text-[10.5px] font-bold">

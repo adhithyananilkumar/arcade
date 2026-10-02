@@ -18,17 +18,32 @@ export interface MotifPaint {
   outline?: boolean;
   /** Screen colour for the terminal motif; paper when absent. */
   deepInk?: string;
+  /** Multiplies every stroke width; below 1 gives the lighter, minimal line. */
+  weight?: number;
+  /**
+   * When set, fills become pale tints of their colour (this share of the colour, the rest white)
+   * instead of the flat colour — the quiet, blended look used on cards.
+   */
+  tint?: number;
 }
 
 export type Motif = (p: MotifPaint) => React.ReactElement;
 
 const line = (p: MotifPaint, w = 3.5) => ({
   stroke: p.ink,
-  strokeWidth: w,
+  strokeWidth: w * (p.weight ?? 1),
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
 });
-const fill = (p: MotifPaint, c: string) => (p.outline ? p.paper : c);
+const fill = (p: MotifPaint, c: string) => {
+  if (p.outline) return p.paper;
+  if (p.tint !== undefined && c !== p.paper) {
+    // Ink fills (the vinyl disc) would be the one heavy shape left; keep them a whisper.
+    const share = c === p.ink ? Math.min(p.tint, 0.14) : p.tint;
+    return `color-mix(in srgb, ${c} ${Math.round(share * 100)}%, white)`;
+  }
+  return c;
+};
 
 // ── AI ─────────────────────────────────────────────────────────────────────────
 
@@ -53,7 +68,7 @@ const neuralNet: Motif = (p) => {
     <g>
       {layers.slice(0, -1).map(([x, ys], i) =>
         ys.map((y) => layers[i + 1][1].map((y2) => (
-          <line key={`${x}${y}${y2}`} x1={x} y1={y} x2={layers[i + 1][0]} y2={y2} stroke={p.ink} strokeWidth={1.6} opacity={0.55} />
+          <line key={`${x}${y}${y2}`} x1={x} y1={y} x2={layers[i + 1][0]} y2={y2} stroke={p.ink} strokeWidth={1.6 * (p.weight ?? 1)} opacity={0.55} />
         )))
       )}
       {nodes.map(([x, y], i) => (
@@ -92,7 +107,7 @@ const brackets: Motif = (p) => (
   <g>
     <rect x={-46} y={-36} width={92} height={72} rx={12} fill={fill(p, p.soft)} {...line(p)} />
     <path d="M-16 -14 L-30 0 L-16 14 M16 -14 L30 0 L16 14" fill="none" {...line(p, 4.5)} />
-    <path d="M6 -20 L-6 20" fill="none" stroke={p.outline ? p.ink : p.main} strokeWidth={4.5} strokeLinecap="round" />
+    <path d="M6 -20 L-6 20" fill="none" stroke={p.outline ? p.ink : p.main} strokeWidth={4.5 * (p.weight ?? 1)} strokeLinecap="round" />
   </g>
 );
 const terminal: Motif = (p) => (
@@ -140,7 +155,7 @@ const barChart: Motif = (p) => (
     {[[-32, 22, p.soft], [-14, 44, p.main], [4, 30, p.accent], [22, 62, p.main]].map(([x, h, c], i) => (
       <rect key={i} x={x as number} y={40 - (h as number)} width={14} height={h as number} rx={3} fill={fill(p, c as string)} {...line(p, 3)} />
     ))}
-    <path d="M-26 6 L-6 -14 L12 -2 L32 -32" fill="none" stroke={p.spark} strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M-26 6 L-6 -14 L12 -2 L32 -32" fill="none" stroke={p.spark} strokeWidth={3.5 * (p.weight ?? 1)} strokeLinecap="round" strokeLinejoin="round" />
     <circle cx={32} cy={-32} r={4} fill={p.spark} />
   </g>
 );
@@ -166,9 +181,9 @@ const database: Motif = (p) => (
 const scatter: Motif = (p) => (
   <g>
     <rect x={-46} y={-40} width={92} height={80} rx={8} fill={fill(p, p.paper)} {...line(p)} />
-    <path d="M-34 28 L34 -28" stroke={p.outline ? p.ink : p.accent} strokeWidth={3} strokeDasharray="6 6" strokeLinecap="round" />
+    <path d="M-34 28 L34 -28" stroke={p.outline ? p.ink : p.accent} strokeWidth={3 * (p.weight ?? 1)} strokeDasharray="6 6" strokeLinecap="round" />
     {[[-26, 14], [-20, 24], [-10, 6], [-2, 12], [6, -4], [14, -2], [20, -18], [28, -12], [-14, -12], [24, 10]].map(([x, y], i) => (
-      <circle key={i} cx={x} cy={y} r={4.5} fill={fill(p, i % 4 === 0 ? p.spark : p.main)} stroke={p.ink} strokeWidth={1.8} />
+      <circle key={i} cx={x} cy={y} r={4.5} fill={fill(p, i % 4 === 0 ? p.spark : p.main)} stroke={p.ink} strokeWidth={1.8 * (p.weight ?? 1)} />
     ))}
   </g>
 );
@@ -187,7 +202,7 @@ const shield: Motif = (p) => (
   <g>
     <path d="M0 -46 L38 -32 V-2 C38 22 20 38 0 46 C-20 38 -38 22 -38 -2 V-32 Z" fill={fill(p, p.main)} {...line(p)} />
     <path d="M0 -34 L28 -24 V-2 C28 16 15 28 0 34 Z" fill={fill(p, p.soft)} opacity={0.6} />
-    <path d="M-16 0 L-4 12 L18 -12" fill="none" stroke={p.outline ? p.ink : p.paper} strokeWidth={6} strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M-16 0 L-4 12 L18 -12" fill="none" stroke={p.outline || p.tint !== undefined ? p.ink : p.paper} strokeWidth={6 * (p.weight ?? 1)} strokeLinecap="round" strokeLinejoin="round" />
   </g>
 );
 const padlock: Motif = (p) => (
@@ -219,7 +234,7 @@ const scanEye: Motif = (p) => (
     <path d="M-44 -26 V-40 H-30 M30 -40 H44 V-26 M44 26 V40 H30 M-30 40 H-44 V26" fill="none" {...line(p, 4)} />
     <path d="M-34 0 C-18 -22 18 -22 34 0 C18 22 -18 22 -34 0 Z" fill={fill(p, p.paper)} {...line(p)} />
     <circle cx={0} cy={0} r={11} fill={fill(p, p.main)} {...line(p, 3)} />
-    <path d="M-44 0 H44" stroke={p.spark} strokeWidth={2.4} strokeDasharray="4 4" />
+    <path d="M-44 0 H44" stroke={p.spark} strokeWidth={2.4 * (p.weight ?? 1)} strokeDasharray="4 4" />
   </g>
 );
 
@@ -228,7 +243,7 @@ const scanEye: Motif = (p) => (
 const cloud: Motif = (p) => (
   <g>
     <path d="M-30 24 A20 20 0 0 1 -28 -14 A26 26 0 0 1 20 -22 A22 22 0 0 1 34 24 Z" fill={fill(p, p.soft)} {...line(p)} />
-    <path d="M-10 10 V-8 M-16 -2 L-10 -8 L-4 -2 M10 -6 V12 M4 6 L10 12 L16 6" fill="none" stroke={p.outline ? p.ink : p.main} strokeWidth={3.6} strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M-10 10 V-8 M-16 -2 L-10 -8 L-4 -2 M10 -6 V12 M4 6 L10 12 L16 6" fill="none" stroke={p.outline ? p.ink : p.main} strokeWidth={3.6 * (p.weight ?? 1)} strokeLinecap="round" strokeLinejoin="round" />
   </g>
 );
 const serverRack: Motif = (p) => (
@@ -236,8 +251,8 @@ const serverRack: Motif = (p) => (
     {[-38, -12, 14].map((y, i) => (
       <g key={y}>
         <rect x={-36} y={y} width={72} height={22} rx={5} fill={fill(p, i === 1 ? p.main : p.paper)} {...line(p)} />
-        <circle cx={-24} cy={y + 11} r={3} fill={i === 1 ? p.paper : p.spark} />
-        <path d={`M4 ${y + 11} H26`} {...line(p, 3)} stroke={i === 1 ? p.paper : p.ink} />
+        <circle cx={-24} cy={y + 11} r={3} fill={i === 1 && p.tint === undefined ? p.paper : p.spark} />
+        <path d={`M4 ${y + 11} H26`} {...line(p, 3)} stroke={i === 1 && p.tint === undefined ? p.paper : p.ink} />
       </g>
     ))}
   </g>
@@ -304,8 +319,8 @@ const layers: Motif = (p) => (
 );
 const bezier: Motif = (p) => (
   <g>
-    <path d="M-40 26 C-30 -40 30 40 40 -26" fill="none" stroke={p.outline ? p.ink : p.main} strokeWidth={5} strokeLinecap="round" />
-    <path d="M-40 26 L-30 -40 M40 -26 L30 40" stroke={p.ink} strokeWidth={2} strokeDasharray="4 4" />
+    <path d="M-40 26 C-30 -40 30 40 40 -26" fill="none" stroke={p.outline ? p.ink : p.main} strokeWidth={5 * (p.weight ?? 1)} strokeLinecap="round" />
+    <path d="M-40 26 L-30 -40 M40 -26 L30 40" stroke={p.ink} strokeWidth={2 * (p.weight ?? 1)} strokeDasharray="4 4" />
     {[[-40, 26], [40, -26]].map(([x, y], i) => <rect key={i} x={x - 6} y={y - 6} width={12} height={12} fill={fill(p, p.paper)} {...line(p, 2.6)} />)}
     {[[-30, -40], [30, 40]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r={6} fill={fill(p, p.spark)} {...line(p, 2.6)} />)}
   </g>
@@ -333,8 +348,8 @@ const growth: Motif = (p) => (
     {[[-38, 18], [-16, 4], [6, -12], [28, -30]].map(([x, h], i) => (
       <rect key={i} x={x} y={38 - (40 - h)} width={16} height={40 - h} rx={3} fill={fill(p, i === 3 ? p.main : p.soft)} {...line(p, 3)} />
     ))}
-    <path d="M-40 6 L-12 -14 L6 -6 L38 -38" fill="none" stroke={p.outline ? p.ink : p.spark} strokeWidth={4.5} strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M24 -40 H40 V-24" fill="none" stroke={p.outline ? p.ink : p.spark} strokeWidth={4.5} strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M-40 6 L-12 -14 L6 -6 L38 -38" fill="none" stroke={p.outline ? p.ink : p.spark} strokeWidth={4.5 * (p.weight ?? 1)} strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M24 -40 H40 V-24" fill="none" stroke={p.outline ? p.ink : p.spark} strokeWidth={4.5 * (p.weight ?? 1)} strokeLinecap="round" strokeLinejoin="round" />
   </g>
 );
 const target: Motif = (p) => (
@@ -357,7 +372,7 @@ const megaphone: Motif = (p) => (
     <path d="M-30 -10 L20 -36 V28 L-30 6 Z" fill={fill(p, p.main)} {...line(p)} />
     <rect x={-42} y={-12} width={14} height={20} rx={4} fill={fill(p, p.paper)} {...line(p, 3)} />
     <path d="M-22 6 L-14 32 H-4 L-10 8" fill={fill(p, p.soft)} {...line(p, 3)} />
-    <path d="M30 -18 C38 -12 38 6 30 12 M36 -28 C50 -16 50 10 36 22" fill="none" stroke={p.outline ? p.ink : p.spark} strokeWidth={3.5} strokeLinecap="round" />
+    <path d="M30 -18 C38 -12 38 6 30 12 M36 -28 C50 -16 50 10 36 22" fill="none" stroke={p.outline ? p.ink : p.spark} strokeWidth={3.5 * (p.weight ?? 1)} strokeLinecap="round" />
   </g>
 );
 
@@ -372,7 +387,7 @@ const coinStack: Motif = (p) => (
       </g>
     ))}
     <circle cx={26} cy={-30} r={14} fill={fill(p, p.main)} {...line(p, 3)} />
-    <path d="M20 -34 H32 M20 -28 H32" {...line(p, 2.4)} stroke={p.outline ? p.ink : p.paper} />
+    <path d="M20 -34 H32 M20 -28 H32" {...line(p, 2.4)} stroke={p.outline || p.tint !== undefined ? p.ink : p.paper} />
   </g>
 );
 const banknote: Motif = (p) => (
@@ -419,7 +434,7 @@ const calculator: Motif = (p) => (
 
 const compassArc: Motif = (p) => (
   <g>
-    <circle cx={0} cy={6} r={34} fill="none" stroke={p.outline ? p.ink : p.main} strokeWidth={3} strokeDasharray="6 6" />
+    <circle cx={0} cy={6} r={34} fill="none" stroke={p.outline ? p.ink : p.main} strokeWidth={3 * (p.weight ?? 1)} strokeDasharray="6 6" />
     <path d="M0 -40 L-22 36 M0 -40 L22 36" fill="none" {...line(p, 4.5)} />
     <circle cx={0} cy={-40} r={7} fill={fill(p, p.spark)} {...line(p, 3)} />
     <path d="M-14 6 H14" {...line(p, 3)} />
@@ -428,15 +443,15 @@ const compassArc: Motif = (p) => (
 const sigma: Motif = (p) => (
   <g>
     <rect x={-44} y={-44} width={88} height={88} rx={14} fill={fill(p, p.soft)} {...line(p)} />
-    <path d="M24 -26 H-20 L6 0 L-20 26 H24" fill="none" stroke={p.outline ? p.ink : p.main} strokeWidth={6} strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M24 -26 H-20 L6 0 L-20 26 H24" fill="none" stroke={p.outline ? p.ink : p.main} strokeWidth={6 * (p.weight ?? 1)} strokeLinecap="round" strokeLinejoin="round" />
   </g>
 );
 const triangleAngle: Motif = (p) => (
   <g>
     <path d="M-42 34 L38 34 L-6 -42 Z" fill={fill(p, p.soft)} {...line(p)} />
-    <path d="M-28 34 A14 14 0 0 0 -35 22" fill="none" stroke={p.outline ? p.ink : p.main} strokeWidth={3.5} />
+    <path d="M-28 34 A14 14 0 0 0 -35 22" fill="none" stroke={p.outline ? p.ink : p.main} strokeWidth={3.5 * (p.weight ?? 1)} />
     <path d="M38 34 V20 H24" fill="none" {...line(p, 2.6)} opacity={0} />
-    <path d="M-6 -42 V34" stroke={p.ink} strokeWidth={2} strokeDasharray="4 4" />
+    <path d="M-6 -42 V34" stroke={p.ink} strokeWidth={2 * (p.weight ?? 1)} strokeDasharray="4 4" />
     <rect x={-6} y={24} width={10} height={10} fill="none" {...line(p, 2.2)} />
     <circle cx={-6} cy={-42} r={5} fill={fill(p, p.spark)} {...line(p, 2.4)} />
   </g>
@@ -444,14 +459,14 @@ const triangleAngle: Motif = (p) => (
 const parabola: Motif = (p) => (
   <g>
     <path d="M-44 30 H44 M0 44 V-44" fill="none" {...line(p, 3)} />
-    <path d="M-34 -40 Q0 70 34 -40" fill="none" stroke={p.outline ? p.ink : p.main} strokeWidth={4.5} strokeLinecap="round" />
+    <path d="M-34 -40 Q0 70 34 -40" fill="none" stroke={p.outline ? p.ink : p.main} strokeWidth={4.5 * (p.weight ?? 1)} strokeLinecap="round" />
     <circle cx={0} cy={15} r={5} fill={fill(p, p.spark)} {...line(p, 2.4)} />
     <path d="M40 -44 L44 -40 L40 -36 M-4 -40 L0 -44 L4 -40" fill="none" {...line(p, 2.4)} />
   </g>
 );
 const infinity: Motif = (p) => (
   <g>
-    <path d="M0 0 C-12 -24 -46 -24 -46 0 C-46 24 -12 24 0 0 C12 -24 46 -24 46 0 C46 24 12 24 0 0 Z" fill={fill(p, p.soft)} stroke={p.outline ? p.ink : p.main} strokeWidth={6} strokeLinejoin="round" />
+    <path d="M0 0 C-12 -24 -46 -24 -46 0 C-46 24 -12 24 0 0 C12 -24 46 -24 46 0 C46 24 12 24 0 0 Z" fill={fill(p, p.soft)} stroke={p.outline ? p.ink : p.main} strokeWidth={6 * (p.weight ?? 1)} strokeLinejoin="round" />
     <circle cx={-26} cy={0} r={4} fill={p.spark} />
     <circle cx={26} cy={0} r={4} fill={p.accent} />
   </g>
@@ -462,7 +477,7 @@ const infinity: Motif = (p) => (
 const atom: Motif = (p) => (
   <g fill="none">
     {[0, 60, 120].map((a, i) => (
-      <ellipse key={a} cx={0} cy={0} rx={44} ry={16} transform={`rotate(${a})`} stroke={i === 0 && !p.outline ? p.main : p.ink} strokeWidth={3} />
+      <ellipse key={a} cx={0} cy={0} rx={44} ry={16} transform={`rotate(${a})`} stroke={i === 0 && !p.outline ? p.main : p.ink} strokeWidth={3 * (p.weight ?? 1)} />
     ))}
     <circle cx={0} cy={0} r={9} fill={fill(p, p.spark)} {...line(p, 3)} />
     <circle cx={44} cy={0} r={4.5} fill={fill(p, p.main)} {...line(p, 2)} />
@@ -474,8 +489,8 @@ const flask: Motif = (p) => (
     <path d="M-10 -44 V-12 L-36 34 A8 8 0 0 0 -29 46 H29 A8 8 0 0 0 36 34 L10 -12 V-44" fill={fill(p, p.paper)} {...line(p)} />
     <path d="M-24 14 H24 L33 32 A6 6 0 0 1 28 40 H-28 A6 6 0 0 1 -33 32 Z" fill={fill(p, p.main)} />
     <path d="M-16 -44 H16" {...line(p, 4)} />
-    <circle cx={-6} cy={26} r={4} fill={p.paper} />
-    <circle cx={8} cy={20} r={3} fill={p.paper} />
+    <circle cx={-6} cy={26} r={4} fill={p.tint !== undefined ? p.ink : p.paper} opacity={p.tint !== undefined ? 0.35 : 1} />
+    <circle cx={8} cy={20} r={3} fill={p.tint !== undefined ? p.ink : p.paper} opacity={p.tint !== undefined ? 0.35 : 1} />
     <circle cx={22} cy={-30} r={5} fill={fill(p, p.spark)} {...line(p, 2.4)} />
   </g>
 );
@@ -501,7 +516,7 @@ const microscope: Motif = (p) => (
 const planet: Motif = (p) => (
   <g>
     <circle cx={0} cy={0} r={28} fill={fill(p, p.main)} {...line(p)} />
-    <path d="M-20 -8 C-8 -14 6 -10 18 -16 M-22 10 C-10 6 4 12 22 6" fill="none" stroke={p.outline ? p.ink : p.paper} strokeWidth={2.4} strokeLinecap="round" opacity={0.7} />
+    <path d="M-20 -8 C-8 -14 6 -10 18 -16 M-22 10 C-10 6 4 12 22 6" fill="none" stroke={p.outline || p.tint !== undefined ? p.ink : p.paper} strokeWidth={2.4 * (p.weight ?? 1)} strokeLinecap="round" opacity={0.7} />
     <ellipse cx={0} cy={0} rx={48} ry={12} fill="none" {...line(p, 3.5)} transform="rotate(-18)" />
     <circle cx={36} cy={-34} r={4} fill={p.spark} />
     <circle cx={-38} cy={30} r={3} fill={p.accent} />
@@ -513,9 +528,9 @@ const planet: Motif = (p) => (
 const circuit: Motif = (p) => (
   <g>
     <rect x={-46} y={-40} width={92} height={80} rx={10} fill={fill(p, p.main)} {...line(p)} />
-    <path d="M-34 -24 H-10 V-6 H14 M-34 22 H0 V8 H34 M20 -28 V-10 H34" fill="none" stroke={p.outline ? p.ink : p.paper} strokeWidth={2.8} strokeLinecap="round" />
+    <path d="M-34 -24 H-10 V-6 H14 M-34 22 H0 V8 H34 M20 -28 V-10 H34" fill="none" stroke={p.outline || p.tint !== undefined ? p.ink : p.paper} strokeWidth={2.8 * (p.weight ?? 1)} strokeLinecap="round" />
     {[[-34, -24], [14, -6], [-34, 22], [34, 8], [20, -28]].map(([x, y], i) => (
-      <circle key={i} cx={x} cy={y} r={4} fill={fill(p, p.spark)} stroke={p.ink} strokeWidth={1.6} />
+      <circle key={i} cx={x} cy={y} r={4} fill={fill(p, p.spark)} stroke={p.ink} strokeWidth={1.6 * (p.weight ?? 1)} />
     ))}
   </g>
 );
@@ -524,7 +539,7 @@ const resistor: Motif = (p) => (
     <path d="M-46 0 H-26 L-20 -14 L-10 14 L0 -14 L10 14 L20 -14 L26 0 H46" fill="none" {...line(p, 4)} />
     <circle cx={-46} cy={0} r={5} fill={fill(p, p.main)} {...line(p, 2.6)} />
     <circle cx={46} cy={0} r={5} fill={fill(p, p.main)} {...line(p, 2.6)} />
-    <path d="M-14 -34 L-24 -18 H-12 L-22 -2" fill="none" stroke={p.outline ? p.ink : p.spark} strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round" transform="translate(30 4)" />
+    <path d="M-14 -34 L-24 -18 H-12 L-22 -2" fill="none" stroke={p.outline ? p.ink : p.spark} strokeWidth={3.5 * (p.weight ?? 1)} strokeLinecap="round" strokeLinejoin="round" transform="translate(30 4)" />
   </g>
 );
 const robot: Motif = (p) => (
@@ -535,7 +550,7 @@ const robot: Motif = (p) => (
     <rect x={-26} y={-16} width={52} height={28} rx={8} fill={fill(p, p.paper)} {...line(p, 3)} />
     <circle cx={-11} cy={-2} r={5} fill={p.ink} />
     <circle cx={11} cy={-2} r={5} fill={p.ink} />
-    <path d="M-14 20 H14" {...line(p, 3)} stroke={p.outline ? p.ink : p.paper} />
+    <path d="M-14 20 H14" {...line(p, 3)} stroke={p.outline || p.tint !== undefined ? p.ink : p.paper} />
     <path d="M-36 0 H-44 M36 0 H44" {...line(p, 4)} />
   </g>
 );
@@ -544,7 +559,7 @@ const antenna: Motif = (p) => (
     <path d="M0 -6 L-16 44 M0 -6 L16 44 M-10 24 H10" {...line(p, 3.5)} />
     <circle cx={0} cy={-10} r={7} fill={fill(p, p.main)} {...line(p, 3)} />
     {[18, 30, 42].map((r, i) => (
-      <path key={r} d={`M${-r * 0.7} ${-10 - r * 0.7} A${r} ${r} 0 0 1 ${r * 0.7} ${-10 - r * 0.7}`} stroke={i === 1 && !p.outline ? p.spark : p.ink} strokeWidth={3.2} strokeLinecap="round" />
+      <path key={r} d={`M${-r * 0.7} ${-10 - r * 0.7} A${r} ${r} 0 0 1 ${r * 0.7} ${-10 - r * 0.7}`} stroke={i === 1 && !p.outline ? p.spark : p.ink} strokeWidth={3.2 * (p.weight ?? 1)} strokeLinecap="round" />
     ))}
   </g>
 );
@@ -553,7 +568,7 @@ const battery: Motif = (p) => (
     <rect x={-44} y={-24} width={80} height={48} rx={9} fill={fill(p, p.paper)} {...line(p)} />
     <rect x={36} y={-10} width={8} height={20} rx={2} fill={fill(p, p.ink)} />
     <rect x={-36} y={-16} width={44} height={32} rx={5} fill={fill(p, p.main)} />
-    <path d="M-6 -12 L-16 2 H-4 L-12 14" fill="none" stroke={p.outline ? p.ink : p.spark} strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M-6 -12 L-16 2 H-4 L-12 14" fill="none" stroke={p.outline ? p.ink : p.spark} strokeWidth={3.5 * (p.weight ?? 1)} strokeLinecap="round" strokeLinejoin="round" />
   </g>
 );
 
@@ -577,12 +592,12 @@ const crane: Motif = (p) => (
 const bridge: Motif = (p) => (
   <g fill="none">
     <path d="M-48 10 H48" {...line(p, 4.5)} />
-    <path d="M-40 10 Q0 -60 40 10" stroke={p.outline ? p.ink : p.main} strokeWidth={4.5} strokeLinecap="round" />
+    <path d="M-40 10 Q0 -60 40 10" stroke={p.outline ? p.ink : p.main} strokeWidth={4.5 * (p.weight ?? 1)} strokeLinecap="round" />
     {[-24, -12, 0, 12, 24].map((x) => (
       <path key={x} d={`M${x} 10 V${-14 + Math.abs(x) * 0.9}`} {...line(p, 2.4)} />
     ))}
     <path d="M-48 10 V40 M48 10 V40" {...line(p, 4)} />
-    <path d="M-46 28 Q-24 20 0 28 Q24 36 46 28" stroke={p.outline ? p.ink : p.accent} strokeWidth={2.6} strokeLinecap="round" />
+    <path d="M-46 28 Q-24 20 0 28 Q24 36 46 28" stroke={p.outline ? p.ink : p.accent} strokeWidth={2.6 * (p.weight ?? 1)} strokeLinecap="round" />
   </g>
 );
 const building: Motif = (p) => (
@@ -590,7 +605,7 @@ const building: Motif = (p) => (
     <rect x={-34} y={-36} width={40} height={80} rx={4} fill={fill(p, p.main)} {...line(p)} />
     <rect x={6} y={-6} width={32} height={50} rx={4} fill={fill(p, p.soft)} {...line(p)} />
     {[-26, -10].flatMap((x) => [-26, -12, 2, 16].map((y) => (
-      <rect key={`${x}${y}`} x={x} y={y} width={8} height={8} rx={1.5} fill={p.outline ? p.paper : p.paper} stroke={p.ink} strokeWidth={1.4} />
+      <rect key={`${x}${y}`} x={x} y={y} width={8} height={8} rx={1.5} fill={p.outline ? p.paper : p.paper} stroke={p.ink} strokeWidth={1.4 * (p.weight ?? 1)} />
     )))}
     <path d="M-46 44 H46" {...line(p, 3.5)} />
   </g>
@@ -625,14 +640,14 @@ const quill: Motif = (p) => (
     <path d="M38 -44 C8 -40 -14 -14 -24 26 L-18 28 C-4 -6 14 -26 38 -44 Z" fill={fill(p, p.main)} {...line(p)} />
     <path d="M38 -44 C30 -16 10 6 -18 28" fill="none" {...line(p, 2.4)} />
     <path d="M-24 26 L-32 44" {...line(p, 3.5)} />
-    <path d="M-44 44 C-30 36 -16 46 0 38" fill="none" stroke={p.outline ? p.ink : p.accent} strokeWidth={3} strokeLinecap="round" />
+    <path d="M-44 44 C-30 36 -16 46 0 38" fill="none" stroke={p.outline ? p.ink : p.accent} strokeWidth={3 * (p.weight ?? 1)} strokeLinecap="round" />
   </g>
 );
 const letterBlocks: Motif = (p) => (
   <g>
     <rect x={-46} y={-30} width={44} height={44} rx={8} fill={fill(p, p.main)} {...line(p)} transform="rotate(-8 -24 -8)" />
     <rect x={2} y={-14} width={44} height={44} rx={8} fill={fill(p, p.soft)} {...line(p)} transform="rotate(7 24 8)" />
-    <path d="M-36 4 L-24 -22 L-12 4 M-32 -4 H-16" fill="none" stroke={p.outline ? p.ink : p.paper} strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" transform="rotate(-8 -24 -8)" />
+    <path d="M-36 4 L-24 -22 L-12 4 M-32 -4 H-16" fill="none" stroke={p.outline || p.tint !== undefined ? p.ink : p.paper} strokeWidth={4 * (p.weight ?? 1)} strokeLinecap="round" strokeLinejoin="round" transform="rotate(-8 -24 -8)" />
     <path d="M30 18 C20 22 14 14 18 6 C22 -2 32 2 32 8 V20" fill="none" {...line(p, 4)} transform="rotate(7 24 8)" />
   </g>
 );
@@ -649,7 +664,7 @@ const globeTalk: Motif = (p) => (
 const heartPulse: Motif = (p) => (
   <g>
     <path d="M0 40 C-60 0 -40 -48 0 -20 C40 -48 60 0 0 40 Z" fill={fill(p, p.main)} {...line(p)} />
-    <path d="M-46 0 H-18 L-10 -16 L0 16 L8 -6 L14 0 H46" fill="none" stroke={p.outline ? p.ink : p.paper} strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M-46 0 H-18 L-10 -16 L0 16 L8 -6 L14 0 H46" fill="none" stroke={p.outline || p.tint !== undefined ? p.ink : p.paper} strokeWidth={4 * (p.weight ?? 1)} strokeLinecap="round" strokeLinejoin="round" />
   </g>
 );
 const medicalCross: Motif = (p) => (
@@ -670,7 +685,7 @@ const stethoscope: Motif = (p) => (
 const leaf: Motif = (p) => (
   <g>
     <path d="M-36 40 C-40 -20 0 -44 44 -44 C44 0 20 40 -36 40 Z" fill={fill(p, p.main)} {...line(p)} />
-    <path d="M-36 40 C-10 14 10 -8 36 -36 M-8 14 H14 M4 2 V-16" fill="none" stroke={p.outline ? p.ink : p.paper} strokeWidth={3} strokeLinecap="round" />
+    <path d="M-36 40 C-10 14 10 -8 36 -36 M-8 14 H14 M4 2 V-16" fill="none" stroke={p.outline || p.tint !== undefined ? p.ink : p.paper} strokeWidth={3 * (p.weight ?? 1)} strokeLinecap="round" />
   </g>
 );
 const pill: Motif = (p) => (
@@ -706,14 +721,14 @@ const waveform: Motif = (p) => (
   <g>
     {[-40, -30, -20, -10, 0, 10, 20, 30, 40].map((x, i) => {
       const h = [10, 24, 40, 18, 52, 30, 44, 20, 12][i];
-      return <rect key={x} x={x - 3.5} y={-h / 2} width={7} height={h} rx={3.5} fill={fill(p, i % 3 === 1 ? p.spark : p.main)} stroke={p.ink} strokeWidth={2} />;
+      return <rect key={x} x={x - 3.5} y={-h / 2} width={7} height={h} rx={3.5} fill={fill(p, i % 3 === 1 ? p.spark : p.main)} stroke={p.ink} strokeWidth={2 * (p.weight ?? 1)} />;
     })}
   </g>
 );
 const vinyl: Motif = (p) => (
   <g>
     <circle cx={0} cy={0} r={44} fill={fill(p, p.ink)} {...line(p)} />
-    {[34, 26].map((r) => <circle key={r} cx={0} cy={0} r={r} fill="none" stroke={p.outline ? p.ink : p.soft} strokeWidth={1.4} opacity={0.6} />)}
+    {[34, 26].map((r) => <circle key={r} cx={0} cy={0} r={r} fill="none" stroke={p.outline ? p.ink : p.soft} strokeWidth={1.4 * (p.weight ?? 1)} opacity={0.6} />)}
     <circle cx={0} cy={0} r={15} fill={fill(p, p.main)} {...line(p, 2.6)} />
     <circle cx={0} cy={0} r={3} fill={p.paper} />
   </g>
@@ -759,7 +774,7 @@ const bookStack: Motif = (p) => (
 const compassRose: Motif = (p) => (
   <g>
     <circle cx={0} cy={0} r={42} fill={fill(p, p.paper)} {...line(p)} />
-    <circle cx={0} cy={0} r={34} fill="none" stroke={p.ink} strokeWidth={1.6} strokeDasharray="3 5" />
+    <circle cx={0} cy={0} r={34} fill="none" stroke={p.ink} strokeWidth={1.6 * (p.weight ?? 1)} strokeDasharray="3 5" />
     <path d="M0 -30 L9 0 L0 30 L-9 0 Z" fill={fill(p, p.soft)} {...line(p, 3)} />
     <path d="M0 -30 L9 0 L-9 0 Z" fill={fill(p, p.main)} {...line(p, 3)} />
     <circle cx={0} cy={0} r={3.5} fill={p.ink} />

@@ -41,8 +41,9 @@ export function ContentCard({ item, channelId, openReviews }: CardProps) {
       type={item.type}
       typeLabel={typeLabel(item.type)}
       statusNode={<ContentStatusPill status={item.status} />}
-      authorName={item.authorName}
-      authorUsername={item.authorUsername}
+      description={item.description}
+      channelName={item.channelName}
+      channelIconUrl={item.channelIconUrl}
       dateText={`Updated ${new Date(item.updatedAt).toLocaleDateString()}`}
       actionHref={href || undefined}
       actionLabel="Manage"
