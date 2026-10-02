@@ -1293,6 +1293,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
   const {
     courses: publicCourses,
     hasMore: hasMoreCourses,
+    isLoading: coursesLoading,
     isLoadingMore: loadingMoreCourses,
     loadMore: loadMoreCourses,
   } = usePublicCourses({
@@ -2431,6 +2432,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
               courseSearchQuery={courseSearchQuery}
               setCourseSearchQuery={setCourseSearchQuery}
               courseStats={courseStats}
+              isLoading={coursesLoading}
             />
 
             {/*
@@ -2455,6 +2457,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
             onClearSearch={() => setCourseSearchQuery("")}
             categoryId={selectedAdminCategory?.id}
             unmatchedCategory={selectedCategoryName.toLowerCase() !== "all" && !selectedAdminCategory}
+            activeCategoryName={activeCategoryName}
+            activeColor={activeData.colors.primary}
           />
         )}
 

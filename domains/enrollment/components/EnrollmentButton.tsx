@@ -11,7 +11,7 @@ import { myEnrollmentKeys } from '../api/myEnrollments.queries';
 import { ResourceType, UIEnrollmentState } from '../types/enrollment.types';
 import { toast } from 'sonner';
 import { ArrowRight, Loader2, LogOut } from 'lucide-react';
-import { launchRazorpayCheckout } from '@/domains/payment';
+import { launchRazorpayCheckout, CheckoutHoldStatus } from '@/domains/payment';
 
 /**
  * Turns a thrown enrollment failure into something worth reading.
@@ -73,6 +73,8 @@ export function EnrollmentButton({
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingPaymentEnrollmentId, setPendingPaymentEnrollmentId] = useState<string | null>(null);
   const [isPaying, setIsPaying] = useState(false);
+  // Bumped when a checkout window closes, so the hold/decline status line re-reads the server.
+  const [checkoutRefresh, setCheckoutRefresh] = useState(0);
 
   // Track idempotency key across component lifecycle for the same logical action
   const idempotencyKeyRef = useRef<string | null>(null);
@@ -124,24 +126,35 @@ export function EnrollmentButton({
       },
       onFailed: () => {
         setIsPaying(false);
-        toast.error('Payment failed. No amount was deducted — you can try again.');
+        setCheckoutRefresh((n) => n + 1);
+        toast.error('The payment could not be completed. Nothing was charged — you can try again.');
       },
       onExpired: () => {
         setIsPaying(false);
-        toast.error('This checkout session expired. Please try again.');
+        setCheckoutRefresh((n) => n + 1);
+        toast.error('This checkout timed out before a payment was made. Start again whenever you are ready.');
       },
       onVerifying: () => {
-        toast.info('Verifying your payment…');
+        toast.info('Confirming your payment with the bank…');
       },
       onVerifyTimeout: () => {
         setIsPaying(false);
-        toast.info('Still confirming your payment — check back in a moment.');
+        setCheckoutRefresh((n) => n + 1);
+        toast.info(
+          'Your bank is taking longer than usual to confirm. If you were charged, access is granted automatically — no need to pay again.',
+          { duration: 10000 },
+        );
       },
       onDismissed: () => {
         setIsPaying(false);
+        setCheckoutRefresh((n) => n + 1);
+      },
+      onAttemptFailed: (reason) => {
+        toast.error(`That attempt didn't go through: ${reason}. You can retry in the same window.`);
       },
       onError: (message) => {
         setIsPaying(false);
+        setCheckoutRefresh((n) => n + 1);
         toast.error(message);
       },
     });
@@ -321,6 +334,7 @@ export function EnrollmentButton({
   if (currentState === 'PENDING') {
     if (pendingPaymentEnrollmentId) {
       return (
+        <div className="w-full">
         <button
           onClick={() => startPayment(pendingPaymentEnrollmentId)}
           disabled={isPaying}
@@ -334,6 +348,10 @@ export function EnrollmentButton({
             'Complete Payment'
           )}
         </button>
+        {!isPaying && (
+          <CheckoutHoldStatus enrollmentId={pendingPaymentEnrollmentId} refreshKey={checkoutRefresh} />
+        )}
+        </div>
       );
     }
     // No payment handle in this component instance — the page was reloaded with a checkout still

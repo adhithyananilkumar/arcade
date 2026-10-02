@@ -9,6 +9,7 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { getCourseChannel, type AttributableCourse, type CardChannel } from "./courseAttribution";
 import ExploreEmptyState from "./ExploreEmptyState";
 import { UnifiedContentCard } from "@/shared/design-system/ui/cards";
+import { ContentCardsGridSkeleton } from "./ContentCardsGridSkeleton";
 
 function hexToRgbStr(hex: string): string {
   hex = hex.replace(/^#/, "");
@@ -553,6 +554,7 @@ interface CoursesViewProps {
   courseSearchQuery: string;
   setCourseSearchQuery: (q: string) => void;
   courseStats: Record<string, { averageRating: number; reviewsCount: number }>;
+  isLoading?: boolean;
 }
 
 export default function CoursesView({
@@ -562,7 +564,8 @@ export default function CoursesView({
   isEmbeddedHub,
   courseSearchQuery,
   setCourseSearchQuery,
-  courseStats
+  courseStats,
+  isLoading = false
 }: CoursesViewProps) {
   const coursesSectionRef = useRef<HTMLDivElement>(null);
   const filtersGridRef = useRef<HTMLDivElement>(null);
@@ -750,7 +753,9 @@ export default function CoursesView({
         </div>
       </div>
 
-      {sortedCourses.length === 0 ? (
+      {isLoading ? (
+        <ContentCardsGridSkeleton count={6} />
+      ) : sortedCourses.length === 0 ? (
         <ExploreEmptyState
           title={courseSearchQuery.trim() ? "No matching courses found" : "No courses found"}
           description={

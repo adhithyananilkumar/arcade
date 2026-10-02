@@ -128,4 +128,8 @@ export const AuthorizationService = {
   canViewAuditLogs: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.audit.view'),
 
   canViewPayments: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.payments.view'),
+  /** Presentation hint only — the refund endpoint re-checks platform.payments.refund. */
+  canRefundPayments: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.payments.refund'),
+  /** Presentation hint only — the commission endpoints re-check platform.payments.commission. */
+  canManageCommission: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.payments.commission'),
 };

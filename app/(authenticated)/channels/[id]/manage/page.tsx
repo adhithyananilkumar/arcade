@@ -23,6 +23,7 @@ import {
   Plus,
   ShieldAlert,
   Users,
+  Wallet,
 } from 'lucide-react';
 import {
   channelService,
@@ -39,13 +40,14 @@ import { PageHeader } from '@/shared/design-system/ui/page-header';
 import { ChannelOverview } from './components/ChannelOverview';
 import { ChannelContentSection } from './components/ChannelContentSection';
 import { ChannelAnalyticsSection } from './components/ChannelAnalyticsSection';
+import { ChannelPaymentsSection } from './components/ChannelPaymentsSection';
 import { ChannelActivityLog } from './components/ChannelActivityLog';
 import { EditOrganizationModal } from './components/EditOrganizationModal';
 import { ChannelIdentityManager } from './ChannelIdentityManager';
 import { ChannelStaffManager } from './ChannelStaffManager';
 import { ChannelDangerZone } from './ChannelDangerZone';
 
-type Section = 'overview' | 'content' | 'reviews' | 'analytics' | 'identity' | 'staff' | 'activity' | 'danger';
+type Section = 'overview' | 'content' | 'reviews' | 'analytics' | 'payments' | 'identity' | 'staff' | 'activity' | 'danger';
 
 const SECTION_COPY: Record<Section, { title: string; description: string }> = {
   overview: { title: 'Overview', description: 'Your channel at a glance.' },
@@ -56,6 +58,11 @@ const SECTION_COPY: Record<Section, { title: string; description: string }> = {
       "Content your creators submit is reviewed here first. Approved content is published, or — if this channel's review policy requires it — sent on to platform review.",
   },
   analytics: { title: 'Analytics', description: "Enrollments and learner feedback across this channel's courses." },
+  payments: {
+    title: 'Payments',
+    description:
+      'What learners have paid, refunds, and what is payable. Payouts are made manually by Arcade. Members without payment access see only their own sales.',
+  },
   identity: { title: 'Identity & handle', description: 'The address and public profile this organization is shown under.' },
   staff: { title: 'Staff & roles', description: "Who can work on this channel, and what they're allowed to do." },
   activity: { title: 'Activity log', description: 'Every change made to this channel, newest first.' },
@@ -164,6 +171,8 @@ export default function ManageChannelPage() {
             ? [item('reviews', 'Reviews', ClipboardCheck, 'bg-[#fef08a] text-[#854d0e]', { count: openCount })]
             : []),
           ...(canEdit ? [item('analytics', 'Analytics', BarChart3, 'bg-[#bbf7d0] text-[#14532d]')] : []),
+          // Every member: the backend narrows an instructor to their own sales.
+          item('payments', 'Payments', Wallet, 'bg-[#fed7aa] text-[#7c2d12]'),
         ],
       },
       {
@@ -286,6 +295,7 @@ export default function ManageChannelPage() {
           )}
           {active === 'reviews' && <ChannelReviewQueue channelId={channelId} />}
           {active === 'analytics' && <ChannelAnalyticsSection channelId={channelId} />}
+          {active === 'payments' && <ChannelPaymentsSection channelId={channelId} isPersonal={channel.isPersonal} />}
           {active === 'identity' && <ChannelIdentityManager channel={channel} canEdit={canEdit} onUpdate={setChannel} />}
           {active === 'staff' && (
             <ChannelStaffManager

@@ -5,6 +5,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import ExploreEmptyState from "./ExploreEmptyState";
 import { UnifiedContentCard } from "@/shared/design-system/ui/cards";
+import { ContentCardsGridSkeleton } from "./ContentCardsGridSkeleton";
 
 
 /*
@@ -526,21 +527,15 @@ export default function EventsView({
       </div>
 
       {eventsLoading ? (
-        <div style={{ padding: "48px 24px", textAlign: "center", color: "#6B7280" }}>
-          Loading events…
-        </div>
+        <ContentCardsGridSkeleton count={6} />
       ) : eventsFailed ? (
-        /* Distinct from "no events": one means the catalogue is empty, the other means we could
-           not read it. Showing an empty state for a failed request tells the learner something
-           false about the platform. */
-        <div style={{ padding: "48px 24px", textAlign: "center" }}>
-          <h4 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--l-ink)", margin: "0 0 6px" }}>
-            Could not load events
-          </h4>
-          <p style={{ color: "#6B7280", fontSize: "0.86rem" }}>
-            Something went wrong reaching the server. Refresh to try again.
-          </p>
-        </div>
+        <ExploreEmptyState
+          title="Could not load events"
+          description="Something went wrong reaching the server. Please try refreshing to load events."
+          actionLabel="Try Again"
+          onAction={() => window.location.reload()}
+          accentColor={activeData.colors.primary}
+        />
       ) : totalCount === 0 ? (
         <ExploreEmptyState
           title={courseSearchQuery.trim() ? "No matching events found" : "No events found"}

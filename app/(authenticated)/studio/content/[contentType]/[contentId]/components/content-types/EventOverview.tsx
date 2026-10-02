@@ -38,11 +38,28 @@ function humanizeKey(key: string): string {
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
+/** Analytics keys that carry money, in minor units. */
+const MONEY_KEYS = new Set([
+  "totalRevenue",
+  "pendingRevenue",
+  "refundedRevenue",
+  "netRevenue",
+  "platformCommission",
+  "organizerEarnings",
+]);
+
 function analyticsToMetrics(analytics?: Record<string, unknown>): Metric[] {
   if (!analytics) return [];
+  const currency = (analytics.currency as string) || "INR";
   return Object.entries(analytics)
     .filter(([, value]) => typeof value === "number" || typeof value === "string")
-    .map(([key, value]) => ({ label: humanizeKey(key), value: value as string | number }));
+    .map(([key, value]) => ({
+      label: humanizeKey(key),
+      value:
+        MONEY_KEYS.has(key) && typeof value === "number"
+          ? new Intl.NumberFormat("en-IN", { style: "currency", currency }).format(value / 100)
+          : (value as string | number),
+    }));
 }
 
 export function getEventMetrics(data: OverviewData): Metric[] {
@@ -190,9 +207,15 @@ export function EventOverviewTab({
   const sessionsCount = eventSummary?.sessionsCount ?? 0;
   const resourcesCount = eventSummary?.resourcesCount ?? 0;
   const registrationsCount = data.eventParticipants?.status === "ok" ? data.eventParticipants.data.length : 0;
-  const revenue = (data.eventAnalytics?.status === "ok" ? (data.eventAnalytics.data.totalRevenue as number) : 0) || 0;
-  const currency = eventDetails?.currency || "INR";
-  const formattedRevenue = new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(revenue);
+  // Analytics amounts are minor units (paise); they were formatted as rupees before, overstating 100×.
+  const analytics = data.eventAnalytics?.status === "ok" ? data.eventAnalytics.data : null;
+  const revenue = ((analytics?.totalRevenue as number) || 0) / 100;
+  const earnings = analytics?.organizerEarnings == null ? null : (analytics.organizerEarnings as number) / 100;
+  const commission = ((analytics?.platformCommission as number) || 0) / 100;
+  const currency = (analytics?.currency as string) || eventDetails?.currency || "INR";
+  const money = (major: number) =>
+    new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(major);
+  const formattedRevenue = money(revenue);
 
   const completionPct = eventSummary?.completionPercentage ?? (data.eventReadiness?.status === "ok" ? data.eventReadiness.data.completionPercentage : 0);
 
@@ -315,7 +338,11 @@ export function EventOverviewTab({
                   Revenue
                 </div>
                 <div className="text-2xl font-black text-[#14142b]">{formattedRevenue}</div>
-                <div className="text-[11px] text-slate-400 mt-0.5">Gross ticket sales</div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  {earnings != null && revenue > 0
+                    ? `Gross · you earn ${money(earnings)} after refunds${commission > 0 ? ` and ${money(commission)} platform commission` : ""}`
+                    : "Gross ticket sales"}
+                </div>
               </div>
             </div>
           </div>
