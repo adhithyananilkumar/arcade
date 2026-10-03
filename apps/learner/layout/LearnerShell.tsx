@@ -4,6 +4,7 @@ import ProtectedLayout from '@/apps/core/layout/ProtectedLayout';
 import LearnerNavbar from '@/apps/learner/layout/LearnerNavbar';
 import LearnerDock from '@/apps/learner/layout/LearnerDock';
 import { QuickAppearance } from '@/apps/core/components/appearance/QuickAppearance';
+import { ThemeScope } from '@/apps/core/components/ThemeScope';
 import { BugIsland } from '@/apps/core/components/bug-reports/BugIsland';
 import { TimeTracker } from "@/domains/learning";
 import { usePathname } from 'next/navigation';
@@ -56,6 +57,13 @@ export default function LearnerShell({
   const hideDock = immersive || HIDE_DOCK_ROUTES.some((r) => r.test(pathname ?? ''));
 
   return (
+    <>
+    {/*
+      The viewer's theme applies wherever the signed-in app shell is shown — the dashboard routes,
+      and public pages (explore, courses, events, profiles) when a member views them. Outside
+      ProtectedLayout on purpose: it holds its children back until mount.
+    */}
+    <ThemeScope />
     <ProtectedLayout>
       <TimeTracker />
       <div className={`relative flex flex-col flex-1 w-full transition-colors duration-300 ${immersive ? 'h-screen overflow-hidden' : ''}`} style={{ fontFamily: 'var(--font-geist-sans)' }}>
@@ -78,5 +86,6 @@ export default function LearnerShell({
         </div>
       </div>
     </ProtectedLayout>
+    </>
   );
 }

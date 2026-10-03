@@ -13,7 +13,7 @@
  * ------------------------------------------------------------------
  */
 
-import { Check, Moon, Sun, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, Check, Moon, Play, Sun, Zap, type LucideIcon } from 'lucide-react';
 import { cn } from '@/shared/utils/utils';
 
 // ── mini previews ─────────────────────────────────────────────────────────
@@ -156,20 +156,24 @@ export function Switch({ checked, onChange, label }: { checked: boolean; onChang
   );
 }
 
-export function WallpaperTile({ selected, onSelect, name, tone, background, image }: {
+export function WallpaperTile({ selected, onSelect, name, tone, background, image, live, progress }: {
   selected: boolean;
   onSelect: () => void;
   name: string;
   tone: 'light' | 'dark';
   background: string;
   image?: string;
+  /** A live (video) wallpaper: shows a LIVE badge with its download size. */
+  live?: { size: string } | null;
+  /** 0–100 while this tile's video downloads; null otherwise. */
+  progress?: number | null;
 }) {
   return (
     <button
       type="button"
       role="radio"
       aria-checked={selected}
-      aria-label={`${name} (${tone} wallpaper)`}
+      aria-label={`${name} (${live ? `live ${live.size} ` : ''}${tone} wallpaper)`}
       onClick={onSelect}
       className={cn(
         'group relative aspect-[16/10] overflow-hidden rounded-xl border-2 transition-all outline-none',
@@ -186,12 +190,74 @@ export function WallpaperTile({ selected, onSelect, name, tone, background, imag
         <span className="truncate text-[11.5px] font-semibold text-white drop-shadow">{name}</span>
         {tone === 'dark' ? <Moon size={11} className="shrink-0 text-white/85" /> : <Sun size={11} className="shrink-0 text-white/85" />}
       </span>
-      {selected && (
+      {live && (
+        <span className="theme-fixed absolute left-1.5 top-1.5 flex items-center gap-1 rounded-full bg-black/55 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+          <Play size={8} fill="currentColor" />
+          Live{live.size ? ` · ${live.size}` : ''}
+        </span>
+      )}
+      {progress != null && (
+        <span className="theme-fixed absolute inset-0 grid place-items-center bg-black/45 backdrop-blur-[1px]">
+          <span className="text-[13px] font-bold tabular-nums text-white drop-shadow">{progress}%</span>
+          <span className="absolute inset-x-2 bottom-2 h-1 overflow-hidden rounded-full bg-white/25">
+            <span className="block h-full rounded-full bg-white transition-[width] duration-200" style={{ width: `${progress}%` }} />
+          </span>
+        </span>
+      )}
+      {selected && progress == null && (
         <span className="absolute right-1.5 top-1.5 grid size-5 place-items-center rounded-full bg-[#4c6fff] text-white shadow">
           <Check size={12} strokeWidth={3} />
         </span>
       )}
     </button>
+  );
+}
+
+/**
+ * Shown while a live wallpaper is selected: what it costs, a stronger warning on devices that are
+ * likely to struggle, and the per-device switch to fall back to the still poster.
+ */
+export function LiveWallpaperNotice({ size, lowEnd, reasons, playing, onPlayingChange, reducedMotion }: {
+  size: string;
+  lowEnd: boolean;
+  reasons: string[];
+  playing: boolean;
+  onPlayingChange: (play: boolean) => void;
+  reducedMotion: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        'rounded-2xl border p-3 text-[12px] leading-relaxed',
+        lowEnd
+          ? 'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200'
+          : 'border-indigo-200/70 bg-indigo-50/70 text-indigo-950 dark:border-indigo-500/25 dark:bg-indigo-500/10 dark:text-indigo-200',
+      )}
+    >
+      <div className="flex gap-2.5">
+        {lowEnd ? <AlertTriangle size={15} className="mt-0.5 shrink-0" /> : <Zap size={15} className="mt-0.5 shrink-0" />}
+        <div className="min-w-0 flex-1 space-y-1">
+          <p className="font-semibold">Live wallpaper{size ? ` · ${size}` : ''}</p>
+          <p>
+            It is a looping video: downloaded once with a progress indicator, then saved on this device so it starts
+            instantly next time. It pauses when the tab is hidden.
+          </p>
+          {lowEnd ? (
+            <p className="font-medium">
+              This device may lag with it{reasons.length ? ` (${reasons.join(', ')})` : ''}. If scrolling feels slow, turn
+              playback off — the still frame stays.
+            </p>
+          ) : (
+            <p>On older or low-power computers it can make scrolling feel slower; you can turn playback off at any time.</p>
+          )}
+          {reducedMotion && <p className="font-medium">Your system asks for reduced motion, so the still frame is shown.</p>}
+        </div>
+      </div>
+      <div className="mt-2.5 flex items-center justify-between gap-3 border-t border-current/10 pt-2.5">
+        <span className="font-semibold">Play live wallpapers on this device</span>
+        <Switch checked={playing} onChange={onPlayingChange} label="Play live wallpapers on this device" />
+      </div>
+    </div>
   );
 }
 

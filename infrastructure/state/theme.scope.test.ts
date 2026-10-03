@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { APP_THEME_ROUTE } from './theme.store';
+import { APP_THEME_ROUTE, themedOnFirstPaint } from './theme.store';
 
 /**
  * The theme applies only inside the signed-in app. APP_THEME_ROUTE is the boot script's
@@ -40,8 +40,17 @@ describe('theme scope', () => {
     expect(pages.filter((url) => !APP_THEME_ROUTE.test(url))).toEqual([]);
   });
 
-  it('never themes a public or onboarding page', () => {
+  it('signed out: public, onboarding and sign-in pages always keep the standard design', () => {
     const pages = [...pagesIn('(public)'), ...pagesIn('(onboarding)'), '/', '/sign', '/forgot-password'];
-    expect(pages.filter((url) => APP_THEME_ROUTE.test(url))).toEqual([]);
+    expect(pages.filter((url) => themedOnFirstPaint(url, false))).toEqual([]);
+  });
+
+  it('signed in: public pages open in the app shell and take the theme — except landing, sign-in and onboarding', () => {
+    const shelled = pagesIn('(public)').filter((url) => url !== '/');
+    expect(shelled.length).toBeGreaterThan(10);
+    expect(shelled.filter((url) => !themedOnFirstPaint(url, true))).toEqual([]);
+    for (const url of ['/', '/sign', '/forgot-password', '/reset-password', '/verify-email', '/oauth2/redirect', ...pagesIn('(onboarding)')]) {
+      expect(themedOnFirstPaint(url, true), url).toBe(false);
+    }
   });
 });

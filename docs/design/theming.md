@@ -1,12 +1,17 @@
 # Theming
 
-**Scope: the theme applies only inside the signed-in app** — the `(authenticated)` route group.
-Landing, explore, public course/event pages, sign-in and onboarding always render Arcade's
-standard light design, whatever the viewer chose. The `(authenticated)` layout mounts
-`ThemeScope`; `AppearanceController` applies the appearance while one is mounted and clears it
-otherwise. For first paint the boot script uses `APP_THEME_ROUTE` (theme.store.ts), and
-`theme.scope.test.ts` fails if that pattern drifts from the route groups — when adding a
-signed-in top-level route, add it to the pattern.
+**Scope: the theme applies wherever the signed-in app shell (`LearnerShell`) is shown** — the
+`(authenticated)` routes, and the public pages (explore, courses, events, profiles) when a member views
+them. Signed-out visitors, the landing page, sign-in flows and onboarding always render Arcade's standard
+light design. `LearnerShell` mounts `ThemeScope`; `AppearanceController` applies the appearance while
+one is mounted and clears it otherwise. For first paint the boot script mirrors this with
+`themedOnFirstPaint` (theme.store.ts: a dashboard route, or a persisted signed-in user outside
+`OUTSIDE_APP_SHELL_ROUTE`), pinned by `theme.scope.test.ts`.
+
+**Live wallpapers** (Console → Appearance accepts MP4/WebM up to 100 MB): the video uploads straight to
+the bucket via a presigned URL, falling back to streaming through the API when the bucket has no CORS
+rule. Viewers download it once (progress pill), it is kept in Cache Storage (last 3), and it plays over
+its poster only when glass is on, "Play live wallpapers" is on for the device, and reduced motion is off.
 
 Arcade has three independent appearance settings, applied as attributes on `<html>`:
 

@@ -12,7 +12,8 @@
  * public pages — landing, explore, sign-in — always render the standard
  * light design.
  *
- * Mounted once, by the (authenticated) layout.
+ * Mounted by LearnerShell, the signed-in app shell — so it covers the
+ * dashboard routes and the public pages a member sees inside that shell.
  * ------------------------------------------------------------------
  */
 

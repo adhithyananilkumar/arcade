@@ -16,7 +16,8 @@
  * ------------------------------------------------------------------
  */
 
-import { api } from '@/infrastructure/http/api';
+import { api, apiUploadWithProgress } from '@/infrastructure/http/api';
+import { putToPresignedUrl } from '@/infrastructure/media/upload';
 
 export type ServerThemeMode = 'LIGHT' | 'DARK' | 'SYSTEM';
 export type ServerContrast = 'STANDARD' | 'HIGH';
@@ -31,6 +32,9 @@ export interface WallpaperChoiceDto {
   url: string | null;
   tone: WallpaperToneValue;
   color: string | null;
+  /** Set for a live wallpaper: the looping video shown over `url` (its poster frame). */
+  videoUrl?: string | null;
+  videoSizeBytes?: number | null;
 }
 
 export interface AppearanceDto {
@@ -65,6 +69,11 @@ export interface GalleryWallpaper {
   averageColor: string;
   width: number;
   height: number;
+  mediaKind: 'IMAGE' | 'VIDEO';
+  /** Live wallpapers only. `imageUrl` is then the poster frame. */
+  videoUrl: string | null;
+  videoSizeBytes: number | null;
+  durationSeconds: number | null;
 }
 
 export interface AdminWallpaper extends GalleryWallpaper {
@@ -120,6 +129,49 @@ export const AppearanceService = {
     },
     remove(id: string): Promise<void> {
       return api.delete<void>(`${ADMIN_BASE}/${id}`);
+    },
+    /**
+     * A live wallpaper: the video goes straight to storage (it is far larger than the API's upload
+     * limit), then the server verifies it and stores the poster frame captured from it.
+     */
+    async uploadVideo(input: {
+      video: File;
+      poster: Blob;
+      name: string;
+      tone: WallpaperToneValue | null;
+      durationSeconds: number | null;
+      onProgress?: (percent: number) => void;
+      signal?: AbortSignal;
+    }): Promise<AdminWallpaper> {
+      const ticket = await api.post<{ key: string; uploadUrl: string; maxBytes: number }>(
+        `${ADMIN_BASE}/video-uploads`,
+        { fileName: input.video.name, contentType: input.video.type, sizeBytes: input.video.size },
+      );
+      let videoKey = ticket.key;
+      try {
+        // Fast path: straight to the bucket.
+        await putToPresignedUrl(ticket.uploadUrl, input.video, input.video.type, input.onProgress, input.signal);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') throw error;
+        // The bucket refused the browser (usually no CORS rule on it): relay through the API,
+        // which streams the video into storage instead.
+        input.onProgress?.(0);
+        const relayed = await apiUploadWithProgress<{ key: string }>(
+          `${ADMIN_BASE}/video-stream`,
+          input.video,
+          input.video.type,
+          input.onProgress,
+          input.signal,
+        );
+        videoKey = relayed.key;
+      }
+      const form = new FormData();
+      form.append('videoKey', videoKey);
+      form.append('poster', input.poster, 'poster.jpg');
+      if (input.name.trim()) form.append('name', input.name.trim());
+      if (input.tone) form.append('tone', input.tone);
+      if (input.durationSeconds) form.append('durationSeconds', String(Math.round(input.durationSeconds * 10) / 10));
+      return api.post<AdminWallpaper>(`${ADMIN_BASE}/videos`, form);
     },
   },
 };

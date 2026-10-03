@@ -18,7 +18,9 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppearanceService, type GalleryWallpaper } from '@/domains/identity';
-import { WALLPAPER_PRESETS } from '@/apps/core/lib/appearance';
+import { WALLPAPER_PRESETS, galleryWallpaper } from '@/apps/core/lib/appearance';
+import { formatMegabytes } from '@/apps/core/lib/liveWallpaper';
+import { SelectedLiveWallpaperNotice, useLiveDownloadProgress } from '@/apps/core/components/appearance/LiveWallpaper';
 import { useSystemPrefersDark } from '@/apps/core/components/AppearanceController';
 import {
   GLASS_OPACITY_MAX,
@@ -78,6 +80,7 @@ export default function AppearancePage() {
   const quickPanel = useAppearanceStore((s) => s.quickPanel);
   const setQuickPanel = useAppearanceStore((s) => s.setQuickPanel);
   const systemDark = useSystemPrefersDark();
+  const download = useLiveDownloadProgress();
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const gallery = useQuery({
@@ -211,9 +214,20 @@ export default function AppearancePage() {
             ) : gallery.data && gallery.data.length > 0 ? (
               <div role="radiogroup" aria-label="Wallpaper gallery" className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
                 {gallery.data.map((g: GalleryWallpaper) => {
-                  const w: Wallpaper = { kind: 'image', id: g.id, url: g.imageUrl, tone: g.tone === 'LIGHT' ? 'light' : 'dark', color: g.averageColor };
+                  const w = galleryWallpaper(g);
+                  const video = w.kind === 'image' ? w.video : null;
                   return (
-                    <WallpaperTile key={g.id} name={g.name} tone={w.tone} background={g.averageColor} image={g.thumbnailUrl} selected={glass && isSelected(w)} onSelect={() => chooseWallpaper(w)} />
+                    <WallpaperTile
+                      key={g.id}
+                      name={g.name}
+                      tone={w.tone}
+                      background={g.averageColor}
+                      image={g.thumbnailUrl}
+                      live={video ? { size: formatMegabytes(video.sizeBytes) } : null}
+                      progress={video && download?.url === video.url ? download.pct : null}
+                      selected={glass && isSelected(w)}
+                      onSelect={() => chooseWallpaper(w)}
+                    />
                   );
                 })}
               </div>
@@ -224,6 +238,8 @@ export default function AppearancePage() {
               </div>
             )}
           </div>
+
+          <SelectedLiveWallpaperNotice />
 
           <div className={cn('grid gap-5 rounded-2xl bg-slate-50 p-4 sm:grid-cols-2 lg:grid-cols-3', !glass && 'pointer-events-none opacity-50')} aria-disabled={!glass}>
             <div>

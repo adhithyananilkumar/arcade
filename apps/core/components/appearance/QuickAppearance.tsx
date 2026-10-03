@@ -25,7 +25,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useShallow } from 'zustand/react/shallow';
 import { Contrast, EyeOff, Monitor, Moon, Palette, Settings2, Sparkles, Sun, X } from 'lucide-react';
 import { AppearanceService, type GalleryWallpaper } from '@/domains/identity';
-import { WALLPAPER_PRESETS } from '@/apps/core/lib/appearance';
+import { WALLPAPER_PRESETS, galleryWallpaper } from '@/apps/core/lib/appearance';
+import { formatMegabytes } from '@/apps/core/lib/liveWallpaper';
+import { SelectedLiveWallpaperNotice, useLiveDownloadProgress } from '@/apps/core/components/appearance/LiveWallpaper';
 import { useSystemPrefersDark } from '@/apps/core/components/AppearanceController';
 import { Segmented, Switch, WallpaperTile } from '@/apps/core/components/appearance/AppearanceControls';
 import {
@@ -119,6 +121,7 @@ export function QuickAppearance() {
   const update = useAppearanceStore((s) => s.update);
   const systemDark = useSystemPrefersDark();
   const [open, setOpen] = useState(false);
+  const download = useLiveDownloadProgress();
   const panel = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
 
@@ -166,7 +169,7 @@ export function QuickAppearance() {
     background: p.swatch,
   }));
   const photoTiles: Tile[] = (gallery.data ?? []).map((g: GalleryWallpaper) => ({
-    w: { kind: 'image', id: g.id, url: g.imageUrl, tone: g.tone === 'LIGHT' ? 'light' : 'dark', color: g.averageColor },
+    w: galleryWallpaper(g),
     name: g.name,
     background: g.averageColor,
     image: g.thumbnailUrl,
@@ -179,6 +182,8 @@ export function QuickAppearance() {
         tone={t.w.tone}
         background={t.background}
         image={t.image}
+        live={t.w.kind === 'image' && t.w.video ? { size: formatMegabytes(t.w.video.sizeBytes) } : null}
+        progress={t.w.kind === 'image' && t.w.video && download?.url === t.w.video.url ? download.pct : null}
         selected={glass && isSelected(t.w)}
         onSelect={() => choose(t.w)}
       />
@@ -283,6 +288,7 @@ export function QuickAppearance() {
                       </div>
                     </div>
                   )}
+                  <SelectedLiveWallpaperNotice />
                 </Island>
 
                 {/* Glass tuning — stays in place (disabled) when glass is off, so the layout never jumps */}

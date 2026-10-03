@@ -15,7 +15,7 @@
  * ------------------------------------------------------------------
  */
 
-import type { AppearanceDto, AppearanceSaveRequest } from '@/domains/identity';
+import type { AppearanceDto, AppearanceSaveRequest, GalleryWallpaper } from '@/domains/identity';
 import {
   DEFAULT_WALLPAPER,
   clampGlassOpacity,
@@ -116,13 +116,32 @@ function toggleAttr(el: HTMLElement, name: string, value: string | null) {
   else if (el.getAttribute(name) !== value) el.setAttribute(name, value);
 }
 
+/** A gallery entry as a choosable wallpaper — a live one carries its video. */
+export function galleryWallpaper(g: GalleryWallpaper): Wallpaper {
+  return {
+    kind: 'image',
+    id: g.id,
+    url: g.imageUrl,
+    tone: g.tone === 'LIGHT' ? 'light' : 'dark',
+    color: g.averageColor,
+    video: g.mediaKind === 'VIDEO' && g.videoUrl ? { url: g.videoUrl, sizeBytes: g.videoSizeBytes } : null,
+  };
+}
+
 // ── server copy ⇄ local settings ─────────────────────────────────────────
 
 export function fromServer(dto: AppearanceDto): AppearanceSettings {
   const w = dto.wallpaper;
   const wallpaper: Wallpaper =
     w.kind === 'image' && w.id && w.url
-      ? { kind: 'image', id: w.id, url: w.url, tone: w.tone === 'LIGHT' ? 'light' : 'dark', color: w.color }
+      ? {
+          kind: 'image',
+          id: w.id,
+          url: w.url,
+          tone: w.tone === 'LIGHT' ? 'light' : 'dark',
+          color: w.color,
+          video: w.videoUrl ? { url: w.videoUrl, sizeBytes: w.videoSizeBytes ?? null } : null,
+        }
       : w.key
         ? { kind: 'preset', key: w.key, tone: w.tone === 'LIGHT' ? 'light' : 'dark' }
         : DEFAULT_WALLPAPER;

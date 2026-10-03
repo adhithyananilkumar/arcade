@@ -428,6 +428,22 @@
   background: var(--wallpaper-scrim, transparent);
 }
 
+/* A live wallpaper's video sits over the poster (the layer's own background) and fades in once
+   it is actually playing; the dimming scrim (::after) stays on top of it. */
+.arcade-wallpaper-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.arcade-wallpaper-video.is-playing {
+  opacity: 1;
+}
+
 :root:not([data-material="glass"]) .arcade-wallpaper {
   display: none;
 }

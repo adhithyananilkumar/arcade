@@ -47,17 +47,26 @@ import { cn } from '@/shared/utils/utils';
 const MAX_BYTES = 5 * 1024 * 1024;
 const MIN_W = 1280;
 const MIN_H = 720;
-const ACCEPT = ['image/jpeg', 'image/png'];
+const IMAGE_TYPES = ['image/jpeg', 'image/png'];
+/** Live wallpapers: looping videos, uploaded straight to storage (mirrors the server's limits). */
+const VIDEO_TYPES = ['video/mp4', 'video/webm'];
+const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
+/** Above this, people on slower connections wait noticeably for the first play. */
+const HEAVY_VIDEO_BYTES = 25 * 1024 * 1024;
+const ACCEPT = [...IMAGE_TYPES, ...VIDEO_TYPES];
 
 type ToneChoice = 'AUTO' | WallpaperToneValue;
 
 interface Draft {
   file: File;
+  /** The image itself, or the poster frame captured from a video. */
   previewUrl: string;
   width: number;
   height: number;
   name: string;
   tone: ToneChoice;
+  /** Set when the file is a video (a live wallpaper). */
+  video?: { url: string; poster: Blob; duration: number };
 }
 
 const formatBytes = (n: number) => (n >= 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
@@ -72,8 +81,68 @@ function readDimensions(url: string): Promise<{ width: number; height: number }>
   });
 }
 
+/**
+ * Reads a video's size and length and captures a poster frame from a quarter of the way in (the
+ * first frame is often black). The poster is what people see while the video loads, and what the
+ * server measures for colour and tone.
+ */
+function readVideo(url: string): Promise<{ width: number; height: number; duration: number; poster: Blob }> {
+  return new Promise((resolve, reject) => {
+    const v = document.createElement('video');
+    v.muted = true;
+    v.playsInline = true;
+    v.preload = 'auto';
+    v.crossOrigin = 'anonymous';
+    let settled = false;
+    const fail = (message = 'This video could not be read. Use an MP4 (H.264) or WebM file.') => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      reject(new Error(message));
+    };
+    // A file the browser cannot decode may never fire an event at all; don't hang the form.
+    const timer = window.setTimeout(() => fail('Reading this video took too long. Try an MP4 (H.264) or WebM file.'), 15000);
+    v.onerror = () => fail();
+    v.onloadedmetadata = () => {
+      // Recorder-made WebM files often report an unknown (Infinity) duration; seeking there never
+      // completes. Use a quarter of the way in when the length is known, else half a second.
+      const d = Number.isFinite(v.duration) ? v.duration : null;
+      v.currentTime = d ? Math.min(Math.max(0.5, d * 0.25), Math.max(0, d - 0.1)) : 0.5;
+    };
+    v.onseeked = () => {
+      if (settled) return;
+      const width = v.videoWidth;
+      const height = v.videoHeight;
+      if (!width || !height) {
+        fail();
+        return;
+      }
+      // Posters are capped at 2560px wide; the server needs at least 1280×720.
+      const scale = Math.min(1, 2560 / width);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(width * scale);
+      canvas.height = Math.round(height * scale);
+      canvas.getContext('2d')?.drawImage(v, 0, 0, canvas.width, canvas.height);
+      settled = true;
+      window.clearTimeout(timer);
+      canvas.toBlob(
+        (blob) =>
+          blob
+            ? resolve({ width, height, duration: Number.isFinite(v.duration) ? v.duration : 0, poster: blob })
+            : reject(new Error('Could not capture a frame from this video.')),
+        'image/jpeg',
+        0.9,
+      );
+    };
+    v.src = url;
+  });
+}
+
+const formatDuration = (s: number | null | undefined) =>
+  s ? (s >= 60 ? `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')} min` : `${Math.round(s)} s`) : '';
+
 /** A miniature of glass over the wallpaper — what people will actually see. */
-function GlassPreview({ image, color, tone }: { image: string; color: string; tone: 'light' | 'dark' }) {
+function GlassPreview({ image, color, tone, video }: { image: string; color: string; tone: 'light' | 'dark'; video?: string | null }) {
   const dark = tone === 'dark';
   const panel = dark ? 'rgba(23,26,33,0.55)' : 'rgba(255,255,255,0.6)';
   const text = dark ? '#eef1f7' : '#14142b';
@@ -81,6 +150,7 @@ function GlassPreview({ image, color, tone }: { image: string; color: string; to
   const line = dark ? 'rgba(255,255,255,0.12)' : 'rgba(20,20,43,0.1)';
   return (
     <div className="theme-fixed relative aspect-[16/9] w-full overflow-hidden rounded-2xl" style={{ backgroundColor: color, backgroundImage: `url("${image}")`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      {video && <video src={video} autoPlay muted loop playsInline className="absolute inset-0 size-full object-cover" aria-hidden="true" />}
       <div className="absolute inset-x-[4%] top-[5%] flex h-[9%] items-center gap-2 rounded-full px-[2%]" style={{ background: panel, backdropFilter: 'blur(14px) saturate(160%)', border: `1px solid ${line}` }}>
         <span className="size-2 rounded-full bg-[#4c6fff]" />
         <span className="h-1.5 w-[14%] rounded-full" style={{ background: text }} />
@@ -140,6 +210,7 @@ export function WallpaperConsole() {
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadPct, setUploadPct] = useState<number | null>(null);
   const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [renaming, setRenaming] = useState<{ id: string; name: string } | null>(null);
@@ -166,6 +237,7 @@ export function WallpaperConsole() {
 
   useEffect(() => () => {
     if (draft) URL.revokeObjectURL(draft.previewUrl);
+    if (draft?.video) URL.revokeObjectURL(draft.video.url);
   }, [draft]);
 
   const stats = useMemo(() => {
@@ -177,7 +249,36 @@ export function WallpaperConsole() {
   const pickFile = async (file: File | undefined) => {
     if (!file) return;
     if (!ACCEPT.includes(file.type)) {
-      toast.error('Use a JPEG or PNG image.');
+      toast.error('Use a JPEG or PNG image, or an MP4 / WebM video for a live wallpaper.');
+      return;
+    }
+    if (VIDEO_TYPES.includes(file.type)) {
+      if (file.size > MAX_VIDEO_BYTES) {
+        toast.error(`That video is ${formatBytes(file.size)} — the limit is ${MAX_VIDEO_BYTES / 1024 / 1024} MB.`);
+        return;
+      }
+      const videoUrl = URL.createObjectURL(file);
+      try {
+        const { width, height, duration, poster } = await readVideo(videoUrl);
+        if (width < MIN_W || height < MIN_H) {
+          URL.revokeObjectURL(videoUrl);
+          toast.error(`Live wallpapers need at least ${MIN_W}×${MIN_H}px — this one is ${width}×${height}.`);
+          return;
+        }
+        const base = file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim().slice(0, 60);
+        setDraft({
+          file,
+          previewUrl: URL.createObjectURL(poster),
+          width,
+          height,
+          name: base,
+          tone: 'AUTO',
+          video: { url: videoUrl, poster, duration },
+        });
+      } catch (e) {
+        URL.revokeObjectURL(videoUrl);
+        toast.error(errorMessage(e, 'This video could not be read.'));
+      }
       return;
     }
     if (file.size > MAX_BYTES) {
@@ -203,8 +304,19 @@ export function WallpaperConsole() {
   const upload = async () => {
     if (!draft) return;
     setUploading(true);
+    setUploadPct(draft.video ? 0 : null);
     try {
-      const created = await AppearanceService.admin.upload(draft.file, draft.name, draft.tone === 'AUTO' ? null : draft.tone);
+      const tone = draft.tone === 'AUTO' ? null : draft.tone;
+      const created = draft.video
+        ? await AppearanceService.admin.uploadVideo({
+            video: draft.file,
+            poster: draft.video.poster,
+            name: draft.name,
+            tone,
+            durationSeconds: draft.video.duration,
+            onProgress: setUploadPct,
+          })
+        : await AppearanceService.admin.upload(draft.file, draft.name, tone);
       setWallpapers((list) => [...list, created]);
       setDraft(null);
       toast.success(`“${created.name}” is live in the gallery`);
@@ -212,6 +324,7 @@ export function WallpaperConsole() {
       toast.error(errorMessage(e, 'Upload failed. Please try again.'));
     } finally {
       setUploading(false);
+      setUploadPct(null);
     }
   };
 
@@ -297,7 +410,7 @@ export function WallpaperConsole() {
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: 'Wallpapers', value: stats.total, icon: Sparkles },
-          { label: 'Live in picker', value: stats.live, icon: Eye },
+          { label: 'In the picker', value: stats.live, icon: Eye },
           { label: 'People using one', value: stats.users, icon: Users },
         ].map((s) => (
           <div key={s.label} className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-surface px-4 py-3 shadow-2xs">
@@ -312,14 +425,38 @@ export function WallpaperConsole() {
 
       {draft ? (
         <section className="grid gap-5 rounded-3xl border border-slate-200/80 bg-surface p-5 shadow-xs lg:grid-cols-[1.4fr_1fr]">
-          <GlassPreview image={draft.previewUrl} color="#6b7fa8" tone={draft.tone === 'LIGHT' ? 'light' : 'dark'} />
+          <GlassPreview image={draft.previewUrl} video={draft.video?.url} color="#6b7fa8" tone={draft.tone === 'LIGHT' ? 'light' : 'dark'} />
           <div className="flex flex-col gap-4">
             <div>
-              <h2 className="text-[15px] font-bold text-slate-900">New wallpaper</h2>
+              <h2 className="text-[15px] font-bold text-slate-900">{draft.video ? 'New live wallpaper' : 'New wallpaper'}</h2>
               <p className="mt-0.5 text-[12.5px] text-slate-500">
-                {draft.width}×{draft.height} · {formatBytes(draft.file.size)} · {draft.file.type === 'image/png' ? 'PNG' : 'JPEG'}
+                {draft.width}×{draft.height} · {formatBytes(draft.file.size)} ·{' '}
+                {draft.video ? `${draft.file.type === 'video/webm' ? 'WebM' : 'MP4'} · ${formatDuration(draft.video.duration)}` : draft.file.type === 'image/png' ? 'PNG' : 'JPEG'}
               </p>
             </div>
+            {draft.video && (
+              <div
+                className={cn(
+                  'rounded-2xl border p-3 text-[12px] leading-relaxed',
+                  draft.file.size > HEAVY_VIDEO_BYTES
+                    ? 'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200'
+                    : 'border-slate-200 bg-slate-50 text-slate-600',
+                )}
+              >
+                {draft.file.size > HEAVY_VIDEO_BYTES ? (
+                  <p>
+                    <span className="font-semibold">This video is {formatBytes(draft.file.size)}.</span> Each person downloads it once (with a
+                    progress indicator) before it plays, then it is saved on their device. Live wallpapers can make older or low-power
+                    devices lag; for a smoother experience keep them short (5–20 s loops) and under 25 MB.
+                  </p>
+                ) : (
+                  <p>
+                    People download it once, then it is saved on their device. They see the poster frame while it loads, and can turn
+                    playback off. Short, seamless loops look best.
+                  </p>
+                )}
+              </div>
+            )}
             <label className="block">
               <span className="mb-1.5 block text-[12px] font-semibold text-slate-700">Name</span>
               <input
@@ -337,6 +474,11 @@ export function WallpaperConsole() {
                 Auto measures the image after upload. Override it if text is hard to read on this picture.
               </p>
             </div>
+            {uploading && uploadPct !== null && (
+              <div className="h-1.5 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-valuenow={uploadPct} aria-valuemin={0} aria-valuemax={100}>
+                <div className="h-full rounded-full bg-[#4c6fff] transition-[width] duration-200" style={{ width: `${uploadPct}%` }} />
+              </div>
+            )}
             <div className="mt-auto flex gap-2">
               <button
                 type="button"
@@ -345,7 +487,7 @@ export function WallpaperConsole() {
                 className="flex flex-1 items-center justify-center gap-2 rounded-full bg-ink px-4 py-2.5 text-[13px] font-semibold text-on-ink transition-colors hover:bg-ink-hover disabled:opacity-50"
               >
                 {uploading ? <Loader2 size={15} className="animate-spin" /> : <UploadCloud size={15} />}
-                {uploading ? 'Uploading…' : 'Publish to gallery'}
+                {uploading ? (uploadPct !== null && uploadPct < 100 ? `Uploading video… ${uploadPct}%` : 'Processing…') : 'Publish to gallery'}
               </button>
               <button
                 type="button"
@@ -378,8 +520,11 @@ export function WallpaperConsole() {
           )}
         >
           <span className="grid size-12 place-items-center rounded-2xl bg-slate-100 text-slate-600"><UploadCloud size={22} /></span>
-          <span className="text-sm font-semibold text-slate-800">Drop an image here, or click to choose</span>
-          <span className="text-[12px] text-slate-500">JPEG or PNG · at least {MIN_W}×{MIN_H} · up to 5 MB. Landscape photos with calm areas work best.</span>
+          <span className="text-sm font-semibold text-slate-800">Drop a photo or a video here, or click to choose</span>
+          <span className="text-[12px] text-slate-500">
+            Photos: JPEG or PNG, up to 5 MB. Live wallpapers: MP4 or WebM loops, up to 100 MB (under 25 MB recommended).
+            At least {MIN_W}×{MIN_H}. Landscape images with calm areas work best.
+          </span>
         </button>
       )}
 
@@ -406,7 +551,7 @@ export function WallpaperConsole() {
                     <img src={w.thumbnailUrl} alt="" loading="lazy" className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
                     <div className="absolute left-3 top-3 flex gap-1.5">
                       <span className={cn('theme-fixed rounded-full px-2 py-0.5 text-[10.5px] font-bold backdrop-blur-md', w.active ? 'bg-emerald-500/90 text-white' : 'bg-black/55 text-white')}>
-                        {w.active ? 'Live' : 'Retired'}
+                        {w.active ? 'In picker' : 'Retired'}
                       </span>
                       <span className="theme-fixed flex items-center gap-1 rounded-full bg-black/45 px-2 py-0.5 text-[10.5px] font-semibold text-white backdrop-blur-md">
                         {w.tone === 'DARK' ? <Moon size={10} /> : <Sun size={10} />}
@@ -452,8 +597,13 @@ export function WallpaperConsole() {
                     )}
 
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] font-medium text-slate-500">
+                      {w.mediaKind === 'VIDEO' && (
+                        <span className="rounded-full bg-indigo-50 px-1.5 py-px text-[10.5px] font-bold uppercase tracking-wide text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
+                          Live · {formatDuration(w.durationSeconds)}
+                        </span>
+                      )}
                       <span>{w.width}×{w.height}</span>
-                      <span>{formatBytes(w.sizeBytes)}</span>
+                      <span>{formatBytes(w.videoSizeBytes ?? w.sizeBytes)}</span>
                       <span className="flex items-center gap-1"><Users size={11} />{w.users} {w.users === 1 ? 'person' : 'people'}</span>
                       <span className="ml-auto flex items-center gap-1"><span className="size-2.5 rounded-full ring-1 ring-slate-200" style={{ background: w.averageColor }} />{w.averageColor}</span>
                     </div>
@@ -495,7 +645,7 @@ export function WallpaperConsole() {
             <DialogTitle>{previewing?.name}</DialogTitle>
             <DialogDescription>How Dynamic Glass looks on this wallpaper, with {previewing?.tone === 'DARK' ? 'light' : 'dark'} text.</DialogDescription>
           </DialogHeader>
-          {previewing && <GlassPreview image={previewing.imageUrl} color={previewing.averageColor} tone={previewing.tone === 'DARK' ? 'dark' : 'light'} />}
+          {previewing && <GlassPreview image={previewing.imageUrl} video={previewing.videoUrl} color={previewing.averageColor} tone={previewing.tone === 'DARK' ? 'dark' : 'light'} />}
         </DialogContent>
       </Dialog>
 

@@ -27,7 +27,16 @@ export type WallpaperTone = 'light' | 'dark';
 /** A wallpaper as the client needs it to paint — a built-in preset or an admin-uploaded image. */
 export type Wallpaper =
   | { kind: 'preset'; key: string; tone: WallpaperTone }
-  | { kind: 'image'; id: string; url: string; tone: WallpaperTone; color: string | null };
+  | {
+      kind: 'image';
+      id: string;
+      /** The photo — or, for a live wallpaper, its poster frame. */
+      url: string;
+      tone: WallpaperTone;
+      color: string | null;
+      /** A live wallpaper's looping video, drawn over the poster once it has loaded. */
+      video?: { url: string; sizeBytes: number | null } | null;
+    };
 
 export interface AppearanceSettings {
   mode: ThemeMode;
@@ -75,6 +84,12 @@ interface AppearanceState extends AppearanceSettings {
    */
   quickPanel: boolean;
   setQuickPanel: (visible: boolean) => void;
+  /**
+   * Whether live (video) wallpapers play on this device. Per device on purpose: a phone or an
+   * older laptop may want the still poster while a desktop plays the video.
+   */
+  liveMotion: boolean;
+  setLiveMotion: (play: boolean) => void;
   update: (patch: Partial<AppearanceSettings>) => void;
   /** Replace with the account's stored copy without marking it as a local edit. */
   hydrateFromServer: (settings: AppearanceSettings, updatedAt: number) => void;
@@ -102,6 +117,8 @@ export const useAppearanceStore = create<AppearanceState>()(
       updatedAt: 0,
       quickPanel: true,
       setQuickPanel: (quickPanel) => set({ quickPanel }),
+      liveMotion: true,
+      setLiveMotion: (liveMotion) => set({ liveMotion }),
       update: (patch) => set({ ...patch, updatedAt: Date.now() }),
       hydrateFromServer: (settings, updatedAt) => set({ ...settings, updatedAt }),
       reset: () => set({ ...DEFAULT_APPEARANCE, updatedAt: Date.now() }),
@@ -118,8 +135,9 @@ export const useAppearanceStore = create<AppearanceState>()(
           wallpaperDim: clampWallpaperDim(s.wallpaperDim ?? DEFAULT_APPEARANCE.wallpaperDim),
         } as AppearanceState;
       },
-      partialize: ({ mode, contrast, material, glassTone, glassOpacity, wallpaper, wallpaperDim, updatedAt, quickPanel }) => ({
+      partialize: ({ mode, contrast, material, glassTone, glassOpacity, wallpaper, wallpaperDim, updatedAt, quickPanel, liveMotion }) => ({
         quickPanel,
+        liveMotion,
         mode,
         contrast,
         material,
@@ -140,18 +158,33 @@ export function pickAppearance(state: AppearanceSettings): AppearanceSettings {
 }
 
 /**
- * The signed-in app's routes — the only pages the theme applies to. Landing, explore, public
- * course/event pages and sign-in always render Arcade's standard light design.
+ * Where the theme applies is decided at runtime by ThemeScope, which the signed-in app shell
+ * (LearnerShell) mounts. That shell wraps the dashboard routes, and also the public pages —
+ * explore, courses, events, profiles — whenever a member views them. Signed-out visitors, the
+ * landing page and the sign-in / onboarding screens always get Arcade's standard light design.
  *
- * This is only the first-paint hint for the boot script; at runtime the (authenticated) layout's
- * ThemeScope is the source of truth. theme.scope.test.ts walks app/ and fails if this stops
- * matching every (authenticated) page or starts matching a (public) one.
+ * The boot script needs the same answer before React loads, so it mirrors that with two rules:
+ * a dashboard route (APP_THEME_ROUTE), or a signed-in member (the persisted auth user) on any
+ * page that is not shell-less (OUTSIDE_APP_SHELL_ROUTE). theme.scope.test.ts pins both against
+ * the app/ route groups.
  */
 export const APP_THEME_ROUTE_SOURCE =
   '^/(?:home|learning|achievements|bug-reports|channels|console|manage-channels|my-events|notifications|organizations|profile|search|settings|studio|trash|join)(?:/|$)' +
   '|^/(?:courses|events)/[^/]+/(?:learn|notes)(?:/|$)' +
   '|^/exams/.+';
 export const APP_THEME_ROUTE = new RegExp(APP_THEME_ROUTE_SOURCE);
+
+/** Pages that never use the app shell, even for a member: landing, sign-in flows, onboarding. */
+export const OUTSIDE_APP_SHELL_SOURCE =
+  '^/$|^/(?:sign|forgot-password|reset-password|verify-email|oauth2|onboarding|dev-editor-perf)(?:/|$)';
+export const OUTSIDE_APP_SHELL_ROUTE = new RegExp(OUTSIDE_APP_SHELL_SOURCE);
+
+export const AUTH_STORAGE_KEY = 'arcade-auth-storage';
+
+/** The boot script's rule, as a function (for tests): does this page start out themed? */
+export function themedOnFirstPaint(pathname: string, signedIn: boolean): boolean {
+  return APP_THEME_ROUTE.test(pathname) || (signedIn && !OUTSIDE_APP_SHELL_ROUTE.test(pathname));
+}
 
 interface ThemeScopeState {
   /** Mounted ThemeScope boundaries. */
@@ -195,7 +228,9 @@ export function resolveDark(settings: AppearanceSettings, systemPrefersDark: boo
  */
 export const APPEARANCE_BOOT_SCRIPT = `(function(){try{
 var d=document.documentElement,s=null;
-if(!new RegExp(${JSON.stringify(APP_THEME_ROUTE_SOURCE)}).test(location.pathname))return;
+var signedIn=false;try{var au=JSON.parse(localStorage.getItem(${JSON.stringify(AUTH_STORAGE_KEY)})||'null');signedIn=!!(au&&au.state&&au.state.user);}catch(e){}
+var p=location.pathname;
+if(!(new RegExp(${JSON.stringify(APP_THEME_ROUTE_SOURCE)}).test(p)||(signedIn&&!new RegExp(${JSON.stringify(OUTSIDE_APP_SHELL_SOURCE)}).test(p))))return;
 d.setAttribute('data-theme-scope','app');
 try{var raw=localStorage.getItem(${JSON.stringify(APPEARANCE_STORAGE_KEY)});s=raw?JSON.parse(raw).state:null;}catch(e){}
 if(!s){try{var l=JSON.parse(localStorage.getItem(${JSON.stringify(LEGACY_STORAGE_KEY)})||'null');if(l&&l.state&&l.state.theme)s={mode:l.state.theme};}catch(e){}}

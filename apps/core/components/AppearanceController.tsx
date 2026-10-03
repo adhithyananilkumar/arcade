@@ -29,6 +29,7 @@ import {
   useAppearanceStore,
   useThemeScopeStore,
 } from '@/infrastructure/state/theme.store';
+import { LiveWallpaperStatus, LiveWallpaperVideo } from '@/apps/core/components/appearance/LiveWallpaper';
 import { applyAppearance, clearAppearance, fromServer, toServer } from '@/apps/core/lib/appearance';
 
 const DARK_QUERY = '(prefers-color-scheme: dark)';
@@ -70,7 +71,14 @@ export function AppearanceController() {
 
   useAccountSync();
 
-  return <div className="arcade-wallpaper" aria-hidden="true" />;
+  return (
+    <>
+      <div className="arcade-wallpaper" aria-hidden="true">
+        <LiveWallpaperVideo />
+      </div>
+      <LiveWallpaperStatus />
+    </>
+  );
 }
 
 function useAccountSync() {
