@@ -486,13 +486,13 @@
 }
 
 :root[data-material="glass"] .apple-glass-dock {
-  background: oklch(1 0 0 / calc(var(--glass-a) * 0.75));
+  background: oklch(1 0 0 / calc(var(--glass-a) * 0.9));
   border-color: oklch(1 0 0 / 0.45);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 oklch(1 0 0 / 0.6);
 }
 
 :root.dark[data-material="glass"] .apple-glass-dock {
-  background: oklch(0.2 0.015 262 / calc(var(--glass-a) * 0.75));
+  background: oklch(0.2 0.015 262 / calc(var(--glass-a) * 0.9));
   border-color: oklch(1 0 0 / 0.16);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 oklch(1 0 0 / 0.1);
 }

@@ -7,7 +7,8 @@
  * App: Core
  *
  * Purpose:
- * Keeps <html> in step with the viewer's appearance, paints the glass
+ * Keeps <html> in step with the viewer's appearance inside the signed-in app
+ * (see ThemeScope) and clears it on public pages; paints the glass
  * wallpaper layer, and syncs the appearance with the signed-in account so it
  * follows them across devices.
  *
@@ -18,12 +19,17 @@
  * ------------------------------------------------------------------
  */
 
-import { useEffect, useRef, useSyncExternalStore } from 'react';
+import { useEffect, useLayoutEffect, useRef, useSyncExternalStore } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { AppearanceService } from '@/domains/identity';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { pickAppearance, useAppearanceStore } from '@/infrastructure/state/theme.store';
-import { applyAppearance, fromServer, toServer } from '@/apps/core/lib/appearance';
+import {
+  pickAppearance,
+  selectInThemeScope,
+  useAppearanceStore,
+  useThemeScopeStore,
+} from '@/infrastructure/state/theme.store';
+import { applyAppearance, clearAppearance, fromServer, toServer } from '@/apps/core/lib/appearance';
 
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 
@@ -45,13 +51,22 @@ export function useSystemPrefersDark(): boolean {
 export function AppearanceController() {
   const settings = useAppearanceStore(useShallow(pickAppearance));
   const systemDark = useSystemPrefersDark();
+  const inScope = useThemeScopeStore(selectInThemeScope);
   const applied = useRef(false);
 
-  useEffect(() => {
+  // Layout effect: entering or leaving the app (client navigation between the landing page and
+  // the dashboard) must switch before paint, not one frame later.
+  useLayoutEffect(() => {
+    if (!inScope) {
+      clearAppearance();
+      applied.current = false;
+      return;
+    }
+    document.documentElement.setAttribute('data-theme-scope', 'app');
     const cleanup = applyAppearance(settings, systemDark, applied.current);
     applied.current = true;
     return cleanup;
-  }, [settings, systemDark]);
+  }, [settings, systemDark, inScope]);
 
   useAccountSync();
 

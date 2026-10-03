@@ -529,7 +529,7 @@ export default function NotificationsHubPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface pt-10 pb-16 text-slate-800">
+    <div className="theme-page-bg min-h-screen bg-surface pt-10 pb-16 text-slate-800">
       <style jsx global>{`
         .notification-header {
           width: 100%;

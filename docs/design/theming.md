@@ -1,5 +1,13 @@
 # Theming
 
+**Scope: the theme applies only inside the signed-in app** — the `(authenticated)` route group.
+Landing, explore, public course/event pages, sign-in and onboarding always render Arcade's
+standard light design, whatever the viewer chose. The `(authenticated)` layout mounts
+`ThemeScope`; `AppearanceController` applies the appearance while one is mounted and clears it
+otherwise. For first paint the boot script uses `APP_THEME_ROUTE` (theme.store.ts), and
+`theme.scope.test.ts` fails if that pattern drifts from the route groups — when adding a
+signed-in top-level route, add it to the pattern.
+
 Arcade has three independent appearance settings, applied as attributes on `<html>`:
 
 | Setting   | Values                      | On `<html>`                       |
@@ -33,6 +41,16 @@ All tokens live in `app/themes.css`.
 - **Deliberately absolute colours** (a black/white sample, badge artwork): add the no-op class
   `theme-fixed` to the class list so the migration scripts leave it alone.
 - **Floating chrome** (pills, docks): `apple-glass-dock`.
+- **Full-screen page background layers** (a `fixed inset-0` div painting a page's own backdrop):
+  add `theme-page-layer` so it steps aside for the glass wallpaper and the high-contrast ground.
+- **A page's own full-height wrapper** (`min-h-screen bg-surface …`): add `theme-page-bg` so it
+  turns transparent under glass and the wallpaper shows around the page's cards.
+- **Content that sits directly on the page** (no card behind it, like Settings rows): add
+  `theme-glass-panel` to its container — one frosted panel under glass, nothing in solid themes.
+- **Inline-styled surfaces** (`background: var(--theme-surface, …)`) get the same frost as
+  `bg-surface` automatically.
+- **Glass limits:** panel opacity is clamped to 0.5–0.9 (client and server); wallpaper dimming is
+  0–0.6, darkening the wallpaper for light text and softening it towards white for dark text.
 - **Third-party widgets** that take a theme prop: `useDocumentTheme()` from `shared/hooks`.
 
 ## Migration scripts

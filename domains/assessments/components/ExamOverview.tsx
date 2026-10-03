@@ -121,7 +121,7 @@ export function ExamOverview({
   );
 
   return (
-    <main className="min-h-screen bg-surface text-ink">
+    <main className="theme-page-bg min-h-screen bg-surface text-ink">
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <div className="arcade-wash w-full">
         <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">

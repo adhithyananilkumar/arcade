@@ -47,7 +47,7 @@ export default function NewExamPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-8">
+    <div className="theme-page-bg flex min-h-screen items-center justify-center bg-slate-50 p-8">
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-surface p-8 shadow-sm">
         <div className="mb-6 flex items-center gap-3">
           <span className="grid size-10 place-items-center rounded-xl bg-ink/[0.06] text-ink">

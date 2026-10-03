@@ -18,6 +18,8 @@
 import type { AppearanceDto, AppearanceSaveRequest } from '@/domains/identity';
 import {
   DEFAULT_WALLPAPER,
+  clampGlassOpacity,
+  clampWallpaperDim,
   resolveDark,
   type AppearanceSettings,
   type Wallpaper,
@@ -58,7 +60,8 @@ export function applyAppearance(settings: AppearanceSettings, systemPrefersDark:
   toggleAttr(root, 'data-material', glass ? 'glass' : null);
 
   if (glass) {
-    root.style.setProperty('--glass-a', String(settings.glassOpacity));
+    root.style.setProperty('--glass-a', String(clampGlassOpacity(settings.glassOpacity)));
+    root.style.setProperty('--wallpaper-dim', String(clampWallpaperDim(settings.wallpaperDim)));
     const w = settings.wallpaper;
     if (w.kind === 'image') {
       toggleAttr(root, 'data-wallpaper', null);
@@ -72,6 +75,7 @@ export function applyAppearance(settings: AppearanceSettings, systemPrefersDark:
     }
   } else {
     root.style.removeProperty('--glass-a');
+    root.style.removeProperty('--wallpaper-dim');
     root.style.removeProperty('--wallpaper-image');
     root.style.removeProperty('--wallpaper-color');
     toggleAttr(root, 'data-wallpaper', null);
@@ -94,6 +98,19 @@ export function applyAppearance(settings: AppearanceSettings, systemPrefersDark:
   };
 }
 
+/**
+ * Back to Arcade's standard light design — used on public pages (landing, explore, sign-in),
+ * which never take the viewer's appearance.
+ */
+export function clearAppearance() {
+  const root = document.documentElement;
+  root.classList.remove('dark', 'theme-transition');
+  root.style.colorScheme = 'light';
+  for (const attr of ['data-contrast', 'data-material', 'data-wallpaper', 'data-theme-scope']) root.removeAttribute(attr);
+  for (const prop of ['--glass-a', '--wallpaper-dim', '--wallpaper-image', '--wallpaper-color']) root.style.removeProperty(prop);
+  document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.remove();
+}
+
 function toggleAttr(el: HTMLElement, name: string, value: string | null) {
   if (value == null) el.removeAttribute(name);
   else if (el.getAttribute(name) !== value) el.setAttribute(name, value);
@@ -114,8 +131,9 @@ export function fromServer(dto: AppearanceDto): AppearanceSettings {
     contrast: dto.contrast === 'HIGH' ? 'high' : 'standard',
     material: dto.material === 'GLASS' ? 'glass' : 'solid',
     glassTone: dto.glassTone.toLowerCase() as AppearanceSettings['glassTone'],
-    glassOpacity: dto.glassOpacity,
+    glassOpacity: clampGlassOpacity(dto.glassOpacity),
     wallpaper,
+    wallpaperDim: clampWallpaperDim(dto.wallpaperDim ?? 0.2),
   };
 }
 
@@ -125,7 +143,8 @@ export function toServer(s: AppearanceSettings): AppearanceSaveRequest {
     contrast: s.contrast === 'high' ? 'HIGH' : 'STANDARD',
     material: s.material === 'glass' ? 'GLASS' : 'SOLID',
     glassTone: s.glassTone.toUpperCase() as AppearanceSaveRequest['glassTone'],
-    glassOpacity: Math.round(s.glassOpacity * 100) / 100,
+    glassOpacity: Math.round(clampGlassOpacity(s.glassOpacity) * 100) / 100,
+    wallpaperDim: Math.round(clampWallpaperDim(s.wallpaperDim) * 100) / 100,
     wallpaperPreset: s.wallpaper.kind === 'preset' ? s.wallpaper.key : null,
     wallpaperId: s.wallpaper.kind === 'image' ? s.wallpaper.id : null,
   };

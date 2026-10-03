@@ -60,7 +60,7 @@ export function SideNav({ sections, activeKey, ariaLabel, className }: SideNavPr
         .map((section, idx) => (
           <div key={section.title ?? idx} className="flex flex-col gap-1.5">
             {section.title && (
-              <p className="px-4 pb-0.5 text-[10.5px] font-bold uppercase tracking-[0.08em] text-slate-400">
+              <p className="theme-nav-title px-4 pb-0.5 text-[10.5px] font-bold uppercase tracking-[0.08em] text-slate-400">
                 {section.title}
               </p>
             )}
@@ -80,7 +80,7 @@ function SideNavLink({ item, active }: { item: SideNavItem; active: boolean }) {
       href={item.href}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'flex items-center gap-3.5 rounded-full px-4 py-3 text-sm font-semibold transition-all duration-200',
+        'theme-nav-item flex items-center gap-3.5 rounded-full px-4 py-3 text-sm font-semibold transition-all duration-200',
         active
           ? item.danger
             ? 'border border-rose-200 bg-rose-50 font-bold text-rose-900 shadow-xs dark:border-rose-900/60 dark:bg-rose-950/50 dark:text-rose-200'

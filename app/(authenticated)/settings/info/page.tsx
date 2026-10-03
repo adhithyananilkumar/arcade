@@ -345,7 +345,7 @@ export default function PersonalInfoPage() {
       transition={{ duration: 0.2 }}
     >
       {/* 1. Personal Information */}
-      <div>
+      <div className="theme-glass-panel">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
           {/* Name */}
         <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-center justify-between gap-3">
@@ -566,7 +566,7 @@ export default function PersonalInfoPage() {
 
       {/* 2. Instructor profile — individual field sections matching Name/Phone/Gender/Address */}
       {isContentStaff && (
-        <div className="mt-6 pt-5 border-t border-slate-100">
+        <div className="theme-glass-panel mt-6 pt-5 border-t border-slate-100">
           <div className="py-2.5 px-3 mb-1">
             <h3 className="text-xs font-semibold text-slate-900">
               Instructor profile
@@ -697,7 +697,7 @@ export default function PersonalInfoPage() {
       )}
 
       {/* 3. Public Profile */}
-      <div className="mt-6 pt-5 border-t border-slate-100">
+      <div className="theme-glass-panel mt-6 pt-5 border-t border-slate-100">
         <div className="py-2.5 px-3 mb-1 flex items-center justify-between gap-3">
           <div className="flex-1 min-w-0">
             <h3 className="text-xs font-semibold text-slate-900">

@@ -156,7 +156,7 @@ export default function AchievementsPage() {
       />
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 hidden dark:block -z-10 bg-slate-950"
+        className="theme-page-layer pointer-events-none fixed inset-0 hidden dark:block -z-10 bg-slate-950"
         style={{
           background: `
             radial-gradient(ellipse 65% 45% at 8% 12%, rgba(76, 111, 255, 0.20) 0%, transparent 60%),

@@ -3,6 +3,7 @@
 import ProtectedLayout from '@/apps/core/layout/ProtectedLayout';
 import LearnerNavbar from '@/apps/learner/layout/LearnerNavbar';
 import LearnerDock from '@/apps/learner/layout/LearnerDock';
+import { QuickAppearance } from '@/apps/core/components/appearance/QuickAppearance';
 import { BugIsland } from '@/apps/core/components/bug-reports/BugIsland';
 import { TimeTracker } from "@/domains/learning";
 import { usePathname } from 'next/navigation';
@@ -69,6 +70,9 @@ export default function LearnerShell({
             {children}
           </main>
           {!hideDock && <LearnerDock />}
+          {/* Quick preferences (theme, glass, wallpaper) on the same browsing surfaces as the dock —
+              Home, Explore, Learning, Achievements… — not on focus screens. Hideable in Settings. */}
+          {!hideDock && <QuickAppearance />}
           {/* Renders nothing unless the backend says this account may report bugs. */}
           <BugIsland />
         </div>

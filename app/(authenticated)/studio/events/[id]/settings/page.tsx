@@ -10,7 +10,7 @@ interface Props {
 export default function EventSettingsPage({ params }: Props) {
   const { id } = use(params);
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="theme-page-bg min-h-screen bg-gray-50">
       <EventWizard eventId={id} initialStep={2} />
     </div>
   );

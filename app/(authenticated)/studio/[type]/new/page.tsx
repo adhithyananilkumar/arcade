@@ -55,7 +55,7 @@ export default async function ContentTypeComingSoonPage({ params }: Props) {
   const Icon = meta.icon;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="theme-page-bg min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="bg-surface rounded-3xl shadow-sm border border-gray-200 p-10 max-w-md w-full text-center">
         <div
           className={`w-14 h-14 rounded-2xl ${meta.bg} flex items-center justify-center mx-auto mb-5`}

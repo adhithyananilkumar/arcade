@@ -63,7 +63,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   );
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen pt-28 md:pt-32 pb-16 bg-surface gap-10 md:gap-14 px-6 md:px-12 items-start">
+    <div className="theme-page-bg flex flex-col md:flex-row min-h-screen pt-28 md:pt-32 pb-16 bg-surface gap-10 md:gap-14 px-6 md:px-12 items-start">
       {/* Sticky Sidebar Navigation */}
       <aside className="w-full md:w-[240px] shrink-0 bg-transparent py-1 md:sticky md:top-28 self-start z-10">
         <SideNav
@@ -77,7 +77,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
       <main className="flex-1 bg-transparent w-full min-w-0">
         <div className="w-full">
           {/* Breadcrumb Header */}
-          <div className="pb-3.5 mb-6 border-b border-slate-200/80 flex items-center gap-2 text-sm text-slate-500 font-semibold">
+          <div className="theme-glass-chip pb-3.5 mb-6 border-b border-slate-200/80 flex items-center gap-2 text-sm text-slate-500 font-semibold">
             <Link href="/settings/info" className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-1.5">
               <SettingsIcon size={15} />
               <span>Settings</span>

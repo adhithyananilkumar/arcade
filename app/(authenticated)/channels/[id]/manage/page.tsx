@@ -202,7 +202,7 @@ export default function ManageChannelPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-surface">
+      <div className="theme-page-bg flex min-h-screen items-center justify-center bg-surface">
         <Loader2 className="h-7 w-7 animate-spin text-slate-400" />
       </div>
     );
@@ -222,7 +222,7 @@ export default function ManageChannelPage() {
     ) : null;
 
   return (
-    <div className="min-h-screen bg-surface px-4 pb-16 pt-24 sm:px-6 md:px-8 lg:px-10 md:pt-28">
+    <div className="theme-page-bg min-h-screen bg-surface px-4 pb-16 pt-24 sm:px-6 md:px-8 lg:px-10 md:pt-28">
       <div className="flex w-full flex-col gap-6 md:flex-row md:items-start md:gap-8 lg:gap-10">
         <aside className="w-full shrink-0 md:sticky md:top-28 md:w-[220px] lg:w-[240px]">
           <SideNav sections={sections} activeKey={active} ariaLabel="Channel dashboard" className="hidden md:flex" />

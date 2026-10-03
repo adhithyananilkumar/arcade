@@ -39,6 +39,8 @@ export interface AppearanceDto {
   material: ServerMaterial;
   glassTone: ServerGlassTone;
   glassOpacity: number;
+  /** Absent from servers that predate wallpaper dimming. */
+  wallpaperDim?: number;
   wallpaper: WallpaperChoiceDto;
   updatedAt: string;
 }
@@ -49,6 +51,7 @@ export interface AppearanceSaveRequest {
   material: ServerMaterial;
   glassTone: ServerGlassTone;
   glassOpacity: number;
+  wallpaperDim: number;
   wallpaperPreset: string | null;
   wallpaperId: string | null;
 }

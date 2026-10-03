@@ -37,7 +37,8 @@
   --art-ground: #fbfcfe;
   --art-ink: #14142b;
   --art-paper: #ffffff;
-  --glass-a: 0.5;
+  --glass-a: 0.68;
+  --wallpaper-dim: 0.2;
   --glass-blur: 22px;
   --focus-ring: 0 0 0 3px rgba(32, 92, 168, 0.15);
 }
@@ -264,8 +265,8 @@
   --page-wash: transparent;
   --surface: oklch(1 0 0 / var(--glass-a));
   --surface-raised: oklch(1 0 0 / calc(var(--glass-a) + 0.2));
-  --n-50: oklch(0.985 0.003 248 / calc(var(--glass-a) * 0.6));
-  --n-100: oklch(0.955 0.008 250 / calc(var(--glass-a) * 0.8));
+  --n-50: oklch(0.985 0.003 248 / calc(var(--glass-a) * 0.75));
+  --n-100: oklch(0.955 0.008 250 / calc(var(--glass-a) * 0.9));
   --n-200: oklch(0.25 0.03 262 / 0.12);
   --n-300: oklch(0.25 0.03 262 / 0.22);
   --n-400: oklch(0.5 0.035 258);
@@ -275,15 +276,16 @@
   --n-800: oklch(0.25 0.04 260);
   --n-900: oklch(0.19 0.04 264);
   --n-950: oklch(0.13 0.04 264);
-  --wallpaper-scrim: oklch(1 0 0 / 0.08);
+  /* light text tone: dimming washes the wallpaper towards white so dark text stays legible */
+  --wallpaper-scrim: oklch(0.99 0.004 250 / var(--wallpaper-dim));
 }
 
 /* ── Glass · dark ────────────────────────────────────────────────────── */
 :root.dark[data-material="glass"] {
   --surface: oklch(0.17 0.015 262 / var(--glass-a));
   --surface-raised: oklch(0.2 0.015 262 / calc(var(--glass-a) + 0.22));
-  --n-50: oklch(0.22 0.014 262 / calc(var(--glass-a) * 0.6));
-  --n-100: oklch(0.27 0.015 262 / calc(var(--glass-a) * 0.8));
+  --n-50: oklch(0.22 0.014 262 / calc(var(--glass-a) * 0.75));
+  --n-100: oklch(0.27 0.015 262 / calc(var(--glass-a) * 0.9));
   --n-200: oklch(1 0 0 / 0.12);
   --n-300: oklch(1 0 0 / 0.2);
   --n-400: oklch(0.7 0.016 262);
@@ -293,7 +295,79 @@
   --n-800: oklch(0.92 0.008 262);
   --n-900: oklch(0.96 0.005 262);
   --n-950: oklch(0.985 0.003 262);
-  --wallpaper-scrim: oklch(0.12 0.02 262 / 0.28);
+  /* dark text tone: dimming darkens the wallpaper behind light text */
+  --wallpaper-scrim: oklch(0.1 0.02 262 / var(--wallpaper-dim));
+}
+
+/*
+ * Pages that paint their own full-screen background layer (My Learning,
+ * Achievements…) tag it `theme-page-layer`. Under glass it would cover the
+ * wallpaper, and under high contrast it would replace the true black ground.
+ */
+:root[data-material="glass"] .theme-page-layer,
+:root[data-contrast="high"] .theme-page-layer {
+  display: none !important;
+}
+
+/*
+ * A page's own full-height wrapper (`theme-page-bg`) is page ground, not a panel: under glass it
+ * steps aside so the wallpaper shows around the page's cards, the way Console does.
+ */
+:root[data-material="glass"] .theme-page-bg {
+  background: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/*
+ * A section that sits straight on the page in solid themes (Settings → Personal info groups)
+ * becomes its own frosted island under glass — like Console's cards — so it never lies directly
+ * on a busy photo. No effect in solid themes.
+ */
+:root[data-material="glass"] .theme-glass-panel {
+  background: var(--surface) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(165%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(165%);
+  border: 1px solid var(--n-200);
+  border-radius: 24px;
+  padding: 1rem 1.25rem;
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.35), 0 10px 40px -12px rgba(0, 0, 0, 0.18);
+}
+
+/*
+ * Side navigation (Console, Settings, Channel manage) sits straight on the page. Under glass every
+ * tab gets its own frosted pill and each group label a small chip, so the nav reads on any photo.
+ * The active tab keeps its own colour.
+ */
+:root[data-material="glass"] .theme-nav-item:not([aria-current="page"]) {
+  background: color-mix(in oklab, var(--surface) 82%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid var(--n-200);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.25);
+}
+
+:root[data-material="glass"] .theme-nav-item:not([aria-current="page"]):hover {
+  background: var(--surface-raised);
+}
+
+:root[data-material="glass"] .theme-nav-title,
+:root[data-material="glass"] .theme-glass-chip {
+  width: fit-content;
+  background: color-mix(in oklab, var(--surface) 82%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid var(--n-200);
+  border-radius: 9999px;
+}
+
+:root[data-material="glass"] .theme-nav-title {
+  margin-left: 0.5rem;
+  padding: 0.2rem 0.75rem;
+}
+
+:root[data-material="glass"] .theme-glass-chip {
+  padding: 0.45rem 1rem;
 }
 
 /* High contrast always wins over translucency: glass stays nearly opaque. */
@@ -417,7 +491,20 @@
 :root[data-material="glass"] :is(
   .bg-surface, .bg-card, .bg-popover, .bg-sidebar,
   [class^="bg-surface/"], [class*=" bg-surface/"],
-  .bg-slate-50, .bg-gray-50, .bg-zinc-50, .bg-neutral-50
+  .bg-slate-50, .bg-gray-50, .bg-zinc-50, .bg-neutral-50,
+  /* inline-styled surfaces (React writes `background:var(…)`; the browser re-serializes with a space) */
+  [style*="background:var(--theme-surface"],
+  [style*="background: var(--theme-surface"],
+  [style*="background-color:var(--theme-surface"],
+  [style*="background-color: var(--theme-surface"],
+  [style*="background:var(--theme-n-50"],
+  [style*="background: var(--theme-n-50"],
+  [style*="background-color:var(--theme-n-50"],
+  [style*="background-color: var(--theme-n-50"],
+  [style*="background:var(--theme-n-100"],
+  [style*="background: var(--theme-n-100"],
+  [style*="background-color:var(--theme-n-100"],
+  [style*="background-color: var(--theme-n-100"]
 ) {
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(165%);
   backdrop-filter: blur(var(--glass-blur)) saturate(165%);

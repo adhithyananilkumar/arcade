@@ -1,5 +1,6 @@
 import LearnerShell from '@/apps/learner/layout/LearnerShell';
 import { StaffOnboardingModal } from './components/StaffOnboardingModal';
+import { ThemeScope } from '@/apps/core/components/ThemeScope';
 
 export default function AuthenticatedLayout({
   children,
@@ -7,9 +8,13 @@ export default function AuthenticatedLayout({
   children: React.ReactNode;
 }) {
   return (
-    <LearnerShell>
-      {children}
-      <StaffOnboardingModal />
-    </LearnerShell>
+    <>
+      {/* Outside the shell on purpose: ProtectedLayout holds its children back until mount. */}
+      <ThemeScope />
+      <LearnerShell>
+        {children}
+        <StaffOnboardingModal />
+      </LearnerShell>
+    </>
   );
 }
