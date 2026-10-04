@@ -1192,8 +1192,6 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
 
   if (isLoading) {
     return (
-  if (isLoading) {
-    return (
       <div className="flex items-center justify-center rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 py-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
         <Loader2 size={24} className="animate-spin text-[#205ca8]" />
       </div>
