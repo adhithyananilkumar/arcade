@@ -170,11 +170,11 @@ function OverviewMessage({
   return (
     <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col items-center justify-center px-4 text-center">
       {icon}
-      <h1 className="mt-4 text-lg font-bold text-slate-900 dark:text-white">{title}</h1>
-      <p className="mt-2 text-[14px] leading-relaxed text-slate-500 dark:text-slate-400">{body}</p>
+      <h1 className="mt-4 text-lg font-bold text-slate-900">{title}</h1>
+      <p className="mt-2 text-[14px] leading-relaxed text-slate-500">{body}</p>
       <Link
         href={action.href}
-        className="mt-6 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900"
+        className="mt-6 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-on-ink transition hover:bg-slate-800"
       >
         {action.label}
       </Link>
@@ -185,15 +185,15 @@ function OverviewMessage({
 function OverviewSkeleton() {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6" aria-busy>
-      <div className="h-44 animate-pulse rounded-3xl bg-slate-100 dark:bg-slate-800/60" />
+      <div className="h-44 animate-pulse rounded-3xl bg-slate-100" />
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="space-y-4">
-          <div className="h-40 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
-          <div className="h-64 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
+          <div className="h-40 animate-pulse rounded-2xl bg-slate-100" />
+          <div className="h-64 animate-pulse rounded-2xl bg-slate-100" />
         </div>
         <div className="space-y-4">
-          <div className="h-48 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
-          <div className="h-36 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
+          <div className="h-48 animate-pulse rounded-2xl bg-slate-100" />
+          <div className="h-36 animate-pulse rounded-2xl bg-slate-100" />
         </div>
       </div>
     </div>

@@ -8,7 +8,7 @@ export const EventStatusBadge: React.FC<Props> = ({ status }) => {
   const getStyles = () => {
     switch (status) {
       case 'DRAFT':
-        return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700';
+        return 'bg-gray-100 text-gray-700 border-gray-200';
       case 'SUBMITTED':
         return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800';
       case 'APPROVED':

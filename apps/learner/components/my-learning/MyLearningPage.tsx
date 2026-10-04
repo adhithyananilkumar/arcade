@@ -210,13 +210,13 @@ export default function MyLearningPage() {
   }, [myExamsQuery.data, searchQuery]);
 
   return (
-    <div className="relative min-h-screen w-full text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/40">
+    <div className="relative min-h-screen w-full text-slate-900 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/40">
       {/* Background — vibrant ambient gradient matching Home and Explore pages */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 dark:hidden -z-10"
         style={{
-          background: `
+          background: `var(--theme-wash, 
             radial-gradient(ellipse 55% 40% at 8% 12%, rgba(41, 98, 214, 0.16) 0%, transparent 60%),
             radial-gradient(ellipse 50% 35% at 92% 20%, rgba(39, 197, 216, 0.14) 0%, transparent 60%),
             radial-gradient(ellipse 45% 35% at 5% 50%, rgba(99, 102, 241, 0.09) 0%, transparent 60%),
@@ -225,12 +225,12 @@ export default function MyLearningPage() {
             radial-gradient(ellipse 50% 35% at 94% 80%, rgba(20, 184, 166, 0.11) 0%, transparent 60%),
             radial-gradient(ellipse 40% 30% at 50% 95%, rgba(44, 131, 245, 0.08) 0%, transparent 60%),
             linear-gradient(to bottom, #E9EEFB 0%, #F5F9FD 25%, #FFFFFF 50%, #FFFFFF 75%, #E8F7F8 100%)
-          `,
+          )`,
         }}
       />
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 hidden dark:block -z-10 bg-slate-950"
+        className="theme-page-layer pointer-events-none fixed inset-0 hidden dark:block -z-10 bg-slate-950"
         style={{
           background: `
             radial-gradient(ellipse 65% 45% at 8% 12%, rgba(41, 98, 214, 0.22) 0%, transparent 60%),
@@ -260,7 +260,7 @@ export default function MyLearningPage() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="inline-block text-slate-900 dark:text-white font-extrabold text-4xl sm:text-5xl lg:text-6xl"
+              className="inline-block text-slate-900 font-extrabold text-4xl sm:text-5xl lg:text-6xl"
             >
               My
             </motion.span>
@@ -310,7 +310,7 @@ export default function MyLearningPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
                 transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold leading-relaxed text-center w-full px-4"
+                className="absolute text-xs sm:text-sm text-slate-600 font-semibold leading-relaxed text-center w-full px-4"
               >
                 {LEARNING_MESSAGES[msgIndex]}
               </motion.p>
@@ -369,7 +369,7 @@ export default function MyLearningPage() {
                   >
                     <Search
                       size={16}
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none"
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
                     />
                     <input
                       ref={(el) => {
@@ -389,7 +389,7 @@ export default function MyLearningPage() {
                         }
                       }}
                       placeholder={tab === 'courses' ? 'Search courses...' : tab === 'events' ? 'Search events...' : 'Search exams...'}
-                      className="w-full pl-9 pr-8 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm bg-transparent border border-slate-200/80 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-300 dark:focus:ring-slate-700 transition-all font-medium"
+                      className="w-full pl-9 pr-8 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm bg-transparent border border-slate-200/80 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-300 transition-all font-medium"
                     />
                     <button
                       type="button"
@@ -397,7 +397,7 @@ export default function MyLearningPage() {
                         setSearchQuery('');
                         setIsSearchOpen(false);
                       }}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-0.5 rounded-full hover:bg-slate-100 transition"
                       aria-label="Close search"
                       title="Close search"
                     >
@@ -413,7 +413,7 @@ export default function MyLearningPage() {
                     transition={{ duration: 0.15 }}
                     type="button"
                     onClick={() => setIsSearchOpen(true)}
-                    className="p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors flex items-center justify-center cursor-pointer"
+                    className="p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors flex items-center justify-center cursor-pointer"
                     aria-label="Open search"
                     title="Search"
                   >
@@ -444,7 +444,7 @@ export default function MyLearningPage() {
         >
           {/* Section Header */}
           <div className="flex items-center justify-between pb-1">
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
               Learning Activity
             </h2>
           </div>
@@ -585,10 +585,6 @@ export default function MyLearningPage() {
           </div>
         </section>
 
-        {/* ── SECTION 3: LEARNING ACTIVITY TIME CHART ────────────────────────── */}
-        <section aria-label="Learning Activity Chart">
-          <LearningActivityPanel enabled={isAuthenticated} />
-        </section>
       </div>
     </div>
   );
@@ -631,10 +627,10 @@ function SortDropdown({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md bg-transparent border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100/60 dark:hover:bg-slate-800/60 transition-colors select-none cursor-pointer"
+        className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md bg-transparent border border-slate-200/80 hover:bg-slate-100/60 transition-colors select-none cursor-pointer"
       >
-        <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400">Sort by:</span>
-        <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
+        <span className="text-xs sm:text-sm font-bold text-slate-500">Sort by:</span>
+        <span className="text-xs sm:text-sm font-extrabold text-slate-900">
           {selectedOption.label}
         </span>
         <ChevronDown
@@ -649,7 +645,7 @@ function SortDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.96 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute right-0 mt-1.5 w-56 rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xl py-2 z-50 overflow-hidden"
+            className="absolute right-0 mt-1.5 w-56 rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md bg-surface border border-slate-200/90 shadow-xl py-2 z-50 overflow-hidden"
             role="listbox"
           >
             {SORT_OPTIONS.map((option) => {
@@ -666,8 +662,8 @@ function SortDropdown({
                   }}
                   className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-xs sm:text-sm font-semibold text-left transition-colors cursor-pointer ${
                     isSelected
-                      ? 'text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800/80 font-bold'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50/80 dark:hover:bg-slate-800/40'
+                      ? 'text-slate-900 bg-slate-50 font-bold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50/80'
                   }`}
                 >
                   <span className="w-4 flex items-center justify-center shrink-0">
@@ -703,8 +699,8 @@ function TabButton({
       onClick={onClick}
       className={`relative px-5 sm:px-6 py-2 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm font-black tracking-tight transition-all duration-200 select-none cursor-pointer min-w-[96px] text-center ${
         active
-          ? 'bg-white dark:bg-slate-900 text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6]'
-          : 'bg-slate-100/80 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700/60 hover:bg-slate-200/70 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white'
+          ? 'bg-surface text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6]'
+          : 'bg-slate-100/80 text-slate-700 border border-slate-200/70 hover:bg-slate-200/70 hover:text-slate-900'
       }`}
     >
       <span className="relative z-10">{label}</span>
@@ -785,7 +781,7 @@ function CoursesDoodle() {
           height="14"
           rx="4"
           transform="rotate(-4 26 48)"
-          className="fill-slate-100 dark:fill-slate-800 stroke-slate-800 dark:stroke-slate-200"
+          className="fill-slate-100 stroke-slate-800"
           strokeWidth="2"
         />
         <path d="M72 45L78 45" className="stroke-[#2962D6] dark:stroke-[#3B82F6]" strokeWidth="2" strokeLinecap="round" />
@@ -798,7 +794,7 @@ function CoursesDoodle() {
           height="14"
           rx="4"
           transform="rotate(2 30 34)"
-          className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200"
+          className="fill-white stroke-slate-800"
           strokeWidth="2"
         />
         <path d="M34 37L48 37" className="stroke-emerald-500 dark:stroke-emerald-400" strokeWidth="2" strokeLinecap="round" />
@@ -808,31 +804,31 @@ function CoursesDoodle() {
           {/* Left page */}
           <path
             d="M22 24C14 22 4 23 2 24V6C4 5 14 4 22 6V24Z"
-            className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200"
+            className="fill-white stroke-slate-800"
             strokeWidth="2"
             strokeLinejoin="round"
           />
           {/* Right page */}
           <path
             d="M22 24C30 22 40 23 42 24V6C40 5 30 4 22 6V24Z"
-            className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200"
+            className="fill-white stroke-slate-800"
             strokeWidth="2"
             strokeLinejoin="round"
           />
           {/* Center spine */}
-          <line x1="22" y1="6" x2="22" y2="24" className="stroke-slate-800 dark:stroke-slate-200" strokeWidth="2" />
+          <line x1="22" y1="6" x2="22" y2="24" className="stroke-slate-800" strokeWidth="2" />
           {/* Left page text lines */}
           <line x1="6" y1="10" x2="18" y2="10" className="stroke-[#2962D6] dark:stroke-[#3B82F6]" strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="6" y1="14" x2="15" y2="14" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="6" y1="18" x2="17" y2="18" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="6" y1="14" x2="15" y2="14" className="stroke-slate-300" strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="6" y1="18" x2="17" y2="18" className="stroke-slate-300" strokeWidth="1.5" strokeLinecap="round" />
           {/* Right page text lines */}
           <line x1="26" y1="10" x2="38" y2="10" className="stroke-emerald-500 dark:stroke-emerald-400" strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="26" y1="14" x2="35" y2="14" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="26" y1="18" x2="37" y2="18" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="26" y1="14" x2="35" y2="14" className="stroke-slate-300" strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="26" y1="18" x2="37" y2="18" className="stroke-slate-300" strokeWidth="1.5" strokeLinecap="round" />
         </g>
 
         {/* Minimal Bookmark ribbon */}
-        <path d="M72 26V38L75 35L78 38V26" className="fill-amber-400 stroke-slate-800 dark:stroke-slate-200" strokeWidth="1.2" strokeLinejoin="round" />
+        <path d="M72 26V38L75 35L78 38V26" className="fill-amber-400 stroke-slate-800" strokeWidth="1.2" strokeLinejoin="round" />
 
         {/* Sparkles */}
         <path d="M18 30L19 26L23 25L19 24L18 20L17 24L13 25L17 26Z" className="fill-amber-400 dark:fill-amber-300" />
@@ -868,7 +864,7 @@ function EventsDoodle() {
           width="50"
           height="56"
           rx="10"
-          className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200"
+          className="fill-white stroke-slate-800"
           strokeWidth="2"
         />
 
@@ -877,26 +873,26 @@ function EventsDoodle() {
           d="M31 34 C31 27 34 23 41 23 H69 C76 23 79 27 79 34 V36 H31 V34 Z"
           className="fill-[#2962D6]/20 dark:fill-[#2962D6]/40"
         />
-        <line x1="30" y1="36" x2="80" y2="36" className="stroke-slate-800 dark:stroke-slate-200" strokeWidth="2" />
+        <line x1="30" y1="36" x2="80" y2="36" className="stroke-slate-800" strokeWidth="2" />
 
         {/* Calendar Rings / Binders at top */}
-        <rect x="40" y="16" width="4" height="10" rx="2" className="fill-slate-800 dark:fill-slate-200" />
-        <rect x="66" y="16" width="4" height="10" rx="2" className="fill-slate-800 dark:fill-slate-200" />
+        <rect x="40" y="16" width="4" height="10" rx="2" className="fill-slate-800" />
+        <rect x="66" y="16" width="4" height="10" rx="2" className="fill-slate-800" />
 
         {/* Calendar Grid Dates */}
-        <circle cx="41" cy="45" r="2.5" className="fill-slate-300 dark:fill-slate-600" />
-        <circle cx="55" cy="45" r="2.5" className="fill-slate-300 dark:fill-slate-600" />
-        <circle cx="69" cy="45" r="2.5" className="fill-slate-300 dark:fill-slate-600" />
+        <circle cx="41" cy="45" r="2.5" className="fill-slate-300" />
+        <circle cx="55" cy="45" r="2.5" className="fill-slate-300" />
+        <circle cx="69" cy="45" r="2.5" className="fill-slate-300" />
 
-        <circle cx="41" cy="56" r="2.5" className="fill-slate-300 dark:fill-slate-600" />
+        <circle cx="41" cy="56" r="2.5" className="fill-slate-300" />
         {/* Highlighted Event Date Star/Pill */}
         <rect x="49" y="50" width="12" height="12" rx="4" className="fill-[#2962D6] dark:fill-[#3B82F6]" />
         <path d="M53 56L54.5 57.5L57.5 54.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
 
-        <circle cx="69" cy="56" r="2.5" className="fill-slate-300 dark:fill-slate-600" />
+        <circle cx="69" cy="56" r="2.5" className="fill-slate-300" />
 
-        <circle cx="41" cy="67" r="2.5" className="fill-slate-300 dark:fill-slate-600" />
-        <circle cx="55" cy="67" r="2.5" className="fill-slate-300 dark:fill-slate-600" />
+        <circle cx="41" cy="67" r="2.5" className="fill-slate-300" />
+        <circle cx="55" cy="67" r="2.5" className="fill-slate-300" />
         <circle cx="69" cy="67" r="2.5" className="fill-[#27C5D8]" />
 
         {/* Sparkles */}
@@ -923,12 +919,12 @@ function EmptyState({
   return (
     <div className="py-10 px-4 text-center flex flex-col items-center justify-center">
       {tab === 'events' ? <EventsDoodle /> : <CoursesDoodle />}
-      <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
-      <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">{body}</p>
+      <h3 className="text-base sm:text-lg font-bold text-slate-900">{title}</h3>
+      <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-sm mx-auto leading-relaxed">{body}</p>
       {ctaHref && ctaLabel && (
         <Link
           href={ctaHref}
-          className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-slate-900 dark:bg-white px-5 py-2.5 text-xs sm:text-sm font-bold text-white dark:text-slate-900 hover:opacity-90 transition shadow-sm"
+          className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-5 py-2.5 text-xs sm:text-sm font-bold text-on-ink hover:opacity-90 transition shadow-sm"
         >
           <Compass className="h-3.5 w-3.5" />
           {ctaLabel}
@@ -949,7 +945,7 @@ function Pagination({
 }) {
   if (totalPages <= 1) return null;
   return (
-    <div className="flex items-center justify-between pt-6 border-t border-slate-200/60 dark:border-slate-800">
+    <div className="flex items-center justify-between pt-6 border-t border-slate-200/60">
       <span className="text-xs font-medium text-slate-500">
         Page {page + 1} of {totalPages}
       </span>
@@ -958,7 +954,7 @@ function Pagination({
           type="button"
           disabled={page === 0}
           onClick={() => onChange(page - 1)}
-          className="p-2 rounded-full border border-slate-200 dark:border-slate-800 disabled:opacity-30 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+          className="p-2 rounded-full border border-slate-200 disabled:opacity-30 hover:bg-slate-100 transition"
           aria-label="Previous page"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -967,7 +963,7 @@ function Pagination({
           type="button"
           disabled={page >= totalPages - 1}
           onClick={() => onChange(page + 1)}
-          className="p-2 rounded-full border border-slate-200 dark:border-slate-800 disabled:opacity-30 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+          className="p-2 rounded-full border border-slate-200 disabled:opacity-30 hover:bg-slate-100 transition"
           aria-label="Next page"
         >
           <ChevronRight className="h-4 w-4" />
@@ -983,7 +979,7 @@ function GridSkeleton() {
       {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}
-          className="h-72 rounded-3xl bg-slate-200/70 dark:bg-slate-800/70"
+          className="h-72 rounded-3xl bg-slate-200/70"
         />
       ))}
     </div>
@@ -994,7 +990,7 @@ function RowsSkeleton() {
   return (
     <div className="space-y-4 animate-pulse">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="h-24 rounded-2xl bg-slate-200/70 dark:bg-slate-800/70" />
+        <div key={i} className="h-24 rounded-2xl bg-slate-200/70" />
       ))}
     </div>
   );

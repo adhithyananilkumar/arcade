@@ -15,8 +15,10 @@ import {
   CheckCircle2,
   CircleSlash,
   Clock,
+  Download,
   FileText,
   Hash,
+  Hourglass,
   ListChecks,
   Loader2,
   Printer,
@@ -24,7 +26,9 @@ import {
   Target,
   XCircle,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
+  downloadGradeCardPdf,
   getGradeCard,
   planKindLabel,
   planTypeMeta,
@@ -37,6 +41,7 @@ export default function GradeCardPage() {
   const cardId = params.cardId as string;
   const [card, setCard] = useState<GradeCardResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     getGradeCard(cardId)
@@ -44,12 +49,24 @@ export default function GradeCardPage() {
       .catch((err) => setError(err?.message ?? 'Could not load this grade card.'));
   }, [cardId]);
 
+  const download = async () => {
+    if (!card) return;
+    setDownloading(true);
+    try {
+      await downloadGradeCardPdf(card.id, card.credentialCode);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Download failed');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
-    <main className="min-h-screen bg-white text-ink print:bg-white">
+    <main className="min-h-screen bg-surface text-ink print:bg-surface">
       <div className="arcade-wash w-full print:bg-none">
-        <div className="mx-auto w-full max-w-4xl px-5 pb-10 pt-28 sm:px-8 sm:pt-32 print:pt-6">
+        <div className="mx-auto w-full max-w-4xl px-5 pb-32 pt-28 sm:px-8 sm:pt-32 print:pb-6 print:pt-6">
           {error ? (
-            <p className="py-24 text-center text-[14px] font-semibold text-rose-600">{error}</p>
+            <p className="py-24 text-center text-[14px] font-semibold text-rose-600 dark:text-rose-400">{error}</p>
           ) : !card ? (
             <div className="flex justify-center py-24">
               <Loader2 className="animate-spin text-slate-400" size={26} />
@@ -80,6 +97,14 @@ export default function GradeCardPage() {
                   >
                     <Printer size={14} /> Print
                   </button>
+                  <button
+                    type="button"
+                    onClick={download}
+                    disabled={downloading}
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-on-ink hover:opacity-90 disabled:opacity-60"
+                  >
+                    {downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />} Download PDF
+                  </button>
                 </div>
               </div>
               <Card card={card} />
@@ -102,12 +127,12 @@ function Card({ card }: { card: GradeCardResponse }) {
     : sitting?.planType
     ? planKindLabel(sitting.planType, sitting.graded)
     : 'Grade card';
-  const chip = sitting?.planType ? planTypeMeta(sitting.planType).chip : 'bg-violet-50 text-violet-700';
+  const chip = sitting?.planType ? planTypeMeta(sitting.planType).chip : 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300';
 
   return (
-    <article className="overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white shadow-[0_12px_40px_rgba(20,20,43,0.08)] print:shadow-none">
+    <article className="overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-surface shadow-[0_12px_40px_rgba(20,20,43,0.08)] print:shadow-none">
       {card.revoked && (
-        <div className="flex items-center gap-2 border-b border-rose-200 bg-rose-50 px-7 py-3 text-[13px] font-semibold text-rose-700">
+        <div className="flex items-center gap-2 border-b border-rose-200 bg-rose-50 px-7 py-3 text-[13px] font-semibold text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
           <ShieldAlert size={16} /> Revoked{card.revokedReason ? `: ${card.revokedReason}` : ''}
         </div>
       )}
@@ -137,6 +162,8 @@ function Card({ card }: { card: GradeCardResponse }) {
         </p>
       </header>
 
+      <CertificateStatus card={card} />
+
       {/* The result */}
       <section className="grid gap-6 border-b border-slate-100 px-7 py-7 sm:grid-cols-[auto_1fr] sm:items-center sm:px-9">
         <ScoreRing percentage={card.percentage} tone={!graded ? 'neutral' : card.passed ? 'pass' : 'fail'} />
@@ -159,7 +186,7 @@ function Card({ card }: { card: GradeCardResponse }) {
         <section className="border-b border-slate-100 px-7 py-6 sm:px-9">
           <SectionTitle>Sitting details</SectionTitle>
           <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Fact icon={<CheckCircle2 size={14} />} label="Correct" value={String(sitting.correctAnswers)} tone="text-emerald-600" />
+            <Fact icon={<CheckCircle2 size={14} />} label="Correct" value={String(sitting.correctAnswers)} tone="text-emerald-600 dark:text-emerald-400" />
             <Fact icon={<XCircle size={14} />} label="Wrong" value={String(sitting.wrongAnswers)} tone="text-rose-500" />
             <Fact icon={<CircleSlash size={14} />} label="Skipped" value={String(sitting.unanswered)} tone="text-slate-500" />
             <Fact icon={<ListChecks size={14} />} label="Questions" value={String(sitting.totalQuestions)} />
@@ -246,7 +273,7 @@ function Card({ card }: { card: GradeCardResponse }) {
                       {item.percentage === null ? (
                         <span className="text-[12px] font-medium text-slate-400">Not sat</span>
                       ) : item.passed ? (
-                        <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-emerald-700">
+                        <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-emerald-700 dark:text-emerald-300">
                           <CheckCircle2 size={13} /> Passed
                         </span>
                       ) : (
@@ -263,16 +290,85 @@ function Card({ card }: { card: GradeCardResponse }) {
 
       <footer className="flex flex-wrap items-center justify-between gap-3 bg-slate-50/70 px-7 py-4 text-[12px] font-medium text-slate-500 sm:px-9">
         <span className="inline-flex items-center gap-1.5">
-          <Hash size={13} /> Verification code{' '}
-          <b className="font-mono tracking-wider text-ink">{card.verificationCode}</b>
+          <Hash size={13} /> Grade card no.{' '}
+          <b className="font-mono tracking-wider text-ink">{card.credentialCode}</b>
+          <Link
+            href={`/credentials/verify?id=${encodeURIComponent(card.credentialCode)}`}
+            className="ml-1 font-semibold text-[#2962D6] hover:underline print:hidden dark:text-[#7eb5ff]"
+          >
+            Verify
+          </Link>
         </span>
         {card.certificateIssued && (
-          <span className="inline-flex items-center gap-1.5 font-semibold text-violet-700">
+          <span className="inline-flex items-center gap-1.5 font-semibold text-violet-700 dark:text-violet-300">
             <BadgeCheck size={14} /> Certificate issued
           </span>
         )}
       </footer>
     </article>
+  );
+}
+
+/** What happened to the certificate this sitting earns — only shown for a passed certification. */
+function CertificateStatus({ card }: { card: GradeCardResponse }) {
+  const status = card.certificateStatus;
+  if (!status || status === 'NOT_APPLICABLE') return null;
+
+  if (status === 'ISSUED') {
+    return (
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50/70 px-7 py-4 sm:px-9 print:hidden dark:border-emerald-500/25 dark:bg-emerald-500/10">
+        <span className="inline-flex items-center gap-2 text-[13px] font-semibold text-emerald-800 dark:text-emerald-200">
+          <BadgeCheck size={16} /> Certificate issued
+          {card.certificateCode && <span className="font-mono text-[12px] tracking-wider">{card.certificateCode}</span>}
+        </span>
+        <span className="flex items-center gap-2">
+          <Link
+            href="/achievements"
+            className="rounded-full bg-emerald-700 px-4 py-1.5 text-[12px] font-semibold text-white hover:bg-emerald-800"
+          >
+            View certificate
+          </Link>
+          {card.certificateCode && (
+            <Link
+              href={`/credentials/verify?id=${encodeURIComponent(card.certificateCode)}`}
+              className="rounded-full border border-emerald-300 px-4 py-1.5 text-[12px] font-semibold text-emerald-800 hover:bg-emerald-100 dark:border-emerald-500/40 dark:text-emerald-200 dark:hover:bg-emerald-500/15"
+            >
+              Verify
+            </Link>
+          )}
+        </span>
+      </div>
+    );
+  }
+
+  const copy: Record<Exclude<typeof status, 'ISSUED' | 'NOT_APPLICABLE'>, { tone: string; icon: ReactNode; text: string }> = {
+    AWAITING_IDENTITY_REVIEW: {
+      tone: 'border-amber-100 bg-amber-50/80 text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200',
+      icon: <Hourglass size={16} />,
+      text: 'You passed. Your certificate will be issued once the exam administrator approves your identity photo.',
+    },
+    AWAITING_ISSUE: {
+      tone: 'border-amber-100 bg-amber-50/80 text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200',
+      icon: <Hourglass size={16} />,
+      text: 'You passed. Your certificate is being issued — refresh this page in a moment.',
+    },
+    IDENTITY_REJECTED: {
+      tone: 'border-rose-100 bg-rose-50/80 text-rose-800 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-200',
+      icon: <ShieldAlert size={16} />,
+      text: 'No certificate was issued: the exam administrator did not accept your identity photo.',
+    },
+    WITHHELD: {
+      tone: 'border-rose-100 bg-rose-50/80 text-rose-800 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-200',
+      icon: <ShieldAlert size={16} />,
+      text: 'No certificate was issued because this grade card was revoked.',
+    },
+  };
+  const c = copy[status];
+  return (
+    <div className={`flex items-start gap-2 border-b px-7 py-4 text-[13px] font-semibold sm:px-9 print:hidden ${c.tone}`}>
+      <span className="mt-0.5 shrink-0">{c.icon}</span>
+      {c.text}
+    </div>
   );
 }
 
@@ -307,13 +403,13 @@ function ScoreRing({ percentage, tone }: { percentage: number; tone: 'pass' | 'f
 function ResultBadge({ graded, passed }: { graded: boolean; passed: boolean }) {
   if (!graded) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1 text-[12px] font-bold text-sky-700">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1 text-[12px] font-bold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
         <FileText size={13} /> Not graded
       </span>
     );
   }
   return passed ? (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[12px] font-bold text-emerald-700">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[12px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
       <CheckCircle2 size={13} /> Passed
     </span>
   ) : (
@@ -341,7 +437,7 @@ function Fact({
   small?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200/80 bg-white px-3.5 py-3">
+    <div className="rounded-xl border border-slate-200/80 bg-surface px-3.5 py-3">
       <dt className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
         {icon}
         {label}

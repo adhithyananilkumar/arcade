@@ -123,19 +123,19 @@ export function VerifiedBadge({
                 color={badge.accentColor}
                 className="shrink-0"
               />
-              <span className="text-[13px] font-bold tracking-tight text-slate-900 dark:text-white">
+              <span className="text-[13px] font-bold tracking-tight text-slate-900">
                 {badge.label}
               </span>
             </span>
 
             {badge.tenure && (
-              <span className="mt-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-neutral-500">
+              <span className="mt-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                 {badge.tenure}
               </span>
             )}
 
             {(badge.note || badge.description) && (
-              <span className="mt-2 block text-[12px] font-medium leading-relaxed text-slate-500 dark:text-neutral-400">
+              <span className="mt-2 block text-[12px] font-medium leading-relaxed text-slate-500">
                 {badge.note || badge.description}
               </span>
             )}
@@ -185,7 +185,7 @@ export function BadgeRow({
         />
       ))}
       {hidden > 0 && (
-        <span className="text-[11px] font-bold text-slate-400 dark:text-neutral-500">
+        <span className="text-[11px] font-bold text-slate-400">
           +{hidden}
         </span>
       )}

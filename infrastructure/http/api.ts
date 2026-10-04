@@ -26,6 +26,9 @@ import { API_ORIGIN } from "@/infrastructure/config/env";
 
 const BASE_URL = API_ORIGIN;
 
+/** Backend error codes on 5xx responses whose message is written for the user and safe to show. */
+const USER_FACING_SERVER_ERROR_CODES = new Set(["EMAIL_NOT_SENT"]);
+
 // Thrown instead of a plain Error so callers that need to branch on HTTP
 // status (e.g. distinguishing 404 from 403) don't have to string-match messages.
 /**
@@ -171,6 +174,7 @@ async function request<T>(
 
   if (!res.ok) {
     let message = `API error ${res.status}`;
+    let code: string | undefined;
     if (text) {
       if (!options?.expectedStatuses?.includes(res.status)) {
         console.error(`[API ERROR ${res.status}] Path: ${path}`, text);
@@ -178,6 +182,7 @@ async function request<T>(
       try {
         const err = JSON.parse(text);
         message = err.message ?? message;
+        code = typeof err.code === 'string' ? err.code : undefined;
       } catch {
         // If it's not JSON (like plain text "Too many requests"), use it directly if it's a short string
         if (text.length < 100 && !text.includes('<html')) {
@@ -193,7 +198,10 @@ async function request<T>(
     // app widely do `toast.error(error.message)` directly, so anything not
     // safe to show a user must be replaced here rather than at each of
     // those call sites individually.
-    if (res.status >= 500) {
+    // Except the 5xx errors the backend raises on purpose with a message written for the user
+    // (GlobalExceptionHandler), e.g. "We couldn't send the email to …" — hiding that behind the
+    // generic text would leave the user believing the email went out.
+    if (res.status >= 500 && !(code && USER_FACING_SERVER_ERROR_CODES.has(code))) {
       // The backend's catch-all handler ends its message with "Reference: <correlation id>" — an
       // id minted specifically to be quoted back, and the only way to find the matching server log
       // line. Keeping it is the difference between a user reporting "it broke" and reporting
@@ -211,7 +219,136 @@ async function request<T>(
   return (text ? JSON.parse(text) : null) as T;
 }
 
+/**
+ * Fetches a binary response (a PDF, an image, an export) with the same session handling as
+ * {@link request}: bearer token attached, one silent refresh on 401. Errors surface as
+ * {@link ApiError} with the server's message, exactly like JSON calls.
+ */
+async function requestBlob(path: string, isRetry = false): Promise<{ blob: Blob; fileName: string | null }> {
+  const token = getAccessToken();
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      method: "GET",
+      cache: "no-store",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  } catch (cause) {
+    throw new ApiError(
+      NETWORK_ERROR_STATUS,
+      `Cannot reach the Arcade API at ${BASE_URL}. The server may not be running.`,
+      { cause },
+    );
+  }
+  if (res.status === 401 && !isRetry && token && (await refreshTokens())) {
+    return requestBlob(path, true);
+  }
+  if (!res.ok) {
+    let message = res.status === 429 ? "Too many downloads. Please wait a minute and try again." : `Download failed (${res.status})`;
+    if (res.status < 500 && res.status !== 429) {
+      try {
+        const err = JSON.parse(await res.text());
+        message = err.message ?? message;
+      } catch {
+        // not JSON — keep the generic message
+      }
+    } else if (res.status >= 500) {
+      message = "Something went wrong on our end. Please try again in a moment.";
+    }
+    throw new ApiError(res.status, message);
+  }
+  return { blob: await res.blob(), fileName: fileNameFrom(res.headers.get("Content-Disposition")) };
+}
+
+/** The filename a Content-Disposition header offers, preferring the RFC 5987 UTF-8 form. */
+function fileNameFrom(header: string | null): string | null {
+  if (!header) return null;
+  const extended = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(header)?.[1];
+  if (extended) {
+    try {
+      return decodeURIComponent(extended.trim());
+    } catch {
+      // fall through to the plain form
+    }
+  }
+  return /filename\s*=\s*"?([^";]+)"?/i.exec(header)?.[1]?.trim() ?? null;
+}
+
+/** Hands a blob to the browser as a file download. */
+function saveBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  // Revoke on the next tick: some browsers start the download asynchronously.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
 // ── Exports ────────────────────────────────────────────────────────────────────
+
+/**
+ * POST a raw body (a Blob) to the API with progress — the JSON/FormData `api.post` cannot report
+ * upload progress. Attaches the access token and retries once after a token refresh.
+ */
+export function apiUploadWithProgress<T>(
+  path: string,
+  body: Blob,
+  contentType: string,
+  onProgress?: (percent: number) => void,
+  signal?: AbortSignal,
+): Promise<T> {
+  const send = (retried: boolean): Promise<T> =>
+    new Promise<T>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const onAbort = () => xhr.abort();
+      signal?.addEventListener("abort", onAbort);
+      const cleanup = () => signal?.removeEventListener("abort", onAbort);
+      xhr.open("POST", `${BASE_URL}${path}`);
+      xhr.withCredentials = true;
+      const token = getAccessToken();
+      if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      xhr.setRequestHeader("Content-Type", contentType);
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgress?.(Math.round((e.loaded / e.total) * 100));
+      };
+      xhr.onload = () => {
+        cleanup();
+        if (xhr.status === 401 && !retried) {
+          refreshTokens().then((ok) => (ok ? send(true).then(resolve, reject) : reject(new ApiError(401, "Unauthorized"))));
+          return;
+        }
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            resolve((xhr.responseText ? JSON.parse(xhr.responseText) : undefined) as T);
+          } catch {
+            resolve(undefined as T);
+          }
+          return;
+        }
+        let message = `API error ${xhr.status}`;
+        try {
+          message = JSON.parse(xhr.responseText)?.message ?? message;
+        } catch {
+          // keep the generic message
+        }
+        reject(new ApiError(xhr.status, xhr.status >= 500 ? "Something went wrong on our side. Please try again." : message));
+      };
+      xhr.onerror = () => {
+        cleanup();
+        reject(new ApiError(NETWORK_ERROR_STATUS, `Cannot reach the Arcade API at ${BASE_URL}.`));
+      };
+      xhr.onabort = () => {
+        cleanup();
+        reject(new DOMException("Upload cancelled", "AbortError"));
+      };
+      xhr.send(body);
+    });
+  return send(false);
+}
 
 export const api = {
   get: <T>(path: string, options?: ApiRequestOptions) => request<T>(path, { method: "GET", cache: "no-store", ...options }),
@@ -227,4 +364,12 @@ export const api = {
       ...(body !== undefined ? { body: body instanceof FormData ? body : JSON.stringify(body) } : {}),
       ...options,
     }),
+  /**
+   * Downloads a file the API serves (e.g. a PDF) and saves it in the browser, named as the server
+   * says, else `fallbackFileName`. Rejects with an {@link ApiError} like any other call.
+   */
+  download: async (path: string, fallbackFileName: string): Promise<void> => {
+    const { blob, fileName } = await requestBlob(path);
+    saveBlob(blob, fileName ?? fallbackFileName);
+  },
 };

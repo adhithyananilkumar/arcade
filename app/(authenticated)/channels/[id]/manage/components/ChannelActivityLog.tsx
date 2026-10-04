@@ -67,8 +67,8 @@ export function ChannelActivityLog({ channelId }: { channelId: string }) {
             className={cn(
               'cursor-pointer rounded-full px-4 py-1.5 text-[12px] font-semibold transition-colors',
               filter === f.id
-                ? 'bg-[#14142b] text-white'
-                : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50',
+                ? 'bg-ink text-on-ink'
+                : 'border border-slate-200 bg-surface text-slate-600 hover:bg-slate-50',
             )}
           >
             {f.label}
@@ -78,7 +78,7 @@ export function ChannelActivityLog({ channelId }: { channelId: string }) {
 
       <Panel padded={false} className="p-2">
         {error ? (
-          <p className="m-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] font-medium text-rose-700">{error}</p>
+          <p className="m-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] font-medium text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">{error}</p>
         ) : logs === null ? (
           <div className="flex justify-center py-16">
             <Loader2 className="animate-spin text-slate-400" size={22} />
@@ -86,17 +86,17 @@ export function ChannelActivityLog({ channelId }: { channelId: string }) {
         ) : logs.length === 0 ? (
           <p className="px-6 py-14 text-center text-[13px] font-medium text-slate-500">No activity recorded yet.</p>
         ) : (
-          <ul className="divide-y divide-slate-100 dark:divide-neutral-800">
+          <ul className="divide-y divide-slate-100">
             {logs.map((log) => {
               const Icon = iconFor(log.action);
               return (
                 <li key={log.id} className="flex gap-3.5 px-3 py-3">
-                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-neutral-900">
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
                     <Icon size={14} />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                      <p className="text-[13px] font-semibold text-[#14142b] dark:text-white">{humanize(log.action)}</p>
+                      <p className="text-[13px] font-semibold text-ink">{humanize(log.action)}</p>
                       <time
                         dateTime={log.createdAt}
                         title={log.createdAt ? new Date(log.createdAt).toLocaleString() : undefined}

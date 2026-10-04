@@ -105,7 +105,7 @@ export function useEventOverviewModel(slugOrId: string): ContentOverviewModel {
     title: event?.title ?? '',
     subtitle: event?.subtitle ?? null,
     description: event?.description ?? null,
-    coverImageUrl: event?.coverImageUrl ?? event?.thumbnailUrl ?? null,
+    category: event?.category ?? null,
     outcomes: [],
 
     channel: null,

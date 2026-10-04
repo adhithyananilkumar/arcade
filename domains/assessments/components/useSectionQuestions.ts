@@ -60,9 +60,9 @@ export const TYPE_LABELS: Record<BankQuestionType, string> = {
 export const DIFFICULTIES: Difficulty[] = ["EASY", "MEDIUM", "HARD"];
 
 export const DIFFICULTIES_BG: Record<Difficulty, string> = {
-  EASY: "bg-emerald-50 text-emerald-700",
-  MEDIUM: "bg-amber-50 text-amber-700",
-  HARD: "bg-rose-50 text-rose-700",
+  EASY: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+  MEDIUM: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+  HARD: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
 };
 
 const newKey = () =>

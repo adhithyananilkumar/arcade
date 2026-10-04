@@ -21,12 +21,14 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/infrastructure/state/queryClient';
 import { Toaster } from '@/shared/design-system/ui/sonner';
 import { AuthInitializer } from '@/apps/core/components/AuthInitializer';
+import { AppearanceController } from '@/apps/core/components/AppearanceController';
 
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthInitializer />
+      <AppearanceController />
       {children}
       <Toaster />
     </QueryClientProvider>

@@ -19,11 +19,11 @@ export function toEventCardView(event: PublishedEventCard): EventCardView {
     category: event.category,
     eventType: event.eventType,
     desc: event.subtitle ?? '',
-    host: event.host ?? 'Arcade',
+    host: event.host ?? '',
+    hostIconUrl: event.hostIconUrl ?? null,
     date: formatSchedule(event),
     status: deriveStatus(event),
     duration: formatDuration(event.durationMinutes),
-    coverImageUrl: event.coverImageUrl ?? event.thumbnailUrl,
   };
 }
 

@@ -46,15 +46,15 @@ export function ExamGradesDialog({ open, onOpenChange, examTitle, cards, onOpenP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[88vh] gap-0 overflow-y-auto rounded-2xl bg-white p-0 text-slate-700 sm:max-w-4xl">
+      <DialogContent className="max-h-[88vh] gap-0 overflow-y-auto rounded-2xl bg-surface p-0 text-slate-700 sm:max-w-4xl">
         <header className="border-b border-slate-200 px-6 pb-5 pt-6 sm:px-8">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">Grade report</p>
-          <DialogTitle className="mt-1.5 pr-8 text-[1.45rem] font-bold leading-tight tracking-tight text-[#14142b]">
+          <DialogTitle className="mt-1.5 pr-8 text-[1.45rem] font-bold leading-tight tracking-tight text-ink">
             {examTitle}
           </DialogTitle>
           {candidate && (
             <p className="mt-1.5 text-[13px] font-medium text-slate-500">
-              Candidate <span className="font-semibold text-[#14142b]">{candidate}</span>
+              Candidate <span className="font-semibold text-ink">{candidate}</span>
             </p>
           )}
         </header>
@@ -107,12 +107,12 @@ function PlanReport({
       <div className="px-6 pt-5 sm:px-8">
         <div className="flex flex-wrap items-center gap-2">
           {first.sitting?.planType && (
-            <span className="rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide text-slate-600">
+            <span className="rounded-md border border-slate-200 bg-surface px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide text-slate-600">
               {planKindLabel(first.sitting.planType, graded)}
             </span>
           )}
           {showPlanName && first.planName && (
-            <span className="text-[13px] font-semibold text-[#14142b]">{first.planName}</span>
+            <span className="text-[13px] font-semibold text-ink">{first.planName}</span>
           )}
         </div>
         <dl className="mt-4 grid grid-cols-2 overflow-hidden rounded-xl border border-slate-200 sm:grid-cols-4">
@@ -120,7 +120,7 @@ function PlanReport({
           <Summary
             label="Result"
             value={!graded ? "Not graded" : passed ? "Passed" : "Not passed"}
-            tone={!graded ? "text-sky-700" : passed ? "text-emerald-700" : "text-slate-600"}
+            tone={!graded ? "text-sky-700 dark:text-sky-300" : passed ? "text-emerald-700 dark:text-emerald-300" : "text-slate-600"}
           />
           <Summary label="Pass mark" value={graded ? `${fmt(first.passPercentage)}%` : "—"} />
           <Summary label="Attempts" value={String(attempts.length)} />
@@ -155,11 +155,11 @@ function PlanReport({
                         open ? "bg-slate-50/60" : ""
                       }`}
                     >
-                      <td className="px-4 py-3 font-semibold text-[#14142b]">
+                      <td className="px-4 py-3 font-semibold text-ink">
                         <span className="inline-flex items-center gap-2">
                           #{s?.attemptNumber ?? "—"}
                           {best?.id === card.id && attempts.length > 1 && (
-                            <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase text-emerald-700">
+                            <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
                               Best
                             </span>
                           )}
@@ -169,13 +169,13 @@ function PlanReport({
                       <td className="px-4 py-3 text-right tabular-nums text-slate-600">
                         {fmt(card.marksObtained)} / {fmt(card.maximumMarks)}
                       </td>
-                      <td className="px-4 py-3 text-right font-bold tabular-nums text-[#14142b]">
+                      <td className="px-4 py-3 text-right font-bold tabular-nums text-ink">
                         {fmt(card.percentage)}%
                       </td>
                       <td className="px-4 py-3 text-center tabular-nums text-slate-500">
                         {s ? (
                           <>
-                            <span className="text-emerald-600">{s.correctAnswers}</span> /{" "}
+                            <span className="text-emerald-600 dark:text-emerald-400">{s.correctAnswers}</span> /{" "}
                             <span className="text-rose-500">{s.wrongAnswers}</span> / {s.unanswered}
                           </>
                         ) : (
@@ -220,7 +220,7 @@ function AttemptDetail({
   return (
     <div className="space-y-4">
       {card.revoked && (
-        <p className="flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[12px] font-semibold text-rose-700">
+        <p className="flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[12px] font-semibold text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
           <ShieldAlert size={14} /> Revoked{card.revokedReason ? `: ${card.revokedReason}` : ""}
         </p>
       )}
@@ -242,17 +242,17 @@ function AttemptDetail({
               const pct = sec.maximumMarks > 0 ? Math.round((sec.marksObtained / sec.maximumMarks) * 100) : 0;
               return (
                 <tr key={sec.sectionId ?? i} className="border-t border-slate-200/70">
-                  <td className="py-2 font-semibold text-[#14142b]">{sec.sectionTitle}</td>
+                  <td className="py-2 font-semibold text-ink">{sec.sectionTitle}</td>
                   <td className="py-2 text-right tabular-nums text-slate-600">{sec.questions}</td>
                   <td className="py-2 text-right tabular-nums text-slate-600">{sec.attempted}</td>
                   <td className="py-2 text-right tabular-nums text-slate-600">{sec.correct}</td>
-                  <td className="py-2 text-right font-semibold tabular-nums text-[#14142b]">
+                  <td className="py-2 text-right font-semibold tabular-nums text-ink">
                     {fmt(sec.marksObtained)} / {fmt(sec.maximumMarks)}
                   </td>
                   <td className="py-2 pl-4">
                     <div className="flex items-center gap-2">
                       <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200">
-                        <div className="h-full rounded-full bg-[#14142b]" style={{ width: `${pct}%` }} />
+                        <div className="h-full rounded-full bg-ink" style={{ width: `${pct}%` }} />
                       </div>
                       <span className="w-9 text-right tabular-nums text-slate-500">{pct}%</span>
                     </div>
@@ -269,10 +269,10 @@ function AttemptDetail({
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/70 pt-3 text-[12px] text-slate-500">
         <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <span>
-            Verification <b className="font-mono tracking-wider text-[#14142b]">{card.verificationCode}</b>
+            Grade card no. <b className="font-mono tracking-wider text-ink">{card.credentialCode}</b>
           </span>
           {card.certificateIssued && (
-            <span className="inline-flex items-center gap-1 font-semibold text-violet-700">
+            <span className="inline-flex items-center gap-1 font-semibold text-violet-700 dark:text-violet-300">
               <BadgeCheck size={13} /> Certificate issued
             </span>
           )}
@@ -281,7 +281,7 @@ function AttemptDetail({
           <button
             type="button"
             onClick={() => onOpenPrintable(card.id)}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-surface px-3 py-1.5 font-semibold text-slate-700 transition-colors hover:bg-slate-50"
           >
             <Printer size={13} /> Printable card
           </button>
@@ -294,7 +294,7 @@ function AttemptDetail({
 function Summary({
   label,
   value,
-  tone = "text-[#14142b]",
+  tone = "text-ink",
   strong = false,
 }: {
   label: string;
@@ -313,16 +313,16 @@ function Summary({
 }
 
 function Outcome({ card, graded }: { card: GradeCardResponse; graded: boolean }) {
-  if (card.revoked) return <span className="text-[12px] font-semibold text-rose-600">Revoked</span>;
+  if (card.revoked) return <span className="text-[12px] font-semibold text-rose-600 dark:text-rose-400">Revoked</span>;
   if (!graded) {
     return (
-      <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-sky-700">
+      <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-sky-700 dark:text-sky-300">
         <FileText size={13} /> Practice
       </span>
     );
   }
   return card.passed ? (
-    <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-emerald-700">
+    <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-emerald-700 dark:text-emerald-300">
       {card.certificateIssued ? <Award size={13} /> : <CheckCircle2 size={13} />} Passed
     </span>
   ) : (

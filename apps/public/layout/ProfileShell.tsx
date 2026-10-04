@@ -55,7 +55,7 @@ export function ProfileShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-white dark:bg-background">
+    <div className="theme-page-bg flex min-h-screen w-full flex-col bg-surface dark:bg-background">
       <HeroNav />
       <main className="flex-1">{children}</main>
       <Footer />

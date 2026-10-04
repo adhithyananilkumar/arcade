@@ -185,7 +185,7 @@ export default function ContentManagePage() {
 
   return (
     <div className="flex w-full flex-col h-full space-y-5 pb-6">
-      <div className="flex-none sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4 rounded-full border border-slate-200/80 bg-white/80 p-1 pr-4 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
+      <div className="flex-none sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4 rounded-full border border-slate-200/80 bg-surface/80 p-1 pr-4 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
         <div className="flex flex-wrap gap-1">
           <button
             type="button"
@@ -193,8 +193,8 @@ export default function ContentManagePage() {
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all",
               activeTab === 'PUBLISHED' 
-                ? "bg-[#14142b] text-white shadow-sm" 
-                : "text-slate-500 hover:bg-slate-50 hover:text-[#14142b]"
+                ? "bg-ink text-on-ink shadow-sm" 
+                : "text-slate-500 hover:bg-slate-50 hover:text-ink"
             )}
           >
             <Library size={14} />
@@ -207,7 +207,7 @@ export default function ContentManagePage() {
               "inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all",
               activeTab === 'SUSPENDED' 
                 ? "bg-rose-600 text-white shadow-sm" 
-                : "text-slate-500 hover:bg-rose-50 hover:text-rose-600"
+                : "text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
             )}
           >
             <Pause size={14} />
@@ -221,7 +221,7 @@ export default function ContentManagePage() {
                 "inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all",
                 activeTab === 'CATEGORIES'
                   ? "bg-indigo-600 text-white shadow-sm"
-                  : "text-slate-500 hover:bg-indigo-50 hover:text-indigo-600"
+                  : "text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400"
               )}
             >
               <Tag size={14} />
@@ -246,7 +246,7 @@ export default function ContentManagePage() {
 
       {activeTab === 'CATEGORIES' && canManageCategories ? (
         <div className="flex-1 min-h-0 overflow-y-auto pr-2 relative space-y-5">
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-5">
+          <div className="rounded-2xl border border-slate-200 bg-surface shadow-sm p-5">
             <h3 className="text-sm font-semibold text-slate-900 mb-3">
               {editingCategoryId ? 'Edit category' : 'New category'}
             </h3>
@@ -295,7 +295,7 @@ export default function ContentManagePage() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
+          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-surface shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[800px] text-left border-collapse">
                 <thead>
@@ -336,7 +336,7 @@ export default function ContentManagePage() {
                         <td className="py-4 px-4 whitespace-nowrap">
                           <span className={cn(
                             "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold border",
-                            category.active ? "bg-emerald-50 text-emerald-700 border-emerald-200/80" : "bg-slate-100 text-slate-600 border-slate-200/80"
+                            category.active ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25" : "bg-slate-100 text-slate-600 border-slate-200/80"
                           )}>
                             <span className={cn("size-1.5 rounded-full", category.active ? "bg-emerald-500" : "bg-slate-400")} />
                             {category.active ? 'Active' : 'Inactive'}
@@ -347,7 +347,7 @@ export default function ContentManagePage() {
                             <button
                               type="button"
                               onClick={() => startEditCategory(category)}
-                              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
+                              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-surface px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
                             >
                               <Pencil size={12} />
                               Edit
@@ -358,8 +358,8 @@ export default function ContentManagePage() {
                               className={cn(
                                 "rounded-xl px-3 py-1.5 text-xs font-semibold transition-all border shadow-2xs",
                                 category.active 
-                                  ? "border-rose-200 bg-white text-rose-600 hover:bg-rose-50" 
-                                  : "border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50"
+                                  ? "border-rose-200 bg-surface text-rose-600 hover:bg-rose-50 dark:border-rose-500/25 dark:text-rose-400 dark:hover:bg-rose-500/10" 
+                                  : "border-emerald-200 bg-surface text-emerald-700 hover:bg-emerald-50 dark:border-emerald-500/25 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
                               )}
                             >
                               {category.active ? 'Deactivate' : 'Activate'}
@@ -376,9 +376,9 @@ export default function ContentManagePage() {
         </div>
       ) : (
       <div className="flex-1 min-h-0 overflow-y-auto pr-2 relative">
-        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
+        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-surface shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
           {error && (
-            <div className="p-4 text-sm font-medium text-red-600 bg-red-50 border-b border-red-100">
+            <div className="p-4 text-sm font-medium text-red-600 bg-red-50 border-b border-red-100 dark:text-red-400 dark:bg-red-500/10 dark:border-red-500/25">
               {error}
             </div>
           )}
@@ -420,8 +420,8 @@ export default function ContentManagePage() {
                       <td className="py-4 px-6 text-right whitespace-nowrap">
                         <span className={cn(
                           "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold border",
-                          course.status === 'PUBLISHED' ? "bg-emerald-50 text-emerald-700 border-emerald-200/80" :
-                          course.status === 'SUSPENDED' ? "bg-rose-50 text-rose-700 border-rose-200/80" :
+                          course.status === 'PUBLISHED' ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25" :
+                          course.status === 'SUSPENDED' ? "bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/25" :
                           "bg-slate-100 text-slate-700 border-slate-200/80"
                         )}>
                           <span className={cn(

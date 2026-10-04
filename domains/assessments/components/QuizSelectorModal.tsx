@@ -43,13 +43,13 @@ export function QuizSelectorModal({ onSelect, onClose, channelId }: QuizSelector
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative flex h-[500px] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
+      <div className="relative flex h-[500px] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-surface shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50">
-              <FileQuestion size={20} className="text-indigo-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/10">
+              <FileQuestion size={20} className="text-indigo-600 dark:text-indigo-400" />
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-900">Select a Quiz</h2>
@@ -97,9 +97,9 @@ export function QuizSelectorModal({ onSelect, onClose, channelId }: QuizSelector
                 <button
                   key={quiz.id}
                   onClick={() => onSelect(quiz.id)}
-                  className="group flex flex-col items-start gap-1 rounded-xl border border-slate-200 bg-white p-4 text-left transition-all hover:border-indigo-300 hover:shadow-md hover:shadow-indigo-500/5"
+                  className="group flex flex-col items-start gap-1 rounded-xl border border-slate-200 bg-surface p-4 text-left transition-all hover:border-indigo-300 hover:shadow-md hover:shadow-indigo-500/5 dark:hover:border-indigo-500/40"
                 >
-                  <h3 className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600">
+                  <h3 className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
                     {quiz.title}
                   </h3>
                   <div className="flex items-center gap-2 mt-1">

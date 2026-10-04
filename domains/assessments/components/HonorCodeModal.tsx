@@ -53,7 +53,7 @@ export function HonorCodeModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 w-full max-w-[500px] rounded-3xl bg-white p-7 sm:p-8 shadow-2xl border border-slate-100"
+            className="relative z-10 w-full max-w-[500px] rounded-3xl bg-surface p-7 sm:p-8 shadow-2xl border border-slate-100"
           >
             {/* Top Row: Title & Close Button */}
             <div className="flex items-start justify-between gap-4">
@@ -86,7 +86,7 @@ export function HonorCodeModal({
                   href="/terms"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-medium text-blue-600 hover:underline inline-flex items-center"
+                  className="font-medium text-blue-600 hover:underline inline-flex items-center dark:text-blue-400"
                 >
                   Learn more
                 </Link>

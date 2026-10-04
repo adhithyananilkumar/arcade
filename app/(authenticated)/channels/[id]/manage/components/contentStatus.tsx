@@ -17,8 +17,8 @@ export const CONTENT_STATUSES = [
 export type ContentStatusId = (typeof CONTENT_STATUSES)[number]['id'];
 
 const STATUS_STYLE: Record<string, string> = {
-  PUBLISHED: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  SUBMITTED: 'border-amber-200 bg-amber-50 text-amber-800',
+  PUBLISHED: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300',
+  SUBMITTED: 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200',
   DRAFT: 'border-slate-200 bg-slate-50 text-slate-600',
   ARCHIVED: 'border-slate-200 bg-slate-100 text-slate-500',
 };

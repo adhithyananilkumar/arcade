@@ -105,7 +105,7 @@ export default function CreatorHero() {
           animate="visible"
           custom={0.1}
           style={{ fontFamily: "'Caveat', cursive" }}
-          className="text-3xl sm:text-4xl lg:text-5xl text-[#7A5AF8] font-bold select-none text-center"
+          className="text-3xl sm:text-4xl lg:text-5xl text-[#7A5AF8] font-bold select-none text-center dark:text-[#b1a6ff]"
         >
           Create. Teach. Inspire...
         </motion.div>
@@ -151,7 +151,7 @@ export default function CreatorHero() {
         >
           <Link
             href="/register?mode=signup"
-            className="w-full sm:w-auto text-center bg-zinc-950 hover:bg-zinc-800 text-white font-bold px-8 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer"
+            className="w-full sm:w-auto text-center bg-zinc-950 hover:bg-zinc-800 text-on-ink font-bold px-8 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer"
           >
             <span>Become a Creator</span>
             <ArrowRight className="w-4 h-4" />
@@ -159,7 +159,7 @@ export default function CreatorHero() {
 
           <a
             href="#faq"
-            className="w-full sm:w-auto text-center bg-white hover:bg-zinc-50 text-zinc-700 font-bold px-8 py-3.5 rounded-xl border border-zinc-200 shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5 text-xs uppercase tracking-wider cursor-pointer"
+            className="w-full sm:w-auto text-center bg-surface hover:bg-zinc-50 text-zinc-700 font-bold px-8 py-3.5 rounded-xl border border-zinc-200 shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5 text-xs uppercase tracking-wider cursor-pointer"
           >
             <span>Learn More</span>
           </a>

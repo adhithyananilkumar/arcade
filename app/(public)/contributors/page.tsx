@@ -58,7 +58,7 @@ export default function ContributorsPage() {
   }, [selectedContributor]);
 
   return (
-    <main className="min-h-screen arcade-wash selection:bg-blue-100 selection:text-[#205ca8] flex flex-col relative">
+    <main className="min-h-screen arcade-wash selection:bg-blue-100 selection:text-[#205ca8] flex flex-col relative dark:selection:bg-blue-500/15 dark:selection:text-[#7cbaff]">
       
       {/* Floating Decorative Icons (Educational Theme) - Fixed to viewport */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -198,7 +198,7 @@ export default function ContributorsPage() {
               className="group flex flex-col items-center text-center max-w-[240px] cursor-pointer"
               onClick={() => setSelectedContributor(contributor)}
             >
-              <div className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-full overflow-hidden bg-white shadow-sm border-4 border-white transition-transform duration-300 group-hover:scale-105 group-hover:shadow-md">
+              <div className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-full overflow-hidden bg-surface shadow-sm border-4 border-surface transition-transform duration-300 group-hover:scale-105 group-hover:shadow-md">
                 <Image
                   src={contributor.avatar}
                   alt={contributor.name}
@@ -208,7 +208,7 @@ export default function ContributorsPage() {
                   unoptimized
                 />
               </div>
-              <h3 className="text-base sm:text-lg font-bold text-slate-900 font-sans mt-4 group-hover:text-indigo-600 transition-colors">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 font-sans mt-4 group-hover:text-indigo-600 transition-colors dark:group-hover:text-indigo-400">
                 {contributor.name}
               </h3>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
@@ -245,7 +245,7 @@ export default function ContributorsPage() {
       </section>
 
       {/* --- ARCADE TIMELINE --- */}
-      <section className="relative w-full z-10 bg-white border-t border-slate-100">
+      <section className="relative w-full z-10 bg-surface border-t border-slate-100">
         <FlowingTimeline />
       </section>
 
@@ -264,23 +264,23 @@ export default function ContributorsPage() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-[2rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+              className="bg-surface/90 backdrop-blur-xl border border-white/50 rounded-[2rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
             >
               {/* Modal Header & Pattern Background */}
               <div className="relative pt-8 px-6 sm:px-10 pb-6 rounded-t-[2rem] overflow-hidden">
                 {/* Subtle dot pattern/gradient in header */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-teal-50/30 -z-10" />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-teal-50/30 -z-10 dark:from-blue-500/10 dark:to-teal-500/10" />
                 <div className="absolute inset-0 opacity-[0.03] -z-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, black 1px, transparent 0)', backgroundSize: '16px 16px' }} />
                 
                 <button 
                   onClick={() => setSelectedContributor(null)}
-                  className="absolute top-6 right-6 w-10 h-10 bg-white/80 hover:bg-white flex items-center justify-center rounded-full shadow-sm text-slate-500 hover:text-slate-800 transition-colors z-10"
+                  className="absolute top-6 right-6 w-10 h-10 bg-surface/80 hover:bg-surface flex items-center justify-center rounded-full shadow-sm text-slate-500 hover:text-slate-800 transition-colors z-10"
                 >
                   <X size={20} strokeWidth={2} />
                 </button>
 
                 <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-center sm:items-start relative z-10">
-                  <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-4 border-white shrink-0 relative bg-slate-100 group-hover:scale-105 transition-transform">
+                  <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-4 border-surface shrink-0 relative bg-slate-100 group-hover:scale-105 transition-transform">
                     <Image
                       src={selectedContributor.avatar}
                       alt={selectedContributor.name}
@@ -291,11 +291,11 @@ export default function ContributorsPage() {
                   </div>
                   <div className="flex flex-col items-center sm:items-start pt-2 sm:pt-4 text-center sm:text-left">
                     <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">{selectedContributor.name}</h2>
-                    <p className="text-blue-600 font-bold mt-1 text-lg">{selectedContributor.role}</p>
+                    <p className="text-blue-600 font-bold mt-1 text-lg dark:text-blue-400">{selectedContributor.role}</p>
                     
                     <div className="flex items-center gap-3 mt-4">
                       {selectedContributor.linkedin && (
-                        <a href={selectedContributor.linkedin} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <a href={selectedContributor.linkedin} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors dark:hover:bg-blue-500/10 dark:hover:text-blue-400">
                           <LinkedinIcon />
                         </a>
                       )}

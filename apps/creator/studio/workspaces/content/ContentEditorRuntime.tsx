@@ -237,7 +237,7 @@ function IconBtn({
         e.stopPropagation();
         onClick();
       }}
-      className={`rounded p-1 text-gray-400 transition-colors ${danger ? "hover:bg-red-50 hover:text-red-600" : "hover:bg-gray-200 hover:text-gray-700"}`}
+      className={`rounded p-1 text-gray-400 transition-colors ${danger ? "hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400" : "hover:bg-gray-200 hover:text-gray-700"}`}
     >
       {children}
     </button>
@@ -343,6 +343,21 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   const badgeContentType: BadgeContentType = adapter.terminology.root === "Course" ? "COURSE" : "EVENT";
   const [badgeAssignment, setBadgeAssignment] = useState<BadgeAssignment | null>(null);
   const [badgeDialogOpen, setBadgeDialogOpen] = useState(false);
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+  const addMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (addMenuRef.current && !addMenuRef.current.contains(event.target as Node)) {
+        setIsAddMenuOpen(false);
+      }
+    }
+    if (isAddMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isAddMenuOpen]);
+
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   // Which live-collaboration room's presence to show: the open lesson's, or — when no lesson is
   // open (viewing the course/event's own settings) — the metadata room's, so "Active now" is
@@ -806,7 +821,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
           `certification learners register for. Its settings follow the platform's exam standards. ` +
           `Adding your first assessment creates the exam.`,
         confirmLabel: "Create and add",
-        icon: <GraduationCap size={20} className="text-[#14142b]" />,
+        icon: <GraduationCap size={20} className="text-ink" />,
         onConfirm: async () => {
           const exam = await adapter.createAssessmentExam?.(contentId);
           if (exam) setExams([{ id: exam.id, title: exam.title, published: false }]);
@@ -1029,7 +1044,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
           setEditing(null);
         }
       }}
-      className={`min-w-0 flex-1 rounded border border-indigo-300 bg-transparent px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-indigo-300 ${className}`}
+      className={`min-w-0 flex-1 rounded border border-indigo-300 bg-transparent px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-indigo-300 dark:border-indigo-500/40 dark:focus:ring-indigo-500/40 ${className}`}
     />
   );
 
@@ -1086,10 +1101,10 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                   <span className="text-gray-400">/</span>
                 </>
               )}
-              <span className="block max-w-[20vw] truncate text-[#14142b]">{activeLessonTitle}</span>
+              <span className="block max-w-[20vw] truncate text-ink">{activeLessonTitle}</span>
             </div>
           ) : (
-            <span className="block max-w-[40vw] truncate text-[#14142b]">{title || adapter.terminology.root}</span>
+            <span className="block max-w-[40vw] truncate text-ink">{title || adapter.terminology.root}</span>
           )
         }
         collaborators={effectiveCollabState.collaborators}
@@ -1164,7 +1179,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
               onRestore={handleRestore}
               embedded
               renderEditor={(previewDoc, selectedId) => (
-                <div key={selectedId} className="bg-white">
+                <div key={selectedId} className="bg-surface">
                   <TiptapContentView body={JSON.stringify(previewDoc)} />
                 </div>
               )}
@@ -1180,8 +1195,8 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
           <>
             {modules.length === 0 && !badgeAssignment?.tier && (
               <div className={TREE_EMPTY_STATE_CLASS}>
-                <Layers size={24} className="text-[#14142b]/40" />
-                <p className="text-xs font-medium text-[#14142b]/60">{copy.noContainers}</p>
+                <Layers size={24} className="text-ink/40" />
+                <p className="text-xs font-medium text-ink/60">{copy.noContainers}</p>
               </div>
             )}
 
@@ -1194,17 +1209,17 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                     <button
                       type="button"
                       onClick={() => setModules((prev) => prev.map((m) => (m.id === mod.id ? { ...m, expanded: !m.expanded } : m)))}
-                      className="flex-shrink-0 text-[#14142b]/50 hover:text-[#14142b]"
+                      className="flex-shrink-0 text-ink/50 hover:text-ink"
                     >
                       {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                     </button>
 
                     {isEditing("module", mod.id) ? (
-                      renameInput("text-xs font-bold text-[#14142b]")
+                      renameInput("text-xs font-bold text-ink")
                     ) : (
                       <span
                         onDoubleClick={() => startEdit("module", mod.id, mod.title)}
-                        className="flex-1 truncate text-xs font-bold text-[#14142b]"
+                        className="flex-1 truncate text-xs font-bold text-ink"
                         title={mod.title}
                       >
                         {mod.title}
@@ -1214,7 +1229,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                     {status !== "SUBMITTED" && (
                       <div className="flex flex-shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                         <DropdownMenu>
-                          <DropdownMenuTrigger title={`Add to ${adapter.terminology.container.toLowerCase()}`} className="rounded-full p-1 text-[#14142b]/50 hover:bg-[#14142b]/10 hover:text-[#14142b]">
+                          <DropdownMenuTrigger title={`Add to ${adapter.terminology.container.toLowerCase()}`} className="rounded-full p-1 text-ink/50 hover:bg-ink/10 hover:text-ink">
                             <Plus size={12} />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="start" sideOffset={4}>
@@ -1249,7 +1264,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                   </div>
 
                   {isExpanded && (
-                    <div className="ml-5 flex flex-col gap-1 border-l border-[#14142b]/10 pl-3 pt-1">
+                    <div className="ml-5 flex flex-col gap-1 border-l border-ink/10 pl-3 pt-1">
                       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(event) => handleDragEnd(mod.id, event)}>
                         <SortableContext items={mod.lessons.map((l) => l.id)} strategy={verticalListSortingStrategy}>
                           {mod.lessons
@@ -1261,7 +1276,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                                 <SortableRow
                                   key={lesson.id}
                                   id={lesson.id}
-                                  className={`group flex items-center gap-2 rounded-full px-3 transition-all ${isActive ? "bg-[#14142b] shadow-md" : "hover:bg-white/40"}`}
+                                  className={`group flex items-center gap-2 rounded-full px-3 transition-all ${isActive ? "bg-ink shadow-md" : "hover:bg-surface/40"}`}
                                 >
                                   {(dragHandleProps) => (
                                     <>
@@ -1318,8 +1333,8 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                             key={assessment.id}
                             className={`group flex items-center gap-2 rounded-full px-3 transition-all ${
                               activeAssessment?.id === assessment.id
-                                ? "bg-[#14142b] shadow-md"
-                                : "hover:bg-white/40"
+                                ? "bg-ink shadow-md"
+                                : "hover:bg-surface/40"
                             }`}
                           >
                             <div className="w-[13px] flex-shrink-0" aria-hidden />
@@ -1338,7 +1353,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                               <GraduationCap size={11} className="flex-shrink-0" />
                               <span className="truncate">{assessment.title}</span>
                               {assessment.planType === "COMPLETION" && (
-                                <span className="flex-shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-700">
+                                <span className="flex-shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
                                   Completion
                                 </span>
                               )}
@@ -1362,7 +1377,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                           <button
                             type="button"
                             onClick={() => addLesson(mod.id)}
-                            className="flex items-center gap-1 py-1 text-[11px] font-semibold text-slate-400 hover:text-[#14142b]"
+                            className="flex items-center gap-1 py-1 text-[11px] font-semibold text-slate-400 hover:text-ink"
                           >
                             <Plus size={11} />
                             Add {adapter.terminology.leafDocument}
@@ -1371,7 +1386,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                             <button
                               type="button"
                               onClick={() => addAssessment(mod.id)}
-                              className="flex items-center gap-1 py-1 text-[11px] font-semibold text-slate-400 hover:text-[#14142b]"
+                              className="flex items-center gap-1 py-1 text-[11px] font-semibold text-slate-400 hover:text-ink"
                             >
                               <Plus size={11} />
                               Add assessment
@@ -1392,7 +1407,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                 {exams.map((exam) => (
                   <div
                     key={exam.id}
-                    className="group flex items-center gap-2 rounded-2xl border border-dashed border-[#14142b]/15 bg-[#14142b]/[0.03] px-3 py-2 shadow-sm transition-all hover:border-[#14142b]/25 hover:bg-[#14142b]/[0.06]"
+                    className="group flex items-center gap-2 rounded-2xl border border-dashed border-ink/15 bg-ink/[0.03] px-3 py-2 shadow-sm transition-all hover:border-ink/25 hover:bg-ink/[0.06]"
                   >
                     <button
                       type="button"
@@ -1400,11 +1415,11 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                       title="Open this exam in Studio — questions, pools, plans and settings"
                       className="flex min-w-0 flex-1 items-center gap-2 text-left"
                     >
-                      <GraduationCap size={14} className="flex-shrink-0 text-[#14142b]/50" />
-                      <span className="flex-1 truncate text-xs font-bold text-[#14142b]/70" title={exam.title}>
+                      <GraduationCap size={14} className="flex-shrink-0 text-ink/50" />
+                      <span className="flex-1 truncate text-xs font-bold text-ink/70" title={exam.title}>
                         {exam.title}
                       </span>
-                      <span className="flex-shrink-0 rounded-full bg-[#14142b]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#14142b]/50">
+                      <span className="flex-shrink-0 rounded-full bg-ink/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink/50">
                         {exam.published ? "Published" : "Draft"}
                       </span>
                     </button>
@@ -1429,7 +1444,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                   type="button"
                   onClick={() => setBadgeDialogOpen(true)}
                   title="Change the badge level"
-                  className="group flex w-full items-center gap-2.5 rounded-2xl border border-white/40 bg-white/60 px-3 py-2 text-left shadow-sm backdrop-blur-md transition-all hover:bg-white/80"
+                  className="group flex w-full items-center gap-2.5 rounded-2xl border border-white/40 bg-surface/60 px-3 py-2 text-left shadow-sm backdrop-blur-md transition-all hover:bg-surface/80"
                 >
                   <CredentialBadge
                     family={badgeContentType}
@@ -1439,7 +1454,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                     className="w-8 shrink-0"
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-xs font-bold text-[#14142b]">
+                    <span className="block truncate text-xs font-bold text-ink">
                       Badge · {badgeAssignment.tier.label}
                     </span>
                     <span className="block truncate text-[10px] font-medium text-slate-500">
@@ -1460,45 +1475,46 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                   container is what an author does constantly; adding a badge or an exam is
                   occasional, so those sit one click away instead of competing for the same
                   visual weight. */}
-              <div className="flex items-stretch gap-1.5">
+              <div className="flex flex-col gap-2">
                 <button
                   type="button"
                   onClick={addContainer}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-surface/60 bg-surface/80 px-4 py-2.5 text-xs font-bold text-ink shadow-xs backdrop-blur-md transition-all hover:bg-surface/95 hover:shadow cursor-pointer"
                 >
-                  <Plus size={14} />
+                  <Plus size={15} className="text-ink" />
                   Add {adapter.terminology.container}
                 </button>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    title="Add something else to this content"
-                    className="flex w-10 shrink-0 items-center justify-center rounded-2xl border border-white/40 bg-white/70 text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow"
-                  >
-                    <ChevronDown size={14} />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="z-50 w-56 rounded-xl border border-slate-100 bg-white p-1.5 shadow-lg">
-                    <DropdownMenuItem onClick={() => setBadgeDialogOpen(true)} className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50">
-                      <Award size={14} className="text-amber-500" />
-                      {badgeAssignment?.tier ? "Change badge level" : "Add badge"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={addExam} className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50">
-                      {addingExam ? <Loader2 size={14} className="animate-spin text-indigo-500" /> : <GraduationCap size={14} className="text-indigo-500" />}
-                      {exams.length > 0 ? "Open exam" : "Set up exam"}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                <button
+                  type="button"
+                  onClick={() => setBadgeDialogOpen(true)}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-surface/60 bg-surface/80 px-4 py-2.5 text-xs font-bold text-ink shadow-xs backdrop-blur-md transition-all hover:bg-surface/95 hover:shadow cursor-pointer"
+                >
+                  <Award size={15} className="text-amber-500 stroke-[2.2]" />
+                  Add badge
+                </button>
 
-              {sidebarExtras}
+                <button
+                  type="button"
+                  onClick={addExam}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-surface/60 bg-surface/80 px-4 py-2.5 text-xs font-bold text-ink shadow-xs backdrop-blur-md transition-all hover:bg-surface/95 hover:shadow cursor-pointer"
+                >
+                  {addingExam ? (
+                    <Loader2 size={15} className="animate-spin text-indigo-500" />
+                  ) : (
+                    <GraduationCap size={15} className="text-indigo-500 stroke-[2.2]" />
+                  )}
+                  Set up exam
+                </button>
+              </div>
             </div>
           ) : undefined
         }
       >
         {status === "SUBMITTED" && (
           <div className="pointer-events-none fixed inset-x-0 top-20 z-[70] flex justify-center">
-            <div className="pointer-events-auto flex max-w-[calc(100vw-2rem)] items-center rounded-full border border-slate-200 bg-white px-5 py-2 shadow-md">
-              <span className="flex items-center gap-2 text-sm font-medium text-amber-600">
+            <div className="pointer-events-auto flex max-w-[calc(100vw-2rem)] items-center rounded-full border border-slate-200 bg-surface px-5 py-2 shadow-md">
+              <span className="flex items-center gap-2 text-sm font-medium text-amber-600 dark:text-amber-400">
                 <span>🔒</span> This content has been submitted for review and is currently locked for editing until a decision is made.
               </span>
             </div>

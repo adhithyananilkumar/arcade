@@ -84,6 +84,10 @@ export interface LearnerEnrollmentSummary {
   grantedAt: string | null;
   startedAt: string | null;
   completedAt: string | null;
+  /** The publishing channel — what a card credits. Null when the resource no longer resolves. */
+  channelName: string | null;
+  /** Its picture; for a personal channel, the owner's profile picture. */
+  channelIconUrl: string | null;
 }
 
 export interface LearnerEnrollmentDetail {

@@ -40,8 +40,8 @@ function EditorialBackdrop() {
     <div
       className="fixed inset-0 pointer-events-none -z-10"
       style={{
-        backgroundColor: '#FAFBFD',
-        backgroundImage: `
+        backgroundColor: 'var(--theme-surface, #FAFBFD)',
+        backgroundImage: `var(--theme-wash, 
           radial-gradient(ellipse 70% 40% at 50% 0%, rgba(224, 236, 255, 0.25) 0%, transparent 70%),
           radial-gradient(ellipse 60% 40% at 10% 25%, rgba(233, 225, 254, 0.20) 0%, transparent 65%),
           radial-gradient(ellipse 60% 40% at 90% 75%, rgba(253, 232, 240, 0.18) 0%, transparent 65%),
@@ -52,7 +52,7 @@ function EditorialBackdrop() {
             #F8F6FD 70%,
             #FAF9FB 100%
           )
-        `,
+        )`,
       }}
     />
   );
@@ -69,11 +69,11 @@ function FormField({ label, required, error, children }: FormFieldProps) {
   return (
     <div className="space-y-2">
       <label className="block text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold">
-        {label} {required && <span className="text-blue-600">*</span>}
+        {label} {required && <span className="text-blue-600 dark:text-blue-400">*</span>}
       </label>
       {children}
       {error && (
-        <p className="text-xs text-red-600 font-medium flex items-center gap-1.5 mt-1.5 animate-in fade-in duration-150">
+        <p className="text-xs text-red-600 font-medium flex items-center gap-1.5 mt-1.5 animate-in fade-in duration-150 dark:text-red-400">
           <AlertCircle size={13} className="shrink-0" />
           <span>{error}</span>
         </p>
@@ -86,7 +86,7 @@ function FormField({ label, required, error, children }: FormFieldProps) {
 function SectionHeading({ title, hint }: { title: string; hint?: string }) {
   return (
     <div className="space-y-2.5 pb-5 border-b border-slate-200/70">
-      <h2 className="text-2xl sm:text-3xl font-normal font-serif italic text-[#0B132B] tracking-tight leading-snug">
+      <h2 className="text-2xl sm:text-3xl font-normal font-serif italic text-ink tracking-tight leading-snug">
         {title}
       </h2>
       <span className="block h-0.5 w-10 bg-[#205ca8]/60 rounded-full" />
@@ -102,10 +102,10 @@ const inputClass =
 const selectClass = `${inputClass} cursor-pointer`;
 
 const textareaClass =
-  'w-full px-4 py-3 bg-white/50 border border-slate-300/80 rounded-xl text-slate-900 text-base placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#205ca8]/15 focus:border-[#205ca8] transition-all resize-none';
+  'w-full px-4 py-3 bg-surface/50 border border-slate-300/80 rounded-xl text-slate-900 text-base placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#205ca8]/15 focus:border-[#205ca8] transition-all resize-none';
 
 const uploadClass =
-  'flex items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-white/50 px-4 py-3.5 cursor-pointer hover:border-[#205ca8] hover:bg-[#205ca8]/[0.04] transition-colors';
+  'flex items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-surface/50 px-4 py-3.5 cursor-pointer hover:border-[#205ca8] hover:bg-[#205ca8]/[0.04] transition-colors';
 
 const emptyApplicant = {
   fullName: '',
@@ -171,7 +171,27 @@ function ChannelInviteCreateContent() {
   const [organization, setOrganization] = useState(emptyOrganization);
   const [organizationProofDocument, setOrganizationProofDocument] = useState<File | null>(null);
 
-  const personalName = (user?.fullName || user?.email || '').trim();
+  const personalName = (
+    user?.fullName ||
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
+    user?.email ||
+    ''
+  ).trim();
+
+  useEffect(() => {
+    if (!user) return;
+    setApplicant((prev) => ({
+      ...prev,
+      fullName: prev.fullName || personalName,
+      email: prev.email || user.email || '',
+      phoneNumber: prev.phoneNumber || user.mobileNumber || '',
+      gender: prev.gender || user.gender || '',
+      address: prev.address || user.address || '',
+    }));
+    if (user.mobileNumber) {
+      setIsPhoneValid(true);
+    }
+  }, [user, personalName]);
 
   const updateApplicant = (field: keyof typeof emptyApplicant, value: string) => {
     setApplicant((prev) => ({ ...prev, [field]: value }));
@@ -312,14 +332,14 @@ function ChannelInviteCreateContent() {
 
   if (submitted) {
     return (
-      <div className="landing-root min-h-[calc(100vh-140px)] flex flex-col justify-center relative text-[#0f172a] font-sans pt-28 sm:pt-32 lg:pt-36 pb-16 lg:pb-20 px-6 sm:px-12 lg:px-20 selection:bg-blue-100 selection:text-blue-900">
+      <div className="landing-root min-h-[calc(100vh-140px)] flex flex-col justify-center relative text-ink font-sans pt-28 sm:pt-32 lg:pt-36 pb-16 lg:pb-20 px-6 sm:px-12 lg:px-20 selection:bg-blue-100 selection:text-blue-900 dark:selection:bg-blue-500/15 dark:selection:text-blue-200">
         <EditorialBackdrop />
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-[520px] mx-auto my-auto text-center flex flex-col items-center"
         >
-          <h1 className="text-3xl sm:text-4xl font-normal font-serif italic text-[#0B132B] tracking-tight leading-snug">
+          <h1 className="text-3xl sm:text-4xl font-normal font-serif italic text-ink tracking-tight leading-snug">
             Request Received.
           </h1>
           <span className="block h-0.5 w-10 bg-[#205ca8]/60 rounded-full mx-auto mt-4" />
@@ -329,7 +349,7 @@ function ChannelInviteCreateContent() {
           </p>
           <button
             onClick={() => router.push('/')}
-            className="mt-9 relative inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-[#0B132B] hover:bg-[#205ca8] text-white font-medium text-sm tracking-wide shadow-sm hover:shadow-md transition-all duration-300 ease-out group"
+            className="mt-9 relative inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-ink hover:bg-[#205ca8] text-on-ink font-medium text-sm tracking-wide shadow-sm hover:shadow-md transition-all duration-300 ease-out group"
           >
             <span>Go to Homepage</span>
             <span className="w-5 h-5 rounded-full bg-white/10 group-hover:bg-white/20 flex items-center justify-center transition-colors">
@@ -342,7 +362,7 @@ function ChannelInviteCreateContent() {
   }
 
   return (
-    <div className="landing-root min-h-[calc(100vh-140px)] relative text-[#0f172a] font-sans pt-28 sm:pt-32 lg:pt-36 pb-16 lg:pb-20 px-6 sm:px-12 lg:px-20 selection:bg-blue-100 selection:text-blue-900">
+    <div className="landing-root min-h-[calc(100vh-140px)] relative text-ink font-sans pt-28 sm:pt-32 lg:pt-36 pb-16 lg:pb-20 px-6 sm:px-12 lg:px-20 selection:bg-blue-100 selection:text-blue-900 dark:selection:bg-blue-500/15 dark:selection:text-blue-200">
       <EditorialBackdrop />
 
       <div className="w-[84vw] max-w-[1400px] mx-auto w-full">
@@ -356,10 +376,10 @@ function ChannelInviteCreateContent() {
               animate="visible"
               custom={0}
               variants={fadeInUp as any}
-              className="text-4xl sm:text-5xl lg:text-[56px] tracking-tight text-[#0B132B] leading-[1.08] font-serif whitespace-nowrap mb-8"
+              className="text-4xl sm:text-5xl lg:text-[56px] tracking-tight text-ink leading-[1.08] font-serif whitespace-nowrap mb-8"
             >
-              <span className="font-bold text-[#0B132B]">Your</span>{' '}
-              <span className="italic font-normal text-[#205ca8]">channel.</span>
+              <span className="font-bold text-ink">Your</span>{' '}
+              <span className="italic font-normal text-[#205ca8] dark:text-[#7cbaff]">channel.</span>
             </motion.h1>
 
             <motion.p
@@ -392,7 +412,7 @@ function ChannelInviteCreateContent() {
                 <p className="text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold mb-1.5">
                   Signed in as
                 </p>
-                <p className="text-base sm:text-lg font-bold text-[#0B132B] font-bricolage leading-snug break-all">
+                <p className="text-base sm:text-lg font-bold text-ink font-bricolage leading-snug break-all">
                   {user?.email || personalName || '—'}
                 </p>
               </div>
@@ -427,7 +447,7 @@ function ChannelInviteCreateContent() {
                       onChange={() => setIsPersonal(true)}
                       className="h-4 w-4 accent-[#205ca8] focus:outline-none"
                     />
-                    <span className="text-sm text-slate-700 group-hover:text-[#0B132B] transition-colors">
+                    <span className="text-sm text-slate-700 group-hover:text-ink transition-colors">
                       Personal Channel
                     </span>
                   </label>
@@ -441,7 +461,7 @@ function ChannelInviteCreateContent() {
                       }}
                       className="h-4 w-4 accent-[#205ca8] focus:outline-none"
                     />
-                    <span className="text-sm text-slate-700 group-hover:text-[#0B132B] transition-colors">
+                    <span className="text-sm text-slate-700 group-hover:text-ink transition-colors">
                       Organization Channel
                     </span>
                   </label>
@@ -477,7 +497,7 @@ function ChannelInviteCreateContent() {
                   <FormField label="Date of Birth" required error={dobError}>
                     <input
                       type="date"
-                      className={cn(inputClass, dobError && "border-red-500 text-red-900 focus:border-red-500")}
+                      className={cn(inputClass, dobError && "border-red-500 text-red-900 focus:border-red-500 dark:text-red-200")}
                       value={applicant.dateOfBirth}
                       max={getTodayDateString()}
                       onChange={(e) => {
@@ -560,13 +580,13 @@ function ChannelInviteCreateContent() {
 
                 <div className="flex justify-center py-2">
                   <div className="relative group cursor-pointer">
-                    <div className="h-24 w-24 overflow-hidden rounded-full border border-dashed border-slate-300 bg-white/50 flex flex-col items-center justify-center transition-colors group-hover:border-[#205ca8] group-hover:bg-[#205ca8]/[0.04]">
+                    <div className="h-24 w-24 overflow-hidden rounded-full border border-dashed border-slate-300 bg-surface/50 flex flex-col items-center justify-center transition-colors group-hover:border-[#205ca8] group-hover:bg-[#205ca8]/[0.04]">
                       {iconPreview ? (
                         <img src={iconPreview} alt="Icon preview" className="h-full w-full object-cover" />
                       ) : (
                         <>
-                          <Upload size={22} className="text-slate-400 group-hover:text-[#205ca8] mb-1 transition-colors" />
-                          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold group-hover:text-[#205ca8] transition-colors">
+                          <Upload size={22} className="text-slate-400 group-hover:text-[#205ca8] mb-1 transition-colors dark:group-hover:text-[#7cbaff]" />
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold group-hover:text-[#205ca8] transition-colors dark:group-hover:text-[#7cbaff]">
                             Icon
                           </span>
                         </>
@@ -682,7 +702,7 @@ function ChannelInviteCreateContent() {
                 <button
                   type="submit"
                   disabled={isLoading || Boolean(dobError)}
-                  className="relative inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-[#0B132B] hover:bg-[#205ca8] text-white font-medium text-sm tracking-wide shadow-sm hover:shadow-md transition-all duration-300 ease-out group disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-ink hover:bg-[#205ca8] text-on-ink font-medium text-sm tracking-wide shadow-sm hover:shadow-md transition-all duration-300 ease-out group disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <>

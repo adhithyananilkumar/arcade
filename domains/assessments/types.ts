@@ -210,7 +210,6 @@ export interface ExamResponse {
   authorAvatarUrl: string | null;
   title: string;
   description: string | null;
-  coverImageUrl: string | null;
   purpose: string | null;
   /** Tiptap JSON, serialized. */
   instructions: string | null;
@@ -241,7 +240,6 @@ export interface ExamResponse {
 export interface ExamRequest {
   title?: string;
   description?: string;
-  coverImageUrl?: string;
   channelId?: string;
   courseId?: string;
   eventId?: string;
@@ -745,7 +743,6 @@ export interface AssessmentLandingResponse {
   examId: string;
   title: string;
   description: string | null;
-  coverImageUrl: string | null;
   purpose: string | null;
   /** Tiptap document. */
   instructions: unknown | null;
@@ -830,9 +827,10 @@ export interface ExamHubCard {
   examId: string;
   title: string;
   description: string | null;
-  coverImageUrl: string | null;
   purpose: string | null;
   channelName: string | null;
+  /** The channel's picture; for a personal channel, its owner's profile picture. */
+  channelIconUrl: string | null;
   certification: boolean;
   plans: ExamHubPlan[];
   tieType: ExamTieType | null;
@@ -906,9 +904,26 @@ export interface GradeCardResponse {
   percentage: number;
   passPercentage: number;
   passed: boolean;
+  /** The stored 12-character code. */
   verificationCode: string;
+  /** The same code as printed on the PDF and checked on the verify page: `GC-XXXX-XXXX-XXXX`. */
+  credentialCode: string;
   issuedAt: string;
   certificateIssued: boolean;
+  /**
+   * Where this card's certificate stands, decided by the server. Null on the public verify view.
+   * AWAITING_ISSUE means cleared but not yet recorded; the server issues it on the next read.
+   */
+  certificateStatus:
+    | "ISSUED"
+    | "AWAITING_IDENTITY_REVIEW"
+    | "AWAITING_ISSUE"
+    | "IDENTITY_REJECTED"
+    | "WITHHELD"
+    | "NOT_APPLICABLE"
+    | null;
+  /** The certificate's `CERT-…` ID once issued. */
+  certificateCode: string | null;
   revoked: boolean;
   revokedReason: string | null;
   sections: GradeCardSection[];

@@ -1,11 +1,26 @@
 # Public Profile Security
 
-## Routing (unchanged by this pass, confirmed still correct)
+## Routing (unified 2026-10-01)
 
-- `/[username]` — public profile, backed by `GET /api/v1/public/profiles/{username}` → `PublicProfileResponse`.
-- `/profile` — the logged-in user's own profile-management page, backed by `GET /api/v1/users/me` → `ProfileResponse`.
+There is **one** profile page per subject, served at `domain/<handle>`:
 
-These are already the canonical, non-duplicated routes the task asked to verify — `/profile` does not redirect to `/[username]`, and both coexist intentionally: `/profile` is where you *manage* your own account, `/[username]` is how *anyone* (including yourself) views the public presentation.
+- A person — `/<handle>`, from `GET /api/v1/public/profiles/{handle}`. The owner sees the same page
+  as everyone else, plus "Edit Profile". Learner panels (achievements, certificates, heatmap) appear
+  only while `showLearnerActivity` is on; instructor panels (published courses/events) appear once the
+  account has an instructor standing. A **personal channel has no page of its own** — this is it.
+- An organization channel — `/<channel handle>`, from `GET /api/v1/public/channels/handle/{handle}`.
+  Same layout, no learner panels.
+
+Aliases, not pages: `/profile` redirects to the signed-in person's `/<handle>` (or to
+`/settings/info` when they have none); `/channels/<id>` asks `GET /api/v1/public/channels/{id}/address`
+and redirects to the owner's handle (personal) or the channel's handle (organization), rendering the
+organization view in place only when it has not claimed a handle. Account management lives in
+`/settings/*`, not on a profile page.
+
+Learner endpoints that honour `showLearnerActivity` server-side (hidden ⇒ absent, never filtered in
+the client): the profile payload's `certificates`, `GET /api/v1/public/credentials/profiles/{handle}/badges`
+(empty list), and `GET /api/v1/public/profiles/{handle}/activity` (404, current calendar year only,
+no learning minutes).
 
 ## Public vs. private DTO separation (already existed, verified correct)
 

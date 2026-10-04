@@ -7,194 +7,187 @@
  * Domain: Profiles
  *
  * Purpose:
- * The header of a person's profile — identity, recognition, and the counts
- * that summarise what the rest of the page contains.
+ * The identity banner at the top of every page in the `domain/<handle>`
+ * namespace — a person (learner or instructor) or an organization channel.
+ * One component for both, so the two kinds of profile read as one system.
  *
  * Rules:
- * - Pure. Actions arrive as `actions`; the component never routes or mutates.
- * - Badges come from `profile.badges`, which the backend granted. Nothing here
- *   infers standing from a role string or a bio.
+ * - Pure. Everything arrives via props; actions are a slot the orchestrator
+ *   fills (edit, share), because only it knows who is looking.
+ * - Shows public fields only. Email, phone and address are private account
+ *   data and are never passed in.
  * - See docs/architecture/ADR-001-frontend-architecture.md
  * ------------------------------------------------------------------
  */
 
-import {
-  BookOpen,
-  Building2,
-  CalendarDays,
-  Globe,
-  MapPin,
-  Presentation,
-  Trophy,
-  User as UserIcon,
-} from 'lucide-react';
-import { BadgeRow } from '@/domains/recognition';
+import { Building2, Calendar, Globe, MapPin, Star, User as UserIcon } from 'lucide-react';
+import { BadgeRow, type ProfileBadge } from '@/domains/recognition';
 import { getAvatarUrl } from '@/shared/utils/avatar';
-import { ProfileStat } from './ProfileCards';
-import type { UserProfile } from '../types/profile.types';
+
+export type ProfileKind = 'learner' | 'instructor' | 'organization';
+
+const KIND_LABEL: Record<ProfileKind, string> = {
+  learner: 'Learner',
+  instructor: 'Instructor',
+  organization: 'Organization',
+};
+
+const KIND_TONE: Record<ProfileKind, string> = {
+  learner:
+    'bg-teal-50 border-teal-200/60 text-teal-700 dark:bg-teal-950/60 dark:border-teal-800/60 dark:text-teal-300',
+  instructor:
+    'bg-indigo-50 border-indigo-200/60 text-indigo-700 dark:bg-indigo-950/60 dark:border-indigo-800/60 dark:text-indigo-300',
+  organization:
+    'bg-amber-50 border-amber-200/60 text-amber-700 dark:bg-amber-950/60 dark:border-amber-800/60 dark:text-amber-300',
+};
 
 export interface ProfileHeroProps {
-  profile: UserProfile;
-  /** Buttons for the viewer — "Edit profile" for the owner, "Share" for everyone. */
+  kind: ProfileKind;
+  name: string;
+  handle?: string | null;
+  avatarUrl?: string | null;
+  /** An organization may have a banner image; otherwise the dotted stripe is shown. */
+  bannerUrl?: string | null;
+  badges: ProfileBadge[];
+  /** One line under the name — a person's headline or a channel's tagline. */
+  headline?: string | null;
+  bio?: string | null;
+  location?: string | null;
+  websiteUrl?: string | null;
+  joinedAt?: string | null;
   actions?: React.ReactNode;
-}
-
-/**
- * The host, as a readable label: "github.com/ada" reads as "github.com".
- *
- * Shown as text rather than as a brand glyph. lucide dropped its brand icons, and drawing
- * approximations of company marks on a public profile is both a trademark question and a
- * maintenance burden — the hostname is unambiguous and needs no upkeep.
- */
-function socialLabel(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '');
-  } catch {
-    // Not a parseable URL. The settings form validates the scheme, but older rows predate that,
-    // and a link that cannot be parsed should still render as something the reader can see.
-    return url.replace(/^https?:\/\//i, '').split('/')[0] || url;
-  }
 }
 
 function formatJoined(value?: string | null): string | null {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  return date.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
 }
 
-export function ProfileHero({ profile, actions }: ProfileHeroProps) {
-  const joined = formatJoined(profile.createdAt);
+export function ProfileHero({
+  kind,
+  name,
+  handle,
+  avatarUrl,
+  bannerUrl,
+  badges,
+  headline,
+  bio,
+  location,
+  websiteUrl,
+  joinedAt,
+  actions,
+}: ProfileHeroProps) {
+  const joined = formatJoined(joinedAt);
+  const FallbackIcon = kind === 'organization' ? Building2 : UserIcon;
 
-  // Deduplicated because the dedicated linkedin/github fields and the free-form social list are
-  // separate inputs on the settings form, and people fill in both.
-  const socials = Array.from(
-    new Set(
-      [profile.linkedinUrl, profile.githubUrl, ...(profile.socialLinks ?? [])]
-        .filter((url): url is string => !!url && url.trim().length > 0)
-        .map((url) => url.trim()),
-    ),
-  );
+  const meta: React.ReactNode[] = [];
+  if (handle) {
+    meta.push(
+      <span key="handle" className="font-semibold text-slate-700">
+        @{handle}
+      </span>,
+    );
+  }
+  if (location) {
+    meta.push(
+      <span key="location" className="flex items-center gap-1">
+        <MapPin size={13} className="text-slate-400" />
+        {location}
+      </span>,
+    );
+  }
+  if (joined) {
+    meta.push(
+      <span key="joined" className="flex items-center gap-1">
+        <Calendar size={13} className="text-slate-400" />
+        {kind === 'organization' ? 'Since' : 'Joined'} {joined}
+      </span>,
+    );
+  }
+  if (websiteUrl) {
+    meta.push(
+      <a
+        key="website"
+        href={websiteUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex max-w-[220px] items-center gap-1 truncate hover:text-slate-900 hover:underline"
+      >
+        <Globe size={13} className="shrink-0 text-slate-400" />
+        {websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+      </a>,
+    );
+  }
 
   return (
-    <header className="relative">
-      {/* A wash rather than a banner image: people have no banner field, and a placeholder
-          graphic would be decoration pretending to be content. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 -top-8 h-48 bg-gradient-to-b from-indigo-50/60 via-white to-transparent dark:from-indigo-950/20 dark:via-black dark:to-transparent"
-      />
-
-      <div className="relative flex flex-col gap-7 pt-4 md:flex-row md:items-start md:gap-9">
-        <div className="relative h-[112px] w-[112px] shrink-0 self-center md:self-start">
-          <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full border border-slate-100 bg-white p-1 shadow-[0_8px_24px_-12px_rgb(15,23,42,0.25)] dark:border-neutral-800 dark:bg-black">
-            <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-slate-50 dark:bg-neutral-900">
-              {profile.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={getAvatarUrl(profile.avatarUrl)}
-                  alt=""
-                  className="h-full w-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <UserIcon size={44} className="text-slate-300 dark:text-neutral-700" />
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="min-w-0 flex-1 text-center md:text-left">
-          <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 md:justify-start">
-            <h1 className="text-[27px] font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white sm:text-[31px]">
-              {profile.fullName || 'Arcade member'}
-            </h1>
-            <BadgeRow badges={profile.badges} size={24} />
-          </div>
-
-          {profile.handle && (
-            <p className="mt-1 text-[14px] font-bold text-slate-400 dark:text-neutral-500">
-              @{profile.handle}
-            </p>
-          )}
-
-          {profile.headline && (
-            <p className="mt-3 text-[15px] font-semibold leading-snug text-slate-700 dark:text-neutral-200">
-              {profile.headline}
-            </p>
-          )}
-
-          {profile.bio && (
-            <p className="mt-3 max-w-2xl text-[13.5px] font-medium leading-relaxed text-slate-500 dark:text-neutral-400">
-              {profile.bio}
-            </p>
-          )}
-
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[12px] font-bold text-slate-400 dark:text-neutral-500 md:justify-start">
-            {profile.workingAt && (
-              <span className="inline-flex items-center gap-1.5">
-                <Building2 size={13} /> {profile.workingAt}
-              </span>
-            )}
-            {profile.location && (
-              <span className="inline-flex items-center gap-1.5">
-                <MapPin size={13} /> {profile.location}
-              </span>
-            )}
-            {joined && (
-              <span className="inline-flex items-center gap-1.5">
-                <CalendarDays size={13} /> Joined {joined}
-              </span>
-            )}
-          </div>
-
-          {socials.length > 0 && (
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 md:justify-start">
-              {socials.map((url) => (
-                <a
-                  key={url}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
-                  // nofollow + noopener: these are user-supplied links on a public page.
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-100 bg-white px-2.5 py-1.5 text-[11.5px] font-bold text-slate-500 transition-colors hover:border-slate-200 hover:text-slate-900 dark:border-neutral-900 dark:bg-black dark:text-neutral-400 dark:hover:border-neutral-800 dark:hover:text-neutral-100"
-                >
-                  <Globe size={12} className="shrink-0 text-slate-300 dark:text-neutral-600" />
-                  {socialLabel(url)}
-                </a>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 md:justify-start">
-            <ProfileStat
-              label={profile.stats.publishedCourses === 1 ? 'course' : 'courses'}
-              value={profile.stats.publishedCourses}
-              icon={BookOpen}
-            />
-            <ProfileStat
-              label={profile.stats.publishedWorkshops === 1 ? 'event' : 'events'}
-              value={profile.stats.publishedWorkshops}
-              icon={Presentation}
-            />
-            {/* Only when the learner side is shown: a zero here would otherwise be read as
-                "earned none" when the truth is "chose not to show". */}
-            {profile.learnerActivityVisible && (
-              <ProfileStat
-                label={profile.stats.certificates === 1 ? 'certificate' : 'certificates'}
-                value={profile.stats.certificates}
-                icon={Trophy}
-              />
-            )}
-          </div>
-        </div>
-
-        {actions && (
-          <div className="flex shrink-0 items-center justify-center gap-2 md:pt-2">
-            {actions}
-          </div>
+    <div className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-surface shadow-xs">
+      <div className="relative h-24 w-full border-b border-slate-100 bg-slate-100/70 sm:h-28">
+        {bannerUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={getAvatarUrl(bannerUrl)} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <div className="absolute inset-0 bg-[radial-gradient(#94a3b8_1px,transparent_1px)] [background-size:16px_16px] opacity-15" />
         )}
       </div>
-    </header>
+
+      <div className="px-6 pb-6 pt-0 sm:px-8">
+        <div className="-mt-12 mb-4 flex flex-col items-center justify-between gap-5 sm:-mt-14 sm:flex-row sm:items-end">
+          <div className="relative z-10 flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-surface bg-slate-100 shadow-md sm:h-28 sm:w-28">
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={getAvatarUrl(avatarUrl)}
+                alt=""
+                className="h-full w-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <FallbackIcon size={48} className="text-teal-600 dark:text-teal-400" />
+            )}
+          </div>
+
+          {actions && (
+            <div className="flex w-full flex-wrap items-center justify-center gap-2.5 sm:w-auto sm:justify-end">
+              {actions}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-2 text-center sm:text-left">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:justify-start">
+            <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+              {name}
+            </h1>
+            <BadgeRow badges={badges} size={22} />
+            <span
+              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${KIND_TONE[kind]}`}
+            >
+              <Star size={11} className="fill-current" />
+              {KIND_LABEL[kind]}
+            </span>
+          </div>
+
+          {headline && (
+            <p className="text-sm font-semibold text-slate-600">{headline}</p>
+          )}
+
+          {meta.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs font-medium text-slate-500 sm:justify-start">
+              {meta.flatMap((node, index) =>
+                index === 0 ? [node] : [<span key={`dot-${index}`}>•</span>, node],
+              )}
+            </div>
+          )}
+
+          {bio && (
+            <p className="max-w-3xl whitespace-pre-line pt-2 text-sm leading-relaxed text-slate-600">
+              {bio}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

@@ -41,11 +41,11 @@ export function CertificationCard({
 
   const noun = contentType === 'COURSE' ? 'course' : 'event';
   return (
-    <section className="overflow-hidden rounded-[1.75rem] border border-violet-200/80 bg-gradient-to-b from-violet-50/70 to-white p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.04)]">
-      <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-violet-700">
+    <section className="overflow-hidden rounded-[1.75rem] border border-violet-200/80 bg-gradient-to-b from-violet-50/70 to-surface p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.04)] dark:border-violet-500/25 dark:from-violet-500/10">
+      <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300">
         <Award size={14} /> Certification
       </div>
-      <p className="text-[14px] font-bold leading-snug text-[#14142b]">{cert.title}</p>
+      <p className="text-[14px] font-bold leading-snug text-ink">{cert.title}</p>
       <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">
         {completed
           ? `You've completed this ${noun}, so you can register for the certification exam.`
@@ -54,7 +54,7 @@ export function CertificationCard({
       </p>
       <Link
         href={examRoutes.landing(cert.examId)}
-        className="mt-3 inline-flex items-center gap-1 text-[12px] font-bold text-violet-700 hover:text-violet-900"
+        className="mt-3 inline-flex items-center gap-1 text-[12px] font-bold text-violet-700 hover:text-violet-900 dark:text-violet-300 dark:hover:text-violet-200"
       >
         View certification <ChevronRight size={14} />
       </Link>

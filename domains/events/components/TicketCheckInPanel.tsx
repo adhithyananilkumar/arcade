@@ -94,7 +94,7 @@ export function TicketCheckInPanel({
 
       {result && (
         <div
-          className="mt-4 flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-900"
+          className="mt-4 flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-200"
           role="status"
         >
           <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
@@ -115,7 +115,7 @@ export function TicketCheckInPanel({
 
       {error && (
         <div
-          className="mt-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-red-900"
+          className="mt-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-red-900 dark:border-red-500/25 dark:bg-red-500/10 dark:text-red-200"
           role="alert"
         >
           <XCircle className="mt-0.5 h-5 w-5 shrink-0" />

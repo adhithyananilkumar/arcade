@@ -223,7 +223,7 @@ export default function TermsPage() {
   };
 
   return (
-    <div className="min-h-screen pt-28 pb-16 relative z-10 bg-white font-sans text-neutral-800">
+    <div className="min-h-screen pt-28 pb-16 relative z-10 bg-surface font-sans text-neutral-800">
 
       {/* --- CENTERED FOCUS READING COLUMN --- */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -244,7 +244,7 @@ export default function TermsPage() {
               fontFamily: '"Amira-Grace", "Amira Grace", cursive'
             }}
           >
-            <span className="text-[#0f172a] dark:text-neutral-200">
+            <span className="text-ink">
               Terms of
             </span>
             {" "}
@@ -276,19 +276,19 @@ export default function TermsPage() {
                 placeholder="Search legal terms, policies, codes..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 bg-white border border-neutral-200 focus:border-neutral-400 rounded-xl shadow-sm focus:ring-0 focus:outline-none transition-all text-xs text-neutral-800"
+                className="w-full pl-11 pr-4 py-2.5 bg-surface border border-neutral-200 focus:border-neutral-400 rounded-xl shadow-sm focus:ring-0 focus:outline-none transition-all text-xs text-neutral-800"
               />
             </div>
             <div className="flex gap-2 shrink-0">
               <button
                 onClick={handlePrint}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border border-neutral-200 rounded-xl text-xs font-semibold text-neutral-700 shadow-sm transition-all"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-surface hover:bg-slate-50 border border-neutral-200 rounded-xl text-xs font-semibold text-neutral-700 shadow-sm transition-all"
               >
                 <Printer size={14} /> Print
               </button>
               <a
                 href="mailto:arcade@amaljyothi.ac.in"
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-neutral-900 hover:bg-neutral-805 text-white rounded-xl text-xs font-semibold shadow-md transition-all justify-center"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-neutral-900 hover:bg-neutral-805 text-on-ink rounded-xl text-xs font-semibold shadow-md transition-all justify-center"
               >
                 Request Support
               </a>
@@ -442,7 +442,7 @@ export default function TermsPage() {
               <p className="text-xs font-bold text-neutral-900">Questions about these Terms?</p>
               <a
                 href="mailto:arcade@amaljyothi.ac.in"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-slate-50 border border-neutral-200 rounded-lg text-xs font-semibold text-neutral-700 shadow-sm transition-all"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-surface hover:bg-slate-50 border border-neutral-200 rounded-lg text-xs font-semibold text-neutral-700 shadow-sm transition-all"
               >
                 Contact IT Cell <ExternalLink size={10} />
               </a>

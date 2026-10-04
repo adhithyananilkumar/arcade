@@ -14,14 +14,14 @@ export function QuizOptionView({ node, updateAttributes, deleteNode }: NodeViewP
           className={`flex h-5 w-5 flex-shrink-0 items-center justify-center border transition-colors rounded ${
             isCorrect
               ? "border-emerald-500 bg-emerald-500 text-white"
-              : "border-gray-300 bg-white text-transparent hover:border-emerald-400"
+              : "border-gray-300 bg-surface text-transparent hover:border-emerald-400"
           }`}
         >
           <Check size={12} />
         </button>
       </div>
       
-      <div className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-800 focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-100 bg-white">
+      <div className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-800 focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-100 bg-surface dark:focus-within:ring-indigo-500/25">
         <NodeViewContent 
           className="quiz-option-content outline-none"
           data-placeholder="Answer option..."

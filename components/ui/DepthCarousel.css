@@ -20,7 +20,7 @@
 }
 
 .depth-carousel:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline: 2px solid color-mix(in oklab, var(--theme-n-50, #ffffff) 50%, transparent);
   outline-offset: 4px;
   border-radius: 12px;
 }
@@ -37,7 +37,7 @@
   left: 50%;
   transform-origin: center center;
   overflow: hidden;
-  background: #0b0d12;
+  background: var(--theme-ink, #0b0d12);
   box-shadow:
     0 30px 60px -20px rgba(0, 0, 0, 0.65),
     0 8px 20px -10px rgba(0, 0, 0, 0.5);
@@ -74,9 +74,9 @@
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
-  background: rgba(18, 20, 26, 0.55);
+  background: var(--theme-ink, rgba(18, 20, 26, 0.55));
   backdrop-filter: blur(8px);
-  color: #fff;
+  color: var(--theme-on-ink, #fff);
   cursor: pointer;
   transition:
     background 0.2s ease,
@@ -85,8 +85,8 @@
 }
 
 .depth-carousel__arrow:hover {
-  background: rgba(28, 31, 40, 0.85);
-  border-color: rgba(255, 255, 255, 0.4);
+  background: var(--theme-ink, rgba(28, 31, 40, 0.85));
+  border-color: color-mix(in oklab, var(--theme-n-50, #ffffff) 40%, transparent);
 }
 
 .depth-carousel__arrow:active {
@@ -130,7 +130,7 @@
 
 .depth-carousel__dot.is-active {
   width: 20px;
-  background: #fff;
+  background: var(--theme-surface, #fff);
 }
 
 @media (prefers-reduced-motion: reduce) {

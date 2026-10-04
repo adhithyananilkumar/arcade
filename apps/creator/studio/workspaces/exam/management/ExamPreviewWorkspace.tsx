@@ -75,13 +75,13 @@ export function ExamPreviewWorkspace({
   return (
     <div className="flex flex-col gap-4">
       {/* ── Candidate-facing cover ──────────────────────────────────────── */}
-      <section className="rounded-2xl border border-white/50 bg-white/70 p-5 shadow-sm backdrop-blur-md">
+      <section className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               {planKindLabel(plan.planType, plan.graded)} · {plan.name}
             </span>
-            <h2 className="mt-1 text-lg font-black tracking-tight text-[#14142b]">{exam.title}</h2>
+            <h2 className="mt-1 text-lg font-black tracking-tight text-ink">{exam.title}</h2>
             {exam.description && (
               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">{exam.description}</p>
             )}
@@ -90,7 +90,7 @@ export function ExamPreviewWorkspace({
               is saved and no attempt is used up. */}
           <Link
             href={`/exams/${exam.id}/attempt?planId=${plan.id}&preview=true&returnTo=${encodeURIComponent(`/studio/content/exam/${exam.id}`)}`}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-black"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink transition-colors hover:bg-ink-hover"
           >
             <Play size={13} /> Sit it as a candidate
           </Link>
@@ -112,11 +112,11 @@ export function ExamPreviewWorkspace({
         </dl>
 
         {(plan.proctoringRequired || plan.identityVerificationRequired || plan.fullscreenRequired || plan.hubListed) && (
-          <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50/60 p-4">
-            <span className="flex items-center gap-1.5 text-xs font-bold text-amber-800">
+          <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-500/25 dark:bg-amber-500/10">
+            <span className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-200">
               <Lock size={13} /> Before you start
             </span>
-            <ul className="mt-2 space-y-1 text-xs leading-relaxed text-amber-900/80">
+            <ul className="mt-2 space-y-1 text-xs leading-relaxed text-amber-900/80 dark:text-amber-200">
               {plan.hubListed && (
                 <li>
                   · You register for this exam from Explore &gt; Exams
@@ -135,9 +135,9 @@ export function ExamPreviewWorkspace({
           </div>
         )}
       </section>
-      <section className="rounded-2xl border border-white/50 bg-white/80 p-6 shadow-sm backdrop-blur-md">
+      <section className="rounded-2xl border border-white/50 bg-surface/80 p-6 shadow-sm backdrop-blur-md">
         <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-500">{plan.name}</span>
-        <h2 className="mt-1 text-xl font-black tracking-tight text-[#14142b]">{exam.title}</h2>
+        <h2 className="mt-1 text-xl font-black tracking-tight text-ink">{exam.title}</h2>
         {exam.description && (
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">{exam.description}</p>
         )}
@@ -154,11 +154,11 @@ export function ExamPreviewWorkspace({
         </dl>
 
         {(plan.proctoringRequired || plan.identityVerificationRequired || plan.fullscreenRequired || plan.hubListed) && (
-          <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50/60 p-4">
-            <span className="flex items-center gap-1.5 text-xs font-bold text-amber-800">
+          <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-500/25 dark:bg-amber-500/10">
+            <span className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-200">
               <Lock size={13} /> Before you start
             </span>
-            <ul className="mt-2 space-y-1 text-xs leading-relaxed text-amber-900/80">
+            <ul className="mt-2 space-y-1 text-xs leading-relaxed text-amber-900/80 dark:text-amber-200">
               {plan.hubListed && (
                 <li>
                   · You register for this exam from Explore &gt; Exams
@@ -179,10 +179,10 @@ export function ExamPreviewWorkspace({
       </section>
 
       {/* ── A real generated paper ──────────────────────────────────────── */}
-      <section className="rounded-2xl border border-white/50 bg-white/70 p-5 shadow-sm backdrop-blur-md">
+      <section className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-black tracking-tight text-[#14142b]">Sample paper</h3>
+            <h3 className="text-sm font-black tracking-tight text-ink">Sample paper</h3>
             <p className="mt-0.5 text-[11px] text-slate-500">
               {plan.fixedPaper
                 ? "Every candidate sits this same selection."
@@ -192,7 +192,7 @@ export function ExamPreviewWorkspace({
           <button
             type="button"
             onClick={() => setNonce((n) => n + 1)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-[#14142b] transition-colors hover:bg-slate-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-surface px-3 py-1.5 text-xs font-bold text-ink transition-colors hover:bg-slate-50"
           >
             <RefreshCw size={13} /> Draw again
           </button>
@@ -211,13 +211,13 @@ export function ExamPreviewWorkspace({
         ) : (
           <ol className="flex flex-col gap-3">
             {paper.map((q, index) => (
-              <li key={q.id} className="rounded-xl border border-slate-100 bg-white p-4">
+              <li key={q.id} className="rounded-xl border border-slate-100 bg-surface p-4">
                 <div className="flex items-start gap-3">
-                  <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-[#14142b] text-[11px] font-bold text-white">
+                  <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-ink text-[11px] font-bold text-on-ink">
                     {index + 1}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm text-[#14142b]">
+                    <div className="text-sm text-ink">
                       <TiptapContentView body={JSON.stringify(q.question)} />
                     </div>
                     {q.options.length > 0 && (
@@ -266,7 +266,7 @@ function Fact({
       <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
         <Icon size={11} /> {label}
       </dt>
-      <dd className="mt-0.5 text-sm font-bold text-[#14142b]">{value}</dd>
+      <dd className="mt-0.5 text-sm font-bold text-ink">{value}</dd>
     </div>
   );
 }

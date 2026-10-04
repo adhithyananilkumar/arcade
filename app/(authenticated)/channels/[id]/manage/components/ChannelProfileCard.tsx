@@ -1,23 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import {
   Building2,
   Calendar,
+  Camera,
   Check,
   Edit3,
   ExternalLink,
   Globe,
   Link2,
+  Loader2,
   Mail,
   Plus,
+  Trash2,
+  Upload,
   User,
   X,
 } from 'lucide-react';
-import type { Channel } from '@/domains/channels';
+import { channelService, type Channel } from '@/domains/channels';
 import { Panel } from '@/shared/design-system/ui/panel';
 import { toast } from 'sonner';
+import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 import { ChannelDoodleBanner } from '../ChannelDoodleBanner';
 import { ChannelSocialLinksCard } from '../ChannelSocialLinksCard';
 
@@ -76,12 +82,6 @@ function socialPlatform(link: string): { icon: React.ComponentType<IconProps>; l
   }
 }
 
-const chip =
-  'flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-[#14142b] dark:border-neutral-700 dark:bg-neutral-800 dark:text-slate-200';
-
-const actionBtn =
-  'inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200/90 bg-white px-3.5 py-1.5 text-[12px] font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-slate-200 dark:hover:bg-neutral-700';
-
 interface Props {
   channel: Channel;
   canEdit: boolean;
@@ -93,6 +93,14 @@ interface Props {
 export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }: Props) {
   const [socialOpen, setSocialOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Banner & Icon direct upload state
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+  const iconInputRef = useRef<HTMLInputElement>(null);
+  const [cropTarget, setCropTarget] = useState<'icon' | 'banner' | null>(null);
+  const [cropSourceFile, setCropSourceFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
   const links = (channel.socialLinks ?? []).filter(Boolean);
   const publicPath = channel.handle ? `/${channel.handle}` : `/channels/${channel.id}`;
 
@@ -107,122 +115,300 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
     }
   };
 
+  const handleBannerSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    setCropSourceFile(file);
+    setCropTarget('banner');
+  };
+
+  const handleIconSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    setCropSourceFile(file);
+    setCropTarget('icon');
+  };
+
+  const handleCropped = async (croppedFile: File) => {
+    const target = cropTarget;
+    setCropTarget(null);
+    setCropSourceFile(null);
+    if (!target) return;
+
+    setIsUploading(true);
+    try {
+      const updated = await channelService.updateChannelProfile(channel.id, {
+        bannerFile: target === 'banner' ? croppedFile : undefined,
+        iconFile: target === 'icon' ? croppedFile : undefined,
+      });
+      onUpdate(updated);
+      toast.success(target === 'banner' ? 'Cover banner updated!' : 'Logo avatar updated!');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to upload image');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveBanner = async () => {
+    setIsUploading(true);
+    try {
+      const updated = await channelService.updateChannelProfile(channel.id, {
+        removeBanner: true,
+      });
+      onUpdate(updated);
+      toast.success('Cover banner removed');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to remove banner');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveIcon = async () => {
+    setIsUploading(true);
+    try {
+      const updated = await channelService.updateChannelProfile(channel.id, {
+        removeIcon: true,
+      });
+      onUpdate(updated);
+      toast.success('Logo avatar removed');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to remove logo');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <>
-      <div className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
-        <div
-          className="relative w-full overflow-hidden border-b border-slate-200/70 bg-[#F5F0E6] text-black"
-          style={{
-            backgroundColor: '#F5F0E6',
-            backgroundImage: `radial-gradient(#14142b 0.8px, transparent 0.8px)`,
-            backgroundSize: '24px 24px',
-          }}
-        >
-          {/* Top Banner section with doodles or custom banner */}
-          <ChannelDoodleBanner bannerUrl={channel.bannerUrl} className="h-32 w-full sm:h-44 border-b-0" />
+      <ImageCropModal
+        open={cropTarget !== null}
+        file={cropSourceFile}
+        aspectRatio={cropTarget === 'banner' ? 4 : 1}
+        title={cropTarget === 'banner' ? 'Crop Organization Banner' : 'Crop Organization Logo'}
+        onCancel={() => {
+          setCropTarget(null);
+          setCropSourceFile(null);
+        }}
+        onCropped={handleCropped}
+      />
 
-          {/* Profile Details Bar overlayed/connected seamlessly */}
-          <div className="relative z-10 flex flex-col gap-4 px-5 pb-5 pt-0 sm:flex-row sm:items-end sm:px-6 sm:pb-6">
-            <div className="-mt-10 sm:-mt-12 flex h-20 w-20 sm:h-22 sm:w-22 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-gradient-to-br from-indigo-500 via-purple-600 to-slate-900 text-white shadow-md dark:border-neutral-900">
-              {channel.iconUrl ? (
-                <img src={channel.iconUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <svg
-                  width="36"
-                  height="36"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="text-white"
+      <input
+        type="file"
+        ref={bannerInputRef}
+        className="hidden"
+        accept="image/jpeg, image/png, image/webp"
+        onChange={handleBannerSelect}
+      />
+      <input
+        type="file"
+        ref={iconInputRef}
+        className="hidden"
+        accept="image/jpeg, image/png, image/webp"
+        onChange={handleIconSelect}
+      />
+
+      <div className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-surface shadow-sm">
+        {/* Full Hero Banner with all floating elements */}
+        <div className="relative group/banner w-full overflow-hidden bg-slate-900">
+          <ChannelDoodleBanner
+            bannerUrl={channel.bannerUrl}
+            className="w-full h-56 sm:h-64 md:h-72 object-cover"
+          />
+
+          {/* Dark gradient overlay for ultra-crisp text contrast */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+          {/* Top Right: Change / Remove Banner */}
+          {canEdit && (
+            <div className="absolute top-3.5 right-3.5 z-20 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => bannerInputRef.current?.click()}
+                disabled={isUploading}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 px-3.5 py-1.5 text-xs font-semibold shadow-md transition-all active:scale-95 disabled:opacity-50"
+                title="Upload or change cover banner"
+              >
+                {isUploading && cropTarget === 'banner' ? (
+                  <Loader2 size={13} className="animate-spin" />
+                ) : (
+                  <Camera size={13} />
+                )}
+                <span>{channel.bannerUrl ? 'Change banner' : 'Upload banner'}</span>
+              </button>
+
+              {channel.bannerUrl && (
+                <button
+                  type="button"
+                  onClick={handleRemoveBanner}
+                  disabled={isUploading}
+                  className="inline-flex cursor-pointer items-center justify-center rounded-full bg-black/50 hover:bg-rose-600 text-white backdrop-blur-md border border-white/20 h-8 w-8 shadow-md transition-all active:scale-95 disabled:opacity-50"
+                  title="Remove cover banner"
                 >
-                  {/* Megaphone Cone Body */}
-                  <path
-                    d="M3.5 10.5V13.5C3.5 14.1 4 14.5 4.5 14.5H6.5L14 18V6L6.5 9.5H4.5C4 9.5 3.5 9.9 3.5 10.5Z"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinejoin="round"
-                  />
-                  {/* Megaphone Back rim */}
-                  <path
-                    d="M14 6C15 6 16 8.7 16 12C16 15.3 15 18 14 18"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                  />
-                  {/* Handle */}
-                  <path
-                    d="M7 14.5L7.8 19C7.9 19.6 8.4 20 9 20C9.6 20 10.1 19.5 10 18.9L9.5 14.5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  {/* Accent dot on cone */}
-                  <circle cx="5" cy="12" r="0.75" fill="#FBBF24" />
-                  {/* Soundwaves / Broadcast arcs */}
-                  <path
-                    d="M18 9C19.2 10 19.8 11 19.8 12C19.8 13 19.2 14 18 15"
-                    stroke="#38BDF8"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M20.5 7C22.2 8.5 23 10.2 23 12C23 13.8 22.2 15.5 20.5 17"
-                    stroke="#38BDF8"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
+                  <Trash2 size={13} />
+                </button>
               )}
             </div>
+          )}
 
-            <div className="min-w-0 flex-1 space-y-2">
-              <div>
-                <h2 className="truncate text-xl font-bold tracking-tight text-[#14142b]">{channel.name}</h2>
-                {channel.tagline && (
-                  <p className="truncate text-[13px] font-medium text-slate-600">{channel.tagline}</p>
+          {/* Floating Profile Info & Actions Bar across the bottom of the banner */}
+          <div className="absolute bottom-0 inset-x-0 z-20 flex flex-col gap-4 p-5 sm:flex-row sm:items-end sm:justify-between sm:p-6">
+            {/* Left: Avatar + Identity Info */}
+            <div className="flex flex-col gap-3.5 sm:flex-row sm:items-end min-w-0">
+              <div className="relative group/avatar flex h-20 w-20 sm:h-24 sm:w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-surface/90 bg-slate-900 text-on-ink shadow-2xl backdrop-blur-md">
+                {channel.iconUrl ? (
+                  <img src={getAvatarUrl(channel.iconUrl)} alt={channel.name} className="h-full w-full object-cover" />
+                ) : (
+                  <svg
+                    width="36"
+                    height="36"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="text-white"
+                  >
+                    {/* Megaphone Cone Body */}
+                    <path
+                      d="M3.5 10.5V13.5C3.5 14.1 4 14.5 4.5 14.5H6.5L14 18V6L6.5 9.5H4.5C4 9.5 3.5 9.9 3.5 10.5Z"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinejoin="round"
+                    />
+                    {/* Megaphone Back rim */}
+                    <path
+                      d="M14 6C15 6 16 8.7 16 12C16 15.3 15 18 14 18"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                    />
+                    {/* Handle */}
+                    <path
+                      d="M7 14.5L7.8 19C7.9 19.6 8.4 20 9 20C9.6 20 10.1 19.5 10 18.9L9.5 14.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    {/* Accent dot on cone */}
+                    <circle cx="5" cy="12" r="0.75" fill="#FBBF24" />
+                    {/* Soundwaves / Broadcast arcs */}
+                    <path
+                      d="M18 9C19.2 10 19.8 11 19.8 12C19.8 13 19.2 14 18 15"
+                      stroke="#38BDF8"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M20.5 7C22.2 8.5 23 10.2 23 12C23 13.8 22.2 15.5 20.5 17"
+                      stroke="#38BDF8"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                )}
+
+                {/* Logo / Profile Avatar hover camera button. A personal channel has no logo of its
+                    own — it always shows the owner's profile picture — so there is nothing to change. */}
+                {canEdit && !channel.isPersonal && (
+                  <button
+                    type="button"
+                    onClick={() => iconInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 cursor-pointer disabled:opacity-50"
+                    title="Upload or change logo avatar"
+                  >
+                    {isUploading && cropTarget === 'icon' ? (
+                      <Loader2 className="animate-spin" size={20} />
+                    ) : (
+                      <>
+                        <Camera size={18} className="mb-0.5" />
+                        <span className="text-[10px] font-bold">Change</span>
+                      </>
+                    )}
+                  </button>
                 )}
               </div>
 
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12px] font-semibold text-slate-600">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-300/80 bg-white/85 backdrop-blur-sm px-2.5 py-0.5 text-slate-800 shadow-xs">
-                  {channel.isPersonal ? <User size={12} /> : <Building2 size={12} />}
-                  {channel.isPersonal ? 'Personal channel' : 'Organization'}
-                </span>
-                {channel.handle && <span className="text-indigo-600 font-bold">@{channel.handle}</span>}
-                <span className="inline-flex items-center gap-1">
-                  Owner
-                  {channel.ownerUsername ? (
-                    <Link href={`/${channel.ownerUsername}`} className="text-slate-800 font-bold hover:underline">
-                      @{channel.ownerUsername}
-                    </Link>
-                  ) : (
-                    <span className="text-slate-800 font-bold">{channel.ownerName}</span>
+              <div className="min-w-0 space-y-1">
+                <div>
+                  <h2 className="truncate text-2xl font-extrabold tracking-tight text-white drop-shadow-md sm:text-3xl">
+                    {channel.name}
+                  </h2>
+                  {channel.tagline && (
+                    <p className="truncate text-[13px] font-medium text-white/80 drop-shadow">
+                      {channel.tagline}
+                    </p>
                   )}
-                </span>
-                <span className="inline-flex items-center gap-1 text-slate-500">
-                  <Calendar size={12} />
-                  Since {new Date(channel.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
-                </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12px] font-semibold text-white/90">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/15 backdrop-blur-md px-2.5 py-0.5 text-white shadow-xs">
+                    {channel.isPersonal ? <User size={12} /> : <Building2 size={12} />}
+                    {channel.isPersonal ? 'Personal channel' : 'Organization'}
+                  </span>
+                  {channel.handle && (
+                    <span className="text-sky-300 font-bold drop-shadow">@{channel.handle}</span>
+                  )}
+                  <span className="inline-flex items-center gap-1 drop-shadow">
+                    Owner
+                    {channel.ownerUsername ? (
+                      <Link
+                        href={`/${channel.ownerUsername}`}
+                        className="text-white font-bold hover:underline"
+                      >
+                        @{channel.ownerUsername}
+                      </Link>
+                    ) : (
+                      <span className="text-white font-bold">{channel.ownerName}</span>
+                    )}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-white/70 drop-shadow">
+                    <Calendar size={12} />
+                    Since{' '}
+                    {new Date(channel.createdAt).toLocaleDateString(undefined, {
+                      month: 'short',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </div>
               </div>
             </div>
 
+            {/* Right: Floating Action Buttons */}
             <div className="flex flex-wrap items-center gap-2">
               {canEdit && onEditProfile && (
                 <button
                   type="button"
                   onClick={onEditProfile}
-                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#14142b] px-3.5 py-1.5 text-[12px] font-semibold text-white shadow-xs transition-colors hover:bg-[#232735]"
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-surface text-slate-900 hover:bg-slate-100 px-3.5 py-1.5 text-[12px] font-bold shadow-lg transition-all active:scale-95"
                 >
                   <Edit3 size={13} /> Edit profile
                 </button>
               )}
 
-              <Link href={publicPath} className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-300/80 bg-white/90 backdrop-blur-sm px-3.5 py-1.5 text-[12px] font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-400 hover:bg-white">
+              <Link
+                href={publicPath}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 px-3.5 py-1.5 text-[12px] font-semibold shadow-lg transition-all active:scale-95"
+              >
                 <ExternalLink size={13} /> View public page
               </Link>
 
-              <button type="button" onClick={copyPublicLink} className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-300/80 bg-white/90 backdrop-blur-sm px-3.5 py-1.5 text-[12px] font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-400 hover:bg-white">
-                {copied ? <Check size={13} className="text-emerald-600" /> : <Link2 size={13} />}
+              <button
+                type="button"
+                onClick={copyPublicLink}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 px-3.5 py-1.5 text-[12px] font-semibold shadow-lg transition-all active:scale-95"
+              >
+                {copied ? <Check size={13} className="text-emerald-400" /> : <Link2 size={13} />}
                 {copied ? 'Copied' : 'Copy link'}
               </button>
 
@@ -231,21 +417,34 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
                 if (!platform) return null;
                 const Icon = platform.icon;
                 return (
-                  <a key={link} href={link} target="_blank" rel="noreferrer" className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-300/80 bg-white/90 backdrop-blur-sm text-slate-700 transition-colors hover:border-slate-400 hover:bg-white hover:text-[#14142b]" title={platform.label}>
+                  <a
+                    key={link}
+                    href={link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex h-8 w-8 items-center justify-center rounded-xl bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 transition-all shadow-lg active:scale-95"
+                    title={platform.label}
+                  >
                     <Icon size={14} />
                   </a>
                 );
               })}
+
               {channel.ownerEmail && (
-                <a href={`mailto:${channel.ownerEmail}`} className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-300/80 bg-white/90 backdrop-blur-sm text-slate-700 transition-colors hover:border-slate-400 hover:bg-white hover:text-[#14142b]" title={`Email ${channel.ownerEmail}`}>
+                <a
+                  href={`mailto:${channel.ownerEmail}`}
+                  className="flex h-8 w-8 items-center justify-center rounded-xl bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 transition-all shadow-lg active:scale-95"
+                  title={`Email ${channel.ownerEmail}`}
+                >
                   <Mail size={14} />
                 </a>
               )}
+
               {canEdit && (
                 <button
                   type="button"
                   onClick={() => setSocialOpen(true)}
-                  className="flex h-8 cursor-pointer items-center gap-1 rounded-xl border border-dashed border-slate-400/80 bg-white/60 px-2.5 text-[12px] font-semibold text-slate-700 transition-colors hover:border-slate-600 hover:bg-white"
+                  className="flex h-8 cursor-pointer items-center gap-1 rounded-xl bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-dashed border-white/40 px-2.5 text-[12px] font-semibold transition-all shadow-lg active:scale-95"
                   title="Manage social links"
                 >
                   <Plus size={14} />
@@ -257,7 +456,7 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
         </div>
 
         {channel.description && (
-          <p className="px-5 py-4 text-[13px] font-medium leading-relaxed text-slate-600 sm:px-6 dark:text-slate-300">
+          <p className="px-6 py-4 text-[13px] font-medium leading-relaxed text-slate-600 sm:px-7">
             {channel.description}
           </p>
         )}
@@ -266,10 +465,10 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
       {socialOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
           <div onClick={() => setSocialOpen(false)} className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-xl overflow-hidden rounded-3xl border border-slate-200 bg-white p-2 shadow-2xl">
+          <div className="relative z-10 w-full max-w-xl overflow-hidden rounded-3xl border border-slate-200 bg-surface p-2 shadow-2xl">
             <div className="mb-2 flex items-center justify-between border-b border-slate-100 px-5 pb-3 pt-3">
               <div>
-                <h3 className="text-[15px] font-bold text-[#14142b]">Social links</h3>
+                <h3 className="text-[15px] font-bold text-ink">Social links</h3>
                 <p className="text-[12px] font-medium text-slate-500">Shown on the channel&apos;s public page.</p>
               </div>
               <button

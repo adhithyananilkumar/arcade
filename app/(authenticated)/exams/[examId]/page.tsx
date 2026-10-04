@@ -56,7 +56,7 @@ export default function ExamPage() {
     return (
       <main className="arcade-wash flex min-h-screen items-center justify-center px-4">
         {error ? (
-          <p className="text-center text-[14px] font-semibold text-rose-600">{error}</p>
+          <p className="text-center text-[14px] font-semibold text-rose-600 dark:text-rose-400">{error}</p>
         ) : (
           <Loader2 className="animate-spin text-slate-400" size={26} />
         )}

@@ -82,7 +82,7 @@ export function UsersList() {
           </div>
           <input
             type="text"
-            className="block w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm focus:border-[#14142b]/30 focus:outline-none focus:ring-1 focus:ring-slate-300 shadow-sm"
+            className="block w-full rounded-xl border border-gray-200 bg-surface py-2.5 pl-10 pr-4 text-sm focus:border-ink/30 focus:outline-none focus:ring-1 focus:ring-slate-300 shadow-sm"
             placeholder="Search users with platform access…"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
@@ -91,7 +91,7 @@ export function UsersList() {
         {canManageAdminRole && (
           <button
             onClick={() => setGrantDialogOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#14142b] hover:bg-[#232735] rounded-xl transition-colors shrink-0"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-on-ink bg-ink hover:bg-ink-hover rounded-xl transition-colors shrink-0"
           >
             <UserPlus size={15} /> Grant Access
           </button>
@@ -121,7 +121,7 @@ export function UsersList() {
           {canManageAdminRole && !search && (
             <button
               onClick={() => setGrantDialogOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-[#14142b] hover:bg-[#232735] rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-on-ink bg-ink hover:bg-ink-hover rounded-lg transition-colors"
             >
               <UserPlus size={14} /> Grant someone access
             </button>
@@ -134,7 +134,7 @@ export function UsersList() {
               <div className="flex items-center gap-3 min-w-0">
                 <Avatar className="h-10 w-10 border border-slate-200 shrink-0">
                   <AvatarImage src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="object-cover" referrerPolicy="no-referrer" />
-                  <AvatarFallback className="bg-slate-100 text-[#14142b] font-semibold text-sm">
+                  <AvatarFallback className="bg-slate-100 text-ink font-semibold text-sm">
                     {user.firstName ? user.firstName.charAt(0) : 'U'}
                     {user.lastName ? user.lastName.charAt(0) : ''}
                   </AvatarFallback>
@@ -145,7 +145,7 @@ export function UsersList() {
                       href={`/${user.username}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-[#14142b] hover:underline transition-colors"
+                      className="hover:text-ink hover:underline transition-colors"
                     >
                       {user.firstName} {user.lastName}
                     </Link>
@@ -154,7 +154,7 @@ export function UsersList() {
                   <div className="mt-2 flex gap-2 flex-wrap">
                     {user.platformRoles?.length ? (
                       user.platformRoles.map((role) => (
-                        <span key={role.id} className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-[#14142b] ring-1 ring-inset ring-slate-300">
+                        <span key={role.id} className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-ink ring-1 ring-inset ring-slate-300">
                           {role.name}
                         </span>
                       ))
@@ -166,7 +166,7 @@ export function UsersList() {
               </div>
               <button
                 onClick={() => openAccessDrawer(user)}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#14142b] bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors shrink-0"
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-ink bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors shrink-0"
               >
                 <Shield size={16} /> Manage Access
               </button>

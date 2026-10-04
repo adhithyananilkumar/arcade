@@ -119,10 +119,10 @@ export function RecognitionConsole() {
     <div className="space-y-7">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-[24px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-[24px] font-extrabold tracking-tight text-slate-900">
             Recognition
           </h1>
-          <p className="mt-1.5 max-w-2xl text-[13px] font-medium leading-relaxed text-slate-500 dark:text-neutral-400">
+          <p className="mt-1.5 max-w-2xl text-[13px] font-medium leading-relaxed text-slate-500">
             Verification ticks, Arcade team badges, and one-off awards. A badge
             is what the platform publicly asserts about an account — it grants no
             permission, and revoking it takes nothing away but the badge.
@@ -134,7 +134,7 @@ export function RecognitionConsole() {
             <button
               type="button"
               onClick={() => setCreatingDefinition(true)}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-extrabold tracking-tight text-slate-700 transition-colors hover:border-slate-900 dark:border-neutral-800 dark:bg-black dark:text-neutral-200 dark:hover:border-neutral-400"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-surface px-4 py-2.5 text-[13px] font-extrabold tracking-tight text-slate-700 transition-colors hover:border-slate-900"
             >
               <Plus size={14} /> New badge
             </button>
@@ -143,14 +143,14 @@ export function RecognitionConsole() {
             type="button"
             onClick={() => setGranting(true)}
             disabled={!definitions.length}
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-[13px] font-extrabold tracking-tight text-white transition-colors hover:bg-slate-800 disabled:opacity-40 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
+            className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-[13px] font-extrabold tracking-tight text-on-ink transition-colors hover:bg-slate-800 disabled:opacity-40"
           >
             <Plus size={14} /> Grant badge
           </button>
         </div>
       </header>
 
-      <div className="flex items-center gap-1 border-b border-slate-100 dark:border-neutral-900">
+      <div className="flex items-center gap-1 border-b border-slate-100">
         {(['grants', 'catalog'] as const).map((id) => (
           <button
             key={id}
@@ -158,8 +158,8 @@ export function RecognitionConsole() {
             onClick={() => setTab(id)}
             className={`-mb-px border-b-2 px-4 py-3 text-[13px] font-bold tracking-tight transition-colors ${
               tab === id
-                ? 'border-slate-900 text-slate-900 dark:border-white dark:text-white'
-                : 'border-transparent text-slate-400 hover:text-slate-600 dark:text-neutral-500'
+                ? 'border-slate-900 text-slate-900'
+                : 'border-transparent text-slate-400 hover:text-slate-600'
             }`}
           >
             {id === 'grants' ? 'Who holds what' : 'Badge catalog'}
@@ -168,7 +168,7 @@ export function RecognitionConsole() {
       </div>
 
       {loading ? (
-        <div className="flex items-center gap-2 py-16 text-[13px] font-bold text-slate-400 dark:text-neutral-500">
+        <div className="flex items-center gap-2 py-16 text-[13px] font-bold text-slate-400">
           <Loader2 size={15} className="animate-spin" /> Loading…
         </div>
       ) : tab === 'grants' ? (
@@ -177,20 +177,20 @@ export function RecognitionConsole() {
             <div className="relative min-w-[240px] flex-1">
               <Search
                 size={14}
-                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 dark:text-neutral-600"
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300"
               />
               <input
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 placeholder="Filter by holder or badge"
-                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3.5 text-[13px] font-semibold text-slate-900 outline-none focus:border-slate-900 dark:border-neutral-800 dark:bg-black dark:text-white dark:focus:border-neutral-400"
+                className="w-full rounded-xl border border-slate-200 bg-surface py-2.5 pl-9 pr-3.5 text-[13px] font-semibold text-slate-900 outline-none focus:border-slate-900"
               />
             </div>
 
             <select
               value={definitionFilter}
               onChange={(e) => setDefinitionFilter(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-[13px] font-bold text-slate-700 outline-none focus:border-slate-900 dark:border-neutral-800 dark:bg-black dark:text-neutral-200"
+              className="rounded-xl border border-slate-200 bg-surface px-3.5 py-2.5 text-[13px] font-bold text-slate-700 outline-none focus:border-slate-900"
             >
               <option value="">All badges</option>
               {definitions.map((definition) => (
@@ -207,14 +207,14 @@ export function RecognitionConsole() {
               description="Grant one to verify an instructor or an organization, or to recognise someone on the Arcade team."
             />
           ) : (
-            <ul className="divide-y divide-slate-100 overflow-hidden rounded-[20px] border border-slate-100 dark:divide-neutral-900 dark:border-neutral-900">
+            <ul className="divide-y divide-slate-100 overflow-hidden rounded-[20px] border border-slate-100">
               {visibleGrants.map((grant) => (
                 <li
                   key={grant.id}
-                  className="flex flex-wrap items-center gap-4 bg-white px-5 py-4 dark:bg-black"
+                  className="flex flex-wrap items-center gap-4 bg-surface px-5 py-4"
                 >
                   <span
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden bg-slate-50 dark:bg-neutral-900 ${
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden bg-slate-50 ${
                       grant.subjectType === 'CHANNEL' ? 'rounded-xl' : 'rounded-full'
                     }`}
                   >
@@ -234,12 +234,12 @@ export function RecognitionConsole() {
                       {grant.subjectHandle ? (
                         <Link
                           href={`/${grant.subjectHandle}`}
-                          className="truncate text-[14px] font-extrabold tracking-tight text-slate-900 hover:text-indigo-600 dark:text-white dark:hover:text-indigo-400"
+                          className="truncate text-[14px] font-extrabold tracking-tight text-slate-900 hover:text-indigo-600 dark:hover:text-indigo-400"
                         >
                           {grant.subjectName}
                         </Link>
                       ) : (
-                        <span className="truncate text-[14px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+                        <span className="truncate text-[14px] font-extrabold tracking-tight text-slate-900">
                           {grant.subjectName}
                         </span>
                       )}
@@ -260,7 +260,7 @@ export function RecognitionConsole() {
                         size={16}
                       />
                     </div>
-                    <p className="mt-0.5 text-[11.5px] font-bold text-slate-400 dark:text-neutral-500">
+                    <p className="mt-0.5 text-[11.5px] font-bold text-slate-400">
                       {grant.title || grant.badgeName}
                       {grant.tenure && ` · ${grant.tenure}`}
                       {` · granted by ${grant.grantedByName}`}
@@ -270,7 +270,7 @@ export function RecognitionConsole() {
                   <button
                     type="button"
                     onClick={() => revoke(grant)}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-[12px] font-extrabold tracking-tight text-slate-500 transition-colors hover:border-rose-300 hover:text-rose-600 dark:border-neutral-800 dark:text-neutral-400 dark:hover:border-rose-900 dark:hover:text-rose-400"
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-[12px] font-extrabold tracking-tight text-slate-500 transition-colors hover:border-rose-300 hover:text-rose-600 dark:hover:border-rose-900 dark:hover:text-rose-400"
                   >
                     <Undo2 size={12} /> Revoke
                   </button>
@@ -284,10 +284,10 @@ export function RecognitionConsole() {
           {definitions.map((definition) => (
             <li
               key={definition.id}
-              className={`rounded-[20px] border bg-white p-5 dark:bg-black ${
+              className={`rounded-[20px] border bg-surface p-5 ${
                 definition.active
-                  ? 'border-slate-100 dark:border-neutral-900'
-                  : 'border-dashed border-slate-200 opacity-60 dark:border-neutral-800'
+                  ? 'border-slate-100'
+                  : 'border-dashed border-slate-200 opacity-60'
               }`}
             >
               <div className="flex items-start gap-3">
@@ -298,29 +298,29 @@ export function RecognitionConsole() {
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[14px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    <span className="text-[14px] font-extrabold tracking-tight text-slate-900">
                       {definition.displayName}
                     </span>
                     {definition.systemDefined && (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-500 dark:bg-neutral-900 dark:text-neutral-400">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-500">
                         <Lock size={9} /> System
                       </span>
                     )}
                     {!definition.active && (
-                      <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-400 dark:bg-neutral-900">
+                      <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-400">
                         Retired
                       </span>
                     )}
                   </div>
-                  <p className="mt-0.5 font-mono text-[10.5px] font-bold text-slate-400 dark:text-neutral-600">
+                  <p className="mt-0.5 font-mono text-[10.5px] font-bold text-slate-400">
                     {definition.code}
                   </p>
                   {definition.description && (
-                    <p className="mt-2 text-[12.5px] font-medium leading-relaxed text-slate-500 dark:text-neutral-400">
+                    <p className="mt-2 text-[12.5px] font-medium leading-relaxed text-slate-500">
                       {definition.description}
                     </p>
                   )}
-                  <p className="mt-3 text-[11.5px] font-bold text-slate-400 dark:text-neutral-500">
+                  <p className="mt-3 text-[11.5px] font-bold text-slate-400">
                     {definition.category} · applies to {definition.appliesTo} ·{' '}
                     {definition.liveGrantCount}{' '}
                     {definition.liveGrantCount === 1 ? 'holder' : 'holders'}

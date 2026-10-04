@@ -54,7 +54,7 @@ function BareEditor({
   // selections instead of synthetic DOM ones.
   (window as unknown as { __editor?: unknown }).__editor = editor;
   const content = (
-    <div className="rounded-xl border border-gray-200 bg-white px-8 py-6">
+    <div className="rounded-xl border border-gray-200 bg-surface px-8 py-6">
       <EditorContent editor={editor} />
     </div>
   );

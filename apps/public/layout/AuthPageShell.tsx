@@ -23,8 +23,8 @@ export function AuthPageShell({
       className={`relative min-h-screen w-full overflow-x-hidden ${spaceGrotesk.className}`}
       style={{
         background:
-          'linear-gradient(to bottom, #E9EEFB 0%, #F8FAFC 28%, #FFFFFF 52%, #FFFFFF 72%, #EAF7EF 100%)',
-        color: '#14142b',
+          'var(--theme-wash, linear-gradient(to bottom, #E9EEFB 0%, #F8FAFC 28%, #FFFFFF 52%, #FFFFFF 72%, #EAF7EF 100%))',
+        color: 'var(--theme-ink, #14142b)',
       }}
     >
       <div

@@ -70,7 +70,9 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     if (user?.onboardingCompleted) {
-      router.push('/');
+      // Document navigation, not router.push: "/" is resolved to the dashboard by middleware on
+      // the request, and a soft navigation can replay the cached signed-out landing page instead.
+      window.location.replace('/');
     }
   }, [user, router]);
 
@@ -151,7 +153,7 @@ export default function OnboardingPage() {
         nickname.trim()
       );
       updateUser(profileRes);
-      router.push('/');
+      window.location.assign('/'); // see the onboardingCompleted effect above
     } catch (error) {
       console.error('Failed to complete onboarding', error);
       setIsSubmitting(false);
@@ -209,7 +211,7 @@ export default function OnboardingPage() {
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="mb-7 text-center sm:text-left"
           >
-            <h1 className="mb-2 text-[1.85rem] font-bold leading-tight tracking-tight text-[#14142b] md:text-[2.1rem]">
+            <h1 className="mb-2 text-[1.85rem] font-bold leading-tight tracking-tight text-ink md:text-[2.1rem]">
               {stepTitle}
               <span className="bg-gradient-to-r from-[#4C6FFF] via-[#1DB876] to-[#9B5DE5] bg-clip-text text-transparent">
                 .
@@ -234,7 +236,7 @@ export default function OnboardingPage() {
                 >
                   <div className="flex flex-col items-center justify-center py-4">
                     <div className="relative group">
-                      <Avatar className="h-[88px] w-[88px] border-4 border-white shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+                      <Avatar className="h-[88px] w-[88px] border-4 border-surface shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                         <AvatarImage src={getAvatarUrl(avatarUrl)} alt="Avatar" className="object-cover" referrerPolicy="no-referrer" />
                         <AvatarFallback className="bg-slate-50 text-slate-400 text-3xl font-bold">
                           {firstName ? firstName.charAt(0) : 'U'}
@@ -255,7 +257,7 @@ export default function OnboardingPage() {
                   </div>
 
                   <div className={`auth-field relative flex h-[60px] cursor-text flex-col justify-center rounded-[20px] px-5 py-2 transition-all ${usernameStatus === 'taken' ? 'auth-field--error' : ''}`}>
-                    <label htmlFor="username" className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA]">Username</label>
+                    <label htmlFor="username" className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA] dark:text-slate-400">Username</label>
                     <input 
                       id="username"
                       value={username}
@@ -268,7 +270,7 @@ export default function OnboardingPage() {
                       {usernameStatus === 'checking' ? <Loader2 className="h-5 w-5 animate-spin text-slate-300" /> : 
                        usernameStatus === 'available' ? <CheckCircle2 className="h-5 w-5 text-[#1DB876]" /> : 
                        usernameStatus === 'taken' ? <AlertCircle className="h-5 w-5 text-red-500" /> : 
-                       <User className="h-5 w-5 text-[#A5B3CA]" />}
+                       <User className="h-5 w-5 text-[#A5B3CA] dark:text-slate-400" />}
                     </div>
                   </div>
 
@@ -285,7 +287,7 @@ export default function OnboardingPage() {
                               key={s} 
                               type="button"
                               onClick={() => setUsername(s)}
-                              className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
+                              className="rounded-full border border-slate-200 bg-surface px-3.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
                             >
                               {s}
                             </button>
@@ -309,7 +311,7 @@ export default function OnboardingPage() {
                 >
                   <div className="grid grid-cols-2 gap-3">
                     <div className="auth-field relative flex h-[60px] cursor-text flex-col justify-center rounded-[20px] px-5 py-2">
-                      <label htmlFor="firstName" className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA] capitalize">First name</label>
+                      <label htmlFor="firstName" className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA] capitalize dark:text-slate-400">First name</label>
                       <input 
                         id="firstName" 
                         value={firstName} 
@@ -320,10 +322,10 @@ export default function OnboardingPage() {
                         autoComplete="given-name"
                         className="w-full border-none bg-transparent p-0 pr-10 text-[15px] font-bold text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300" 
                       />
-                      <Briefcase className="absolute right-5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#A5B3CA]" />
+                      <Briefcase className="absolute right-5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#A5B3CA] dark:text-slate-400" />
                     </div>
                     <div className="auth-field relative flex h-[60px] cursor-text flex-col justify-center rounded-[20px] px-5 py-2">
-                      <label htmlFor="lastName" className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA] capitalize">Last name</label>
+                      <label htmlFor="lastName" className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA] capitalize dark:text-slate-400">Last name</label>
                       <input 
                         id="lastName" 
                         value={lastName} 
@@ -331,13 +333,13 @@ export default function OnboardingPage() {
                         autoComplete="family-name"
                         className="w-full border-none bg-transparent p-0 pr-10 text-[15px] font-bold text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300" 
                       />
-                      <Briefcase className="absolute right-5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#A5B3CA]" />
+                      <Briefcase className="absolute right-5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#A5B3CA] dark:text-slate-400" />
                     </div>
                   </div>
 
                   <div className="space-y-1">
                     <div className={`auth-field relative flex h-[60px] cursor-text flex-col justify-center rounded-[20px] px-5 py-2 ${nicknameTouched && nicknameIssue ? 'auth-field--error' : ''}`}>
-                      <label htmlFor="nickname" className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA]">What should we call you?</label>
+                      <label htmlFor="nickname" className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA] dark:text-slate-400">What should we call you?</label>
                       <input
                         id="nickname"
                         value={nickname}
@@ -350,7 +352,7 @@ export default function OnboardingPage() {
                         aria-describedby="nickname-hint"
                         className="w-full border-none bg-transparent p-0 pr-14 text-[15px] font-bold text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300"
                       />
-                      <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[12px] font-bold tabular-nums text-[#A5B3CA]">
+                      <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[12px] font-bold tabular-nums text-[#A5B3CA] dark:text-slate-400">
                         {nicknameLength(nickname.trim())}/{NICKNAME_MAX_LENGTH}
                       </span>
                     </div>
@@ -360,7 +362,7 @@ export default function OnboardingPage() {
                   </div>
 
                   <div className="auth-field relative flex min-h-[64px] flex-col justify-center rounded-[20px] px-5 py-2">
-                    <label htmlFor="mobile" className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA] capitalize">Mobile number</label>
+                    <label htmlFor="mobile" className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA] capitalize dark:text-slate-400">Mobile number</label>
                     <PhoneInput
                       id="mobile"
                       variant="auth"
@@ -381,11 +383,11 @@ export default function OnboardingPage() {
                       onClick={() => setIsGenderDropdownOpen(!isGenderDropdownOpen)}
                       aria-expanded={isGenderDropdownOpen}
                     >
-                      <span className="mb-0.5 text-[11px] font-bold tracking-wide text-[#A5B3CA] capitalize">Gender</span>
+                      <span className="mb-0.5 text-[11px] font-bold tracking-wide text-[#A5B3CA] capitalize dark:text-slate-400">Gender</span>
                       <span className={`text-[15px] font-bold ${gender ? 'text-slate-900' : 'font-medium text-slate-300'}`}>
                         {gender ? genderOptions.find(g => g.value === gender)?.label : 'Select gender'}
                       </span>
-                      <ChevronDown className={`absolute right-5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#A5B3CA] transition-transform duration-300 ${isGenderDropdownOpen ? 'rotate-180' : ''}`} />
+                      <ChevronDown className={`absolute right-5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#A5B3CA] transition-transform duration-300 dark:text-slate-400 ${isGenderDropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     <motion.div
@@ -397,7 +399,7 @@ export default function OnboardingPage() {
                       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
                       className="overflow-hidden"
                     >
-                      <div className="mt-2 overflow-hidden rounded-[20px] border border-slate-200/80 bg-white">
+                      <div className="mt-2 overflow-hidden rounded-[20px] border border-slate-200/80 bg-surface">
                         {genderOptions.map((option, idx) => (
                           <button
                             key={option.value}
@@ -407,7 +409,7 @@ export default function OnboardingPage() {
                               setIsGenderDropdownOpen(false);
                             }}
                             className={`w-full px-5 py-3.5 text-left text-[14px] font-semibold transition-colors hover:bg-slate-50 ${
-                              gender === option.value ? 'bg-slate-50 text-[#4C6FFF]' : 'text-slate-600'
+                              gender === option.value ? 'bg-slate-50 text-[#4C6FFF] dark:text-[#8db1ff]' : 'text-slate-600'
                             } ${idx !== genderOptions.length - 1 ? 'border-b border-slate-100' : ''}`}
                           >
                             {option.label}
@@ -418,7 +420,7 @@ export default function OnboardingPage() {
                   </div>
 
                   <div className="auth-field relative flex h-[60px] cursor-text flex-col justify-center rounded-[20px] px-5 py-2">
-                    <label htmlFor="address" className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA] capitalize">Address</label>
+                    <label htmlFor="address" className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA] capitalize dark:text-slate-400">Address</label>
                     <input 
                       id="address" 
                       value={address} 
@@ -427,7 +429,7 @@ export default function OnboardingPage() {
                       autoComplete="street-address"
                       className="w-full border-none bg-transparent p-0 pr-10 text-[15px] font-bold text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300" 
                     />
-                    <MapPin className="absolute right-5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#A5B3CA]" />
+                    <MapPin className="absolute right-5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#A5B3CA] dark:text-slate-400" />
                   </div>
                 </motion.div>
               )}
@@ -444,7 +446,7 @@ export default function OnboardingPage() {
                 >
                   <div className="space-y-1">
                     <div className={`auth-field relative flex h-[60px] cursor-text flex-col justify-center rounded-[20px] px-5 py-2 ${socialLink1 && !isLinkedinValid ? 'auth-field--error' : ''}`}>
-                      <label htmlFor="linkedin" className={`mb-0.5 cursor-text text-[11px] font-bold tracking-wide capitalize ${socialLink1 && !isLinkedinValid ? 'text-red-400' : 'text-[#A5B3CA]'}`}>LinkedIn URL</label>
+                      <label htmlFor="linkedin" className={`mb-0.5 cursor-text text-[11px] font-bold tracking-wide capitalize ${socialLink1 && !isLinkedinValid ? 'text-red-400' : 'text-[#A5B3CA] dark:text-slate-400'}`}>LinkedIn URL</label>
                       <input 
                         id="linkedin"
                         value={socialLink1} 
@@ -453,7 +455,7 @@ export default function OnboardingPage() {
                         className="w-full border-none bg-transparent p-0 pr-10 text-[15px] font-bold text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300" 
                       />
                       <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="absolute right-5 top-1/2 z-10 -translate-y-1/2 transition-transform hover:scale-110" title="Open LinkedIn to copy your link">
-                        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" className="h-[20px] w-[20px] text-[#0077b5]" xmlns="http://www.w3.org/2000/svg">
+                        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" className="h-[20px] w-[20px] text-[#0077b5] dark:text-[#64c1ff]" xmlns="http://www.w3.org/2000/svg">
                           <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                         </svg>
                       </a>
@@ -464,7 +466,7 @@ export default function OnboardingPage() {
                   </div>
                   <div className="space-y-1">
                     <div className={`auth-field relative flex h-[60px] cursor-text flex-col justify-center rounded-[20px] px-5 py-2 ${socialLink2 && !isGithubValid ? 'auth-field--error' : ''}`}>
-                      <label htmlFor="github" className={`mb-0.5 cursor-text text-[11px] font-bold tracking-wide capitalize ${socialLink2 && !isGithubValid ? 'text-red-400' : 'text-[#A5B3CA]'}`}>GitHub URL</label>
+                      <label htmlFor="github" className={`mb-0.5 cursor-text text-[11px] font-bold tracking-wide capitalize ${socialLink2 && !isGithubValid ? 'text-red-400' : 'text-[#A5B3CA] dark:text-slate-400'}`}>GitHub URL</label>
                       <input 
                         id="github"
                         value={socialLink2} 
@@ -496,7 +498,7 @@ export default function OnboardingPage() {
                   className="space-y-6"
                 >
                   <div className="auth-field relative flex h-[52px] cursor-text flex-row items-center rounded-[20px] px-5">
-                    <Search className="h-4 w-4 text-[#A5B3CA] shrink-0" />
+                    <Search className="h-4 w-4 text-[#A5B3CA] shrink-0 dark:text-slate-400" />
                     <input
                       value={interestSearch}
                       onChange={e => setInterestSearch(e.target.value)}
@@ -530,10 +532,10 @@ export default function OnboardingPage() {
                             onClick={() => toggleInterest(interest.id)}
                             className={`px-5 py-3 rounded-[24px] text-[14px] font-bold transition-all border border-transparent ${
                               isSelected
-                                ? 'bg-[#12141C] text-white shadow-[0_2px_10px_rgba(18,20,28,0.12)]'
+                                ? 'bg-ink text-on-ink shadow-[0_2px_10px_rgba(18,20,28,0.12)]'
                                 : atLimit
-                                  ? 'bg-white/40 text-slate-300 border border-slate-200/60 cursor-not-allowed'
-                                  : 'bg-white/70 text-slate-500 hover:bg-white hover:text-slate-800 border border-slate-200/80'
+                                  ? 'bg-surface/40 text-slate-300 border border-slate-200/60 cursor-not-allowed'
+                                  : 'bg-surface/70 text-slate-500 hover:bg-surface hover:text-slate-800 border border-slate-200/80'
                             }`}
                           >
                             {interest.name}
@@ -552,7 +554,7 @@ export default function OnboardingPage() {
               variant="ghost" 
               onClick={handleBack} 
               disabled={isSubmitting}
-              className="group flex h-[52px] w-1/2 flex-1 items-center justify-center gap-2 rounded-[26px] bg-[#F7F9FB] px-8 text-[14px] font-bold text-[#A5B3CA] transition-all hover:bg-slate-100 hover:text-slate-700"
+              className="group flex h-[52px] w-1/2 flex-1 items-center justify-center gap-2 rounded-[26px] bg-slate-50 px-8 text-[14px] font-bold text-[#A5B3CA] transition-all hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400"
             >
               <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
               Go back
@@ -562,7 +564,7 @@ export default function OnboardingPage() {
               <Button 
                 onClick={nextStep} 
                 disabled={(step === 1 && !isStep1Valid) || (step === 2 && !isStep2Valid) || (step === 3 && !isStep3Valid)}
-                className={`h-[52px] px-8 rounded-full font-semibold text-[14px] bg-[#12141C] hover:bg-[#232735] text-white shadow-[0_2px_10px_rgba(18,20,28,0.14)] transition-all duration-300 ease-out hover:-translate-y-0.5 active:translate-y-0 w-1/2 flex-1 ${(step === 1 && usernameStatus === 'taken') ? 'opacity-0 pointer-events-none scale-95 translate-y-2' : 'opacity-100 scale-100 translate-y-0'}`}
+                className={`h-[52px] px-8 rounded-full font-semibold text-[14px] bg-ink hover:bg-ink-hover text-on-ink shadow-[0_2px_10px_rgba(18,20,28,0.14)] transition-all duration-300 ease-out hover:-translate-y-0.5 active:translate-y-0 w-1/2 flex-1 ${(step === 1 && usernameStatus === 'taken') ? 'opacity-0 pointer-events-none scale-95 translate-y-2' : 'opacity-100 scale-100 translate-y-0'}`}
               >
                 {step === 3 && (!socialLink1.trim() && !socialLink2.trim()) ? 'Skip' : 'Continue'}
               </Button>
@@ -570,7 +572,7 @@ export default function OnboardingPage() {
               <Button 
                 onClick={handleComplete} 
                 disabled={isSubmitting}
-                className="h-[52px] px-8 rounded-full font-semibold text-[14px] bg-[#12141C] hover:bg-[#232735] text-white shadow-[0_2px_10px_rgba(18,20,28,0.14)] transition-all hover:-translate-y-0.5 active:translate-y-0 w-1/2 flex-1"
+                className="h-[52px] px-8 rounded-full font-semibold text-[14px] bg-ink hover:bg-ink-hover text-on-ink shadow-[0_2px_10px_rgba(18,20,28,0.14)] transition-all hover:-translate-y-0.5 active:translate-y-0 w-1/2 flex-1"
               >
                 {isSubmitting ? (
                   <PebbleLoader tone="light" size="sm" />

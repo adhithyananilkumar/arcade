@@ -11,7 +11,7 @@ import { myEnrollmentKeys } from '../api/myEnrollments.queries';
 import { ResourceType, UIEnrollmentState } from '../types/enrollment.types';
 import { toast } from 'sonner';
 import { ArrowRight, Loader2, LogOut } from 'lucide-react';
-import { launchRazorpayCheckout } from '@/domains/payment';
+import { launchRazorpayCheckout, CheckoutHoldStatus } from '@/domains/payment';
 
 /**
  * Turns a thrown enrollment failure into something worth reading.
@@ -73,6 +73,8 @@ export function EnrollmentButton({
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingPaymentEnrollmentId, setPendingPaymentEnrollmentId] = useState<string | null>(null);
   const [isPaying, setIsPaying] = useState(false);
+  // Bumped when a checkout window closes, so the hold/decline status line re-reads the server.
+  const [checkoutRefresh, setCheckoutRefresh] = useState(0);
 
   // Track idempotency key across component lifecycle for the same logical action
   const idempotencyKeyRef = useRef<string | null>(null);
@@ -124,24 +126,35 @@ export function EnrollmentButton({
       },
       onFailed: () => {
         setIsPaying(false);
-        toast.error('Payment failed. No amount was deducted — you can try again.');
+        setCheckoutRefresh((n) => n + 1);
+        toast.error('The payment could not be completed. Nothing was charged — you can try again.');
       },
       onExpired: () => {
         setIsPaying(false);
-        toast.error('This checkout session expired. Please try again.');
+        setCheckoutRefresh((n) => n + 1);
+        toast.error('This checkout timed out before a payment was made. Start again whenever you are ready.');
       },
       onVerifying: () => {
-        toast.info('Verifying your payment…');
+        toast.info('Confirming your payment with the bank…');
       },
       onVerifyTimeout: () => {
         setIsPaying(false);
-        toast.info('Still confirming your payment — check back in a moment.');
+        setCheckoutRefresh((n) => n + 1);
+        toast.info(
+          'Your bank is taking longer than usual to confirm. If you were charged, access is granted automatically — no need to pay again.',
+          { duration: 10000 },
+        );
       },
       onDismissed: () => {
         setIsPaying(false);
+        setCheckoutRefresh((n) => n + 1);
+      },
+      onAttemptFailed: (reason) => {
+        toast.error(`That attempt didn't go through: ${reason}. You can retry in the same window.`);
       },
       onError: (message) => {
         setIsPaying(false);
+        setCheckoutRefresh((n) => n + 1);
         toast.error(message);
       },
     });
@@ -283,14 +296,14 @@ export function EnrollmentButton({
       <div className="flex items-center gap-2.5 w-full">
         <button
           onClick={handleGoToResource}
-          className={`bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold py-3 px-5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 flex-1 text-sm ${className}`}>
+          className={`bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold py-3.5 px-7 rounded-full shadow-[0_4px_20px_rgba(16,185,129,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_6px_24px_rgba(16,185,129,0.35)] transition-all text-sm flex items-center justify-center gap-2 flex-1 ${className}`}>
           <span>Go to {resourceLabel}</span>
-          <ArrowRight className="w-4 h-4 shrink-0" />
+          <ArrowRight className="w-4 h-4 shrink-0 text-white" />
         </button>
         <button
           onClick={handleRevoke}
           disabled={isProcessing}
-          className="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 dark:bg-gray-800 dark:hover:bg-red-950/40 dark:text-gray-400 dark:hover:text-red-400 font-medium py-3 px-3.5 rounded-xl transition-colors border border-gray-200 dark:border-gray-700 disabled:opacity-50 text-xs shrink-0 flex items-center gap-1.5"
+          className="bg-slate-950/5 hover:bg-slate-950/10 active:scale-[0.98] text-slate-700 hover:text-red-600 backdrop-blur-md border border-slate-950/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 flex items-center gap-1.5 disabled:opacity-50 dark:hover:text-red-400"
           title="Unenroll">
           <LogOut className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Unenroll</span>
@@ -304,13 +317,13 @@ export function EnrollmentButton({
       <div className="flex items-center gap-2.5 w-full">
         <button
           disabled
-          className={`bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 font-semibold py-3 px-4 rounded-xl shadow-sm opacity-90 cursor-default border border-amber-200 dark:border-amber-700 flex-1 text-center text-sm ${className}`}>
+          className={`bg-amber-500/15 text-amber-900 dark:text-amber-200 backdrop-blur-md font-bold py-3.5 px-6 rounded-full border border-amber-500/20 shadow-xs opacity-90 cursor-default flex-1 text-center text-sm ${className}`}>
           Waitlisted
         </button>
         <button
           onClick={handleRevoke}
           disabled={isProcessing}
-          className="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 dark:bg-gray-800 dark:hover:bg-red-950/40 dark:text-gray-400 dark:hover:text-red-400 font-medium py-3 px-3.5 rounded-xl transition-colors border border-gray-200 dark:border-gray-700 disabled:opacity-50 text-xs shrink-0"
+          className="bg-slate-950/5 hover:bg-slate-950/10 active:scale-[0.98] text-slate-700 hover:text-red-600 backdrop-blur-md border border-slate-950/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 disabled:opacity-50 dark:hover:text-red-400"
           title="Leave waitlist">
           Leave
         </button>
@@ -321,10 +334,11 @@ export function EnrollmentButton({
   if (currentState === 'PENDING') {
     if (pendingPaymentEnrollmentId) {
       return (
+        <div className="w-full">
         <button
           onClick={() => startPayment(pendingPaymentEnrollmentId)}
           disabled={isPaying}
-          className={`bg-[#4c6fff] hover:bg-[#3d5ce0] active:scale-[0.98] text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition-all w-full text-sm flex items-center justify-center gap-2 disabled:opacity-70 ${className}`}>
+          className={`bg-ink hover:bg-ink active:scale-[0.98] text-on-ink font-bold py-3.5 px-8 rounded-full shadow-[0_8px_25px_rgba(20,22,28,0.22),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15 transition-all w-full text-sm flex items-center justify-center gap-2 disabled:opacity-70 ${className}`}>
           {isPaying ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin shrink-0" />
@@ -334,25 +348,45 @@ export function EnrollmentButton({
             'Complete Payment'
           )}
         </button>
+        {!isPaying && (
+          <CheckoutHoldStatus enrollmentId={pendingPaymentEnrollmentId} refreshKey={checkoutRefresh} />
+        )}
+        </div>
       );
     }
-    // No payment handle in this component instance — either the page was reloaded while a
-    // payment settles, or the enrollment is waiting on someone's approval. `pendingReason`
-    // tells the two apart; "Action required" on a payment that is merely settling would tell
-    // the learner to do something there is nothing to do about.
-    const isSettlingPayment = pendingReason === 'PAYMENT';
+    // No payment handle in this component instance — the page was reloaded with a checkout still
+    // open, or the enrollment is waiting on someone's approval. `pendingReason` tells them apart.
+    if (pendingReason === 'PAYMENT') {
+      return (
+        <div className="flex items-center gap-2.5 w-full">
+          <button
+            onClick={handleEnroll}
+            disabled={isProcessing}
+            className={`bg-ink hover:bg-ink active:scale-[0.98] text-on-ink font-bold py-3.5 px-8 rounded-full shadow-[0_8px_25px_rgba(20,22,28,0.22),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15 transition-all flex-1 text-sm flex items-center justify-center gap-2 disabled:opacity-70 ${className}`}>
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                <span>Opening checkout…</span>
+              </>
+            ) : (
+              'Complete Payment'
+            )}
+          </button>
+          <button
+            onClick={handleRevoke}
+            disabled={isProcessing}
+            className="bg-slate-950/5 hover:bg-slate-950/10 active:scale-[0.98] text-slate-700 hover:text-red-600 backdrop-blur-md border border-slate-950/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 disabled:opacity-50 dark:hover:text-red-400"
+            title="Cancel this registration">
+            Cancel
+          </button>
+        </div>
+      );
+    }
     return (
       <button
         disabled
-        className={`bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold py-3 px-4 rounded-xl shadow-sm opacity-90 cursor-default border border-blue-200 dark:border-blue-800 w-full text-sm ${isSettlingPayment ? 'flex items-center justify-center gap-2' : ''} ${className}`}>
-        {isSettlingPayment ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-            <span>Processing…</span>
-          </>
-        ) : (
-          'Action required'
-        )}
+        className={`bg-blue-500/15 text-blue-900 dark:text-blue-200 backdrop-blur-md font-bold py-3.5 px-6 rounded-full border border-blue-500/20 shadow-xs opacity-90 cursor-default w-full text-sm ${className}`}>
+        Action required
       </button>
     );
   }
@@ -362,7 +396,7 @@ export function EnrollmentButton({
     <button
       onClick={handleEnroll}
       disabled={isProcessing}
-      className={`bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold py-3 px-5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed w-full text-sm ${className}`}>
+      className={`bg-ink hover:bg-ink active:scale-[0.98] text-on-ink font-bold py-3.5 px-8 rounded-full shadow-[0_8px_25px_rgba(20,22,28,0.22),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed w-full text-sm ${className}`}>
       {isProcessing ? (
         <>
           <Loader2 className="w-4 h-4 animate-spin shrink-0" />
@@ -371,7 +405,7 @@ export function EnrollmentButton({
       ) : (
         <>
           <span>{resourceType === 'EXAM' ? 'Register' : 'Enroll Now'}</span>
-          <ArrowRight className="w-4 h-4 shrink-0" />
+          <ArrowRight className="w-4 h-4 shrink-0 text-white" />
         </>
       )}
     </button>

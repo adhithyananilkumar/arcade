@@ -158,10 +158,10 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
   if (mode === "closed") return null;
 
   return (
-    <div className="pointer-events-auto fixed right-4 top-20 bottom-4 z-[65] flex w-[340px] flex-col rounded-3xl border border-white/40 bg-white/70 shadow-xl backdrop-blur-xl">
+    <div className="pointer-events-auto fixed right-4 top-20 bottom-4 z-[65] flex w-[340px] flex-col rounded-3xl border border-white/40 bg-surface/70 shadow-xl backdrop-blur-xl">
       {mode === "workflow" && (
         <div className="flex items-center gap-1.5 p-3">
-          <div className="flex flex-1 items-center gap-1 rounded-full border border-white/40 bg-white/60 p-1">
+          <div className="flex flex-1 items-center gap-1 rounded-full border border-white/40 bg-surface/60 p-1">
             {TABS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
@@ -169,8 +169,8 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
                 onClick={() => onTabChange(id)}
                 className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
                   tab === id
-                    ? "bg-[#14142b] text-white shadow-sm"
-                    : "text-slate-500 hover:text-[#14142b]"
+                    ? "bg-ink text-on-ink shadow-sm"
+                    : "text-slate-500 hover:text-ink"
                 }`}
               >
                 <Icon size={13} />
@@ -192,7 +192,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
           editorContextNode
         ) : props.unavailableNotes?.[tab as RightSidebarTab] ? (
           <div className="flex flex-col items-center justify-center gap-2.5 py-16 text-center">
-            <span className="grid size-12 place-items-center rounded-2xl border border-white/40 bg-white/60">
+            <span className="grid size-12 place-items-center rounded-2xl border border-white/40 bg-surface/60">
               <Shield className="h-6 w-6 text-slate-300" />
             </span>
             <p className="max-w-[240px] text-xs leading-relaxed text-slate-500">
@@ -207,7 +207,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
           )
         ) : tab === "collab" && props.collaborationCapability && props.collaborationCapability.status !== "available" ? (
           <div className="flex flex-col items-center justify-center gap-2.5 py-16 text-center">
-            <span className="grid size-12 place-items-center rounded-2xl border border-white/40 bg-white/60">
+            <span className="grid size-12 place-items-center rounded-2xl border border-white/40 bg-surface/60">
               <Users className="h-6 w-6 text-slate-300" />
             </span>
             <h4 className="text-sm font-semibold text-slate-800">
@@ -226,7 +226,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
               <p className="text-xs">Loading history…</p>
             </div>
           ) : props.statusHistoryError ? (
-            <div className="rounded-2xl border border-rose-200/70 bg-rose-50/70 p-3 text-xs text-rose-600">
+            <div className="rounded-2xl border border-rose-200/70 bg-rose-50/70 p-3 text-xs text-rose-600 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-400">
               {props.statusHistoryError}
               <button
                 type="button"
@@ -238,26 +238,26 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
             </div>
           ) : props.statusHistory.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2.5 py-16 text-center">
-              <span className="grid size-12 place-items-center rounded-2xl bg-white/60 border border-white/40">
+              <span className="grid size-12 place-items-center rounded-2xl bg-surface/60 border border-white/40">
                 <AlertCircle className="h-6 w-6 text-slate-300" />
               </span>
-              <p className="text-sm font-semibold text-[#14142b]">No status history yet</p>
+              <p className="text-sm font-semibold text-ink">No status history yet</p>
               <p className="max-w-[200px] text-xs text-slate-400">
                 Submits, approvals, and rejections will show up here.
               </p>
             </div>
           ) : (
-            <div className="relative ml-2.5 space-y-6 border-l-2 border-white/60 pt-2">
+            <div className="relative ml-2.5 space-y-6 border-l-2 border-surface/60 pt-2">
               {props.statusHistory.map((event, idx) => (
                 <div key={idx} className="relative pl-5">
-                  <div className="absolute -left-[10px] top-0.5 rounded-full bg-white/90 p-0.5">
+                  <div className="absolute -left-[10px] top-0.5 rounded-full bg-surface/90 p-0.5">
                     {statusIcon(event.label)}
                   </div>
-                  <span className="text-sm font-semibold text-[#14142b]">
+                  <span className="text-sm font-semibold text-ink">
                     {event.label.split(":")[0]}
                   </span>
                   {event.label.includes(":") && (
-                    <p className="mt-1 rounded-xl border border-white/50 bg-white/50 p-2 text-xs italic text-slate-600">
+                    <p className="mt-1 rounded-xl border border-white/50 bg-surface/50 p-2 text-xs italic text-slate-600">
                       &quot;{event.label.substring(event.label.indexOf(":") + 1).trim()}&quot;
                     </p>
                   )}
@@ -279,9 +279,9 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
               <span
                 className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                   props.collabState.status === "connected"
-                    ? "bg-emerald-50 text-emerald-600"
+                    ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
                     : props.collabState.status === "connecting"
-                      ? "bg-amber-50 text-amber-600"
+                      ? "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
                       : "bg-slate-100 text-slate-500"
                 }`}
               >
@@ -295,7 +295,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
                 {props.collabState.collaborators.map((c) => (
                   <div
                     key={c.clientId}
-                    className="flex items-center justify-between rounded-xl border border-emerald-100/70 bg-emerald-50/50 p-2 text-xs"
+                    className="flex items-center justify-between rounded-xl border border-emerald-100/70 bg-emerald-50/50 p-2 text-xs dark:border-emerald-500/25 dark:bg-emerald-500/10"
                   >
                     <div className="flex items-center gap-2">
                       <div
@@ -322,7 +322,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
                 <button
                   type="button"
                   onClick={() => props.onShowAddFormChange(!props.showAddForm)}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                 >
                   <UserPlus size={13} />
                   Add
@@ -330,23 +330,23 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
               </div>
 
               {props.showAddForm && (
-                <div className="space-y-2 rounded-xl border border-white/50 bg-white/60 p-2.5 text-xs">
+                <div className="space-y-2 rounded-xl border border-white/50 bg-surface/60 p-2.5 text-xs">
                   <div className="relative">
                     <input
                       type="text"
                       placeholder="User email or name…"
                       value={props.inviteEmail}
                       onChange={(e) => props.onInviteEmailChange(e.target.value)}
-                      className="w-full rounded-lg border border-white/60 bg-white/80 px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                      className="w-full rounded-lg border border-surface/60 bg-surface/80 px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-400"
                     />
                     {props.userSearchResults.length > 0 && (
-                      <div className="absolute left-0 right-0 top-full z-10 mt-1 max-h-36 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+                      <div className="absolute left-0 right-0 top-full z-10 mt-1 max-h-36 overflow-y-auto rounded-lg border border-slate-200 bg-surface shadow-lg">
                         {props.userSearchResults.map((u) => (
                           <button
                             key={u.id}
                             type="button"
                             onClick={() => props.onInviteEmailChange(u.label)}
-                            className="w-full px-2.5 py-1.5 text-left text-xs font-medium text-slate-800 hover:bg-indigo-50"
+                            className="w-full px-2.5 py-1.5 text-left text-xs font-medium text-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-500/10"
                           >
                             {u.label}
                           </button>
@@ -358,7 +358,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
                     <select
                       value={props.inviteRole}
                       onChange={(e) => props.onInviteRoleChange(e.target.value as "EDITOR" | "MANAGER" | "VIEWER")}
-                      className="rounded-lg border border-white/60 bg-white/80 px-2 py-1 text-xs font-medium text-slate-700 focus:outline-none"
+                      className="rounded-lg border border-surface/60 bg-surface/80 px-2 py-1 text-xs font-medium text-slate-700 focus:outline-none"
                     >
                       <option value="EDITOR">Editor</option>
                       <option value="MANAGER">Manager</option>
@@ -376,7 +376,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
                         type="button"
                         disabled={props.inviting || !props.inviteEmail.trim()}
                         onClick={() => props.onAddCollaborator()}
-                        className="rounded-lg bg-[#14142b] px-3 py-1 text-xs font-semibold text-white hover:bg-[#232735] disabled:opacity-50"
+                        className="rounded-lg bg-ink px-3 py-1 text-xs font-semibold text-on-ink hover:bg-ink-hover disabled:opacity-50"
                       >
                         {props.inviting ? "Adding…" : "Add"}
                       </button>
@@ -394,7 +394,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
                   {props.collaborators.map((member) => (
                     <div
                       key={member.userId}
-                      className="flex items-center justify-between rounded-xl border border-white/50 bg-white/50 p-2 text-xs"
+                      className="flex items-center justify-between rounded-xl border border-white/50 bg-surface/50 p-2 text-xs"
                     >
                       <div className="flex min-w-0 items-center gap-2">
                         <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-200 text-[11px] font-bold text-slate-600">
@@ -409,11 +409,11 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
                         <span
                           className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${
                             member.role === "OWNER"
-                              ? "bg-purple-100 text-purple-700"
+                              ? "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300"
                               : member.role === "MANAGER"
-                                ? "bg-blue-100 text-blue-700"
+                                ? "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
                                 : member.role === "EDITOR"
-                                  ? "bg-emerald-100 text-emerald-700"
+                                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
                                   : "bg-slate-100 text-slate-600"
                           }`}
                         >
@@ -432,7 +432,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
                               <MoreVertical size={14} />
                             </button>
                             {openMenuId === member.userId && (
-                              <div className="absolute right-0 top-full mt-1 w-36 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg z-50">
+                              <div className="absolute right-0 top-full mt-1 w-36 overflow-hidden rounded-lg border border-slate-200 bg-surface shadow-lg z-50">
                                 <button
                                   type="button"
                                   onClick={(e) => {
@@ -453,7 +453,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
                                       setOpenMenuId(null);
                                       // TODO: Implement Transfer Ownership
                                     }}
-                                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-purple-700 transition-colors hover:bg-purple-50 border-t border-slate-100"
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-purple-700 transition-colors hover:bg-purple-50 border-t border-slate-100 dark:text-purple-300 dark:hover:bg-purple-500/10"
                                   >
                                     <Shield size={13} />
                                     Transfer Ownership
@@ -466,7 +466,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
                                       setOpenMenuId(null);
                                       props.onRemoveCollaborator(member.userId, member.name || member.email);
                                     }}
-                                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-rose-600 transition-colors hover:bg-rose-50 border-t border-slate-100"
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-rose-600 transition-colors hover:bg-rose-50 border-t border-slate-100 dark:text-rose-400 dark:hover:bg-rose-500/10"
                                   >
                                     <Trash2 size={13} />
                                     Remove
@@ -489,7 +489,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
       <div className="mt-auto px-4 pb-4">
         <div className="flex items-center justify-between border-t border-white/50 pt-3 text-[11px] text-slate-400">
           <span>{props.footerOverride?.label ?? (props.activeLessonId ? "Lesson ID" : "Resource ID")}</span>
-          <span className="max-w-[140px] truncate rounded bg-white/60 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
+          <span className="max-w-[140px] truncate rounded bg-surface/60 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
             {props.footerOverride?.value ?? props.activeLessonId ?? "—"}
           </span>
         </div>

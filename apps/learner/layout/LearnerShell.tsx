@@ -3,10 +3,11 @@
 import ProtectedLayout from '@/apps/core/layout/ProtectedLayout';
 import LearnerNavbar from '@/apps/learner/layout/LearnerNavbar';
 import LearnerDock from '@/apps/learner/layout/LearnerDock';
+import { QuickAppearance } from '@/apps/core/components/appearance/QuickAppearance';
+import { ThemeScope } from '@/apps/core/components/ThemeScope';
+import { BugIsland } from '@/apps/core/components/bug-reports/BugIsland';
 import { TimeTracker } from "@/domains/learning";
-import { useThemeStore } from '@/infrastructure/state/theme.store';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
 
 /**
  * Routes that own their entire viewport and supply their own top chrome. The
@@ -45,9 +46,7 @@ export default function LearnerShell({
 }: {
   children: React.ReactNode;
 }) {
-  const { theme } = useThemeStore();
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
 
   const immersive = IMMERSIVE_ROUTES.some((r) => r.test(pathname ?? ''));
   // The global Dock is hidden everywhere under /studio, including the
@@ -57,32 +56,36 @@ export default function LearnerShell({
   // app-wide destinations.
   const hideDock = immersive || HIDE_DOCK_ROUTES.some((r) => r.test(pathname ?? ''));
 
-  // Prevent hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null; // or a loading spinner
-  }
-
   return (
+    <>
+    {/*
+      The viewer's theme applies wherever the signed-in app shell is shown — the dashboard routes,
+      and public pages (explore, courses, events, profiles) when a member views them. Outside
+      ProtectedLayout on purpose: it holds its children back until mount.
+    */}
+    <ThemeScope />
     <ProtectedLayout>
       <TimeTracker />
-      <div className={`relative flex flex-col flex-1 w-full transition-colors duration-300 ${theme === 'dark' ? 'dark' : ''} ${immersive ? 'h-screen overflow-hidden' : ''}`} style={{ fontFamily: 'var(--font-geist-sans)' }}>
+      <div className={`relative flex flex-col flex-1 w-full transition-colors duration-300 ${immersive ? 'h-screen overflow-hidden' : ''}`} style={{ fontFamily: 'var(--font-geist-sans)' }}>
         {/*
           Transparent shell — page backgrounds run under the floating navbar.
           Do NOT add top padding here (that paints a solid empty block on bg-white).
           Each page offsets its content below the nav instead.
         */}
-        <div className="flex flex-col flex-1 relative z-10 bg-transparent text-slate-900 dark:text-white h-full">
+        <div className="flex flex-col flex-1 relative z-10 bg-transparent text-slate-900 h-full">
           {!immersive && <LearnerNavbar />}
           <main className="relative bg-transparent flex flex-col flex-1">
             {children}
           </main>
           {!hideDock && <LearnerDock />}
+          {/* Quick preferences (theme, glass, wallpaper) on the same browsing surfaces as the dock —
+              Home, Explore, Learning, Achievements… — not on focus screens. Hideable in Settings. */}
+          {!hideDock && <QuickAppearance />}
+          {/* Renders nothing unless the backend says this account may report bugs. */}
+          <BugIsland />
         </div>
       </div>
     </ProtectedLayout>
+    </>
   );
 }

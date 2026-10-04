@@ -65,7 +65,7 @@ const TYPE_STYLES: Record<
   review: {
     iconBg: "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border-purple-100 dark:border-purple-900/30",
     cardHoverEffect: "hover:shadow-lg hover:shadow-purple-100/40 hover:border-purple-300 dark:hover:border-purple-800",
-    cardBg: "bg-gradient-to-br from-white to-purple-50/30 dark:from-neutral-900 dark:to-purple-950/10",
+    cardBg: "bg-gradient-to-br from-surface to-purple-50/30 dark:to-purple-950/10",
     cardUnreadBg: "bg-gradient-to-br from-purple-50/20 to-purple-100/10 dark:from-purple-950/20 dark:to-purple-900/10",
     leftBar: "bg-gradient-to-b from-purple-500 to-fuchsia-600",
     btnGradient: "bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white shadow-purple-200/50 dark:shadow-none",
@@ -77,7 +77,7 @@ const TYPE_STYLES: Record<
   grade: {
     iconBg: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30",
     cardHoverEffect: "hover:shadow-lg hover:shadow-emerald-100/40 hover:border-emerald-300 dark:hover:border-emerald-800",
-    cardBg: "bg-gradient-to-br from-white to-emerald-50/30 dark:from-neutral-900 dark:to-emerald-950/10",
+    cardBg: "bg-gradient-to-br from-surface to-emerald-50/30 dark:to-emerald-950/10",
     cardUnreadBg: "bg-gradient-to-br from-emerald-50/20 to-emerald-100/10 dark:from-emerald-950/20 dark:to-emerald-900/10",
     leftBar: "bg-gradient-to-b from-emerald-500 to-teal-600",
     btnGradient: "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-emerald-200/50 dark:shadow-none",
@@ -89,7 +89,7 @@ const TYPE_STYLES: Record<
   comment: {
     iconBg: "bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 border-sky-100 dark:border-sky-900/30",
     cardHoverEffect: "hover:shadow-lg hover:shadow-sky-100/40 hover:border-sky-300 dark:hover:border-sky-800",
-    cardBg: "bg-gradient-to-br from-white to-sky-50/30 dark:from-neutral-900 dark:to-sky-950/10",
+    cardBg: "bg-gradient-to-br from-surface to-sky-50/30 dark:to-sky-950/10",
     cardUnreadBg: "bg-gradient-to-br from-sky-50/20 to-sky-100/10 dark:from-sky-950/20 dark:to-sky-900/10",
     leftBar: "bg-gradient-to-b from-sky-500 to-blue-500",
     btnGradient: "bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white shadow-sky-200/50 dark:shadow-none",
@@ -101,7 +101,7 @@ const TYPE_STYLES: Record<
   invite: {
     iconBg: "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30",
     cardHoverEffect: "hover:shadow-lg hover:shadow-amber-100/40 hover:border-amber-300 dark:hover:border-amber-800",
-    cardBg: "bg-gradient-to-br from-white to-amber-50/30 dark:from-neutral-900 dark:to-amber-950/10",
+    cardBg: "bg-gradient-to-br from-surface to-amber-50/30 dark:to-amber-950/10",
     cardUnreadBg: "bg-gradient-to-br from-amber-50/20 to-amber-100/10 dark:from-amber-950/20 dark:to-amber-900/10",
     leftBar: "bg-gradient-to-b from-amber-500 to-orange-500",
     btnGradient: "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-amber-200/50 dark:shadow-none",
@@ -111,21 +111,21 @@ const TYPE_STYLES: Record<
     borderColor: "border-amber-100 dark:border-amber-900/30",
   },
   system: {
-    iconBg: "bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 border-slate-200 dark:border-neutral-700",
-    cardHoverEffect: "hover:shadow-lg hover:shadow-slate-200/40 hover:border-slate-350 dark:hover:border-neutral-600",
-    cardBg: "bg-gradient-to-br from-white to-slate-50/30 dark:from-neutral-900 dark:to-neutral-800/10",
-    cardUnreadBg: "bg-gradient-to-br from-slate-50/20 to-slate-100/10 dark:from-neutral-800/20 dark:to-neutral-700/10",
+    iconBg: "bg-slate-100 text-slate-700 border-slate-200",
+    cardHoverEffect: "hover:shadow-lg hover:shadow-slate-200/40 hover:border-slate-350",
+    cardBg: "bg-gradient-to-br from-surface to-slate-50/30",
+    cardUnreadBg: "bg-gradient-to-br from-slate-50/20 to-slate-100/10",
     leftBar: "bg-gradient-to-b from-slate-500 to-slate-600",
     btnGradient: "bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white shadow-slate-200/50 dark:shadow-none",
-    detailsBg: "bg-slate-100/50 dark:bg-neutral-800/40 border border-slate-200/50 dark:border-neutral-700/20",
-    badgeBg: "bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300",
+    detailsBg: "bg-slate-100/50 border border-slate-200/50",
+    badgeBg: "bg-slate-100 text-slate-700",
     badgeText: "SYSTEM",
-    borderColor: "border-slate-200 dark:border-neutral-800",
+    borderColor: "border-slate-200",
   },
   profile: {
     iconBg: "bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-900/30",
     cardHoverEffect: "hover:shadow-lg hover:shadow-rose-100/40 hover:border-rose-300 dark:hover:border-rose-800",
-    cardBg: "bg-gradient-to-br from-white to-rose-50/30 dark:from-neutral-900 dark:to-rose-950/10",
+    cardBg: "bg-gradient-to-br from-surface to-rose-50/30 dark:to-rose-950/10",
     cardUnreadBg: "bg-gradient-to-br from-rose-50/20 to-rose-100/10 dark:from-rose-950/20 dark:to-rose-900/10",
     leftBar: "bg-gradient-to-b from-rose-500 to-red-600",
     btnGradient: "bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white shadow-rose-200/50 dark:shadow-none",
@@ -375,8 +375,8 @@ export default function NotificationsHubPage() {
                 <h4
                   className={`text-xs leading-none truncate ${
                     item.read
-                      ? "font-semibold text-slate-600 dark:text-slate-400"
-                      : "font-black text-slate-900 dark:text-slate-100"
+                      ? "font-semibold text-slate-600"
+                      : "font-black text-slate-900"
                   }`}
                 >
                   {item.title}
@@ -388,7 +388,7 @@ export default function NotificationsHubPage() {
                   // A collapsed group stands for many events; say so explicitly rather than
                   // letting one row quietly under-represent a backlog.
                   <span
-                    className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-slate-900/5 dark:bg-white/10 text-slate-600 dark:text-slate-300"
+                    className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-slate-900/5 text-slate-600"
                     title={`${item.groupCount} events collapsed into this notification`}
                   >
                     <Layers size={8} />
@@ -402,7 +402,7 @@ export default function NotificationsHubPage() {
             </div>
             <p
               className={`text-[11px] font-semibold leading-relaxed mt-1 ${
-                item.read ? "text-slate-400 dark:text-slate-500" : "text-slate-550 dark:text-slate-400"
+                item.read ? "text-slate-400" : "text-slate-550"
               }`}
             >
               {item.message}
@@ -412,7 +412,7 @@ export default function NotificationsHubPage() {
           <div className="flex items-center gap-2.5 shrink-0 select-none" onClick={(e) => e.stopPropagation()}>
             {item.read ? (
               <span
-                className="p-1.5 rounded-lg bg-slate-50 dark:bg-neutral-800 text-emerald-500"
+                className="p-1.5 rounded-lg bg-slate-50 text-emerald-500"
                 title={item.readAt ? `Read ${formatTimestamp(item.readAt)}` : "Read"}
               >
                 <Check size={12} />
@@ -420,7 +420,7 @@ export default function NotificationsHubPage() {
             ) : (
               <button
                 onClick={(e) => handleMarkOneRead(item.id, e)}
-                className="p-1.5 rounded-lg border border-transparent bg-slate-50 dark:bg-neutral-800 text-blue-600 hover:bg-blue-50/80 dark:hover:bg-blue-950/40 transition-all"
+                className="p-1.5 rounded-lg border border-transparent bg-slate-50 text-blue-600 hover:bg-blue-50/80 dark:hover:bg-blue-950/40 transition-all dark:text-blue-400"
                 title="Mark as read"
               >
                 <Eye size={12} />
@@ -429,7 +429,7 @@ export default function NotificationsHubPage() {
 
             <button
               onClick={() => handleCardClick(item)}
-              className="p-1 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded text-slate-500 transition-transform"
+              className="p-1 hover:bg-slate-100 rounded text-slate-500 transition-transform"
               style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
               title={isExpanded ? "Collapse" : "Expand Details"}
             >
@@ -439,7 +439,7 @@ export default function NotificationsHubPage() {
             <button
               onClick={(e) => handleDeleteItem(item.id, e)}
               disabled={isDeleting}
-              className="p-1.5 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded text-slate-450 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+              className="p-1.5 hover:bg-slate-100 rounded text-slate-450 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
               title="Delete notification"
             >
               {isDeleting ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
@@ -458,13 +458,13 @@ export default function NotificationsHubPage() {
             >
               <div className="space-y-4 text-left pt-3">
                 {item.actorName && (
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wide">
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wide">
                     By {item.actorName}
                   </p>
                 )}
 
                 {item.groupCount > 1 && (
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
+                  <p className="text-[11px] text-slate-500 font-semibold">
                     This groups {item.groupCount} similar updates. Open the linked queue to see each
                     one individually.
                   </p>
@@ -477,7 +477,7 @@ export default function NotificationsHubPage() {
                         <span className="text-slate-400 font-extrabold uppercase tracking-wider text-[9px] shrink-0">
                           {label}
                         </span>
-                        <span className="text-slate-750 dark:text-slate-300 font-semibold break-words">{value}</span>
+                        <span className="text-slate-750 font-semibold break-words">{value}</span>
                       </div>
                     ))}
                   </div>
@@ -515,7 +515,7 @@ export default function NotificationsHubPage() {
           {label === "Today" && unreadCount > 0 && (
             <button
               onClick={markAllRead}
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 hover:text-blue-700 dark:text-blue-400 transition-colors"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 hover:text-blue-700 dark:text-blue-400 transition-colors dark:hover:text-blue-300"
             >
               Mark all as read <CheckCircle2 size={12} />
             </button>
@@ -529,7 +529,7 @@ export default function NotificationsHubPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-950 pt-10 pb-16 text-slate-800 dark:text-slate-200">
+    <div className="theme-page-bg min-h-screen bg-surface pt-10 pb-16 text-slate-800">
       <style jsx global>{`
         .notification-header {
           width: 100%;
@@ -648,7 +648,7 @@ export default function NotificationsHubPage() {
             <div
               role="tablist"
               aria-label="Filter notifications by read state"
-              className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-neutral-900 p-1 border border-slate-200 dark:border-neutral-800"
+              className="inline-flex items-center gap-1 rounded-full bg-slate-100 p-1 border border-slate-200"
             >
               {(
                 [
@@ -663,8 +663,8 @@ export default function NotificationsHubPage() {
                   onClick={() => handleTabChange(id)}
                   className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
                     activeTab === id
-                      ? "bg-white dark:bg-neutral-800 text-slate-900 dark:text-slate-100 shadow-sm"
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                      ? "bg-surface text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-800"
                   }`}
                 >
                   {label}
@@ -689,13 +689,13 @@ export default function NotificationsHubPage() {
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search notifications…"
                 aria-label="Search notifications"
-                className="w-full rounded-full border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 py-2 pl-9 pr-9 text-xs font-semibold text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+                className="w-full rounded-full border border-slate-200 bg-surface py-2 pl-9 pr-9 text-xs font-semibold text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
               />
               {searchInput && (
                 <button
                   onClick={() => setSearchInput("")}
                   aria-label="Clear search"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 >
                   <X size={13} />
                 </button>
@@ -705,7 +705,7 @@ export default function NotificationsHubPage() {
             {unreadCount > 0 && (
               <button
                 onClick={markAllRead}
-                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-neutral-800 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-neutral-900 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600 hover:bg-slate-50 transition-colors"
               >
                 <CheckCircle2 size={13} /> Mark all read
               </button>
@@ -718,8 +718,8 @@ export default function NotificationsHubPage() {
               onClick={() => handleCategoryChange(null)}
               className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider border transition-colors ${
                 activeCategory === null
-                  ? "border-slate-900 dark:border-slate-100 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900"
-                  : "border-slate-200 dark:border-neutral-800 text-slate-500 dark:text-slate-400 hover:border-slate-400"
+                  ? "border-slate-900 bg-slate-900 text-on-ink"
+                  : "border-slate-200 text-slate-500 hover:border-slate-400"
               }`}
             >
               All types
@@ -734,14 +734,14 @@ export default function NotificationsHubPage() {
                   className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider border transition-colors ${
                     isActive
                       ? "border-blue-600 bg-blue-600 text-white"
-                      : "border-slate-200 dark:border-neutral-800 text-slate-500 dark:text-slate-400 hover:border-slate-400"
+                      : "border-slate-200 text-slate-500 hover:border-slate-400"
                   }`}
                 >
                   {CATEGORY_LABELS[category]}
                   {count > 0 && (
                     <span
                       className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 rounded-full text-[9px] font-black ${
-                        isActive ? "bg-white/25 text-white" : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300"
+                        isActive ? "bg-white/25 text-white" : "bg-slate-100 text-slate-600"
                       }`}
                     >
                       {count > 99 ? "99+" : count}
@@ -765,7 +765,7 @@ export default function NotificationsHubPage() {
             {isFiltered && (
               <button
                 onClick={clearFilters}
-                className="text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                className="text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-700"
               >
                 Clear filters
               </button>
@@ -784,10 +784,10 @@ export default function NotificationsHubPage() {
             animate={{ opacity: 1, scale: 1 }}
             className="py-20 text-center select-none"
           >
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 flex items-center justify-center text-slate-400">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400">
               <Bell size={24} />
             </div>
-            <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+            <p className="text-sm font-bold text-slate-700">
               {isFiltered
                 ? "Nothing matches those filters"
                 : activeTab === "unread"
@@ -804,7 +804,7 @@ export default function NotificationsHubPage() {
             {isFiltered && (
               <button
                 onClick={clearFilters}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-neutral-800 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-neutral-900"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600 hover:bg-slate-50"
               >
                 Clear filters
               </button>
@@ -820,7 +820,7 @@ export default function NotificationsHubPage() {
                 <button
                   onClick={() => loadMore()}
                   disabled={isLoadingMore}
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-neutral-800 px-5 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-neutral-900 transition-colors disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-5 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
                 >
                   {isLoadingMore && <Loader2 size={12} className="animate-spin" />}
                   {isLoadingMore ? "Loading" : "Load more"}

@@ -85,20 +85,20 @@ export function AssessmentResultCard({
           </span>
 
           {landing.planType === "COMPLETION" && landing.tiedContentTitle && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-800">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
               Completes {landing.tiedContentTitle}
             </span>
           )}
 
           {certificateIssued && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-emerald-800">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200">
               <Award size={12} />
               Certificate issued
             </span>
           )}
         </div>
 
-        <h1 className="text-[1.65rem] font-bold leading-tight tracking-tight text-[#14142b] sm:text-[1.85rem]">
+        <h1 className="text-[1.65rem] font-bold leading-tight tracking-tight text-ink sm:text-[1.85rem]">
           {landing.title}
         </h1>
 
@@ -131,7 +131,7 @@ export function AssessmentResultCard({
                 <button
                   type="button"
                   onClick={onNextItem}
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#14142b] px-6 py-3 text-[14px] font-semibold text-white transition-colors hover:bg-[#232735] shadow-[0_4px_14px_rgba(20,20,43,0.12)] cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3 text-[14px] font-semibold text-on-ink transition-colors hover:bg-ink-hover shadow-[0_4px_14px_rgba(20,20,43,0.12)] cursor-pointer"
                 >
                   <span>Go to next item</span>
                   <ChevronRight size={16} />
@@ -159,8 +159,8 @@ export function AssessmentResultCard({
                   disabled={starting}
                   className={`inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-[14px] font-semibold transition-all cursor-pointer ${
                     hasPassed && onNextItem
-                      ? "border border-slate-300 bg-white text-slate-800 hover:bg-slate-50"
-                      : "bg-[#14142b] text-white hover:bg-[#232735] shadow-[0_4px_14px_rgba(20,20,43,0.15)]"
+                      ? "border border-slate-300 bg-surface text-slate-800 hover:bg-slate-50"
+                      : "bg-ink text-on-ink hover:bg-ink-hover shadow-[0_4px_14px_rgba(20,20,43,0.15)]"
                   }`}
                 >
                   <RotateCcw size={15} />
@@ -192,9 +192,9 @@ export function AssessmentResultCard({
         <div
           className={`sm:col-span-7 flex flex-col justify-between rounded-2xl border p-5 sm:p-6 transition-all ${
             hasPassed
-              ? "border-emerald-200/90 bg-emerald-50/75 text-emerald-950"
+              ? "border-emerald-200/90 bg-emerald-50/75 text-emerald-950 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-200"
               : isAwaitingReview
-              ? "border-amber-200/90 bg-amber-50/75 text-amber-950"
+              ? "border-amber-200/90 bg-amber-50/75 text-amber-950 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200"
               : "border-slate-200 bg-slate-50/90 text-slate-900"
           }`}
         >
@@ -202,15 +202,15 @@ export function AssessmentResultCard({
             <div className="mb-2 flex items-center gap-2">
               {hasPassed ? (
                 <>
-                  <CheckCircle2 className="text-emerald-600" size={19} />
-                  <span className="text-[15px] font-bold text-emerald-900">
+                  <CheckCircle2 className="text-emerald-600 dark:text-emerald-400" size={19} />
+                  <span className="text-[15px] font-bold text-emerald-900 dark:text-emerald-200">
                     You passed!
                   </span>
                 </>
               ) : isAwaitingReview ? (
                 <>
-                  <Hourglass className="text-amber-600" size={19} />
-                  <span className="text-[15px] font-bold text-amber-900">
+                  <Hourglass className="text-amber-600 dark:text-amber-400" size={19} />
+                  <span className="text-[15px] font-bold text-amber-900 dark:text-amber-200">
                     Awaiting marking
                   </span>
                 </>
@@ -240,21 +240,21 @@ export function AssessmentResultCard({
                 <button
                   type="button"
                   onClick={() => onViewGradeCard(gradeCardId)}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#232735] cursor-pointer"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-on-ink transition-colors hover:bg-ink-hover cursor-pointer"
                 >
                   <Award size={14} />
                   View grade card
                   <ChevronRight size={14} />
                 </button>
               ) : isAwaitingReview ? (
-                <p className="text-[12px] font-medium text-amber-800">
+                <p className="text-[12px] font-medium text-amber-800 dark:text-amber-200">
                   Your grade card is issued once marking is complete.
                 </p>
               ) : null}
             </div>
           </div>
 
-          <div className="mt-5 pt-3 border-t border-black/[0.06] text-[11px] font-medium text-slate-500">
+          <div className="mt-5 pt-3 border-t border-slate-950/[0.06] text-[11px] font-medium text-slate-500">
             {latestAttempt?.submittedAt ? (
               <>Submitted {formatWhen(latestAttempt.submittedAt)}.</>
             ) : resuming ? (
@@ -266,9 +266,9 @@ export function AssessmentResultCard({
         </div>
 
         {/* Right Card: What to expect */}
-        <div className="sm:col-span-5 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs flex flex-col justify-between">
+        <div className="sm:col-span-5 rounded-2xl border border-slate-200/90 bg-surface p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <h2 className="mb-4 text-[13px] font-bold uppercase tracking-wider text-[#14142b]">
+            <h2 className="mb-4 text-[13px] font-bold uppercase tracking-wider text-ink">
               What to expect
             </h2>
 
@@ -277,7 +277,7 @@ export function AssessmentResultCard({
               <li className="flex items-start gap-3">
                 <Calendar size={16} className="mt-0.5 text-slate-400 shrink-0" />
                 <div>
-                  <p className="text-[13px] font-semibold text-[#14142b]">
+                  <p className="text-[13px] font-semibold text-ink">
                     {landing.accessWindow?.closesAt
                       ? `Closes ${formatWhen(landing.accessWindow.closesAt)}`
                       : "Self-paced"}
@@ -292,7 +292,7 @@ export function AssessmentResultCard({
               <li className="flex items-start gap-3">
                 <RotateCcw size={16} className="mt-0.5 text-slate-400 shrink-0" />
                 <div>
-                  <p className="text-[13px] font-semibold text-[#14142b]">
+                  <p className="text-[13px] font-semibold text-ink">
                     {landing.maxAttempts === 1
                       ? "1 attempt allowed"
                       : `${landing.maxAttempts} attempts allowed`}
@@ -309,7 +309,7 @@ export function AssessmentResultCard({
               <li className="flex items-start gap-3">
                 <Clock size={16} className="mt-0.5 text-slate-400 shrink-0" />
                 <div>
-                  <p className="text-[13px] font-semibold text-[#14142b]">
+                  <p className="text-[13px] font-semibold text-ink">
                     {landing.durationMinutes} min limit
                   </p>
                   <p className="text-[11px] text-slate-500">
@@ -341,7 +341,7 @@ export function AssessmentResultCard({
           <h2 className="mb-3 text-[12px] font-bold uppercase tracking-wider text-slate-400">
             Attempt history
           </h2>
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-surface">
             <ul className="divide-y divide-slate-100">
               {landing.history.map((attempt) => (
                 <li
@@ -350,7 +350,7 @@ export function AssessmentResultCard({
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[13px] font-semibold text-[#14142b]">
+                      <p className="text-[13px] font-semibold text-ink">
                         Attempt {attempt.attemptNumber}
                       </p>
                       {latestAttempt?.attemptId === attempt.attemptId && landing.history.length > 1 && (
@@ -370,14 +370,14 @@ export function AssessmentResultCard({
 
                   <div className="flex shrink-0 items-center gap-3">
                     {attempt.awaitingReview ? (
-                      <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-amber-700">
+                      <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-amber-700 dark:text-amber-300">
                         <Hourglass size={13} />
                         Awaiting marking
                       </span>
                     ) : attempt.percentage !== null ? (
                       <span
                         className={`inline-flex items-center gap-1.5 text-[12px] font-semibold ${
-                          graded && attempt.passed ? "text-emerald-700" : "text-slate-500"
+                          graded && attempt.passed ? "text-emerald-700 dark:text-emerald-300" : "text-slate-500"
                         }`}
                       >
                         {graded && attempt.passed && <CheckCircle2 size={14} />}
@@ -406,7 +406,7 @@ export function AssessmentResultCard({
 
       {/* ── Collapsible Instructions / Syllabus Terms ──────────────── */}
       {(landing.instructions != null || landing.planDescription) && (
-        <section className="mb-7 rounded-2xl border border-slate-200 bg-white p-5">
+        <section className="mb-7 rounded-2xl border border-slate-200 bg-surface p-5">
           <button
             type="button"
             onClick={() => setShowInstructions(!showInstructions)}

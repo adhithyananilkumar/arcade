@@ -1,5 +1,6 @@
 "use client";
 
+import { ContentArt } from '@/shared/design-system/art';
 import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
@@ -68,13 +69,13 @@ interface CourseRendererProps {
 function statusTone(status: string) {
   switch (status) {
     case "PUBLISHED":
-      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      return "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25";
     case "REJECTED":
-      return "bg-rose-50 text-rose-700 border-rose-200";
+      return "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/25";
     case "SUBMITTED":
-      return "bg-amber-50 text-amber-800 border-amber-200";
+      return "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:border-amber-500/25";
     case "APPROVED":
-      return "bg-sky-50 text-sky-700 border-sky-200";
+      return "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:border-sky-500/25";
     default:
       return "bg-slate-100 text-slate-600 border-slate-200";
   }
@@ -193,7 +194,7 @@ export function CourseRenderer({
     return (
       <div
         className="flex h-screen items-center justify-center text-[13px] font-medium text-slate-400"
-        style={{ background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)" }}
+        style={{ background: "var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%))" }}
       >
         Loading course…
       </div>
@@ -204,12 +205,12 @@ export function CourseRenderer({
     return (
       <div
         className="flex h-screen flex-col items-center justify-center gap-3 text-center"
-        style={{ background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)" }}
+        style={{ background: "var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%))" }}
       >
-        <p className="text-sm text-rose-600">{error ?? "Course not found"}</p>
+        <p className="text-sm text-rose-600 dark:text-rose-400">{error ?? "Course not found"}</p>
         <Link
           href="/console/reviews"
-          className="text-[13px] font-semibold text-[#14142b] underline-offset-2 hover:underline"
+          className="text-[13px] font-semibold text-ink underline-offset-2 hover:underline"
         >
           Back to reviews
         </Link>
@@ -220,20 +221,20 @@ export function CourseRenderer({
   return (
     <div
       className="flex h-screen overflow-hidden"
-      style={{ background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 28%, #FFFFFF 72%)" }}
+      style={{ background: "var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 28%, #FFFFFF 72%))" }}
     >
       {/* Sidebar — navigation only */}
-      <aside className="flex w-[280px] shrink-0 flex-col border-r border-slate-200/80 bg-white/75 backdrop-blur-xl lg:w-[300px]">
+      <aside className="flex w-[280px] shrink-0 flex-col border-r border-slate-200/80 bg-surface/75 backdrop-blur-xl lg:w-[300px]">
         <div className="border-b border-slate-100 px-4 pb-4 pt-5">
           <Link
             href={canPublish ? "/console/reviews" : "/studio/published"}
-            className="mb-4 inline-flex items-center gap-1.5 text-[12px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
+            className="mb-4 inline-flex items-center gap-1.5 text-[12px] font-semibold text-slate-400 transition-colors hover:text-ink"
           >
             <ArrowLeft size={14} />
             Back
           </Link>
 
-          <p className="line-clamp-2 text-[15px] font-bold leading-snug tracking-tight text-[#14142b]">
+          <p className="line-clamp-2 text-[15px] font-bold leading-snug tracking-tight text-ink">
             {course.title}
           </p>
           <span
@@ -282,7 +283,7 @@ export function CourseRenderer({
                   <button
                     type="button"
                     onClick={() => toggleModule(mod.id)}
-                    className="flex w-full items-center gap-1.5 rounded-xl px-3 py-2 text-left text-[13px] font-semibold text-[#14142b] transition-colors hover:bg-slate-100/80"
+                    className="flex w-full items-center gap-1.5 rounded-xl px-3 py-2 text-left text-[13px] font-semibold text-ink transition-colors hover:bg-slate-100/80"
                   >
                     {collapsed ? (
                       <ChevronRight size={14} className="shrink-0 text-slate-400" />
@@ -301,8 +302,8 @@ export function CourseRenderer({
                             onClick={() => setSelectedItem({ kind: "lesson", id: item.item.id })}
                             className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-[12px] transition-colors ${
                               selectedItem?.kind === "lesson" && selectedItem.id === item.item.id
-                                ? "bg-[#14142b] font-semibold text-white shadow-[0_6px_14px_rgba(20,20,43,0.14)]"
-                                : "font-medium text-slate-500 hover:bg-white hover:text-[#14142b]"
+                                ? "bg-ink font-semibold text-on-ink shadow-[0_6px_14px_rgba(20,20,43,0.14)]"
+                                : "font-medium text-slate-500 hover:bg-surface hover:text-ink"
                             }`}
                           >
                             {selectedItem?.kind === "lesson" && selectedItem.id === item.item.id ? (
@@ -319,8 +320,8 @@ export function CourseRenderer({
                             onClick={() => setSelectedItem({ kind: "quiz", id: item.id })}
                             className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-[12px] transition-colors ${
                               selectedItem?.kind === "quiz" && selectedItem.id === item.id
-                                ? "bg-[#14142b] font-semibold text-white shadow-[0_6px_14px_rgba(20,20,43,0.14)]"
-                                : "font-medium text-slate-500 hover:bg-white hover:text-[#14142b]"
+                                ? "bg-ink font-semibold text-on-ink shadow-[0_6px_14px_rgba(20,20,43,0.14)]"
+                                : "font-medium text-slate-500 hover:bg-surface hover:text-ink"
                             }`}
                           >
                             <FileQuestion
@@ -333,7 +334,7 @@ export function CourseRenderer({
                             />
                             <span className="line-clamp-1 flex-1">{item.title}</span>
                             {quizStats[item.id]?.bestScore != null && (
-                              <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600">
+                              <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
                                 {quizStats[item.id].bestScore}/{quizStats[item.id].maxScore}
                               </span>
                             )}
@@ -346,8 +347,8 @@ export function CourseRenderer({
                             className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-[12px] transition-colors ${
                               selectedItem?.kind === "assessment" &&
                               (selectedItem.id === item.item.placementId || selectedItem.id === item.item.examId)
-                                ? "bg-[#14142b] font-semibold text-white shadow-[0_6px_14px_rgba(20,20,43,0.14)]"
-                                : "font-medium text-slate-500 hover:bg-white hover:text-[#14142b]"
+                                ? "bg-ink font-semibold text-on-ink shadow-[0_6px_14px_rgba(20,20,43,0.14)]"
+                                : "font-medium text-slate-500 hover:bg-surface hover:text-ink"
                             }`}
                           >
                             <Award
@@ -366,7 +367,7 @@ export function CourseRenderer({
                                   selectedItem?.kind === "assessment" &&
                                   (selectedItem.id === item.item.placementId || selectedItem.id === item.item.examId)
                                     ? "bg-white/20 text-white"
-                                    : "bg-amber-50 text-amber-700 border border-amber-200"
+                                    : "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/25"
                                 }`}
                               >
                                 {assessmentKindLabel(item.item)}
@@ -396,8 +397,8 @@ export function CourseRenderer({
                     className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-[12px] transition-colors ${
                       selectedItem?.kind === "assessment" &&
                       (selectedItem.id === a.placementId || selectedItem.id === a.examId)
-                        ? "bg-[#14142b] font-semibold text-white shadow-[0_6px_14px_rgba(20,20,43,0.14)]"
-                        : "font-medium text-slate-500 hover:bg-white hover:text-[#14142b]"
+                        ? "bg-ink font-semibold text-on-ink shadow-[0_6px_14px_rgba(20,20,43,0.14)]"
+                        : "font-medium text-slate-500 hover:bg-surface hover:text-ink"
                     }`}
                   >
                     <Award
@@ -416,7 +417,7 @@ export function CourseRenderer({
                           selectedItem?.kind === "assessment" &&
                           (selectedItem.id === a.placementId || selectedItem.id === a.examId)
                             ? "bg-white/20 text-white"
-                            : "bg-amber-50 text-amber-700 border border-amber-200"
+                            : "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/25"
                         }`}
                       >
                         {assessmentKindLabel(a)}
@@ -434,7 +435,7 @@ export function CourseRenderer({
       {/* Content pane */}
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Top bar: breadcrumb + tools */}
-        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200/70 bg-white/60 px-6 py-3.5 backdrop-blur-xl">
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200/70 bg-surface/60 px-6 py-3.5 backdrop-blur-xl">
           <nav className="flex min-w-0 items-center gap-1.5 text-[12px]">
             <span className="truncate font-semibold text-slate-400">{course.title}</span>
             {selectedModule && (
@@ -446,13 +447,13 @@ export function CourseRenderer({
             {(selectedLesson || selectedQuizTitle || selectedAssessment) && (
               <>
                 <span className="text-slate-300">/</span>
-                <span className="truncate font-bold text-[#14142b]">{crumbLabel}</span>
+                <span className="truncate font-bold text-ink">{crumbLabel}</span>
               </>
             )}
             {!selectedLesson && !selectedQuizTitle && !selectedAssessment && (
               <>
                 <span className="text-slate-300">/</span>
-                <span className="font-bold text-[#14142b]">{crumbLabel}</span>
+                <span className="font-bold text-ink">{crumbLabel}</span>
               </>
             )}
           </nav>
@@ -464,8 +465,8 @@ export function CourseRenderer({
                 onClick={() => setShowUpdatedContent(!showUpdatedContent)}
                 className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
                   showUpdatedContent
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300"
+                    : "border-slate-200 bg-surface text-slate-600 hover:border-slate-300"
                 }`}
               >
                 {showUpdatedContent ? "Updated" : "Published"}
@@ -475,7 +476,7 @@ export function CourseRenderer({
               <button
                 type="button"
                 onClick={() => onViewHistory(selectedLesson.id)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-[#14142b] transition-colors hover:border-slate-300 hover:bg-slate-50"
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3 py-1.5 text-[11px] font-semibold text-ink transition-colors hover:border-slate-300 hover:bg-slate-50"
               >
                 <History size={13} />
                 History
@@ -487,7 +488,7 @@ export function CourseRenderer({
                   <button
                     type="button"
                     onClick={() => setIsRejectDialogOpen(true)}
-                    className="rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-[12px] font-semibold text-rose-600 transition-colors hover:bg-rose-100"
+                    className="rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-[12px] font-semibold text-rose-600 transition-colors hover:bg-rose-100 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/15"
                   >
                     Reject
                   </button>
@@ -495,7 +496,7 @@ export function CourseRenderer({
                 <button
                   type="button"
                   onClick={() => setIsPublishDialogOpen(true)}
-                  className="rounded-full bg-[#14142b] px-4 py-1.5 text-[12px] font-semibold text-white shadow-[0_6px_14px_rgba(20,20,43,0.16)] transition-colors hover:bg-[#232735]"
+                  className="rounded-full bg-ink px-4 py-1.5 text-[12px] font-semibold text-on-ink shadow-[0_6px_14px_rgba(20,20,43,0.16)] transition-colors hover:bg-ink-hover"
                 >
                   Approve & Publish
                 </button>
@@ -507,7 +508,7 @@ export function CourseRenderer({
         <div className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-3xl px-8 py-8 lg:px-12">
             {selectedLesson ? (
-              <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-8 shadow-[0_8px_28px_rgba(20,20,43,0.05)]">
+              <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-8 shadow-[0_8px_28px_rgba(20,20,43,0.05)]">
                 <TiptapContentView
                   body={
                     showUpdatedContent
@@ -523,7 +524,7 @@ export function CourseRenderer({
                 />
               </div>
             ) : selectedQuizId ? (
-              <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_8px_28px_rgba(20,20,43,0.05)]">
+              <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_8px_28px_rgba(20,20,43,0.05)]">
                 <QuizPlayer
                   key={selectedQuizId}
                   quizId={selectedQuizId}
@@ -531,14 +532,14 @@ export function CourseRenderer({
                 />
               </div>
             ) : selectedAssessment ? (
-              <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-8 shadow-[0_8px_28px_rgba(20,20,43,0.05)] space-y-6">
+              <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-8 shadow-[0_8px_28px_rgba(20,20,43,0.05)] space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-5">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
+                      <h2 className="text-xl font-bold tracking-tight text-ink">
                         {selectedAssessment.title}
                       </h2>
-                      <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-800">
+                      <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
                         {assessmentKindLabel(selectedAssessment)}
                       </span>
                     </div>
@@ -548,7 +549,7 @@ export function CourseRenderer({
                   </div>
 
                   {selectedAssessment.requiredForCompletion ? (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] font-semibold text-rose-700">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] font-semibold text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
                       <Target size={12} /> Required for course pass
                     </span>
                   ) : (
@@ -563,7 +564,7 @@ export function CourseRenderer({
                     <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
                       <Award size={13} className="text-slate-400" /> Type
                     </div>
-                    <div className="text-[15px] font-bold text-[#14142b] mt-1">
+                    <div className="text-[15px] font-bold text-ink mt-1">
                       {assessmentKindLabel(selectedAssessment)}
                     </div>
                   </div>
@@ -571,7 +572,7 @@ export function CourseRenderer({
                     <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
                       <Target size={13} className="text-slate-400" /> Completion Gate
                     </div>
-                    <div className="text-[15px] font-bold text-[#14142b] mt-1">
+                    <div className="text-[15px] font-bold text-ink mt-1">
                       {selectedAssessment.requiredForCompletion ? "Mandatory" : "Optional"}
                     </div>
                   </div>
@@ -579,7 +580,7 @@ export function CourseRenderer({
                     <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
                       <CheckCircle2 size={13} className="text-slate-400" /> Plan Reference
                     </div>
-                    <div className="text-[15px] font-bold text-[#14142b] mt-1 font-mono text-[12px] truncate">
+                    <div className="text-[15px] font-bold text-ink mt-1 font-mono text-[12px] truncate">
                       {selectedAssessment.planId || "Default Blueprint"}
                     </div>
                   </div>
@@ -587,12 +588,12 @@ export function CourseRenderer({
 
 
                 {canPublish && (
-                  <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4 text-[13px] text-blue-900 space-y-1">
+                  <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4 text-[13px] text-blue-900 space-y-1 dark:border-blue-500/25 dark:bg-blue-500/10 dark:text-blue-200">
                     <div className="font-semibold flex items-center gap-1.5">
-                      <Shield size={15} className="text-blue-700" />
+                      <Shield size={15} className="text-blue-700 dark:text-blue-300" />
                       Assessment Review & Approval Seam
                     </div>
-                    <p className="text-blue-800 text-[12px]">
+                    <p className="text-blue-800 text-[12px] dark:text-blue-200">
                       This assessment is coupled with the current course lifecycle. Approving or rejecting the course automatically publishes or returns this exam in tandem.
                     </p>
                   </div>
@@ -606,31 +607,20 @@ export function CourseRenderer({
               </div>
             ) : (
               <div className="flex flex-col items-center text-center">
-                {course.coverImageUrl ? (
-                  <div className="mb-8 aspect-video w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200/80 shadow-[0_12px_32px_rgba(20,20,43,0.1)]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={course.coverImageUrl}
-                      alt={course.title}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="mb-8 flex aspect-video w-full max-w-lg items-center justify-center rounded-2xl border border-slate-200 bg-slate-50">
-                    <span className="text-[13px] font-medium text-slate-400">No cover image</span>
-                  </div>
-                )}
-                <h2 className="mb-3 text-2xl font-bold tracking-tight text-[#14142b]">
+                <div className="mb-8 aspect-video w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200/80 shadow-[0_12px_32px_rgba(20,20,43,0.1)]">
+                  <ContentArt seed={course.id} kind="COURSE" title={course.title} />
+                </div>
+                <h2 className="mb-3 text-2xl font-bold tracking-tight text-ink">
                   {course.title}
                 </h2>
                 <div className="mb-6 flex flex-wrap items-center justify-center gap-2 text-[12px] font-semibold text-slate-500">
-                  <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5">
+                  <span className="rounded-full border border-slate-200 bg-surface px-3 py-1.5">
                     {course.pricingModel === "PAID"
                       ? formatMoney(course.priceAmount ?? 0, course.currency ?? "USD")
                       : "Free"}
                   </span>
                   {canPublish && (
-                    <span className="rounded-full border border-[#14142b]/15 bg-[#14142b] px-3 py-1.5 text-white">
+                    <span className="rounded-full border border-ink/15 bg-ink px-3 py-1.5 text-on-ink">
                       Review mode
                     </span>
                   )}
@@ -650,21 +640,21 @@ export function CourseRenderer({
       {selectedLesson && canPublish && (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
           {isFeedbackOpen && (
-            <div className="mb-3 flex h-[560px] w-[400px] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_20px_50px_rgba(20,20,43,0.18)] animate-in fade-in slide-in-from-bottom-4 duration-200">
+            <div className="mb-3 flex h-[560px] w-[400px] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-surface shadow-[0_20px_50px_rgba(20,20,43,0.18)] animate-in fade-in slide-in-from-bottom-4 duration-200">
               <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3">
                 <div className="flex items-center gap-2.5">
-                  <span className="grid size-8 place-items-center rounded-xl bg-[#14142b] text-white">
+                  <span className="grid size-8 place-items-center rounded-xl bg-ink text-on-ink">
                     <MessageSquare size={14} />
                   </span>
                   <div>
-                    <p className="text-[13px] font-bold text-[#14142b]">Reviewer feedback</p>
+                    <p className="text-[13px] font-bold text-ink">Reviewer feedback</p>
                     <p className="text-[10px] font-medium text-slate-400">Internal · this lesson</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsFeedbackOpen(false)}
-                  className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+                  className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink"
                 >
                   <X size={16} />
                 </button>
@@ -687,8 +677,8 @@ export function CourseRenderer({
             onClick={() => setIsFeedbackOpen(!isFeedbackOpen)}
             className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-[13px] font-semibold shadow-[0_10px_24px_rgba(20,20,43,0.2)] transition-transform hover:scale-[1.02] active:scale-[0.98] ${
               isFeedbackOpen
-                ? "bg-slate-800 text-white"
-                : "bg-[#14142b] text-white hover:bg-[#232735]"
+                ? "bg-slate-800 text-on-ink"
+                : "bg-ink text-on-ink hover:bg-ink-hover"
             }`}
           >
             <MessageSquare size={15} />
@@ -709,17 +699,17 @@ export function CourseRenderer({
       />
 
       {isRejectDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#14142b]/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_24px_60px_rgba(20,20,43,0.22)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface shadow-[0_24px_60px_rgba(20,20,43,0.22)]">
             <div className="border-b border-slate-100 px-6 py-4">
-              <h2 className="text-[16px] font-bold tracking-tight text-[#14142b]">Reject course</h2>
+              <h2 className="text-[16px] font-bold tracking-tight text-ink">Reject course</h2>
               <p className="mt-1 text-[12px] font-medium text-slate-500">
                 The author will see this reason on their submission.
               </p>
             </div>
             <div className="px-6 py-5">
               <textarea
-                className="h-32 w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 text-[13px] text-[#14142b] outline-none transition-shadow placeholder:text-slate-400 focus:border-[#14142b]/25 focus:bg-white focus:ring-4 focus:ring-slate-200/70"
+                className="h-32 w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 text-[13px] text-ink outline-none transition-shadow placeholder:text-slate-400 focus:border-ink/25 focus:bg-surface focus:ring-4 focus:ring-slate-200/70"
                 placeholder="E.g. Audio quality in module 2 needs improvement…"
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}

@@ -247,7 +247,7 @@ export default function PrivacyPage() {
   };
 
   return (
-    <div className="min-h-screen pt-28 pb-16 relative z-10 bg-white font-sans text-neutral-800">
+    <div className="min-h-screen pt-28 pb-16 relative z-10 bg-surface font-sans text-neutral-800">
       
       {/* --- CENTERED FOCUS READING COLUMN --- */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -268,7 +268,7 @@ export default function PrivacyPage() {
               fontFamily: '"Amira-Grace", "Amira Grace", cursive'
             }}
           >
-            <span className="text-[#0f172a] dark:text-neutral-200">
+            <span className="text-ink">
               Privacy
             </span>
             {" "}
@@ -300,19 +300,19 @@ export default function PrivacyPage() {
                 placeholder="Search sections, terms, cookies..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 bg-white border border-neutral-200 focus:border-neutral-400 rounded-xl shadow-sm focus:ring-0 focus:outline-none transition-all text-xs text-neutral-800"
+                className="w-full pl-11 pr-4 py-2.5 bg-surface border border-neutral-200 focus:border-neutral-400 rounded-xl shadow-sm focus:ring-0 focus:outline-none transition-all text-xs text-neutral-800"
               />
             </div>
             <div className="flex gap-2 shrink-0">
               <button
                 onClick={handlePrint}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border border-neutral-200 rounded-xl text-xs font-semibold text-neutral-700 shadow-sm transition-all"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-surface hover:bg-slate-50 border border-neutral-200 rounded-xl text-xs font-semibold text-neutral-700 shadow-sm transition-all"
               >
                 <Printer size={14} /> Print
               </button>
               <a
                 href="mailto:arcade@amaljyothi.ac.in"
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-semibold shadow-md transition-all justify-center"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-on-ink rounded-xl text-xs font-semibold shadow-md transition-all justify-center"
               >
                 Email Admin
               </a>
@@ -432,7 +432,7 @@ export default function PrivacyPage() {
                   >
                     <button
                       onClick={() => setExpandedFaq(isOpen ? null : index)}
-                      className="w-full flex items-center justify-between text-left font-semibold text-xs text-neutral-800 hover:text-indigo-600 transition-colors py-1.5"
+                      className="w-full flex items-center justify-between text-left font-semibold text-xs text-neutral-800 hover:text-indigo-600 transition-colors py-1.5 dark:hover:text-indigo-400"
                     >
                       <span>{faq.question}</span>
                       <ChevronDown
@@ -491,7 +491,7 @@ export default function PrivacyPage() {
                 href="https://www.amaljyothi.ac.in"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-slate-50 border border-neutral-200 rounded-lg text-xs font-semibold text-neutral-700 shadow-sm transition-all"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-surface hover:bg-slate-50 border border-neutral-200 rounded-lg text-xs font-semibold text-neutral-700 shadow-sm transition-all"
               >
                 Visit AJCE Portal <ExternalLink size={10} />
               </a>

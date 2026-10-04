@@ -35,6 +35,7 @@
 }
 
 @import "tailwindcss";
+@import "./themes.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -123,6 +124,11 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
   --color-ink: var(--ink);
+  --color-ink-hover: var(--ink-hover);
+  --color-on-ink: var(--on-ink);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-page: var(--page);
   --color-paper: var(--paper);
   --color-mist: var(--mist);
   --color-blue: var(--blue);
@@ -187,8 +193,7 @@
   --sidebar-border: oklch(0.91 0.02 245);
   --sidebar-ring: oklch(0.708 0.02 245);
 
-  /* Arcade Brand Palette Tokens */
-  --ink: #14161c;
+  /* Arcade Brand Palette Tokens (--ink/--surface live in themes.css) */
   --paper: #eef5fc;
   --mist: #e2eefc;
   --blue: #3457e8;
@@ -200,46 +205,6 @@
   --subtle: #6a6d7c;
 }
 
-.dark {
-  color-scheme: dark;
-  --background: oklch(0.16 0.04 250);
-  --foreground: oklch(0.985 0.01 245);
-  --card: oklch(0.20 0.04 250);
-  --card-foreground: oklch(0.985 0.01 245);
-  --popover: oklch(0.18 0.04 250);
-  --popover-foreground: oklch(0.985 0.01 245);
-  --primary: oklch(0.922 0.01 245);
-  --primary-foreground: oklch(0.205 0.04 250);
-  --secondary: oklch(0.269 0.04 250);
-  --secondary-foreground: oklch(0.985 0.01 245);
-  --muted: oklch(0.269 0.04 250);
-  --muted-foreground: oklch(0.708 0.02 245);
-  --accent: oklch(0.269 0.04 250);
-  --accent-foreground: oklch(0.985 0.01 245);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0.02 245);
-  --chart-1: oklch(0.87 0.02 245);
-  --chart-2: oklch(0.556 0.02 245);
-  --chart-3: oklch(0.439 0.02 245);
-  --chart-4: oklch(0.371 0.02 245);
-  --chart-5: oklch(0.269 0.02 245);
-  --sidebar: oklch(0.18 0.04 250);
-  --sidebar-foreground: oklch(0.985 0.01 245);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0.01 245);
-  --sidebar-accent: oklch(0.269 0.04 250);
-  --sidebar-accent-foreground: oklch(0.985 0.01 245);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0.02 245);
-
-  --ink: #eef5fc;
-  --paper: #14161c;
-  --mist: #1a1e26;
-  --line: rgba(255, 255, 255, 0.1);
-  --subtle: #94a3b8;
-}
 
 @layer base {
 
@@ -499,9 +464,10 @@
       rgba(255, 255, 255, 0.3));
 }
 
-/* Apple-style floating dock */
+/* Apple-style floating dock — the navbar pills, dock and bug island. Follows the theme: the
+   surface token keeps light pixel-identical, dark gets a raised dark pill, glass a real frost. */
 .apple-glass-dock {
-  background: rgba(255, 255, 255, 0.92);
+  background: color-mix(in oklab, var(--surface-raised) 92%, transparent);
   backdrop-filter: blur(40px) saturate(200%);
   -webkit-backdrop-filter: blur(40px) saturate(200%);
   border: 0.5px solid rgba(0, 0, 0, 0.08);
@@ -512,12 +478,23 @@
 }
 
 .dark .apple-glass-dock {
-  background: rgba(40, 40, 40, 0.90);
-  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  border: 0.5px solid rgba(255, 255, 255, 0.14);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+}
+
+:root[data-material="glass"] .apple-glass-dock {
+  background: oklch(1 0 0 / calc(var(--glass-a) * 0.9));
+  border-color: oklch(1 0 0 / 0.45);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 oklch(1 0 0 / 0.6);
+}
+
+:root.dark[data-material="glass"] .apple-glass-dock {
+  background: oklch(0.2 0.015 262 / calc(var(--glass-a) * 0.9));
+  border-color: oklch(1 0 0 / 0.16);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 oklch(1 0 0 / 0.1);
 }
 
 /* Card Scalloped Left Edge Cutout */

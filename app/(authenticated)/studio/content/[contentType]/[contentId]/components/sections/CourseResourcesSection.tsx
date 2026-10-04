@@ -6,14 +6,14 @@ export function CourseResourcesSection() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* 1. Downloadable Course Attachments & Assets */}
-      <div className="rounded-[24px] border-[1.5px] border-emerald-400/80 bg-gradient-to-b from-emerald-50/40 via-white to-white p-6 sm:p-7 shadow-[4px_-4px_0px_0px_#A7F3D0] flex flex-col justify-between gap-4">
-        <div className="flex flex-col gap-1 border-b border-emerald-100 pb-3">
+      <div className="rounded-[24px] border-[1.5px] border-emerald-400/80 bg-gradient-to-b from-emerald-50/40 via-surface to-surface p-6 sm:p-7 shadow-[4px_-4px_0px_0px_#A7F3D0] flex flex-col justify-between gap-4 dark:from-emerald-500/10">
+        <div className="flex flex-col gap-1 border-b border-emerald-100 pb-3 dark:border-emerald-500/25">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <Download size={18} className="text-emerald-600" />
+              <Download size={18} className="text-emerald-600 dark:text-emerald-400" />
               Downloadable Course Resources
             </h3>
-            <span className="rounded-full border border-emerald-200 bg-emerald-100 text-emerald-800 px-3 py-0.5 text-[10px] font-black uppercase tracking-wider">
+            <span className="rounded-full border border-emerald-200 bg-emerald-100 text-emerald-800 px-3 py-0.5 text-[10px] font-black uppercase tracking-wider dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-200">
               3 Files
             </span>
           </div>
@@ -32,10 +32,10 @@ export function CourseResourcesSection() {
             return (
               <div
                 key={file.name}
-                className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-emerald-200/80 bg-white hover:bg-emerald-50/40 transition-colors shadow-2xs"
+                className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-emerald-200/80 bg-surface hover:bg-emerald-50/40 transition-colors shadow-2xs dark:border-emerald-500/25 dark:hover:bg-emerald-500/10"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-emerald-100 text-emerald-700 border border-emerald-200">
+                  <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/25">
                     <IconComponent size={16} />
                   </div>
                   <div className="flex flex-col min-w-0">
@@ -43,7 +43,7 @@ export function CourseResourcesSection() {
                     <span className="text-[11px] font-medium text-slate-400">{file.type} · {file.size}</span>
                   </div>
                 </div>
-                <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1 shrink-0">
+                <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1 shrink-0 dark:text-emerald-300 dark:bg-emerald-500/10 dark:border-emerald-500/25">
                   {file.downloads}
                 </span>
               </div>
@@ -53,14 +53,14 @@ export function CourseResourcesSection() {
       </div>
 
       {/* 2. Student Q&A & Community Discussion Hub */}
-      <div className="rounded-[24px] border-[1.5px] border-amber-400/80 bg-gradient-to-b from-amber-50/40 via-white to-white p-6 sm:p-7 shadow-[4px_-4px_0px_0px_#FDE68A] flex flex-col justify-between gap-4">
-        <div className="flex flex-col gap-1 border-b border-amber-100 pb-3">
+      <div className="rounded-[24px] border-[1.5px] border-amber-400/80 bg-gradient-to-b from-amber-50/40 via-surface to-surface p-6 sm:p-7 shadow-[4px_-4px_0px_0px_#FDE68A] flex flex-col justify-between gap-4 dark:from-amber-500/10">
+        <div className="flex flex-col gap-1 border-b border-amber-100 pb-3 dark:border-amber-500/25">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <MessageSquare size={18} className="text-amber-600" />
+              <MessageSquare size={18} className="text-amber-600 dark:text-amber-400" />
               Student Q&A & Discussion Hub
             </h3>
-            <span className="rounded-full border border-amber-300 bg-amber-100 text-amber-900 px-3 py-0.5 text-[10px] font-black uppercase tracking-wider animate-pulse">
+            <span className="rounded-full border border-amber-300 bg-amber-100 text-amber-900 px-3 py-0.5 text-[10px] font-black uppercase tracking-wider animate-pulse dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-200">
               4 Unanswered
             </span>
           </div>
@@ -86,10 +86,10 @@ export function CourseResourcesSection() {
           ].map((item) => (
             <div
               key={item.question}
-              className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-amber-200/80 bg-white hover:bg-amber-50/40 transition-colors shadow-2xs"
+              className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-amber-200/80 bg-surface hover:bg-amber-50/40 transition-colors shadow-2xs dark:border-amber-500/25 dark:hover:bg-amber-500/10"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="grid size-9 shrink-0 place-items-center rounded-full bg-slate-900 text-white font-black text-xs">
+                <div className="grid size-9 shrink-0 place-items-center rounded-full bg-slate-900 text-on-ink font-black text-xs">
                   {item.author.charAt(0)}
                 </div>
                 <div className="flex flex-col min-w-0">

@@ -130,7 +130,7 @@ function AuthHeading({ title }: { title: string }) {
           animate={{ opacity: 1, y: 0 }}
           exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
           transition={{ duration: 0.34, ease: easeOut }}
-          className="absolute inset-x-0 top-0 text-[1.9rem] font-bold leading-[1.2] tracking-tight text-[#14142b] sm:text-[2.25rem]"
+          className="absolute inset-x-0 top-0 text-[1.9rem] font-bold leading-[1.2] tracking-tight text-ink sm:text-[2.25rem]"
         >
           {title}
           <AuthPeriodGear />
@@ -165,7 +165,7 @@ function PrimaryButton({
       disabled={loading || disabled}
       whileHover={reduce || loading ? undefined : { y: -1 }}
       whileTap={reduce || loading ? undefined : { scale: 0.985 }}
-      className="flex w-full items-center justify-center gap-2 rounded-full bg-[#12141C] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgba(18,20,28,0.14)] transition-colors hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-80"
+      className="flex w-full items-center justify-center gap-2 rounded-full bg-ink px-8 py-3.5 text-sm font-semibold text-on-ink shadow-[0_2px_10px_rgba(18,20,28,0.14)] transition-colors hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-80"
     >
       {loading ? <PebbleLoader tone="light" size="sm" /> : children}
     </motion.button>
@@ -223,7 +223,7 @@ function OtpInput({
             onKeyDown={(e) => handleKeyDown(e, i)}
             autoComplete={i === 0 ? 'one-time-code' : 'off'}
             className={`h-12 w-full max-w-[48px] rounded-xl border-2 text-center text-lg font-bold text-slate-900 outline-none transition-all focus:border-[#4C6FFF] ${
-              error ? 'border-red-500 bg-red-50/50' : 'border-slate-200 bg-transparent'
+              error ? 'border-red-500 bg-red-50/50 dark:bg-red-500/10' : 'border-slate-200 bg-transparent'
             }`}
           />
         ))}
@@ -314,11 +314,9 @@ export default function AuthForm({
     } else if (mode === 'verify') {
       handleModeChange('signup');
     } else if (mode === 'login') {
-      if (typeof window !== 'undefined' && window.history.length > 1) {
-        router.back();
-      } else {
-        router.push('/');
-      }
+      // Always the landing page. history.back() sent people to whatever they visited before
+      // (an old deep link, another site, or the sign-in form itself after a redirect loop).
+      router.push('/');
     }
   };
 
@@ -415,7 +413,7 @@ export default function AuthForm({
         <button
           type="button"
           onClick={() => handleModeChange('login')}
-          className="font-semibold text-[#4C6FFF] transition-colors hover:text-[#3a5ae6]"
+          className="font-semibold text-[#4C6FFF] transition-colors hover:text-[#3a5ae6] dark:text-[#8db1ff] dark:hover:text-[#8cb1ff]"
         >
           Sign in
         </button>
@@ -426,7 +424,7 @@ export default function AuthForm({
         <button
           type="button"
           onClick={() => handleModeChange('signup')}
-          className="font-semibold text-[#4C6FFF] transition-colors hover:text-[#3a5ae6]"
+          className="font-semibold text-[#4C6FFF] transition-colors hover:text-[#3a5ae6] dark:text-[#8db1ff] dark:hover:text-[#8cb1ff]"
         >
           Create one
         </button>
@@ -475,7 +473,7 @@ export default function AuthForm({
         transition={{ duration: 0.45, ease: easeOut }}
       >
         <CheckCircle2 className="mb-5 h-14 w-14 text-[#1DB876]" strokeWidth={1.75} />
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-[#14142b]">
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-ink">
           {copy.title}
           <AuthPeriodGear />
         </h2>
@@ -487,7 +485,7 @@ export default function AuthForm({
             <button
               type="button"
               onClick={() => handleModeChange('login')}
-              className="rounded-full bg-[#12141C] px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#232735]"
+              className="rounded-full bg-ink px-8 py-3.5 text-sm font-semibold text-on-ink transition-colors hover:bg-ink-hover"
             >
               Sign in
             </button>
@@ -496,7 +494,7 @@ export default function AuthForm({
           <button
             type="button"
             onClick={() => handleModeChange('login')}
-            className="text-sm font-semibold text-[#4C6FFF] hover:text-[#3a5ae6]"
+            className="text-sm font-semibold text-[#4C6FFF] hover:text-[#3a5ae6] dark:text-[#8db1ff] dark:hover:text-[#8cb1ff]"
           >
             Back to sign in
           </button>
@@ -525,7 +523,7 @@ export default function AuthForm({
               <button
                 type="button"
                 onClick={() => handleModeChange('login')}
-                className="rounded-full bg-[#12141C] px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#232735]"
+                className="rounded-full bg-ink px-8 py-3.5 text-sm font-semibold text-on-ink transition-colors hover:bg-ink-hover"
               >
                 Sign in
               </button>
@@ -543,7 +541,7 @@ export default function AuthForm({
               <button
                 type="button"
                 onClick={() => handleModeChange('login')}
-                className="text-sm font-semibold text-[#4C6FFF] hover:text-[#3a5ae6]"
+                className="text-sm font-semibold text-[#4C6FFF] hover:text-[#3a5ae6] dark:text-[#8db1ff] dark:hover:text-[#8cb1ff]"
               >
                 Back to sign in
               </button>
@@ -649,7 +647,7 @@ export default function AuthForm({
                 />
                 <div className="mt-3 flex justify-end pr-1">
                   {resendSuccess ? (
-                    <span className="text-xs font-semibold text-green-600">
+                    <span className="text-xs font-semibold text-green-600 dark:text-green-400">
                       Verification code resent!
                     </span>
                   ) : (
@@ -671,7 +669,7 @@ export default function AuthForm({
                           setResending(false);
                         }
                       }}
-                      className="text-xs font-bold text-[#4C6FFF] hover:text-[#3a5ae6] disabled:opacity-50 transition-colors"
+                      className="text-xs font-bold text-[#4C6FFF] hover:text-[#3a5ae6] disabled:opacity-50 transition-colors dark:text-[#8db1ff] dark:hover:text-[#8cb1ff]"
                     >
                       {resending ? 'Resending...' : 'Resend verification code'}
                     </button>
@@ -703,7 +701,7 @@ export default function AuthForm({
                     <button
                       type="button"
                       onClick={() => handleModeChange('forgot')}
-                      className="text-sm font-semibold text-slate-500 transition-colors hover:text-[#14142b]"
+                      className="text-sm font-semibold text-slate-500 transition-colors hover:text-ink"
                     >
                       Forgot password?
                     </button>
@@ -765,7 +763,7 @@ export default function AuthForm({
                   onClick={onGoogleLogin}
                   whileHover={reduce ? undefined : { y: -1 }}
                   whileTap={reduce ? undefined : { scale: 0.985 }}
-                  className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white px-8 py-3.5 text-sm font-semibold text-[#14142b] transition-colors hover:border-slate-300 hover:bg-slate-50"
+                  className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-surface px-8 py-3.5 text-sm font-semibold text-ink transition-colors hover:border-slate-300 hover:bg-slate-50"
                 >
                   <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
                     <path

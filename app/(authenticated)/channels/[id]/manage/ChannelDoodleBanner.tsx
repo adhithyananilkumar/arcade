@@ -3,6 +3,7 @@
 import React, { useRef } from 'react';
 import { useMotionValue } from 'framer-motion';
 import { Doodle, DoodleType } from '@/apps/public/components/landing/signature/DoodleElements';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 
 interface Props {
   bannerUrl?: string | null;
@@ -14,10 +15,12 @@ export function ChannelDoodleBanner({ bannerUrl, className = "h-40 w-full sm:h-5
   const mouseX = useMotionValue(-1000);
   const mouseY = useMotionValue(-1000);
 
-  if (bannerUrl) {
+  const resolvedBannerUrl = getAvatarUrl(bannerUrl);
+
+  if (resolvedBannerUrl) {
     return (
-      <div className={`relative overflow-hidden border-b border-slate-200/80 ${className}`}>
-        <img src={bannerUrl} alt="Channel Banner" className="h-full w-full object-cover" />
+      <div className={`relative overflow-hidden ${className}`}>
+        <img src={resolvedBannerUrl} alt="Channel Banner" className="h-full w-full object-cover object-center" />
       </div>
     );
   }
@@ -54,11 +57,9 @@ export function ChannelDoodleBanner({ bannerUrl, className = "h-40 w-full sm:h-5
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`relative w-full overflow-hidden bg-[#F5F0E6] text-black ${className}`}
+      className={`relative w-full overflow-hidden bg-slate-100 text-slate-950 ${className}`}
       style={{
-        backgroundColor: '#F5F0E6',
-        backgroundImage: `radial-gradient(#14142b 0.8px, transparent 0.8px)`,
-        backgroundSize: '24px 24px',
+        backgroundColor: 'var(--theme-n-100, #F5F0E6)',
       }}
     >
       {/* Background Doodles */}

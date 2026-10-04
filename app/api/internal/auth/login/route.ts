@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { API_V1_BASE_URL } from '@/infrastructure/config/env';
+import { edgeClientHeaders } from '../_lib/edgeClient';
+import { refreshCookieOptions } from '../_lib/refreshCookie';
 
 const BACKEND_URL = API_V1_BASE_URL;
 
@@ -16,9 +18,7 @@ export async function POST(request: Request) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // Forward client IP and User-Agent if needed
-        'X-Forwarded-For': request.headers.get('x-forwarded-for') || '',
-        'User-Agent': request.headers.get('user-agent') || '',
+        ...edgeClientHeaders(request),
       },
       body: JSON.stringify(body),
     });
@@ -34,13 +34,7 @@ export async function POST(request: Request) {
     // Set refresh token in HttpOnly cookie using standard Next.js method
     if (refreshToken) {
       const cookieStore = await cookies();
-      cookieStore.set('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax', // Use lax for local dev, strict for prod if on same domain
-        path: '/',
-        maxAge: 30 * 24 * 60 * 60, // 30 days
-      });
+      cookieStore.set('refreshToken', refreshToken, refreshCookieOptions(request));
     }
 
     // Return access token to the client

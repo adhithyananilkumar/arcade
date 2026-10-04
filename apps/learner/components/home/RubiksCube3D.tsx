@@ -873,7 +873,7 @@ function getCameraAwareMove(
         <button
           type="button"
           onClick={() => setScale((s) => Math.min(MAX_SCALE, +(s + 0.1).toFixed(2)))}
-          className="w-6 h-6 rounded-none bg-white/95 dark:bg-slate-800/95 hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200/90 dark:border-slate-700/80 shadow-xs flex items-center justify-center text-xs transition-transform active:scale-90 cursor-pointer"
+          className="w-6 h-6 rounded-none bg-surface/95 hover:bg-surface text-slate-700 border border-slate-200/90 shadow-xs flex items-center justify-center text-xs transition-transform active:scale-90 cursor-pointer"
           title="Increase cube size (+)"
           aria-label="Increase cube size"
         >
@@ -888,7 +888,7 @@ function getCameraAwareMove(
           title="Drag to adjust size"
         >
           {/* Vertical Track Line */}
-          <div className="w-[2.5px] h-full bg-slate-300 dark:bg-slate-600/90 relative shadow-inner">
+          <div className="w-[2.5px] h-full bg-slate-300 relative shadow-inner">
             {/* Active Blue Progress Fill */}
             <div
               className="absolute bottom-0 inset-x-0 bg-[#2563EB]"
@@ -898,7 +898,7 @@ function getCameraAwareMove(
 
           {/* Circle Thumb Handle (matching vertical slider in screenshot) */}
           <div
-            className="absolute w-7 h-7 rounded-full border-[2.5px] border-slate-700 dark:border-white bg-white/90 dark:bg-slate-850 shadow-[0_2px_8px_rgba(0,0,0,0.22)] flex items-center justify-center cursor-grab active:cursor-grabbing hover:scale-110 transition-transform"
+            className="absolute w-7 h-7 rounded-full border-[2.5px] border-slate-700 bg-surface/90 dark:bg-slate-850 shadow-[0_2px_8px_rgba(0,0,0,0.22)] flex items-center justify-center cursor-grab active:cursor-grabbing hover:scale-110 transition-transform"
             style={{
               bottom: `calc(${pct * 100}% - 14px)`,
             }}
@@ -912,7 +912,7 @@ function getCameraAwareMove(
         <button
           type="button"
           onClick={() => setScale((s) => Math.max(MIN_SCALE, +(s - 0.1).toFixed(2)))}
-          className="w-6 h-6 rounded-none bg-white/95 dark:bg-slate-800/95 hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200/90 dark:border-slate-700/80 shadow-xs flex items-center justify-center text-xs transition-transform active:scale-90 cursor-pointer"
+          className="w-6 h-6 rounded-none bg-surface/95 hover:bg-surface text-slate-700 border border-slate-200/90 shadow-xs flex items-center justify-center text-xs transition-transform active:scale-90 cursor-pointer"
           title="Decrease cube size (-)"
           aria-label="Decrease cube size"
         >
@@ -923,7 +923,7 @@ function getCameraAwareMove(
         <button
           type="button"
           onClick={() => setScale(1.0)}
-          className="px-1.5 py-0.5 rounded-none text-[10px] font-mono font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer"
+          className="px-1.5 py-0.5 rounded-none text-[10px] font-mono font-bold text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
           title="Click to reset size to 100%"
         >
           {Math.round(scale * 100)}%
@@ -940,7 +940,7 @@ function getCameraAwareMove(
           type="button"
           onClick={handleUndo}
           disabled={isTwisting || solveStatus === 'solving' || moveCount === 0}
-          className="relative inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-slate-100/40 dark:bg-slate-800/40 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 text-slate-800 dark:text-slate-100 border border-slate-200/50 dark:border-slate-700/50 transition-all hover:scale-105 active:scale-95 disabled:opacity-25 disabled:pointer-events-none cursor-pointer"
+          className="relative inline-flex items-center justify-center w-7.5 h-7.5 rounded-full bg-slate-100/40 hover:bg-slate-200/60 text-slate-800 border border-slate-200/50 transition-all hover:scale-105 active:scale-95 disabled:opacity-25 disabled:pointer-events-none cursor-pointer"
           title={moveCount > 0 ? `Undo last move (${moveCount} left)` : 'Undo'}
           aria-label="Undo"
         >
@@ -1050,12 +1050,12 @@ function getCameraAwareMove(
       >
         {/* Fullscreen Header (only in Modal) */}
         {inModal && (
-          <div className="w-full flex items-center justify-between px-5 py-3 rounded-2xl bg-white/95 dark:bg-slate-800/95 border border-slate-200/90 dark:border-slate-700/80 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md">
+          <div className="w-full flex items-center justify-between px-5 py-3 rounded-2xl bg-surface/95 border border-slate-200/90 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md">
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-sm font-bold tracking-tight text-slate-800 dark:text-slate-100">
+              <span className="text-sm font-bold tracking-tight text-slate-800">
                 Rubiks
               </span>
-              <span className="text-xs text-slate-400 dark:text-slate-500 font-normal">
+              <span className="text-xs text-slate-400 font-normal">
                 · Fullscreen
               </span>
             </div>
@@ -1173,7 +1173,7 @@ function getCameraAwareMove(
         {/* Hint Toast (displayed if active) */}
         {hintMessage && (
           <div
-            className={`z-30 px-3 py-1 rounded-full bg-white/95 dark:bg-slate-900/95 border border-amber-200/80 dark:border-amber-700/60 text-amber-700 dark:text-amber-300 text-[11px] font-medium shadow-[0_4px_12px_rgba(20,20,43,0.08)] backdrop-blur-md flex items-center gap-1.5 whitespace-nowrap pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200 ${
+            className={`z-30 px-3 py-1 rounded-full bg-surface/95 border border-amber-200/80 dark:border-amber-700/60 text-amber-700 dark:text-amber-300 text-[11px] font-medium shadow-[0_4px_12px_rgba(20,20,43,0.08)] backdrop-blur-md flex items-center gap-1.5 whitespace-nowrap pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200 ${
               inModal ? 'mb-2' : 'absolute bottom-4 left-1/2 -translate-x-1/2'
             }`}
           >
@@ -1191,19 +1191,19 @@ function getCameraAwareMove(
         {/* Inline Card Placeholder */}
         <div className="flex h-full flex-col gap-3.5">
           <div className="flex min-h-[28px] items-center justify-between gap-3">
-            <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
+            <h2 className="text-xl font-bold tracking-tight text-ink">
               Rubiks
             </h2>
             {renderControls()}
           </div>
-          <div className="relative w-full h-[380px] rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-dashed border-slate-300 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 p-8 flex items-center justify-center text-xs font-mono text-slate-500">
+          <div className="relative w-full h-[380px] rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-dashed border-slate-300 bg-surface/40 p-8 flex items-center justify-center text-xs font-mono text-slate-500">
             Rubiks (Fullscreen mode active · Press Esc or click Minimize to return)
           </div>
         </div>
 
         {/* High-priority Portal with Clean White Theme Background (z-[99999]) */}
         {createPortal(
-          <div className="fixed inset-0 z-[99999] bg-gradient-to-b from-[#F8FAFC] via-[#F1F5F9] to-[#E2E8F0] dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 sm:p-10 flex flex-col items-center justify-between select-none overflow-hidden animate-in fade-in duration-200">
+          <div className="fixed inset-0 z-[99999] bg-gradient-to-b from-slate-50 via-slate-100 to-slate-200 p-6 sm:p-10 flex flex-col items-center justify-between select-none overflow-hidden animate-in fade-in duration-200">
             {renderCubeUI(true)}
           </div>,
           document.body
@@ -1216,7 +1216,7 @@ function getCameraAwareMove(
     <div className="flex h-full flex-col gap-3.5">
       {/* Outer Section Header: Title on Left, Controls on Right */}
       <div className="flex min-h-[28px] items-center justify-between gap-3">
-        <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
+        <h2 className="text-xl font-bold tracking-tight text-ink">
           Rubiks
         </h2>
         {renderControls()}
@@ -1224,7 +1224,7 @@ function getCameraAwareMove(
 
       {/* 3D Cube Card */}
       <div className="min-h-0 flex-1 flex flex-col justify-center">
-        <div className="relative w-full h-full min-h-[380px] overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white/95 p-4 sm:p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] backdrop-blur-sm select-none flex flex-col justify-between items-center">
+        <div className="relative w-full h-full min-h-[340px] overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-4 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] backdrop-blur-sm select-none flex flex-col justify-between items-center">
           {/* Decorative background ambient glow matching Resume Learning */}
           <div
             aria-hidden

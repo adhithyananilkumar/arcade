@@ -122,7 +122,7 @@ export default function LearnerDock() {
                       'transition-colors duration-200',
                       active
                         ? item.activeColor
-                        : 'text-slate-500/75 dark:text-neutral-400/80'
+                        : 'text-slate-500/75'
                     )}
                     strokeWidth={active ? 2.3 : 1.7}
                     aria-label={item.label}

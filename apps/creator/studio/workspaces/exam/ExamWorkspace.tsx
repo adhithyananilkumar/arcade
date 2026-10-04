@@ -413,8 +413,8 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         onClick={() => selectSection("")}
         className={`mb-2 flex w-full items-center gap-2 rounded-2xl border px-3 py-2 text-left text-xs font-bold shadow-sm backdrop-blur-md transition-all ${
           activeSectionId === ""
-            ? "border-[#14142b] bg-[#14142b] text-white"
-            : "border-white/40 bg-white/60 text-[#14142b] hover:bg-white/80"
+            ? "border-ink bg-ink text-on-ink"
+            : "border-white/40 bg-surface/60 text-ink hover:bg-surface/80"
         }`}
       >
         <Layers size={13} className="flex-shrink-0" />
@@ -423,8 +423,8 @@ export function ExamWorkspace({ examId }: { examId: string }) {
 
       {sections.length === 0 && (
         <div className={TREE_EMPTY_STATE_CLASS}>
-          <Layers size={24} className="text-[#14142b]/40" />
-          <p className="text-xs font-medium text-[#14142b]/60">
+          <Layers size={24} className="text-ink/40" />
+          <p className="text-xs font-medium text-ink/60">
             No sections yet. Add a section to start writing questions.
           </p>
         </div>
@@ -439,7 +439,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
               <button
                 type="button"
                 onClick={() => selectSection(isExpanded ? "" : section.id)}
-                className="flex-shrink-0 text-[#14142b]/40 transition-colors hover:text-[#14142b]"
+                className="flex-shrink-0 text-ink/40 transition-colors hover:text-ink"
                 title={isExpanded ? "Collapse" : "Expand"}
               >
                 {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -455,7 +455,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
                     if (e.key === "Enter") commitRename(section.id, renameDraft);
                     if (e.key === "Escape") setRenamingSectionId(null);
                   }}
-                  className="min-w-0 flex-1 rounded-lg border border-[#14142b]/15 bg-white px-2 py-1 text-xs font-bold text-[#14142b] outline-none"
+                  className="min-w-0 flex-1 rounded-lg border border-ink/15 bg-surface px-2 py-1 text-xs font-bold text-ink outline-none"
                 />
               ) : (
                 <span
@@ -465,14 +465,14 @@ export function ExamWorkspace({ examId }: { examId: string }) {
                     setRenameDraft(section.title);
                   }}
                   onClick={() => selectSection(section.id)}
-                  className="min-w-0 flex-1 cursor-pointer truncate text-xs font-bold text-[#14142b]"
+                  className="min-w-0 flex-1 cursor-pointer truncate text-xs font-bold text-ink"
                   title={section.title}
                 >
                   {section.title}
                 </span>
               )}
 
-              <span className="flex-shrink-0 rounded-full bg-[#14142b]/10 px-2 py-0.5 text-[10px] font-semibold text-[#14142b]/50">
+              <span className="flex-shrink-0 rounded-full bg-ink/10 px-2 py-0.5 text-[10px] font-semibold text-ink/50">
                 {section.questionCount}
               </span>
 
@@ -482,7 +482,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
                     type="button"
                     title="Add question"
                     onClick={() => addQuestionTo(section.id)}
-                    className="rounded-md p-1 text-[#14142b]/40 transition-colors hover:bg-[#14142b]/5 hover:text-[#14142b]"
+                    className="rounded-md p-1 text-ink/40 transition-colors hover:bg-ink/5 hover:text-ink"
                   >
                     <Plus size={12} />
                   </button>
@@ -493,7 +493,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
                       setRenamingSectionId(section.id);
                       setRenameDraft(section.title);
                     }}
-                    className="rounded-md p-1 text-[#14142b]/40 transition-colors hover:bg-[#14142b]/5 hover:text-[#14142b]"
+                    className="rounded-md p-1 text-ink/40 transition-colors hover:bg-ink/5 hover:text-ink"
                   >
                     <Pencil size={12} />
                   </button>
@@ -501,7 +501,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
                     type="button"
                     title="Delete section"
                     onClick={() => askDeleteSection(section)}
-                    className="rounded-md p-1 text-[#14142b]/40 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                    className="rounded-md p-1 text-ink/40 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                   >
                     <Trash2 size={12} />
                   </button>
@@ -511,9 +511,9 @@ export function ExamWorkspace({ examId }: { examId: string }) {
 
             {/* Questions — the exam's equivalent of a module's lessons */}
             {isExpanded && (
-              <div className="ml-5 flex flex-col gap-0.5 border-l border-[#14142b]/10 pl-3 pt-1">
+              <div className="ml-5 flex flex-col gap-0.5 border-l border-ink/10 pl-3 pt-1">
                 {questionsLoading ? (
-                  <span className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] text-[#14142b]/40">
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] text-ink/40">
                     <Loader2 size={11} className="animate-spin" /> Loading…
                   </span>
                 ) : (
@@ -525,7 +525,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
                       <div
                         key={q.key}
                         className={`group/leaf flex items-center gap-2 rounded-full px-3 transition-all ${
-                          isOpen ? "bg-[#14142b] shadow-md" : "hover:bg-white/40"
+                          isOpen ? "bg-ink shadow-md" : "hover:bg-surface/40"
                         }`}
                       >
                         <button
@@ -557,7 +557,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
                               })
                             }
                             className={`flex-shrink-0 rounded-md p-1 opacity-0 transition-opacity group-hover/leaf:opacity-100 ${
-                              isOpen ? "text-white/70 hover:text-white" : "text-[#14142b]/40 hover:text-rose-600"
+                              isOpen ? "text-white/70 hover:text-white" : "text-ink/40 hover:text-rose-600 dark:hover:text-rose-400"
                             }`}
                           >
                             <Trash2 size={11} />
@@ -572,7 +572,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
                   <button
                     type="button"
                     onClick={() => addQuestionTo(section.id)}
-                    className="mt-0.5 flex items-center gap-1 py-1 pl-3 text-[11px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
+                    className="mt-0.5 flex items-center gap-1 py-1 pl-3 text-[11px] font-semibold text-slate-400 transition-colors hover:text-ink"
                   >
                     <Plus size={11} />
                     Add question
@@ -599,13 +599,13 @@ export function ExamWorkspace({ examId }: { examId: string }) {
             <div className="flex items-center gap-1.5 text-gray-500">
               <span className="block max-w-[15vw] truncate font-medium">{activeSection.title}</span>
               <span className="text-gray-400">/</span>
-              <span className="block max-w-[20vw] truncate text-[#14142b]">
+              <span className="block max-w-[20vw] truncate text-ink">
                 Question {activeQuestionIndex + 1}
               </span>
             </div>
           ) : (
             <div className="flex items-center gap-1.5 text-gray-500">
-              <span className="block max-w-[28vw] truncate text-[#14142b]">{exam.title}</span>
+              <span className="block max-w-[28vw] truncate text-ink">{exam.title}</span>
               {activeSection && (
                 <>
                   <span className="text-gray-400">/</span>
@@ -629,7 +629,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
           exam.tieType ? (
             <span
               title={`This exam is tied to ${exam.tiedContentTitle ?? "its " + exam.tieType.toLowerCase()} and is reviewed and published with it.`}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/70 px-3 py-1.5 text-[11px] font-semibold text-slate-600 backdrop-blur-md"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface/70 px-3 py-1.5 text-[11px] font-semibold text-slate-600 backdrop-blur-md"
             >
               {exam.tieType === "COURSE" ? "Course exam" : "Event exam"}
               {exam.tiedContentTitle ? ` · ${exam.tiedContentTitle}` : ""}
@@ -701,8 +701,8 @@ export function ExamWorkspace({ examId }: { examId: string }) {
       >
         {readOnly && (
           <div className="pointer-events-none fixed inset-x-0 top-20 z-[70] flex justify-center">
-            <div className="pointer-events-auto flex max-w-[calc(100vw-2rem)] items-center rounded-full border border-slate-200 bg-white px-5 py-2 shadow-md">
-              <span className="flex items-center gap-2 text-sm font-medium text-amber-600">
+            <div className="pointer-events-auto flex max-w-[calc(100vw-2rem)] items-center rounded-full border border-slate-200 bg-surface px-5 py-2 shadow-md">
+              <span className="flex items-center gap-2 text-sm font-medium text-amber-600 dark:text-amber-400">
                 <span>🔒</span> This exam has been submitted for review and is locked for editing.
               </span>
             </div>

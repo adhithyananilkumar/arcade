@@ -26,32 +26,11 @@
 
 "use client"
 
-import { useEffect, useState, type CSSProperties, type MouseEvent } from "react"
+import { type CSSProperties, type MouseEvent } from "react"
 import { Toaster as Sonner, toast, type ToasterProps } from "sonner"
+import { useDocumentTheme } from "@/shared/hooks/useDocumentTheme"
 import { CheckCircle2, XCircle, AlertTriangle, Info, Loader2 } from "lucide-react"
 
-/**
- * Tracks whether `.dark` is on `<html>`, without importing the app's theme
- * store — this file must stay infrastructure-free (shared → infrastructure
- * is a reverse dependency). Only feeds sonner's own `theme` prop (its
- * internal gray-scale and spinner vars); every color this file actually
- * renders comes from the `dark:` Tailwind classNames below and reacts to
- * `.dark` on its own regardless of this value.
- */
-function useDocumentTheme(): "light" | "dark" {
-  const [theme, setTheme] = useState<"light" | "dark">("light")
-
-  useEffect(() => {
-    const root = document.documentElement
-    const sync = () => setTheme(root.classList.contains("dark") ? "dark" : "light")
-    sync()
-    const observer = new MutationObserver(sync)
-    observer.observe(root, { attributes: true, attributeFilter: ["class"] })
-    return () => observer.disconnect()
-  }, [])
-
-  return theme
-}
 
 // Clears the app's floating bottom dock family (fixed bottom-6, ~60px tall
 // pill) with room to spare, on every screen that has one — and costs nothing
@@ -74,10 +53,10 @@ const AUTO_DISMISS_MS = 3000
 // below performs is just the same motion, triggered early.
 const TOAST_CLASSNAME = [
   "!items-center !gap-3 !border !p-4 cursor-pointer select-none",
-  "!border-slate-200/80 !bg-white/90 !text-[#14142b]",
-  "!shadow-[0_16px_40px_rgba(20,20,43,0.15)] backdrop-blur-xl backdrop-saturate-150 !ring-1 !ring-black/[0.04]",
-  "dark:!border-white/[0.18] dark:!bg-neutral-800/90 dark:!text-neutral-50",
-  "dark:!shadow-[0_16px_40px_rgba(0,0,0,0.45)] dark:!ring-white/[0.04]",
+  "!border-slate-200/80 !bg-surface/90 !text-ink",
+  "!shadow-[0_16px_40px_rgba(20,20,43,0.15)] backdrop-blur-xl backdrop-saturate-150 !ring-1 !ring-slate-950/[0.04]",
+  "",
+  "dark:!shadow-[0_16px_40px_rgba(0,0,0,0.45)]",
   // A single fully-arbitrary, fully-important shorthand — sonner's own
   // transition is a plain (non-important) shorthand too, and shorthands
   // don't merge: whichever applies resets every sub-property (duration,
@@ -100,7 +79,7 @@ const TOAST_CLASSNAME = [
 // snappy scale-and-settle entrance instead of just appearing flat.
 const ICON_CLASSNAME = [
   "!m-0 !flex !h-8 !w-8 shrink-0 !items-center !justify-center !rounded-full toast-icon-pop",
-  "!bg-slate-100 !text-slate-600 dark:!bg-white/10 dark:!text-neutral-300",
+  "!bg-slate-100 !text-slate-600",
   "[&>svg]:!m-0 [&>svg]:!h-4 [&>svg]:!w-4",
   "[[data-type=success]_&]:!bg-emerald-500/15 [[data-type=success]_&]:!text-emerald-600 dark:[[data-type=success]_&]:!bg-emerald-500/20 dark:[[data-type=success]_&]:!text-emerald-400",
   "[[data-type=error]_&]:!bg-rose-500/15 [[data-type=error]_&]:!text-rose-600 dark:[[data-type=error]_&]:!bg-rose-500/20 dark:[[data-type=error]_&]:!text-rose-400",
@@ -157,19 +136,19 @@ function Toaster({ style, ...props }: ToasterProps) {
             toast: TOAST_CLASSNAME,
             icon: ICON_CLASSNAME,
             content: "!gap-0.5",
-            title: "!text-[13px] !font-bold !leading-snug !text-[#14142b] dark:!text-neutral-50",
+            title: "!text-[13px] !font-bold !leading-snug !text-ink",
             description:
-              "!text-[12px] !font-medium !leading-snug !text-slate-500 dark:!text-neutral-400",
+              "!text-[12px] !font-medium !leading-snug !text-slate-500",
             actionButton: [
               "!h-8 !shrink-0 !rounded-full !border-0 !px-4 !text-[12px] !font-semibold",
-              "!bg-[#14142b] !text-white hover:!bg-[#232735]",
-              "dark:!bg-white dark:!text-[#14142b] dark:hover:!bg-neutral-200",
+              "!bg-ink !text-on-ink hover:!bg-ink-hover",
+              "",
               "transition-colors",
             ].join(" "),
             cancelButton: [
               "!h-8 !shrink-0 !rounded-full !border-0 !px-3.5 !text-[12px] !font-semibold",
               "!bg-slate-100 !text-slate-600 hover:!bg-slate-200",
-              "dark:!bg-white/10 dark:!text-neutral-300 dark:hover:!bg-white/15",
+              "",
               "transition-colors",
             ].join(" "),
           },

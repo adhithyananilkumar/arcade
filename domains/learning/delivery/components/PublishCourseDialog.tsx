@@ -37,11 +37,11 @@ export function PublishCourseDialog({ open, onClose, onConfirm }: PublishCourseD
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#14142b]/40 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_24px_60px_rgba(20,20,43,0.22)] animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface shadow-[0_24px_60px_rgba(20,20,43,0.22)] animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
           <div>
-            <h2 className="text-[16px] font-bold tracking-tight text-[#14142b]">
+            <h2 className="text-[16px] font-bold tracking-tight text-ink">
               Approve & publish
             </h2>
             <p className="mt-0.5 text-[12px] font-medium text-slate-500">
@@ -52,7 +52,7 @@ export function PublishCourseDialog({ open, onClose, onConfirm }: PublishCourseD
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+            className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink"
           >
             <X size={18} />
           </button>
@@ -67,7 +67,7 @@ export function PublishCourseDialog({ open, onClose, onConfirm }: PublishCourseD
           <div>
             <label
               htmlFor="approval-note"
-              className="mb-1.5 block text-[12px] font-semibold text-[#14142b]"
+              className="mb-1.5 block text-[12px] font-semibold text-ink"
             >
               Approval notes{" "}
               <span className="font-medium text-slate-400">(optional)</span>
@@ -78,7 +78,7 @@ export function PublishCourseDialog({ open, onClose, onConfirm }: PublishCourseD
               onChange={(e) => setNote(e.target.value)}
               rows={3}
               placeholder="Add a note for the audit log or author…"
-              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 text-[13px] text-[#14142b] outline-none transition-shadow placeholder:text-slate-400 focus:border-[#14142b]/25 focus:bg-white focus:ring-4 focus:ring-slate-200/70"
+              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 text-[13px] text-ink outline-none transition-shadow placeholder:text-slate-400 focus:border-ink/25 focus:bg-surface focus:ring-4 focus:ring-slate-200/70"
             />
           </div>
 
@@ -93,8 +93,8 @@ export function PublishCourseDialog({ open, onClose, onConfirm }: PublishCourseD
               <div
                 className={`flex size-5 items-center justify-center rounded border-2 transition-colors ${
                   checked
-                    ? "border-[#14142b] bg-[#14142b]"
-                    : "border-slate-300 group-hover:border-[#14142b]/60"
+                    ? "border-ink bg-ink"
+                    : "border-slate-300 group-hover:border-ink/60"
                 }`}
               >
                 <Check
@@ -104,7 +104,7 @@ export function PublishCourseDialog({ open, onClose, onConfirm }: PublishCourseD
                 />
               </div>
             </div>
-            <span className="select-none text-[13px] font-medium text-[#14142b]">
+            <span className="select-none text-[13px] font-medium text-ink">
               This course follows Arcade content guidelines.
             </span>
           </label>
@@ -123,7 +123,7 @@ export function PublishCourseDialog({ open, onClose, onConfirm }: PublishCourseD
             type="button"
             onClick={handleConfirm}
             disabled={!checked || loading}
-            className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-4 py-2 text-[12px] font-semibold text-white shadow-[0_8px_16px_rgba(20,20,43,0.16)] transition-colors hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-on-ink shadow-[0_8px_16px_rgba(20,20,43,0.16)] transition-colors hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-40"
           >
             {loading && <Loader2 size={14} className="animate-spin" />}
             Publish

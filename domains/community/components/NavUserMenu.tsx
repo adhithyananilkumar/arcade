@@ -50,7 +50,7 @@ export function NavUserMenu({ user, onLogout }: NavUserMenuProps) {
           padding: '4px 8px 4px 4px',
           borderRadius: 'var(--radius-full)',
           border: '1px solid var(--border)',
-          backgroundColor: open ? 'var(--surface)' : '#fff',
+          backgroundColor: open ? 'var(--surface)' : 'var(--theme-surface, #fff)',
           cursor: 'pointer',
           transition: 'all 0.15s',
         }}
@@ -92,7 +92,7 @@ export function NavUserMenu({ user, onLogout }: NavUserMenuProps) {
               right: 0,
               top: 'calc(100% + 8px)',
               width: 220,
-              backgroundColor: '#fff',
+              backgroundColor: 'var(--theme-surface, #fff)',
               border: '1px solid var(--border)',
               borderRadius: 'var(--radius-lg)',
               boxShadow: 'var(--shadow-md)',

@@ -135,13 +135,13 @@ export function AssessmentLanding({
             {planKindLabel(landing.planType, landing.graded)}
           </span>
           {landing.planType === "COMPLETION" && landing.tiedContentTitle && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-800">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
               Completes {landing.tiedContentTitle}
             </span>
           )}
         </div>
 
-        <h1 className="text-[1.6rem] font-bold leading-tight tracking-tight text-[#14142b]">
+        <h1 className="text-[1.6rem] font-bold leading-tight tracking-tight text-ink">
           {landing.title}
         </h1>
         {landing.planName && (
@@ -188,7 +188,7 @@ export function AssessmentLanding({
       {(landing.proctoringRequired ||
         landing.identityVerificationRequired ||
         landing.fullscreenRequired) && (
-        <section className="mb-7 rounded-2xl border border-slate-200 bg-white p-5">
+        <section className="mb-7 rounded-2xl border border-slate-200 bg-surface p-5">
           <h2 className="mb-3 text-[12px] font-bold uppercase tracking-wider text-slate-400">
             Before you begin
           </h2>
@@ -252,7 +252,7 @@ export function AssessmentLanding({
             type="button"
             onClick={handleStartClick}
             disabled={starting}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-[#14142b] px-7 py-3.5 text-[14px] font-semibold text-white transition-colors hover:bg-[#232735] disabled:opacity-60 cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-7 py-3.5 text-[14px] font-semibold text-on-ink transition-colors hover:bg-ink-hover disabled:opacity-60 cursor-pointer"
           >
             {resuming ? "Resume assessment" : retaking ? "Retake assessment" : "Start assessment"}
           </button>
@@ -275,10 +275,10 @@ export function AssessmentLanding({
             {landing.history.map((attempt) => (
               <li
                 key={attempt.attemptId}
-                className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3"
+                className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-surface px-4 py-3"
               >
                 <div className="min-w-0">
-                  <p className="text-[13px] font-semibold text-[#14142b]">
+                  <p className="text-[13px] font-semibold text-ink">
                     Attempt {attempt.attemptNumber}
                   </p>
                   <p className="text-[11px] font-medium text-slate-400">
@@ -289,14 +289,14 @@ export function AssessmentLanding({
                 <div className="flex shrink-0 items-center gap-3">
                   {attempt.awaitingReview ? (
                     // A provisional score is withheld rather than shown as if it were final.
-                    <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-amber-700">
+                    <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-amber-700 dark:text-amber-300">
                       <Hourglass size={13} />
                       Awaiting marking
                     </span>
                   ) : attempt.percentage !== null ? (
                     <span
                       className={`inline-flex items-center gap-1.5 text-[12px] font-semibold ${
-                        attempt.passed ? "text-emerald-700" : "text-slate-500"
+                        attempt.passed ? "text-emerald-700 dark:text-emerald-300" : "text-slate-500"
                       }`}
                     >
                       {attempt.passed && <CheckCircle2 size={13} />}
@@ -333,12 +333,12 @@ export function AssessmentLanding({
 
 function Fact({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-3.5 py-3">
+    <div className="rounded-xl border border-slate-200 bg-surface px-3.5 py-3">
       <dt className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
         {icon}
         {label}
       </dt>
-      <dd className="text-[15px] font-bold tabular-nums text-[#14142b]">{value}</dd>
+      <dd className="text-[15px] font-bold tabular-nums text-ink">{value}</dd>
     </div>
   );
 }

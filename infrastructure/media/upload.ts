@@ -22,6 +22,48 @@ interface PresignResponse {
   publicUrl: string;
 }
 
+/**
+ * PUT a file straight to a presigned storage URL, reporting progress (0–100). The building block
+ * for flows whose presign/register steps are not the generic media ones (e.g. live wallpapers).
+ */
+export function putToPresignedUrl(
+  url: string,
+  file: Blob,
+  contentType: string,
+  onProgress?: (percent: number) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException("Upload cancelled", "AbortError"));
+      return;
+    }
+    const xhr = new XMLHttpRequest();
+    const onAbort = () => xhr.abort();
+    signal?.addEventListener("abort", onAbort);
+    const cleanup = () => signal?.removeEventListener("abort", onAbort);
+    xhr.open("PUT", url);
+    xhr.setRequestHeader("Content-Type", contentType);
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) onProgress?.(Math.round((event.loaded / event.total) * 100));
+    };
+    xhr.onload = () => {
+      cleanup();
+      if (xhr.status >= 200 && xhr.status < 300) resolve();
+      else reject(new Error("Upload to storage failed"));
+    };
+    xhr.onerror = () => {
+      cleanup();
+      reject(new Error("Upload to storage failed"));
+    };
+    xhr.onabort = () => {
+      cleanup();
+      reject(new DOMException("Upload cancelled", "AbortError"));
+    };
+    xhr.send(file);
+  });
+}
+
 /** Upload a file to storage via presign -> PUT -> register-metadata. Throws on failure. */
 export async function uploadFileToStorage(
   file: File,

@@ -108,13 +108,13 @@ export function OverviewNotesPanel({
                 <button
                   type="button"
                   onClick={() => setOpenNote(note)}
-                  className="group w-full rounded-xl border border-slate-200/70 bg-white/60 p-3 text-left transition hover:border-indigo-300 hover:bg-indigo-50/40 dark:border-slate-800 dark:bg-slate-900/40 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30"
+                  className="group w-full rounded-xl border border-slate-200/70 bg-surface/60 p-3 text-left transition hover:border-indigo-300 hover:bg-indigo-50/40 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30"
                 >
                   <span className="flex items-center gap-1.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
                     <PenLine size={11} />
                     {note.anchorLabel ?? 'On this course'}
                   </span>
-                  <p className="mt-1 line-clamp-3 text-[13px] leading-relaxed text-slate-600 dark:text-slate-300">
+                  <p className="mt-1 line-clamp-3 text-[13px] leading-relaxed text-slate-600">
                     {note.excerpt}
                   </p>
                 </button>
@@ -140,7 +140,7 @@ function NotesSkeleton() {
       {[0, 1].map((i) => (
         <div
           key={i}
-          className="h-16 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800/60"
+          className="h-16 animate-pulse rounded-xl bg-slate-100"
         />
       ))}
     </div>

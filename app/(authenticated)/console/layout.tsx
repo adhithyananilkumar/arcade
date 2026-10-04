@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Tv, ClipboardCheck, Shield, SlidersHorizontal, Inbox, Receipt, Library, AtSign, BadgeCheck } from 'lucide-react';
+import { Tv, ClipboardCheck, Shield, SlidersHorizontal, Inbox, Receipt, Library, AtSign, BadgeCheck, Bug, Palette } from 'lucide-react';
 import { SideNav, SideNavTabs, type SideNavItem } from '@/shared/design-system/ui/side-nav';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
@@ -22,33 +22,41 @@ export default function ArcConsoleLayout({
   const showInbox = AuthorizationService.canManageInbox(user);
   const showRecognition = AuthorizationService.canManageRecognition(user);
   const showHandles = AuthorizationService.canManageHandles(user);
+  const showBugs = AuthorizationService.canOpenBugConsole(user);
+  const showAppearance = AuthorizationService.canManageAppearance(user);
 
   const navItems = [
     ...(showAdminChannels
-      ? [{ name: 'Channels', href: '/console/channels', icon: Tv, iconBg: 'bg-[#bae6fd] text-[#0c4a6e]' }]
+      ? [{ name: 'Channels', href: '/console/channels', icon: Tv, iconBg: 'bg-[#bae6fd] text-[#0c4a6e] dark:text-[#85bfe9] dark:bg-[#bae6fd]/15' }]
       : []),
     ...(showReviews
-      ? [{ name: 'Reviews', href: '/console/reviews', icon: ClipboardCheck, iconBg: 'bg-[#fef08a] text-[#854d0e]' }]
+      ? [{ name: 'Reviews', href: '/console/reviews', icon: ClipboardCheck, iconBg: 'bg-[#fef08a] text-[#854d0e] dark:bg-[#fef08a]/15 dark:text-[#e7a871]' }]
       : []),
     ...(showContentManage
-      ? [{ name: 'Content manage', href: '/console/content-manage', icon: Library, iconBg: 'bg-[#fbcfe8] text-[#831843]' }]
+      ? [{ name: 'Content manage', href: '/console/content-manage', icon: Library, iconBg: 'bg-[#fbcfe8] text-[#831843] dark:text-[#ff8eaf] dark:bg-[#fbcfe8]/15' }]
       : []),
     ...(showExams
-      ? [{ name: 'Exam standards', href: '/console/exam-standards', icon: SlidersHorizontal, iconBg: 'bg-[#bbf7d0] text-[#14532d]' }]
+      ? [{ name: 'Exam standards', href: '/console/exam-standards', icon: SlidersHorizontal, iconBg: 'bg-[#bbf7d0] text-[#14532d] dark:bg-[#bbf7d0]/15 dark:text-[#8bc89c]' }]
       : []),
     ...(showPayments
-      ? [{ name: 'Payments', href: '/console/payments', icon: Receipt, iconBg: 'bg-[#e9d5ff] text-[#4c1d95]' }]
+      ? [{ name: 'Payments', href: '/console/payments', icon: Receipt, iconBg: 'bg-[#e9d5ff] text-[#4c1d95] dark:text-[#bda1ff] dark:bg-[#e9d5ff]/15' }]
       : []),
     ...(showInbox
-      ? [{ name: 'Inbox', href: '/console/inbox', icon: Inbox, iconBg: 'bg-[#dbeafe] text-[#1e40af]' }]
+      ? [{ name: 'Inbox', href: '/console/inbox', icon: Inbox, iconBg: 'bg-slate-200 text-[#1e40af] dark:text-[#86b3ff]' }]
+      : []),
+    ...(showBugs
+      ? [{ name: 'Bugs', href: '/console/bugs', icon: Bug, iconBg: 'bg-slate-300 text-[#7f1d1d] dark:text-[#ff948b]' }]
       : []),
     ...(showRecognition
-      ? [{ name: 'Recognition', href: '/console/recognition', icon: BadgeCheck, iconBg: 'bg-[#ddd6fe] text-[#4c1d95]' }]
+      ? [{ name: 'Recognition', href: '/console/recognition', icon: BadgeCheck, iconBg: 'bg-[#ddd6fe] text-[#4c1d95] dark:text-[#bda1ff] dark:bg-[#ddd6fe]/15' }]
       : []),
     ...(showHandles
-      ? [{ name: 'Handles', href: '/console/handles', icon: AtSign, iconBg: 'bg-[#c7d2fe] text-[#312e81]' }]
+      ? [{ name: 'Handles', href: '/console/handles', icon: AtSign, iconBg: 'bg-[#c7d2fe] text-[#312e81] dark:text-[#a5adff] dark:bg-[#c7d2fe]/15' }]
       : []),
-    ...(showIam ? [{ name: 'IAM', href: '/console/iam', icon: Shield, iconBg: 'bg-[#fed7aa] text-[#7c2d12]' }] : []),
+    ...(showAppearance
+      ? [{ name: 'Appearance', href: '/console/appearance', icon: Palette, iconBg: 'bg-[#fbcfe8] text-[#831843] dark:bg-[#fbcfe8]/15 dark:text-[#ff8eaf]' }]
+      : []),
+    ...(showIam ? [{ name: 'IAM', href: '/console/iam', icon: Shield, iconBg: 'bg-[#fed7aa] text-[#7c2d12] dark:bg-[#fed7aa]/15 dark:text-[#f79d80]' }] : []),
   ].map((item): SideNavItem => ({
     key: item.href,
     label: item.name,
@@ -65,7 +73,7 @@ export default function ArcConsoleLayout({
     <div
       className="relative h-screen w-full flex flex-col overflow-hidden"
       style={{
-        background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 32%, #FFFFFF 70%)',
+        background: 'var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 32%, #FFFFFF 70%))',
       }}
     >
       <div className="relative z-10 flex w-full flex-1 min-h-0 flex-col gap-5 px-4 pt-24 sm:px-6 md:flex-row md:gap-5 md:px-8 md:pt-24 pb-0">

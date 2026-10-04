@@ -43,4 +43,12 @@ export {
   useInterestsQuery,
   useMyInterestsQuery,
   useUpdateMyInterestsMutation,
-} from './api/interest.queries';
+} from './api/interest.queries';export { AppearanceService } from './api/appearance.service';
+export type {
+  AppearanceDto,
+  AppearanceSaveRequest,
+  GalleryWallpaper,
+  AdminWallpaper,
+  WallpaperUpdate,
+  WallpaperToneValue,
+} from './api/appearance.service';

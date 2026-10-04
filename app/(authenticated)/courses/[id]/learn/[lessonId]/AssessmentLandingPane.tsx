@@ -15,6 +15,7 @@ import {
 } from '@/domains/assessments';
 import type { AssessmentNodeResponse } from '@/shared/types/api.types';
 import { examRoutes, courseRoutes } from '@/shared/routes/content.routes';
+import { IdentityCapture } from '@/apps/learner/components/exams/IdentityCapture';
 
 interface AssessmentLandingPaneProps {
   assessment: AssessmentNodeResponse;
@@ -83,8 +84,8 @@ export function AssessmentLandingPane({
 
   if (error) {
     return (
-      <div className="rounded-lg border border-slate-200/80 bg-white/95 px-6 py-12 text-center">
-        <p className="text-[14px] font-semibold text-rose-600">{error}</p>
+      <div className="rounded-lg border border-slate-200/80 bg-surface/95 px-6 py-12 text-center">
+        <p className="text-[14px] font-semibold text-rose-600 dark:text-rose-400">{error}</p>
       </div>
     );
   }
@@ -98,10 +99,21 @@ export function AssessmentLandingPane({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200/80 bg-white/95 px-5 py-7 shadow-[0_8px_28px_rgba(20,20,43,0.05)] sm:px-8 sm:py-9 md:px-12 md:py-11">
+    <div className="rounded-lg border border-slate-200/80 bg-surface/95 px-5 py-7 shadow-[0_8px_28px_rgba(20,20,43,0.05)] sm:px-8 sm:py-9 md:px-12 md:py-11">
       <AssessmentLanding
         landing={landing}
         onStart={handleStart}
+        identitySlot={
+          // An author preview writes nothing, so it has no identity step.
+          !isPreview && landing.planId && landing.blockedReason === 'IDENTITY_REQUIRED' ? (
+            <IdentityCapture
+              examId={assessment.examId}
+              planId={landing.planId}
+              rejected={landing.identityStatus === 'REJECTED'}
+              onSubmitted={load}
+            />
+          ) : undefined
+        }
         onViewGradeCard={(gradeCardId) => router.push(examRoutes.gradeCard(gradeCardId))}
         onNextItem={onNextItem}
         onReportIssue={onReportIssue}

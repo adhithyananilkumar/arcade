@@ -47,7 +47,7 @@ export default function LearnerSidebar() {
   }
 
   return (
-    <div className="flex h-full w-64 flex-col bg-white border-r border-slate-100 shadow-[1px_0_10px_rgba(0,0,0,0.01)] relative z-30">
+    <div className="flex h-full w-64 flex-col bg-surface border-r border-slate-100 shadow-[1px_0_10px_rgba(0,0,0,0.01)] relative z-30">
       {/* Brand Logo Header */}
       <div className="flex h-16 items-center px-6 border-b border-slate-50/50">
         <Link href="/" className="flex items-center gap-2 group">
@@ -76,7 +76,7 @@ export default function LearnerSidebar() {
               {isActive && (
                 <motion.div
                   layoutId="sidebar-active-indicator"
-                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-50/70 to-purple-50/40 border-l-[3px] border-indigo-600 shadow-[inset_0_1px_2px_rgba(99,102,241,0.03)]"
+                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-50/70 to-purple-50/40 border-l-[3px] border-indigo-600 shadow-[inset_0_1px_2px_rgba(99,102,241,0.03)] dark:from-indigo-500/10 dark:to-purple-500/10"
                   initial={false}
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
                 />
@@ -84,11 +84,11 @@ export default function LearnerSidebar() {
               <Icon
                 size={18}
                 className={`relative z-10 transition-colors duration-200 ${
-                  isActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-700'
+                  isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-700'
                 }`}
               />
               <span className={`relative z-10 transition-colors duration-200 ${
-                isActive ? 'text-indigo-900 font-semibold' : 'text-slate-600 group-hover:text-slate-900'
+                isActive ? 'text-indigo-900 font-semibold dark:text-indigo-200' : 'text-slate-600 group-hover:text-slate-900'
               }`}>
                 {item.name}
               </span>

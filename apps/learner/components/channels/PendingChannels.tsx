@@ -42,6 +42,7 @@ import { toast } from 'sonner';
 import { usePermissions } from "@/domains/identity";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
 import { cn } from '@/shared/utils/utils';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 
 type StatusFilter = 'ALL' | 'PENDING' | 'ACTIVE' | 'SUSPENDED';
 type TypeFilter = 'ALL' | 'PERSONAL' | 'ORGANIZATION';
@@ -241,8 +242,9 @@ export function PendingChannels() {
       setHardDeleteTarget(null);
       setSelectedRow(null);
       invalidateChannelAdmin();
-    } catch {
-      toast.error('Failed to permanently delete channel');
+    } catch (err) {
+      // The backend explains refusals (e.g. records that are kept permanently); show that reason.
+      toast.error(err instanceof Error && err.message ? err.message : 'Failed to permanently delete channel');
     } finally {
       setHardDeleteSubmitting(false);
     }
@@ -287,7 +289,7 @@ export function PendingChannels() {
             onClick={() => setStatusFilter('PENDING')}
             className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${
               statusFilter === 'PENDING'
-                ? 'bg-white text-slate-900 shadow-xs font-bold'
+                ? 'bg-surface text-slate-900 shadow-xs font-bold'
                 : 'hover:text-slate-900'
             }`}
           >
@@ -295,7 +297,7 @@ export function PendingChannels() {
             <span
               className={`inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
                 statusFilter === 'PENDING'
-                  ? 'bg-amber-100 text-amber-800'
+                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200'
                   : 'bg-slate-200/80 text-slate-600'
               }`}
             >
@@ -308,7 +310,7 @@ export function PendingChannels() {
             onClick={() => setStatusFilter('ALL')}
             className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${
               statusFilter === 'ALL'
-                ? 'bg-white text-slate-900 shadow-xs font-bold'
+                ? 'bg-surface text-slate-900 shadow-xs font-bold'
                 : 'hover:text-slate-900'
             }`}
           >
@@ -316,7 +318,7 @@ export function PendingChannels() {
             <span
               className={`inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
                 statusFilter === 'ALL'
-                  ? 'bg-slate-900 text-white'
+                  ? 'bg-slate-900 text-on-ink'
                   : 'bg-slate-200/80 text-slate-600'
               }`}
             >
@@ -329,7 +331,7 @@ export function PendingChannels() {
             onClick={() => setStatusFilter('ACTIVE')}
             className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${
               statusFilter === 'ACTIVE'
-                ? 'bg-white text-slate-900 shadow-xs font-bold'
+                ? 'bg-surface text-slate-900 shadow-xs font-bold'
                 : 'hover:text-slate-900'
             }`}
           >
@@ -337,7 +339,7 @@ export function PendingChannels() {
             <span
               className={`inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
                 statusFilter === 'ACTIVE'
-                  ? 'bg-emerald-100 text-emerald-800'
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200'
                   : 'bg-slate-200/80 text-slate-600'
               }`}
             >
@@ -350,7 +352,7 @@ export function PendingChannels() {
             onClick={() => setStatusFilter('SUSPENDED')}
             className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${
               statusFilter === 'SUSPENDED'
-                ? 'bg-white text-slate-900 shadow-xs font-bold'
+                ? 'bg-surface text-slate-900 shadow-xs font-bold'
                 : 'hover:text-slate-900'
             }`}
           >
@@ -358,7 +360,7 @@ export function PendingChannels() {
             <span
               className={`inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
                 statusFilter === 'SUSPENDED'
-                  ? 'bg-rose-100 text-rose-800'
+                  ? 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-200'
                   : 'bg-slate-200/80 text-slate-600'
               }`}
             >
@@ -374,7 +376,7 @@ export function PendingChannels() {
             <button
               type="button"
               onClick={() => setTypeDropdownOpen((prev) => !prev)}
-              className={`inline-flex items-center gap-2 rounded-xl border bg-white px-3 py-1.5 text-xs font-semibold shadow-2xs transition-all ${
+              className={`inline-flex items-center gap-2 rounded-xl border bg-surface px-3 py-1.5 text-xs font-semibold shadow-2xs transition-all ${
                 typeDropdownOpen
                   ? 'border-slate-400 ring-2 ring-slate-100 text-slate-900'
                   : 'border-slate-200/90 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
@@ -397,7 +399,7 @@ export function PendingChannels() {
             </button>
 
             {typeDropdownOpen && (
-              <div className="absolute left-0 top-full z-50 mt-1.5 min-w-[190px] rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-[0_12px_30px_rgba(20,20,43,0.12)] backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-100">
+              <div className="absolute left-0 top-full z-50 mt-1.5 min-w-[190px] rounded-2xl border border-slate-200/90 bg-surface p-1.5 shadow-[0_12px_30px_rgba(20,20,43,0.12)] backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-100">
                 <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Channel Type
                 </div>
@@ -440,7 +442,7 @@ export function PendingChannels() {
               placeholder="Search channel or owner..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-slate-200/90 bg-white py-1.5 pl-8 pr-7 text-xs font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100 transition-all"
+              className="w-full rounded-xl border border-slate-200/90 bg-surface py-1.5 pl-8 pr-7 text-xs font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100 transition-all"
             />
             {searchQuery && (
               <button
@@ -460,7 +462,7 @@ export function PendingChannels() {
               onClick={() => setViewMode('GRID')}
               className={`flex size-7 items-center justify-center rounded-lg transition-all ${
                 viewMode === 'GRID'
-                  ? 'bg-white text-slate-900 shadow-xs'
+                  ? 'bg-surface text-slate-900 shadow-xs'
                   : 'text-slate-400 hover:text-slate-700'
               }`}
               title="Card Grid view"
@@ -472,7 +474,7 @@ export function PendingChannels() {
               onClick={() => setViewMode('TABLE')}
               className={`flex size-7 items-center justify-center rounded-lg transition-all ${
                 viewMode === 'TABLE'
-                  ? 'bg-white text-slate-900 shadow-xs'
+                  ? 'bg-surface text-slate-900 shadow-xs'
                   : 'text-slate-400 hover:text-slate-700'
               }`}
               title="List view"
@@ -485,14 +487,14 @@ export function PendingChannels() {
 
       {/* Main Content Area: Cards or Table */}
       {loading ? (
-        <div className="rounded-2xl border border-slate-200/80 bg-white py-20 text-center shadow-[0_2px_12px_rgba(20,20,43,0.03)]">
+        <div className="rounded-2xl border border-slate-200/80 bg-surface py-20 text-center shadow-[0_2px_12px_rgba(20,20,43,0.03)]">
           <div className="flex flex-col items-center justify-center gap-2.5">
             <div className="size-6 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
             <span className="text-xs font-medium text-slate-500">Loading channels...</span>
           </div>
         </div>
       ) : paginatedChannels.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200/80 bg-white py-16 text-center shadow-[0_2px_12px_rgba(20,20,43,0.03)]">
+        <div className="rounded-2xl border border-slate-200/80 bg-surface py-16 text-center shadow-[0_2px_12px_rgba(20,20,43,0.03)]">
           <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
             <div className="flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
               <Tv size={22} />
@@ -533,7 +535,7 @@ export function PendingChannels() {
               <div
                 key={channel.id}
                 onClick={() => setSelectedRow(channel)}
-                className="group relative flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_2px_10px_rgba(20,20,43,0.03)] hover:border-slate-300 hover:shadow-[0_8px_24px_rgba(20,20,43,0.06)] hover:-translate-y-0.5 transition-all cursor-pointer"
+                className="group relative flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-surface p-5 shadow-[0_2px_10px_rgba(20,20,43,0.03)] hover:border-slate-300 hover:shadow-[0_8px_24px_rgba(20,20,43,0.06)] hover:-translate-y-0.5 transition-all cursor-pointer"
               >
                 {/* Card Top: Avatar, Name, Badges */}
                 <div className="space-y-3">
@@ -542,7 +544,7 @@ export function PendingChannels() {
                       <div className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200/90 text-slate-700 overflow-hidden shrink-0 border border-slate-200/80 shadow-2xs group-hover:scale-105 transition-transform font-bold text-sm">
                         {channel.iconUrl ? (
                           <img
-                            src={channel.iconUrl}
+                            src={getAvatarUrl(channel.iconUrl)}
                             alt={channel.name}
                             className="h-full w-full object-cover"
                           />
@@ -551,14 +553,14 @@ export function PendingChannels() {
                         )}
                       </div>
                       <div className="min-w-0">
-                        <h4 className="text-sm font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors leading-snug">
+                        <h4 className="text-sm font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors leading-snug dark:group-hover:text-blue-400">
                           {channel.name}
                         </h4>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span
                             className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold border ${
                               channel.isPersonal
-                                ? 'border-sky-200 bg-sky-50 text-sky-700'
+                                ? 'border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-500/25 dark:bg-sky-500/10 dark:text-sky-300'
                                 : 'border-slate-200 bg-slate-50 text-slate-700'
                             }`}
                           >
@@ -573,12 +575,12 @@ export function PendingChannels() {
                     <span
                       className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10.5px] font-bold border ${
                         isActive
-                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300'
                           : isSuspended
-                          ? 'border-rose-200 bg-rose-50 text-rose-700'
+                          ? 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300'
                           : isRejected
                           ? 'border-slate-200 bg-slate-100 text-slate-600'
-                          : 'border-amber-200 bg-amber-50 text-amber-700'
+                          : 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-300'
                       }`}
                     >
                       <span
@@ -635,7 +637,7 @@ export function PendingChannels() {
                           <button
                             type="button"
                             onClick={() => handleAccept(channel.id)}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-[#14142b] hover:bg-[#232735] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition-all"
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-ink hover:bg-ink-hover px-3 py-1.5 text-xs font-semibold text-on-ink shadow-xs transition-all"
                             title="Approve channel"
                           >
                             <Check size={12} className="text-emerald-400" strokeWidth={3} />
@@ -646,7 +648,7 @@ export function PendingChannels() {
                           <button
                             type="button"
                             onClick={() => openRejectDialog(channel)}
-                            className="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-colors"
+                            className="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-surface px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-colors dark:border-rose-500/25 dark:text-rose-400 dark:hover:bg-rose-500/10 dark:hover:border-rose-500/40"
                             title="Reject channel"
                           >
                             <X size={12} strokeWidth={2.5} />
@@ -663,7 +665,7 @@ export function PendingChannels() {
                           href={`/channels/${channel.id}/manage`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                          className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-surface px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
                         >
                           <ExternalLink size={12} />
                           <span>Manage</span>
@@ -672,7 +674,7 @@ export function PendingChannels() {
                           <button
                             type="button"
                             onClick={() => openSuspendDialog(channel)}
-                            className="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-white px-2 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
+                            className="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-surface px-2 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors dark:border-rose-500/25 dark:text-rose-400 dark:hover:bg-rose-500/10"
                             title="Suspend channel"
                           >
                             <ShieldOff size={12} />
@@ -699,7 +701,7 @@ export function PendingChannels() {
                           href={`/channels/${channel.id}/manage`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-surface px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
                         >
                           <ExternalLink size={12} />
                           <span>Manage</span>
@@ -712,7 +714,7 @@ export function PendingChannels() {
                   <button
                     type="button"
                     onClick={() => setSelectedRow(channel)}
-                    className="inline-flex size-8 items-center justify-center rounded-xl border border-slate-200/90 bg-white text-slate-400 hover:bg-slate-100 hover:text-slate-800 transition-colors shrink-0"
+                    className="inline-flex size-8 items-center justify-center rounded-xl border border-slate-200/90 bg-surface text-slate-400 hover:bg-slate-100 hover:text-slate-800 transition-colors shrink-0"
                     title="View details"
                   >
                     <Eye size={13} />
@@ -724,7 +726,7 @@ export function PendingChannels() {
         </div>
       ) : (
         /* Modern Enterprise Data Table */
-        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
+        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-surface shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[960px] text-left border-collapse">
               <thead>
@@ -755,19 +757,19 @@ export function PendingChannels() {
                       {/* Channel Column */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3.5">
-                          <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 via-slate-50 to-indigo-100/70 text-indigo-600 overflow-hidden shrink-0 border border-indigo-200/50 shadow-2xs group-hover:scale-105 group-hover:border-indigo-300 transition-all">
+                          <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 via-slate-50 to-indigo-100/70 text-indigo-600 overflow-hidden shrink-0 border border-indigo-200/50 shadow-2xs group-hover:scale-105 group-hover:border-indigo-300 transition-all dark:from-indigo-500/10 dark:to-indigo-500/15 dark:text-indigo-400 dark:border-indigo-500/25 dark:group-hover:border-indigo-500/40">
                             {channel.iconUrl ? (
                               <img
-                                src={channel.iconUrl}
+                                src={getAvatarUrl(channel.iconUrl)}
                                 alt={channel.name}
                                 className="h-full w-full object-cover"
                               />
                             ) : (
-                              <Tv size={17} className="text-indigo-600" />
+                              <Tv size={17} className="text-indigo-600 dark:text-indigo-400" />
                             )}
                           </div>
                           <div className="min-w-0 max-w-[260px]">
-                            <p className="truncate text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">
+                            <p className="truncate text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight dark:group-hover:text-indigo-400">
                               {channel.name}
                             </p>
                             <p className="truncate text-[11px] text-slate-400 font-normal mt-0.5">
@@ -782,8 +784,8 @@ export function PendingChannels() {
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold border ${
                             channel.isPersonal
-                              ? 'border-sky-200/80 bg-sky-50 text-sky-700'
-                              : 'border-purple-200/80 bg-purple-50 text-purple-700'
+                              ? 'border-sky-200/80 bg-sky-50 text-sky-700 dark:border-sky-500/25 dark:bg-sky-500/10 dark:text-sky-300'
+                              : 'border-purple-200/80 bg-purple-50 text-purple-700 dark:border-purple-500/25 dark:bg-purple-500/10 dark:text-purple-300'
                           }`}
                         >
                           {channel.isPersonal ? (
@@ -833,12 +835,12 @@ export function PendingChannels() {
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold border ${
                             isActive
-                              ? 'border-emerald-200/80 bg-emerald-50 text-emerald-700'
+                              ? 'border-emerald-200/80 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300'
                               : isSuspended
-                              ? 'border-rose-200/80 bg-rose-50 text-rose-700'
+                              ? 'border-rose-200/80 bg-rose-50 text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300'
                               : isRejected
                               ? 'border-slate-200/80 bg-slate-100 text-slate-600'
-                              : 'border-amber-200/80 bg-amber-50 text-amber-700'
+                              : 'border-amber-200/80 bg-amber-50 text-amber-700 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-300'
                           }`}
                         >
                           <span
@@ -865,7 +867,7 @@ export function PendingChannels() {
                                 <button
                                   type="button"
                                   onClick={() => handleAccept(channel.id)}
-                                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#14142b] hover:bg-[#232735] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                  className="inline-flex items-center gap-1.5 rounded-xl bg-ink hover:bg-ink-hover px-3.5 py-1.5 text-xs font-semibold text-on-ink shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
                                   title="Approve channel"
                                 >
                                   <Check size={12} className="text-emerald-400" strokeWidth={3} />
@@ -876,7 +878,7 @@ export function PendingChannels() {
                                 <button
                                   type="button"
                                   onClick={() => openRejectDialog(channel)}
-                                  className="inline-flex items-center gap-1 rounded-xl border border-rose-200/90 bg-white px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:border-rose-300 shadow-2xs hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                  className="inline-flex items-center gap-1 rounded-xl border border-rose-200/90 bg-surface px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:border-rose-300 shadow-2xs hover:scale-[1.02] active:scale-[0.98] transition-all dark:border-rose-500/25 dark:text-rose-400 dark:hover:bg-rose-500/10 dark:hover:border-rose-500/40"
                                   title="Reject channel"
                                 >
                                   <X size={12} strokeWidth={2.5} />
@@ -892,7 +894,7 @@ export function PendingChannels() {
                                 href={`/channels/${channel.id}/manage`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-2xs"
+                                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-surface px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-2xs"
                               >
                                 <ExternalLink size={12} />
                                 <span>Manage</span>
@@ -901,7 +903,7 @@ export function PendingChannels() {
                                 <button
                                   type="button"
                                   onClick={() => openSuspendDialog(channel)}
-                                  className="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors shadow-2xs"
+                                  className="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-surface px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors shadow-2xs dark:border-rose-500/25 dark:text-rose-400 dark:hover:bg-rose-500/10"
                                   title="Suspend channel"
                                 >
                                   <ShieldOff size={12} />
@@ -928,7 +930,7 @@ export function PendingChannels() {
                                 href={`/channels/${channel.id}/manage`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
+                                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-surface px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
                               >
                                 <ExternalLink size={12} />
                                 <span>Manage</span>
@@ -939,7 +941,7 @@ export function PendingChannels() {
                           <button
                             type="button"
                             onClick={() => setSelectedRow(channel)}
-                            className="inline-flex size-8 items-center justify-center rounded-xl border border-slate-200/90 bg-white text-slate-400 hover:text-slate-800 hover:bg-slate-100 hover:border-slate-300 transition-all"
+                            className="inline-flex size-8 items-center justify-center rounded-xl border border-slate-200/90 bg-surface text-slate-400 hover:text-slate-800 hover:bg-slate-100 hover:border-slate-300 transition-all"
                             title="View channel details"
                           >
                             <Eye size={13} />
@@ -957,7 +959,7 @@ export function PendingChannels() {
 
       {/* Clean Footer Pagination */}
       {totalElements > 0 && (
-        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white px-5 py-3 sm:flex-row sm:items-center sm:justify-between text-xs text-slate-500 shadow-2xs">
+        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-surface px-5 py-3 sm:flex-row sm:items-center sm:justify-between text-xs text-slate-500 shadow-2xs">
           <div>
             Showing <span className="font-semibold text-slate-800">{(page - 1) * pageSize + 1}</span>–
             <span className="font-semibold text-slate-800">
@@ -972,7 +974,7 @@ export function PendingChannels() {
                 type="button"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-surface px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft size={13} />
                 <span>Prev</span>
@@ -984,7 +986,7 @@ export function PendingChannels() {
                 type="button"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-surface px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <span>Next</span>
                 <ChevronRight size={13} />
@@ -1006,10 +1008,10 @@ export function PendingChannels() {
               {/* Channel Header Banner/Avatar */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50/60">
                 <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="flex size-13 items-center justify-center rounded-xl bg-white text-slate-700 overflow-hidden shrink-0 border border-slate-200/80 shadow-2xs">
+                  <div className="flex size-13 items-center justify-center rounded-xl bg-surface text-slate-700 overflow-hidden shrink-0 border border-slate-200/80 shadow-2xs">
                     {selectedChannel.iconUrl ? (
                       <img
-                        src={selectedChannel.iconUrl}
+                        src={getAvatarUrl(selectedChannel.iconUrl)}
                         alt={selectedChannel.name}
                         className="h-full w-full object-cover"
                       />
@@ -1022,18 +1024,18 @@ export function PendingChannels() {
                       {selectedChannel.name}
                     </h3>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium border border-slate-200 bg-white text-slate-600">
+                      <span className="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium border border-slate-200 bg-surface text-slate-600">
                         {selectedChannel.isPersonal ? 'Personal' : 'Organization'}
                       </span>
                       <span
                         className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-medium border ${
                           selectedChannel.status === 'ACTIVE'
-                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300'
                             : selectedChannel.status === 'SUSPENDED'
-                            ? 'border-rose-200 bg-rose-50 text-rose-700'
+                            ? 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300'
                             : selectedChannel.status === 'REJECTED'
                             ? 'border-slate-200 bg-slate-100 text-slate-600'
-                            : 'border-amber-200 bg-amber-50 text-amber-700'
+                            : 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-300'
                         }`}
                       >
                         <span
@@ -1076,7 +1078,7 @@ export function PendingChannels() {
                       <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                         Description
                       </h4>
-                      <p className="text-sm text-slate-700 leading-relaxed bg-white p-3.5 rounded-xl border border-slate-200 min-h-[72px]">
+                      <p className="text-sm text-slate-700 leading-relaxed bg-surface p-3.5 rounded-xl border border-slate-200 min-h-[72px]">
                         {selectedChannel.description}
                       </p>
                     </div>
@@ -1086,7 +1088,7 @@ export function PendingChannels() {
                       <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                         Purpose
                       </h4>
-                      <p className="text-sm text-slate-700 leading-relaxed bg-white p-3.5 rounded-xl border border-slate-200 min-h-[72px]">
+                      <p className="text-sm text-slate-700 leading-relaxed bg-surface p-3.5 rounded-xl border border-slate-200 min-h-[72px]">
                         {selectedChannel.purpose}
                       </p>
                     </div>
@@ -1096,11 +1098,11 @@ export function PendingChannels() {
 
               {/* Suspension Reason */}
               {selectedChannel.status === 'SUSPENDED' && selectedChannel.suspensionReason && (
-                <div className="space-y-1 bg-rose-50 p-3.5 rounded-xl border border-rose-200">
-                  <h4 className="text-xs font-semibold text-rose-800 flex items-center gap-1.5">
+                <div className="space-y-1 bg-rose-50 p-3.5 rounded-xl border border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/25">
+                  <h4 className="text-xs font-semibold text-rose-800 flex items-center gap-1.5 dark:text-rose-200">
                     <AlertTriangle size={13} /> Suspension Reason
                   </h4>
-                  <p className="text-xs text-rose-700">{selectedChannel.suspensionReason}</p>
+                  <p className="text-xs text-rose-700 dark:text-rose-300">{selectedChannel.suspensionReason}</p>
                 </div>
               )}
 
@@ -1120,7 +1122,7 @@ export function PendingChannels() {
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                     <UserCircle2 size={13} className="text-slate-400" /> Applicant Details
                   </h4>
-                  <div className="rounded-xl border border-slate-200 bg-white p-5">
+                  <div className="rounded-xl border border-slate-200 bg-surface p-5">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5 text-left">
                       <div>
                         <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Full Name</span>
@@ -1191,7 +1193,7 @@ export function PendingChannels() {
                             href={selectedChannel.applicantProfile.personalIdProofDocumentUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#205ca8] hover:text-[#184884] hover:underline transition-colors shrink-0"
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#205ca8] hover:text-[#184884] hover:underline transition-colors shrink-0 dark:text-[#7cbaff] dark:hover:text-[#87baff]"
                           >
                             <FileText size={14} className="text-slate-400" />
                             <span>View ID Proof Document</span>
@@ -1210,7 +1212,7 @@ export function PendingChannels() {
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                     <Building2 size={13} className="text-slate-400" /> Organization Details
                   </h4>
-                  <div className="rounded-xl border border-slate-200 bg-white p-5">
+                  <div className="rounded-xl border border-slate-200 bg-surface p-5">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5 text-left">
                       <div>
                         <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Organization Name</span>
@@ -1238,7 +1240,7 @@ export function PendingChannels() {
                               href={selectedChannel.applicantProfile.organizationWebsite.startsWith('http') ? selectedChannel.applicantProfile.organizationWebsite : `https://${selectedChannel.applicantProfile.organizationWebsite}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[#205ca8] hover:underline inline-flex items-center gap-1"
+                              className="text-[#205ca8] hover:underline inline-flex items-center gap-1 dark:text-[#7cbaff]"
                             >
                               {selectedChannel.applicantProfile.organizationWebsite}
                               <ExternalLink size={11} />
@@ -1285,7 +1287,7 @@ export function PendingChannels() {
                             href={selectedChannel.applicantProfile.organizationProofDocumentUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#205ca8] hover:text-[#184884] hover:underline transition-colors shrink-0"
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#205ca8] hover:text-[#184884] hover:underline transition-colors shrink-0 dark:text-[#7cbaff] dark:hover:text-[#87baff]"
                           >
                             <FileText size={14} className="text-slate-400" />
                             <span>View Organization Proof Document</span>
@@ -1303,7 +1305,7 @@ export function PendingChannels() {
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                   <User size={13} className="text-slate-400" /> Owner Details
                 </h4>
-                <div className="rounded-xl border border-slate-200 bg-white p-5">
+                <div className="rounded-xl border border-slate-200 bg-surface p-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3.5 text-left">
                     <div>
                       <span className="block text-[11px] font-medium text-slate-500 mb-0.5">Full Name</span>
@@ -1354,7 +1356,7 @@ export function PendingChannels() {
                       {channelContent.map((item) => (
                         <div
                           key={item.id}
-                          className="flex items-center justify-between gap-3 bg-white p-2.5 rounded-lg border border-slate-200 text-xs"
+                          className="flex items-center justify-between gap-3 bg-surface p-2.5 rounded-lg border border-slate-200 text-xs"
                         >
                           <div className="min-w-0">
                             <p className="font-semibold text-slate-800 truncate">{item.title}</p>
@@ -1363,12 +1365,12 @@ export function PendingChannels() {
                           <span
                             className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded border ${
                               item.status.toUpperCase() === 'PUBLISHED'
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25'
                                 : item.status.toUpperCase() === 'DRAFT'
                                 ? 'bg-slate-100 text-slate-600 border-slate-200'
                                 : item.status.toUpperCase() === 'REJECTED'
-                                ? 'bg-rose-50 text-rose-600 border-rose-200'
-                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                                ? 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/25'
+                                : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/25'
                             }`}
                           >
                             {item.status.replace(/_/g, ' ')}
@@ -1388,7 +1390,7 @@ export function PendingChannels() {
                       <button
                         type="button"
                         onClick={() => openRejectDialog(selectedChannel)}
-                        className="px-5 py-2.5 bg-white text-rose-700 rounded-lg hover:bg-rose-50 transition-colors font-medium text-xs border border-rose-200"
+                        className="px-5 py-2.5 bg-surface text-rose-700 rounded-lg hover:bg-rose-50 transition-colors font-medium text-xs border border-rose-200 dark:text-rose-300 dark:hover:bg-rose-500/10 dark:border-rose-500/25"
                       >
                         <X size={14} className="inline mr-1" /> Reject Request
                       </button>
@@ -1400,7 +1402,7 @@ export function PendingChannels() {
                           handleAccept(selectedChannel.id);
                           setSelectedRow(null);
                         }}
-                        className="px-6 py-2.5 bg-[#0B132B] text-white rounded-lg hover:bg-[#205ca8] transition-colors font-medium text-xs shadow-2xs"
+                        className="px-6 py-2.5 bg-ink text-on-ink rounded-lg hover:bg-[#205ca8] transition-colors font-medium text-xs shadow-2xs"
                       >
                         <Check size={14} className="inline mr-1 text-emerald-400" /> Approve Channel
                       </button>
@@ -1416,7 +1418,7 @@ export function PendingChannels() {
                         setSelectedRow(null);
                         openSuspendDialog(selectedChannel);
                       }}
-                      className="px-5 py-2.5 bg-white text-rose-700 rounded-lg hover:bg-rose-50 transition-colors font-medium text-xs border border-rose-200"
+                      className="px-5 py-2.5 bg-surface text-rose-700 rounded-lg hover:bg-rose-50 transition-colors font-medium text-xs border border-rose-200 dark:text-rose-300 dark:hover:bg-rose-500/10 dark:border-rose-500/25"
                     >
                       <ShieldOff size={14} className="inline mr-1" /> Suspend Channel
                     </button>
@@ -1424,7 +1426,7 @@ export function PendingChannels() {
                       href={`/channels/${selectedChannel.id}/manage`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-6 py-2.5 bg-[#0B132B] text-white rounded-lg hover:bg-[#205ca8] transition-colors font-medium text-xs shadow-2xs inline-flex items-center gap-1.5"
+                      className="px-6 py-2.5 bg-ink text-on-ink rounded-lg hover:bg-[#205ca8] transition-colors font-medium text-xs shadow-2xs inline-flex items-center gap-1.5"
                     >
                       <ExternalLink size={14} /> Open Studio Manage
                     </a>
@@ -1448,14 +1450,14 @@ export function PendingChannels() {
 
                 {/* Danger Zone */}
                 {canSuspend && (selectedChannel.status === 'ACTIVE' || selectedChannel.status === 'SUSPENDED') && (
-                  <div className="pt-2 border-t border-dashed border-rose-200 flex justify-end">
+                  <div className="pt-2 border-t border-dashed border-rose-200 flex justify-end dark:border-rose-500/25">
                     <button
                       type="button"
                       onClick={() => {
                         setSelectedRow(null);
                         openHardDeleteDialog(selectedChannel);
                       }}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg transition-colors font-medium text-xs border border-rose-200"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg transition-colors font-medium text-xs border border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15 dark:border-rose-500/25"
                     >
                       <Trash2 size={13} /> Force Permanent Delete
                     </button>
@@ -1471,7 +1473,7 @@ export function PendingChannels() {
       <Dialog open={!!suspendTarget} onOpenChange={(open) => !open && setSuspendTarget(null)}>
         <DialogContent className="max-w-md p-6 sm:p-7">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-rose-700 flex items-center gap-2">
+            <DialogTitle className="text-lg font-bold text-rose-700 flex items-center gap-2 dark:text-rose-300">
               <ShieldOff size={18} /> Suspend Channel
             </DialogTitle>
           </DialogHeader>
@@ -1497,7 +1499,7 @@ export function PendingChannels() {
                 />
               </div>
 
-              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-rose-200 bg-rose-50/50 cursor-pointer">
+              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-rose-200 bg-rose-50/50 cursor-pointer dark:border-rose-500/25 dark:bg-rose-500/10">
                 <input
                   type="checkbox"
                   checked={suspendForce}
@@ -1505,7 +1507,7 @@ export function PendingChannels() {
                   className="mt-0.5 h-4 w-4 accent-rose-600 rounded"
                 />
                 <span className="text-xs text-slate-700">
-                  <span className="font-bold text-rose-700">Force immediate unlisting</span> — removes
+                  <span className="font-bold text-rose-700 dark:text-rose-300">Force immediate unlisting</span> — removes
                   channel contents immediately without a 6-month grace period.
                 </span>
               </label>
@@ -1535,7 +1537,7 @@ export function PendingChannels() {
       <Dialog open={!!rejectTarget} onOpenChange={(open) => !open && setRejectTarget(null)}>
         <DialogContent className="max-w-md p-6 sm:p-7">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-rose-700 flex items-center gap-2">
+            <DialogTitle className="text-lg font-bold text-rose-700 flex items-center gap-2 dark:text-rose-300">
               <X size={18} /> Reject Channel Request
             </DialogTitle>
           </DialogHeader>
@@ -1587,16 +1589,16 @@ export function PendingChannels() {
       <Dialog open={!!hardDeleteTarget} onOpenChange={(open) => !open && setHardDeleteTarget(null)}>
         <DialogContent className="max-w-md p-6 sm:p-7">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-rose-700 flex items-center gap-2">
+            <DialogTitle className="text-lg font-bold text-rose-700 flex items-center gap-2 dark:text-rose-300">
               <AlertTriangle size={18} /> Permanently Delete Channel
             </DialogTitle>
           </DialogHeader>
 
           {hardDeleteTarget && (
             <div className="space-y-4 mt-3">
-              <div className="space-y-1.5 p-3.5 rounded-xl border border-rose-200 bg-rose-50">
-                <p className="text-xs font-bold text-rose-800">Irreversible Action</p>
-                <ul className="text-xs text-rose-700 space-y-1 list-disc list-inside">
+              <div className="space-y-1.5 p-3.5 rounded-xl border border-rose-200 bg-rose-50 dark:border-rose-500/25 dark:bg-rose-500/10">
+                <p className="text-xs font-bold text-rose-800 dark:text-rose-200">Irreversible Action</p>
+                <ul className="text-xs text-rose-700 space-y-1 list-disc list-inside dark:text-rose-300">
                   <li>Every course, roadmap, and workshop is deleted permanently.</li>
                   <li>Learners already enrolled in content lose access permanently.</li>
                   <li>Staff roles and permissions will be deleted.</li>
@@ -1624,7 +1626,7 @@ export function PendingChannels() {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-800" htmlFor="hard-delete-confirm-modal">
-                  Type <span className="font-mono text-rose-700 select-all">{hardDeleteTarget.name}</span> to confirm
+                  Type <span className="font-mono text-rose-700 select-all dark:text-rose-300">{hardDeleteTarget.name}</span> to confirm
                 </label>
                 <input
                   id="hard-delete-confirm-modal"
@@ -1636,7 +1638,7 @@ export function PendingChannels() {
                 />
               </div>
 
-              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-rose-200 bg-rose-50/50 cursor-pointer">
+              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-rose-200 bg-rose-50/50 cursor-pointer dark:border-rose-500/25 dark:bg-rose-500/10">
                 <input
                   type="checkbox"
                   checked={hardDeleteAcknowledged}

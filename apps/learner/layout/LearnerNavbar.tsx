@@ -231,6 +231,28 @@ export default function LearnerNavbar() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // The public course detail page breadcrumb
+  const isCoursePublic = pathname.startsWith('/courses/') && !pathname.includes('/learn');
+  const coursePublicId = isCoursePublic ? pathname.split('/')[2] : null;
+
+  const { data: coursePublicData } = useQuery({
+    queryKey: ['course-public-title', coursePublicId],
+    queryFn: () => api.get<{ title: string }>(`/api/v1/public/courses/${coursePublicId}`),
+    enabled: Boolean(coursePublicId),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // The public event detail page breadcrumb
+  const isEventPublic = pathname.startsWith('/events/') && pathname !== '/events';
+  const eventPublicSlug = isEventPublic ? pathname.split('/')[2] : null;
+
+  const { data: eventPublicData } = useQuery({
+    queryKey: ['event-public-title', eventPublicSlug],
+    queryFn: () => api.get<{ title: string }>(`/api/v1/events/public/${eventPublicSlug}`),
+    enabled: Boolean(eventPublicSlug),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const channelTabLabel = (() => {
     if (!isChannelManage) return 'Overview';
     const tab = (searchParams.get('tab') || 'OVERVIEW').toUpperCase();
@@ -287,7 +309,7 @@ export default function LearnerNavbar() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full apple-glass-dock text-slate-600 shadow-none transition-colors [box-shadow:none] hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full apple-glass-dock text-slate-600 shadow-none transition-colors [box-shadow:none] hover:text-indigo-600 dark:hover:text-indigo-400"
             title="Go back"
           >
             <ArrowLeft size={18} />
@@ -295,16 +317,48 @@ export default function LearnerNavbar() {
         )}
       </div>
 
+      {/* Center: Course Public page breadcrumbs */}
+      {isCoursePublic && (
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center gap-2 text-[13.5px]">
+          <Link
+            href="/courses"
+            className="font-bold text-slate-700 hover:text-ink transition-colors"
+          >
+            Courses
+          </Link>
+          <span className="text-slate-400">/</span>
+          <span className="max-w-[180px] sm:max-w-[300px] truncate font-bold text-ink whitespace-nowrap">
+            {coursePublicData?.title ?? 'Course'}
+          </span>
+        </div>
+      )}
+
+      {/* Center: Event Public page breadcrumbs */}
+      {isEventPublic && (
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center gap-2 text-[13.5px]">
+          <Link
+            href="/events"
+            className="font-bold text-slate-700 hover:text-ink transition-colors"
+          >
+            Events
+          </Link>
+          <span className="text-slate-400">/</span>
+          <span className="max-w-[180px] sm:max-w-[300px] truncate font-bold text-ink whitespace-nowrap">
+            {eventPublicData?.title ?? 'Event'}
+          </span>
+        </div>
+      )}
+
       {/* Center: Channel Manage breadcrumbs */}
       {isChannelManage && (
         <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex h-12 items-center justify-center gap-3 rounded-full px-5 apple-glass-dock text-xs shadow-none [box-shadow:none]">
           <Link
             href="/manage-channels"
-            className="font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            className="font-bold text-slate-600 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
           >
             Channels
           </Link>
-          <span className="h-3.5 w-px bg-slate-200 dark:bg-slate-700 shrink-0" />
+          <span className="h-3.5 w-px bg-slate-200 shrink-0" />
           <span className="font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
             {channelTabLabel}
           </span>
@@ -316,7 +370,7 @@ export default function LearnerNavbar() {
         <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex h-12 items-center justify-center gap-3 rounded-full px-5 apple-glass-dock text-xs shadow-none [box-shadow:none]">
           <Link
             href="/manage-channels"
-            className="font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            className="font-bold text-slate-600 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
           >
             Channels
           </Link>
@@ -326,7 +380,7 @@ export default function LearnerNavbar() {
       {/* Center: Course learn page — course title */}
       {courseLearnId && (
         <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex h-12 items-center rounded-full px-5 apple-glass-dock text-xs shadow-none [box-shadow:none]">
-          <span className="max-w-[220px] truncate font-extrabold text-[#14142b] dark:text-white whitespace-nowrap">
+          <span className="max-w-[220px] truncate font-extrabold text-ink whitespace-nowrap">
             {courseLearnData?.title ?? 'Course'}
           </span>
         </div>
@@ -347,7 +401,7 @@ export default function LearnerNavbar() {
           {consoleCrumb && (
             <>
               <span className="text-[11px] text-slate-300">/</span>
-              <span className="text-[11px] font-bold text-[#14142b]">{consoleCrumb}</span>
+              <span className="text-[11px] font-bold text-ink">{consoleCrumb}</span>
             </>
           )}
         </div>
@@ -360,12 +414,12 @@ export default function LearnerNavbar() {
           <div className="relative flex items-center justify-center">
             <button 
               onClick={() => setIsNotificationsOpen((open) => !open)}
-              className="relative p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
+              className="relative p-2 text-slate-600 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-950/5 rounded-full transition-colors"
               title="Notifications"
             >
               <Bell size={20} strokeWidth={2} />
               {unreadCount > 0 && (
-                <span className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-[3px] text-[9px] font-bold text-white border border-white dark:border-neutral-900 shadow-sm">
+                <span className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-[3px] text-[9px] font-bold text-white border border-surface shadow-sm">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
               )}
@@ -377,13 +431,13 @@ export default function LearnerNavbar() {
                   className="fixed inset-0 z-40 cursor-default"
                   onClick={() => setIsNotificationsOpen(false)}
                 />
-                <div className="absolute right-0 top-full mt-3 w-80 rounded-2xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-2xl overflow-hidden z-50">
-                  <div className="px-4 py-3 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
-                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Notifications</h3>
+                <div className="absolute right-0 top-full mt-3 w-80 rounded-2xl bg-surface/90 backdrop-blur-xl border border-slate-950/5 shadow-2xl overflow-hidden z-50">
+                  <div className="px-4 py-3 border-b border-slate-950/5 flex items-center justify-between">
+                    <h3 className="font-bold text-slate-800 text-sm">Notifications</h3>
                     {unreadCount > 0 && (
                       <button
                         onClick={markAllRead}
-                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                       >
                         Mark all read
                       </button>
@@ -391,18 +445,18 @@ export default function LearnerNavbar() {
                   </div>
                   <div className="max-h-[420px] overflow-y-auto">
                     {invitations.length > 0 && (
-                      <div className="border-b border-black/5 dark:border-white/5">
+                      <div className="border-b border-slate-950/5">
                         <p className="px-4 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">Action Required</p>
-                        <div className="divide-y divide-black/5 dark:divide-white/5">
+                        <div className="divide-y divide-slate-950/5">
                           {invitations.map(inv => (
-                            <div key={inv.id} className="p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                              <p className="text-sm text-slate-800 dark:text-slate-200 font-medium mb-1">
+                            <div key={inv.id} className="p-4 hover:bg-slate-950/5 transition-colors">
+                              <p className="text-sm text-slate-800 font-medium mb-1">
                                 Invitation to join <span className="font-bold">{inv.channelName}</span>
                               </p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                <span className="font-bold text-slate-700 dark:text-slate-300">{inv.invitedByName}</span> invited you as <span className="font-bold text-slate-700 dark:text-slate-300">{inv.roleNames.join(', ')}</span>.
+                              <p className="text-xs text-slate-500 mb-1">
+                                <span className="font-bold text-slate-700">{inv.invitedByName}</span> invited you as <span className="font-bold text-slate-700">{inv.roleNames.join(', ')}</span>.
                               </p>
-                              <p className="text-[11px] text-slate-400 dark:text-slate-500 mb-3">
+                              <p className="text-[11px] text-slate-400 mb-3">
                                 {new Date(inv.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(inv.createdAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
                                 {inv.expiresAt && (
                                   <> · expires {new Date(inv.expiresAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</>
@@ -417,7 +471,7 @@ export default function LearnerNavbar() {
                                 </button>
                                 <button
                                   onClick={() => { handleRejectInvite(inv.id); setIsNotificationsOpen(false); }}
-                                  className="flex-1 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center gap-1"
+                                  className="flex-1 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center justify-center gap-1"
                                 >
                                   <X size={14} /> Decline
                                 </button>
@@ -439,11 +493,11 @@ export default function LearnerNavbar() {
                       emptyMessage={invitations.length > 0 ? undefined : 'No new notifications'}
                     />
                   </div>
-                  <div className="border-t border-black/5 dark:border-white/5 p-3 text-center bg-slate-50/50 dark:bg-neutral-950/20">
+                  <div className="border-t border-slate-950/5 p-3 text-center bg-slate-50/50">
                     <Link 
                       href="/notifications" 
                       onClick={() => setIsNotificationsOpen(false)}
-                      className="text-xs font-extrabold text-indigo-600 hover:text-indigo-700 transition-colors"
+                      className="text-xs font-extrabold text-indigo-600 hover:text-indigo-700 transition-colors dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
                       See more
                     </Link>
@@ -458,15 +512,15 @@ export default function LearnerNavbar() {
         <div className="pointer-events-auto relative z-50 flex items-center">
           <MenuContainer>
             {/* Trigger (Profile Picture and Name) */}
-            <div className="flex h-full w-full items-center justify-between gap-2">
-              <span className="max-w-[100px] truncate text-sm font-bold text-[#14142b]">
+            <div className="flex h-full w-full items-center justify-between gap-1.5">
+              <span className="max-w-[66px] truncate text-sm font-bold text-ink">
                 {navPillName(user)}
               </span>
-              <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-black/5 shadow-xs">
+              <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-slate-950/5 shadow-xs">
                 {user?.avatarUrl ? (
                   <img src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-slate-100 text-[11px] font-black text-[#14142b]">
+                  <div className="flex h-full w-full items-center justify-center bg-slate-100 text-[11px] font-black text-ink">
                     {user?.firstName ? user.firstName.charAt(0).toUpperCase() : (user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'U')}
                   </div>
                 )}
@@ -475,7 +529,7 @@ export default function LearnerNavbar() {
 
             {/* Menu Items */}
             <MenuItem 
-              icon={<UserIcon className="text-emerald-600" strokeWidth={2} />} 
+              icon={<UserIcon className="text-emerald-600 dark:text-emerald-400" strokeWidth={2} />} 
               onClick={() => router.push('/profile')} 
             >
               Profile
@@ -496,7 +550,7 @@ export default function LearnerNavbar() {
             )}
             {showStudio && (
               <MenuItem 
-                icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
+                icon={<BookOpen className="text-ink" strokeWidth={2} />} 
                 onClick={() => router.push('/studio')}
               >
                 Studio
@@ -504,7 +558,7 @@ export default function LearnerNavbar() {
             )}
             {collaboratedEventId && (
               <MenuItem 
-                icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
+                icon={<BookOpen className="text-ink" strokeWidth={2} />} 
                 onClick={() => router.push('/studio/events')}
               >
                 Events
@@ -526,7 +580,10 @@ export default function LearnerNavbar() {
             </MenuItem>
             <MenuItem 
               icon={<Compass className="text-slate-600" strokeWidth={2} />} 
-              onClick={() => router.push('/?public=true')} 
+              // Document navigation, not router.push: "/" is landing vs dashboard by middleware on
+              // the request, and a soft navigation that only changes the query string reuses the
+              // dashboard already rendered at "/" — the URL changes but the page never does.
+              onClick={() => window.location.assign('/?public=true')}
             >
               Website
             </MenuItem>

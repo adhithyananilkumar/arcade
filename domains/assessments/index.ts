@@ -133,6 +133,7 @@ export {
   gradePreviewPaper,
   previewAttemptPaper,
   getGradeCard,
+  downloadGradeCardPdf,
   getMyGradeCards,
   verifyGradeCard,
 } from "./api";

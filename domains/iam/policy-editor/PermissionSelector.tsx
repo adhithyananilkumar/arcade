@@ -11,6 +11,8 @@ const SURFACE_LABEL: Record<ConsoleSurface, string> = {
   EXAMS: 'Exams',
   PAYMENTS: 'Payments',
   INBOX: 'Inbox',
+  BUGS: 'Bugs',
+  APPEARANCE: 'Appearance',
   IAM: 'IAM',
   SYSTEM: 'System',
 };
@@ -22,6 +24,8 @@ const SURFACE_DESCRIPTION: Record<ConsoleSurface, string> = {
   EXAMS: 'Create and edit exam schedule time slots for published courses',
   PAYMENTS: 'Financial, billing, and analytics operations',
   INBOX: 'Manage support and report submissions',
+  BUGS: 'Report bugs during a test release, work the bug tracker, and configure intake',
+  APPEARANCE: 'Curate the wallpaper gallery people choose from for glass mode',
   IAM: 'Manage platform access and policies',
   SYSTEM: 'Platform capabilities with no dedicated Console page',
 };
@@ -33,6 +37,8 @@ const SURFACE_ORDER: ConsoleSurface[] = [
   'EXAMS',
   'PAYMENTS',
   'INBOX',
+  'BUGS',
+  'APPEARANCE',
   'IAM',
   'SYSTEM',
 ];
@@ -72,17 +78,17 @@ function PermissionSurfaceGroup({
   const delegableIds = heldCodes ? permissions.filter((p) => heldCodes.has(p.code)).map((p) => p.id) : ids;
 
   return (
-    <div className="border border-slate-200/80 rounded-xl overflow-hidden bg-white">
+    <div className="border border-slate-200/80 rounded-xl overflow-hidden bg-surface">
       <div className="flex items-center gap-3 px-4 py-3 bg-slate-50/80 select-none">
         <button
           type="button"
           onClick={() => onToggleAll(allSelected ? ids : delegableIds, !allSelected)}
           className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
             allSelected
-              ? 'bg-[#14142b] border-[#14142b] text-white'
+              ? 'bg-ink border-ink text-on-ink'
               : someSelected
               ? 'bg-slate-300 border-slate-400 text-white'
-              : 'border-slate-300 hover:border-slate-400 bg-white'
+              : 'border-slate-300 hover:border-slate-400 bg-surface'
           }`}
           title="Select all in this surface"
         >
@@ -127,10 +133,10 @@ function PermissionSurfaceGroup({
                 <div
                   className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
                     isSelected
-                      ? 'bg-[#14142b] border-[#14142b] text-white'
+                      ? 'bg-ink border-ink text-on-ink'
                       : locked
                       ? 'border-slate-200 bg-slate-50'
-                      : 'border-slate-300 hover:border-slate-400 bg-white'
+                      : 'border-slate-300 hover:border-slate-400 bg-surface'
                   }`}
                 >
                   {isSelected && <Check size={10} strokeWidth={3} />}
@@ -227,7 +233,7 @@ export function PermissionSelector({ permissions, selectedIds, onChange, myPermi
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search permissions…"
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-sm font-medium focus:border-[#14142b]/30 focus:bg-white focus:ring-2 focus:ring-slate-200 outline-none"
+          className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-sm font-medium focus:border-ink/30 focus:bg-surface focus:ring-2 focus:ring-slate-200 outline-none"
         />
       </div>
 

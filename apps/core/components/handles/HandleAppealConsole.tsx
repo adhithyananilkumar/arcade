@@ -106,10 +106,10 @@ export function HandleAppealConsole() {
   return (
     <div className="space-y-7">
       <header>
-        <h1 className="text-[24px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+        <h1 className="text-[24px] font-extrabold tracking-tight text-slate-900">
           Handle appeals
         </h1>
-        <p className="mt-1.5 max-w-2xl text-[13px] font-medium leading-relaxed text-slate-500 dark:text-neutral-400">
+        <p className="mt-1.5 max-w-2xl text-[13px] font-medium leading-relaxed text-slate-500">
           Claims on handles somebody else holds. Approving one transfers the
           handle immediately and leaves the previous holder with no profile
           address until they choose a new one — so decide on the evidence, not on
@@ -117,7 +117,7 @@ export function HandleAppealConsole() {
         </p>
       </header>
 
-      <div className="flex items-center gap-1 border-b border-slate-100 dark:border-neutral-900">
+      <div className="flex items-center gap-1 border-b border-slate-100">
         {FILTERS.map((option) => (
           <button
             key={option.id}
@@ -125,8 +125,8 @@ export function HandleAppealConsole() {
             onClick={() => setFilter(option.id)}
             className={`-mb-px border-b-2 px-4 py-3 text-[13px] font-bold tracking-tight transition-colors ${
               filter === option.id
-                ? 'border-slate-900 text-slate-900 dark:border-white dark:text-white'
-                : 'border-transparent text-slate-400 hover:text-slate-600 dark:text-neutral-500'
+                ? 'border-slate-900 text-slate-900'
+                : 'border-transparent text-slate-400 hover:text-slate-600'
             }`}
           >
             {option.label}
@@ -135,7 +135,7 @@ export function HandleAppealConsole() {
       </div>
 
       {loading ? (
-        <div className="flex items-center gap-2 py-16 text-[13px] font-bold text-slate-400 dark:text-neutral-500">
+        <div className="flex items-center gap-2 py-16 text-[13px] font-bold text-slate-400">
           <Loader2 size={15} className="animate-spin" /> Loading…
         </div>
       ) : appeals.length === 0 ? (
@@ -156,12 +156,12 @@ export function HandleAppealConsole() {
             return (
               <li
                 key={appeal.id}
-                className="rounded-[20px] border border-slate-100 bg-white p-6 dark:border-neutral-900 dark:bg-black"
+                className="rounded-[20px] border border-slate-100 bg-surface p-6"
               >
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="flex min-w-0 items-start gap-3">
                     <span
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden bg-slate-50 dark:bg-neutral-900 ${
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden bg-slate-50 ${
                         appeal.claimantType === 'CHANNEL'
                           ? 'rounded-xl'
                           : 'rounded-full'
@@ -180,20 +180,20 @@ export function HandleAppealConsole() {
 
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[16px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+                        <span className="text-[16px] font-extrabold tracking-tight text-slate-900">
                           @{appeal.requestedHandle}
                         </span>
                         <HandleAppealStatusPill status={appeal.status} />
                       </div>
 
-                      <p className="mt-1 text-[12.5px] font-bold text-slate-500 dark:text-neutral-400">
+                      <p className="mt-1 text-[12.5px] font-bold text-slate-500">
                         Claimed by {appeal.claimantName}
                         {appeal.claimantType === 'CHANNEL' && ' (channel)'}
                         {appeal.claimantCurrentHandle &&
                           ` · currently @${appeal.claimantCurrentHandle}`}
                       </p>
 
-                      <p className="mt-0.5 text-[12px] font-bold text-slate-400 dark:text-neutral-500">
+                      <p className="mt-0.5 text-[12px] font-bold text-slate-400">
                         {appeal.currentHolderName
                           ? `Held by ${appeal.currentHolderName}`
                           : 'The handle is currently unheld'}
@@ -207,7 +207,7 @@ export function HandleAppealConsole() {
                         type="button"
                         onClick={() => decide(appeal, false)}
                         disabled={deciding === appeal.id}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2 text-[12.5px] font-extrabold tracking-tight text-slate-600 transition-colors hover:border-rose-300 hover:text-rose-600 disabled:opacity-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:border-rose-900 dark:hover:text-rose-400"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2 text-[12.5px] font-extrabold tracking-tight text-slate-600 transition-colors hover:border-rose-300 hover:text-rose-600 disabled:opacity-50 dark:hover:border-rose-900 dark:hover:text-rose-400"
                       >
                         <X size={13} /> Decline
                       </button>
@@ -215,7 +215,7 @@ export function HandleAppealConsole() {
                         type="button"
                         onClick={() => decide(appeal, true)}
                         disabled={deciding === appeal.id}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-2 text-[12.5px] font-extrabold tracking-tight text-white transition-colors hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-2 text-[12.5px] font-extrabold tracking-tight text-on-ink transition-colors hover:bg-slate-800 disabled:opacity-50"
                       >
                         {deciding === appeal.id ? (
                           <Loader2 size={13} className="animate-spin" />
@@ -242,11 +242,11 @@ export function HandleAppealConsole() {
                   </div>
                 )}
 
-                <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3.5 dark:bg-neutral-950">
-                  <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-400 dark:text-neutral-600">
+                <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3.5">
+                  <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-400">
                     Their case
                   </p>
-                  <p className="mt-1.5 whitespace-pre-wrap text-[13px] font-medium leading-relaxed text-slate-600 dark:text-neutral-300">
+                  <p className="mt-1.5 whitespace-pre-wrap text-[13px] font-medium leading-relaxed text-slate-600">
                     {appeal.justification}
                   </p>
                   {appeal.evidenceUrl && (
@@ -254,14 +254,14 @@ export function HandleAppealConsole() {
                       href={appeal.evidenceUrl}
                       target="_blank"
                       rel="noopener noreferrer nofollow"
-                      className="mt-3 inline-flex items-center gap-1.5 text-[12.5px] font-extrabold text-indigo-500 transition-colors hover:text-indigo-600 dark:text-indigo-400"
+                      className="mt-3 inline-flex items-center gap-1.5 text-[12.5px] font-extrabold text-indigo-500 transition-colors hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-400"
                     >
                       Supporting link <ExternalLink size={12} />
                     </a>
                   )}
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] font-bold text-slate-400 dark:text-neutral-500">
+                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] font-bold text-slate-400">
                   <span>Filed {new Date(appeal.createdAt).toLocaleString()}</span>
                   {appeal.decidedByName && (
                     <span>
@@ -273,7 +273,7 @@ export function HandleAppealConsole() {
                   {appeal.claimantCurrentHandle && (
                     <Link
                       href={`/${appeal.claimantCurrentHandle}`}
-                      className="text-indigo-500 hover:text-indigo-600 dark:text-indigo-400"
+                      className="text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-400"
                     >
                       View claimant
                     </Link>
@@ -281,7 +281,7 @@ export function HandleAppealConsole() {
                 </div>
 
                 {appeal.decisionNote && (
-                  <p className="mt-3 text-[12.5px] font-medium text-slate-500 dark:text-neutral-400">
+                  <p className="mt-3 text-[12.5px] font-medium text-slate-500">
                     <span className="font-extrabold">Note:</span> {appeal.decisionNote}
                   </p>
                 )}

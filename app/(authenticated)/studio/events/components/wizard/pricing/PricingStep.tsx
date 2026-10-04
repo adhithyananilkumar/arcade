@@ -10,8 +10,8 @@ interface Props {
 export const PricingStep: React.FC<Props> = ({ form }) => {
   return (
     <div className="space-y-6 flex flex-col xl:flex-row xl:space-y-0 xl:space-x-8">
-      <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 max-w-4xl">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Pricing & Registration</h2>
+      <div className="flex-1 bg-surface rounded-lg shadow-sm border border-gray-200 p-8 max-w-4xl">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Pricing & Registration</h2>
         <PricingForm form={form} />
       </div>
 

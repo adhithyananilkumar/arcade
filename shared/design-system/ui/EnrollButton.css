@@ -10,7 +10,7 @@
   border-radius: 0;
   font-size: 15px;
   font-weight: 600;
-  color: #12141c;
+  color: var(--theme-ink, #12141c);
   background: transparent !important;
   background-color: transparent !important;
   box-shadow: none !important;
@@ -46,7 +46,7 @@
   background-color: transparent !important;
   box-shadow: none !important;
   opacity: 0.8;
-  color: #12141c;
+  color: var(--theme-ink, #12141c);
 }
 
 :is(.dark, [data-theme='dark']) .animated-button:hover {

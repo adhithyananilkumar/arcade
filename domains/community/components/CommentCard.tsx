@@ -92,7 +92,7 @@ export function CommentCard({ comment, post, depth = 0 }: Props) {
               fontSize: 10,
               fontWeight: 700,
               color: '#16A34A',
-              backgroundColor: '#DCFCE7',
+              backgroundColor: 'var(--theme-n-100, #DCFCE7)',
               borderRadius: 'var(--radius-full)',
               padding: '1px 6px',
               textTransform: 'uppercase',
@@ -173,7 +173,7 @@ export function CommentCard({ comment, post, depth = 0 }: Props) {
                     onClick={() => acceptAnswer.mutate({ postId: post.id, commentId: comment.id })}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 4, padding: '0 12px', height: 32,
-                      borderRadius: 'var(--radius-full)', border: '1px solid var(--success)', backgroundColor: '#ecfdf5',
+                      borderRadius: 'var(--radius-full)', border: '1px solid var(--success)', backgroundColor: 'var(--theme-n-50, #ecfdf5)',
                       cursor: 'pointer', fontSize: 13, fontWeight: 500, color: 'var(--success)', marginLeft: 8
                     }}
                   >
@@ -204,7 +204,7 @@ export function CommentCard({ comment, post, depth = 0 }: Props) {
                           exit={{ opacity: 0, scale: 0.95, y: -5 }}
                           transition={{ duration: 0.1 }}
                           style={{
-                            position: 'absolute', bottom: '100%', right: 0, marginBottom: 8, backgroundColor: '#fff',
+                            position: 'absolute', bottom: '100%', right: 0, marginBottom: 8, backgroundColor: 'var(--theme-surface, #fff)',
                             border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow-md)',
                             zIndex: 10, padding: 4, minWidth: 120,
                           }}

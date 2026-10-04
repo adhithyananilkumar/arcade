@@ -1,8 +1,8 @@
 .arc-footer {
   --fe-bg: transparent;
-  --fe-text: #111827;
-  --fe-text-soft: #4b5563;
-  --fe-border: rgba(17, 24, 39, 0.08);
+  --fe-text: var(--theme-ink, #111827);
+  --fe-text-soft: var(--theme-n-600, #4b5563);
+  --fe-border: color-mix(in oklab, var(--theme-ink, #111827) 8%, transparent);
   --fe-accent: #2563eb;
 
   background: transparent !important;
@@ -118,8 +118,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #f8fafc;
-  border: 1px solid rgba(17, 24, 39, 0.12);
+  background: var(--theme-n-50, #f8fafc);
+  border: 1px solid color-mix(in oklab, var(--theme-ink, #111827) 12%, transparent);
   border-radius: 9999px;
   padding: 4px 4px 4px 14px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -128,7 +128,7 @@
 
 .arc-footer__input-group:focus-within {
   border-color: #2563eb;
-  background: #ffffff;
+  background: var(--theme-surface, #ffffff);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12), 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
@@ -145,7 +145,7 @@
 }
 
 .arc-footer__mono-input::placeholder {
-  color: #94a3b8;
+  color: var(--theme-n-400, #94a3b8);
 }
 
 .arc-footer__mono-btn {

@@ -78,10 +78,10 @@ export function ContentLifecycleTimeline({
       {events.map((e) => (
         <li key={e.id} className="relative pb-5 last:pb-0">
           <span
-            className={`absolute -left-[26px] top-1.5 h-2.5 w-2.5 rounded-full ring-4 ring-white ${dotColor(e.eventType)}`}
+            className={`absolute -left-[26px] top-1.5 h-2.5 w-2.5 rounded-full ring-4 ring-surface ${dotColor(e.eventType)}`}
           />
           <div className="flex flex-wrap items-baseline gap-x-2">
-            <span className="text-[13px] font-semibold text-[#14142b]">
+            <span className="text-[13px] font-semibold text-ink">
               {EVENT_LABEL[e.eventType] ?? e.eventType}
             </span>
             {e.versionNumber != null ? (

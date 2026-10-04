@@ -172,10 +172,12 @@ export interface ChannelContentItem {
   type: string;
   title: string;
   description?: string | null;
-  coverImageUrl?: string | null;
   status: string;
   createdAt: string;
   updatedAt: string;
+  channelName?: string | null;
+  /** The channel's picture; for a personal channel, its owner's profile picture. */
+  channelIconUrl?: string | null;
   authorId?: string | null;
   authorName?: string | null;
   authorUsername?: string | null;
@@ -513,6 +515,11 @@ export const channelService = {
    */
   getMyAuthoredContentCount: async (): Promise<number> => {
     return api.get<number>('/api/courses/mine/count');
+  },
+
+  /** Pending + accepted content collaborations (any type) — an invited collaborator's way into Studio. */
+  getMyCollaborationCount: async (): Promise<number> => {
+    return api.get<number>('/api/v1/content/collaborations/mine/count');
   },
 
   getChannelContent: async (channelId: string): Promise<ChannelContentItem[]> => {

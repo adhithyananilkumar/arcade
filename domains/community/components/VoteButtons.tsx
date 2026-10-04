@@ -117,8 +117,8 @@ export function VoteButtons({
           height: '100%',
           border: 'none',
           cursor: 'pointer',
-          backgroundColor: upvoted ? '#EBF0FA' : 'transparent',
-          color: upvoted ? '#205CA8' : 'var(--text-muted)',
+          backgroundColor: upvoted ? 'var(--theme-n-100, #EBF0FA)' : 'transparent',
+          color: upvoted ? 'oklch(from #205CA8 max(l, var(--fg-lift, 0)) c h)' : 'var(--text-muted)',
           transition: 'all 0.15s',
         }}
       >
@@ -126,7 +126,7 @@ export function VoteButtons({
           size={14} 
           color={upvoted ? '#205CA8' : 'currentColor'}
           style={{
-            fill: upvoted ? '#205CA8' : 'none',
+            fill: upvoted ? 'oklch(from #205CA8 max(l, var(--fg-lift, 0)) c h)' : 'none',
             strokeWidth: upvoted ? 0 : 2,
           }}
         />
@@ -139,7 +139,7 @@ export function VoteButtons({
         minWidth: 24,
         textAlign: 'center',
         padding: '0 4px',
-        color: upvoted ? '#205CA8' : downvoted ? '#DC2626' : 'var(--text-primary)',
+        color: upvoted ? 'oklch(from #205CA8 max(l, var(--fg-lift, 0)) c h)' : downvoted ? '#DC2626' : 'var(--text-primary)',
         transition: 'color 0.15s',
       }}>
         {score}
@@ -162,7 +162,7 @@ export function VoteButtons({
           height: '100%',
           border: 'none',
           cursor: 'pointer',
-          backgroundColor: downvoted ? '#FEF2F2' : 'transparent',
+          backgroundColor: downvoted ? 'var(--theme-n-100, #FEF2F2)' : 'transparent',
           color: downvoted ? '#DC2626' : 'var(--text-muted)',
           transition: 'all 0.15s',
         }}

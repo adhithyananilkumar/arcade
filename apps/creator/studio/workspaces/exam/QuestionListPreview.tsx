@@ -30,9 +30,9 @@ import {
 const PAGE_SIZE = 20;
 
 const DIFFICULTY_STYLES: Record<Difficulty, string> = {
-  EASY: "bg-emerald-50 text-emerald-700",
-  MEDIUM: "bg-amber-50 text-amber-700",
-  HARD: "bg-rose-50 text-rose-700",
+  EASY: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+  MEDIUM: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+  HARD: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
 };
 
 const DIFFICULTIES: Difficulty[] = ["EASY", "MEDIUM", "HARD"];
@@ -122,7 +122,7 @@ export function QuestionListPreview({
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search questions…"
             aria-label="Search questions"
-            className="w-full rounded-xl border border-white/50 bg-white/70 py-2 pl-9 pr-8 text-xs font-medium text-[#14142b] shadow-sm outline-none backdrop-blur-md placeholder:text-slate-400 focus:border-indigo-200 focus:ring-2 focus:ring-indigo-100"
+            className="w-full rounded-xl border border-white/50 bg-surface/70 py-2 pl-9 pr-8 text-xs font-medium text-ink shadow-sm outline-none backdrop-blur-md placeholder:text-slate-400 focus:border-indigo-200 focus:ring-2 focus:ring-indigo-100 dark:focus:border-indigo-500/25 dark:focus:ring-indigo-500/25"
           />
           {search && (
             <button
@@ -136,7 +136,7 @@ export function QuestionListPreview({
           )}
         </div>
 
-        <div className="flex items-center gap-1 rounded-xl border border-white/50 bg-white/70 p-1 shadow-sm backdrop-blur-md">
+        <div className="flex items-center gap-1 rounded-xl border border-white/50 bg-surface/70 p-1 shadow-sm backdrop-blur-md">
           {DIFFICULTIES.map((d) => {
             const on = difficulties.includes(d);
             return (
@@ -172,7 +172,7 @@ export function QuestionListPreview({
                   setSearch("");
                   setDifficulties([]);
                 }}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-[#14142b] transition-colors hover:bg-slate-50"
+                className="rounded-xl border border-slate-200 bg-surface px-4 py-2 text-xs font-bold text-ink transition-colors hover:bg-slate-50"
               >
                 Clear filters
               </button>
@@ -194,7 +194,7 @@ export function QuestionListPreview({
                 <button
                   type="button"
                   onClick={onAddQuestion}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-black"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink transition-colors hover:bg-ink-hover"
                 >
                   <Plus size={14} /> New question
                 </button>
@@ -210,15 +210,15 @@ export function QuestionListPreview({
                 <button
                   type="button"
                   onClick={() => onOpenQuestion(q)}
-                  className="w-full rounded-2xl border border-white/50 bg-white/70 p-5 text-left shadow-sm backdrop-blur-md transition-all hover:border-indigo-200 hover:bg-white hover:shadow-md"
+                  className="w-full rounded-2xl border border-white/50 bg-surface/70 p-5 text-left shadow-sm backdrop-blur-md transition-all hover:border-indigo-200 hover:bg-surface hover:shadow-md dark:hover:border-indigo-500/25"
                 >
                   <div className="flex items-start gap-3">
-                    <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-[#14142b] text-[11px] font-bold text-white">
+                    <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-ink text-[11px] font-bold text-on-ink">
                       {index + 1}
                     </span>
 
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm text-[#14142b]">
+                      <div className="text-sm text-ink">
                         {promptToPlainText(q.prompt) ? (
                           <TiptapContentView body={JSON.stringify(q.prompt)} />
                         ) : (
@@ -233,7 +233,7 @@ export function QuestionListPreview({
                               key={o.id}
                               className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs ${
                                 o.correct
-                                  ? "border-emerald-200 bg-emerald-50/60 text-emerald-800"
+                                  ? "border-emerald-200 bg-emerald-50/60 text-emerald-800 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-200"
                                   : "border-slate-100 text-slate-600"
                               }`}
                             >
@@ -259,7 +259,7 @@ export function QuestionListPreview({
                           {q.points} mark{q.points === 1 ? "" : "s"}
                         </span>
                         {q.tags.map((tag) => (
-                          <span key={tag} className="rounded-full bg-indigo-50 px-2 py-0.5 text-indigo-600">
+                          <span key={tag} className="rounded-full bg-indigo-50 px-2 py-0.5 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
                             {tag}
                           </span>
                         ))}
@@ -276,7 +276,7 @@ export function QuestionListPreview({
               type="button"
               onClick={() => setLimit((l) => l + PAGE_SIZE)}
               disabled={loading}
-              className="mx-auto rounded-xl border border-white/50 bg-white/70 px-5 py-2 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-colors hover:bg-white disabled:opacity-50"
+              className="mx-auto rounded-xl border border-white/50 bg-surface/70 px-5 py-2 text-xs font-bold text-ink shadow-sm backdrop-blur-md transition-colors hover:bg-surface disabled:opacity-50"
             >
               {loading ? "Loading…" : `Show more (${total - rows.length} left)`}
             </button>
@@ -286,7 +286,7 @@ export function QuestionListPreview({
             <button
               type="button"
               onClick={onAddQuestion}
-              className="flex items-center justify-center gap-1.5 rounded-2xl border border-dashed border-slate-300 px-4 py-3 text-xs font-bold text-slate-400 transition-colors hover:border-slate-400 hover:bg-white/60 hover:text-[#14142b]"
+              className="flex items-center justify-center gap-1.5 rounded-2xl border border-dashed border-slate-300 px-4 py-3 text-xs font-bold text-slate-400 transition-colors hover:border-slate-400 hover:bg-surface/60 hover:text-ink"
             >
               <Plus size={14} /> Add question
             </button>

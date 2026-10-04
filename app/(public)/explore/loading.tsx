@@ -21,7 +21,7 @@ export default function ExploreLoading() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[1, 2, 3].map((card) => (
-                  <div key={card} className="rounded-2xl border border-slate-100 bg-white p-6 h-48 flex flex-col justify-between">
+                  <div key={card} className="rounded-2xl border border-slate-100 bg-surface p-6 h-48 flex flex-col justify-between">
                     <div className="space-y-3">
                       <Skeleton className="h-6 w-3/4 bg-slate-200/60" />
                       <Skeleton className="h-4 w-full bg-slate-200/60" />

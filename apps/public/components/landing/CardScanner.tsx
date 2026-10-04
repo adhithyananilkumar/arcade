@@ -165,7 +165,7 @@ export default function CardScanner() {
   } : {};
 
   return (
-    <div ref={containerRef} className="card-scanner-wrapper relative w-full max-w-[500px] mx-auto p-6 rounded-3xl border border-zinc-200/50 bg-white/60 backdrop-blur-xl shadow-2xl overflow-visible">
+    <div ref={containerRef} className="card-scanner-wrapper relative w-full max-w-[500px] mx-auto p-6 rounded-3xl border border-zinc-200/50 bg-surface/60 backdrop-blur-xl shadow-2xl overflow-visible">
       
       {/* Dynamic scan states helper instruction */}
       <div className="flex items-center justify-between mb-6 border-b border-zinc-100 pb-4">
@@ -181,7 +181,7 @@ export default function CardScanner() {
         </div>
         
         {scanState === "success" && (
-          <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
+          <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1 dark:text-emerald-400">
             <ShieldCheck className="w-3.5 h-3.5" /> Redirecting...
           </span>
         )}
@@ -256,8 +256,8 @@ export default function CardScanner() {
               </div>
               
               {/* Small contact chip representation */}
-              <div className="w-8 h-6 rounded-md bg-gradient-to-tr from-amber-400 to-amber-200 border border-amber-300/40 relative flex items-center justify-center">
-                <Cpu className="w-4 h-4 text-amber-900/60" />
+              <div className="w-8 h-6 rounded-md bg-gradient-to-tr from-amber-400 to-amber-200 border border-amber-300/40 relative flex items-center justify-center dark:to-amber-500/20 dark:border-amber-500/40">
+                <Cpu className="w-4 h-4 text-amber-900/60 dark:text-amber-200" />
               </div>
             </div>
             
@@ -273,9 +273,9 @@ export default function CardScanner() {
           ref={slotRef}
           className={`scanner-dock w-full sm:w-[200px] h-[320px] rounded-2xl border-2 border-dashed flex flex-col justify-between p-5 relative transition-all duration-300 ${
             scanState === "success" 
-              ? "border-emerald-500 bg-emerald-50/10 shadow-[0_0_20px_rgba(16,185,129,0.15)]" 
+              ? "border-emerald-500 bg-emerald-50/10 shadow-[0_0_20px_rgba(16,185,129,0.15)] dark:bg-emerald-500/10" 
               : scanState === "scanning" 
-              ? "border-amber-400 bg-amber-50/5 shadow-[0_0_20px_rgba(245,158,11,0.1)]" 
+              ? "border-amber-400 bg-amber-50/5 shadow-[0_0_20px_rgba(245,158,11,0.1)] dark:bg-amber-500/10" 
               : "border-zinc-300 bg-zinc-50/50"
           }`}
         >
@@ -295,8 +295,8 @@ export default function CardScanner() {
           {/* Dock visual center target */}
           <div className="my-auto flex flex-col items-center justify-center text-center p-4">
             <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 transition-colors duration-300 ${
-              scanState === "success" ? "bg-emerald-100 text-emerald-600" :
-              scanState === "scanning" ? "bg-amber-100 text-amber-600 animate-pulse" :
+              scanState === "success" ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400" :
+              scanState === "scanning" ? "bg-amber-100 text-amber-600 animate-pulse dark:bg-amber-500/15 dark:text-amber-400" :
               "bg-zinc-100 text-zinc-400"
             }`}>
               {scanState === "success" ? (
@@ -349,7 +349,7 @@ export default function CardScanner() {
 
       {/* Access card swipe instructions or hint */}
       {scanState === "idle" && (
-        <div className="mt-4 flex items-center justify-center gap-2 p-2 bg-indigo-50/50 border border-indigo-100/30 rounded-xl text-[11px] text-indigo-700 text-center animate-pulse">
+        <div className="mt-4 flex items-center justify-center gap-2 p-2 bg-indigo-50/50 border border-indigo-100/30 rounded-xl text-[11px] text-indigo-700 text-center animate-pulse dark:bg-indigo-500/10 dark:border-indigo-500/25 dark:text-indigo-300">
           <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
           <span><b>Tip:</b> Click the card to auto-scan, or drag it into the slot!</span>
         </div>

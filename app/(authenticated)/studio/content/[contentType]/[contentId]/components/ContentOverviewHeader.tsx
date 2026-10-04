@@ -67,13 +67,13 @@ function ActionButton({
   const cls =
     variant === "primary"
       ? "bg-blue-600 text-white hover:bg-blue-700 shadow-xs active:scale-[0.98]"
-      : "border border-slate-200 bg-white text-[#14142b] hover:bg-slate-50 hover:border-slate-300 shadow-2xs active:scale-[0.98]";
+      : "border border-slate-200 bg-surface text-ink hover:bg-slate-50 hover:border-slate-300 shadow-2xs active:scale-[0.98]";
   const content = (
     <>
       {Icon && <Icon size={15} />} <span>{label}</span>
     </>
   );
-  const className = `inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-extrabold transition-all duration-200 cursor-pointer ${cls}`;
+  const className = `inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-extrabold transition-all duration-200 cursor-pointer ${cls}`;
   if (href) {
     return (
       <Link href={href} className={className}>
@@ -93,7 +93,6 @@ export function ContentOverviewHeader({
   contentId,
   title,
   status,
-  coverImageUrl,
   channelName,
   authorName,
   createdAt,
@@ -109,7 +108,6 @@ export function ContentOverviewHeader({
   contentId: string;
   title: string;
   status: string;
-  coverImageUrl?: string | null;
   channelName?: string | null;
   authorName?: string | null;
   createdAt: string;
@@ -164,7 +162,20 @@ export function ContentOverviewHeader({
 
   async function handleConfirmedAction() {
     if (confirmAction === "delete") {
-      await deleteContent(segment, contentId, title);
+      // A null request means this type has no delete. It used to be awaited anyway and reported as
+      // "Deleted", which is how an exam "deleted" here was still on the dashboard afterwards.
+      const request = deleteContent(segment, contentId, title);
+      if (!request) {
+        toast.error("This content can't be deleted here.");
+        setConfirmAction(null);
+        return;
+      }
+      try {
+        await request;
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Could not delete");
+        return;
+      }
       toast.success("Deleted");
       setConfirmAction(null);
       router.push("/studio");
@@ -208,53 +219,27 @@ export function ContentOverviewHeader({
   const updatedParts = formatDateParts(updatedAt);
 
   return (
-    <div className="flex flex-col items-center justify-center py-4 w-full">
+    <div className="flex flex-col items-center justify-center pt-10 sm:pt-12 pb-1 w-full">
       {/* Main Centered Content Title & Metadata */}
-      <div className="flex flex-col items-center justify-center text-center gap-2 max-w-4xl mx-auto">
+      <div className="flex flex-col items-center justify-center text-center gap-1.5 max-w-4xl mx-auto">
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Satisfy&family=Alex+Brush&display=swap');`}</style>
 
         <h1
-          className="text-4xl font-bold tracking-wide bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 bg-clip-text text-transparent sm:text-5xl lg:text-6xl py-1 leading-snug text-center"
+          className="text-4xl font-bold tracking-wide bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 bg-clip-text text-transparent sm:text-5xl lg:text-6xl py-0.5 leading-tight text-center"
           style={{
             fontFamily: "'Dancing Script', 'Satisfy', 'Great Vibes', 'Alex Brush', cursive",
           }}
         >
           {title}
         </h1>
-        <p className="text-xs font-medium text-slate-500 text-center">
-          Created {formatDateLine(createdAt)} &nbsp;·&nbsp; Last edited {formatDateLine(updatedAt)}
-        </p>
 
-        {/* Combined Row: Channel Name, Content Type, and Published Status */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 text-xs font-black uppercase tracking-wider py-1">
-          <span className="inline-flex items-center gap-1.5 text-indigo-700">
-            <Tv size={13} className="text-indigo-600" />
-            {channelName || "Personal Channel"}
-          </span>
-          <span className="text-slate-300">·</span>
-          <span className="inline-flex items-center gap-1.5 text-blue-700">
-            <BookOpen size={13} className="text-blue-600" />
-            {CONTENT_TYPE_LABEL[segment]}
-          </span>
-          <span className="text-slate-300">·</span>
-          <span className="inline-flex items-center gap-1.5 font-black uppercase tracking-widest text-emerald-600">
-            <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
-            <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-              {status ? status.toLowerCase() : "published"}
-            </span>
-          </span>
-        </div>
-
-        {/* SINGLE ROW BELOW HEADING: Preview, Edit Content, 3-Dots Menu.
-            There used to be an "Active Learners N" badge here driven by a Math.random() ticker —
-            removed rather than kept as decoration. Real learner counts belong here only once a
-            live-activity endpoint exists to source them. */}
+        {/* SINGLE ROW BELOW HEADING: Preview, Edit Content, 3-Dots Menu. */}
         {showMetadataRail && (
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1.5">
             {/* Action Buttons: Preview & Edit Content */}
             {channelSuspended ? (
               <span
-                className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700"
+                className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300"
                 title="This channel is suspended — editing is disabled until it's reactivated"
               >
                 Editing Disabled
@@ -278,7 +263,7 @@ export function ContentOverviewHeader({
                 <button
                   type="button"
                   onClick={() => setMenuOpen((v) => !v)}
-                  className="grid size-9 place-items-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 cursor-pointer shadow-2xs"
+                  className="grid size-9 place-items-center rounded-full border border-slate-200 bg-surface text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 cursor-pointer shadow-2xs"
                   aria-label="More actions"
                 >
                   <MoreVertical size={16} />
@@ -286,7 +271,7 @@ export function ContentOverviewHeader({
                 {menuOpen && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                    <div className="absolute right-0 z-20 mt-2 w-48 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl">
+                    <div className="absolute right-0 z-20 mt-2 w-48 rounded-2xl border border-slate-200 bg-surface p-1.5 shadow-xl">
                       {duplicate && (
                         <button
                           onClick={() => {
@@ -315,7 +300,7 @@ export function ContentOverviewHeader({
                             setMenuOpen(false);
                             setConfirmAction("delete");
                           }}
-                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer text-left"
+                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer text-left dark:text-rose-400 dark:hover:bg-rose-500/10"
                         >
                           <Trash2 size={14} /> Delete
                         </button>

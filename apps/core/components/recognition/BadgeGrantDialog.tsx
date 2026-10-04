@@ -174,14 +174,14 @@ export function BadgeGrantDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 p-4 backdrop-blur-sm dark:bg-black/60">
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[22px] border border-slate-100 bg-white p-6 shadow-2xl dark:border-neutral-900 dark:bg-black">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 p-4 backdrop-blur-sm">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[22px] border border-slate-100 bg-surface p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-[17px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+            <h2 className="text-[17px] font-extrabold tracking-tight text-slate-900">
               Grant a badge
             </h2>
-            <p className="mt-1 text-[12.5px] font-medium text-slate-500 dark:text-neutral-400">
+            <p className="mt-1 text-[12.5px] font-medium text-slate-500">
               A badge is recognition, not permission. Granting one changes what
               Arcade says about this account, never what it can do.
             </p>
@@ -190,7 +190,7 @@ export function BadgeGrantDialog({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-slate-50 hover:text-slate-600 dark:text-neutral-600 dark:hover:bg-neutral-900"
+            className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-slate-50 hover:text-slate-600"
           >
             <X size={16} />
           </button>
@@ -198,7 +198,7 @@ export function BadgeGrantDialog({
 
         <div className="mt-6 space-y-5">
           <div>
-            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700 dark:text-neutral-200">
+            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700">
               Badge
             </label>
             <div className="mt-2 grid gap-2">
@@ -209,8 +209,8 @@ export function BadgeGrantDialog({
                   onClick={() => setBadgeCode(definition.code)}
                   className={`flex items-center gap-3 rounded-xl border px-3.5 py-2.5 text-left transition-colors ${
                     definition.code === badgeCode
-                      ? 'border-slate-900 bg-slate-50 dark:border-neutral-400 dark:bg-neutral-900'
-                      : 'border-slate-200 hover:border-slate-300 dark:border-neutral-800 dark:hover:border-neutral-700'
+                      ? 'border-slate-900 bg-slate-50'
+                      : 'border-slate-200 hover:border-slate-300'
                   }`}
                 >
                   <VerifiedBadge
@@ -229,10 +229,10 @@ export function BadgeGrantDialog({
                     showDetailOnHover={false}
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    <span className="block truncate text-[13px] font-extrabold tracking-tight text-slate-900">
                       {definition.displayName}
                     </span>
-                    <span className="block text-[11px] font-bold text-slate-400 dark:text-neutral-500">
+                    <span className="block text-[11px] font-bold text-slate-400">
                       {definition.category} · applies to {definition.appliesTo}
                     </span>
                   </span>
@@ -250,8 +250,8 @@ export function BadgeGrantDialog({
                   onClick={() => setChosenType(type)}
                   className={`flex-1 rounded-xl border px-3 py-2 text-[12.5px] font-extrabold tracking-tight transition-colors ${
                     chosenType === type
-                      ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-black'
-                      : 'border-slate-200 text-slate-500 dark:border-neutral-800 dark:text-neutral-400'
+                      ? 'border-slate-900 bg-slate-900 text-on-ink'
+                      : 'border-slate-200 text-slate-500'
                   }`}
                 >
                   {type === 'USER' ? 'A person' : 'A channel'}
@@ -261,25 +261,25 @@ export function BadgeGrantDialog({
           )}
 
           <div>
-            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700 dark:text-neutral-200">
+            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700">
               {effectiveType === 'USER' ? 'Who gets it' : 'Which channel'}
             </label>
 
             {subject ? (
-              <div className="mt-2 flex items-center gap-3 rounded-xl border border-slate-900 px-3.5 py-2.5 dark:border-neutral-400">
+              <div className="mt-2 flex items-center gap-3 rounded-xl border border-slate-900 px-3.5 py-2.5">
                 <SubjectAvatar option={subject} type={effectiveType} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[13px] font-extrabold text-slate-900 dark:text-white">
+                  <span className="block truncate text-[13px] font-extrabold text-slate-900">
                     {subject.name}
                   </span>
-                  <span className="block text-[11px] font-bold text-slate-400 dark:text-neutral-500">
+                  <span className="block text-[11px] font-bold text-slate-400">
                     {subject.secondary}
                   </span>
                 </span>
                 <button
                   type="button"
                   onClick={() => setSubject(null)}
-                  className="rounded-lg p-1 text-slate-300 hover:text-slate-600 dark:text-neutral-600"
+                  className="rounded-lg p-1 text-slate-300 hover:text-slate-600"
                   aria-label="Choose someone else"
                 >
                   <X size={14} />
@@ -290,7 +290,7 @@ export function BadgeGrantDialog({
                 <div className="relative mt-2">
                   <Search
                     size={14}
-                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 dark:text-neutral-600"
+                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300"
                   />
                   <input
                     value={query}
@@ -300,7 +300,7 @@ export function BadgeGrantDialog({
                         ? 'Search by name or handle'
                         : 'Search organization channels'
                     }
-                    className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-9 text-[13.5px] font-semibold text-slate-900 outline-none transition-colors focus:border-slate-900 placeholder:font-medium placeholder:text-slate-300 dark:border-neutral-800 dark:bg-black dark:text-white dark:focus:border-neutral-400"
+                    className="w-full rounded-xl border border-slate-200 bg-surface py-2.5 pl-9 pr-9 text-[13.5px] font-semibold text-slate-900 outline-none transition-colors focus:border-slate-900 placeholder:font-medium placeholder:text-slate-300"
                   />
                   {searching && (
                     <Loader2
@@ -311,20 +311,20 @@ export function BadgeGrantDialog({
                 </div>
 
                 {results.length > 0 && (
-                  <ul className="mt-2 max-h-52 overflow-y-auto rounded-xl border border-slate-100 dark:border-neutral-900">
+                  <ul className="mt-2 max-h-52 overflow-y-auto rounded-xl border border-slate-100">
                     {results.map((option) => (
                       <li key={option.id}>
                         <button
                           type="button"
                           onClick={() => setSubject(option)}
-                          className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-neutral-900"
+                          className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-slate-50"
                         >
                           <SubjectAvatar option={option} type={effectiveType} />
                           <span className="min-w-0 flex-1">
-                            <span className="block truncate text-[13px] font-bold text-slate-900 dark:text-white">
+                            <span className="block truncate text-[13px] font-bold text-slate-900">
                               {option.name}
                             </span>
-                            <span className="block truncate text-[11px] font-bold text-slate-400 dark:text-neutral-500">
+                            <span className="block truncate text-[11px] font-bold text-slate-400">
                               {option.secondary}
                             </span>
                           </span>
@@ -339,10 +339,10 @@ export function BadgeGrantDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700 dark:text-neutral-200">
+              <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700">
                 Title <span className="font-bold text-slate-300">(optional)</span>
               </label>
-              <p className="mt-1 text-[11.5px] font-medium text-slate-400 dark:text-neutral-500">
+              <p className="mt-1 text-[11.5px] font-medium text-slate-400">
                 Replaces the badge name for this holder.
               </p>
               <input
@@ -350,15 +350,15 @@ export function BadgeGrantDialog({
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={120}
                 placeholder={selected?.displayName ?? 'Arcade Team Lead'}
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-[13px] font-semibold text-slate-900 outline-none focus:border-slate-900 dark:border-neutral-800 dark:bg-black dark:text-white dark:focus:border-neutral-400"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-surface px-3.5 py-2.5 text-[13px] font-semibold text-slate-900 outline-none focus:border-slate-900"
               />
             </div>
 
             <div>
-              <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700 dark:text-neutral-200">
+              <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700">
                 Tenure <span className="font-bold text-slate-300">(optional)</span>
               </label>
-              <p className="mt-1 text-[11.5px] font-medium text-slate-400 dark:text-neutral-500">
+              <p className="mt-1 text-[11.5px] font-medium text-slate-400">
                 Shown under the title on hover.
               </p>
               <input
@@ -366,13 +366,13 @@ export function BadgeGrantDialog({
                 onChange={(e) => setTenure(e.target.value)}
                 maxLength={40}
                 placeholder="2025-26"
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-[13px] font-semibold text-slate-900 outline-none focus:border-slate-900 dark:border-neutral-800 dark:bg-black dark:text-white dark:focus:border-neutral-400"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-surface px-3.5 py-2.5 text-[13px] font-semibold text-slate-900 outline-none focus:border-slate-900"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700 dark:text-neutral-200">
+            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700">
               Note <span className="font-bold text-slate-300">(optional)</span>
             </label>
             <input
@@ -380,7 +380,7 @@ export function BadgeGrantDialog({
               onChange={(e) => setNote(e.target.value)}
               maxLength={280}
               placeholder="Led the exam platform rewrite"
-              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-[13px] font-semibold text-slate-900 outline-none focus:border-slate-900 dark:border-neutral-800 dark:bg-black dark:text-white dark:focus:border-neutral-400"
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-surface px-3.5 py-2.5 text-[13px] font-semibold text-slate-900 outline-none focus:border-slate-900"
             />
           </div>
         </div>
@@ -389,7 +389,7 @@ export function BadgeGrantDialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl px-4 py-2.5 text-[13px] font-extrabold tracking-tight text-slate-500 transition-colors hover:bg-slate-50 dark:text-neutral-400 dark:hover:bg-neutral-900"
+            className="rounded-xl px-4 py-2.5 text-[13px] font-extrabold tracking-tight text-slate-500 transition-colors hover:bg-slate-50"
           >
             Cancel
           </button>
@@ -397,7 +397,7 @@ export function BadgeGrantDialog({
             type="button"
             onClick={submit}
             disabled={!selected || !subject || submitting}
-            className="rounded-xl bg-slate-900 px-5 py-2.5 text-[13px] font-extrabold tracking-tight text-white transition-all hover:bg-slate-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
+            className="rounded-xl bg-slate-900 px-5 py-2.5 text-[13px] font-extrabold tracking-tight text-on-ink transition-all hover:bg-slate-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {submitting ? 'Granting…' : 'Grant badge'}
           </button>
@@ -417,7 +417,7 @@ function SubjectAvatar({
   const Fallback = type === 'CHANNEL' ? Building2 : UserIcon;
   return (
     <span
-      className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden bg-slate-50 dark:bg-neutral-900 ${
+      className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden bg-slate-50 ${
         type === 'CHANNEL' ? 'rounded-xl' : 'rounded-full'
       }`}
     >
@@ -430,7 +430,7 @@ function SubjectAvatar({
           referrerPolicy="no-referrer"
         />
       ) : (
-        <Fallback size={14} className="text-slate-300 dark:text-neutral-700" />
+        <Fallback size={14} className="text-slate-300" />
       )}
     </span>
   );
