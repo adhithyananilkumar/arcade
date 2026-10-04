@@ -40,7 +40,7 @@ function PanelSection({ title, children, defaultOpen = false, isOpen: controlled
       <button
         type="button"
         onClick={() => onToggle ? onToggle() : setInternalIsOpen(!internalIsOpen)}
-        className="flex w-full items-center gap-2 py-2.5 px-1 text-left hover:bg-white/40 transition-colors"
+        className="flex w-full items-center gap-2 py-2.5 px-1 text-left hover:bg-surface/40 transition-colors"
       >
         <ChevronRight size={14} className={`text-slate-400 transition-transform ${isOpen ? "rotate-90" : ""}`} />
         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{title}</span>
@@ -57,7 +57,7 @@ function ColorField({ value, onChange }: { value: string; onChange: (v: string) 
         type="color"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-7 w-7 cursor-pointer rounded border border-white/60 bg-transparent p-0"
+        className="h-7 w-7 cursor-pointer rounded border border-surface/60 bg-transparent p-0"
       />
       {value}
     </label>
@@ -112,7 +112,7 @@ function NumberField({ value, onChange, min, max, step, width = "w-20" }: { valu
       step={step}
       onChange={handleChange}
       onBlur={handleBlur}
-      className={`${width} min-w-0 rounded-xl border border-white/50 bg-white/60 px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-[#14142b]/30`}
+      className={`${width} min-w-0 rounded-xl border border-white/50 bg-surface/60 px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-ink/30`}
     />
   );
 }
@@ -126,7 +126,7 @@ function SegmentedField<T extends string>({ value, options, onChange }: { value:
           type="button"
           onClick={() => onChange(opt)}
           className={`rounded-lg px-2.5 py-1 text-[11px] font-medium capitalize ${
-            value === opt ? "bg-[#14142b] text-white" : "bg-white/60 text-slate-500 hover:bg-white"
+            value === opt ? "bg-ink text-on-ink" : "bg-surface/60 text-slate-500 hover:bg-surface"
           }`}
         >
           {opt}
@@ -177,7 +177,7 @@ function BackgroundSection({ editor }: { editor: BadgeEditorState }) {
             type="button"
             onClick={() => switchType(t)}
             className={`rounded-lg px-2.5 py-1 text-[11px] font-medium ${
-              bg.type === t ? "bg-[#14142b] text-white" : "bg-white/60 text-slate-500 hover:bg-white"
+              bg.type === t ? "bg-ink text-on-ink" : "bg-surface/60 text-slate-500 hover:bg-surface"
             }`}
           >
             {BACKGROUND_LABELS[t]}
@@ -232,7 +232,7 @@ function BackgroundSection({ editor }: { editor: BadgeEditorState }) {
                 type="button"
                 onClick={() => editor.updateBackground({ ...bg, pattern: p })}
                 className={`rounded-lg px-2.5 py-1 text-[11px] font-medium capitalize ${
-                  bg.pattern === p ? "bg-[#14142b] text-white" : "bg-white/60 text-slate-500 hover:bg-white"
+                  bg.pattern === p ? "bg-ink text-on-ink" : "bg-surface/60 text-slate-500 hover:bg-surface"
                 }`}
               >
                 {p}
@@ -284,7 +284,7 @@ function FrameSection({ editor }: { editor: BadgeEditorState }) {
               type="button"
               onClick={() => switchType(t)}
               className={`rounded-lg px-2.5 py-1 text-[11px] font-medium capitalize ${
-                border.type === t ? "bg-[#14142b] text-white" : "bg-white/60 text-slate-500 hover:bg-white"
+                border.type === t ? "bg-ink text-on-ink" : "bg-surface/60 text-slate-500 hover:bg-surface"
               }`}
             >
               {t === "gradient" ? "Linear" : "Solid"}
@@ -415,7 +415,7 @@ export function BadgePropertiesPanel({ editor }: { editor: BadgeEditorState }) {
               value={obj.text}
               onChange={(e) => editor.updateSelected({ text: e.target.value })}
               rows={2}
-              className="w-full resize-none rounded-xl border border-white/50 bg-white/60 px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-[#14142b]/30"
+              className="w-full resize-none rounded-xl border border-white/50 bg-surface/60 px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-ink/30"
             />
           </PanelSection>
           <PanelSection title="Typography" defaultOpen>
@@ -570,7 +570,7 @@ function SortableLayerItem({
       ref={setNodeRef}
       style={style}
       className={`group flex items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs ${
-        editor.selectedId === obj.id ? "bg-[#14142b] text-white" : "text-slate-600 hover:bg-white/60"
+        editor.selectedId === obj.id ? "bg-ink text-on-ink" : "text-slate-600 hover:bg-surface/60"
       }`}
     >
       <button type="button" onClick={() => editor.toggleVisibility(obj.id)} className="flex-shrink-0 opacity-60 hover:opacity-100">
@@ -590,7 +590,7 @@ function SortableLayerItem({
               setIsEditing(false);
             }
           }}
-          className="min-w-0 flex-1 truncate rounded bg-white px-1 py-0.5 text-slate-800 outline-none ring-1 ring-[#14142b]/30"
+          className="min-w-0 flex-1 truncate rounded bg-surface px-1 py-0.5 text-slate-800 outline-none ring-1 ring-ink/30"
         />
       ) : (
         <button
@@ -613,7 +613,7 @@ function SortableLayerItem({
           setTempName(displayName);
           setIsEditing(true);
         }}
-        className="flex-shrink-0 opacity-0 hover:text-[#14142b] group-hover:opacity-60"
+        className="flex-shrink-0 opacity-0 hover:text-ink group-hover:opacity-60"
         title="Rename layer"
       >
         <Pencil size={13} />
@@ -694,14 +694,14 @@ const CONTEXT_TABS: { id: BadgeEditorPanel; label: string; icon: typeof LayersIc
 export function BadgeEditorContextPanel({ editor }: { editor: BadgeEditorState }) {
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-3 flex items-center gap-1 rounded-full border border-white/40 bg-white/60 p-1">
+      <div className="mb-3 flex items-center gap-1 rounded-full border border-white/40 bg-surface/60 p-1">
         {CONTEXT_TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             type="button"
             onClick={() => editor.setActivePanel(id)}
             className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-2 py-1.5 text-xs font-semibold transition-colors ${
-              editor.activePanel === id ? "bg-[#14142b] text-white shadow-sm" : "text-slate-500 hover:text-[#14142b]"
+              editor.activePanel === id ? "bg-ink text-on-ink shadow-sm" : "text-slate-500 hover:text-ink"
             }`}
           >
             <Icon size={13} />

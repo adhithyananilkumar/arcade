@@ -101,12 +101,12 @@ const KIND_META: Record<
   MANUAL: {
     icon: Bookmark,
     label: "Named",
-    chip: "bg-[#14142b]/8 text-[#14142b]",
+    chip: "bg-ink/8 text-ink",
   },
   WORKFLOW: {
     icon: GitCommitVertical,
     label: "Milestone",
-    chip: "bg-emerald-50 text-emerald-700",
+    chip: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
   },
 };
 
@@ -115,24 +115,24 @@ function statusMeta(label: string) {
   if (l.startsWith("approved")) {
     return {
       icon: CheckCircle,
-      iconClass: "text-emerald-600",
-      ring: "border-emerald-200",
+      iconClass: "text-emerald-600 dark:text-emerald-400",
+      ring: "border-emerald-200 dark:border-emerald-500/25",
       accent: "border-l-emerald-400",
     };
   }
   if (l.startsWith("rejected")) {
     return {
       icon: XCircle,
-      iconClass: "text-rose-600",
-      ring: "border-rose-200",
+      iconClass: "text-rose-600 dark:text-rose-400",
+      ring: "border-rose-200 dark:border-rose-500/25",
       accent: "border-l-rose-400",
     };
   }
   if (l.startsWith("submitted")) {
     return {
       icon: Send,
-      iconClass: "text-sky-600",
-      ring: "border-sky-200",
+      iconClass: "text-sky-600 dark:text-sky-400",
+      ring: "border-sky-200 dark:border-sky-500/25",
       accent: "border-l-sky-400",
     };
   }
@@ -198,8 +198,8 @@ export function VersionHistoryPanel({
                 onClick={() => setTab("log")}
                 className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[12px] font-semibold transition-all ${
                   tab === "log"
-                    ? "bg-[#14142b] text-white shadow-sm"
-                    : "text-slate-500 hover:text-[#14142b]"
+                    ? "bg-ink text-on-ink shadow-sm"
+                    : "text-slate-500 hover:text-ink"
                 }`}
               >
                 <FileClock size={13} />
@@ -210,8 +210,8 @@ export function VersionHistoryPanel({
                 onClick={() => setTab("comment")}
                 className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[12px] font-semibold transition-all ${
                   tab === "comment"
-                    ? "bg-[#14142b] text-white shadow-sm"
-                    : "text-slate-500 hover:text-[#14142b]"
+                    ? "bg-ink text-on-ink shadow-sm"
+                    : "text-slate-500 hover:text-ink"
                 }`}
               >
                 <MessageSquareText size={13} />
@@ -234,7 +234,7 @@ export function VersionHistoryPanel({
                   <span className="grid size-14 place-items-center rounded-2xl bg-slate-50">
                     <MessageSquareText size={24} className="text-slate-300" />
                   </span>
-                  <p className="text-[13px] font-semibold text-[#14142b]">No workflow comments</p>
+                  <p className="text-[13px] font-semibold text-ink">No workflow comments</p>
                   <p className="max-w-[220px] text-[11px] leading-relaxed text-slate-400">
                     Approvals, rejections, and submission notes will appear here.
                   </p>
@@ -251,15 +251,15 @@ export function VersionHistoryPanel({
                     return (
                       <div key={idx} className="relative pb-6 pl-6 last:pb-0">
                         <span
-                          className={`absolute -left-[13px] top-0 grid size-6 place-items-center rounded-full border bg-white ${meta.ring}`}
+                          className={`absolute -left-[13px] top-0 grid size-6 place-items-center rounded-full border bg-surface ${meta.ring}`}
                         >
                           <Icon size={12} className={meta.iconClass} />
                         </span>
                         <div
-                          className={`rounded-2xl border border-slate-100 border-l-[3px] bg-white p-3.5 shadow-[0_2px_8px_rgba(20,20,43,0.03)] ${meta.accent}`}
+                          className={`rounded-2xl border border-slate-100 border-l-[3px] bg-surface p-3.5 shadow-[0_2px_8px_rgba(20,20,43,0.03)] ${meta.accent}`}
                         >
                           <div className="flex items-start justify-between gap-2">
-                            <p className="text-[13px] font-bold text-[#14142b]">{title}</p>
+                            <p className="text-[13px] font-bold text-ink">{title}</p>
                             <span className="shrink-0 text-[10px] font-medium text-slate-400">
                               {formatRelative(event.createdAt)}
                             </span>
@@ -289,11 +289,11 @@ export function VersionHistoryPanel({
                 </div>
               ) : error ? (
                 <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center">
-                  <p className="text-sm text-rose-600">{error}</p>
+                  <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p>
                   <button
                     type="button"
                     onClick={onRetryLoad}
-                    className="text-[12px] font-semibold text-[#14142b] hover:underline"
+                    className="text-[12px] font-semibold text-ink hover:underline"
                   >
                     Try again
                   </button>
@@ -303,7 +303,7 @@ export function VersionHistoryPanel({
                   <span className="grid size-14 place-items-center rounded-2xl bg-slate-50">
                     <Clock size={26} className="text-slate-300" />
                   </span>
-                  <p className="text-[13px] font-semibold text-[#14142b]">No versions yet</p>
+                  <p className="text-[13px] font-semibold text-ink">No versions yet</p>
                   <p className="max-w-[220px] text-[11px] leading-relaxed text-slate-400">
                     Snapshots save automatically as content is edited.
                   </p>
@@ -321,13 +321,13 @@ export function VersionHistoryPanel({
                         onClick={() => onSelectVersion(v)}
                         className={`flex w-full items-start gap-3 rounded-2xl border px-3.5 py-3 text-left transition-all ${
                           isActive
-                            ? "border-[#14142b]/20 bg-[#14142b]/[0.04] shadow-[0_4px_12px_rgba(20,20,43,0.06)]"
+                            ? "border-ink/20 bg-ink/[0.04] shadow-[0_4px_12px_rgba(20,20,43,0.06)]"
                             : "border-transparent hover:border-slate-100 hover:bg-slate-50"
                         }`}
                       >
                         <span
                           className={`mt-0.5 grid size-8 shrink-0 place-items-center rounded-xl ${
-                            isActive ? "bg-[#14142b] text-white" : "bg-slate-100 text-slate-500"
+                            isActive ? "bg-ink text-on-ink" : "bg-slate-100 text-slate-500"
                           }`}
                         >
                           <Icon size={14} />
@@ -337,7 +337,7 @@ export function VersionHistoryPanel({
                             <span
                               className={`truncate text-[13px] ${
                                 isActive
-                                  ? "font-bold text-[#14142b]"
+                                  ? "font-bold text-ink"
                                   : "font-semibold text-slate-800"
                               }`}
                             >
@@ -371,13 +371,13 @@ export function VersionHistoryPanel({
 
         {/* Preview + restore floating side-panel */}
         {selected && (!isSuView || tab === "log") && (
-          <div className="absolute right-[calc(100%+16px)] top-0 bottom-16 z-50 flex w-[440px] flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/95 shadow-2xl backdrop-blur-xl">
+          <div className="absolute right-[calc(100%+16px)] top-0 bottom-16 z-50 flex w-[440px] flex-col overflow-hidden rounded-3xl border border-white/40 bg-surface/95 shadow-2xl backdrop-blur-xl">
             <div className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/50 px-5 py-4">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Preview
                 </p>
-                <p className="text-[13px] font-semibold text-[#14142b]">
+                <p className="text-[13px] font-semibold text-ink">
                   {formatAbsolute(selected.createdAt)}
                 </p>
               </div>
@@ -386,7 +386,7 @@ export function VersionHistoryPanel({
                   type="button"
                   onClick={handleRestore}
                   disabled={restoring || !previewDoc}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-4 py-2 text-[12px] font-semibold text-white shadow-sm transition-all hover:bg-[#232735] hover:shadow-md disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-on-ink shadow-sm transition-all hover:bg-ink-hover hover:shadow-md disabled:opacity-50"
                 >
                   {restoring ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -397,7 +397,7 @@ export function VersionHistoryPanel({
                 </button>
               )}
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto bg-white px-6 py-6">
+            <div className="min-h-0 flex-1 overflow-y-auto bg-surface px-6 py-6">
               {previewLoading ? (
                 <div className="flex h-full items-center justify-center text-slate-400">
                   <Loader2 size={24} className="animate-spin" />
@@ -423,17 +423,17 @@ export function VersionHistoryPanel({
 
   return (
     <div className="fixed inset-0 z-40 flex justify-end">
-      <div className="absolute inset-0 bg-[#14142b]/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={onClose} />
 
-      <aside className="relative flex h-full w-full max-w-[420px] flex-col border-l border-slate-200/80 bg-white shadow-[0_0_56px_rgba(20,20,43,0.2)]">
+      <aside className="relative flex h-full w-full max-w-[420px] flex-col border-l border-slate-200/80 bg-surface shadow-[0_0_56px_rgba(20,20,43,0.2)]">
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-4">
           <div className="flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-2xl bg-[#14142b] text-white shadow-[0_8px_16px_rgba(20,20,43,0.18)]">
+            <span className="grid size-10 place-items-center rounded-2xl bg-ink text-on-ink shadow-[0_8px_16px_rgba(20,20,43,0.18)]">
               <History size={17} />
             </span>
             <div>
-              <h2 className="text-[15px] font-bold tracking-tight text-[#14142b]">
+              <h2 className="text-[15px] font-bold tracking-tight text-ink">
                 {isSuView ? "History" : "Version history"}
               </h2>
               <p className="text-[11px] font-medium text-slate-400">
@@ -444,7 +444,7 @@ export function VersionHistoryPanel({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink"
           >
             <X size={18} />
           </button>

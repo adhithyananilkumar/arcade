@@ -28,7 +28,7 @@ export function ExamMarkingWorkspace({ examId }: { examId: string }) {
     load();
   }, [load]);
 
-  if (error) return <p className="text-sm text-rose-600">Failed to load the marking queue.</p>;
+  if (error) return <p className="text-sm text-rose-600 dark:text-rose-400">Failed to load the marking queue.</p>;
   if (queue === null) {
     return (
       <div className="flex justify-center py-12">
@@ -38,9 +38,9 @@ export function ExamMarkingWorkspace({ examId }: { examId: string }) {
   }
   if (queue.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-14 text-center">
+      <div className="rounded-2xl border border-dashed border-slate-200 bg-surface px-6 py-14 text-center">
         <PenLine className="mx-auto mb-2 text-slate-300" size={24} />
-        <p className="text-sm font-semibold text-[#14142b]">Nothing to mark</p>
+        <p className="text-sm font-semibold text-ink">Nothing to mark</p>
         <p className="mt-1 text-xs text-slate-500">Written answers appear here after a learner submits.</p>
       </div>
     );
@@ -49,16 +49,16 @@ export function ExamMarkingWorkspace({ examId }: { examId: string }) {
   return (
     <div className="flex flex-col gap-4">
       {queue.map((item) => (
-        <section key={item.attemptId} className="rounded-2xl border border-slate-200 bg-white">
+        <section key={item.attemptId} className="rounded-2xl border border-slate-200 bg-surface">
           <header className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
             <div>
-              <p className="text-sm font-bold text-[#14142b]">{item.learnerName}</p>
+              <p className="text-sm font-bold text-ink">{item.learnerName}</p>
               <p className="text-[11px] text-slate-400">
                 Attempt {item.attemptNumber}
                 {item.submittedAt && ` · submitted ${new Date(item.submittedAt).toLocaleString()}`}
               </p>
             </div>
-            <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-bold text-amber-700">
+            <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-bold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
               {item.questions.filter((q) => q.awardedMarks === null).length} to mark
             </span>
           </header>
@@ -106,7 +106,7 @@ function MarkRow({
 
   return (
     <div className="grid gap-4 px-5 py-4 lg:grid-cols-[1fr_1fr_220px]">
-      <div className="min-w-0 text-[13px] text-[#14142b]">
+      <div className="min-w-0 text-[13px] text-ink">
         <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">Question {question.position + 1}</p>
         <TiptapContentView body={typeof question.prompt === "string" ? question.prompt : JSON.stringify(question.prompt)} emptyMessage="" />
         {question.sampleAnswer && (
@@ -130,7 +130,7 @@ function MarkRow({
             step="0.5"
             value={marks}
             onChange={(e) => setMarks(e.target.value)}
-            className="w-20 rounded-lg border border-slate-200 px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-indigo-300"
+            className="w-20 rounded-lg border border-slate-200 px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-indigo-300 dark:focus:border-indigo-500/40"
           />
           / {question.points}
         </label>
@@ -139,13 +139,13 @@ function MarkRow({
           onChange={(e) => setNote(e.target.value)}
           rows={2}
           placeholder="Feedback (optional)"
-          className="rounded-lg border border-slate-200 px-2 py-1.5 text-xs outline-none focus:border-indigo-300"
+          className="rounded-lg border border-slate-200 px-2 py-1.5 text-xs outline-none focus:border-indigo-300 dark:focus:border-indigo-500/40"
         />
         <button
           type="button"
           onClick={save}
           disabled={saving}
-          className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#14142b] px-3 py-1.5 text-xs font-bold text-white hover:bg-black disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-xs font-bold text-on-ink hover:bg-ink-hover disabled:opacity-50"
         >
           {saving ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
           {question.awardedMarks === null ? "Save mark" : "Update mark"}

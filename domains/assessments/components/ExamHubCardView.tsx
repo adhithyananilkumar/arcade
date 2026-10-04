@@ -56,7 +56,7 @@ export function ExamHubCardView({ card, onOpen, onViewGrades, hideTypeAndFeeBadg
             {card.certification ? "Certification" : "Exam"}
           </span>
 
-          <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700">
+          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-600 border border-slate-200/60">
             {card.feeMinor > 0 ? formatMoney(card.feeMinor, card.currency ?? "INR") : "Free"}
           </span>
         </div>
@@ -81,8 +81,8 @@ export function ExamHubCardView({ card, onOpen, onViewGrades, hideTypeAndFeeBadg
       )}
 
       {window && (
-        <p className="flex items-center gap-1.5 pt-0.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-          <CalendarClock size={12} className="shrink-0 text-slate-400 dark:text-slate-500" />
+        <p className="flex items-center gap-1.5 pt-0.5 text-[11px] font-semibold text-slate-500">
+          <CalendarClock size={12} className="shrink-0 text-slate-400" />
           {window}
         </p>
       )}
@@ -101,7 +101,7 @@ export function ExamHubCardView({ card, onOpen, onViewGrades, hideTypeAndFeeBadg
       <button
         type="button"
         onClick={onViewGrades}
-        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 px-3 py-2.5 text-[12.5px] font-semibold transition-all"
+        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-slate-100 hover:bg-slate-200 text-slate-800 px-3 py-2.5 text-[12.5px] font-semibold transition-all"
       >
         <Award size={13} />
         <span>Grades</span>
@@ -109,7 +109,7 @@ export function ExamHubCardView({ card, onOpen, onViewGrades, hideTypeAndFeeBadg
       <button
         type="button"
         onClick={onOpen}
-        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] hover:bg-[#232735] text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 px-3 py-2.5 text-[12.5px] font-semibold transition-all shadow-sm hover:shadow-md"
+        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-ink hover:bg-ink-hover text-on-ink px-3 py-2.5 text-[12.5px] font-semibold transition-all shadow-sm hover:shadow-md"
       >
         <span>{actionLabel}</span>
         <ChevronRight size={13} />
@@ -133,7 +133,9 @@ export function ExamHubCardView({ card, onOpen, onViewGrades, hideTypeAndFeeBadg
         </span>
       }
       categoryId={card.categoryId}
-      authorName={card.channelName}
+      description={card.description}
+      channelName={card.channelName}
+      channelIconUrl={card.channelIconUrl}
       metaTags={metaTags}
       metadataBadges={metadataBadges}
       actionLabel={actionLabel}

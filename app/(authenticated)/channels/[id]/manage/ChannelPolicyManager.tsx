@@ -151,10 +151,10 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
   return (
     <div className={`space-y-6 ${hideHeader ? 'pt-0' : 'mt-8 pt-8 border-t border-slate-200/60'}`}>
       {!canManageRoles && (
-        <Card className="border-2 border-blue-400/90 bg-blue-50/30 shadow-2xs mb-8 rounded-none">
+        <Card className="border-2 border-blue-400/90 bg-blue-50/30 shadow-2xs mb-8 rounded-none dark:bg-blue-500/10">
           <CardHeader>
-            <h3 className="text-sm font-extrabold text-[#14142b] flex items-center gap-2">
-              <ShieldCheck className="text-blue-600" size={18} />
+            <h3 className="text-sm font-extrabold text-ink flex items-center gap-2">
+              <ShieldCheck className="text-blue-600 dark:text-blue-400" size={18} />
               Your Permissions
             </h3>
             <p className="text-xs font-medium text-slate-500">Here are the permissions you have been granted in this channel.</p>
@@ -178,8 +178,8 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
           {!hideHeader ? (
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h3 className="text-lg font-extrabold text-[#14142b] flex items-center gap-2.5">
-                  <span className="grid size-9 place-items-center rounded-2xl bg-blue-100/90 text-blue-700 border border-blue-200/60 shadow-2xs">
+                <h3 className="text-lg font-extrabold text-ink flex items-center gap-2.5">
+                  <span className="grid size-9 place-items-center rounded-2xl bg-blue-100/90 text-blue-700 border border-blue-200/60 shadow-2xs dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/25">
                     <Shield size={18} />
                   </span>
                   <span>Custom Roles</span>
@@ -191,7 +191,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
                   onClick={() => setIsModalOpen(true)}
                   disabled={isSuspended}
                   title={isSuspended ? 'Channel is suspended' : undefined}
-                  className="rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-5 py-2 text-xs font-extrabold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                  className="rounded-full bg-ink text-on-ink hover:bg-ink-hover px-5 py-2 text-xs font-extrabold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
                   <Plus size={16} /> Create Role
                 </Button>
@@ -204,7 +204,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
                   onClick={() => setIsModalOpen(true)}
                   disabled={isSuspended}
                   title={isSuspended ? 'Channel is suspended' : undefined}
-                  className="rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-5 py-2 text-xs font-extrabold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                  className="rounded-full bg-ink text-on-ink hover:bg-ink-hover px-5 py-2 text-xs font-extrabold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
                   <Plus size={16} /> Create Role
                 </Button>
@@ -214,10 +214,10 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
 
           {roles.length === 0 && (
             <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-12 text-center">
-              <div className="mb-3 grid size-12 place-items-center rounded-2xl bg-blue-50 text-blue-600 border border-blue-100/80">
+              <div className="mb-3 grid size-12 place-items-center rounded-2xl bg-blue-50 text-blue-600 border border-blue-100/80 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/25">
                 <Shield size={22} />
               </div>
-              <p className="text-sm font-extrabold text-[#14142b]">No policies yet</p>
+              <p className="text-sm font-extrabold text-ink">No policies yet</p>
               <p className="mt-1 max-w-sm text-xs font-medium text-slate-500">
                 A policy is a named bundle of channel permissions you grant to staff. Create one to start inviting your team.
               </p>
@@ -228,15 +228,15 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
             {roles.map((role) => (
               <div
                 key={role.id}
-                className="group relative flex flex-col justify-between rounded-none border-2 border-sky-400/90 bg-white p-5 sm:p-6 shadow-[0_4px_25px_rgba(20,20,43,0.06)] hover:shadow-lg hover:border-blue-600 transition-all duration-200"
+                className="group relative flex flex-col justify-between rounded-none border-2 border-sky-400/90 bg-surface p-5 sm:p-6 shadow-[0_4px_25px_rgba(20,20,43,0.06)] hover:shadow-lg hover:border-blue-600 transition-all duration-200"
               >
                 <div>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2.5">
-                      <span className="grid size-8 place-items-center rounded-xl bg-sky-50/90 text-sky-600 border border-sky-200/80 shadow-2xs">
+                      <span className="grid size-8 place-items-center rounded-xl bg-sky-50/90 text-sky-600 border border-sky-200/80 shadow-2xs dark:bg-sky-500/10 dark:text-sky-400 dark:border-sky-500/25">
                         <ShieldCheck size={16} />
                       </span>
-                      <h4 className="font-extrabold text-[#14142b] text-base leading-tight">
+                      <h4 className="font-extrabold text-ink text-base leading-tight">
                         {role.displayName}
                       </h4>
                     </div>
@@ -249,7 +249,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
                           onClick={() => startEditRole(role)}
                           disabled={isSuspended}
                           title={isSuspended ? 'Channel is suspended' : 'Edit Role'}
-                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors"
+                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors dark:hover:text-sky-400 dark:hover:bg-sky-500/10"
                         >
                           <Edit3 size={15} />
                         </Button>
@@ -259,7 +259,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
                           onClick={() => handleDeletePolicy(role.id)}
                           disabled={isSuspended}
                           title={isSuspended ? 'Channel is suspended' : 'Delete Role'}
-                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors dark:hover:text-rose-400 dark:hover:bg-rose-500/10"
                         >
                           <Trash2 size={15} />
                         </Button>
@@ -281,7 +281,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
                       <Badge
                         key={p.id}
                         variant="outline"
-                        className="inline-flex items-center gap-1 text-[11px] font-extrabold text-sky-700 border-sky-200/90 bg-sky-50/90 px-3 py-1 rounded-full shadow-2xs"
+                        className="inline-flex items-center gap-1 text-[11px] font-extrabold text-sky-700 border-sky-200/90 bg-sky-50/90 px-3 py-1 rounded-full shadow-2xs dark:text-sky-300 dark:border-sky-500/25 dark:bg-sky-500/10"
                       >
                         <ShieldCheck size={12} className="text-sky-500 shrink-0" />
                         <span>{formatPermissionKey(p.code)}</span>
@@ -300,7 +300,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
 
       {isModalOpen && mounted && createPortal(
         <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 sm:p-6 overflow-hidden">
-          <div className="w-full max-w-4xl max-h-[88vh] rounded-3xl overflow-hidden shadow-2xl border border-slate-200/80 bg-white flex flex-col">
+          <div className="w-full max-w-4xl max-h-[88vh] rounded-3xl overflow-hidden shadow-2xl border border-slate-200/80 bg-surface flex flex-col">
             <PolicyEditor
               scope="CHANNEL"
               resourceId={channelId}

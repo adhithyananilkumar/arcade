@@ -29,7 +29,7 @@ export function Panel({
         'rounded-[20px] border',
         tone === 'danger'
           ? 'border-rose-200 bg-rose-50/40 dark:border-rose-900/60 dark:bg-rose-950/20'
-          : 'border-slate-200/80 bg-white dark:border-neutral-800 dark:bg-neutral-950',
+          : 'border-slate-200/80 bg-surface',
         padded && 'p-5 sm:p-6',
         className,
       )}

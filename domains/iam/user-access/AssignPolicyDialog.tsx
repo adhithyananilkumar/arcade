@@ -68,7 +68,7 @@ export function AssignPolicyDialog({
   return (
     <div className="fixed inset-0 z-[60] flex items-start justify-center bg-black/50 p-4 pt-[10vh]" onClick={onClose}>
       <div
-        className="w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[75vh]"
+        className="w-full max-w-md rounded-2xl bg-surface shadow-2xl overflow-hidden flex flex-col max-h-[75vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {!selected ? (
@@ -89,7 +89,7 @@ export function AssignPolicyDialog({
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search policies…"
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-sm font-medium focus:border-[#14142b]/30 focus:bg-white focus:ring-1 focus:ring-slate-300 outline-none"
+                  className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-sm font-medium focus:border-ink/30 focus:bg-surface focus:ring-1 focus:ring-slate-300 outline-none"
                 />
               </div>
             </div>
@@ -179,7 +179,7 @@ export function AssignPolicyDialog({
                 type="button"
                 onClick={handleConfirm}
                 disabled={busy}
-                className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#14142b] rounded-xl hover:bg-[#232735] transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-on-ink bg-ink rounded-xl hover:bg-ink-hover transition-colors disabled:opacity-50"
               >
                 {busy && <Loader2 size={12} className="animate-spin" />}
                 Assign Policy

@@ -4,64 +4,28 @@ export interface Metric {
   value: string | number;
 }
 
-const CARD_THEMES = [
-  {
-    border: "border-[1.5px] border-blue-400/80",
-    shadow: "shadow-[4px_-4px_0px_0px_#BFDBFE]",
-    hoverShadow: "hover:shadow-[6px_-6px_0px_0px_#93C5FD]",
-    bg: "bg-gradient-to-b from-blue-50/40 via-white to-white",
-    subTag: "text-blue-600",
-    valueText: "text-blue-950",
-  },
-  {
-    border: "border-[1.5px] border-indigo-400/80",
-    shadow: "shadow-[4px_-4px_0px_0px_#C7D2FE]",
-    hoverShadow: "hover:shadow-[6px_-6px_0px_0px_#A5B4FC]",
-    bg: "bg-gradient-to-b from-indigo-50/40 via-white to-white",
-    subTag: "text-indigo-600",
-    valueText: "text-indigo-950",
-  },
-  {
-    border: "border-[1.5px] border-emerald-400/80",
-    shadow: "shadow-[4px_-4px_0px_0px_#A7F3D0]",
-    hoverShadow: "hover:shadow-[6px_-6px_0px_0px_#6EE7B7]",
-    bg: "bg-gradient-to-b from-emerald-50/40 via-white to-white",
-    subTag: "text-emerald-600",
-    valueText: "text-teal-950",
-  },
-  {
-    border: "border-[1.5px] border-purple-400/80",
-    shadow: "shadow-[4px_-4px_0px_0px_#E9D5FF]",
-    hoverShadow: "hover:shadow-[6px_-6px_0px_0px_#C084FC]",
-    bg: "bg-gradient-to-b from-purple-50/40 via-white to-white",
-    subTag: "text-purple-600",
-    valueText: "text-purple-950",
-  },
-];
-
 export function MetricsGrid({ metrics }: { metrics: Metric[] }) {
   if (metrics.length === 0) return null;
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 py-2">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 py-2">
       {metrics.map((metric, idx) => {
-        const theme = CARD_THEMES[idx % CARD_THEMES.length];
         const numStr = String(idx + 1).padStart(2, "0");
         return (
           <div
             key={metric.label}
-            className={`flex flex-col justify-between p-6 min-h-[170px] rounded-[24px] ${theme.border} ${theme.bg} ${theme.shadow}`}
+            className="flex flex-col justify-between p-6 min-h-[160px] rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-md"
           >
             <div className="flex flex-col gap-1 min-w-0">
-              <span className={`font-mono text-[11px] font-black tracking-wider uppercase ${theme.subTag}`}>
+              <span className="font-mono text-[11px] font-bold tracking-wider uppercase text-[#205ca8] dark:text-blue-400">
                 {numStr} // {metric.label}
               </span>
               {metric.sublabel && (
-                <span className="text-xs font-semibold text-slate-500">
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                   {metric.sublabel}
                 </span>
               )}
             </div>
-            <div className={`text-4xl sm:text-5xl font-black tracking-tighter pt-4 ${theme.valueText}`}>
+            <div className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[#0B132B] dark:text-white pt-3">
               {metric.value}
             </div>
           </div>

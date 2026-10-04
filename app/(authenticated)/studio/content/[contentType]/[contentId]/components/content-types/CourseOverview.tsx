@@ -16,6 +16,8 @@ export function getCourseMetrics(_data: OverviewData): Metric[] {
   ];
 }
 
+import { CoursePricingEditor, SettingsHeaderBanner } from "../sections/LearnersAnalyticsSection";
+
 export function CourseOverviewTab({
   tab,
   data,
@@ -33,11 +35,12 @@ export function CourseOverviewTab({
   onSubmit: () => void;
   submitting: boolean;
 }) {
+  const collaborators = data.collaborators.status === "ok" ? data.collaborators.data : undefined;
+  const canManage =
+    data.content?.authorId === currentUserId ||
+    !!collaborators?.some((c) => c.userId === currentUserId && (c.role === "OWNER" || c.role === "MANAGER"));
+
   if (tab === "people") {
-    const collaborators = data.collaborators.status === "ok" ? data.collaborators.data : undefined;
-    const canManage =
-      data.content?.authorId === currentUserId ||
-      !!collaborators?.some((c) => c.userId === currentUserId && (c.role === "OWNER" || c.role === "MANAGER"));
     return (
       <CollaboratorsSection
         segment="course"
@@ -58,6 +61,15 @@ export function CourseOverviewTab({
           readOnly={data.content?.status === "SUBMITTED"}
         />
         <BadgeTierPanel contentType="COURSE" contentId={contentId} />
+        <CoursePricingEditor contentId={contentId} />
+        <CollaboratorsSection
+          segment="course"
+          contentId={contentId}
+          collaborators={collaborators}
+          unavailable={data.collaborators.status === "error"}
+          canManage={canManage}
+          onChanged={onChanged}
+        />
       </div>
     );
   }

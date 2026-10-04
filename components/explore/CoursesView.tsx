@@ -6,9 +6,10 @@ import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
-import { getCourseAttribution, type AttributableCourse } from "./courseAttribution";
+import { getCourseChannel, type AttributableCourse, type CardChannel } from "./courseAttribution";
 import ExploreEmptyState from "./ExploreEmptyState";
 import { UnifiedContentCard } from "@/shared/design-system/ui/cards";
+import { ContentCardsGridSkeleton } from "./ContentCardsGridSkeleton";
 
 function hexToRgbStr(hex: string): string {
   hex = hex.replace(/^#/, "");
@@ -63,11 +64,7 @@ interface EnrichedCourse {
   rating: number;
   reviewsCount: number;
   categoryTag: string;
-  instructor: {
-    name: string;
-    role: string;
-    avatarUrl: string;
-  };
+  channel: CardChannel | null;
 }
 
 function getEnrichedCourse(course: { title: string; duration: string; level: string; desc: string; category?: string } & AttributableCourse, index: number, categoryName: string): EnrichedCourse {
@@ -103,14 +100,14 @@ function getEnrichedCourse(course: { title: string; duration: string; level: str
     categoryTag = course.category || "General";
   }
 
-  const instructor = getCourseAttribution(course as AttributableCourse);
+  const channel = getCourseChannel(course as AttributableCourse);
 
   return {
     ...course,
     rating,
     reviewsCount,
     categoryTag,
-    instructor
+    channel
   };
 }
 
@@ -413,11 +410,11 @@ const FilterPillButton: React.FC<FilterPillButtonProps> = ({
         gap: "8px",
         padding: "8px 16px",
         borderRadius: "10px",
-        border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1.5px solid rgba(20, 23, 31, 0.06)",
-        background: isActive ? activeData.colors.secondary : "rgba(255, 255, 255, 0.65)",
+        border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1.5px solid var(--theme-n-900, rgba(20, 23, 31, 0.06))",
+        background: isActive ? activeData.colors.secondary : "var(--theme-surface, rgba(255, 255, 255, 0.65))",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
-        color: isActive ? activeData.colors.primary : "#5E606A",
+        color: isActive ? activeData.colors.primary : "var(--theme-n-600, #5E606A)",
         fontSize: "0.82rem",
         fontWeight: "700",
         cursor: "pointer",
@@ -528,18 +525,17 @@ export const CourseCard: React.FC<CourseCardProps> = ({
       type="COURSE"
       typeLabel={enriched.categoryTag || 'Course'}
       category={course.category || activeCategoryName}
-      authorName={enriched.instructor?.name}
-      authorSubtitle={enriched.instructor?.role}
-      authorAvatarUrl={enriched.instructor?.avatarUrl}
+      channelName={enriched.channel?.name}
+      channelIconUrl={enriched.channel?.iconUrl}
       metaTags={[
         course.duration ? course.duration : null,
         course.level ? course.level : null,
       ].filter(Boolean)}
       metadataBadges={
         realReviewsCount > 0 ? (
-          <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-500">
             <span className="text-amber-500">★</span>
-            <span className="font-bold text-slate-800 dark:text-slate-200">{realRating.toFixed(1)}</span>
+            <span className="font-bold text-slate-800">{realRating.toFixed(1)}</span>
             <span className="text-slate-400">({realReviewsCount} {realReviewsCount === 1 ? 'Review' : 'Reviews'})</span>
           </div>
         ) : null
@@ -558,6 +554,7 @@ interface CoursesViewProps {
   courseSearchQuery: string;
   setCourseSearchQuery: (q: string) => void;
   courseStats: Record<string, { averageRating: number; reviewsCount: number }>;
+  isLoading?: boolean;
 }
 
 export default function CoursesView({
@@ -567,7 +564,8 @@ export default function CoursesView({
   isEmbeddedHub,
   courseSearchQuery,
   setCourseSearchQuery,
-  courseStats
+  courseStats,
+  isLoading = false
 }: CoursesViewProps) {
   const coursesSectionRef = useRef<HTMLDivElement>(null);
   const filtersGridRef = useRef<HTMLDivElement>(null);
@@ -631,7 +629,7 @@ export default function CoursesView({
           </h2>
         </div>
         {sortedCourses.length > 0 && (
-          <span style={{ fontSize: "0.82rem", fontWeight: "600", color: "#6B7280" }}>
+          <span style={{ fontSize: "0.82rem", fontWeight: "600", color: "var(--theme-n-500, #6B7280)" }}>
             {sortedCourses.length} {sortedCourses.length === 1 ? "course available" : "courses available"}
           </span>
         )}
@@ -647,11 +645,11 @@ export default function CoursesView({
           flexWrap: "wrap",
           marginBottom: "28px",
           padding: "10px 16px",
-          background: "rgba(255, 255, 255, 0.75)",
+          background: "var(--theme-surface, rgba(255, 255, 255, 0.75))",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
           borderRadius: "14px",
-          border: "1px solid rgba(20, 23, 31, 0.08)",
+          border: "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.02)"
         }}
       >
@@ -664,7 +662,7 @@ export default function CoursesView({
               gap: "6px",
               fontSize: "0.82rem",
               fontWeight: "800",
-              color: "#4B5563",
+              color: "var(--theme-n-600, #4B5563)",
               textTransform: "uppercase",
               letterSpacing: "0.04em",
               paddingRight: "4px"
@@ -688,9 +686,9 @@ export default function CoursesView({
                     borderRadius: "8px",
                     fontSize: "0.82rem",
                     fontWeight: isActive ? "700" : "600",
-                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid rgba(20, 23, 31, 0.08)",
-                    background: isActive ? `${activeData.colors.primary}18` : "#FFFFFF",
-                    color: isActive ? activeData.colors.primary : "#4B5563",
+                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
+                    background: isActive ? `${activeData.colors.primary}18` : "var(--theme-surface, #FFFFFF)",
+                    color: isActive ? activeData.colors.primary : "var(--theme-n-600, #4B5563)",
                     cursor: "pointer",
                     transition: "all 0.2s ease"
                   }}
@@ -711,7 +709,7 @@ export default function CoursesView({
               gap: "6px",
               fontSize: "0.82rem",
               fontWeight: "800",
-              color: "#4B5563",
+              color: "var(--theme-n-600, #4B5563)",
               textTransform: "uppercase",
               letterSpacing: "0.04em"
             }}
@@ -740,9 +738,9 @@ export default function CoursesView({
                     borderRadius: "8px",
                     fontSize: "0.82rem",
                     fontWeight: isActive ? "700" : "600",
-                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid rgba(20, 23, 31, 0.08)",
-                    background: isActive ? `${activeData.colors.primary}18` : "#FFFFFF",
-                    color: isActive ? activeData.colors.primary : "#4B5563",
+                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
+                    background: isActive ? `${activeData.colors.primary}18` : "var(--theme-surface, #FFFFFF)",
+                    color: isActive ? activeData.colors.primary : "var(--theme-n-600, #4B5563)",
                     cursor: "pointer",
                     transition: "all 0.2s ease"
                   }}
@@ -755,7 +753,9 @@ export default function CoursesView({
         </div>
       </div>
 
-      {sortedCourses.length === 0 ? (
+      {isLoading ? (
+        <ContentCardsGridSkeleton count={6} />
+      ) : sortedCourses.length === 0 ? (
         <ExploreEmptyState
           title={courseSearchQuery.trim() ? "No matching courses found" : "No courses found"}
           description={
@@ -774,7 +774,7 @@ export default function CoursesView({
           accentColor={activeData.colors.primary}
         />
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
           {sortedCourses.map((course: any, index: number) => {
             const stats = courseStats[course.id] || { averageRating: 0.0, reviewsCount: 0 };
             return (

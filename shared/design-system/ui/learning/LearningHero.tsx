@@ -123,7 +123,7 @@ export function LearningHero({
         {/* Left — editorial copy */}
         <div>
         {category && (
-          <span className="inline-block px-3.5 py-1 bg-[#4c6fff]/10 text-[#4c6fff] text-xs font-bold uppercase tracking-wider rounded-full mb-3">
+          <span className="inline-block px-3.5 py-1 bg-[#4c6fff]/10 text-[#4c6fff] text-xs font-bold uppercase tracking-wider rounded-full mb-3 dark:text-[#8db1ff]">
             {category}
           </span>
         )}
@@ -132,7 +132,7 @@ export function LearningHero({
           style={{ fontFamily: '"Clash Display", var(--font-sora), sans-serif', fontWeight: 700 }}
         >
           {firstPart}{" "}
-          <span className="relative whitespace-nowrap italic text-[#4c6fff]">
+          <span className="relative whitespace-nowrap italic text-[#4c6fff] dark:text-[#8db1ff]">
             {lastWord}
             <FlowerMark
               size={26}
@@ -278,7 +278,7 @@ export function LearningHero({
           style={{ background: accentColor }}
           aria-hidden="true"
         />
-        <div className="relative rounded-3xl bg-[#14142b] p-3.5 shadow-[0_28px_60px_rgba(20,22,28,0.28)]">
+        <div className="relative rounded-3xl bg-ink p-3.5 shadow-[0_28px_60px_rgba(20,22,28,0.28)]">
           <div className="mb-3 flex items-center justify-between px-1">
             <div className="flex items-center gap-2.5">
               <span 
@@ -302,7 +302,7 @@ export function LearningHero({
             </div>
           </div>
 
-          <div className="relative grid h-56 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#1d2130] to-[#262a38]">
+          <div className="relative grid h-56 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 to-slate-800">
             {previewImageUrl ? (
               <img
                 src={previewImageUrl}

@@ -20,17 +20,17 @@ export default function IamPage() {
   return (
     <div className="flex w-full flex-col h-full space-y-5 pb-6">
       <div className="flex-none space-y-0.5">
-        <h1 className="text-lg font-bold text-[#14142b]">IAM</h1>
+        <h1 className="text-lg font-bold text-ink">IAM</h1>
         <p className="text-sm text-gray-500">Manage who can access Arcade Platform operations.</p>
       </div>
-      <div className="flex-none sticky top-0 z-20 flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-white/80 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
+      <div className="flex-none sticky top-0 z-20 flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-surface/80 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
         <button
           type="button"
           onClick={() => setActiveTab('USERS')}
           className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all ${
             activeTab === 'USERS'
-              ? 'bg-[#14142b] text-white shadow-sm'
-              : 'text-slate-500 hover:bg-slate-50 hover:text-[#14142b]'
+              ? 'bg-ink text-on-ink shadow-sm'
+              : 'text-slate-500 hover:bg-slate-50 hover:text-ink'
           }`}
         >
           <Users size={14} />
@@ -41,8 +41,8 @@ export default function IamPage() {
           onClick={() => setActiveTab('POLICIES')}
           className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all ${
             activeTab === 'POLICIES'
-              ? 'bg-[#14142b] text-white shadow-sm'
-              : 'text-slate-500 hover:bg-slate-50 hover:text-[#14142b]'
+              ? 'bg-ink text-on-ink shadow-sm'
+              : 'text-slate-500 hover:bg-slate-50 hover:text-ink'
           }`}
         >
           <Shield size={14} />

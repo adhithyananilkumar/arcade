@@ -25,7 +25,7 @@ export function ArcadeScene({
           fontSize: 9.5,
           letterSpacing: "0.22em",
           textTransform: "uppercase",
-          color: "#b8b8b8",
+          color: "var(--theme-n-400, #b8b8b8)",
           fontFamily:
             "var(--font-geist-sans), system-ui, -apple-system, sans-serif",
           fontWeight: 400,

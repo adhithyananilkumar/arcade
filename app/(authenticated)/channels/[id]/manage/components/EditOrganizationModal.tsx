@@ -169,12 +169,12 @@ export function EditOrganizationModal({
             initial={{ opacity: 0, scale: 0.95, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
-            className="relative z-10 w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-2xl"
+            className="relative z-10 w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200/80 bg-surface shadow-2xl"
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
               <div>
-                <h2 className="text-lg font-black tracking-tight text-[#14142b]">
+                <h2 className="text-lg font-black tracking-tight text-ink">
                   Edit Organization Profile
                 </h2>
                 <p className="text-xs font-semibold text-slate-500">
@@ -203,7 +203,7 @@ export function EditOrganizationModal({
                     <button
                       type="button"
                       onClick={handleRemoveBanner}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:underline dark:text-rose-400"
                     >
                       <Trash2 size={13} />
                       <span>Remove Banner</span>
@@ -215,8 +215,8 @@ export function EditOrganizationModal({
                   <ChannelDoodleBanner bannerUrl={bannerPreview} className="w-full aspect-[4/1]" />
 
                   <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-xs">
-                    <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-xs font-extrabold text-slate-800 shadow-md hover:bg-slate-50 transition-all">
-                      <Upload size={14} className="text-indigo-600" />
+                    <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-surface px-4 py-2 text-xs font-extrabold text-slate-800 shadow-md hover:bg-slate-50 transition-all">
+                      <Upload size={14} className="text-indigo-600 dark:text-indigo-400" />
                       <span>Upload & Crop Banner</span>
                       <input
                         type="file"
@@ -231,7 +231,9 @@ export function EditOrganizationModal({
 
               {/* 2. Logo Avatar & Channel Name Section */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:items-center">
-                {/* Logo Crop Preview */}
+                {/* Logo Crop Preview — organizations only. A personal channel's picture is always
+                    its owner's profile picture, so it has no logo to upload. */}
+                {!channel.isPersonal && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
@@ -241,7 +243,7 @@ export function EditOrganizationModal({
                       <button
                         type="button"
                         onClick={handleRemoveLogo}
-                        className="text-[11px] font-bold text-rose-600 hover:underline"
+                        className="text-[11px] font-bold text-rose-600 hover:underline dark:text-rose-400"
                       >
                         Remove
                       </button>
@@ -300,8 +302,8 @@ export function EditOrganizationModal({
                     )}
 
                     <div className="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <label className="cursor-pointer p-2 rounded-full bg-white text-slate-800 shadow-md">
-                        <Upload size={16} className="text-indigo-600" />
+                      <label className="cursor-pointer p-2 rounded-full bg-surface text-slate-800 shadow-md">
+                        <Upload size={16} className="text-indigo-600 dark:text-indigo-400" />
                         <input
                           type="file"
                           accept="image/*"
@@ -312,9 +314,10 @@ export function EditOrganizationModal({
                     </div>
                   </div>
                 </div>
+                )}
 
                 {/* Name Input */}
-                <div className="sm:col-span-2 space-y-2">
+                <div className={`${channel.isPersonal ? 'sm:col-span-3' : 'sm:col-span-2'} space-y-2`}>
                   <label className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
                     Organization Channel Name
                   </label>
@@ -326,7 +329,7 @@ export function EditOrganizationModal({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Arcade AI Research Institute"
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-2.5 text-xs font-semibold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-2.5 text-xs font-semibold text-slate-800 focus:border-indigo-500 focus:bg-surface focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                   />
                 </div>
               </div>
@@ -342,7 +345,7 @@ export function EditOrganizationModal({
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe your organization's mission, courses, faculty, and learning goals..."
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 text-xs font-semibold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 text-xs font-semibold text-slate-800 focus:border-indigo-500 focus:bg-surface focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
                 />
               </div>
 
@@ -351,7 +354,7 @@ export function EditOrganizationModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                  className="rounded-2xl border border-slate-200 bg-surface px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
                 >
                   Cancel
                 </button>
@@ -359,7 +362,7 @@ export function EditOrganizationModal({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-[#14142b] px-6 py-2.5 text-xs font-extrabold text-white shadow-md hover:bg-indigo-950 transition-all active:scale-[0.98] disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-ink px-6 py-2.5 text-xs font-extrabold text-on-ink shadow-md hover:bg-indigo-950 transition-all active:scale-[0.98] disabled:opacity-60"
                 >
                   {loading ? (
                     <>

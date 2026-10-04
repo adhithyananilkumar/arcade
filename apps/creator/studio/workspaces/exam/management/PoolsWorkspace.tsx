@@ -197,7 +197,7 @@ export function PoolsWorkspace({
             <button
               type="button"
               onClick={onCreate}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-black"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink transition-colors hover:bg-ink-hover"
             >
               <Plus size={14} /> New pool
             </button>
@@ -210,7 +210,7 @@ export function PoolsWorkspace({
   return (
     <div className="flex flex-col gap-4">
       {/* ── Identity ────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-white/50 bg-white/70 p-5 shadow-sm backdrop-blur-md">
+      <div className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
         <label htmlFor="pool-title" className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">
           Pool name
         </label>
@@ -219,7 +219,7 @@ export function PoolsWorkspace({
           value={draft.title}
           disabled={readOnly}
           onChange={(e) => patch({ title: e.target.value })}
-          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#14142b] outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+          className="w-full rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/25"
         />
         <label htmlFor="pool-desc" className="mb-1.5 mt-4 block text-[11px] font-bold uppercase tracking-wider text-slate-400">
           Description <span className="font-medium normal-case text-slate-300">(optional)</span>
@@ -230,12 +230,12 @@ export function PoolsWorkspace({
           disabled={readOnly}
           onChange={(e) => patch({ description: e.target.value })}
           placeholder="What this pool is for"
-          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-[#14142b] outline-none placeholder:text-slate-300 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+          className="w-full rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-slate-300 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/25"
         />
       </div>
 
       {/* ── Mode ────────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-white/50 bg-white/70 p-5 shadow-sm backdrop-blur-md">
+      <div className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
         <span className="mb-3 block text-[11px] font-bold uppercase tracking-wider text-slate-400">
           How this pool picks questions
         </span>
@@ -250,12 +250,12 @@ export function PoolsWorkspace({
                 onClick={() => patch({ mode })}
                 className={`rounded-xl border p-3 text-left transition-all ${
                   on
-                    ? "border-indigo-300 bg-indigo-50/60 ring-1 ring-indigo-200"
-                    : "border-slate-200 bg-white hover:border-slate-300"
+                    ? "border-indigo-300 bg-indigo-50/60 ring-1 ring-indigo-200 dark:border-indigo-500/40 dark:bg-indigo-500/10 dark:ring-indigo-500/25"
+                    : "border-slate-200 bg-surface hover:border-slate-300"
                 }`}
               >
-                <span className="flex items-center gap-1.5 text-xs font-bold text-[#14142b]">
-                  {on && <Check size={13} className="text-indigo-600" />}
+                <span className="flex items-center gap-1.5 text-xs font-bold text-ink">
+                  {on && <Check size={13} className="text-indigo-600 dark:text-indigo-400" />}
                   {mode === "DYNAMIC" ? "Matches filters" : "Hand-picked"}
                 </span>
                 <span className="mt-1 block text-[11px] leading-relaxed text-slate-500">
@@ -271,7 +271,7 @@ export function PoolsWorkspace({
 
       {/* ── Filters ─────────────────────────────────────────────────────── */}
       {draft.mode === "DYNAMIC" && (
-        <div className="rounded-2xl border border-white/50 bg-white/70 p-5 shadow-sm backdrop-blur-md">
+        <div className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
           <span className="mb-4 block text-[11px] font-bold uppercase tracking-wider text-slate-400">
             Filters
           </span>
@@ -346,19 +346,19 @@ export function PoolsWorkspace({
       )}
 
       {/* ── Live match ──────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-indigo-200/70 bg-indigo-50/40 p-5 shadow-sm">
+      <div className="rounded-2xl border border-indigo-200/70 bg-indigo-50/40 p-5 shadow-sm dark:border-indigo-500/25 dark:bg-indigo-500/10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <span className="flex items-baseline gap-2">
-              <span className="text-2xl font-black tracking-tight text-[#14142b]">
+              <span className="text-2xl font-black tracking-tight text-ink">
                 {countLoading ? <Loader2 size={20} className="animate-spin text-indigo-500" /> : (matchCount ?? "—")}
               </span>
-              <span className="text-sm font-semibold text-[#14142b]/60">
+              <span className="text-sm font-semibold text-ink/60">
                 question{matchCount === 1 ? "" : "s"} match
               </span>
             </span>
             {matchCount === 0 && (
-              <p className="mt-1 text-[11px] font-medium text-amber-600">
+              <p className="mt-1 text-[11px] font-medium text-amber-600 dark:text-amber-400">
                 Nothing matches these filters yet — a plan drawing from this pool won&apos;t be able
                 to build a paper.
               </p>
@@ -368,7 +368,7 @@ export function PoolsWorkspace({
             <button
               type="button"
               onClick={() => setShowSample((v) => !v)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-white px-3 py-1.5 text-xs font-bold text-indigo-700 transition-colors hover:bg-indigo-50"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-surface px-3 py-1.5 text-xs font-bold text-indigo-700 transition-colors hover:bg-indigo-50 dark:border-indigo-500/25 dark:text-indigo-300 dark:hover:bg-indigo-500/10"
             >
               <Eye size={13} /> {showSample ? "Hide" : "View"} questions
             </button>
@@ -376,7 +376,7 @@ export function PoolsWorkspace({
         </div>
 
         {showSample && (
-          <ul className="mt-4 max-h-64 space-y-1 overflow-y-auto rounded-xl bg-white/80 p-2 arcade-scrollbar-mini">
+          <ul className="mt-4 max-h-64 space-y-1 overflow-y-auto rounded-xl bg-surface/80 p-2 arcade-scrollbar-mini">
             {sample.map((q) => (
               <li key={q.id} className="truncate rounded-lg px-2 py-1.5 text-xs text-slate-600 hover:bg-slate-50">
                 {promptToPlainText(q.prompt) || "Untitled question"}
@@ -397,7 +397,7 @@ export function PoolsWorkspace({
           <button
             type="button"
             onClick={remove}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-white px-3.5 py-2 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-surface px-3.5 py-2 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50 dark:border-rose-500/25 dark:text-rose-400 dark:hover:bg-rose-500/10"
           >
             <Trash2 size={13} /> Delete pool
           </button>
@@ -405,7 +405,7 @@ export function PoolsWorkspace({
             type="button"
             onClick={save}
             disabled={!dirty || saving}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-black disabled:opacity-40"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink transition-colors hover:bg-ink-hover disabled:opacity-40"
           >
             {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
             {dirty ? "Save changes" : "Saved"}
@@ -447,7 +447,7 @@ function Facet({
       className={`max-w-[200px] truncate rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors disabled:opacity-60 ${
         on
           ? "bg-indigo-600 text-white shadow-sm"
-          : "border border-slate-200 bg-white text-slate-500 hover:border-indigo-200 hover:text-indigo-700"
+          : "border border-slate-200 bg-surface text-slate-500 hover:border-indigo-200 hover:text-indigo-700 dark:hover:border-indigo-500/25 dark:hover:text-indigo-300"
       }`}
     >
       {children}

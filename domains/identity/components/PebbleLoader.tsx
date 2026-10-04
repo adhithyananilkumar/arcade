@@ -13,7 +13,7 @@ export function PebbleLoader({
   size?: 'sm' | 'md';
 }) {
   const reduce = useReducedMotion();
-  const color = tone === 'light' ? 'bg-white' : 'bg-[#14142b]';
+  const color = tone === 'light' ? 'bg-surface' : 'bg-ink';
   const dot = size === 'sm' ? 'h-1.5 w-1.5' : 'h-2.5 w-2.5';
   const bounce = size === 'sm' ? -6 : -10;
 

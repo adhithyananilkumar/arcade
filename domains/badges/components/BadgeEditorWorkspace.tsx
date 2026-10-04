@@ -10,7 +10,7 @@ import type { BadgeEditorState } from "../hooks/useBadgeEditor";
 const BadgeCanvas = dynamic(() => import("./BadgeCanvas").then((m) => m.BadgeCanvas), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full w-full items-center justify-center text-xs text-[#14142b]/40">Loading editor…</div>
+    <div className="flex h-full w-full items-center justify-center text-xs text-ink/40">Loading editor…</div>
   ),
 });
 
@@ -83,7 +83,7 @@ export function BadgeEditorWorkspace({ editor }: { editor: BadgeEditorState }) {
   if (!editor.doc) {
     return (
       <div className="flex h-full w-full items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#14142b]/15 border-t-[#14142b]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink/15 border-t-ink" />
       </div>
     );
   }
@@ -113,7 +113,7 @@ export function BadgeEditorWorkspace({ editor }: { editor: BadgeEditorState }) {
       </div>
 
       <div className="flex w-full flex-shrink-0 flex-col items-center gap-2 pb-2 pt-1">
-        <div className="h-4 text-[11px] text-[#14142b]/40">
+        <div className="h-4 text-[11px] text-ink/40">
           {!editor.readOnly && editor.saveState === "saving" && "Saving…"}
           {!editor.readOnly && editor.saveState === "saved" && "Saved"}
           {!editor.readOnly && editor.saveState === "error" && (

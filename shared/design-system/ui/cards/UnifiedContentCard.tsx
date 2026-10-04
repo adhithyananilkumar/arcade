@@ -8,12 +8,12 @@ import {
   GraduationCap,
   Map,
   FileText,
-  User,
   ArrowUpRight,
   LucideIcon,
 } from 'lucide-react';
 import { ContentArt } from '@/shared/design-system/art';
 import { cn } from '@/shared/utils/utils';
+import { ChannelAvatar } from './ChannelAvatar';
 
 export type UnifiedContentType =
   | 'COURSE'
@@ -38,10 +38,10 @@ export interface UnifiedContentCardProps {
   category?: string | null;
   /** Console category id, when the name isn't to hand. */
   categoryId?: string | null;
-  authorName?: string | null;
-  authorUsername?: string | null;
-  authorSubtitle?: string | null;
-  authorAvatarUrl?: string | null;
+  /** The publishing channel. A card credits its channel only — never a person or a role. */
+  channelName?: string | null;
+  /** The channel's picture; for a personal channel the backend sends its owner's. */
+  channelIconUrl?: string | null;
   dateText?: string | null;
   metaTags?: Array<string | React.ReactNode>;
   metadataBadges?: React.ReactNode;
@@ -77,10 +77,8 @@ export function UnifiedContentCard({
   statusNode,
   category,
   categoryId,
-  authorName,
-  authorUsername,
-  authorSubtitle,
-  authorAvatarUrl,
+  channelName,
+  channelIconUrl,
   dateText,
   metaTags,
   metadataBadges,
@@ -101,7 +99,7 @@ export function UnifiedContentCard({
   return (
     <div
       className={cn(
-        'group relative flex h-full flex-col justify-between overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white/95 p-4 sm:p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95',
+        'group relative flex h-full flex-col justify-between overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-4 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] backdrop-blur-sm',
         className
       )}
     >
@@ -111,90 +109,87 @@ export function UnifiedContentCard({
         className="pointer-events-none absolute -right-12 -bottom-12 h-44 w-44 rounded-full bg-gradient-to-br from-[#4C6FFF]/10 via-[#1DB876]/8 to-transparent blur-2xl"
       />
 
-      <div className="relative z-10 flex flex-1 flex-col justify-between gap-3 sm:gap-4">
-        {/* Generated, category-themed artwork (uploaded covers were removed platform-wide) */}
-        <div className="relative h-40 sm:h-44 w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 shadow-xs transition-transform duration-500 group-hover:scale-[1.02] dark:border-slate-800">
+      <div className="relative z-10 flex flex-1 flex-col justify-between gap-3">
+        {/* Generated, category-themed artwork */}
+        <div className="relative h-36 sm:h-38 w-full shrink-0 overflow-hidden rounded-tl-[1.5rem] rounded-br-[1.5rem] rounded-tr-md rounded-bl-md border border-slate-200/70 shadow-xs transition-transform duration-500 group-hover:scale-[1.02]">
           <ContentArt seed={id || title || 'default'} kind={type} category={category} categoryId={categoryId} title={title} />
+          {statusNode && (
+            <div className="absolute top-2.5 right-2.5 z-10">
+              {statusNode}
+            </div>
+          )}
         </div>
 
-        {/* Title, Description & Details */}
-        <div className="space-y-2 flex-1">
-          <h4 className="line-clamp-2 text-base font-bold tracking-tight text-[#14142b] transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400 leading-snug">
-            {title || 'Untitled'}
-          </h4>
+        {/* Card Content: Title, Description, Channel, Meta, Badges, Progress */}
+        <div className="flex flex-1 flex-col gap-2.5">
+          <div className="space-y-1">
+            <h4 className="line-clamp-2 text-[15px] font-bold tracking-tight text-ink transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400 leading-snug">
+              {title || 'Untitled'}
+            </h4>
 
-          {description && (
-            <p className="line-clamp-2 text-xs sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
-              {description}
-            </p>
-          )}
-
-          {authorName && (
-            <div className="flex items-center gap-2 pt-0.5">
-              {authorAvatarUrl ? (
-                <img
-                  src={authorAvatarUrl}
-                  alt={authorName}
-                  className="size-5 rounded-full object-cover border border-slate-200 dark:border-slate-700"
-                />
-              ) : (
-                <User size={12} className="text-slate-400 shrink-0" />
-              )}
-              <p className="truncate text-[11.5px] font-medium text-slate-500 dark:text-slate-400">
-                <span>{authorName}</span>
-                {authorUsername && <span className="text-slate-400"> (@{authorUsername})</span>}
-                {authorSubtitle && <span className="text-slate-400"> • {authorSubtitle}</span>}
+            {description ? (
+              <p className="line-clamp-2 text-xs font-medium text-slate-500 leading-relaxed">
+                {description}
               </p>
-            </div>
-          )}
+            ) : null}
+          </div>
 
-          {dateText && (
-            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
-              {dateText}
-            </p>
-          )}
-
-          {metaTags && metaTags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 pt-1 text-[11.5px] font-medium text-slate-500 dark:text-slate-400">
-              {metaTags.map((tag, idx) => (
-                <React.Fragment key={idx}>
-                  {idx > 0 && <span>·</span>}
-                  <span>{tag}</span>
-                </React.Fragment>
-              ))}
-            </div>
-          )}
-
-          {metadataBadges && (
-            <div className="flex flex-wrap items-center gap-1.5 pt-1">
-              {metadataBadges}
-            </div>
-          )}
-
-          {/* Optional Progress Bar */}
-          {typeof progressPercent === 'number' && (
-            <div className="space-y-1 pt-1.5">
-              <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                <span>Progress</span>
-                <span>{progressPercent}%</span>
+          <div className="flex flex-col gap-2 pt-0.5">
+            {/* The publishing channel */}
+            {channelName ? (
+              <div className="flex items-center gap-2">
+                <ChannelAvatar name={channelName} iconUrl={channelIconUrl} size={19} />
+                <p className="truncate text-[11.5px] font-semibold text-slate-600">
+                  {channelName}
+                </p>
               </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-300"
-                  style={{ width: `${Math.min(100, Math.max(0, progressPercent))}%` }}
-                />
+            ) : null}
+
+            {/* Date and Meta Tags */}
+            {(dateText || (metaTags && metaTags.length > 0)) ? (
+              <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium text-slate-500">
+                {dateText && <span>{dateText}</span>}
+                {metaTags?.map((tag, idx) => (
+                  <React.Fragment key={idx}>
+                    {(idx > 0 || dateText) && <span>·</span>}
+                    <span>{tag}</span>
+                  </React.Fragment>
+                ))}
               </div>
-            </div>
-          )}
+            ) : null}
+
+            {/* Metadata Badges */}
+            {metadataBadges ? (
+              <div className="flex flex-wrap items-center gap-1.5">
+                {metadataBadges}
+              </div>
+            ) : null}
+
+            {/* Progress Bar */}
+            {typeof progressPercent === 'number' && (
+              <div className="space-y-1 pt-1">
+                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500">
+                  <span>Progress</span>
+                  <span className="font-bold text-slate-700">{progressPercent}%</span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-300"
+                    style={{ width: `${Math.min(100, Math.max(0, progressPercent))}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Bottom Action CTA */}
-        <div className="pt-2">
+        {/* Bottom Action CTA anchored to bottom */}
+        <div className="mt-auto pt-2">
           {customActionNode ? (
             customActionNode
           ) : disabledAction ? (
             <span
-              className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-slate-100 px-4 py-2.5 text-[13px] font-semibold text-slate-400 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-slate-100 px-4 py-2.5 text-[13px] font-semibold text-slate-400 cursor-not-allowed"
               aria-disabled="true"
             >
               {disabledActionLabel}
@@ -202,7 +197,7 @@ export function UnifiedContentCard({
           ) : actionHref ? (
             <Link
               href={actionHref}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] hover:bg-[#232735] text-white px-4 py-2.5 text-[13px] font-semibold transition-all shadow-sm hover:shadow-md dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-ink hover:bg-ink-hover text-on-ink px-4 py-2.5 text-[13px] font-semibold transition-all shadow-sm hover:shadow-md"
             >
               <span>{actionLabel}</span>
               <ActionIcon size={14} />
@@ -211,7 +206,7 @@ export function UnifiedContentCard({
             <button
               type="button"
               onClick={onActionClick}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] hover:bg-[#232735] text-white px-4 py-2.5 text-[13px] font-semibold transition-all shadow-sm hover:shadow-md dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 cursor-pointer"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-ink hover:bg-ink-hover text-on-ink px-4 py-2.5 text-[13px] font-semibold transition-all shadow-sm hover:shadow-md cursor-pointer"
             >
               <span>{actionLabel}</span>
               <ActionIcon size={14} />

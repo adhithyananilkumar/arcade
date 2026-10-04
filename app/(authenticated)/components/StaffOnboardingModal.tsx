@@ -178,7 +178,7 @@ export function StaffOnboardingModal() {
       <DialogContent
         className="max-w-[530px] w-[92vw] p-6 sm:p-7 rounded-2xl border border-slate-200/90 shadow-xl"
         style={{
-          backgroundColor: '#FAFBFD',
+          backgroundColor: 'var(--theme-surface, #FAFBFD)',
           backgroundImage: `
             radial-gradient(ellipse 80% 50% at 50% 0%, rgba(224, 236, 255, 0.45) 0%, transparent 70%),
             radial-gradient(ellipse 60% 40% at 95% 90%, rgba(233, 225, 254, 0.25) 0%, transparent 65%),
@@ -187,11 +187,11 @@ export function StaffOnboardingModal() {
         }}
       >
         <DialogHeader className="space-y-1.5 pb-4 border-b border-slate-200/80 text-left">
-          <DialogTitle className="text-2xl sm:text-[26px] font-normal font-serif italic text-[#0B132B] dark:text-white tracking-tight leading-snug">
+          <DialogTitle className="text-2xl sm:text-[26px] font-normal font-serif italic text-ink tracking-tight leading-snug">
             Your instructor profile.
           </DialogTitle>
           <span className="block h-0.5 w-10 bg-[#205ca8]/60 rounded-full mt-1 mb-1" />
-          <DialogDescription className="text-xs sm:text-[13px] text-slate-500 dark:text-neutral-400 leading-relaxed">
+          <DialogDescription className="text-xs sm:text-[13px] text-slate-500 leading-relaxed">
             This is what learners see next to your name on the courses you publish.
           </DialogDescription>
         </DialogHeader>
@@ -211,7 +211,7 @@ export function StaffOnboardingModal() {
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="What you do, and what you teach."
-              className="w-full py-2 bg-transparent border-b border-slate-300 dark:border-neutral-700 text-slate-900 dark:text-white text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#205ca8] dark:focus:border-sky-400 transition-colors resize-none min-h-[64px] leading-relaxed"
+              className="w-full py-2 bg-transparent border-b border-slate-300 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#205ca8] dark:focus:border-sky-400 transition-colors resize-none min-h-[64px] leading-relaxed"
             />
           </div>
 
@@ -230,7 +230,7 @@ export function StaffOnboardingModal() {
                 value={specialities}
                 onChange={(e) => setSpecialities(e.target.value)}
                 placeholder="e.g. Design systems"
-                className="w-full py-2 bg-transparent border-b border-slate-300 dark:border-neutral-700 text-slate-900 dark:text-white text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#205ca8] dark:focus:border-sky-400 transition-colors"
+                className="w-full py-2 bg-transparent border-b border-slate-300 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#205ca8] dark:focus:border-sky-400 transition-colors"
               />
             </div>
 
@@ -250,10 +250,10 @@ export function StaffOnboardingModal() {
                 value={experience}
                 onChange={(e) => setExperience(e.target.value)}
                 placeholder="e.g. 5"
-                className="w-full py-2 bg-transparent border-b border-slate-300 dark:border-neutral-700 text-slate-900 dark:text-white text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#205ca8] dark:focus:border-sky-400 transition-colors"
+                className="w-full py-2 bg-transparent border-b border-slate-300 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#205ca8] dark:focus:border-sky-400 transition-colors"
               />
               {!experienceIsValid && (
-                <p className="text-[11px] text-red-600 font-medium mt-1">
+                <p className="text-[11px] text-red-600 font-medium mt-1 dark:text-red-400">
                   Enter a whole number between 0 and 80.
                 </p>
               )}
@@ -266,18 +266,18 @@ export function StaffOnboardingModal() {
               type="button"
               onClick={() => void handleDismiss()}
               disabled={isSubmitting}
-              className="px-4 py-2 text-xs sm:text-sm font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors"
+              className="px-4 py-2 text-xs sm:text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
             >
               {manualOpen ? 'Cancel' : 'Not now'}
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !experienceIsValid}
-              className="relative inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#0B132B] hover:bg-[#205ca8] text-white font-medium text-xs sm:text-sm tracking-wide shadow-2xs transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="relative inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-ink hover:bg-[#205ca8] text-on-ink font-medium text-xs sm:text-sm tracking-wide shadow-2xs transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
-                  <div className="size-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="size-3.5 border-2 border-white/30 border-t-surface rounded-full animate-spin" />
                   <span>Saving…</span>
                 </>
               ) : (

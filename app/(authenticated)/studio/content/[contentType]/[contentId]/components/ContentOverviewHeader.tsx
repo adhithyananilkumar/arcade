@@ -67,7 +67,7 @@ function ActionButton({
   const cls =
     variant === "primary"
       ? "bg-blue-600 text-white hover:bg-blue-700 shadow-xs active:scale-[0.98]"
-      : "border border-slate-200 bg-white text-[#14142b] hover:bg-slate-50 hover:border-slate-300 shadow-2xs active:scale-[0.98]";
+      : "border border-slate-200 bg-surface text-ink hover:bg-slate-50 hover:border-slate-300 shadow-2xs active:scale-[0.98]";
   const content = (
     <>
       {Icon && <Icon size={15} />} <span>{label}</span>
@@ -219,7 +219,7 @@ export function ContentOverviewHeader({
   const updatedParts = formatDateParts(updatedAt);
 
   return (
-    <div className="flex flex-col items-center justify-center pt-0 pb-1 w-full">
+    <div className="flex flex-col items-center justify-center pt-10 sm:pt-12 pb-1 w-full">
       {/* Main Centered Content Title & Metadata */}
       <div className="flex flex-col items-center justify-center text-center gap-1.5 max-w-4xl mx-auto">
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Satisfy&family=Alex+Brush&display=swap');`}</style>
@@ -239,7 +239,7 @@ export function ContentOverviewHeader({
             {/* Action Buttons: Preview & Edit Content */}
             {channelSuspended ? (
               <span
-                className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700"
+                className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300"
                 title="This channel is suspended — editing is disabled until it's reactivated"
               >
                 Editing Disabled
@@ -263,7 +263,7 @@ export function ContentOverviewHeader({
                 <button
                   type="button"
                   onClick={() => setMenuOpen((v) => !v)}
-                  className="grid size-9 place-items-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 cursor-pointer shadow-2xs"
+                  className="grid size-9 place-items-center rounded-full border border-slate-200 bg-surface text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 cursor-pointer shadow-2xs"
                   aria-label="More actions"
                 >
                   <MoreVertical size={16} />
@@ -271,7 +271,7 @@ export function ContentOverviewHeader({
                 {menuOpen && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                    <div className="absolute right-0 z-20 mt-2 w-48 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl">
+                    <div className="absolute right-0 z-20 mt-2 w-48 rounded-2xl border border-slate-200 bg-surface p-1.5 shadow-xl">
                       {duplicate && (
                         <button
                           onClick={() => {
@@ -300,7 +300,7 @@ export function ContentOverviewHeader({
                             setMenuOpen(false);
                             setConfirmAction("delete");
                           }}
-                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer text-left"
+                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer text-left dark:text-rose-400 dark:hover:bg-rose-500/10"
                         >
                           <Trash2 size={14} /> Delete
                         </button>

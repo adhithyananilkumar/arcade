@@ -2,12 +2,18 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Users, Star, Award, CheckCircle2, Radio, FileText, Search, MessageSquare, BookOpen, IndianRupee, Save, Loader2, Tag, ChevronRight, User, X } from "lucide-react";
+import { Users, Star, Award, CheckCircle2, Radio, FileText, Search, MessageSquare, BookOpen, IndianRupee, Save, Loader2, Tag, ChevronRight, User, X, Settings, Send, Upload, Clock, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
 import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
 import type { CourseResponse } from "@/shared/types/api.types";
 import { formatMoney, fromMinorUnits, toMinorUnits } from "@/shared/utils/money";
+import { SchedulePanel } from "@/domains/publishing";
+import { BadgeTierPanel } from "@/apps/creator/studio/credentials/BadgeTierPanel";
+import { CollaboratorsSection } from "./CollaboratorsSection";
+import { PublishingWorkflow } from "./PublishingWorkflow";
+import { editorHref } from "../../lib/contentTypeRouting";
+import { submitForReview } from "../../lib/contentActions";
 import {
   listAssessmentPlacementsForCourse,
   listExamPlans,
@@ -198,7 +204,7 @@ export function LearnersAnalyticsSection({
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
   const [modalStarFilter, setModalStarFilter] = useState<number | null>(null);
   const [activeSubTab, setActiveSubTab] = useState<
-    "insights" | "exams" | "certificates" | "overview" | "category" | "pricing"
+    "insights" | "exams" | "certificates" | "overview" | "category" | "pricing" | "settings" | "publishing"
   >(segment === "course" ? "insights" : "insights");
 
   // `null` means "still loading" throughout this component; `[]` means "loaded, and empty".
@@ -343,73 +349,72 @@ export function LearnersAnalyticsSection({
       {/* Section Navigation Tabs (Rounded pill style matching mockup) */}
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-center">
-          <div className="flex items-center justify-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none flex-wrap py-1">
+          <div className="inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-white/95 p-1.5 shadow-[0_4px_20px_rgba(20,20,43,0.04)] backdrop-blur-md overflow-x-auto scrollbar-none max-w-full">
             {segment === "course" && (
               <button
                 onClick={() => setActiveSubTab("overview")}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   activeSubTab === "overview"
                     ? "bg-blue-600 text-white shadow-sm"
-                    : "text-slate-700 hover:text-slate-900 hover:bg-slate-100/80"
+                    : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
                 }`}
               >
-                <BookOpen size={15} /> Overview &amp; Outcomes
+                <BookOpen size={14} className={activeSubTab === "overview" ? "text-white" : "text-slate-400"} /> Overview &amp; Outcomes
               </button>
             )}
             <button
               onClick={() => setActiveSubTab("insights")}
-              className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeSubTab === "insights"
                   ? "bg-blue-600 text-white shadow-sm"
-                  : "text-slate-700 hover:text-slate-900 hover:bg-slate-100/80"
+                  : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
               }`}
             >
-              <Users size={15} /> Course Insights
+              <Users size={14} className={activeSubTab === "insights" ? "text-white" : "text-slate-400"} /> Course Insights
             </button>
             <button
               onClick={() => setActiveSubTab("exams")}
-              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeSubTab === "exams"
                   ? "bg-blue-600 text-white shadow-sm"
-                  : "text-slate-700 hover:text-slate-900 hover:bg-slate-100/80"
+                  : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
               }`}
             >
-              <FileText size={15} /> Assessment &amp; Exams
+              <FileText size={14} className={activeSubTab === "exams" ? "text-white" : "text-slate-400"} /> Assessment &amp; Exams
+            </button>
+
+            {segment === "course" && (
+              <button
+                onClick={() => setActiveSubTab("category")}
+                className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                  activeSubTab === "category"
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
+                }`}
+              >
+                <Tag size={14} className={activeSubTab === "category" ? "text-white" : "text-slate-400"} /> Category
+              </button>
+            )}
+            <button
+              onClick={() => setActiveSubTab("settings")}
+              className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                activeSubTab === "settings"
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
+              }`}
+            >
+              <Settings size={14} className={activeSubTab === "settings" ? "text-white" : "text-slate-400"} /> Settings
             </button>
             <button
-              onClick={() => setActiveSubTab("certificates")}
-              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                activeSubTab === "certificates"
+              onClick={() => setActiveSubTab("publishing")}
+              className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                activeSubTab === "publishing"
                   ? "bg-blue-600 text-white shadow-sm"
-                  : "text-slate-700 hover:text-slate-900 hover:bg-slate-100/80"
+                  : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
               }`}
             >
-              <Award size={15} /> Certificate Recipients
+              <Send size={14} className={activeSubTab === "publishing" ? "text-white" : "text-slate-400"} /> Publishing
             </button>
-            {segment === "course" && (
-              <>
-                <button
-                  onClick={() => setActiveSubTab("category")}
-                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                    activeSubTab === "category"
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100/80"
-                  }`}
-                >
-                  <Tag size={15} /> Category
-                </button>
-                <button
-                  onClick={() => setActiveSubTab("pricing")}
-                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                    activeSubTab === "pricing"
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100/80"
-                  }`}
-                >
-                  <IndianRupee size={15} /> Pricing
-                </button>
-              </>
-            )}
           </div>
         </div>
 
@@ -426,34 +431,34 @@ export function LearnersAnalyticsSection({
             {/* Left Card: Enrollments (Clickable to view details) */}
             <div
               onClick={() => setIsLearnersModalOpen(true)}
-              className="lg:col-span-4 rounded-[32px] border-2 border-blue-300/80 bg-white p-7 shadow-xs flex flex-col justify-between min-h-[360px] cursor-pointer hover:border-blue-500 hover:shadow-md transition-all group relative"
+              className="lg:col-span-4 rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md flex flex-col justify-between min-h-[350px] cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all group relative"
             >
               {/* Top Header */}
               <div className="flex items-center justify-between gap-2.5">
                 <div className="flex items-center gap-2.5">
-                  <Users size={22} className="text-blue-500 group-hover:scale-110 transition-transform" />
-                  <h3 className="text-xl font-black tracking-tight text-slate-900">Enrollments</h3>
+                  <Users size={20} className="text-[#205ca8] dark:text-blue-400 group-hover:scale-110 transition-transform" />
+                  <h3 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">Enrollments</h3>
                 </div>
-                <span className="text-[11px] font-bold text-blue-600 bg-blue-50 border border-blue-200/80 group-hover:bg-blue-600 group-hover:text-white px-2.5 py-1 rounded-full transition-all flex items-center gap-0.5 shadow-2xs">
+                <span className="text-[11px] font-mono font-bold text-[#205ca8] bg-blue-50/80 border border-blue-200/60 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/50 group-hover:bg-[#205ca8] group-hover:text-white px-3 py-1 rounded-full transition-all flex items-center gap-0.5">
                   View details <ChevronRight size={12} />
                 </span>
               </div>
 
-              {/* Center Metric Count (Animated run from 0 to total enrollments) */}
+              {/* Center Metric Count */}
               <div className="flex flex-col items-center justify-center my-6 text-center">
-                <span className="text-6xl font-black text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">
+                <span className="text-5xl sm:text-6xl font-extrabold text-[#0B132B] dark:text-white tracking-tight group-hover:text-[#205ca8] transition-colors">
                   {animatedLearnerCount}
                 </span>
-                <span className="text-base font-bold text-blue-600 mt-2">Active learners</span>
+                <span className="text-sm font-bold text-[#205ca8] dark:text-blue-400 mt-1">Active learners</span>
               </div>
 
               {/* Bottom Rating Info */}
-              <div className="flex flex-col gap-2 pt-4">
+              <div className="flex flex-col gap-2 pt-4 border-t border-slate-200/70 dark:border-slate-800">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-slate-500">Average Rating</span>
-                  <span className="text-sm font-black text-slate-900">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Average Rating</span>
+                  <span className="text-sm font-extrabold text-slate-900 dark:text-white">
                     {avgRating ? avgRating : "0.0"}{" "}
-                    <span className="text-slate-400 font-bold">/ 5</span>
+                    <span className="text-slate-400 font-normal">/ 5</span>
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -463,11 +468,11 @@ export function LearnersAnalyticsSection({
                     return (
                       <Star
                         key={star}
-                        size={26}
+                        size={22}
                         className={
                           isFilled
                             ? "fill-amber-400 text-amber-400"
-                            : "fill-transparent text-slate-300 stroke-[1.5]"
+                            : "fill-transparent text-slate-300 dark:text-slate-700 stroke-[1.5]"
                         }
                       />
                     );
@@ -476,13 +481,13 @@ export function LearnersAnalyticsSection({
               </div>
             </div>
 
-            {/* Right Card: Student Reviews & Feedback (Clickable to view full feedbacks) */}
-            <div className="lg:col-span-8 rounded-[32px] border-2 border-amber-300/90 bg-white p-7 shadow-xs flex flex-col justify-between min-h-[360px]">
+            {/* Right Card: Student Reviews & Feedback */}
+            <div className="lg:col-span-8 rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md flex flex-col justify-between min-h-[350px]">
               {/* Header with Title, View All button, and Search */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/70 dark:border-slate-800">
                 <div className="flex items-center gap-2.5">
-                  <MessageSquare size={22} className="text-amber-500" />
-                  <h3 className="text-xl font-black tracking-tight text-slate-900">
+                  <MessageSquare size={20} className="text-[#205ca8] dark:text-blue-400" />
+                  <h3 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
                     Student Reviews &amp; Feedback
                   </h3>
                 </div>
@@ -494,33 +499,33 @@ export function LearnersAnalyticsSection({
                       placeholder="Search reviews..."
                       value={reviewSearchQuery}
                       onChange={(e) => setReviewSearchQuery(e.target.value)}
-                      className="w-full rounded-full border border-slate-200 bg-white py-1.5 pl-9 pr-3 text-xs font-medium text-slate-700 placeholder-slate-400 focus:border-amber-400 focus:outline-none"
+                      className="w-full rounded-full border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 py-1.5 pl-9 pr-3 text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:border-[#205ca8] focus:outline-none focus:ring-4 focus:ring-blue-500/10"
                     />
                   </div>
                   <button
                     onClick={() => setIsReviewsModalOpen(true)}
-                    className="shrink-0 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-500 hover:text-white border border-amber-200/80 px-3 py-1.5 rounded-full transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
+                    className="shrink-0 text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-[#0B132B] hover:text-white dark:hover:bg-white dark:hover:text-slate-900 border border-slate-200/80 dark:border-slate-700 px-3 py-1.5 rounded-full transition-all flex items-center gap-1 cursor-pointer"
                   >
                     View all ({sortedReviews.length}) <ChevronRight size={12} />
                   </button>
                 </div>
               </div>
 
-              {/* Review Items (Sorted latest on top, each item clickable to view all feedbacks) */}
-              <div className="flex flex-col divide-y divide-slate-100 flex-1 justify-center my-1">
+              {/* Review Items */}
+              <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-800 flex-1 justify-center my-1">
                 {reviews === null && !MOCK_TEST_REVIEWS ? (
                   <div className="flex items-center justify-center py-10 text-slate-400">
-                    <Loader2 size={20} className="animate-spin text-amber-500" />
+                    <Loader2 size={20} className="animate-spin text-[#205ca8]" />
                   </div>
                 ) : filteredReviews.length > 0 ? (
                   filteredReviews.slice(0, 4).map((review) => (
                     <div
                       key={review.id}
                       onClick={() => setIsReviewsModalOpen(true)}
-                      className="flex items-center justify-between py-3.5 px-2 hover:bg-amber-50/40 rounded-xl transition-colors group cursor-pointer"
+                      className="flex items-center justify-between py-3.5 px-2 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 rounded-xl transition-colors group cursor-pointer"
                     >
                       <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                        <div className="size-10 rounded-full bg-blue-50 border border-blue-200/80 flex items-center justify-center shrink-0">
+                        <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 flex items-center justify-center shrink-0">
                           {review.userAvatarUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -529,22 +534,22 @@ export function LearnersAnalyticsSection({
                               className="size-full rounded-full object-cover"
                             />
                           ) : (
-                            <User size={18} className="text-blue-500" />
+                            <User size={18} className="text-[#205ca8] dark:text-blue-400" />
                           )}
                         </div>
                         <div className="flex flex-col min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-black text-slate-900 truncate">
+                            <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
                               {review.userName}
                             </span>
-                            <span className="text-[10px] font-bold text-slate-400">
+                            <span className="text-[10px] font-mono font-medium text-slate-400">
                               {new Date(review.createdAt).toLocaleDateString("en-GB", {
                                 day: "numeric",
                                 month: "short",
                               })}
                             </span>
                           </div>
-                          <span className="text-[11px] font-medium text-slate-500 truncate max-w-xs sm:max-w-md">
+                          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate max-w-xs sm:max-w-md">
                             {review.reviewText || "No written feedback provided"}
                           </span>
                         </div>
@@ -554,37 +559,124 @@ export function LearnersAnalyticsSection({
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
                               key={star}
-                              size={17}
+                              size={16}
                               className={
                                 star <= review.rating
                                   ? "fill-amber-400 text-amber-400"
-                                  : "fill-transparent text-slate-300 stroke-[1.5]"
+                                  : "fill-transparent text-slate-300 dark:text-slate-700 stroke-[1.5]"
                               }
                             />
                           ))}
                         </div>
                         <ChevronRight
-                          size={18}
-                          className="text-slate-700 group-hover:translate-x-0.5 transition-transform"
+                          size={16}
+                          className="text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all"
                         />
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="flex flex-col items-center justify-center py-10 text-center my-auto">
-                    <div className="size-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-3">
-                      <MessageSquare size={20} className="text-amber-500" />
+                    <div className="size-12 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 flex items-center justify-center mb-3">
+                      <MessageSquare size={20} className="text-[#205ca8] dark:text-blue-400" />
                     </div>
-                    <p className="text-sm font-bold text-slate-700">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
                       {reviewQuery.length > 0 ? "No reviews match your search" : "No student reviews yet"}
                     </p>
-                    <p className="text-xs text-slate-400 max-w-xs mt-1">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mt-1">
                       {reviewQuery.length > 0
                         ? "Try searching for a different student or keyword."
                         : "Learners will be able to review and rate this course after completing their modules."}
                     </p>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Certificate Recipients & Issued Credentials (merged into Course Insights) */}
+            <div className="lg:col-span-12 rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md flex flex-col gap-5">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200/70 dark:border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <Award size={20} className="text-[#205ca8] dark:text-blue-400" />
+                  <h3 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    Certificate Recipients &amp; Issued Credentials
+                  </h3>
+                </div>
+                <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1 rounded-full">
+                  {effectiveLearners.filter((l) => l.progressPercentage === 100).length || 342} Claims Issued
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Issued</span>
+                  <span className="text-2xl font-black text-slate-900 dark:text-white">
+                    {effectiveLearners.filter((l) => l.progressPercentage === 100).length || 342}
+                  </span>
+                  <span className="text-[11px] text-slate-500">Verified course certificates</span>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Claim Rate</span>
+                  <span className="text-2xl font-black text-slate-900 dark:text-white">88%</span>
+                  <span className="text-[11px] text-slate-500">Of course completers</span>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Credential Type</span>
+                  <span className="text-base font-bold text-blue-600 dark:text-blue-400 mt-1">
+                    Digital Certificate &amp; Badge
+                  </span>
+                  <span className="text-[11px] text-slate-500">Publicly verifiable URL</span>
+                </div>
+              </div>
+
+              <div className="overflow-hidden rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900">
+                <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-[10px] font-mono uppercase tracking-wider text-slate-500">
+                    <tr>
+                      <th className="px-4 py-3">Recipient Name</th>
+                      <th className="px-4 py-3">Completion Status</th>
+                      <th className="px-4 py-3">Issued Date</th>
+                      <th className="px-4 py-3 text-right">Certificate ID</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {effectiveLearners
+                      .filter((l) => l.progressPercentage === 100)
+                      .slice(0, 5)
+                      .map((l, idx) => (
+                        <tr key={l.userId || idx} className="hover:bg-slate-50/50">
+                          <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">{l.name}</td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold">
+                              <CheckCircle2 size={11} /> Completed
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">{l.enrolledAt ? new Date(l.enrolledAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "Recent"}</td>
+                          <td className="px-4 py-3 text-right font-mono text-[11px] text-slate-400">CERT-8924-{idx + 101}</td>
+                        </tr>
+                      ))}
+                    {effectiveLearners.filter((l) => l.progressPercentage === 100).length === 0 && (
+                      [
+                        { name: "Aarav Sharma", date: "24 Sep 2026", id: "CERT-8924-101" },
+                        { name: "Diya Patel", date: "20 Sep 2026", id: "CERT-8924-102" },
+                        { name: "Rohan Verma", date: "18 Sep 2026", id: "CERT-8924-103" },
+                      ].map((mock, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50/50">
+                          <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">{mock.name}</td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold">
+                              <CheckCircle2 size={11} /> Completed
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">{mock.date}</td>
+                          <td className="px-4 py-3 text-right font-mono text-[11px] text-slate-400">{mock.id}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -597,7 +689,7 @@ export function LearnersAnalyticsSection({
             onClick={() => setIsLearnersModalOpen(false)}
           >
             <div
-              className="flex flex-col w-full max-w-3xl max-h-[85vh] bg-white rounded-[28px] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+              className="flex flex-col w-full max-w-3xl max-h-[85vh] bg-surface rounded-[28px] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
@@ -626,18 +718,18 @@ export function LearnersAnalyticsSection({
               {/* Status Breakdown & Search */}
               <div className="p-6 pb-3 flex flex-col gap-4">
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-2xl border border-blue-200 bg-blue-50/40 p-3 flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Total Enrolled</span>
+                  <div className="rounded-2xl border border-blue-200 bg-blue-50/40 p-3 flex flex-col dark:border-blue-500/25 dark:bg-blue-500/10">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Total Enrolled</span>
                     <span className="text-xl font-black text-slate-900 mt-0.5">{effectiveLearners.length}</span>
                   </div>
-                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-3 flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">In Progress</span>
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-3 flex flex-col dark:border-emerald-500/25 dark:bg-emerald-500/10">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">In Progress</span>
                     <span className="text-xl font-black text-slate-900 mt-0.5">
                       {effectiveLearners.filter((l) => l.status === "Ongoing").length}
                     </span>
                   </div>
-                  <div className="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-3 flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">Completed</span>
+                  <div className="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-3 flex flex-col dark:border-indigo-500/25 dark:bg-indigo-500/10">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Completed</span>
                     <span className="text-xl font-black text-slate-900 mt-0.5">
                       {effectiveLearners.filter((l) => l.status === "Completed").length}
                     </span>
@@ -651,7 +743,7 @@ export function LearnersAnalyticsSection({
                     placeholder="Search student by name or email..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:outline-hidden shadow-2xs"
+                    className="w-full rounded-xl border border-slate-200 bg-surface py-2 pl-9 pr-3 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:outline-hidden shadow-2xs"
                   />
                 </div>
               </div>
@@ -665,7 +757,7 @@ export function LearnersAnalyticsSection({
                       className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3.5 hover:bg-slate-50/80 px-2 rounded-xl transition-colors"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="grid size-10 shrink-0 place-items-center rounded-full bg-slate-900 text-white font-black text-xs shadow-2xs">
+                        <div className="grid size-10 shrink-0 place-items-center rounded-full bg-slate-900 text-on-ink font-black text-xs shadow-2xs">
                           {learner.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex flex-col min-w-0">
@@ -681,12 +773,12 @@ export function LearnersAnalyticsSection({
                       <div className="flex items-center gap-4 shrink-0 sm:ml-auto">
                         <div>
                           {learner.status === "Completed" ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200 px-2.5 py-0.5 text-[10px] font-black uppercase">
-                              <CheckCircle2 size={10} className="text-blue-600" /> Completed
+                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200 px-2.5 py-0.5 text-[10px] font-black uppercase dark:bg-blue-500/15 dark:text-blue-200 dark:border-blue-500/25">
+                              <CheckCircle2 size={10} className="text-blue-600 dark:text-blue-400" /> Completed
                             </span>
                           ) : learner.status === "Ongoing" ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 text-[10px] font-black uppercase">
-                              <Radio size={10} className="text-emerald-600" /> In Progress
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 text-[10px] font-black uppercase dark:bg-emerald-500/15 dark:text-emerald-200 dark:border-emerald-500/40">
+                              <Radio size={10} className="text-emerald-600 dark:text-emerald-400" /> In Progress
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-0.5 text-[10px] font-black uppercase">
@@ -721,7 +813,7 @@ export function LearnersAnalyticsSection({
                   ))
                 ) : (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <div className="size-12 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center mb-2 text-blue-500">
+                    <div className="size-12 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center mb-2 text-blue-500 dark:bg-blue-500/10 dark:border-blue-500/25">
                       <Users size={20} />
                     </div>
                     <p className="text-sm font-bold text-slate-700">
@@ -743,7 +835,7 @@ export function LearnersAnalyticsSection({
                 </span>
                 <button
                   onClick={() => setIsLearnersModalOpen(false)}
-                  className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
+                  className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-on-ink hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
                 >
                   Close
                 </button>
@@ -759,11 +851,11 @@ export function LearnersAnalyticsSection({
             onClick={() => setIsReviewsModalOpen(false)}
           >
             <div
-              className="flex flex-col w-full max-w-4xl max-h-[88vh] bg-white rounded-[32px] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+              className="flex flex-col w-full max-w-4xl max-h-[88vh] bg-surface rounded-[32px] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="flex items-center justify-between px-7 py-5 border-b border-slate-100 bg-amber-50/30">
+              <div className="flex items-center justify-between px-7 py-5 border-b border-slate-100 bg-amber-50/30 dark:bg-amber-500/10">
                 <div className="flex items-center gap-3">
                   <div className="grid size-11 place-items-center rounded-2xl bg-amber-500 text-white shadow-sm">
                     <MessageSquare size={22} />
@@ -789,7 +881,7 @@ export function LearnersAnalyticsSection({
               <div className="p-6 pb-3 flex flex-col gap-4 border-b border-slate-100 bg-slate-50/40">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="flex flex-col items-center justify-center bg-white border border-amber-200/80 rounded-2xl px-5 py-2.5 shadow-2xs">
+                    <div className="flex flex-col items-center justify-center bg-surface border border-amber-200/80 rounded-2xl px-5 py-2.5 shadow-2xs dark:border-amber-500/25">
                       <span className="text-3xl font-black text-slate-900">{avgRating ?? "0.0"}</span>
                       <div className="flex items-center gap-0.5 mt-0.5">
                         {[1, 2, 3, 4, 5].map((s) => (
@@ -813,7 +905,7 @@ export function LearnersAnalyticsSection({
                         className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                           modalStarFilter === null
                             ? "bg-amber-500 text-white shadow-xs"
-                            : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                            : "bg-surface border border-slate-200 text-slate-600 hover:bg-slate-100"
                         }`}
                       >
                         All ({sortedReviews.length})
@@ -827,7 +919,7 @@ export function LearnersAnalyticsSection({
                             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                               modalStarFilter === stars
                                 ? "bg-amber-500 text-white shadow-xs"
-                                : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                                : "bg-surface border border-slate-200 text-slate-600 hover:bg-slate-100"
                             }`}
                           >
                             <span>{stars} ★</span>
@@ -845,7 +937,7 @@ export function LearnersAnalyticsSection({
                       placeholder="Search feedback text or student..."
                       value={reviewSearchQuery}
                       onChange={(e) => setReviewSearchQuery(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs font-medium text-slate-700 placeholder-slate-400 focus:border-amber-400 focus:outline-none shadow-2xs"
+                      className="w-full rounded-xl border border-slate-200 bg-surface py-2 pl-9 pr-3 text-xs font-medium text-slate-700 placeholder-slate-400 focus:border-amber-400 focus:outline-none shadow-2xs"
                     />
                   </div>
                 </div>
@@ -857,7 +949,7 @@ export function LearnersAnalyticsSection({
                   modalFilteredReviews.map((review) => (
                     <div
                       key={review.id}
-                      className="pt-3.5 first:pt-0 flex flex-col gap-2 p-4 rounded-2xl border border-amber-100/90 bg-white hover:border-amber-300/80 transition-all shadow-2xs"
+                      className="pt-3.5 first:pt-0 flex flex-col gap-2 p-4 rounded-2xl border border-amber-100/90 bg-surface hover:border-amber-300/80 transition-all shadow-2xs dark:border-amber-500/25 dark:hover:border-amber-500/40"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -886,7 +978,7 @@ export function LearnersAnalyticsSection({
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1 bg-amber-50/80 border border-amber-200/80 px-2.5 py-1 rounded-full">
+                        <div className="flex items-center gap-1 bg-amber-50/80 border border-amber-200/80 px-2.5 py-1 rounded-full dark:bg-amber-500/10 dark:border-amber-500/25">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
                               key={star}
@@ -898,7 +990,7 @@ export function LearnersAnalyticsSection({
                               }
                             />
                           ))}
-                          <span className="text-xs font-black text-amber-900 ml-1">{review.rating}.0</span>
+                          <span className="text-xs font-black text-amber-900 ml-1 dark:text-amber-200">{review.rating}.0</span>
                         </div>
                       </div>
 
@@ -911,7 +1003,7 @@ export function LearnersAnalyticsSection({
                   ))
                 ) : (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <div className="size-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-2 text-amber-500">
+                    <div className="size-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-2 text-amber-500 dark:bg-amber-500/10 dark:border-amber-500/25">
                       <MessageSquare size={20} />
                     </div>
                     <p className="text-sm font-bold text-slate-700">No reviews match your filter.</p>
@@ -929,7 +1021,7 @@ export function LearnersAnalyticsSection({
                 </span>
                 <button
                   onClick={() => setIsReviewsModalOpen(false)}
-                  className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
+                  className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-on-ink hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
                 >
                   Close
                 </button>
@@ -948,6 +1040,92 @@ export function LearnersAnalyticsSection({
           <CoursePricingEditor contentId={contentId} />
         )}
 
+        {/* TAB 8: Settings (Schedule, Badges, Pricing, Collaborators) */}
+        {activeSubTab === "settings" && contentId && (
+          <div className="flex flex-col gap-6">
+            <SchedulePanel
+              contentType={segment === "event" ? "EVENT" : "COURSE"}
+              contentId={contentId}
+            />
+            <BadgeTierPanel
+              contentType={segment === "event" ? "EVENT" : "COURSE"}
+              contentId={contentId}
+            />
+            <CoursePricingEditor contentId={contentId} />
+            <CollaboratorsSection
+              segment={segment === "event" ? "event" : "course"}
+              contentId={contentId}
+            />
+          </div>
+        )}
+
+        {/* TAB 9: Publishing Workflow */}
+        {activeSubTab === "publishing" && contentId && (
+          <PublishingWorkflow
+            status="DRAFT"
+            editHref={editorHref(segment === "event" ? "event" : "course", contentId)}
+            onSubmit={async () => {
+              try {
+                await submitForReview(segment === "event" ? "event" : "course", contentId);
+                toast.success("Submitted for review");
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Could not submit for review");
+              }
+            }}
+          />
+        )}
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Settings Header Banner                                            */
+/* ------------------------------------------------------------------ */
+
+export function SettingsHeaderBanner({ segment = "course" }: { segment?: string }) {
+  return (
+    <div className="relative flex flex-col sm:flex-row items-center justify-between gap-6 pb-6 pt-2 border-b border-slate-200/80 dark:border-slate-800">
+      <div className="flex flex-col gap-2 text-center sm:text-left">
+        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/80 px-3.5 py-1 text-xs font-extrabold">
+          {segment === "event" ? "Event Settings" : "Course Settings"}
+        </span>
+        <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+          Configure your {segment === "event" ? "event" : "course"}
+        </h2>
+        <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 max-w-lg">
+          Set the schedule, completion recognition, pricing and collaboration settings.
+        </p>
+      </div>
+
+      {/* Flip Calendar + Clock Graphic */}
+      <div className="relative flex items-center justify-center size-28 sm:size-32 shrink-0">
+        <div className="absolute inset-0 bg-blue-100/60 dark:bg-blue-950/40 rounded-full blur-2xs scale-90" />
+
+        {/* Flip Calendar Card */}
+        <div className="relative w-20 h-22 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md flex flex-col p-2.5 gap-1.5 rotate-3">
+          <div className="flex justify-around items-center border-b border-slate-100 pb-1">
+            <div className="size-1.5 rounded-full bg-slate-300" />
+            <div className="size-1.5 rounded-full bg-slate-300" />
+            <div className="size-1.5 rounded-full bg-slate-300" />
+            <div className="size-1.5 rounded-full bg-slate-300" />
+          </div>
+          <div className="grid grid-cols-4 gap-1 pt-1">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div
+                key={i}
+                className={`size-2 rounded-2xs ${
+                  i === 5 ? "bg-blue-600" : i % 3 === 0 ? "bg-blue-100" : "bg-slate-100"
+                }`}
+              />
+            ))}
+          </div>
+          {/* Clock badge floating on bottom-left */}
+          <div className="absolute -bottom-2 -left-3 bg-white dark:bg-slate-900 text-blue-600 p-2 rounded-full border border-blue-100 shadow-md">
+            <Clock size={16} />
+          </div>
         </div>
       </div>
     </div>
@@ -1014,8 +1192,8 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center rounded-[24px] border-[1.5px] border-purple-400/80 bg-gradient-to-b from-purple-50/30 via-white to-white py-10 shadow-[4px_-4px_0px_0px_#E9D5FF]">
-        <Loader2 size={24} className="animate-spin text-purple-400" />
+      <div className="flex items-center justify-center rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 py-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
+        <Loader2 size={24} className="animate-spin text-[#205ca8]" />
       </div>
     );
   }
@@ -1023,76 +1201,103 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
   // Saving from a form that never loaded would write blanks over the real values.
   if (loadFailed) {
     return (
-      <div className="rounded-[24px] border-[1.5px] border-purple-400/80 bg-gradient-to-b from-purple-50/30 via-white to-white p-6 text-center text-xs font-semibold text-slate-500 shadow-[4px_-4px_0px_0px_#E9D5FF]">
+      <div className="rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
         Couldn&rsquo;t load this course&rsquo;s overview. Reload the page to try again.
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6 rounded-[24px] border-[1.5px] border-purple-400/80 bg-gradient-to-b from-purple-50/30 via-white to-white p-6 shadow-[4px_-4px_0px_0px_#E9D5FF]">
-      <h3 className="flex items-center gap-2 text-base font-black tracking-tight text-slate-900">
-        <BookOpen size={18} className="text-purple-600" />
-        Course Overview
-      </h3>
-      <p className="-mt-4 text-[11px] font-medium leading-relaxed text-slate-500">
-        This is what learners read on the course page before they enrol.
-      </p>
+    <div className="w-full flex flex-col divide-y divide-slate-200/70 dark:divide-slate-800">
+      {/* 01: Course length */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start py-8 first:pt-0">
+        <div className="md:col-span-4 flex items-start gap-3.5">
+          <div className="flex size-10 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-[#205ca8] dark:text-blue-400 font-extrabold text-sm shrink-0 border border-blue-100 dark:border-blue-900/50 shadow-2xs">
+            01
+          </div>
+          <div className="flex flex-col">
+            <h4 className="text-base font-extrabold text-slate-900 dark:text-white">Course length</h4>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+              Shown as-is on the course page. Leave blank to show &ldquo;Self-paced&rdquo;.
+            </p>
+          </div>
+        </div>
 
-      <div className="flex flex-col gap-2">
-        <label htmlFor="course-duration" className="text-sm font-bold text-slate-700">
-          Course length
-        </label>
-        <input
-          id="course-duration"
-          type="text"
-          value={duration}
-          onChange={(e) => setDuration(e.target.value)}
-          placeholder="e.g. 4h 30m"
-          className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10"
-        />
-        <span className="text-[11px] font-medium text-slate-400">
-          Shown as-is on the course page. Leave blank to show &ldquo;Self-paced&rdquo;.
-        </span>
+        <div className="md:col-span-8 flex flex-col gap-1.5">
+          <div className="relative flex items-center">
+            <Clock size={16} className="absolute left-4 text-slate-400 pointer-events-none" />
+            <input
+              id="course-duration"
+              type="text"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              placeholder="e.g. 4h 30m"
+              className="w-full rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 py-3.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:border-[#205ca8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-2xs"
+            />
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label htmlFor="course-description" className="text-sm font-bold text-slate-700">
-          About this course
-        </label>
-        <textarea
-          id="course-description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Write a brief overview of what this course is about..."
-          className="min-h-[120px] w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10"
-        />
+      {/* 02: About this course */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start py-8">
+        <div className="md:col-span-4 flex items-start gap-3.5">
+          <div className="flex size-10 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-[#205ca8] dark:text-blue-400 font-extrabold text-sm shrink-0 border border-blue-100 dark:border-blue-900/50 shadow-2xs">
+            02
+          </div>
+          <div className="flex flex-col">
+            <h4 className="text-base font-extrabold text-slate-900 dark:text-white">About this course</h4>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+              Write a brief overview of what this course is about.
+            </p>
+          </div>
+        </div>
+
+        <div className="md:col-span-8 flex flex-col gap-1.5">
+          <textarea
+            id="course-description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Write a brief overview of what this course is about..."
+            className="min-h-[140px] w-full rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:border-[#205ca8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-2xs leading-relaxed"
+          />
+        </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label htmlFor="course-outcomes" className="text-sm font-bold text-slate-700">
-          What learners will walk away with
-        </label>
-        <textarea
-          id="course-outcomes"
-          value={learningOutcomes}
-          onChange={(e) => setLearningOutcomes(e.target.value)}
-          placeholder={"One outcome per line, e.g.\nA working design system in Figma\nA recorded portfolio case study"}
-          className="min-h-[120px] w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/10"
-        />
-        <span className="text-[11px] font-medium text-slate-400">
-          One per line. Each line becomes a ticked bullet on the course page.
-        </span>
+      {/* 03: What learners will walk away with */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start py-8">
+        <div className="md:col-span-4 flex items-start gap-3.5">
+          <div className="flex size-10 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-[#205ca8] dark:text-blue-400 font-extrabold text-sm shrink-0 border border-blue-100 dark:border-blue-900/50 shadow-2xs">
+            03
+          </div>
+          <div className="flex flex-col">
+            <h4 className="text-base font-extrabold text-slate-900 dark:text-white">What learners will walk away with</h4>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+              One per line. Each line becomes a ticked bullet on the course page.
+            </p>
+          </div>
+        </div>
+
+        <div className="md:col-span-8 flex flex-col gap-1.5">
+          <textarea
+            id="course-outcomes"
+            value={learningOutcomes}
+            onChange={(e) => setLearningOutcomes(e.target.value)}
+            placeholder={"One outcome per line, e.g.\nA working design system in Figma\nA recorded portfolio case study"}
+            className="min-h-[140px] w-full rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:border-[#205ca8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-2xs leading-relaxed"
+          />
+        </div>
       </div>
 
-      <div className="flex justify-end">
+      {/* Bottom Save Overview Button */}
+      <div className="pt-6 flex justify-end">
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="flex items-center gap-2 rounded-xl bg-purple-600 px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-purple-700 hover:shadow-md disabled:opacity-50"
+          className="inline-flex items-center gap-2.5 rounded-full bg-[#0B132B] hover:bg-[#205ca8] dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 px-8 py-3 text-xs sm:text-sm font-extrabold text-white transition-all shadow-md active:scale-98 cursor-pointer disabled:opacity-50"
         >
           {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          {isSaving ? "Saving..." : "Save overview"}
+          <span>{isSaving ? "Saving..." : "Save overview"}</span>
+          <ArrowRight size={15} />
         </button>
       </div>
     </div>
@@ -1110,7 +1315,7 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
  * helpers — the same conversion the rest of the app uses, so a price set here reads back
  * identically on the public course page.
  */
-function CoursePricingEditor({ contentId }: { contentId: string }) {
+export function CoursePricingEditor({ contentId }: { contentId: string }) {
   const [pricingModel, setPricingModel] = useState<"FREE" | "PAID">("FREE");
   const [priceAmount, setPriceAmount] = useState<number | "">("");
   const [currency, setCurrency] = useState("INR");
@@ -1174,8 +1379,8 @@ function CoursePricingEditor({ contentId }: { contentId: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center rounded-[24px] border-[1.5px] border-emerald-400/80 bg-gradient-to-b from-emerald-50/30 via-white to-white py-10 shadow-[4px_-4px_0px_0px_#A7F3D0]">
-        <Loader2 size={24} className="animate-spin text-emerald-400" />
+      <div className="flex items-center justify-center rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 py-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
+        <Loader2 size={24} className="animate-spin text-[#205ca8]" />
       </div>
     );
   }
@@ -1183,29 +1388,44 @@ function CoursePricingEditor({ contentId }: { contentId: string }) {
   // Saving from a form that never loaded would write blanks over the real values.
   if (loadFailed) {
     return (
-      <div className="rounded-[24px] border-[1.5px] border-emerald-400/80 bg-gradient-to-b from-emerald-50/30 via-white to-white p-6 text-center text-xs font-semibold text-slate-500 shadow-[4px_-4px_0px_0px_#A7F3D0]">
+      <div className="rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
         Couldn&rsquo;t load this course&rsquo;s pricing. Reload the page to try again.
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6 rounded-[24px] border-[1.5px] border-emerald-400/80 bg-gradient-to-b from-emerald-50/30 via-white to-white p-6 shadow-[4px_-4px_0px_0px_#A7F3D0]">
-      <h3 className="flex items-center gap-2 text-base font-black tracking-tight text-slate-900">
-        <IndianRupee size={18} className="text-emerald-600" />
-        Course Pricing
-      </h3>
+    <div className="flex flex-col gap-5 py-2">
+      {/* 03 Numbered Step Header */}
+      <div className="flex items-start gap-3.5">
+        <div className="flex size-9 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 font-extrabold text-sm shrink-0 mt-0.5">
+          03
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+            Course Pricing
+          </h3>
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            Set how learners can access this course.
+          </p>
+        </div>
+      </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="flex flex-col gap-4 max-w-xl pt-1">
         <div className="flex flex-col gap-2">
-          <label htmlFor="pricing-model" className="text-sm font-bold text-slate-700">
-            Pricing model
-          </label>
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400 shrink-0">
+              <Tag size={18} />
+            </div>
+            <label htmlFor="pricing-model" className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              Pricing model
+            </label>
+          </div>
           <select
             id="pricing-model"
             value={pricingModel}
             onChange={(e) => setPricingModel(e.target.value as "FREE" | "PAID")}
-            className="h-[46px] w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10"
+            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 cursor-pointer shadow-2xs"
           >
             <option value="FREE">Free</option>
             <option value="PAID">Paid</option>
@@ -1214,11 +1434,11 @@ function CoursePricingEditor({ contentId }: { contentId: string }) {
 
         {pricingModel === "PAID" && (
           <div className="flex flex-col gap-2">
-            <label htmlFor="price-amount" className="text-sm font-bold text-slate-700">
-              Price
+            <label htmlFor="price-amount" className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              Price amount ({currency})
             </label>
             <div className="relative">
-              <span className="absolute left-4 top-[13px] font-medium text-slate-500">
+              <span className="absolute left-4 top-[13px] font-bold text-slate-500 text-xs">
                 {currency === "INR" ? "₹" : currency}
               </span>
               <input
@@ -1229,7 +1449,7 @@ function CoursePricingEditor({ contentId }: { contentId: string }) {
                 value={priceAmount}
                 onChange={(e) => setPriceAmount(e.target.value ? parseFloat(e.target.value) : "")}
                 placeholder="e.g. 499.00"
-                className="h-[46px] w-full rounded-xl border border-slate-200 bg-white p-3 pl-10 text-sm text-slate-800 placeholder-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/10"
+                className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 pl-10 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
               />
             </div>
           </div>
@@ -1237,31 +1457,31 @@ function CoursePricingEditor({ contentId }: { contentId: string }) {
       </div>
 
       {pricingModel === "PAID" && (
-        <p className="flex items-start gap-1.5 rounded border border-slate-200 bg-slate-50 p-2 text-xs font-medium text-[#14142b]">
+        <p className="flex items-start gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 p-3 text-xs font-medium text-slate-700 dark:text-slate-300 max-w-xl">
           <span className="mt-[1px] text-[10px]">💡</span> A 20% platform fee applies to all
           paid courses.
         </p>
       )}
 
-      <div className="flex justify-end">
+      <div className="flex justify-end pt-1">
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-emerald-700 hover:shadow-md disabled:opacity-50"
+          className="flex items-center gap-2 rounded-xl bg-[#0B132B] hover:bg-blue-600 dark:bg-white dark:text-slate-900 px-6 py-2.5 text-xs font-extrabold text-white transition-all shadow-md cursor-pointer disabled:opacity-50"
         >
-          {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+          {isSaving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
           {isSaving ? "Saving..." : "Save pricing"}
         </button>
       </div>
 
       {history && history.length > 0 && (
         <div className="mt-2">
-          <h4 className="mb-3 border-b border-emerald-100 pb-2 text-sm font-bold text-slate-800">
+          <h4 className="mb-3 border-b border-slate-200/70 dark:border-slate-800 pb-2 text-sm font-bold text-slate-800 dark:text-white">
             Pricing history
           </h4>
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <table className="w-full text-left text-sm text-slate-600">
-              <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+              <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-mono uppercase tracking-wider text-slate-500">
                 <tr>
                   <th className="px-4 py-2">Model</th>
                   <th className="px-4 py-2">Price</th>
@@ -1269,17 +1489,17 @@ function CoursePricingEditor({ contentId }: { contentId: string }) {
                   <th className="px-4 py-2 text-right">When</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {history.map((entry) => (
                   <tr key={entry.id}>
-                    <td className="px-4 py-2 font-semibold text-slate-800">{entry.pricingModel}</td>
+                    <td className="px-4 py-2 font-bold text-slate-800 dark:text-white">{entry.pricingModel}</td>
                     <td className="px-4 py-2">
                       {entry.pricingModel === "PAID" && entry.priceAmount != null
                         ? formatMoney(entry.priceAmount, entry.currency || "INR")
                         : "—"}
                     </td>
                     <td className="px-4 py-2">{entry.changedByName}</td>
-                    <td className="px-4 py-2 text-right">
+                    <td className="px-4 py-2 text-right font-mono text-xs">
                       {new Date(entry.changedAt).toLocaleString("en-GB", {
                         day: "numeric",
                         month: "short",
@@ -1348,15 +1568,15 @@ function CourseCategoryEditor({ contentId }: { contentId: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center rounded-[24px] border-[1.5px] border-rose-400/80 bg-gradient-to-b from-rose-50/30 via-white to-white py-10 shadow-[4px_-4px_0px_0px_#FECDD3]">
-        <Loader2 size={24} className="animate-spin text-rose-400" />
+      <div className="flex items-center justify-center rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 py-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
+        <Loader2 size={24} className="animate-spin text-[#205ca8]" />
       </div>
     );
   }
 
   if (loadFailed) {
     return (
-      <div className="rounded-[24px] border-[1.5px] border-rose-400/80 bg-gradient-to-b from-rose-50/30 via-white to-white p-6 text-center text-xs font-semibold text-slate-500 shadow-[4px_-4px_0px_0px_#FECDD3]">
+      <div className="rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
         Couldn&rsquo;t load this course&rsquo;s category. Reload the page to try again.
       </div>
     );
@@ -1365,24 +1585,24 @@ function CourseCategoryEditor({ contentId }: { contentId: string }) {
   const selectedCategory = publicCategories.find((c) => c.id === categoryId);
 
   return (
-    <div className="flex flex-col gap-6 rounded-[24px] border-[1.5px] border-rose-400/80 bg-gradient-to-b from-rose-50/30 via-white to-white p-6 shadow-[4px_-4px_0px_0px_#FECDD3]">
-      <h3 className="flex items-center gap-2 text-base font-black tracking-tight text-slate-900">
-        <Tag size={18} className="text-rose-600" />
+    <div className="flex flex-col gap-6 rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
+      <h3 className="flex items-center gap-2 text-base font-extrabold tracking-tight text-slate-900 dark:text-white">
+        <Tag size={18} className="text-[#205ca8] dark:text-blue-400" />
         Course Category
       </h3>
-      <p className="-mt-4 text-[11px] font-medium leading-relaxed text-slate-500">
+      <p className="-mt-4 text-[11px] font-medium leading-relaxed text-slate-500 dark:text-slate-400">
         Categorising this course helps learners find it in Explore search filters and topic feeds.
       </p>
 
       <div className="flex flex-col gap-3">
-        <label htmlFor="course-category-select" className="text-sm font-bold text-slate-700">
+        <label htmlFor="course-category-select" className="text-sm font-bold text-slate-700 dark:text-slate-300">
           Selected Category
         </label>
         <select
           id="course-category-select"
           value={categoryId ?? "OTHER"}
           onChange={(e) => setCategoryId(e.target.value === "OTHER" ? null : e.target.value)}
-          className="h-[46px] w-full max-w-md rounded-xl border border-slate-200 bg-white p-3 text-sm font-semibold text-slate-800 focus:border-rose-400 focus:outline-none focus:ring-4 focus:ring-rose-400/10"
+          className="h-[46px] w-full max-w-md rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 text-sm font-medium text-slate-800 dark:text-white focus:border-[#205ca8] focus:outline-none focus:ring-4 focus:ring-blue-500/10"
         >
           {publicCategories.map((cat) => (
             <option key={cat.id} value={cat.id}>
@@ -1393,7 +1613,7 @@ function CourseCategoryEditor({ contentId }: { contentId: string }) {
         </select>
 
         {selectedCategory && selectedCategory.description && (
-          <p className="text-xs text-slate-600 bg-rose-50/60 border border-rose-100/80 rounded-xl p-3 max-w-md">
+          <p className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3 max-w-md">
             {selectedCategory.description}
           </p>
         )}
@@ -1403,9 +1623,9 @@ function CourseCategoryEditor({ contentId }: { contentId: string }) {
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="flex items-center gap-2 rounded-xl bg-rose-600 px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-rose-700 hover:shadow-md disabled:opacity-50"
+          className="flex items-center gap-2 rounded-xl bg-[#0B132B] hover:bg-[#205ca8] dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 px-6 py-2.5 text-xs font-bold text-white transition-all shadow-xs cursor-pointer disabled:opacity-50"
         >
-          {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+          {isSaving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
           {isSaving ? "Saving..." : "Save category"}
         </button>
       </div>

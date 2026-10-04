@@ -176,7 +176,7 @@ export function UserAccessDrawer({
                   className="object-cover"
                   referrerPolicy="no-referrer"
                 />
-                <AvatarFallback className="bg-slate-100 text-[#14142b] font-semibold text-sm">
+                <AvatarFallback className="bg-slate-100 text-ink font-semibold text-sm">
                   {user.firstName?.charAt(0) ?? 'U'}
                   {user.lastName?.charAt(0) ?? ''}
                 </AvatarFallback>
@@ -223,8 +223,8 @@ export function UserAccessDrawer({
                         <li key={entry.id} className="text-xs text-gray-600">
                           <span className="font-semibold text-gray-800">{entry.actorName ?? 'System'}</span>{' '}
                           {(entry.action ?? 'PLATFORM_ROLES_REPLACED').toLowerCase().replace(/_/g, ' ')}
-                          {entry.addedRoles && <span className="text-emerald-600"> +{entry.addedRoles}</span>}
-                          {entry.removedRoles && <span className="text-rose-600"> -{entry.removedRoles}</span>}
+                          {entry.addedRoles && <span className="text-emerald-600 dark:text-emerald-400"> +{entry.addedRoles}</span>}
+                          {entry.removedRoles && <span className="text-rose-600 dark:text-rose-400"> -{entry.removedRoles}</span>}
                           <span className="text-gray-400"> · {timeAgo(entry.createdAt)}</span>
                         </li>
                       ))}

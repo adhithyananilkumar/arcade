@@ -21,7 +21,6 @@ import {
   GraduationCap,
   MoreVertical,
   NotebookPen,
-  Sparkles,
   Star,
   RotateCcw,
 } from 'lucide-react';
@@ -114,7 +113,7 @@ export function CoursePlayer({
   const [collapsedModules, setCollapsedModules] = useState<Record<string, boolean>>({});
   const toggleModule = (moduleId: string) =>
     setCollapsedModules((prev) => ({ ...prev, [moduleId]: !prev[moduleId] }));
-  const [rightPanelTab, setRightPanelTab] = useState<'notes' | 'ai'>('notes');
+
   const [rightPanelWidth, setRightPanelWidth] = useState(380);
 
   const noteAnchor = useMemo(
@@ -363,9 +362,9 @@ export function CoursePlayer({
     return (
       <main
         className="flex min-h-screen items-center justify-center"
-        style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
+        style={{ background: 'var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%))' }}
       >
-        <div className="size-8 animate-spin rounded-full border-2 border-[#14142b] border-t-transparent" />
+        <div className="size-8 animate-spin rounded-full border-2 border-ink border-t-transparent" />
       </main>
     );
   }
@@ -373,8 +372,8 @@ export function CoursePlayer({
   if (!course) {
     return (
       <main
-        className="flex min-h-screen flex-col items-center justify-center px-4 text-[#14142b]"
-        style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
+        className="flex min-h-screen flex-col items-center justify-center px-4 text-ink"
+        style={{ background: 'var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%))' }}
       >
         <h2 className="mb-2 text-xl font-bold">Course not found</h2>
         <p className="mb-6 text-sm font-medium text-slate-500">
@@ -383,7 +382,7 @@ export function CoursePlayer({
         <button
           type="button"
           onClick={() => (isPreview ? onExitPreview?.() || router.push(`/studio/content/course/${courseId}`) : router.back())}
-          className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#232735]"
+          className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink transition-colors hover:bg-ink-hover"
         >
           Go back
         </button>
@@ -397,7 +396,7 @@ export function CoursePlayer({
     <div
       className="relative min-h-screen w-full"
       style={{
-        background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)',
+        background: 'var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%))',
       }}
     >
       <div
@@ -411,9 +410,9 @@ export function CoursePlayer({
 
       {/* Creator Preview Top Banner */}
       {isPreview && (
-        <div className="sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 border-b border-amber-300/60 bg-amber-50/95 px-4 py-2.5 backdrop-blur-md sm:px-8 shadow-xs">
-          <div className="flex items-center gap-2 text-[13px] font-medium text-amber-950">
-            <span className="rounded-full bg-amber-200/90 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-900">
+        <div className="sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 border-b border-amber-300/60 bg-amber-50/95 px-4 py-2.5 backdrop-blur-md sm:px-8 shadow-xs dark:border-amber-500/40 dark:bg-amber-500/10">
+          <div className="flex items-center gap-2 text-[13px] font-medium text-amber-950 dark:text-amber-200">
+            <span className="rounded-full bg-amber-200/90 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-900 dark:bg-amber-500/20 dark:text-amber-200">
               Creator Preview Mode
             </span>
             <span>
@@ -433,7 +432,7 @@ export function CoursePlayer({
                 });
                 toast.success('Preview progress reset.');
               }}
-              className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/80 bg-white px-3 py-1 text-[12px] font-semibold text-amber-900 transition-colors hover:bg-amber-100/50 cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/80 bg-surface px-3 py-1 text-[12px] font-semibold text-amber-900 transition-colors hover:bg-amber-100/50 cursor-pointer shadow-xs dark:border-amber-500/40 dark:text-amber-200 dark:hover:bg-amber-500/15"
             >
               <RotateCcw size={12} />
               <span>Reset Progress</span>
@@ -441,7 +440,7 @@ export function CoursePlayer({
             <button
               type="button"
               onClick={() => (onExitPreview ? onExitPreview() : router.push(`/studio/content/course/${courseId}`))}
-              className="rounded-full bg-[#14142b] px-3.5 py-1 text-[12px] font-semibold text-white transition-colors hover:bg-[#232735] cursor-pointer shadow-xs"
+              className="rounded-full bg-ink px-3.5 py-1 text-[12px] font-semibold text-on-ink transition-colors hover:bg-ink-hover cursor-pointer shadow-xs"
             >
               Exit Preview
             </button>
@@ -465,14 +464,14 @@ export function CoursePlayer({
                       <button
                         type="button"
                         onClick={() => toggleModule(mod.id)}
-                        className="group flex w-full items-center gap-2 rounded-2xl border border-white/40 bg-white/60 px-3.5 py-2.5 text-left shadow-sm backdrop-blur-md transition-all hover:border-white/60 hover:bg-white/80"
+                        className="group flex w-full items-center gap-2 rounded-2xl border border-white/40 bg-surface/60 px-3.5 py-2.5 text-left shadow-sm backdrop-blur-md transition-all hover:border-surface/60 hover:bg-surface/80"
                       >
                         {isCollapsed ? (
-                          <ChevronRight size={15} className="flex-shrink-0 text-[#14142b]/50" />
+                          <ChevronRight size={15} className="flex-shrink-0 text-ink/50" />
                         ) : (
-                          <ChevronDown size={15} className="flex-shrink-0 text-[#14142b]/50" />
+                          <ChevronDown size={15} className="flex-shrink-0 text-ink/50" />
                         )}
-                        <span className="flex-1 truncate text-[13px] font-bold text-[#14142b]">
+                        <span className="flex-1 truncate text-[13px] font-bold text-ink">
                           {mod.title?.trim() ? mod.title : `Module ${modIdx + 1}`}
                         </span>
                       </button>
@@ -488,7 +487,7 @@ export function CoursePlayer({
                                 <div
                                   key={item.id}
                                   className={`group flex items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
-                                    isSelected ? 'bg-[#14142b] shadow-md' : 'bg-white/50 hover:bg-white/80'
+                                    isSelected ? 'bg-ink shadow-md' : 'bg-surface/50 hover:bg-surface/80'
                                   }`}
                                 >
                                   <button
@@ -501,7 +500,7 @@ export function CoursePlayer({
                                     <GraduationCap size={13} className="flex-shrink-0" />
                                     <span className="truncate">{item.assessment.title}</span>
                                     {item.assessment.requiredForCompletion && (
-                                      <span className="flex-shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-700">
+                                      <span className="flex-shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
                                         Required
                                       </span>
                                     )}
@@ -516,7 +515,7 @@ export function CoursePlayer({
                               <div
                                 key={lesson.id}
                                 className={`group/item flex items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
-                                  isSelected ? 'bg-[#14142b] shadow-md' : 'bg-white/50 hover:bg-white/80'
+                                  isSelected ? 'bg-ink shadow-md' : 'bg-surface/50 hover:bg-surface/80'
                                 }`}
                               >
                                 <button
@@ -552,7 +551,7 @@ export function CoursePlayer({
                                     } ${
                                       isSelected
                                         ? 'text-white/70 hover:bg-white/15 hover:text-white'
-                                        : 'text-[#14142b]/50 hover:bg-[#14142b]/10 hover:text-[#14142b]'
+                                        : 'text-ink/50 hover:bg-ink/10 hover:text-ink'
                                     }`}
                                     title="Lesson options"
                                   >
@@ -568,7 +567,7 @@ export function CoursePlayer({
                                           setActiveMenuLessonId(null);
                                         }}
                                       />
-                                      <div className="absolute right-0 top-full mt-1 z-40 w-32 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
+                                      <div className="absolute right-0 top-full mt-1 z-40 w-32 rounded-xl border border-slate-200 bg-surface p-1 shadow-lg">
                                         <button
                                           type="button"
                                           onClick={(e) => {
@@ -582,7 +581,7 @@ export function CoursePlayer({
                                             });
                                             setReportModalOpen(true);
                                           }}
-                                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-red-50 hover:text-red-600"
+                                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                                         >
                                           <Flag size={13} />
                                           <span>Report</span>
@@ -605,7 +604,7 @@ export function CoursePlayer({
             {progress && progress.totalLessons > 0 && (
               <div className="space-y-2 px-5 pt-3 pb-5 md:px-6">
                 {progress.enrollmentStatus === 'COMPLETED' && (
-                  <p className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                  <p className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                     <CheckCircle2 size={12} />
                     Course completed
                   </p>
@@ -614,7 +613,7 @@ export function CoursePlayer({
                   <span>
                     {progress.completedLessons} of {progress.totalLessons}
                   </span>
-                  <span className="tabular-nums text-[#14142b]">{progress.percent}%</span>
+                  <span className="tabular-nums text-ink">{progress.percent}%</span>
                 </div>
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200/80">
                   <div
@@ -643,13 +642,13 @@ export function CoursePlayer({
             ) : selectedLesson ? (
               <>
                 <div className="min-h-[42vh] flex-1 rounded-3xl border border-white/40 bg-white/30 px-5 py-7 shadow-lg backdrop-blur-xl sm:px-8 sm:py-9 md:px-12 md:py-11">
-                  <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-[#14142b] prose-a:text-[#FF6B4A] hover:prose-a:text-[#D94F32] prose-p:text-slate-700">
+                  <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-ink prose-a:text-[#FF6B4A] hover:prose-a:text-[#D94F32] prose-p:text-slate-700 dark:hover:prose-a:text-[#ff8d71]">
                     {selectedLesson.body ? (
                       <TiptapContentView body={selectedLesson.body} />
                     ) : (
                       <div className="rounded-2xl border border-white/40 bg-white/20 px-6 py-14 text-center backdrop-blur-md">
                         <BookOpen size={36} className="mx-auto mb-3 text-slate-300" />
-                        <p className="text-[15px] font-semibold text-[#14142b]">No content yet</p>
+                        <p className="text-[15px] font-semibold text-ink">No content yet</p>
                         <p className="mt-1 text-sm text-slate-400">
                           This lesson does not have material published.
                         </p>
@@ -665,7 +664,7 @@ export function CoursePlayer({
                       <button
                         type="button"
                         onClick={handlePrevious}
-                        className="inline-flex items-center gap-2 rounded-full bg-white/70 backdrop-blur-md px-4 py-2.5 text-[13px] font-semibold text-[#14142b] transition-colors hover:bg-white"
+                        className="inline-flex items-center gap-2 rounded-full bg-surface/70 backdrop-blur-md px-4 py-2.5 text-[13px] font-semibold text-ink transition-colors hover:bg-surface"
                       >
                         <ChevronLeft size={16} />
                         Previous
@@ -679,7 +678,7 @@ export function CoursePlayer({
                         type="button"
                         onClick={handleNext}
                         disabled={marking}
-                        className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
+                        className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-on-ink shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-ink-hover disabled:opacity-60"
                       >
                         {marking ? 'Saving…' : lessonDone ? 'Next' : 'Complete & next'}
                         <ChevronRight size={16} />
@@ -712,7 +711,7 @@ export function CoursePlayer({
             ) : (
               <div className="flex min-h-[50vh] flex-col items-center justify-center rounded-3xl border border-white/40 bg-white/30 px-6 py-16 text-center shadow-lg backdrop-blur-xl">
                 <BookOpen size={40} className="mb-3 text-slate-300" />
-                <p className="text-lg font-bold text-[#14142b]">Pick a lesson</p>
+                <p className="text-lg font-bold text-ink">Pick a lesson</p>
                 <p className="mt-1 text-sm text-slate-400">Choose one from the sidebar to start.</p>
               </div>
             )}
@@ -733,53 +732,23 @@ export function CoursePlayer({
           style={isDesktopViewport ? { width: rightPanelWidth } : undefined}
         >
           <div className="flex flex-col gap-3 h-full px-5 pb-8 md:px-4">
-            <div className="flex items-center gap-1.5 rounded-full border border-white/40 bg-white/30 p-1 shadow-lg backdrop-blur-xl">
-              <button
-                type="button"
-                onClick={() => setRightPanelTab('notes')}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[12px] font-semibold transition-all ${
-                  rightPanelTab === 'notes'
-                    ? 'bg-[#14142b] text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)]'
-                    : 'text-slate-500 hover:text-[#14142b]'
-                }`}
-              >
-                <NotebookPen size={13} />
-                Notes
-              </button>
-              <button
-                type="button"
-                onClick={() => setRightPanelTab('ai')}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[12px] font-semibold transition-all ${
-                  rightPanelTab === 'ai'
-                    ? 'bg-[#14142b] text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)]'
-                    : 'text-slate-500 hover:text-[#14142b]'
-                }`}
-              >
-                <Sparkles size={13} />
-                AI Chat
-              </button>
+            <div className="flex items-center gap-2 rounded-full border border-white/40 bg-white/30 px-4 py-2.5 shadow-lg backdrop-blur-xl">
+              <NotebookPen size={16} className="text-ink" />
+              <h2 className="text-sm font-bold text-ink">Notes</h2>
             </div>
 
             <div className="flex h-full flex-1 flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/30 p-4 shadow-lg backdrop-blur-xl">
-              {rightPanelTab === 'notes' ? (
-                <NotesEditor
-                  key={noteEditorKey}
-                  content={noteInitialBody}
-                  onChange={handleNoteSave}
-                  saveStatus={noteSaveStatus}
-                  placeholder={
-                    selectedItem
-                      ? `Jot notes for ${selectedItem.kind === 'lesson' ? selectedItem.lesson.title : selectedItem.assessment.title}…`
-                      : 'Jot notes for this course…'
-                  }
-                />
-              ) : (
-                <div className="flex h-full min-h-[50vh] flex-col items-center justify-center text-center">
-                  <Sparkles size={28} className="mb-3 text-slate-300" />
-                  <p className="text-[13px] font-semibold text-[#14142b]">AI chat coming soon</p>
-                  <p className="mt-1 text-[12px] text-slate-400">Ask questions about this lesson.</p>
-                </div>
-              )}
+              <NotesEditor
+                key={noteEditorKey}
+                content={noteInitialBody}
+                onChange={handleNoteSave}
+                saveStatus={noteSaveStatus}
+                placeholder={
+                  selectedItem
+                    ? `Jot notes for ${selectedItem.kind === 'lesson' ? selectedItem.lesson.title : selectedItem.assessment.title}…`
+                    : 'Jot notes for this course…'
+                }
+              />
             </div>
           </div>
         </aside>

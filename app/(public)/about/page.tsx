@@ -54,8 +54,8 @@ export default function AboutPage() {
     <div className="landing-root min-h-screen flex flex-col relative z-10 bg-slate-50 overflow-hidden font-sans text-slate-900">
       {/* Background Gradients */}
       <div className="fixed inset-0 pointer-events-none -z-10 bg-slate-50">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-100/50 rounded-full blur-[120px] opacity-70" />
-        <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-indigo-50/50 rounded-full blur-[100px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-100/50 rounded-full blur-[120px] opacity-70 dark:bg-blue-500/15" />
+        <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-indigo-50/50 rounded-full blur-[100px] dark:bg-indigo-500/10" />
       </div>
 
       {/* --- HERO SECTION --- */}
@@ -63,7 +63,7 @@ export default function AboutPage() {
         ref={headerRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="relative w-full h-[100vh] min-h-[100vh] flex flex-col justify-center items-center text-center px-6 overflow-hidden z-10 bg-white pt-24 md:pt-28"
+        className="relative w-full h-[100vh] min-h-[100vh] flex flex-col justify-center items-center text-center px-6 overflow-hidden z-10 bg-surface pt-24 md:pt-28"
       >
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap');
@@ -120,7 +120,7 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-[52px] sm:text-[68px] md:text-[76px] lg:text-[84px] tracking-tight leading-[1.05] text-[#0B132B] drop-shadow-[0_4px_16px_rgba(11,19,43,0.04)] text-center"
+            className="text-[52px] sm:text-[68px] md:text-[76px] lg:text-[84px] tracking-tight leading-[1.05] text-ink drop-shadow-[0_4px_16px_rgba(11,19,43,0.04)] text-center"
             style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', Georgia, serif", fontWeight: 600 }}
           >
             <span className="block">
@@ -155,7 +155,7 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.25, ease: "easeOut" }}
-            className="text-[18px] sm:text-[19px] leading-[1.75] text-[#475569] max-w-[560px] mx-auto font-sans font-normal drop-shadow-[0_2px_8px_rgba(11,19,43,0.02)]"
+            className="text-[18px] sm:text-[19px] leading-[1.75] text-slate-600 max-w-[560px] mx-auto font-sans font-normal drop-shadow-[0_2px_8px_rgba(11,19,43,0.02)]"
           >
             Arcade is AJCE's official platform for learning, innovation, and collaboration, offering certified webinars, hackathons, workshops, and engaging community experiences.
           </motion.p>
@@ -169,16 +169,16 @@ export default function AboutPage() {
           >
             <Link
               href="/explore"
-              className="relative inline-flex items-center gap-3 px-6 py-3.5 rounded-full bg-[#0B132B] hover:bg-[#121E42] text-white font-medium text-base shadow-[0_10px_30px_-8px_rgba(11,19,43,0.35)] hover:shadow-[0_16px_36px_-6px_rgba(11,19,43,0.45)] border-t border-white/20 hover:-translate-y-[3px] active:translate-y-0 transition-all duration-250 ease-out group"
+              className="relative inline-flex items-center gap-3 px-6 py-3.5 rounded-full bg-ink hover:bg-[#121E42] text-on-ink font-medium text-base shadow-[0_10px_30px_-8px_rgba(11,19,43,0.35)] hover:shadow-[0_16px_36px_-6px_rgba(11,19,43,0.45)] border-t border-white/20 hover:-translate-y-[3px] active:translate-y-0 transition-all duration-250 ease-out group"
             >
               <span>Learn More</span>
-              <span className="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-inner group-hover:translate-x-[4px] transition-transform duration-250 ease-out">
-                <ArrowUpRight className="w-4 h-4 text-[#0B132B] stroke-[2.5]" />
+              <span className="w-7 h-7 rounded-full bg-surface flex items-center justify-center shadow-inner group-hover:translate-x-[4px] transition-transform duration-250 ease-out">
+                <ArrowUpRight className="w-4 h-4 text-ink stroke-[2.5]" />
               </span>
             </Link>
             <button
               disabled
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white border border-slate-200 text-slate-400 font-semibold text-base cursor-not-allowed opacity-70"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-surface border border-slate-200 text-slate-400 font-semibold text-base cursor-not-allowed opacity-70"
               title="Verification feature coming soon"
             >
               <ShieldCheck size={18} />
@@ -301,7 +301,7 @@ function AJCESection() {
       description: "Highly accredited with a NAAC A+ grade alongside NBA-accredited engineering programmes.",
       icon: BadgeCheck,
       colorClasses: {
-        numberText: "text-blue-600",
+        numberText: "text-blue-600 dark:text-blue-400",
         hoverBorder: "group-hover:border-blue-600",
         hoverBg: "group-hover:bg-blue-600",
         lineBg: "bg-blue-600",
@@ -322,7 +322,7 @@ function AJCESection() {
   ];
 
   return (
-    <section className="relative bg-gradient-to-b from-slate-50 via-blue-50/60 to-slate-50 text-[#0b1220]">
+    <section className="relative bg-gradient-to-b from-slate-50 via-blue-50/60 to-slate-50 text-ink dark:via-blue-500/10">
       <div ref={sectionRef} className="relative h-[100vh] min-h-[850px] overflow-hidden">
 
         {/* Background */}
@@ -369,7 +369,7 @@ function AJCESection() {
         </svg>
 
         {/* Animated Typography */}
-        <div className="absolute inset-0 z-30 pointer-events-none font-black text-[22vw] md:text-[12vw] tracking-[-0.05em] text-[#0b1220] leading-none">
+        <div className="absolute inset-0 z-30 pointer-events-none font-black text-[22vw] md:text-[12vw] tracking-[-0.05em] text-ink leading-none">
           <motion.div style={{ left: xA, top: yA }} className="absolute -translate-x-1/2 -translate-y-1/2">
             A
           </motion.div>
@@ -389,13 +389,13 @@ function AJCESection() {
           style={{ opacity: finalRevealOpacity }}
           className="absolute left-[8%] md:left-[8%] top-[45%] z-40 max-w-[520px] pr-8 lg:pr-12"
         >
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-[#2563eb]">
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-[#2563eb] dark:text-[#80b5ff]">
             Powered by Amal Jyothi
           </p>
           <h2 className="font-bricolage text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
             College of<br />Engineering
           </h2>
-          <p className="mt-6 max-w-[430px] text-base leading-7 text-[#64748b] pr-4">
+          <p className="mt-6 max-w-[430px] text-base leading-7 text-slate-500 pr-4">
             Arcade is the official learning and event platform of Amal
             Jyothi College of Engineering, where every certificate is
             backed by an institution known for academic excellence,
@@ -410,7 +410,7 @@ function AJCESection() {
           WHY AJCE
       ========================================================= */}
 
-      <section className="relative overflow-hidden bg-[#f8fafc]">
+      <section className="relative overflow-hidden bg-slate-50">
 
         <div className="mx-auto max-w-[1400px] px-6 py-28 sm:px-10 lg:px-16 lg:py-40">
 
@@ -420,7 +420,7 @@ function AJCESection() {
 
             <div>
 
-              <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.3em] text-[#2563eb]">
+              <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.3em] text-[#2563eb] dark:text-[#80b5ff]">
                 Why AJCE
               </p>
 
@@ -429,7 +429,7 @@ function AJCESection() {
                 <br />
                 infrastructure of
                 <br />
-                <span className="text-[#2563eb]">
+                <span className="text-[#2563eb] dark:text-[#80b5ff]">
                   Engineering Education.
                 </span>
               </h3>
@@ -438,7 +438,7 @@ function AJCESection() {
 
             <div className="flex items-center">
 
-              <p className="max-w-2xl text-base md:text-lg leading-8 text-[#64748b]">
+              <p className="max-w-2xl text-base md:text-lg leading-8 text-slate-500">
                 An institution shaped by academic excellence,
                 innovation, accreditation, and a commitment to
                 meaningful industry engagement.
@@ -452,7 +452,7 @@ function AJCESection() {
               FEATURE LIST
           ========================================================= */}
 
-          <div className="mt-24 border-t border-[#0b1220]/15">
+          <div className="mt-24 border-t border-ink/15">
 
             {highlights.map((item, index) => {
 
@@ -484,11 +484,11 @@ function AJCESection() {
                     grid
                     gap-8
                     border-b
-                    border-[#0b1220]/15
+                    border-ink/15
                     py-12
                     transition-colors
                     duration-500
-                    hover:bg-white
+                    hover:bg-surface
                     lg:grid-cols-[100px_1fr_1fr_80px]
                     lg:items-center
                   "
@@ -508,7 +508,7 @@ function AJCESection() {
 
                   {/* Description */}
 
-                  <p className="max-w-md text-sm leading-6 text-[#64748b]">
+                  <p className="max-w-md text-sm leading-6 text-slate-500">
                     {item.description}
                   </p>
 
@@ -522,7 +522,7 @@ function AJCESection() {
                     justify-center
                     rounded-full
                     border
-                    border-[#0b1220]/15
+                    border-ink/15
                     transition-all
                     duration-500
                     ${item.colorClasses.hoverBorder}

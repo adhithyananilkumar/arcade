@@ -163,8 +163,8 @@ export function AnimatedList<T = any>({
             {renderItem ? (
               renderItem(item, index, selectedIndex === index)
             ) : (
-              <div className={`p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 transition-all ${selectedIndex === index ? 'ring-2 ring-purple-500' : ''} ${itemClassName}`}>
-                <p className="text-sm font-semibold text-slate-800 dark:text-white m-0">
+              <div className={`p-4 rounded-xl bg-slate-50 transition-all ${selectedIndex === index ? 'ring-2 ring-purple-500' : ''} ${itemClassName}`}>
+                <p className="text-sm font-semibold text-slate-800 m-0">
                   {typeof item === 'string' ? item : (item as any).title || (item as any).name || JSON.stringify(item)}
                 </p>
               </div>

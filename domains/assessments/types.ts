@@ -829,6 +829,8 @@ export interface ExamHubCard {
   description: string | null;
   purpose: string | null;
   channelName: string | null;
+  /** The channel's picture; for a personal channel, its owner's profile picture. */
+  channelIconUrl: string | null;
   certification: boolean;
   plans: ExamHubPlan[];
   tieType: ExamTieType | null;

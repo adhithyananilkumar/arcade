@@ -41,8 +41,9 @@ export function ContentCard({ item, channelId, openReviews }: CardProps) {
       type={item.type}
       typeLabel={typeLabel(item.type)}
       statusNode={<ContentStatusPill status={item.status} />}
-      authorName={item.authorName}
-      authorUsername={item.authorUsername}
+      description={item.description}
+      channelName={item.channelName}
+      channelIconUrl={item.channelIconUrl}
       dateText={`Updated ${new Date(item.updatedAt).toLocaleDateString()}`}
       actionHref={href || undefined}
       actionLabel="Manage"
@@ -73,7 +74,7 @@ export function ContentRow({ item, channelId, openReviews, compact }: RowProps) 
         <ContentArt seed={item.id} kind={item.type} title={item.title} />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13.5px] font-semibold text-[#14142b] dark:text-white">{item.title || 'Untitled'}</p>
+        <p className="truncate text-[13.5px] font-semibold text-ink">{item.title || 'Untitled'}</p>
         <p className="truncate text-[12px] font-medium text-slate-500">
           {typeLabel(item.type)}
           {item.authorName && <> · {item.authorUsername ? `@${item.authorUsername}` : item.authorName}</>}
@@ -89,7 +90,7 @@ export function ContentRow({ item, channelId, openReviews, compact }: RowProps) 
   return (
     <li>
       {href ? (
-        <Link href={href} className={cn(rowClass, 'transition-colors hover:bg-slate-50 dark:hover:bg-neutral-900')}>
+        <Link href={href} className={cn(rowClass, 'transition-colors hover:bg-slate-50')}>
           {body}
         </Link>
       ) : (
@@ -159,8 +160,8 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
               className={cn(
                 'inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-1.5 text-[12px] font-semibold transition-colors',
                 status === f.id
-                  ? 'bg-[#14142b] text-white'
-                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50',
+                  ? 'bg-ink text-on-ink'
+                  : 'border border-slate-200 bg-surface text-slate-600 hover:bg-slate-50',
               )}
             >
               {f.label}
@@ -182,7 +183,7 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
               value={type}
               onChange={(e) => setType(e.target.value)}
               aria-label="Content type"
-              className="h-9 cursor-pointer rounded-full border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+              className="h-9 cursor-pointer rounded-full border border-slate-200 bg-surface px-3 text-[12px] font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
             >
               <option value="ALL">All types</option>
               {types.map((t) => (
@@ -200,17 +201,17 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search title or author"
-              className="h-9 w-full rounded-full border border-slate-200 bg-white pl-9 pr-3 text-[12.5px] font-medium text-slate-800 placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+              className="h-9 w-full rounded-full border border-slate-200 bg-surface pl-9 pr-3 text-[12.5px] font-medium text-slate-800 placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
             />
           </div>
 
-          <div className="hidden sm:flex items-center rounded-full border border-slate-200 bg-white p-0.5">
+          <div className="hidden sm:flex items-center rounded-full border border-slate-200 bg-surface p-0.5">
             <button
               type="button"
               onClick={() => setViewMode('grid')}
               className={cn(
                 'flex h-7.5 w-7.5 items-center justify-center rounded-full transition-colors',
-                viewMode === 'grid' ? 'bg-[#14142b] text-white' : 'text-slate-500 hover:text-slate-800',
+                viewMode === 'grid' ? 'bg-ink text-on-ink' : 'text-slate-500 hover:text-slate-800',
               )}
               title="Grid view"
             >
@@ -221,7 +222,7 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
               onClick={() => setViewMode('list')}
               className={cn(
                 'flex h-7.5 w-7.5 items-center justify-center rounded-full transition-colors',
-                viewMode === 'list' ? 'bg-[#14142b] text-white' : 'text-slate-500 hover:text-slate-800',
+                viewMode === 'list' ? 'bg-ink text-on-ink' : 'text-slate-500 hover:text-slate-800',
               )}
               title="List view"
             >
@@ -232,8 +233,8 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-200 bg-white/60 px-6 py-14 text-center dark:border-neutral-800 dark:bg-neutral-900/60">
-          <p className="text-[14px] font-semibold text-[#14142b] dark:text-white">
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-surface/60 px-6 py-14 text-center">
+          <p className="text-[14px] font-semibold text-ink">
             {content.length === 0 ? 'No content yet' : 'Nothing matches these filters'}
           </p>
           <p className="mt-1 text-[12.5px] font-medium text-slate-500">
@@ -250,7 +251,7 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
         </div>
       ) : (
         <Panel padded={false} className="p-2">
-          <ul className="divide-y divide-slate-100 dark:divide-neutral-800">
+          <ul className="divide-y divide-slate-100">
             {filtered.map((item) => (
               <ContentRow key={item.id} item={item} channelId={channelId} openReviews={openReviews} />
             ))}

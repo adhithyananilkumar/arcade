@@ -65,7 +65,7 @@ export function BadgeDetailPanel({ badge, tiers, onClose, onChanged }: BadgeDeta
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-              className="flex w-screen max-w-md flex-col overflow-y-auto border-l border-slate-200/80 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900 sm:max-w-[480px] sm:p-8"
+              className="flex w-screen max-w-md flex-col overflow-y-auto border-l border-slate-200/80 bg-surface p-6 shadow-2xl sm:max-w-[480px] sm:p-8"
             >
               <PanelBody key={badge.credentialCode} badge={badge} tiers={tiers} onClose={onClose} onChanged={onChanged} />
             </motion.div>
@@ -123,16 +123,16 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
   };
 
   const secondary =
-    'inline-flex items-center justify-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800';
+    'inline-flex items-center justify-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md border border-slate-200 bg-surface px-4 py-2.5 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50';
 
   return (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
         <button
           type="button"
           onClick={onClose}
-          className="group/back rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+          className="group/back rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
           title="Go back to Achievements"
         >
           <ArrowLeft className="h-5 w-5 transition-transform group-hover/back:-translate-x-0.5" />
@@ -140,7 +140,7 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
         <button
           type="button"
           onClick={onClose}
-          className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-white"
+          className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
           title="Close"
         >
           <X className="h-5 w-5" />
@@ -180,20 +180,20 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
         </div>
 
         <span className={cn('rounded-full border px-3 py-1 text-xs font-semibold', style.chip)}>{badge.badgeClass.tier.label}</span>
-        <h2 className="mt-3 text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">{badge.name}</h2>
-        <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+        <h2 className="mt-3 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">{badge.name}</h2>
+        <p className="mt-1.5 text-sm text-slate-500">
           {badge.badgeClass.family.label} · issued by{' '}
           {badge.issuerHandle ? (
-            <Link href={`/${badge.issuerHandle}`} className="font-bold text-slate-800 hover:underline dark:text-slate-200">
+            <Link href={`/${badge.issuerHandle}`} className="font-bold text-slate-800 hover:underline">
               {badge.issuerName}
             </Link>
           ) : (
-            <span className="font-bold text-slate-800 dark:text-slate-200">{badge.issuerName}</span>
+            <span className="font-bold text-slate-800">{badge.issuerName}</span>
           )}
         </p>
         <div className="mt-2 flex items-center justify-center gap-1.5 text-xs font-bold">
           {badge.revoked ? (
-            <span className="flex items-center gap-1.5 text-rose-600">
+            <span className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
               <ShieldAlert className="h-4 w-4" /> Revoked{badge.revokedReason ? ` — ${badge.revokedReason}` : ''}
             </span>
           ) : (
@@ -206,11 +206,11 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
 
       <div className="space-y-5">
         {/* Criteria */}
-        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4">
           <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Earning criteria</p>
-          <p className="mt-1.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{badge.criteria}</p>
+          <p className="mt-1.5 text-sm leading-relaxed text-slate-700">{badge.criteria}</p>
           {badge.contentPath && (
-            <Link href={badge.contentPath} className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-[#2962D6] hover:underline">
+            <Link href={badge.contentPath} className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-[#2962D6] hover:underline dark:text-[#7eb5ff]">
               View the {badge.contentType.toLowerCase()} <ExternalLink size={11} />
             </Link>
           )}
@@ -220,16 +220,16 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Credential ID</p>
           <div className="mt-1.5 flex items-center gap-2">
-            <code className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono text-sm font-bold tracking-wider text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+            <code className="rounded-lg border border-slate-200 bg-surface px-3 py-1.5 font-mono text-sm font-bold tracking-wider text-slate-800">
               {badge.credentialCode}
             </code>
             <button
               type="button"
               onClick={() => copy(badge.credentialCode, 'id')}
-              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-800"
+              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
               aria-label="Copy credential ID"
             >
-              {copied === 'id' ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+              {copied === 'id' ? <Check size={14} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={14} />}
             </button>
           </div>
         </div>
@@ -240,7 +240,7 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
             <Link
               href={credentialPath(badge.credentialCode)}
               target="_blank"
-              className="col-span-2 inline-flex items-center justify-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] px-4 py-3 text-xs font-bold text-white transition-colors hover:bg-[#232735] dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+              className="col-span-2 inline-flex items-center justify-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-ink px-4 py-3 text-xs font-bold text-on-ink transition-colors hover:bg-ink-hover"
             >
               <ExternalLink size={14} /> Open credential page
             </Link>
@@ -253,7 +253,7 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
               <LinkedInGlyph size={14} /> Add to LinkedIn
             </a>
             <button type="button" onClick={() => copy(publicUrl, 'link')} className={cn(secondary, 'col-span-2')}>
-              {copied === 'link' ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />} Copy share link
+              {copied === 'link' ? <Check size={14} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={14} />} Copy share link
             </button>
             <button type="button" onClick={() => download('png')} disabled={downloading !== null} className={secondary}>
               {downloading === 'png' ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />} PNG
@@ -270,12 +270,12 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
             type="button"
             onClick={toggleVisibility}
             disabled={savingVisibility}
-            className="flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200/80 px-4 py-3 text-left transition hover:bg-slate-50 disabled:opacity-60 dark:border-slate-800 dark:hover:bg-slate-800/60"
+            className="flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200/80 px-4 py-3 text-left transition hover:bg-slate-50 disabled:opacity-60"
           >
             <span className="flex items-center gap-3">
-              {badge.publicVisible ? <Eye size={16} className="text-emerald-600" /> : <EyeOff size={16} className="text-slate-400" />}
+              {badge.publicVisible ? <Eye size={16} className="text-emerald-600 dark:text-emerald-400" /> : <EyeOff size={16} className="text-slate-400" />}
               <span>
-                <span className="block text-sm font-bold text-slate-800 dark:text-slate-100">{badge.publicVisible ? 'Public' : 'Private'}</span>
+                <span className="block text-sm font-bold text-slate-800">{badge.publicVisible ? 'Public' : 'Private'}</span>
                 <span className="block text-xs text-slate-500">
                   {badge.publicVisible
                     ? 'Shown on your profile; anyone with the link can view and verify it.'
@@ -283,8 +283,8 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
                 </span>
               </span>
             </span>
-            <span aria-hidden className={cn('relative h-6 w-11 shrink-0 rounded-full transition-colors', badge.publicVisible ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700')}>
-              <span className={cn('absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all', badge.publicVisible ? 'left-[22px]' : 'left-0.5')} />
+            <span aria-hidden className={cn('relative h-6 w-11 shrink-0 rounded-full transition-colors', badge.publicVisible ? 'bg-emerald-500' : 'bg-slate-300')}>
+              <span className={cn('absolute top-0.5 h-5 w-5 rounded-full bg-surface shadow transition-all', badge.publicVisible ? 'left-[22px]' : 'left-0.5')} />
             </span>
           </button>
         )}

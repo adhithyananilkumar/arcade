@@ -127,7 +127,7 @@ export function PolicyManager() {
             </div>
             <input
               type="text"
-              className="block w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm focus:border-[#14142b]/30 focus:outline-none focus:ring-1 focus:ring-slate-300 shadow-sm"
+              className="block w-full rounded-xl border border-gray-200 bg-surface py-2.5 pl-10 pr-4 text-sm focus:border-ink/30 focus:outline-none focus:ring-1 focus:ring-slate-300 shadow-sm"
               placeholder="Search policies…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -139,7 +139,7 @@ export function PolicyManager() {
                 setEditingRole(null);
                 setIsModalOpen(true);
               }}
-              className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#14142b] hover:bg-[#232735] rounded-lg transition-colors shrink-0"
+              className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-on-ink bg-ink hover:bg-ink-hover rounded-lg transition-colors shrink-0"
             >
               <Plus size={16} /> Create Policy
             </button>
@@ -158,14 +158,14 @@ export function PolicyManager() {
             new Set((role.permissions ?? []).map((p) => SURFACE_LABEL[(p.surface as ConsoleSurface) ?? 'SYSTEM']))
           );
           return (
-            <div key={role.id} className="p-5 rounded-xl border border-gray-100 bg-white shadow-sm flex flex-col h-full">
+            <div key={role.id} className="p-5 rounded-xl border border-gray-100 bg-surface shadow-sm flex flex-col h-full">
               <div className="flex items-start justify-between mb-3">
                 <div className="min-w-0">
                   <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                    <ShieldCheck size={18} className="text-[#14142b] shrink-0" />
+                    <ShieldCheck size={18} className="text-ink shrink-0" />
                     <span className="truncate">{role.displayName}</span>
                     <span className={`shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full ${
-                      role.systemRole ? 'bg-gray-100 text-gray-600' : 'bg-indigo-50 text-indigo-600'
+                      role.systemRole ? 'bg-gray-100 text-gray-600' : 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400'
                     }`}>
                       {role.systemRole ? 'System' : 'Custom'}
                     </span>
@@ -176,7 +176,7 @@ export function PolicyManager() {
                   {canManagePolicies && !role.systemRole && (
                     <button
                       onClick={() => startEditRole(role)}
-                      className="p-1.5 text-gray-500 hover:text-[#14142b] rounded-lg hover:bg-slate-100 transition-colors"
+                      className="p-1.5 text-gray-500 hover:text-ink rounded-lg hover:bg-slate-100 transition-colors"
                       title="Edit Policy"
                     >
                       <Edit3 size={16} />
@@ -186,7 +186,7 @@ export function PolicyManager() {
                     canDelegatePolicy(myPermissionCodes, role) ? (
                       <button
                         onClick={() => setDeletingRole(role)}
-                        className="p-1.5 text-gray-500 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                        className="p-1.5 text-gray-500 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors dark:hover:text-red-400 dark:hover:bg-red-500/10"
                         title="Delete Policy"
                       >
                         <Trash2 size={16} />
@@ -214,7 +214,7 @@ export function PolicyManager() {
                 {surfaces.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {surfaces.map((s) => (
-                      <span key={s} className="inline-block px-2 py-1 bg-slate-100 text-[#14142b] text-xs rounded border border-slate-200">
+                      <span key={s} className="inline-block px-2 py-1 bg-slate-100 text-ink text-xs rounded border border-slate-200">
                         {s}
                       </span>
                     ))}

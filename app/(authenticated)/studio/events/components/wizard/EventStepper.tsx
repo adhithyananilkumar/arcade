@@ -36,10 +36,10 @@ export function EventStepper({ currentStep, steps, onStepClick, completedSteps }
                   <span className="flex items-center">
                     <span
                       className={`relative z-10 w-8 h-8 flex items-center justify-center rounded-full border-2 transition-all ${isCurrent
-                          ? 'border-violet-600 bg-white dark:bg-gray-900 text-violet-600 shadow-sm'
+                          ? 'border-violet-600 bg-surface text-violet-600 shadow-sm dark:text-violet-400'
                           : isCompleted
                             ? 'bg-violet-600 border-violet-600 text-white'
-                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 group-hover:border-violet-400'
+                            : 'border-gray-300 bg-surface text-gray-500 group-hover:border-violet-400'
                         }`}
                     >
                       {isCompleted ? (
@@ -61,8 +61,8 @@ export function EventStepper({ currentStep, steps, onStepClick, completedSteps }
                       className={`text-sm font-medium transition-colors ${isCurrent
                           ? 'text-violet-600 dark:text-violet-400 font-semibold'
                           : isCompleted
-                            ? 'text-gray-900 dark:text-gray-200'
-                            : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
+                            ? 'text-gray-900'
+                            : 'text-gray-500 group-hover:text-gray-700'
                         }`}
                     >
                       {step}

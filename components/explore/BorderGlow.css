@@ -12,8 +12,8 @@
   isolation: isolate;
   transform: translate3d(0, 0, 0.01px);
   display: grid;
-  border: 1px solid #E6E3F1;
-  background: var(--card-bg, #FFFFFF);
+  border: 1px solid var(--theme-n-200, #E6E3F1);
+  background: var(--card-bg, var(--theme-surface, #FFFFFF));
   overflow: visible;
   box-shadow:
     rgba(0, 0, 0, 0.1) 0px 1px 2px,

@@ -49,15 +49,15 @@ export function ProfileEmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-[20px] border border-dashed border-slate-200 bg-slate-50/50 px-6 py-16 text-center dark:border-neutral-900 dark:bg-neutral-950/50">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm dark:bg-neutral-900">
-        <Icon size={20} className="text-slate-300 dark:text-neutral-600" />
+    <div className="flex flex-col items-center justify-center rounded-[20px] border border-dashed border-slate-200 bg-slate-50/50 px-6 py-16 text-center">
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-surface shadow-sm">
+        <Icon size={20} className="text-slate-300" />
       </div>
-      <p className="text-[14px] font-bold tracking-tight text-slate-700 dark:text-neutral-200">
+      <p className="text-[14px] font-bold tracking-tight text-slate-700">
         {title}
       </p>
       {description && (
-        <p className="mt-1.5 max-w-sm text-[12.5px] font-medium leading-relaxed text-slate-400 dark:text-neutral-500">
+        <p className="mt-1.5 max-w-sm text-[12.5px] font-medium leading-relaxed text-slate-400">
           {description}
         </p>
       )}
@@ -94,6 +94,8 @@ export function ContentCard({ item, kind, href }: ContentCardProps) {
       title={item.title}
       description={item.description}
       type={type}
+      channelName={item.channelName}
+      channelIconUrl={item.channelIconUrl}
       dateText={formatMonth(item.createdAt)}
       actionHref={href}
       actionLabel={isCourse ? 'View Course' : 'View Event'}

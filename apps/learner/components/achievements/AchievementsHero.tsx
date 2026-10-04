@@ -84,7 +84,7 @@ export default function AchievementsHero({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1, ease: cubicEase }}
-          className="inline-block text-slate-900 dark:text-white font-extrabold text-4xl sm:text-5xl lg:text-6xl"
+          className="inline-block text-slate-900 font-extrabold text-4xl sm:text-5xl lg:text-6xl"
         >
           My
         </motion.span>
@@ -135,7 +135,7 @@ export default function AchievementsHero({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
             transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold leading-relaxed text-center w-full px-4"
+            className="absolute text-xs sm:text-sm text-slate-600 font-semibold leading-relaxed text-center w-full px-4"
           >
             {MESSAGES[msgIndex]}
           </motion.p>

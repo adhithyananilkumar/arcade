@@ -205,7 +205,7 @@ export const ArcadeEditor = memo(
         className={
           chromeless
             ? `!bg-transparent !shadow-none !border-none ${className}`
-            : `rounded-xl border border-gray-200 bg-white overflow-hidden ${className}`
+            : `rounded-xl border border-gray-200 bg-surface overflow-hidden ${className}`
         }
         style={chromeless ? { minHeight } : undefined}
       >
@@ -220,7 +220,7 @@ export const ArcadeEditor = memo(
       className={
         chromeless
           ? `arcade-chromeless-editor relative flex flex-col !bg-transparent !shadow-none !border-none ${className}`
-          : `relative rounded-xl border border-gray-200 bg-white overflow-hidden flex flex-col ${className}`
+          : `relative rounded-xl border border-gray-200 bg-surface overflow-hidden flex flex-col ${className}`
       }
     >
       <RichTextProvider editor={editor}>

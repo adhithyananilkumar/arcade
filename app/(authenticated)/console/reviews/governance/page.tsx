@@ -160,7 +160,7 @@ export default function ContentGovernancePage() {
       <header className="flex-none">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="flex items-center gap-2 text-[1.2rem] font-bold tracking-tight text-[#14142b]">
+            <h1 className="flex items-center gap-2 text-[1.2rem] font-bold tracking-tight text-ink">
               <ShieldCheck size={19} /> Content governance
             </h1>
             <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-slate-500">
@@ -170,7 +170,7 @@ export default function ContentGovernancePage() {
             </p>
           </div>
           {waivedCount > 0 ? (
-            <span className="shrink-0 rounded-full bg-amber-50 px-3 py-1.5 text-[11px] font-bold text-amber-800">
+            <span className="shrink-0 rounded-full bg-amber-50 px-3 py-1.5 text-[11px] font-bold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
               {waivedCount} channel{waivedCount === 1 ? "" : "s"} exempt from platform review
             </span>
           ) : null}
@@ -185,13 +185,13 @@ export default function ContentGovernancePage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search channels"
-            className="w-full rounded-full border border-slate-200 bg-white py-2 pl-9 pr-4 text-[13px] outline-none focus:border-[#14142b]"
+            className="w-full rounded-full border border-slate-200 bg-surface py-2 pl-9 pr-4 text-[13px] outline-none focus:border-ink"
           />
         </div>
       </header>
 
       {loadError ? (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] text-rose-800">
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] text-rose-800 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-200">
           {loadError}
         </div>
       ) : null}
@@ -284,10 +284,10 @@ export default function ContentGovernancePage() {
 
       {auditChannel ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+          <div className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-surface p-6 shadow-xl">
             <header className="flex items-start justify-between gap-4 pb-4">
               <div>
-                <h2 className="text-[16px] font-bold text-[#14142b]">Governance history</h2>
+                <h2 className="text-[16px] font-bold text-ink">Governance history</h2>
                 <p className="mt-0.5 text-[12px] text-slate-500">{auditChannel.channelName}</p>
               </div>
               <button
@@ -309,7 +309,7 @@ export default function ContentGovernancePage() {
                 {audit.map((entry) => (
                   <li key={entry.id} className="py-3">
                     <div className="flex flex-wrap items-baseline gap-2">
-                      <span className="text-[13px] font-semibold text-[#14142b]">
+                      <span className="text-[13px] font-semibold text-ink">
                         {entry.eventType.replaceAll("_", " ").toLowerCase()}
                       </span>
                       <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-600">

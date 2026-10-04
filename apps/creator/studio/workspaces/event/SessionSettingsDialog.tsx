@@ -65,7 +65,7 @@ export const SessionSettingsDialog: React.FC<Props> = ({ open, onClose, eventId,
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/40 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-3xl rounded-xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="w-full max-w-3xl rounded-xl bg-surface shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-100 bg-gray-50/50 px-6 py-4">
           <h2 className="text-lg font-semibold text-gray-900">Day Schedule & Settings</h2>
           <button
@@ -83,7 +83,7 @@ export const SessionSettingsDialog: React.FC<Props> = ({ open, onClose, eventId,
               <Loader2 className="animate-spin" size={24} />
             </div>
           ) : error ? (
-            <div className="p-4 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>
+            <div className="p-4 bg-red-50 text-red-600 rounded-lg text-sm dark:bg-red-500/10 dark:text-red-400">{error}</div>
           ) : session ? (
             <SessionForm session={session} onUpdate={handleUpdate} />
           ) : null}

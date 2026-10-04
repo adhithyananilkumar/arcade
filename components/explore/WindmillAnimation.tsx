@@ -167,14 +167,14 @@ export default function WindmillAnimation() {
           </g>
           
           {/* Arched Wooden Door */}
-          <path d="M 188 250 L 188 225 A 12 12 0 0 1 212 225 L 212 250 Z" fill="#451a03" stroke="#290f02" strokeWidth="1" />
-          <rect x="188" y="240" width="24" height="2" fill="#290f02" opacity="0.8" />
-          <rect x="188" y="228" width="24" height="2" fill="#290f02" opacity="0.8" />
-          <line x1="200" y1="213" x2="200" y2="250" stroke="#290f02" strokeWidth="1" />
+          <path d="M 188 250 L 188 225 A 12 12 0 0 1 212 225 L 212 250 Z" fill="#451a03" stroke="var(--theme-ink, #290f02)" strokeWidth="1" />
+          <rect x="188" y="240" width="24" height="2" fill="var(--theme-ink, #290f02)" opacity="0.8" />
+          <rect x="188" y="228" width="24" height="2" fill="var(--theme-ink, #290f02)" opacity="0.8" />
+          <line x1="200" y1="213" x2="200" y2="250" stroke="var(--theme-ink, #290f02)" strokeWidth="1" />
           
           {/* Simple Windows */}
-          <rect x="196" y="175" width="8" height="12" rx="3" fill="#291F18" />
-          <rect x="196" y="145" width="8" height="10" rx="3" fill="#291F18" />
+          <rect x="196" y="175" width="8" height="12" rx="3" fill="var(--theme-ink, #291F18)" />
+          <rect x="196" y="145" width="8" height="10" rx="3" fill="var(--theme-ink, #291F18)" />
           
           {/* Rounded Wooden Roof */}
           <path d="M 182 120 Q 200 80 218 120 Z" fill="url(#roofGrad)" stroke="#5E3F24" strokeWidth="1" />
@@ -184,8 +184,8 @@ export default function WindmillAnimation() {
         {/* WINDMILL BLADES (ROTATING ASSEMBLY) */}
         <g className="blade-assembly">
           {/* Back connector cross */}
-          <line x1="200" y1="20" x2="200" y2="220" stroke="#3D2611" strokeWidth="3" />
-          <line x1="100" y1="120" x2="300" y2="120" stroke="#3D2611" strokeWidth="3" />
+          <line x1="200" y1="20" x2="200" y2="220" stroke="var(--theme-ink, #3D2611)" strokeWidth="3" />
+          <line x1="100" y1="120" x2="300" y2="120" stroke="var(--theme-ink, #3D2611)" strokeWidth="3" />
           
           {/* Blade 1 (Top) */}
           <g transform="translate(200, 120)">
@@ -248,8 +248,8 @@ export default function WindmillAnimation() {
           </g>
 
           {/* Central Hub */}
-          <circle cx="200" cy="120" r="7" fill="#3D2611" />
-          <circle cx="200" cy="120" r="3" fill="#221306" />
+          <circle cx="200" cy="120" r="7" fill="var(--theme-ink, #3D2611)" />
+          <circle cx="200" cy="120" r="3" fill="var(--theme-ink, #221306)" />
         </g>
 
         {/* LUSH GRASS (SURFACE BASE) */}

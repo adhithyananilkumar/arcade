@@ -29,16 +29,16 @@ export const SessionCard: React.FC<Props> = ({ id, session, index, onUpdate, onD
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-white dark:bg-gray-900 border rounded-lg shadow-sm ${
-        isDragging ? 'border-violet-500 shadow-md ring-1 ring-violet-500' : 'border-gray-200 dark:border-gray-700'
+      className={`bg-surface border rounded-lg shadow-sm ${
+        isDragging ? 'border-violet-500 shadow-md ring-1 ring-violet-500' : 'border-gray-200'
       }`}
     >
-      <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 rounded-t-lg">
+      <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50 rounded-t-lg">
         <div className="flex items-center space-x-3 flex-1">
-          <div {...attributes} {...listeners} className="cursor-grab hover:bg-gray-200 dark:hover:bg-gray-700 p-1 rounded">
+          <div {...attributes} {...listeners} className="cursor-grab hover:bg-gray-200 p-1 rounded">
             <GripVertical size={20} className="text-gray-400" />
           </div>
-          <span className="font-semibold text-gray-700 dark:text-gray-300">
+          <span className="font-semibold text-gray-700">
             Session {index + 1}: {session.title || 'Untitled Session'}
           </span>
         </div>
@@ -47,7 +47,7 @@ export const SessionCard: React.FC<Props> = ({ id, session, index, onUpdate, onD
           <button
             type="button"
             onClick={onDuplicate}
-            className="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded hover:bg-gray-200 transition-colors"
             title="Duplicate Session"
           >
             <Copy size={18} />
@@ -55,16 +55,16 @@ export const SessionCard: React.FC<Props> = ({ id, session, index, onUpdate, onD
           <button
             type="button"
             onClick={onDelete}
-            className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded hover:bg-gray-200 transition-colors"
             title="Delete Session"
           >
             <Trash2 size={18} />
           </button>
-          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+          <div className="w-px h-6 bg-gray-300 mx-1"></div>
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1.5 text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 text-gray-500 hover:text-gray-900 rounded hover:bg-gray-200 transition-colors"
           >
             {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
           </button>

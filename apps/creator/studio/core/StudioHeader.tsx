@@ -56,7 +56,7 @@ export function StudioSaveStatus({ state }: { state: StudioSaveState }) {
     );
   if (state === "saved")
     return (
-      <span className="flex items-center gap-1.5 text-xs text-emerald-600">
+      <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
         <Check size={12} />
         Saved
       </span>
@@ -107,7 +107,7 @@ export function StudioPresenceStack({ collaborators }: { collaborators: ActiveCo
               key={c.user?.id || c.clientId}
               title={`${name} (Editing now)`}
               style={{ backgroundColor: bgColor }}
-              className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-semibold text-white shadow-sm ring-1 ring-black/5"
+              className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-surface text-xs font-semibold text-white shadow-sm ring-1 ring-slate-950/5"
             >
               {name.charAt(0).toUpperCase()}
             </div>
@@ -117,7 +117,7 @@ export function StudioPresenceStack({ collaborators }: { collaborators: ActiveCo
         {overflowCount > 0 && (
           <div
             title={`${overflowCount} more active collaborator${overflowCount > 1 ? "s" : ""}`}
-            className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-slate-700 text-xs font-semibold text-white shadow-sm ring-1 ring-black/5"
+            className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-surface bg-slate-700 text-xs font-semibold text-on-ink shadow-sm ring-1 ring-slate-950/5"
           >
             +{overflowCount}
           </div>
@@ -127,7 +127,7 @@ export function StudioPresenceStack({ collaborators }: { collaborators: ActiveCo
       {popoverOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setPopoverOpen(false)} />
-          <div className="absolute right-0 top-10 z-50 w-56 rounded-2xl border border-slate-100 bg-white p-3 shadow-xl ring-1 ring-black/5">
+          <div className="absolute right-0 top-10 z-50 w-56 rounded-2xl border border-slate-100 bg-surface p-3 shadow-xl ring-1 ring-slate-950/5">
             <div className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
               Active Collaborators ({activeList.length})
             </div>
@@ -148,7 +148,7 @@ export function StudioPresenceStack({ collaborators }: { collaborators: ActiveCo
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-xs font-semibold text-slate-800">{name}</div>
-                      <div className="flex items-center gap-1 text-[10px] font-medium text-emerald-600">
+                      <div className="flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
                         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
                         Editing now
                       </div>
@@ -189,23 +189,23 @@ export function StudioShareControl({
 
   if (!onOpenCollaborators) {
     return (
-      <div className="relative inline-flex items-center overflow-hidden rounded-full bg-[#c2e7ff] text-[#001d35] shadow-sm transition-all hover:bg-[#b5e0ff] hover:shadow-md">
+      <div className="relative inline-flex items-center overflow-hidden rounded-full bg-[#c2e7ff] text-ink shadow-sm transition-all hover:bg-[#b5e0ff] hover:shadow-md dark:bg-[#c2e7ff]/15 dark:hover:bg-[#b5e0ff]/15">
         <button
           type="button"
           onClick={copyLink}
-          className="flex cursor-pointer items-center gap-2 py-2.5 pl-4 pr-3 text-xs font-semibold tracking-tight text-[#001d35]"
+          className="flex cursor-pointer items-center gap-2 py-2.5 pl-4 pr-3 text-xs font-semibold tracking-tight text-ink"
           title={note ?? "Copy a link to this editor"}
         >
-          <Copy size={15} className="text-[#001d35]" />
+          <Copy size={15} className="text-ink" />
           <span>Share</span>
         </button>
         {note && (
           <>
-            <div className="h-4 w-[1px] bg-white/90" />
+            <div className="h-4 w-[1px] bg-surface/90" />
             <DropdownMenu>
               <DropdownMenuTrigger>
                 <div
-                  className="flex cursor-pointer items-center justify-center py-2.5 pl-2 pr-3 text-xs text-[#001d35] transition-colors hover:bg-[#a6d9ff]"
+                  className="flex cursor-pointer items-center justify-center py-2.5 pl-2 pr-3 text-xs text-ink transition-colors hover:bg-[#a6d9ff] dark:hover:bg-[#a6d9ff]/15"
                   title="Share options"
                 >
                   <ChevronDown size={14} />
@@ -213,7 +213,7 @@ export function StudioShareControl({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="z-50 w-64 rounded-xl border border-slate-100 bg-white p-2 shadow-lg"
+                className="z-50 w-64 rounded-xl border border-slate-100 bg-surface p-2 shadow-lg"
               >
                 <p className="px-2 py-1.5 text-[11px] leading-relaxed text-slate-500">{note}</p>
               </DropdownMenuContent>
@@ -225,21 +225,21 @@ export function StudioShareControl({
   }
 
   return (
-    <div className="relative inline-flex items-center overflow-hidden rounded-full bg-[#c2e7ff] text-[#001d35] shadow-sm transition-all hover:bg-[#b5e0ff] hover:shadow-md">
+    <div className="relative inline-flex items-center overflow-hidden rounded-full bg-[#c2e7ff] text-ink shadow-sm transition-all hover:bg-[#b5e0ff] hover:shadow-md dark:bg-[#c2e7ff]/15 dark:hover:bg-[#b5e0ff]/15">
       <button
         type="button"
         onClick={onOpenCollaborators}
-        className="flex cursor-pointer items-center gap-2 py-2.5 pl-4 pr-3 text-xs font-semibold tracking-tight text-[#001d35] transition-colors"
+        className="flex cursor-pointer items-center gap-2 py-2.5 pl-4 pr-3 text-xs font-semibold tracking-tight text-ink transition-colors"
         title="Add Collaborators"
       >
-        <Users size={15} className="text-[#001d35]" />
+        <Users size={15} className="text-ink" />
         <span>Share</span>
       </button>
-      <div className="h-4 w-[1px] bg-white/90" />
+      <div className="h-4 w-[1px] bg-surface/90" />
       <DropdownMenu>
         <DropdownMenuTrigger>
           <div
-            className="flex cursor-pointer items-center justify-center py-2.5 pl-2 pr-3 text-xs text-[#001d35] transition-colors hover:bg-[#a6d9ff]"
+            className="flex cursor-pointer items-center justify-center py-2.5 pl-2 pr-3 text-xs text-ink transition-colors hover:bg-[#a6d9ff] dark:hover:bg-[#a6d9ff]/15"
             title="Share options"
           >
             <ChevronDown size={14} />
@@ -247,13 +247,13 @@ export function StudioShareControl({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="z-50 w-52 rounded-xl border border-slate-100 bg-white p-1.5 shadow-lg"
+          className="z-50 w-52 rounded-xl border border-slate-100 bg-surface p-1.5 shadow-lg"
         >
           <DropdownMenuItem
             onClick={onOpenCollaborators}
             className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
           >
-            <Users size={14} className="text-indigo-600" />
+            <Users size={14} className="text-indigo-600 dark:text-indigo-400" />
             View Collaborators
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -284,8 +284,8 @@ export function StudioPanelToggle({ open, onToggle }: { open: boolean; onToggle:
       aria-expanded={open}
       className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border shadow-sm transition-all duration-300 ease-in-out ${
         open
-          ? "border-[#14142b] bg-[#14142b] text-white"
-          : "border-white/40 bg-white/60 text-[#14142b] backdrop-blur-md hover:border-[#14142b] hover:bg-[#14142b] hover:text-white"
+          ? "border-ink bg-ink text-on-ink"
+          : "border-white/40 bg-surface/60 text-ink backdrop-blur-md hover:border-ink hover:bg-ink hover:text-on-ink"
       }`}
     >
       <Menu size={16} />
@@ -320,8 +320,8 @@ export function StudioActionButton({
     "flex h-10 flex-shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-5 py-2 text-sm font-bold shadow-sm transition-all duration-300 ease-in-out disabled:cursor-not-allowed disabled:opacity-50";
   const toneClass =
     tone === "primary"
-      ? "border border-[#14142b] bg-[#14142b] text-white hover:bg-black hover:shadow-md"
-      : "border border-white/40 bg-white/60 text-[#14142b] backdrop-blur-md hover:border-[#14142b] hover:bg-[#14142b] hover:text-white hover:shadow-md";
+      ? "border border-ink bg-ink text-on-ink hover:bg-ink-hover hover:shadow-md"
+      : "border border-white/40 bg-surface/60 text-ink backdrop-blur-md hover:border-ink hover:bg-ink hover:text-on-ink hover:shadow-md";
 
   return (
     <button type="button" onClick={onClick} disabled={disabled} title={title} className={`${base} ${toneClass}`}>
@@ -350,8 +350,8 @@ export function StudioIconAction({
       title={title}
       className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border shadow-sm transition-colors ${
         active
-          ? "border-[#14142b] bg-[#14142b] text-white"
-          : "border-white/40 bg-white/60 text-slate-600 hover:bg-white hover:text-[#14142b]"
+          ? "border-ink bg-ink text-on-ink"
+          : "border-white/40 bg-surface/60 text-slate-600 hover:bg-surface hover:text-ink"
       }`}
     >
       {children}

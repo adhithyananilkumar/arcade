@@ -55,10 +55,10 @@ function OAuthRedirectHandler() {
   }, [searchParams, router, setAuth, setStatus]);
 
   return (
-    <div className="relative flex h-screen w-full overflow-hidden bg-[#f8fafc] text-slate-900" style={{ fontFamily: 'var(--font-geist-sans)' }}>
+    <div className="relative flex h-screen w-full overflow-hidden bg-slate-50 text-slate-900" style={{ fontFamily: 'var(--font-geist-sans)' }}>
       {/* Ambient background glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-tr from-indigo-200/30 to-purple-200/30 blur-3xl pointer-events-none z-0" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-blue-200/20 to-emerald-200/20 blur-3xl pointer-events-none z-0" />
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-tr from-indigo-200/30 to-purple-200/30 blur-3xl pointer-events-none z-0 dark:from-indigo-500/20 dark:to-purple-500/20" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-blue-200/20 to-emerald-200/20 blur-3xl pointer-events-none z-0 dark:from-blue-500/20 dark:to-emerald-500/20" />
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden relative z-10">

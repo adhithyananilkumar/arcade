@@ -6,7 +6,7 @@
   --brand:#2E2EAB; --brand-2:#4B47E6; --brand-ink:#191962;
   --teal:#20B8CF; --amber:#F5A623; --purple:#7A5AF8;
   --lav-50:#F5F6FE; --lav-100:#ECEDFC; --lav-200:#DEE0FA;
-  --ink:#1C1C2E; --muted:#5C5F79; --white:#FFFFFF;
+  --ink:var(--theme-ink, #1C1C2E); --muted:var(--theme-n-600, #5C5F79); --white:#FFFFFF;
   --shadow-sm:0 4px 12px -4px rgba(25,25,98,.08);
   --shadow-md:0 12px 28px -12px rgba(25,25,98,.16);
   --radius:16px; --maxw:1120px;
@@ -77,26 +77,26 @@
 }
 
 .for-creators-root .btn-primary {
-  background:#0B0B1E;
-  color:#fff;
+  background:var(--theme-ink, #0B0B1E);
+  color:var(--theme-on-ink, #fff);
   box-shadow:0 8px 16px -8px rgba(11,11,30,.4);
 }
 
 .for-creators-root .btn-primary:hover {
   transform:translateY(-1px);
   box-shadow:0 12px 24px -8px rgba(11,11,30,.5);
-  background:#1C1C2E;
+  background:var(--theme-ink, #1C1C2E);
 }
 
 .for-creators-root .btn-ghost {
-  background:#fff;
-  color:#1C1C2E;
-  border:1.5px solid #E2E8F0;
+  background:var(--theme-surface, #fff);
+  color:var(--theme-ink, #1C1C2E);
+  border:1.5px solid var(--theme-n-200, #E2E8F0);
 }
 
 .for-creators-root .btn-ghost:hover {
   transform:translateY(-1px);
-  border-color:#94A3B8;
+  border-color:var(--theme-n-400, #94A3B8);
   box-shadow:var(--shadow-sm);
 }
 
@@ -244,7 +244,7 @@
   width: 100%;
   max-width: 440px;
   aspect-ratio: 16/12;
-  background: #ffffff;
+  background: var(--theme-surface, #ffffff);
   border: 1px solid var(--lav-200);
   border-radius: 16px;
   box-shadow: var(--shadow-md);
@@ -402,7 +402,7 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #ffffff;
+  background: var(--theme-surface, #ffffff);
   border: 2px solid var(--lav-200);
   display: flex;
   align-items: center;
@@ -485,7 +485,7 @@
 }
 
 .for-creators-root .dashboard-tab-trigger.active {
-  background: #ffffff;
+  background: var(--theme-surface, #ffffff);
   border-color: var(--lav-200);
   box-shadow: var(--shadow-sm);
 }
@@ -531,7 +531,7 @@
 .for-creators-root .dashboard-preview-window {
   width: 100%;
   height: 380px;
-  background: #ffffff;
+  background: var(--theme-surface, #ffffff);
   border: 1px solid var(--lav-200);
   border-radius: 18px;
   box-shadow: var(--shadow-md);
@@ -563,7 +563,7 @@
   flex: 1;
   padding: 24px;
   overflow: hidden;
-  background: #ffffff;
+  background: var(--theme-surface, #ffffff);
 }
 
 /* Course Builder mock elements */
@@ -593,7 +593,7 @@
 
 .for-creators-root .mock-syllabus-item.nested {
   margin-left: 28px;
-  background: #ffffff;
+  background: var(--theme-surface, #ffffff);
   border-style: dashed;
 }
 
@@ -767,7 +767,7 @@
 }
 
 .for-creators-root .pubtab-panel {
-  background:rgba(255,255,255,.5);
+  background:color-mix(in oklab, var(--theme-surface, #ffffff) 50%, transparent);
   border:1px solid var(--lav-200);
   border-radius:var(--radius);
   padding:28px;
@@ -817,7 +817,7 @@
 }
 
 .for-creators-root .format-card {
-  background: #ffffff;
+  background: var(--theme-surface, #ffffff);
   border-radius: 14px;
   padding: 20px 18px;
   border: 1px solid var(--lav-100);
@@ -863,7 +863,7 @@
 }
 
 .for-creators-root .price-card {
-  background: #ffffff;
+  background: var(--theme-surface, #ffffff);
   border-radius: var(--radius);
   padding: 24px;
   border: 1px solid var(--lav-100);
@@ -942,7 +942,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  background: #ffffff;
+  background: var(--theme-surface, #ffffff);
   border: 1px solid var(--lav-200);
   border-radius: 14px;
   padding: 18px 20px;
@@ -1037,7 +1037,7 @@
 }
 
 .for-creators-root .trust-inner {
-  background: rgba(255, 255, 255, 0.65);
+  background: color-mix(in oklab, var(--theme-surface, #ffffff) 65%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--lav-200);
@@ -1079,7 +1079,7 @@
   display: flex;
   gap: 12px;
   align-items: center;
-  background: #ffffff;
+  background: var(--theme-surface, #ffffff);
   border: 1px solid var(--lav-100);
   border-radius: 12px;
   padding: 12px 16px;
@@ -1185,7 +1185,7 @@
 .for-creators-root .cta-cursive {
   font-family: 'Fraunces', serif;
   font-style: italic;
-  color: #5C5F79;
+  color: var(--theme-n-600, #5C5F79);
   font-size: 1.15rem;
   display: block;
   margin-bottom: 12px;
@@ -1197,7 +1197,7 @@
   font-family: 'Poppins', sans-serif;
   font-size: clamp(2rem, 5vw, 2.6rem);
   font-weight: 800;
-  color: #0B0B1E;
+  color: var(--theme-ink, #0B0B1E);
   line-height: 1.25;
   letter-spacing: -0.02em;
   margin-bottom: 32px;
@@ -1228,7 +1228,7 @@
 
 .for-creators-root .cta-desc {
   font-size: 1.05rem;
-  color: #5C5F79;
+  color: var(--theme-n-600, #5C5F79);
   margin-bottom: 32px;
   max-width: 580px;
   margin-left: auto;
@@ -1268,8 +1268,8 @@
 }
 
 .for-creators-root .btn-cta-secondary {
-  background: #ffffff;
-  color: #0B0B1E;
+  background: var(--theme-surface, #ffffff);
+  color: var(--theme-ink, #0B0B1E);
   padding: 14px 28px;
   border-radius: 100px;
   font-family: 'Poppins', sans-serif;
@@ -1308,7 +1308,7 @@
   .for-creators-root .mobile-milestone-card {
     display: flex;
     gap: 12px;
-    background: #ffffff;
+    background: var(--theme-surface, #ffffff);
     border: 1px solid var(--lav-200);
     border-radius: 12px;
     padding: 14px;
@@ -1394,8 +1394,8 @@
    CARD SCANNER & DOCK STYLES
    ========================================== */
 .card-scanner-wrapper {
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(228, 228, 231, 0.8);
+  background: color-mix(in oklab, var(--theme-surface, #ffffff) 55%, transparent);
+  border: 1px solid color-mix(in oklab, var(--theme-n-200, #e4e4e7) 80%, transparent);
   box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -1473,14 +1473,14 @@
 
 /* Scanner Dock glassmorphism styling */
 .scanner-dock {
-  background: rgba(244, 244, 245, 0.4);
+  background: color-mix(in oklab, var(--theme-n-100, #f4f4f5) 40%, transparent);
   box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.04), 
               0 4px 6px -1px rgba(0, 0, 0, 0.02);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .scanner-dock:hover {
-  background: rgba(244, 244, 245, 0.6);
+  background: color-mix(in oklab, var(--theme-n-100, #f4f4f5) 60%, transparent);
 }
 /* ==========================================================================
    "Everything in One Place" Wave Timeline Animations

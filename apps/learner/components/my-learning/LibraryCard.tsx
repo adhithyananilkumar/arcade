@@ -56,6 +56,8 @@ export function LibraryCard({
           </span>
         ) : null
       }
+      channelName={item.channelName}
+      channelIconUrl={item.channelIconUrl}
       dateText={enrolledOn ? `Enrolled ${enrolledOn}` : null}
       progressPercent={pct}
       actionHref={openable && href ? href : undefined}

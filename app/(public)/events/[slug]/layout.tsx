@@ -66,7 +66,7 @@ export default function EventDetailLayout({
 }>) {
   return (
     <div
-      className={`${inter.variable} ${fraunces.variable} antialiased min-h-screen bg-white text-ink`}
+      className={`${inter.variable} ${fraunces.variable} antialiased min-h-screen bg-surface text-ink`}
       style={{ fontFamily: 'var(--font-inter), sans-serif' }}
     >
       {children}

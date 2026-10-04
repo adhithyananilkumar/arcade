@@ -52,7 +52,7 @@ export default function ReviewsConsoleLayout({ children }: { children: React.Rea
                 aria-current={active ? "page" : undefined}
                 className={`inline-flex items-center gap-1.5 border-b-2 px-3 pb-2.5 pt-1 text-[13px] font-semibold transition-colors ${
                   active
-                    ? "border-[#14142b] text-[#14142b]"
+                    ? "border-ink text-ink"
                     : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
               >

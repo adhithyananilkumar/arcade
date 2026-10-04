@@ -53,7 +53,7 @@ export function NotesWorkspacePage({ model }: { model: ContentOverviewModel }) {
       <div className="mx-auto w-full max-w-3xl px-4 pt-28 sm:px-6 md:pt-32">
       <Link
         href={model.overviewHref}
-        className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+        className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-slate-800"
       >
         <ArrowLeft size={13} />
         Back to {model.title || 'overview'}
@@ -61,12 +61,12 @@ export function NotesWorkspacePage({ model }: { model: ContentOverviewModel }) {
 
       <header className="mt-3 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900 dark:text-white">
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
             <NotebookPen size={22} className="text-indigo-500" />
             Your notes
           </h1>
           {data && (
-            <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-[13px] text-slate-500">
               {data.noteCount} {data.noteCount === 1 ? 'note' : 'notes'} · {data.totalWordCount}{' '}
               {data.totalWordCount === 1 ? 'word' : 'words'}
             </p>
@@ -84,7 +84,7 @@ export function NotesWorkspacePage({ model }: { model: ContentOverviewModel }) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search your notes"
-              className="w-56 rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-[13px] outline-none transition focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-900"
+              className="w-56 rounded-xl border border-slate-200 bg-surface py-2 pl-9 pr-3 text-[13px] outline-none transition focus:border-indigo-400"
             />
           </label>
         )}
@@ -93,13 +93,13 @@ export function NotesWorkspacePage({ model }: { model: ContentOverviewModel }) {
       {isLoading && (
         <div className="mt-6 space-y-3" aria-busy>
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-32 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
+            <div key={i} className="h-32 animate-pulse rounded-2xl bg-slate-100" />
           ))}
         </div>
       )}
 
       {!isLoading && (data?.noteCount ?? 0) === 0 && (
-        <p className="mt-10 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm leading-relaxed text-slate-500 dark:border-slate-700 dark:text-slate-400">
+        <p className="mt-10 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm leading-relaxed text-slate-500">
           You haven&rsquo;t written anything here yet.
           <br />
           Notes you take while working through this collect on this page.
@@ -107,7 +107,7 @@ export function NotesWorkspacePage({ model }: { model: ContentOverviewModel }) {
       )}
 
       {!isLoading && (data?.noteCount ?? 0) > 0 && notes.length === 0 && (
-        <p className="mt-10 text-center text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-10 text-center text-sm text-slate-500">
           No notes match &ldquo;{query}&rdquo;.
         </p>
       )}
@@ -119,13 +119,13 @@ export function NotesWorkspacePage({ model }: { model: ContentOverviewModel }) {
           return (
             <li
               key={note.id}
-              className="rounded-2xl border border-slate-200/80 bg-white/70 p-5 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/60"
+              className="rounded-2xl border border-slate-200/80 bg-surface/70 p-5 backdrop-blur-sm"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <h2 className="text-[15px] font-semibold text-slate-900 dark:text-slate-100">
+                  <h2 className="text-[15px] font-semibold text-slate-900">
                     {href ? (
-                      <Link href={href} className="hover:text-indigo-600 hover:underline">
+                      <Link href={href} className="hover:text-indigo-600 hover:underline dark:hover:text-indigo-400">
                         {note.anchorLabel ?? 'On this content'}
                       </Link>
                     ) : (

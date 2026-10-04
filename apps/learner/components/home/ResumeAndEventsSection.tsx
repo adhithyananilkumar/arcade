@@ -32,6 +32,8 @@ export type EventCard = {
   tone: 'coral' | 'blue' | 'emerald' | 'violet';
   href: string;
   statusLabel?: string;
+  channelName?: string | null;
+  channelIconUrl?: string | null;
 };
 
 export type ResumeCourse = {
@@ -43,7 +45,9 @@ export type ResumeCourse = {
    * assert "you have completed none of it", which is a different and unverified claim.
    */
   progress: number | null;
-  authorName?: string | null;
+  /** The publishing channel — the only thing a card credits. */
+  channelName?: string | null;
+  channelIconUrl?: string | null;
 };
 
 const TONE_CONFIG: Record<
@@ -64,16 +68,16 @@ const TONE_CONFIG: Record<
     borderAccent: 'border-[#FF6B4A]/30',
     borderLeft: 'border-l-[#FF6B4A]',
     badgeBg: 'bg-[#FF6B4A]/15',
-    badgeText: 'text-[#D94F32]',
+    badgeText: 'text-[#D94F32] dark:text-[#ff8d71]',
     icon: Trophy,
   },
   blue: {
     bgTint: 'bg-[#4C6FFF]/12',
-    iconColor: 'text-[#4C6FFF]',
+    iconColor: 'text-[#4C6FFF] dark:text-[#8db1ff]',
     borderAccent: 'border-[#4C6FFF]/30',
     borderLeft: 'border-l-[#4C6FFF]',
     badgeBg: 'bg-[#4C6FFF]/15',
-    badgeText: 'text-[#3A56D4]',
+    badgeText: 'text-[#3A56D4] dark:text-[#8db1ff]',
     icon: Sparkles,
   },
   emerald: {
@@ -82,16 +86,16 @@ const TONE_CONFIG: Record<
     borderAccent: 'border-[#1DB876]/30',
     borderLeft: 'border-l-[#1DB876]',
     badgeBg: 'bg-[#1DB876]/15',
-    badgeText: 'text-[#0F9A5F]',
+    badgeText: 'text-[#0F9A5F] dark:text-[#5dd293]',
     icon: Rocket,
   },
   violet: {
     bgTint: 'bg-[#9B5DE5]/12',
-    iconColor: 'text-[#9B5DE5]',
+    iconColor: 'text-[#9B5DE5] dark:text-[#ca9dff]',
     borderAccent: 'border-[#9B5DE5]/30',
     borderLeft: 'border-l-[#9B5DE5]',
     badgeBg: 'bg-[#9B5DE5]/15',
-    badgeText: 'text-[#7A3FC0]',
+    badgeText: 'text-[#7A3FC0] dark:text-[#c99dff]',
     icon: Palette,
   },
 };
@@ -158,7 +162,7 @@ function EmptyRecommendationsIllustration() {
       <circle cx="118" cy="38" r="2.5" fill="#0EA5E9" fillOpacity="0.8" />
 
       {/* Shadow under book */}
-      <ellipse cx="85" cy="100" rx="38" ry="6" fill="#14142B" fillOpacity="0.06" />
+      <ellipse cx="85" cy="100" rx="38" ry="6" fill="var(--theme-ink, #14142B)" fillOpacity="0.06" />
 
       {/* Stylized Open Learning Hub / Book */}
       {/* Left page */}
@@ -224,7 +228,7 @@ function EmptyRecommendedCard() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="relative flex h-full min-h-[340px] flex-col items-center justify-center overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white/95 p-6 sm:p-7 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm text-center"
+      className="relative flex h-full min-h-[340px] flex-col items-center justify-center overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-7 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm text-center"
     >
       {/* Decorative ambient background glow */}
       <div
@@ -239,7 +243,7 @@ function EmptyRecommendedCard() {
         </div>
 
         {/* Headline */}
-        <h3 className="text-base sm:text-lg font-bold tracking-tight text-[#14142b]">
+        <h3 className="text-base sm:text-lg font-bold tracking-tight text-ink">
           No recommendations yet
         </h3>
 
@@ -252,7 +256,7 @@ function EmptyRecommendedCard() {
         <div className="mt-5 w-full">
           <Link
             href="/search"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] px-5 py-3 text-[13px] font-semibold text-white transition-all shadow-sm hover:bg-[#232735] hover:shadow-md cursor-pointer"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-ink px-5 py-3 text-[13px] font-semibold text-on-ink transition-all shadow-sm hover:bg-ink-hover hover:shadow-md cursor-pointer"
           >
             <Compass size={16} /> Explore courses
           </Link>
@@ -270,7 +274,8 @@ function RecommendedFeaturedCard({ course }: { course: CourseSummaryResponse }) 
       description={course.description || `${course.moduleCount || 0} modules · Self-paced learning`}
       type="COURSE"
       typeLabel="Featured Course"
-      authorName={course.authorName}
+      channelName={course.channel?.name}
+      channelIconUrl={course.channel?.iconUrl}
       categoryId={course.categoryId}
       actionHref={courseRoutes.landing(course.id)}
       actionLabel="View Course"
@@ -293,9 +298,10 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
     <UnifiedContentCard
       id={course.id}
       title={course.title}
-      description={course.authorName ? `Instructor: ${course.authorName}` : (pct && pct > 0 ? 'Pick up right where you left off' : 'Continue where you left off')}
+      description={pct && pct > 0 ? 'Pick up right where you left off' : 'Continue where you left off'}
       type="COURSE"
-      authorName={course.authorName}
+      channelName={course.channelName}
+      channelIconUrl={course.channelIconUrl}
       progressPercent={pct}
       actionHref={courseRoutes.overview(course.id)}
       actionLabel={pct && pct > 0 ? 'Continue Learning' : 'Start Learning'}
@@ -312,6 +318,8 @@ function EventRowItem({ event, index }: { event: EventCard; index: number }) {
       description={event.tagline}
       type="EVENT"
       typeLabel="Event"
+      channelName={event.channelName}
+      channelIconUrl={event.channelIconUrl}
       metaTags={[
         event.when ? event.when : null,
         event.where ? event.where : null,
@@ -342,20 +350,20 @@ export function ResumeAndEventsSection({
         {/* Left Column: Resume Learning OR Recommended for you */}
         <div className="flex h-full flex-col gap-3.5">
           <div className="flex min-h-[28px] items-center justify-between gap-3">
-            <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
+            <h2 className="text-xl font-bold tracking-tight text-ink">
               {resumeCourse ? 'Resume learning' : 'Recommended for you'}
             </h2>
             {resumeCourse ? (
               <Link
                 href="/my-learning"
-                className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-all hover:gap-1.5 hover:text-[#3a5ae6]"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-all hover:gap-1.5 hover:text-[#3a5ae6] dark:text-[#8db1ff] dark:hover:text-[#8cb1ff]"
               >
                 My learning <ChevronRight size={15} />
               </Link>
             ) : featuredRecommended ? (
               <Link
                 href="/search"
-                className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-all hover:gap-1.5 hover:text-[#3a5ae6]"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-all hover:gap-1.5 hover:text-[#3a5ae6] dark:text-[#8db1ff] dark:hover:text-[#8cb1ff]"
               >
                 View all <ChevronRight size={15} />
               </Link>
@@ -380,12 +388,12 @@ export function ResumeAndEventsSection({
       {displayedEvents.length > 0 && (
         <section className="space-y-3.5">
           <div className="flex min-h-[28px] items-center justify-between gap-3">
-            <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
+            <h2 className="text-xl font-bold tracking-tight text-ink">
               Upcoming events
             </h2>
             <Link
               href="/search"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-all hover:gap-1.5 hover:text-[#3a5ae6]"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-all hover:gap-1.5 hover:text-[#3a5ae6] dark:text-[#8db1ff] dark:hover:text-[#8cb1ff]"
             >
               Browse all <ArrowUpRight size={15} />
             </Link>

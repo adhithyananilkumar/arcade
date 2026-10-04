@@ -2,26 +2,41 @@
 
 import React, { useId, useMemo } from 'react';
 import { cn } from '@/shared/utils/utils';
-import { usePublicCategories } from '@/shared/hooks/usePublicCategories';
+import { usePublicCategoriesStatus } from '@/shared/hooks/usePublicCategories';
 import { createRng, type Rng } from './rng';
-import { INK, paletteFor, resolveArtTheme, type ArtPalette, type ArtTheme } from './themes';
+import { paletteFor, resolveArtTheme, type ArtPalette, type ArtTheme } from './themes';
 import { MOTIFS, type Motif, type MotifPaint } from './motifs';
+
+/**
+ * Theme-aware colours. Each resolves to the palette's own light value in light mode (see
+ * `.content-art` in app/themes.css), and to a dark, hue-tinted ground with light line work in dark
+ * themes — so the picture is the same drawing in every theme, never a light block on a dark page.
+ */
+const ART = {
+  ink: 'var(--a-ink)',
+  white: 'var(--a-white)',
+  paper: 'var(--a-paper)',
+  soft: 'var(--a-soft)',
+  blank: 'var(--a-blank)',
+} as const;
 
 /**
  * Generated artwork for courses, events and exams — Arcade's replacement for uploaded banners.
  *
- * Uploaded covers made every catalogue look different in size, crop and quality. This draws a
- * picture instead, from three inputs:
+ * Light and hand-drawn: doodled scenes on a flat, pale ground — never a solid colour block, never
+ * an icon sitting on a plate. Three inputs decide the picture:
  *
- * - the **category** (or title) picks a theme: palette and a library of subject motifs;
- * - the **kind** picks a composition family, so a course, an event and an exam are told apart at a
- *   glance — courses are an illustrated object on a soft stage ("atelier"), events a bold poster
- *   with a ticket stub, exams a measured blueprint sheet with a seal;
- * - the **seed** (the content id) picks motif, palette, background pattern, layout, rotation and
- *   accents, so every item gets its own picture and keeps it on every page.
+ * - the **category** (or title) picks a theme: a soft palette and a library of subject motifs;
+ * - the **kind** picks a scene, so the three read apart at a glance — a course is a *learning path*
+ *   (a main subject and two companions linked by a dotted trail to a flag), an event a
+ *   *celebration* (the subject with bursts, confetti and a calendar page), an exam a fading
+ *   graph-paper sheet with a measured frame and a small seal;
+ * - the **seed** (content id) picks motif, palette, layout and texture, so each item has its own
+ *   picture and keeps it everywhere.
  *
- * Five motifs × several palettes × six patterns × layouts × accent scatter gives each category
- * hundreds of distinct pictures per kind. Pure SVG: crisp at any size, no network, no layout shift.
+ * **It never changes after it is drawn.** Content that names its category by id waits for the
+ * category list to settle and draws once; drawing from the title first and the category a moment
+ * later made every card swap its picture shortly after the page loaded.
  */
 
 export type ContentArtKind = 'COURSE' | 'EVENT' | 'EXAM';
@@ -47,6 +62,9 @@ const r2 = (n: number) => Math.round(n * 100) / 100;
 
 const W = 400;
 const H = 240;
+/** Line weight and fill tint for every motif: light strokes, pale fills. */
+const LINE_WEIGHT = 0.6;
+const FILL_TINT = 0.3;
 
 /** Maps every content-type spelling used across the app onto the three families. */
 export function artKindOf(type?: string | null): ContentArtKind {
@@ -61,12 +79,15 @@ interface Scene {
   theme: ArtTheme;
   pal: ArtPalette;
   motif: Motif;
-  sideMotif: Motif;
+  /** Two more subjects from the same theme, for the doodle scenes. */
+  companions: [Motif, Motif];
   uid: string;
 }
 
 export function ContentArt({ seed, kind, category, categoryId, title, className, label }: ContentArtProps) {
-  const categories = usePublicCategories();
+  const { categories, settled } = usePublicCategoriesStatus();
+  // Only content addressed by category id has to wait; a name or a title is known immediately.
+  const waiting = !category && !!categoryId && !settled;
   const categoryName =
     category ?? (categoryId ? categories.find((c) => c.id === categoryId)?.name ?? null : null);
   const reactId = useId();
@@ -76,373 +97,403 @@ export function ContentArt({ seed, kind, category, categoryId, title, className,
   const scene = useMemo<Omit<Scene, 'uid'>>(() => {
     const theme = resolveArtTheme(categoryName, title);
     const rng = createRng(`${seed}|${family}|${theme.key}`);
-    const motifs = MOTIFS[theme.key];
-    const motif = rng.pick(motifs);
-    const others = motifs.filter((m) => m !== motif);
-    return { rng, theme, pal: paletteFor(theme, seed), motif, sideMotif: rng.pick(others) };
+    const motif = rng.pick(MOTIFS[theme.key]);
+    // Companions come from their own stream so the main sequence — and with it every exam picture
+    // already drawn — stays exactly as it was.
+    const pick = createRng(`${seed}|companions`);
+    const pool = MOTIFS[theme.key].filter((m) => m !== motif);
+    const first = pool.splice(pick.int(0, pool.length - 1), 1)[0];
+    const second = pool[pick.int(0, pool.length - 1)];
+    return { rng, theme, pal: paletteFor(theme, seed), motif, companions: [first, second] };
   }, [seed, family, categoryName, title]);
 
   const s: Scene = { ...scene, uid };
   const description = label ?? `${scene.theme.label} ${family.toLowerCase()} artwork`;
 
+  // The whole scene always shows ("meet"), whatever shape the slot is — cropping ("slice") cut the
+  // top and bottom off in wide slots (Resume learning) and the sides off in small square ones
+  // (search, recommendations). The element's own background is the scene's ground colour, so the
+  // spare space reads as more of the same flat ground rather than as letterbox bars.
+  const ground = waiting
+    ? ART.blank
+    : family === 'EXAM'
+      ? `color-mix(in srgb, ${ART.paper} 60%, ${ART.white})`
+      : ART.paper;
+
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="xMidYMid slice"
+      preserveAspectRatio="xMidYMid meet"
       role="img"
       aria-label={description}
-      className={cn('block h-full w-full select-none', className)}
+      overflow="visible"
+      style={
+        {
+          background: ground,
+          '--p-paper': scene.pal.paper,
+          '--p-soft': scene.pal.soft,
+          '--p-main': scene.pal.main,
+        } as React.CSSProperties
+      }
+      className={cn('content-art block h-full w-full select-none', className)}
     >
-      {family === 'EVENT' ? <Poster {...s} /> : family === 'EXAM' ? <Blueprint {...s} /> : <Atelier {...s} />}
+      {waiting ? (
+        <rect width={W} height={H} fill={ART.blank} />
+      ) : family === 'EVENT' ? (
+        <Celebration {...s} />
+      ) : family === 'EXAM' ? (
+        <Sheet {...s} />
+      ) : (
+        <LearningPath {...s} />
+      )}
     </svg>
   );
 }
 
 // ── Shared pieces ────────────────────────────────────────────────────────────
 
-function paint(pal: ArtPalette, outline = false): MotifPaint {
-  return { ink: INK, main: pal.main, accent: pal.accent, spark: pal.spark, soft: pal.soft, paper: '#FFFFFF', outline };
+function paint(pal: ArtPalette): MotifPaint {
+  return {
+    ink: ART.ink,
+    main: pal.main,
+    accent: pal.accent,
+    spark: pal.spark,
+    soft: ART.soft,
+    paper: ART.white,
+    weight: LINE_WEIGHT,
+    tint: FILL_TINT,
+  };
 }
 
-type Floater = 'diamond' | 'circle' | 'ring' | 'plus' | 'square' | 'triangle' | 'dots';
-
-function FloaterShape({ kind, x, y, size, color, rotate }: { kind: Floater; x: number; y: number; size: number; color: string; rotate: number }) {
-  const t = `translate(${x} ${y}) rotate(${rotate})`;
-  const s = size;
-  switch (kind) {
-    case 'diamond':
-      return <path transform={t} d={`M0 ${-s} L${s} 0 L0 ${s} L${-s} 0 Z`} fill={color} />;
-    case 'circle':
-      return <circle transform={t} r={s * 0.75} fill={color} />;
-    case 'ring':
-      return <circle transform={t} r={s * 0.8} fill="none" stroke={color} strokeWidth={2.4} />;
-    case 'plus':
-      return <path transform={t} d={`M${-s} 0 H${s} M0 ${-s} V${s}`} stroke={color} strokeWidth={2.6} strokeLinecap="round" />;
-    case 'square':
-      return <rect transform={t} x={-s * 0.7} y={-s * 0.7} width={s * 1.4} height={s * 1.4} rx={2} fill="none" stroke={color} strokeWidth={2.2} />;
-    case 'triangle':
-      return <path transform={t} d={`M0 ${-s} L${s * 0.9} ${s * 0.7} L${-s * 0.9} ${s * 0.7} Z`} fill="none" stroke={color} strokeWidth={2.2} strokeLinejoin="round" />;
-    default:
-      return (
-        <g transform={t} fill={color}>
-          {[-6, 0, 6].map((dx) => <circle key={dx} cx={dx} cy={0} r={1.8} />)}
-        </g>
-      );
-  }
+/**
+ * Near-white ground with one soft wash of the theme colour. It fades to the card's own white at the
+ * edges, so the art reads as part of the card rather than a picture placed on it.
+ */
+function Ground({ pal, uid, x, y }: { pal: ArtPalette; uid: string; x: number; y: number }) {
+  const id = `${uid}wash`;
+  return (
+    <>
+      <defs>
+        <radialGradient id={id} gradientUnits="userSpaceOnUse" cx={x} cy={y} r={230}>
+          <stop offset="0" stopColor={ART.soft} stopOpacity={0.75} />
+          <stop offset="0.55" stopColor={ART.soft} stopOpacity={0.22} />
+          <stop offset="1" stopColor={ART.white} stopOpacity={0} />
+        </radialGradient>
+      </defs>
+      <rect width={W} height={H} fill={ART.white} />
+      <rect width={W} height={H} fill={ART.paper} opacity={0.6} />
+      <rect width={W} height={H} fill={`url(#${id})`} />
+    </>
+  );
 }
 
-/** Small accents scattered away from the subject. */
-function Floaters({ rng, colors, count, avoid }: { rng: Rng; colors: string[]; count: number; avoid: { x: number; y: number; r: number } }) {
-  const kinds: Floater[] = ['diamond', 'circle', 'ring', 'plus', 'square', 'triangle', 'dots'];
+/** Faint texture that fades out towards the edges. */
+function FadingTexture({ rng, pal, uid, x, y, kind }: { rng: Rng; pal: ArtPalette; uid: string; x: number; y: number; kind: 'dots' | 'rings' | 'grid' | 'rays' | 'none' }) {
+  if (kind === 'none') return null;
+  const mask = `${uid}m`;
+  const fade = `${uid}f`;
+  const pat = `${uid}p`;
+  const color = pal.main;
+  return (
+    <>
+      <defs>
+        <radialGradient id={fade} gradientUnits="userSpaceOnUse" cx={x} cy={y} r={190}>
+          <stop offset="0" stopColor="#fff" stopOpacity={1} />
+          <stop offset="1" stopColor="#fff" stopOpacity={0} />
+        </radialGradient>
+        <mask id={mask}>
+          <rect width={W} height={H} fill={`url(#${fade})`} />
+        </mask>
+        {kind === 'dots' && (
+          <pattern id={pat} width={16} height={16} patternUnits="userSpaceOnUse">
+            <circle cx={2} cy={2} r={1} fill={color} />
+          </pattern>
+        )}
+        {kind === 'grid' && (
+          <pattern id={pat} width={14} height={14} patternUnits="userSpaceOnUse">
+            <path d="M14 0 H0 V14" fill="none" stroke={color} strokeWidth={0.5} />
+          </pattern>
+        )}
+      </defs>
+      <g mask={`url(#${mask})`} opacity={0.22}>
+        {(kind === 'dots' || kind === 'grid') && <rect width={W} height={H} fill={`url(#${pat})`} />}
+        {kind === 'rings' && (
+          <g fill="none" stroke={color} strokeWidth={0.8}>
+            {Array.from({ length: 7 }, (_, i) => (
+              <circle key={i} cx={x} cy={y} r={44 + i * 22} />
+            ))}
+          </g>
+        )}
+        {kind === 'rays' && (
+          <g stroke={color} strokeWidth={0.8}>
+            {Array.from({ length: 24 }, (_, i) => {
+              const a = (i / 24) * Math.PI * 2 + rng.range(0, 0.1);
+              return <line key={i} x1={x} y1={y} x2={r2(x + Math.cos(a) * 260)} y2={r2(y + Math.sin(a) * 260)} />;
+            })}
+          </g>
+        )}
+      </g>
+    </>
+  );
+}
+
+/** Two or three tiny accents; restraint is the point. */
+function Accents({ rng, pal, avoid }: { rng: Rng; pal: ArtPalette; avoid: { x: number; y: number; r: number } }) {
   const items: React.ReactElement[] = [];
+  const count = rng.int(2, 3);
   let tries = 0;
-  while (items.length < count && tries < 60) {
+  while (items.length < count && tries < 40) {
     tries++;
-    const x = r2(rng.range(24, W - 24));
-    const y = r2(rng.range(22, H - 22));
+    const x = r2(rng.range(30, W - 30));
+    const y = r2(rng.range(28, H - 28));
     if (Math.hypot(x - avoid.x, y - avoid.y) < avoid.r) continue;
+    const color = rng.pick([pal.main, pal.accent, pal.spark]);
+    const k = rng.int(0, 2);
     items.push(
-      <FloaterShape key={items.length} kind={rng.pick(kinds)} x={x} y={y} size={r2(rng.range(4, 8))} color={rng.pick(colors)} rotate={rng.int(0, 45)} />
+      k === 0 ? (
+        <circle key={items.length} cx={x} cy={y} r={2.2} fill={color} opacity={0.55} />
+      ) : k === 1 ? (
+        <circle key={items.length} cx={x} cy={y} r={4} fill="none" stroke={color} strokeWidth={1.2} opacity={0.5} />
+      ) : (
+        <path key={items.length} d={`M${x - 3.5} ${y} H${x + 3.5} M${x} ${y - 3.5} V${y + 3.5}`} stroke={color} strokeWidth={1.2} strokeLinecap="round" opacity={0.5} />
+      )
     );
   }
   return <g>{items}</g>;
 }
 
-/** Quiet texture behind course art; six families, chosen per seed. */
-function Texture({ rng, color, uid }: { rng: Rng; color: string; uid: string }) {
-  const variant = rng.int(0, 5);
-  const id = `${uid}tex`;
-  if (variant === 0) {
-    return (
-      <>
-        <defs>
-          <pattern id={id} width={18} height={18} patternUnits="userSpaceOnUse">
-            <circle cx={2} cy={2} r={1.3} fill={color} />
-          </pattern>
-        </defs>
-        <rect width={W} height={H} fill={`url(#${id})`} opacity={0.5} />
-      </>
-    );
-  }
-  if (variant === 1) {
-    const cx = rng.range(60, 340);
-    const cy = rng.range(40, 200);
-    return (
-      <g fill="none" stroke={color} strokeWidth={1.2} opacity={0.55}>
-        {Array.from({ length: 9 }, (_, i) => (
-          <ellipse key={i} cx={cx} cy={cy} rx={30 + i * 26} ry={18 + i * 17} transform={`rotate(${rng.int(-20, 20)} ${cx} ${cy})`} />
-        ))}
-      </g>
-    );
-  }
-  if (variant === 2) {
-    return (
-      <>
-        <defs>
-          <pattern id={id} width={14} height={14} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <line x1={0} y1={0} x2={0} y2={14} stroke={color} strokeWidth={1.2} />
-          </pattern>
-        </defs>
-        <rect x={rng.pick([0, W * 0.55])} y={0} width={W * 0.45} height={H} fill={`url(#${id})`} opacity={0.45} />
-      </>
-    );
-  }
-  if (variant === 3) {
-    return (
-      <>
-        <defs>
-          <pattern id={id} width={36} height={20.8} patternUnits="userSpaceOnUse">
-            <path d="M0 0 L18 10.4 L36 0 M0 20.8 L18 10.4 L36 20.8 M18 10.4 V0" fill="none" stroke={color} strokeWidth={0.9} />
-          </pattern>
-        </defs>
-        <rect width={W} height={H} fill={`url(#${id})`} opacity={0.45} />
-      </>
-    );
-  }
-  if (variant === 4) {
-    return (
-      <g fill="none" stroke={color} strokeWidth={1.4} opacity={0.55}>
-        {Array.from({ length: 6 }, (_, i) => {
-          const y = 30 + i * 36;
-          return <path key={i} d={`M0 ${y} Q100 ${y - 14} 200 ${y} T400 ${y}`} />;
-        })}
-      </g>
-    );
-  }
+// ── Doodle vocabulary (courses and events) ──────────────────────────────────
+
+/** Doodle line: thin, round, softened ink. */
+const DOODLE = { stroke: ART.ink, strokeWidth: 1.6, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none', strokeOpacity: 0.7 };
+
+/** Flat, light ground — nothing else, so nothing reads as cut off at the edges. */
+function LightGround({ rng, pal }: { rng: Rng; pal: ArtPalette }) {
+  // Two draws that once placed corner shapes. Still taken so every doodle after them lands exactly
+  // where it did — the pictures already shown must not change.
+  rng.chance(0.5);
+  rng.chance(0.6);
   return (
-    <g stroke={color} strokeWidth={1.6} strokeLinecap="round" opacity={0.6}>
-      {Array.from({ length: 22 }, (_, i) => {
-        const x = rng.range(10, W - 10);
-        const y = rng.range(10, H - 10);
-        return <path key={i} d={`M${x - 3} ${y} H${x + 3} M${x} ${y - 3} V${y + 3}`} />;
+    <g>
+      <rect width={W} height={H} fill={ART.white} />
+      <rect width={W} height={H} fill={ART.paper} />
+    </g>
+  );
+}
+
+function Place({ motif, pal, x, y, scale, rotate = 0 }: { motif: Motif; pal: ArtPalette; x: number; y: number; scale: number; rotate?: number }) {
+  return <g transform={`translate(${x} ${y}) rotate(${rotate}) scale(${scale})`}>{motif(paint(pal))}</g>;
+}
+
+function Sparkle({ x, y, s, color }: { x: number; y: number; s: number; color: string }) {
+  const k = r2(s * 0.28);
+  return (
+    <path
+      d={`M${x} ${y - s} Q${x + k} ${y - k} ${x + s} ${y} Q${x + k} ${y + k} ${x} ${y + s} Q${x - k} ${y + k} ${x - s} ${y} Q${x - k} ${y - k} ${x} ${y - s} Z`}
+      {...DOODLE}
+      fill={color}
+      fillOpacity={0.55}
+      strokeWidth={1.2}
+    />
+  );
+}
+
+function Squiggle({ x, y, len, color, rng }: { x: number; y: number; len: number; color: string; rng: Rng }) {
+  const waves = Math.max(2, Math.round(len / 12));
+  const step = r2(len / waves);
+  let d = `M${x} ${y}`;
+  for (let i = 0; i < waves; i++) {
+    const amp = r2(rng.range(3, 5) * (i % 2 ? -1 : 1));
+    d += ` q${r2(step / 2)} ${amp} ${step} 0`;
+  }
+  return <path d={d} {...DOODLE} stroke={color} strokeOpacity={0.75} strokeWidth={1.8} />;
+}
+
+function Dot({ x, y, color, r = 2.4 }: { x: number; y: number; color: string; r?: number }) {
+  return <circle cx={x} cy={y} r={r} fill={color} opacity={0.7} />;
+}
+
+/** Short strokes radiating above a subject — "this is the thing". */
+function Burst({ x, y, r, rng }: { x: number; y: number; r: number; rng: Rng }) {
+  const start = rng.range(-0.3, 0.3);
+  return (
+    <g {...DOODLE}>
+      {Array.from({ length: 5 }, (_, i) => {
+        const a = start - Math.PI / 2 + (i - 2) * 0.42;
+        return <line key={i} x1={r2(x + Math.cos(a) * r)} y1={r2(y + Math.sin(a) * r)} x2={r2(x + Math.cos(a) * (r + 9))} y2={r2(y + Math.sin(a) * (r + 9))} />;
       })}
     </g>
   );
 }
 
-// ── Course: "atelier" — an illustrated object on a soft stage ───────────────
-
-function Atelier({ rng, pal, motif, sideMotif, uid }: Scene) {
-  const layout = rng.int(0, 2); // 0 centred, 1 left-weighted, 2 right-weighted
-  const cx = layout === 0 ? 200 : layout === 1 ? 150 : 250;
-  const cy = 118;
-  const tilt = rng.range(-7, 7);
-  const scale = rng.range(1.05, 1.25);
-  const blob = rng.int(0, 2);
-  const sideX = layout === 1 ? 318 : layout === 2 ? 82 : rng.pick([70, 330]);
-  const showSide = layout !== 0 || rng.chance(0.45);
-
+/** A dotted, gently curving trail ending in an arrowhead. */
+function Trail({ from, to, bend, rng }: { from: [number, number]; to: [number, number]; bend: number; rng: Rng }) {
+  const [x1, y1] = from;
+  const [x2, y2] = to;
+  const mx = r2((x1 + x2) / 2 + rng.range(-8, 8));
+  const my = r2((y1 + y2) / 2 + bend);
+  const a = Math.atan2(y2 - my, x2 - mx);
+  const head = (d: number) => `${r2(x2 - Math.cos(a + d) * 7)} ${r2(y2 - Math.sin(a + d) * 7)}`;
   return (
-    <g>
-      <rect width={W} height={H} fill={pal.paper} />
-      <Texture rng={rng} color={pal.soft} uid={uid} />
-      {/* Soft ground behind the subject */}
-      {blob === 0 && <circle cx={cx} cy={cy} r={86} fill={pal.soft} opacity={0.85} />}
-      {blob === 1 && <rect x={cx - 96} y={cy - 78} width={192} height={156} rx={48} fill={pal.soft} opacity={0.85} transform={`rotate(${rng.int(-8, 8)} ${cx} ${cy})`} />}
-      {blob === 2 && (
-        <path
-          d={`M${cx - 92} ${cy + 10} C${cx - 96} ${cy - 70} ${cx + 30} ${cy - 96} ${cx + 88} ${cy - 40} C${cx + 120} ${cy} ${cx + 70} ${cy + 86} ${cx} ${cy + 84} C${cx - 60} ${cy + 82} ${cx - 90} ${cy + 50} ${cx - 92} ${cy + 10} Z`}
-          fill={pal.soft}
-          opacity={0.85}
-        />
-      )}
-      {/* Stage shadow */}
-      <ellipse cx={cx} cy={cy + 70} rx={62} ry={9} fill={INK} opacity={0.08} />
-      <Floaters rng={rng} colors={[pal.main, pal.accent, pal.spark]} count={rng.int(5, 8)} avoid={{ x: cx, y: cy, r: 100 }} />
-      {showSide && (
-        <g transform={`translate(${sideX} ${rng.pick([62, 176])})`}>
-          <rect x={-30} y={-30} width={60} height={60} rx={16} fill="#FFFFFF" stroke={INK} strokeWidth={2} opacity={0.95} />
-          <g transform="scale(0.42)">{sideMotif(paint(pal))}</g>
-        </g>
-      )}
-      <g transform={`translate(${cx} ${cy}) rotate(${tilt}) scale(${scale})`}>{motif(paint(pal))}</g>
+    <g {...DOODLE}>
+      <path d={`M${x1} ${y1} Q${mx} ${my} ${x2} ${y2}`} strokeDasharray="1 5" strokeWidth={2} />
+      <path d={`M${head(0.5)} L${x2} ${y2} L${head(-0.5)}`} />
     </g>
   );
 }
 
-// ── Event: "poster" — bold field, rhythmic shapes, a ticket stub ────────────
-
-function Poster({ rng, pal, motif, uid }: Scene) {
-  const variant = rng.int(0, 4);
-  const angle = rng.int(-30, 30);
-  const gid = `${uid}g`;
-  const stubLeft = rng.chance(0.35);
-  const stubX = stubLeft ? 92 : 300;
-  const badgeX = stubLeft ? 250 : 140;
-  const badgeY = 120;
-  const light = 'rgba(255,255,255,0.14)';
-
+function Flag({ x, y, color }: { x: number; y: number; color: string }) {
   return (
     <g>
-      <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1" gradientTransform={`rotate(${angle} 0.5 0.5)`}>
-          <stop offset="0" stopColor={pal.deep} />
-          <stop offset="1" stopColor={pal.vivid} />
-        </linearGradient>
-      </defs>
-      <rect width={W} height={H} fill={`url(#${gid})`} />
-
-      {/* Rhythm: five poster families */}
-      {variant === 0 && (
-        <g fill={light}>
-          {Array.from({ length: 14 }, (_, i) => {
-            const a = (i / 14) * Math.PI * 2;
-            const x2 = r2(badgeX + Math.cos(a) * 420);
-            const y2 = r2(badgeY + Math.sin(a) * 420);
-            const x3 = r2(badgeX + Math.cos(a + 0.12) * 420);
-            const y3 = r2(badgeY + Math.sin(a + 0.12) * 420);
-            return <path key={i} d={`M${badgeX} ${badgeY} L${x2} ${y2} L${x3} ${y3} Z`} />;
-          })}
-        </g>
-      )}
-      {variant === 1 && (
-        <g fill="none" stroke={light} strokeWidth={14}>
-          {[70, 110, 150, 190, 230].map((r) => <circle key={r} cx={badgeX} cy={H + 30} r={r} />)}
-        </g>
-      )}
-      {variant === 2 && (
-        <g fill={light} transform={`rotate(${rng.int(-28, -12)} 200 120)`}>
-          {[-120, -40, 40, 120, 200].map((x, i) => <rect key={x} x={x + 60} y={-100} width={i % 2 ? 26 : 46} height={440} />)}
-        </g>
-      )}
-      {variant === 3 && (
-        <g fill={light}>
-          {Array.from({ length: 10 }, (_, r) =>
-            Array.from({ length: 16 }, (_, c) => {
-              const x = 14 + c * 26;
-              const y = 14 + r * 26;
-              const d = Math.hypot(x - badgeX, y - badgeY);
-              const rad = r2(Math.max(0.6, 8 - d / 32));
-              return <circle key={`${r}-${c}`} cx={x} cy={y} r={rad} />;
-            })
-          )}
-        </g>
-      )}
-      {variant === 4 && (
-        <g fill={light}>
-          {[-1, 0, 1].map((i) => (
-            <path key={i} d={`M${badgeX + i * 70} -10 L${badgeX + i * 70 - 46} ${H + 10} L${badgeX + i * 70 + 46} ${H + 10} Z`} opacity={0.8} />
-          ))}
-        </g>
-      )}
-
-      <Floaters rng={rng} colors={[pal.spark, '#FFFFFF', pal.soft]} count={rng.int(4, 7)} avoid={{ x: badgeX, y: badgeY, r: 92 }} />
-
-      {/* Ticket stub */}
-      <g>
-        <path
-          d={`M${stubX - 52} 34 H${stubX + 52} V${H / 2 - 12} A12 12 0 0 0 ${stubX + 52} ${H / 2 + 12} V${H - 34} H${stubX - 52} V${H / 2 + 12} A12 12 0 0 0 ${stubX - 52} ${H / 2 - 12} Z`}
-          fill="#FFFFFF"
-          opacity={0.96}
-        />
-        <line x1={stubX - 36} y1={H / 2} x2={stubX + 36} y2={H / 2} stroke={INK} strokeWidth={1.6} strokeDasharray="4 5" opacity={0.35} />
-        <rect x={stubX - 34} y={56} width={rng.int(36, 60)} height={9} rx={4.5} fill={pal.main} />
-        <rect x={stubX - 34} y={74} width={rng.int(46, 66)} height={6} rx={3} fill={INK} opacity={0.18} />
-        <rect x={stubX - 34} y={86} width={rng.int(26, 44)} height={6} rx={3} fill={INK} opacity={0.12} />
-        {/* Barcode */}
-        <g fill={INK} opacity={0.75}>
-          {Array.from({ length: 16 }, (_, i) => (
-            <rect key={i} x={stubX - 34 + i * 4.4} y={H / 2 + 22} width={rng.pick([1.4, 2.2, 3])} height={40} />
-          ))}
-        </g>
-        <circle cx={stubX + 28} cy={H - 52} r={7} fill={pal.spark} />
-      </g>
-
-      {/* Subject on a white badge */}
-      <circle cx={badgeX} cy={badgeY} r={70} fill="#FFFFFF" opacity={0.12} />
-      <circle cx={badgeX} cy={badgeY} r={56} fill="#FFFFFF" stroke={INK} strokeWidth={3} />
-      <g transform={`translate(${badgeX} ${badgeY}) rotate(${rng.range(-8, 8)}) scale(0.78)`}>{motif(paint(pal))}</g>
+      <path d={`M${x - 14} ${y} H${x + 16}`} {...DOODLE} />
+      <path d={`M${x} ${y} V${y - 28}`} {...DOODLE} />
+      <path d={`M${x} ${y - 28} L${x + 17} ${y - 22} L${x} ${y - 16} Z`} {...DOODLE} fill={color} fillOpacity={0.45} strokeWidth={1.3} />
     </g>
   );
 }
 
-// ── Exam: "blueprint" — graph paper, rulers, a measured subject and a seal ──
+function Confetti({ rng, pal, count, avoid }: { rng: Rng; pal: ArtPalette; count: number; avoid: Array<{ x: number; y: number; r: number }> }) {
+  const items: React.ReactElement[] = [];
+  let tries = 0;
+  while (items.length < count && tries < 90) {
+    tries++;
+    const x = r2(rng.range(20, W - 20));
+    const y = r2(rng.range(18, H - 18));
+    if (avoid.some((o) => Math.hypot(x - o.x, y - o.y) < o.r)) continue;
+    const color = rng.pick([pal.main, pal.accent, pal.spark]);
+    const k = rng.int(0, 2);
+    items.push(
+      <g key={items.length} transform={`translate(${x} ${y}) rotate(${rng.int(0, 180)})`}>
+        {k === 0 && <rect x={-4} y={-1.6} width={8} height={3.2} rx={1.2} fill={color} opacity={0.6} />}
+        {k === 1 && <path d="M-5 2 L-2 -2 L1 2 L4 -2" {...DOODLE} stroke={color} strokeOpacity={0.8} strokeWidth={1.5} />}
+        {k === 2 && <path d="M0 -4 L3.6 2.6 L-3.6 2.6 Z" fill={color} opacity={0.55} />}
+      </g>
+    );
+  }
+  return <g>{items}</g>;
+}
 
-function Blueprint({ rng, pal, motif, uid }: Scene) {
-  const minor = `${uid}mi`;
-  const major = `${uid}ma`;
-  const cx = rng.pick([150, 170, 200]);
-  const cy = 124;
-  const sealRight = cx < 200 || rng.chance(0.5);
-  const sealX = sealRight ? 318 : 82;
-  const sealY = rng.pick([70, 168]);
-  const answers = rng.int(0, 3);
-  const showBubbles = sealRight ? rng.chance(0.5) : false;
+function CalendarPage({ x, y, pal }: { x: number; y: number; pal: ArtPalette }) {
+  return (
+    <g transform={`translate(${x} ${y}) rotate(-6)`}>
+      <rect x={-22} y={-20} width={44} height={42} rx={6} {...DOODLE} fill={ART.white} />
+      <rect x={-22} y={-20} width={44} height={12} rx={6} fill={pal.main} opacity={0.3} />
+      <path d="M-22 -8 H22" {...DOODLE} />
+      <path d="M-12 -25 V-15 M12 -25 V-15" {...DOODLE} strokeWidth={2} />
+      {[-12, 0, 12].flatMap((cx) => [2, 13].map((cy) => <circle key={`${cx}:${cy}`} cx={cx} cy={cy} r={1.8} fill={ART.ink} opacity={0.35} />))}
+      <circle cx={12} cy={13} r={5.5} fill="none" stroke={pal.spark} strokeWidth={1.6} />
+    </g>
+  );
+}
+
+// ── Course: a learning path ─────────────────────────────────────────────────
+
+function LearningPath({ rng, pal, motif, companions }: Scene) {
+  const flip = rng.chance(0.5);
+  const X = (x: number) => (flip ? W - x : x);
 
   return (
     <g>
-      <defs>
-        <pattern id={minor} width={12} height={12} patternUnits="userSpaceOnUse">
-          <path d="M12 0 H0 V12" fill="none" stroke={pal.main} strokeWidth={0.5} opacity={0.35} />
-        </pattern>
-        <pattern id={major} width={48} height={48} patternUnits="userSpaceOnUse">
-          <path d="M48 0 H0 V48" fill="none" stroke={pal.main} strokeWidth={1} opacity={0.35} />
-        </pattern>
-      </defs>
-      <rect width={W} height={H} fill={pal.paper} />
-      <rect width={W} height={H} fill={`url(#${minor})`} />
-      <rect width={W} height={H} fill={`url(#${major})`} />
+      <LightGround rng={rng} pal={pal} />
+      <Trail from={[X(186), 98]} to={[X(240), 76]} bend={-16} rng={rng} />
+      <Trail from={[X(286), 100]} to={[X(296), 144]} bend={0} rng={rng} />
+      <Trail from={[X(324), 176]} to={[X(340), 196]} bend={4} rng={rng} />
+      <Flag x={X(352)} y={214} color={pal.spark} />
+      <Place motif={motif} pal={pal} x={X(132)} y={128} scale={1.05} rotate={r2(rng.range(-4, 4))} />
+      <Place motif={companions[0]} pal={pal} x={X(270)} y={68} scale={0.44} rotate={r2(rng.range(-8, 8))} />
+      <Place motif={companions[1]} pal={pal} x={X(298)} y={172} scale={0.44} rotate={r2(rng.range(-8, 8))} />
+      <Sparkle x={X(66)} y={50} s={8} color={pal.spark} />
+      <Sparkle x={X(214)} y={202} s={5} color={pal.accent} />
+      <Squiggle x={X(44)} y={212} len={44} color={pal.main} rng={rng} />
+      <Dot x={X(360)} y={42} color={pal.accent} />
+      <Dot x={X(210)} y={38} color={pal.main} r={1.8} />
+    </g>
+  );
+}
 
-      {/* Rulers */}
-      <g stroke={INK} strokeWidth={1.2} opacity={0.5}>
-        <line x1={0} y1={14} x2={W} y2={14} />
-        {Array.from({ length: 41 }, (_, i) => <line key={`t${i}`} x1={i * 10} y1={14} x2={i * 10} y2={i % 5 === 0 ? 4 : 9} />)}
-        <line x1={14} y1={0} x2={14} y2={H} />
-        {Array.from({ length: 25 }, (_, i) => <line key={`l${i}`} x1={14} y1={i * 10} x2={i % 5 === 0 ? 4 : 9} y2={i * 10} />)}
-      </g>
+// ── Event: a celebration ────────────────────────────────────────────────────
 
-      {/* Measured frame around the subject */}
-      <rect x={cx - 66} y={cy - 66} width={132} height={132} rx={6} fill="#FFFFFF" fillOpacity={0.8} stroke={INK} strokeWidth={1.6} strokeDasharray="6 5" />
-      <g stroke={pal.main} strokeWidth={1.4} fill={pal.main}>
-        <line x1={cx - 66} y1={cy + 82} x2={cx + 66} y2={cy + 82} />
-        <path d={`M${cx - 66} ${cy + 82} l6 -3 v6 Z M${cx + 66} ${cy + 82} l-6 -3 v6 Z`} stroke="none" />
-        <line x1={cx - 82} y1={cy - 66} x2={cx - 82} y2={cy + 66} />
-        <path d={`M${cx - 82} ${cy - 66} l-3 6 h6 Z M${cx - 82} ${cy + 66} l-3 -6 h6 Z`} stroke="none" />
-      </g>
-      {/* Corner crosshairs */}
-      {[[-66, -66], [66, -66], [-66, 66], [66, 66]].map(([dx, dy], i) => (
-        <circle key={i} cx={cx + dx} cy={cy + dy} r={3.5} fill="#FFFFFF" stroke={INK} strokeWidth={1.6} />
+function Celebration({ rng, pal, motif, companions }: Scene) {
+  const flip = rng.chance(0.5);
+  const X = (x: number) => (flip ? W - x : x);
+  const mx = X(170);
+  const my = 128;
+
+  return (
+    <g>
+      <LightGround rng={rng} pal={pal} />
+      <Confetti
+        rng={rng}
+        pal={pal}
+        count={rng.int(9, 13)}
+        avoid={[{ x: mx, y: my, r: 76 }, { x: X(316), y: 78, r: 40 }, { x: X(304), y: 176, r: 34 }]}
+      />
+      <Burst x={mx} y={my - 4} r={60} rng={rng} />
+      <Place motif={motif} pal={pal} x={mx} y={my} scale={1.02} rotate={r2(rng.range(-4, 4))} />
+      <CalendarPage x={X(316)} y={78} pal={pal} />
+      <Place motif={companions[0]} pal={pal} x={X(304)} y={176} scale={0.42} rotate={r2(rng.range(-10, 10))} />
+      <Sparkle x={X(62)} y={66} s={9} color={pal.spark} />
+      <Sparkle x={X(250)} y={38} s={5} color={pal.accent} />
+      <Squiggle x={X(46)} y={200} len={40} color={pal.accent} rng={rng} />
+    </g>
+  );
+}
+
+// ── Exam: the subject on a fading graph-paper sheet with a small seal ───────
+
+function Sheet({ rng, pal, motif, uid }: Scene) {
+  const cx = rng.pick([182, 200, 218]);
+  const cy = 122;
+  const sealRight = cx <= 200;
+  const sealX = sealRight ? cx + 112 : cx - 112;
+  const sealY = rng.pick([76, 164]);
+  const bubbleX = sealRight ? cx + 96 : cx - 120;
+  const bubbleY = sealY === 76 ? 146 : 64;
+  const chosen = rng.int(0, 2);
+  const hair = { stroke: ART.ink, strokeOpacity: 0.28, strokeWidth: 1.1 };
+
+  return (
+    <g>
+      <Ground pal={pal} uid={uid} x={cx} y={cy} />
+      <FadingTexture rng={rng} pal={pal} uid={uid} x={cx} y={cy} kind="grid" />
+
+      {/* Hairline frame with corner ticks */}
+      <rect x={cx - 62} y={cy - 62} width={124} height={124} rx={10} fill={ART.white} fillOpacity={0.7} {...hair} strokeDasharray="4 4" />
+      {[[-62, -62], [62, -62], [-62, 62], [62, 62]].map(([dx, dy], i) => (
+        <path key={i} d={`M${cx + dx - 5} ${cy + dy} H${cx + dx + 5} M${cx + dx} ${cy + dy - 5} V${cy + dy + 5}`} stroke={pal.main} strokeOpacity={0.6} strokeWidth={1.2} />
       ))}
-      <g transform={`translate(${cx} ${cy}) scale(1.02)`}>{motif(paint(pal, rng.chance(0.4)))}</g>
+      <g transform={`translate(${cx} ${cy}) scale(0.95)`}>{motif(paint(pal))}</g>
 
-      {/* Answer bubbles, or a short checklist */}
-      {showBubbles ? (
-        <g transform={`translate(${sealX - 22} ${sealY === 70 ? 150 : 46})`}>
-          {[0, 1, 2, 3].map((i) => (
-            <g key={i} transform={`translate(0 ${i * 15})`}>
-              <circle cx={0} cy={0} r={5} fill={i === answers ? INK : '#FFFFFF'} stroke={INK} strokeWidth={1.6} />
-              <rect x={10} y={-2.5} width={rng.int(22, 34)} height={5} rx={2.5} fill={INK} opacity={0.18} />
-            </g>
-          ))}
-        </g>
-      ) : (
-        <g transform={`translate(${sealRight ? 286 : 40} ${sealY === 70 ? 150 : 40})`}>
-          {[0, 1, 2].map((i) => (
-            <g key={i} transform={`translate(0 ${i * 16})`}>
-              <rect x={0} y={-5} width={10} height={10} rx={2} fill="#FFFFFF" stroke={INK} strokeWidth={1.6} />
-              {i <= answers && <path d="M2 0 L4.5 3 L9 -3.5" fill="none" stroke={pal.main} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />}
-              <rect x={16} y={-2.5} width={rng.int(30, 54)} height={5} rx={2.5} fill={INK} opacity={0.2} />
-            </g>
-          ))}
-        </g>
-      )}
+      {/* Three answer bubbles */}
+      <g transform={`translate(${bubbleX} ${bubbleY})`}>
+        {[0, 1, 2].map((i) => (
+          <g key={i} transform={`translate(0 ${i * 13})`}>
+            <circle r={3.6} fill={i === chosen ? pal.main : ART.white} fillOpacity={i === chosen ? 0.7 : 1} {...(i === chosen ? {} : hair)} />
+            <rect x={9} y={-2} width={rng.int(16, 26)} height={4} rx={2} fill={ART.ink} opacity={0.1} />
+          </g>
+        ))}
+      </g>
 
-      {/* Seal */}
-      <g transform={`translate(${sealX} ${sealY}) rotate(${rng.int(-15, 15)})`}>
+      {/* Small outline seal */}
+      <g transform={`translate(${sealX} ${sealY}) rotate(${rng.int(-12, 12)})`} opacity={0.85}>
         <path
-          d={Array.from({ length: 24 }, (_, i) => {
-            const a = (i / 24) * Math.PI * 2;
-            const r = i % 2 ? 26 : 30;
-            return `${i ? 'L' : 'M'}${(Math.cos(a) * r).toFixed(1)} ${(Math.sin(a) * r).toFixed(1)}`;
-          }).join(' ') + ' Z'}
-          fill={pal.spark}
-          stroke={INK}
-          strokeWidth={2}
+          d={
+            Array.from({ length: 20 }, (_, i) => {
+              const a = (i / 20) * Math.PI * 2;
+              const r = i % 2 ? 15 : 17.5;
+              return `${i ? 'L' : 'M'}${(Math.cos(a) * r).toFixed(1)} ${(Math.sin(a) * r).toFixed(1)}`;
+            }).join(' ') + ' Z'
+          }
+          fill={ART.soft}
+          fillOpacity={0.6}
+          stroke={pal.main}
+          strokeOpacity={0.6}
+          strokeWidth={1.1}
           strokeLinejoin="round"
         />
-        <circle r={18} fill="#FFFFFF" stroke={INK} strokeWidth={2} />
-        <path d="M-8 0 L-2 6 L9 -6" fill="none" stroke={pal.main} strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M-5 0 L-1.5 3.5 L5.5 -4" fill="none" stroke={pal.main} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
       </g>
+      <Accents rng={rng} pal={pal} avoid={{ x: cx, y: cy, r: 96 }} />
     </g>
   );
 }

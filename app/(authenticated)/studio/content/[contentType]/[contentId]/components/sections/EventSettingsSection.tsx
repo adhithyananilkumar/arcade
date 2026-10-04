@@ -98,15 +98,15 @@ export function EventSettingsSection({ eventId, initialEvent, onChanged }: Props
 
   const labelCls = "block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2";
   const inputCls =
-    "w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-all focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 shadow-2xs";
+    "w-full rounded-xl border border-slate-200 bg-surface px-4 py-2.5 text-sm text-slate-900 transition-all focus:border-blue-500 focus:bg-surface focus:outline-none focus:ring-2 focus:ring-blue-100 shadow-2xs dark:focus:ring-blue-500/25";
 
   return (
     <form onSubmit={handleSave} className="flex flex-col gap-8 max-w-4xl mx-auto w-full">
       {/* Header bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-[#14142b] flex items-center gap-2">
-            <Settings size={20} className="text-blue-600" />
+          <h2 className="text-xl font-bold tracking-tight text-ink flex items-center gap-2">
+            <Settings size={20} className="text-blue-600 dark:text-blue-400" />
             Event Settings
           </h2>
           <p className="mt-1 text-xs font-medium text-slate-500">
@@ -125,9 +125,9 @@ export function EventSettingsSection({ eventId, initialEvent, onChanged }: Props
       </div>
 
       {/* Basic Info Card */}
-      <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm space-y-5">
-        <h3 className="text-sm font-bold text-[#14142b] flex items-center gap-2 border-b border-slate-100 pb-3">
-          <Sparkles size={16} className="text-indigo-600" />
+      <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm space-y-5">
+        <h3 className="text-sm font-bold text-ink flex items-center gap-2 border-b border-slate-100 pb-3">
+          <Sparkles size={16} className="text-indigo-600 dark:text-indigo-400" />
           Basic Information
         </h3>
 
@@ -195,9 +195,9 @@ export function EventSettingsSection({ eventId, initialEvent, onChanged }: Props
       </div>
 
       {/* Format & Delivery Card */}
-      <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm space-y-6">
-        <h3 className="text-sm font-bold text-[#14142b] flex items-center gap-2 border-b border-slate-100 pb-3">
-          <Video size={16} className="text-blue-600" />
+      <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm space-y-6">
+        <h3 className="text-sm font-bold text-ink flex items-center gap-2 border-b border-slate-100 pb-3">
+          <Video size={16} className="text-blue-600 dark:text-blue-400" />
           Format & Delivery
         </h3>
 
@@ -218,8 +218,8 @@ export function EventSettingsSection({ eventId, initialEvent, onChanged }: Props
                 onClick={() => handleChange("eventType", type)}
                 className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                   formData.eventType === type
-                    ? "border-blue-600 bg-blue-50/80 text-blue-700 shadow-xs ring-1 ring-blue-600"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                    ? "border-blue-600 bg-blue-50/80 text-blue-700 shadow-xs ring-1 ring-blue-600 dark:bg-blue-500/10 dark:text-blue-300"
+                    : "border-slate-200 bg-surface text-slate-700 hover:border-slate-300 hover:bg-slate-50"
                 }`}
               >
                 <span>{label}</span>
@@ -244,8 +244,8 @@ export function EventSettingsSection({ eventId, initialEvent, onChanged }: Props
                 onClick={() => handleChange("deliveryMode", mode)}
                 className={`p-3 rounded-xl border text-xs font-bold text-center transition-all cursor-pointer ${
                   formData.deliveryMode === mode
-                    ? "border-indigo-600 bg-indigo-50/80 text-indigo-700 shadow-xs ring-1 ring-indigo-600"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                    ? "border-indigo-600 bg-indigo-50/80 text-indigo-700 shadow-xs ring-1 ring-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300"
+                    : "border-slate-200 bg-surface text-slate-700 hover:border-slate-300 hover:bg-slate-50"
                 }`}
               >
                 {label}
@@ -266,8 +266,8 @@ export function EventSettingsSection({ eventId, initialEvent, onChanged }: Props
                   onClick={() => handleChange("difficulty", lvl)}
                   className={`p-2.5 rounded-xl border text-xs font-bold text-center transition-all cursor-pointer ${
                     formData.difficulty === lvl
-                      ? "border-blue-600 bg-blue-50 text-blue-700 shadow-xs"
-                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                      ? "border-blue-600 bg-blue-50 text-blue-700 shadow-xs dark:bg-blue-500/10 dark:text-blue-300"
+                      : "border-slate-200 bg-surface text-slate-600 hover:bg-slate-50"
                   }`}
                 >
                   {lvl.charAt(0) + lvl.slice(1).toLowerCase()}
@@ -294,9 +294,9 @@ export function EventSettingsSection({ eventId, initialEvent, onChanged }: Props
       </div>
 
       {/* Visibility & Access Card */}
-      <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm space-y-4">
-        <h3 className="text-sm font-bold text-[#14142b] flex items-center gap-2 border-b border-slate-100 pb-3">
-          <Shield size={16} className="text-emerald-600" />
+      <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm space-y-4">
+        <h3 className="text-sm font-bold text-ink flex items-center gap-2 border-b border-slate-100 pb-3">
+          <Shield size={16} className="text-emerald-600 dark:text-emerald-400" />
           Visibility & Access
         </h3>
 
@@ -317,8 +317,8 @@ export function EventSettingsSection({ eventId, initialEvent, onChanged }: Props
               key={v}
               className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
                 formData.visibility === v
-                  ? "border-emerald-600 bg-emerald-50/50 shadow-xs ring-1 ring-emerald-600"
-                  : "border-slate-200 bg-white hover:bg-slate-50/60"
+                  ? "border-emerald-600 bg-emerald-50/50 shadow-xs ring-1 ring-emerald-600 dark:bg-emerald-500/10"
+                  : "border-slate-200 bg-surface hover:bg-slate-50/60"
               }`}
             >
               <input
@@ -327,7 +327,7 @@ export function EventSettingsSection({ eventId, initialEvent, onChanged }: Props
                 value={v}
                 checked={formData.visibility === v}
                 onChange={() => handleChange("visibility", v)}
-                className="mt-0.5 h-4 w-4 text-emerald-600 focus:ring-emerald-500"
+                className="mt-0.5 h-4 w-4 text-emerald-600 focus:ring-emerald-500 dark:text-emerald-400"
               />
               <div className="flex flex-col">
                 <span className="text-xs font-bold text-slate-900">{title}</span>

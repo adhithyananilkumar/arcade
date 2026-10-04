@@ -175,6 +175,9 @@ export interface ChannelContentItem {
   status: string;
   createdAt: string;
   updatedAt: string;
+  channelName?: string | null;
+  /** The channel's picture; for a personal channel, its owner's profile picture. */
+  channelIconUrl?: string | null;
   authorId?: string | null;
   authorName?: string | null;
   authorUsername?: string | null;

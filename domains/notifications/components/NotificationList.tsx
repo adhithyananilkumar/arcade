@@ -58,28 +58,28 @@ function typeLabel(type: string): string | null {
 function typeTone(type: string): string {
   switch (type) {
     case 'COURSE_COLLABORATION_INVITATION':
-      return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+      return 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/25';
     case 'COURSE_COLLABORATION_ACCEPTED':
-      return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25';
     case 'COURSE_COLLABORATION_DECLINED':
-      return 'bg-rose-50 text-rose-700 border-rose-200';
+      return 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/25';
     case 'OWNER_TRANSFER_REQUESTED':
-      return 'bg-amber-50 text-amber-800 border-amber-300';
+      return 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-500/10 dark:text-amber-200 dark:border-amber-500/40';
     case 'OWNER_TRANSFER_ACCEPTED':
-      return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25';
     case 'OWNER_TRANSFER_DECLINED':
     case 'OWNER_TRANSFER_CANCELLED':
-      return 'bg-rose-50 text-rose-700 border-rose-200';
+      return 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/25';
     case 'CONTENT_APPROVED':
-      return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25';
     case 'CONTENT_CHANGES_REQUESTED':
-      return 'bg-amber-50 text-amber-700 border-amber-200';
+      return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/25';
     case 'CONTENT_SUBMITTED':
-      return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+      return 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/25';
     case 'REACH_US':
-      return 'bg-blue-50 text-blue-700 border-blue-200';
+      return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/25';
     case 'CONTENT_REPORTED':
-      return 'bg-amber-50 text-amber-700 border-amber-200';
+      return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/25';
     default:
       return 'bg-slate-50 text-slate-600 border-slate-200';
   }
@@ -158,7 +158,7 @@ export function NotificationList({
           </div>
         </div>
 
-        <h4 className="text-xs font-black text-slate-850 dark:text-slate-200 mb-1">You&apos;re all caught up!</h4>
+        <h4 className="text-xs font-black text-slate-850 mb-1">You&apos;re all caught up!</h4>
         <p className="text-[10px] text-slate-400 font-semibold max-w-[180px] mx-auto leading-relaxed">
           {emptyMessage || "We'll notify you when something new arrives."}
         </p>
@@ -269,7 +269,7 @@ export function NotificationList({
   );
 
   return (
-    <div className="divide-y divide-black/5 dark:divide-white/5">
+    <div className="divide-y divide-slate-950/5">
       {uniqueNotifications.map((n) => {
         const metadataObj = parseMetadata(n.metadata);
 
@@ -303,7 +303,7 @@ export function NotificationList({
                     ? 'border-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/20'
                     : resolvedStatus === 'DECLINED' || resolvedStatus === 'CANCELLED'
                     ? 'border-rose-500 bg-rose-50/30 dark:bg-rose-950/20'
-                    : 'border-slate-400 bg-slate-50/40 dark:bg-slate-900/20'
+                    : 'border-slate-400 bg-slate-50/40'
                 }`}
                 onClick={() => onItemClick?.(n)}
               >
@@ -311,12 +311,12 @@ export function NotificationList({
                   <span
                     className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
                       isPending
-                        ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-300'
+                        ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-500/40'
                         : resolvedStatus === 'ACCEPTED'
-                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/50 dark:text-emerald-300'
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/50 dark:text-emerald-300 dark:border-emerald-500/40'
                         : resolvedStatus === 'DECLINED' || resolvedStatus === 'CANCELLED'
-                        ? 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-900/50 dark:text-rose-300'
-                        : 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300'
+                        ? 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-900/50 dark:text-rose-300 dark:border-rose-500/40'
+                        : 'bg-slate-100 text-slate-700 border-slate-300'
                     }`}
                   >
                     {isPending
@@ -328,13 +328,13 @@ export function NotificationList({
                   {!n.read && <span className="mt-1 h-2 w-2 rounded-full bg-amber-500 shrink-0" />}
                 </div>
 
-                <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mt-1">
+                <p className="text-sm font-bold text-slate-900 mt-1">
                   {currentOwnerName} wants to transfer ownership of {channelName} to you.
                 </p>
 
                 {isPending ? (
                   <>
-                    <div className="my-2.5 rounded-lg bg-amber-100/70 dark:bg-amber-900/40 p-2.5 text-xs text-amber-950 dark:text-amber-200 space-y-1 border border-amber-200/60">
+                    <div className="my-2.5 rounded-lg bg-amber-100/70 dark:bg-amber-900/40 p-2.5 text-xs text-amber-950 dark:text-amber-200 space-y-1 border border-amber-200/60 dark:border-amber-500/25">
                       <p className="font-semibold text-[11px] uppercase tracking-wider text-amber-800 dark:text-amber-300">
                         If you accept:
                       </p>
@@ -346,7 +346,7 @@ export function NotificationList({
                       </p>
                     </div>
 
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mb-3">
+                    <p className="text-[11px] text-slate-400 mb-3">
                       {new Date(n.createdAt).toLocaleDateString(undefined, {
                         month: 'short',
                         day: 'numeric',
@@ -364,7 +364,7 @@ export function NotificationList({
                         type="button"
                         disabled={actionLoadingId === requestId}
                         onClick={(e) => handleDecline(e, requestId, resolvedStatus)}
-                        className="flex-1 py-1.5 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 rounded-lg transition-colors border border-slate-300 dark:border-neutral-700 disabled:opacity-50"
+                        className="flex-1 py-1.5 px-3 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-300 disabled:opacity-50"
                       >
                         Decline
                       </button>
@@ -382,11 +382,11 @@ export function NotificationList({
                     </div>
                   </>
                 ) : (
-                  <div className="mt-2.5 pt-2 border-t border-black/5 dark:border-white/10">
-                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                  <div className="mt-2.5 pt-2 border-t border-slate-950/5">
+                    <p className="text-xs font-semibold text-slate-700">
                       Ownership Transfer {resolvedStatus.charAt(0) + resolvedStatus.slice(1).toLowerCase()}
                     </p>
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                    <p className="text-[11px] text-slate-400 mt-0.5">
                       This transfer request is no longer active.
                     </p>
                   </div>
@@ -404,7 +404,7 @@ export function NotificationList({
                   ? 'border-amber-500 bg-amber-50/40 dark:bg-amber-950/20'
                   : resolvedStatus === 'ACCEPTED'
                   ? 'border-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/20'
-                  : 'border-slate-400 bg-slate-50/40 dark:bg-slate-900/20'
+                  : 'border-slate-400 bg-slate-50/40'
               }`}
               onClick={() => onItemClick?.(n)}
             >
@@ -412,10 +412,10 @@ export function NotificationList({
                 <span
                   className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
                     isPending
-                      ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-300'
+                      ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-500/40'
                       : resolvedStatus === 'ACCEPTED'
-                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/50 dark:text-emerald-300'
-                      : 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300'
+                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/50 dark:text-emerald-300 dark:border-emerald-500/40'
+                      : 'bg-slate-100 text-slate-700 border-slate-300'
                   }`}
                 >
                   {isPending
@@ -427,7 +427,7 @@ export function NotificationList({
                 {!n.read && <span className="mt-1 h-2 w-2 rounded-full bg-amber-500 shrink-0" />}
               </div>
 
-              <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mt-1">
+              <p className="text-sm font-bold text-slate-900 mt-1">
                 {isPending
                   ? `Waiting for ${proposedOwnerName} to respond.`
                   : `Ownership transfer for ${channelName} is ${resolvedStatus.toLowerCase()}.`}
@@ -449,7 +449,7 @@ export function NotificationList({
                   </button>
                 </div>
               ) : (
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">
+                <p className="text-[11px] text-slate-400 mt-1.5">
                   No further action required.
                 </p>
               )}
@@ -460,7 +460,7 @@ export function NotificationList({
         const label = typeLabel(n.type);
         const content = (
           <div
-            className={`p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors ${!n.read ? 'bg-indigo-50/50 dark:bg-indigo-500/10' : ''}`}
+            className={`p-4 hover:bg-slate-950/5 transition-colors ${!n.read ? 'bg-indigo-50/50 dark:bg-indigo-500/10' : ''}`}
             onClick={() => onItemClick?.(n)}
           >
             <div className="flex items-start justify-between gap-2">
@@ -472,24 +472,24 @@ export function NotificationList({
                     {label}
                   </span>
                 )}
-                <p className="text-sm text-slate-800 dark:text-slate-200 font-bold">{n.title}</p>
+                <p className="text-sm text-slate-800 font-bold">{n.title}</p>
                 {n.groupCount > 1 && (
                   // A collapsed group stands for many events. The count is shown explicitly so the
                   // row never reads like a single occurrence the reader might under-weight.
-                  <span className="mt-1 inline-flex items-center rounded-full bg-slate-100 dark:bg-neutral-800 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:text-slate-300">
+                  <span className="mt-1 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
                     {n.groupCount} updates
                   </span>
                 )}
               </div>
               {!n.read && <span className="mt-1 h-2 w-2 rounded-full bg-indigo-500 shrink-0" />}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 break-words">{n.message}</p>
+            <p className="text-xs text-slate-500 mt-1 break-words">{n.message}</p>
             {n.actorName && (
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+              <p className="text-[11px] text-slate-400 mt-1">
                 by {n.actorName}
               </p>
             )}
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">
+            <p className="text-[11px] text-slate-400 mt-1.5">
               {new Date(n.createdAt).toLocaleDateString(undefined, {
                 month: 'short',
                 day: 'numeric',

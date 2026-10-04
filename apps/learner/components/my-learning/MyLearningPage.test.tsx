@@ -75,6 +75,8 @@ function course(over: Partial<LearnerEnrollmentSummary> = {}): LearnerEnrollment
     grantedAt: '2026-08-01T10:00:00Z',
     startedAt: null,
     completedAt: null,
+    channelName: null,
+    channelIconUrl: null,
     ...over,
   };
 }

@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
+import { useDocumentTheme } from '@/shared/hooks/useDocumentTheme';
 import '@uiw/react-md-editor/markdown-editor.css';
 import '@uiw/react-markdown-preview/markdown.css';
 
@@ -16,6 +17,7 @@ interface ForumEditorProps {
 }
 
 export function ForumEditor({ value, onChange, minHeight = 300 }: ForumEditorProps) {
+  const colorMode = useDocumentTheme();
   const [isFocused, setIsFocused] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -98,7 +100,7 @@ export function ForumEditor({ value, onChange, minHeight = 300 }: ForumEditorPro
         opacity: isUploading ? 0.7 : 1,
         position: 'relative',
       }}
-      data-color-mode="light"
+      data-color-mode={colorMode}
     >
       {!value && (
         <div style={{
@@ -126,7 +128,7 @@ export function ForumEditor({ value, onChange, minHeight = 300 }: ForumEditorPro
         style={{
           border: 'none',
           boxShadow: 'none',
-          backgroundColor: '#fff',
+          backgroundColor: 'var(--theme-surface, #fff)',
         }}
       />
     </div>

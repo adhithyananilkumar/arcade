@@ -239,7 +239,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
 
   if (accessDenied) {
     return (
-      <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center">
+      <div className="rounded-2xl border border-gray-100 bg-surface p-8 text-center">
         <p className="text-sm font-semibold text-gray-700">You're not a member of this channel</p>
         <p className="text-sm text-gray-500 mt-1">Only the owner and staff can view its roster and roles.</p>
       </div>
@@ -250,7 +250,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
     // The backend refuses staffing calls on personal channels; the manage page normally hides
     // this tab for them, so this is only a safety net for deep links.
     return (
-      <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center">
+      <div className="rounded-2xl border border-gray-100 bg-surface p-8 text-center">
         <p className="text-sm font-semibold text-gray-700">Personal channels don&apos;t have staff</p>
         <p className="text-sm text-gray-500 mt-1">
           You are the sole authority on a personal channel. Create an organisation channel to invite a team and define policies.
@@ -276,8 +276,8 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                 onClick={() => setActiveSubView(v.id)}
                 className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 text-[12px] font-semibold transition-colors ${
                   activeSubView === v.id
-                    ? 'bg-[#14142b] text-white'
-                    : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                    ? 'bg-ink text-on-ink'
+                    : 'border border-slate-200 bg-surface text-slate-600 hover:bg-slate-50'
                 }`}
               >
                 <v.icon size={13} />
@@ -297,7 +297,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                   value={staffSearch}
                   onChange={(e) => setStaffSearch(e.target.value)}
                   placeholder="Search staff..."
-                  className="w-full pl-9 pr-3 py-1.5 border-slate-200 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 text-xs rounded-full shadow-2xs font-medium placeholder:text-slate-400"
+                  className="w-full pl-9 pr-3 py-1.5 border-slate-200 bg-surface focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 text-xs rounded-full shadow-2xs font-medium placeholder:text-slate-400"
                 />
               </div>
             )}
@@ -307,7 +307,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                 onClick={() => setIsInviteModalOpen(true)}
                 disabled={isSuspended}
                 title={isSuspended ? 'Channel is suspended' : undefined}
-                className="rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-4.5 py-2 text-xs font-bold shadow-xs cursor-pointer shrink-0"
+                className="rounded-full bg-ink text-on-ink hover:bg-ink-hover px-4.5 py-2 text-xs font-bold shadow-xs cursor-pointer shrink-0"
               >
                 <Plus size={16} />
                 <span>Invite Staff</span>
@@ -321,7 +321,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
       {activeSubView === 'ROSTER' ? (
         <>
           {staff.length === 0 ? (
-            <div className="relative overflow-hidden flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-slate-200/80 bg-gradient-to-b from-white via-slate-50/40 to-white shadow-2xs">
+            <div className="relative overflow-hidden flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-slate-200/80 bg-gradient-to-b from-surface via-slate-50/40 to-surface shadow-2xs">
               {/* Hand-Drawn Doodle Background Accents */}
               <div className="absolute inset-0 pointer-events-none opacity-[0.14] select-none overflow-hidden">
                 <svg className="absolute left-10 top-1/2 -translate-y-1/2 size-20 text-slate-800" viewBox="0 0 60 60" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
@@ -335,17 +335,17 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
               </div>
 
               <div className="relative z-10">
-                <div className="mb-3.5 mx-auto grid size-12 place-items-center rounded-2xl bg-blue-50 text-blue-600 border border-blue-100/80 shadow-2xs">
+                <div className="mb-3.5 mx-auto grid size-12 place-items-center rounded-2xl bg-blue-50 text-blue-600 border border-blue-100/80 shadow-2xs dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/25">
                   <Users size={22} />
                 </div>
-                <p className="text-sm font-extrabold text-[#14142b]">No staff members invited yet</p>
+                <p className="text-sm font-extrabold text-ink">No staff members invited yet</p>
                 <p className="mt-1 text-xs font-medium text-slate-500 max-w-sm mx-auto">
                   Invite team members or creators to help manage this channel and publish content.
                 </p>
               </div>
             </div>
           ) : filteredStaff.length === 0 ? (
-            <div className="p-8 text-center text-sm font-medium text-slate-400 rounded-3xl border border-slate-200/80 bg-white">
+            <div className="p-8 text-center text-sm font-medium text-slate-400 rounded-3xl border border-slate-200/80 bg-surface">
               No staff match &quot;{staffSearch}&quot;.
             </div>
           ) : (
@@ -356,33 +356,33 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                 return (
                   <div
                     key={member.id}
-                    className="group relative flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-none border-t-2 border-l-2 border-t-sky-400 border-l-sky-400 border-r border-b border-r-slate-200/60 border-b-slate-200/60 bg-white p-4 sm:p-5 shadow-[6px_-6px_16px_rgba(20,20,43,0.08)] hover:shadow-[8px_-8px_22px_rgba(20,20,43,0.12)] hover:border-t-blue-500 hover:border-l-blue-500 transition-all duration-200"
+                    className="group relative flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-none border-t-2 border-l-2 border-t-sky-400 border-l-sky-400 border-r border-b border-r-slate-200/60 border-b-slate-200/60 bg-surface p-4 sm:p-5 shadow-[6px_-6px_16px_rgba(20,20,43,0.08)] hover:shadow-[8px_-8px_22px_rgba(20,20,43,0.12)] hover:border-t-blue-500 hover:border-l-blue-500 transition-all duration-200"
                   >
                     {/* Left Block: Avatar + Member Meta */}
                     <div className="flex items-center gap-4 min-w-0 flex-1">
                       {/* User Avatar */}
                       <div className="relative shrink-0">
-                        <Avatar className="h-11 w-11 bg-gradient-to-br from-blue-600 via-sky-600 to-slate-900 text-white font-black shadow-xs ring-2 ring-white">
+                        <Avatar className="h-11 w-11 bg-gradient-to-br from-blue-600 via-sky-600 to-slate-900 text-white font-black shadow-xs ring-2 ring-surface">
                           <AvatarFallback className="font-black text-xs text-white">
                             {member.userName.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-white shadow-xs" title="Active Staff Member" />
+                        <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-surface shadow-xs" title="Active Staff Member" />
                       </div>
 
                       {/* Member Name & Handle */}
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm font-black text-[#14142b] truncate">{member.userName}</span>
+                          <span className="text-sm font-black text-ink truncate">{member.userName}</span>
                           {isSelf && (
-                            <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-[10px] font-black text-purple-700 border border-purple-200/80">
+                            <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-[10px] font-black text-purple-700 border border-purple-200/80 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/25">
                               You
                             </span>
                           )}
                         </div>
                         <p className="text-xs font-semibold text-slate-500 truncate mt-0.5">
                           {member.username ? (
-                            <Link href={`/${member.username}`} className="font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                            <Link href={`/${member.username}`} className="font-bold text-blue-600 hover:text-blue-800 transition-colors dark:text-blue-400 dark:hover:text-blue-200">
                               @{member.username}
                             </Link>
                           ) : (
@@ -398,7 +398,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                         <Badge
                           key={role.id}
                           variant="outline"
-                          className="inline-flex items-center gap-1.5 text-xs font-extrabold text-sky-700 border-sky-200/90 bg-sky-50/90 px-3.5 py-1.5 rounded-full shadow-2xs"
+                          className="inline-flex items-center gap-1.5 text-xs font-extrabold text-sky-700 border-sky-200/90 bg-sky-50/90 px-3.5 py-1.5 rounded-full shadow-2xs dark:text-sky-300 dark:border-sky-500/25 dark:bg-sky-500/10"
                         >
                           <ShieldCheck size={13} className="text-sky-500 shrink-0" />
                           <span>{role.displayName}</span>
@@ -413,7 +413,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => openEditRoles(member)}
-                          className="h-8.5 w-8.5 rounded-xl border border-slate-200/80 bg-white text-slate-500 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-colors cursor-pointer"
+                          className="h-8.5 w-8.5 rounded-xl border border-slate-200/80 bg-surface text-slate-500 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-colors cursor-pointer dark:hover:text-blue-400 dark:hover:bg-blue-500/10 dark:hover:border-blue-500/25"
                           title="Edit policies"
                         >
                           <Pencil size={15} />
@@ -424,7 +424,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => handleRemoveStaff(member.userId, isSelf)}
-                          className="h-8.5 w-8.5 rounded-xl border border-slate-200/80 bg-white text-slate-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-colors cursor-pointer"
+                          className="h-8.5 w-8.5 rounded-xl border border-slate-200/80 bg-surface text-slate-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-colors cursor-pointer dark:hover:text-rose-400 dark:hover:bg-rose-500/10 dark:hover:border-rose-500/25"
                           title={isSelf ? 'Leave channel' : 'Remove staff member'}
                         >
                           {isSelf ? <LogOut size={15} /> : <Trash2 size={15} />}
@@ -443,7 +443,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsStaffExpanded(true)}
-                className="text-xs font-extrabold text-[#14142b] hover:bg-slate-100 rounded-full px-5 py-2"
+                className="text-xs font-extrabold text-ink hover:bg-slate-100 rounded-full px-5 py-2"
               >
                 See {filteredStaff.length - 5} More Members
               </Button>
@@ -455,7 +455,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsStaffExpanded(false)}
-                className="text-xs font-extrabold text-[#14142b] hover:bg-slate-100 rounded-full px-5 py-2"
+                className="text-xs font-extrabold text-ink hover:bg-slate-100 rounded-full px-5 py-2"
               >
                 Show Less
               </Button>
@@ -469,15 +469,15 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
       )}
 
       {canManageStaff && activeSubView === 'ROSTER' && invitations.length > 0 && (
-        <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-sm space-y-0">
-          <div className="flex items-center justify-between border-b border-slate-100 bg-amber-50/50 px-6 py-4">
-            <h4 className="flex items-center gap-2.5 text-sm font-extrabold text-[#14142b]">
-              <span className="grid size-8 place-items-center rounded-xl bg-amber-100/90 text-amber-700 border border-amber-200/60 shadow-2xs">
+        <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-surface/95 shadow-sm space-y-0">
+          <div className="flex items-center justify-between border-b border-slate-100 bg-amber-50/50 px-6 py-4 dark:bg-amber-500/10">
+            <h4 className="flex items-center gap-2.5 text-sm font-extrabold text-ink">
+              <span className="grid size-8 place-items-center rounded-xl bg-amber-100/90 text-amber-700 border border-amber-200/60 shadow-2xs dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/25">
                 <Mail size={16} />
               </span>
               <span>Pending Invitations</span>
             </h4>
-            <span className="rounded-full bg-amber-100/80 px-2.5 py-0.5 text-xs font-black text-amber-800 border border-amber-200/60">
+            <span className="rounded-full bg-amber-100/80 px-2.5 py-0.5 text-xs font-black text-amber-800 border border-amber-200/60 dark:bg-amber-500/15 dark:text-amber-200 dark:border-amber-500/25">
               {invitations.length} Pending
             </span>
           </div>
@@ -488,21 +488,21 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
               return (
                 <div
                   key={inv.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 hover:bg-amber-50/20 transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 hover:bg-amber-50/20 transition-colors dark:hover:bg-amber-500/10"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-100 text-amber-800 font-extrabold text-xs border border-amber-200/60">
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-100 text-amber-800 font-extrabold text-xs border border-amber-200/60 dark:bg-amber-500/15 dark:text-amber-200 dark:border-amber-500/25">
                       {inv.email[0].toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-black text-[#14142b] truncate">{inv.email}</p>
+                      <p className="text-xs font-black text-ink truncate">{inv.email}</p>
                       <p className="text-[11px] font-semibold text-slate-400 truncate mt-0.5">
                         Invited by <span className="text-slate-700 font-bold">{inv.invitedByName}</span> on{' '}
                         {new Date(inv.createdAt).toLocaleDateString()}
                         {expiry && (
                           <>
                             {' · '}
-                            <span className={`inline-flex items-center gap-1 ${inv.expired ? 'text-rose-600 font-bold' : ''}`}>
+                            <span className={`inline-flex items-center gap-1 ${inv.expired ? 'text-rose-600 font-bold dark:text-rose-400' : ''}`}>
                               <Clock size={10} /> {expiry}
                             </span>
                           </>
@@ -516,8 +516,8 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                       variant="outline"
                       className={
                         inv.expired
-                          ? 'text-rose-700 border-rose-200/70 bg-rose-50/90 text-[11px] font-black px-3 py-1 rounded-full'
-                          : 'text-amber-700 border-amber-200/70 bg-amber-50/90 text-[11px] font-black px-3 py-1 rounded-full'
+                          ? 'text-rose-700 border-rose-200/70 bg-rose-50/90 text-[11px] font-black px-3 py-1 rounded-full dark:text-rose-300 dark:border-rose-500/25 dark:bg-rose-500/10'
+                          : 'text-amber-700 border-amber-200/70 bg-amber-50/90 text-[11px] font-black px-3 py-1 rounded-full dark:text-amber-300 dark:border-amber-500/25 dark:bg-amber-500/10'
                       }
                     >
                       {inv.roleNames.join(', ')} • {inv.expired ? 'EXPIRED' : inv.status}
@@ -527,7 +527,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                       size="icon-sm"
                       onClick={() => handleCancelInvitation(inv)}
                       disabled={isSuspended || cancellingInvitationId === inv.id}
-                      className="h-8 w-8 rounded-xl border border-slate-200/80 bg-white text-slate-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-colors cursor-pointer"
+                      className="h-8 w-8 rounded-xl border border-slate-200/80 bg-surface text-slate-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-colors cursor-pointer dark:hover:text-rose-400 dark:hover:bg-rose-500/10 dark:hover:border-rose-500/25"
                       title={inv.expired ? 'Remove expired invitation' : 'Cancel invitation'}
                     >
                       {cancellingInvitationId === inv.id ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
@@ -544,7 +544,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsInvitationsExpanded(true)}
-                className="text-xs font-bold text-[#14142b]"
+                className="text-xs font-bold text-ink"
               >
                 See {invitations.length - 3} More
               </Button>
@@ -556,7 +556,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsInvitationsExpanded(false)}
-                className="text-xs font-bold text-[#14142b]"
+                className="text-xs font-bold text-ink"
               >
                 Show Less
               </Button>
@@ -566,9 +566,9 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
       )}
 
       <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
-        <DialogContent className="max-w-md p-6 rounded-3xl border border-slate-200 bg-white shadow-2xl z-[100]">
+        <DialogContent className="max-w-md p-6 rounded-3xl border border-slate-200 bg-surface shadow-2xl z-[100]">
           <DialogHeader>
-            <DialogTitle className="text-base font-extrabold text-[#14142b]">Invite Staff Member</DialogTitle>
+            <DialogTitle className="text-base font-extrabold text-ink">Invite Staff Member</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 mt-4">
@@ -583,7 +583,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="user@example.com or username"
-                  className="pl-10 pr-10 rounded-2xl border-slate-200 bg-slate-50/80 text-xs font-medium focus:border-blue-500 focus:bg-white"
+                  className="pl-10 pr-10 rounded-2xl border-slate-200 bg-slate-50/80 text-xs font-medium focus:border-blue-500 focus:bg-surface"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
                   {emailStatus === 'LOADING' && <Loader2 size={16} className="animate-spin text-slate-400" />}
@@ -593,12 +593,12 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
               </div>
 
               {emailStatus === 'FOUND' && foundUser && (
-                <p className="mt-2 text-xs font-bold text-emerald-600 flex items-center gap-1">
+                <p className="mt-2 text-xs font-bold text-emerald-600 flex items-center gap-1 dark:text-emerald-400">
                   <Check size={12} /> Found user: {foundUser.firstName} {foundUser.lastName}
                 </p>
               )}
               {emailStatus === 'NOT_FOUND' && inviteEmail && (
-                <p className="mt-2 text-xs font-bold text-rose-600 flex items-center gap-1">
+                <p className="mt-2 text-xs font-bold text-rose-600 flex items-center gap-1 dark:text-rose-400">
                   <X size={12} /> User not found. Must be a registered user.
                 </p>
               )}
@@ -614,7 +614,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                     No policies defined yet. Create one under{' '}
                     <button
                       type="button"
-                      className="font-bold text-blue-600 hover:underline"
+                      className="font-bold text-blue-600 hover:underline dark:text-blue-400"
                       onClick={() => { setIsInviteModalOpen(false); setActiveSubView('CUSTOM_ROLES'); }}
                     >
                       Custom Roles
@@ -623,7 +623,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                   </p>
                 )}
                 {roles.map(role => (
-                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-blue-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800">
+                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-blue-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800 dark:hover:bg-blue-500/10">
                     <input
                       type="checkbox"
                       checked={selectedRoleIds.includes(role.id)}
@@ -653,9 +653,9 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
       </Dialog>
 
       <Dialog open={!!editRolesTarget} onOpenChange={(open) => !open && setEditRolesTarget(null)}>
-        <DialogContent className="max-w-md p-6 rounded-3xl border border-slate-200 bg-white shadow-2xl z-[100]">
+        <DialogContent className="max-w-md p-6 rounded-3xl border border-slate-200 bg-surface shadow-2xl z-[100]">
           <DialogHeader>
-            <DialogTitle className="text-base font-extrabold text-[#14142b]">Edit Policies</DialogTitle>
+            <DialogTitle className="text-base font-extrabold text-ink">Edit Policies</DialogTitle>
           </DialogHeader>
 
           {editRolesTarget && (
@@ -665,7 +665,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
               </p>
               <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-2xl border border-slate-200 p-2 bg-slate-50/50">
                 {roles.map(role => (
-                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-blue-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800">
+                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-blue-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800 dark:hover:bg-blue-500/10">
                     <input
                       type="checkbox"
                       checked={editRoleIds.includes(role.id)}

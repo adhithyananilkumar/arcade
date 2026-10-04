@@ -36,7 +36,7 @@ export function StudioEditorFrame({ children }: { children: ReactNode }) {
     // path), which is what produced the page-wide scrollbar on top of the canvas's
     // own. Taking it out of flow entirely removes that possibility outright: the
     // canvas's `overflow-y-auto` below is the only scroll container left.
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#fafafa]">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-surface">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         <div className="absolute -left-[10%] -top-[20%] h-[70%] w-[50%] animate-pulse rounded-full bg-indigo-500/15 blur-[120px] duration-10000" />
         <div className="absolute -right-[10%] top-[10%] h-[60%] w-[45%] animate-pulse rounded-full bg-rose-500/15 blur-[120px] duration-7000" />
@@ -116,7 +116,7 @@ export function StudioEditorTopBar({
       <div className="relative flex w-full items-center justify-between">
         {/* Left: Logo & Back Button */}
         <div className="pointer-events-auto flex items-center gap-2">
-          <div className="flex h-10 shrink-0 items-center rounded-full px-5 bg-white/60 shadow-sm border border-white/40 backdrop-blur-md">
+          <div className="flex h-10 shrink-0 items-center rounded-full px-5 bg-surface/60 shadow-sm border border-white/40 backdrop-blur-md">
             <Link href="/" className="group flex cursor-pointer items-center">
               <Image
                 src="/arcade.svg"
@@ -133,7 +133,7 @@ export function StudioEditorTopBar({
             onClick={onBack}
             disabled={backDisabled}
             title={backTitle}
-            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/60 text-[#14142b] shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md disabled:opacity-60 backdrop-blur-md"
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/40 bg-surface/60 text-ink shadow-sm transition-all duration-300 hover:bg-surface hover:shadow-md disabled:opacity-60 backdrop-blur-md"
           >
             <ArrowLeft size={16} />
           </button>
@@ -141,7 +141,7 @@ export function StudioEditorTopBar({
 
         {/* Center: breadcrumb / title pill */}
         <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center gap-2">
-          <div className="flex h-8 items-center justify-center rounded-full border border-white/40 bg-white/60 px-4 py-1 text-xs font-bold tracking-tight text-[#14142b] shadow-sm backdrop-blur-md">
+          <div className="flex h-8 items-center justify-center rounded-full border border-white/40 bg-surface/60 px-4 py-1 text-xs font-bold tracking-tight text-ink shadow-sm backdrop-blur-md">
             {breadcrumb}
           </div>
         </div>
@@ -214,7 +214,7 @@ export function StudioEditorBody({
       <aside className="relative z-20 ml-10 mt-4 mb-4 flex flex-shrink-0 flex-col w-[268px] overflow-visible">
         {/* ── Sidebar header ───────────────── */}
         <div className="flex flex-shrink-0 items-center justify-between mb-3">
-          <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#14142b]/60">
+          <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-bold uppercase tracking-[0.15em] text-ink/60">
             {sidebarTitle}
           </span>
         </div>
@@ -258,10 +258,10 @@ export function StudioEditorBody({
 // visual approximation of it.
 
 export const TREE_CONTAINER_ROW_CLASS =
-  "group flex items-center gap-2 rounded-2xl border border-white/40 bg-white/60 backdrop-blur-md px-3 py-2 shadow-sm transition-all hover:border-white/60 hover:bg-white/80";
+  "group flex items-center gap-2 rounded-2xl border border-white/40 bg-surface/60 backdrop-blur-md px-3 py-2 shadow-sm transition-all hover:border-surface/60 hover:bg-surface/80";
 
 export const TREE_SIDEBAR_BUTTON_CLASS =
-  "flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow disabled:opacity-60";
+  "flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-surface/70 px-4 py-2.5 text-xs font-bold text-ink shadow-sm backdrop-blur-md transition-all hover:bg-surface/90 hover:shadow disabled:opacity-60";
 
 export const TREE_SIDEBAR_ACTIONS_CLASS =
   "flex shrink-0 flex-col gap-2 mt-auto pt-4 pb-2 px-1 border-t border-slate-100/50";
@@ -295,8 +295,8 @@ export const CANVAS_WRAPPER_CLASS = "w-full max-w-[640px] md:max-w-[768px] lg:ma
 export function StudioCanvasLoading({ label = "Loading…" }: { label?: string }) {
   return (
     <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3" role="status">
-      <Loader2 size={20} className="animate-spin text-[#14142b]/40" />
-      <p className="text-sm font-medium text-[#14142b]/50">{label}</p>
+      <Loader2 size={20} className="animate-spin text-ink/40" />
+      <p className="text-sm font-medium text-ink/50">{label}</p>
     </div>
   );
 }
@@ -319,12 +319,12 @@ export function StudioCanvasEmpty({
 }) {
   return (
     <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 px-6 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/60 shadow-sm ring-1 ring-black/[0.03]">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface/60 shadow-sm ring-1 ring-slate-950/[0.03]">
         <Icon size={24} className="text-indigo-400" />
       </div>
       <div className="max-w-md">
-        <h3 className="text-base font-semibold text-[#14142b]">{title}</h3>
-        {description && <p className="mt-1.5 text-sm leading-relaxed text-[#14142b]/50">{description}</p>}
+        <h3 className="text-base font-semibold text-ink">{title}</h3>
+        {description && <p className="mt-1.5 text-sm leading-relaxed text-ink/50">{description}</p>}
       </div>
       {action}
     </div>
@@ -341,12 +341,12 @@ export function StudioCanvasError({
   return (
     <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 px-6 text-center" role="alert">
       <AlertTriangle size={22} className="text-rose-500" />
-      <p className="max-w-md text-sm font-semibold text-rose-600">{message}</p>
+      <p className="max-w-md text-sm font-semibold text-rose-600 dark:text-rose-400">{message}</p>
       {onRetry && (
         <button
           type="button"
           onClick={onRetry}
-          className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-[#14142b] transition-colors hover:bg-slate-50"
+          className="rounded-xl border border-slate-200 bg-surface px-4 py-2 text-xs font-bold text-ink transition-colors hover:bg-slate-50"
         >
           Try again
         </button>

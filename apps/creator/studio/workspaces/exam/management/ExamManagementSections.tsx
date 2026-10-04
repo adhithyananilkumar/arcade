@@ -168,7 +168,7 @@ export function ExamManagementSections({
             onClick={() => setTab(t.id)}
             aria-current={tab === t.id ? "page" : undefined}
             className={`inline-flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition-all ${
-              tab === t.id ? "bg-[#14142b] text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              tab === t.id ? "bg-ink text-on-ink shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
             <t.icon size={14} /> {t.label}
@@ -176,7 +176,7 @@ export function ExamManagementSections({
         ))}
       </div>
 
-      <div className="rounded-[24px] border-[1.5px] border-indigo-400/80 bg-gradient-to-b from-indigo-50/30 via-white to-white p-5 shadow-[4px_-4px_0px_0px_#C7D2FE]">
+      <div className="rounded-[24px] border-[1.5px] border-indigo-400/80 bg-gradient-to-b from-indigo-50/30 via-surface to-surface p-5 shadow-[4px_-4px_0px_0px_#C7D2FE] dark:from-indigo-500/10">
         {loading ? (
           <div className="flex justify-center py-16">
             <Loader2 size={18} className="animate-spin text-slate-400" />
@@ -247,8 +247,8 @@ export function ExamManagementSections({
                     onClick={() => setActivePlanId(plan.id)}
                     className={`rounded-full px-3 py-1 text-[11px] font-bold transition-colors ${
                       plan.id === activePlanId
-                        ? "bg-[#14142b] text-white"
-                        : "border border-slate-200 bg-white text-slate-500 hover:text-[#14142b]"
+                        ? "bg-ink text-on-ink"
+                        : "border border-slate-200 bg-surface text-slate-500 hover:text-ink"
                     }`}
                   >
                     {plan.name}
@@ -313,8 +313,8 @@ function ListDetail({
               onClick={() => onSelect(item.id)}
               className={`flex w-full flex-col gap-0.5 rounded-xl border px-3 py-2 text-left transition-all ${
                 item.id === activeId
-                  ? "border-[#14142b] bg-[#14142b] text-white"
-                  : "border-slate-200 bg-white hover:border-slate-300"
+                  ? "border-ink bg-ink text-on-ink"
+                  : "border-slate-200 bg-surface hover:border-slate-300"
               }`}
             >
               <span className="flex items-center gap-1.5">
@@ -324,7 +324,7 @@ function ListDetail({
                 {item.badge && (
                   <span
                     className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${
-                      item.id === activeId ? "bg-white/20 text-white" : "bg-amber-50 text-amber-700"
+                      item.id === activeId ? "bg-white/20 text-white" : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
                     }`}
                   >
                     {item.badge}
@@ -350,7 +350,7 @@ function ListDetail({
             type="button"
             onClick={onCreate}
             disabled={creating}
-            className="mt-1 flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-300 px-3 py-2 text-xs font-bold text-slate-500 transition-colors hover:border-slate-400 hover:bg-white hover:text-[#14142b] disabled:opacity-50"
+            className="mt-1 flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-300 px-3 py-2 text-xs font-bold text-slate-500 transition-colors hover:border-slate-400 hover:bg-surface hover:text-ink disabled:opacity-50"
           >
             {creating ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
             {createLabel}

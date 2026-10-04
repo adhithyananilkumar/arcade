@@ -57,7 +57,7 @@ export function CertificateFace({ certificate: c, className }: CertificateFacePr
       aria-label={`${c.documentTitle}: ${c.title}, awarded to ${c.recipientName} by ${c.issuerName}${c.revoked ? " (revoked)" : ""}`}
     >
       <div
-        className="relative h-full w-full overflow-hidden bg-white"
+        className="relative h-full w-full overflow-hidden bg-surface"
         style={{ padding: "0.8cqw", border: `0.55cqw solid ${NAVY}`, color: NAVY }}
       >
         <div
@@ -68,7 +68,7 @@ export function CertificateFace({ certificate: c, className }: CertificateFacePr
             <span
               aria-hidden
               className="pointer-events-none absolute inset-0 flex select-none items-center justify-center font-black"
-              style={{ fontSize: "12cqw", color: "#F6D3CE", transform: "rotate(-24deg)" }}
+              style={{ fontSize: "12cqw", color: "var(--theme-n-300, #F6D3CE)", transform: "rotate(-24deg)" }}
             >
               REVOKED
             </span>

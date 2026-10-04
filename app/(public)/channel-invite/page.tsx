@@ -29,8 +29,8 @@ function EditorialBackdrop() {
     <div
       className="fixed inset-0 pointer-events-none -z-10"
       style={{
-        backgroundColor: '#FAFBFD',
-        backgroundImage: `
+        backgroundColor: 'var(--theme-surface, #FAFBFD)',
+        backgroundImage: `var(--theme-wash, 
           radial-gradient(ellipse 70% 40% at 50% 0%, rgba(224, 236, 255, 0.25) 0%, transparent 70%),
           radial-gradient(ellipse 60% 40% at 10% 25%, rgba(233, 225, 254, 0.20) 0%, transparent 65%),
           radial-gradient(ellipse 60% 40% at 90% 75%, rgba(253, 232, 240, 0.18) 0%, transparent 65%),
@@ -41,7 +41,7 @@ function EditorialBackdrop() {
             #F8F6FD 70%,
             #FAF9FB 100%
           )
-        `,
+        )`,
       }}
     />
   );
@@ -109,7 +109,7 @@ function ChannelInviteContent() {
   const effectiveErrorMessage = !token ? 'No invitation token was provided in the URL.' : errorMessage;
 
   return (
-    <div className="landing-root min-h-[calc(100vh-140px)] flex flex-col justify-center relative text-[#0f172a] font-sans pt-28 sm:pt-32 lg:pt-36 pb-16 lg:pb-20 px-6 sm:px-12 lg:px-20 selection:bg-blue-100 selection:text-blue-900">
+    <div className="landing-root min-h-[calc(100vh-140px)] flex flex-col justify-center relative text-ink font-sans pt-28 sm:pt-32 lg:pt-36 pb-16 lg:pb-20 px-6 sm:px-12 lg:px-20 selection:bg-blue-100 selection:text-blue-900 dark:selection:bg-blue-500/15 dark:selection:text-blue-200">
       <EditorialBackdrop />
 
       <motion.div
@@ -123,7 +123,7 @@ function ChannelInviteContent() {
             <div className="mb-8">
               <PebbleLoader />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-normal font-serif italic text-[#0B132B] tracking-tight leading-snug">
+            <h1 className="text-3xl sm:text-4xl font-normal font-serif italic text-ink tracking-tight leading-snug">
               {effectiveState === 'validating' ? 'Checking your invitation.' : 'Taking you onward.'}
             </h1>
             <span className="block h-0.5 w-10 bg-[#205ca8]/60 rounded-full mx-auto mt-4" />
@@ -135,14 +135,14 @@ function ChannelInviteContent() {
 
         {effectiveState === 'error' && (
           <div className="flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center border border-rose-100 mb-6">
+            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center border border-rose-100 mb-6 dark:bg-rose-500/10 dark:border-rose-500/25">
               {effectiveErrorMessage.includes('expired') ? (
                 <MailWarning className="w-6 h-6" />
               ) : (
                 <XCircle className="w-6 h-6" />
               )}
             </div>
-            <h1 className="text-3xl sm:text-4xl font-normal font-serif italic text-[#0B132B] tracking-tight leading-snug">
+            <h1 className="text-3xl sm:text-4xl font-normal font-serif italic text-ink tracking-tight leading-snug">
               Invitation unavailable.
             </h1>
             <span className="block h-0.5 w-10 bg-[#205ca8]/60 rounded-full mx-auto mt-4" />
@@ -152,7 +152,7 @@ function ChannelInviteContent() {
 
             <Link
               href="/"
-              className="mt-9 relative inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-[#0B132B] hover:bg-[#205ca8] text-white font-medium text-sm tracking-wide shadow-sm hover:shadow-md transition-all duration-300 ease-out group"
+              className="mt-9 relative inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-ink hover:bg-[#205ca8] text-on-ink font-medium text-sm tracking-wide shadow-sm hover:shadow-md transition-all duration-300 ease-out group"
             >
               <span>Go to Homepage</span>
               <span className="w-5 h-5 rounded-full bg-white/10 group-hover:bg-white/20 flex items-center justify-center transition-colors">

@@ -39,7 +39,7 @@ export function UserInfoCard({
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-      className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 p-5 sm:p-7 shadow-[0_8px_30px_rgba(20,20,43,0.04)] backdrop-blur-md"
+      className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-surface/90 p-5 sm:p-7 shadow-[0_8px_30px_rgba(20,20,43,0.04)] backdrop-blur-md"
     >
       {/* Subtle ambient gradient backdrop */}
       <div
@@ -57,7 +57,7 @@ export function UserInfoCard({
           {/* Avatar with gradient ring */}
           <div className="relative shrink-0">
             <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-gradient-to-tr from-[#2962D6] via-[#2C83F5] to-[#27C5D8] p-0.5 shadow-md">
-              <div className="h-full w-full overflow-hidden rounded-[14px] bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+              <div className="h-full w-full overflow-hidden rounded-[14px] bg-slate-100 flex items-center justify-center">
                 {user?.avatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -72,7 +72,7 @@ export function UserInfoCard({
                 )}
               </div>
             </div>
-            <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 shadow-xs">
+            <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 ring-2 ring-surface shadow-xs">
               <Sparkles className="h-3 w-3 text-white" />
             </div>
           </div>
@@ -80,14 +80,14 @@ export function UserInfoCard({
           {/* Name & Handle */}
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
                 {displayName}
               </h2>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-blue-50 dark:bg-blue-950/60 text-[#2962D6] dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60">
                 Learner
               </span>
             </div>
-            <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+            <p className="text-xs sm:text-sm font-medium text-slate-500">
               {handleOrEmail}
             </p>
           </div>
@@ -101,7 +101,7 @@ export function UserInfoCard({
               <Zap className="w-4 h-4 fill-amber-500 text-amber-500" />
               <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider">Points</span>
             </div>
-            <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+            <span className="text-lg sm:text-xl font-black text-slate-900">
               {calculatedPoints.toLocaleString()}
             </span>
           </div>
@@ -112,7 +112,7 @@ export function UserInfoCard({
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider">Finished</span>
             </div>
-            <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+            <span className="text-lg sm:text-xl font-black text-slate-900">
               {completedCoursesCount}
             </span>
           </div>
@@ -123,7 +123,7 @@ export function UserInfoCard({
               <Trophy className="w-4 h-4 text-purple-500" />
               <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider">Badges</span>
             </div>
-            <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+            <span className="text-lg sm:text-xl font-black text-slate-900">
               {achievementsCount}
             </span>
           </div>
@@ -134,7 +134,7 @@ export function UserInfoCard({
               <BookOpen className="w-4 h-4 text-blue-500" />
               <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider">In Progress</span>
             </div>
-            <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+            <span className="text-lg sm:text-xl font-black text-slate-900">
               {activeCoursesCount}
             </span>
           </div>

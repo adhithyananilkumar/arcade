@@ -84,8 +84,8 @@ export function AssessmentLandingPane({
 
   if (error) {
     return (
-      <div className="rounded-lg border border-slate-200/80 bg-white/95 px-6 py-12 text-center">
-        <p className="text-[14px] font-semibold text-rose-600">{error}</p>
+      <div className="rounded-lg border border-slate-200/80 bg-surface/95 px-6 py-12 text-center">
+        <p className="text-[14px] font-semibold text-rose-600 dark:text-rose-400">{error}</p>
       </div>
     );
   }
@@ -99,7 +99,7 @@ export function AssessmentLandingPane({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200/80 bg-white/95 px-5 py-7 shadow-[0_8px_28px_rgba(20,20,43,0.05)] sm:px-8 sm:py-9 md:px-12 md:py-11">
+    <div className="rounded-lg border border-slate-200/80 bg-surface/95 px-5 py-7 shadow-[0_8px_28px_rgba(20,20,43,0.05)] sm:px-8 sm:py-9 md:px-12 md:py-11">
       <AssessmentLanding
         landing={landing}
         onStart={handleStart}

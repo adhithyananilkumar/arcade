@@ -74,12 +74,12 @@ export default function RegisteredMembersPage() {
               <input
                 type="text"
                 placeholder="Search participants..."
-                className="pl-10 pr-4 py-2 border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-4 py-2 border border-zinc-200 rounded-lg bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <button className="flex items-center px-4 py-2 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800">
+            <button className="flex items-center px-4 py-2 border border-zinc-200 rounded-lg text-sm bg-surface hover:bg-zinc-50">
               <Filter className="w-4 h-4 mr-2" />
               Filters
             </button>
@@ -92,16 +92,16 @@ export default function RegisteredMembersPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
-          <table className="w-full text-left text-sm text-zinc-600 dark:text-zinc-400">
-            <thead className="bg-zinc-50 dark:bg-zinc-950/50 border-b border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+        <div className="bg-surface border border-zinc-200 rounded-xl overflow-hidden shadow-sm">
+          <table className="w-full text-left text-sm text-zinc-600">
+            <thead className="bg-zinc-50 border-b border-zinc-200 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
               <tr>
                 <th className="px-4 py-4 w-12 text-center">
                   <input
                     type="checkbox"
                     checked={selected.size === participants.length && participants.length > 0}
                     onChange={toggleSelectAll}
-                    className="rounded border-zinc-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-zinc-300 text-blue-600 focus:ring-blue-500 dark:text-blue-400"
                   />
                 </th>
                 <th className="px-4 py-4">Participant</th>
@@ -111,11 +111,11 @@ export default function RegisteredMembersPage() {
                 <th className="px-4 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+            <tbody className="divide-y divide-zinc-200">
               {participants.map((p) => (
                 <tr 
                   key={p.id} 
-                  className={`hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors ${activeParticipant?.id === p.id ? 'bg-zinc-50 dark:bg-zinc-800/50' : ''}`}
+                  className={`hover:bg-zinc-50 cursor-pointer transition-colors ${activeParticipant?.id === p.id ? 'bg-zinc-50' : ''}`}
                   onClick={() => setActiveParticipant(p)}
                 >
                   <td className="px-4 py-4 text-center" onClick={(e) => e.stopPropagation()}>
@@ -123,14 +123,14 @@ export default function RegisteredMembersPage() {
                       type="checkbox"
                       checked={selected.has(p.id)}
                       onChange={() => toggleSelect(p.id)}
-                      className="rounded border-zinc-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-zinc-300 text-blue-600 focus:ring-blue-500 dark:text-blue-400"
                     />
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center space-x-3">
-                      <img src={p.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name || 'User')}&background=random`} alt={p.name || 'User'} className="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700" />
+                      <img src={p.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name || 'User')}&background=random`} alt={p.name || 'User'} className="w-8 h-8 rounded-full border border-zinc-200" />
                       <div>
-                        <div className="font-medium text-zinc-900 dark:text-zinc-100">{p.name}</div>
+                        <div className="font-medium text-zinc-900">{p.name}</div>
                         <div className="text-xs text-zinc-500">{p.email}</div>
                       </div>
                     </div>
@@ -142,7 +142,7 @@ export default function RegisteredMembersPage() {
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       p.status === 'APPROVED' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
                       p.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                      'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400'
+                      'bg-zinc-100 text-zinc-800'
                     }`}>
                       {p.status}
                     </span>
@@ -152,9 +152,9 @@ export default function RegisteredMembersPage() {
                       p.paymentStatus === 'PAID' || p.paymentStatus === 'FREE' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
                       p.paymentStatus === 'PENDING' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' :
                       p.paymentStatus === 'FAILED' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                      p.paymentStatus === 'REFUNDED' ? 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400' :
+                      p.paymentStatus === 'REFUNDED' ? 'bg-zinc-100 text-zinc-800' :
                       p.paymentStatus === 'PARTIAL_REFUND' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' :
-                      'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400'
+                      'bg-zinc-100 text-zinc-800'
                     }`}>
                       {p.paymentStatus}
                     </span>
@@ -162,7 +162,7 @@ export default function RegisteredMembersPage() {
                   <td className="px-4 py-4 text-right relative" onClick={(e) => e.stopPropagation()}>
                     <button 
                       onClick={() => setActionMenuId(actionMenuId === p.id ? null : p.id)}
-                      className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                      className="text-zinc-400 hover:text-zinc-600 p-1 rounded-md hover:bg-zinc-100 transition-colors">
                       <MoreHorizontal className="w-5 h-5" />
                     </button>
                     {actionMenuId === p.id && (
@@ -171,7 +171,7 @@ export default function RegisteredMembersPage() {
                           className="fixed inset-0 z-10" 
                           onClick={() => setActionMenuId(null)}
                         />
-                        <div className="absolute right-8 top-10 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-lg z-20 py-1 flex flex-col items-start overflow-hidden">
+                        <div className="absolute right-8 top-10 w-48 bg-surface border border-zinc-200 rounded-lg shadow-lg z-20 py-1 flex flex-col items-start overflow-hidden">
                           <button 
                             onClick={async () => {
                               setActionMenuId(null);
@@ -186,7 +186,7 @@ export default function RegisteredMembersPage() {
                                 }
                               }
                             }}
-                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center transition-colors"
+                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center transition-colors dark:text-red-400"
                           >
                             <XCircle className="w-4 h-4 mr-2" />
                             Remove Participant
@@ -204,23 +204,23 @@ export default function RegisteredMembersPage() {
 
       {/* Side Panel */}
       {activeParticipant && (
-        <div className="w-1/3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm p-6 overflow-y-auto">
+        <div className="w-1/3 bg-surface border border-zinc-200 rounded-xl shadow-sm p-6 overflow-y-auto">
           <div className="flex justify-between items-start mb-6">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Participant Details</h2>
-            <button onClick={() => setActiveParticipant(null)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
+            <h2 className="text-lg font-semibold text-zinc-900">Participant Details</h2>
+            <button onClick={() => setActiveParticipant(null)} className="text-zinc-400 hover:text-zinc-600">
               <XCircle className="w-5 h-5" />
             </button>
           </div>
           
-          <div className="flex flex-col items-center text-center mb-8 border-b border-zinc-200 dark:border-zinc-800 pb-6">
-            <img src={activeParticipant.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(activeParticipant.name || 'User')}&background=random`} alt="Avatar" className="w-24 h-24 rounded-full border-4 border-zinc-50 dark:border-zinc-800 mb-4" />
-            <h3 className="text-xl font-medium text-zinc-900 dark:text-zinc-100">{activeParticipant.name}</h3>
+          <div className="flex flex-col items-center text-center mb-8 border-b border-zinc-200 pb-6">
+            <img src={activeParticipant.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(activeParticipant.name || 'User')}&background=random`} alt="Avatar" className="w-24 h-24 rounded-full border-4 border-zinc-50 mb-4" />
+            <h3 className="text-xl font-medium text-zinc-900">{activeParticipant.name}</h3>
             <p className="text-sm text-zinc-500 mb-4">{activeParticipant.email}</p>
             <div className="flex space-x-2">
-              <button className="flex items-center px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-md text-sm font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
+              <button className="flex items-center px-3 py-1.5 bg-zinc-100 text-zinc-700 rounded-md text-sm font-medium hover:bg-zinc-200 transition-colors">
                 <Mail className="w-4 h-4 mr-2" /> Message
               </button>
-              <button className="flex items-center px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-md text-sm font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
+              <button className="flex items-center px-3 py-1.5 bg-zinc-100 text-zinc-700 rounded-md text-sm font-medium hover:bg-zinc-200 transition-colors">
                 <Download className="w-4 h-4 mr-2" /> Export
               </button>
             </div>
@@ -228,32 +228,32 @@ export default function RegisteredMembersPage() {
           
           <div className="space-y-6">
             <div>
-              <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-3">Registration Stats</h4>
+              <h4 className="text-sm font-medium text-zinc-900 mb-3">Registration Stats</h4>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-zinc-50 dark:bg-zinc-950/50 p-3 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-200">
                   <div className="text-xs text-zinc-500 mb-1">Status</div>
-                  <div className="font-medium text-zinc-900 dark:text-zinc-100">{activeParticipant.status}</div>
+                  <div className="font-medium text-zinc-900">{activeParticipant.status}</div>
                 </div>
-                <div className="bg-zinc-50 dark:bg-zinc-950/50 p-3 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-200">
                   <div className="text-xs text-zinc-500 mb-1">Attendance</div>
-                  <div className="font-medium text-zinc-900 dark:text-zinc-100">{activeParticipant.attendance}%</div>
+                  <div className="font-medium text-zinc-900">{activeParticipant.attendance}%</div>
                 </div>
               </div>
             </div>
             
             {/* Payment Details Section */}
             <div>
-              <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-3">Payment Details</h4>
-              <div className="bg-zinc-50 dark:bg-zinc-950/50 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800">
+              <h4 className="text-sm font-medium text-zinc-900 mb-3">Payment Details</h4>
+              <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-200">
                 {activeParticipant.paymentStatus === 'FREE' ? (
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-zinc-500">Amount Paid:</span>
-                      <span className="font-medium text-zinc-900 dark:text-zinc-100">$0.00</span>
+                      <span className="font-medium text-zinc-900">$0.00</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-zinc-500">Payment Method:</span>
-                      <span className="font-medium text-zinc-900 dark:text-zinc-100">Not Required</span>
+                      <span className="font-medium text-zinc-900">Not Required</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-zinc-500">Status:</span>
@@ -261,36 +261,36 @@ export default function RegisteredMembersPage() {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-zinc-500">Transaction ID:</span>
-                      <span className="font-medium text-zinc-900 dark:text-zinc-100">N/A</span>
+                      <span className="font-medium text-zinc-900">N/A</span>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-zinc-500">Amount:</span>
-                      <span className="font-medium text-zinc-900 dark:text-zinc-100">Amount & Currency</span>
+                      <span className="font-medium text-zinc-900">Amount & Currency</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-zinc-500">Status:</span>
-                      <span className="font-medium text-zinc-900 dark:text-zinc-100">{activeParticipant.paymentStatus}</span>
+                      <span className="font-medium text-zinc-900">{activeParticipant.paymentStatus}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-zinc-500">Transaction ID:</span>
-                      <span className="font-medium text-zinc-900 dark:text-zinc-100">TXN-XXXXXX</span>
+                      <span className="font-medium text-zinc-900">TXN-XXXXXX</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-zinc-500">Payment Method:</span>
-                      <span className="font-medium text-zinc-900 dark:text-zinc-100">Credit Card / Gateway</span>
+                      <span className="font-medium text-zinc-900">Credit Card / Gateway</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-zinc-500">Payment Date:</span>
-                      <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                      <span className="font-medium text-zinc-900">
                         {activeParticipant.registrationDate ? format(activeParticipant.registrationDate, 'MMM d, yyyy') : 'Pending'}
                       </span>
                     </div>
                     
-                    <div className="pt-3 mt-3 border-t border-zinc-200 dark:border-zinc-800 flex justify-end space-x-2">
-                      <button className="px-3 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                    <div className="pt-3 mt-3 border-t border-zinc-200 flex justify-end space-x-2">
+                      <button className="px-3 py-1.5 text-xs font-medium text-zinc-700 bg-surface border border-zinc-200 rounded-md hover:bg-zinc-50 transition-colors">
                         View Invoice
                       </button>
                       {(activeParticipant.paymentStatus === 'PAID' || activeParticipant.paymentStatus === 'PARTIAL_REFUND') && (
@@ -305,14 +305,14 @@ export default function RegisteredMembersPage() {
             </div>
             
             <div>
-              <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2">Instructor Notes</h4>
+              <h4 className="text-sm font-medium text-zinc-900 mb-2">Instructor Notes</h4>
               <textarea 
-                className="w-full h-24 p-3 border border-zinc-200 dark:border-zinc-800 rounded-lg bg-zinc-50 dark:bg-zinc-950/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-zinc-900 dark:text-zinc-100"
+                className="w-full h-24 p-3 border border-zinc-200 rounded-lg bg-zinc-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-zinc-900"
                 placeholder="Add notes about this participant..."
               />
             </div>
             
-            <div className="flex justify-end space-x-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <div className="flex justify-end space-x-3 pt-4 border-t border-zinc-200">
               <button 
                 onClick={async () => {
                   if (confirm('Are you sure you want to remove this participant?')) {
@@ -326,7 +326,7 @@ export default function RegisteredMembersPage() {
                     }
                   }
                 }}
-                className="px-4 py-2 border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 dark:border-red-900/50 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded-lg text-sm font-medium transition-colors">
+                className="px-4 py-2 border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 dark:border-red-900/50 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded-lg text-sm font-medium transition-colors dark:text-red-400">
                 Remove
               </button>
               <button className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors">

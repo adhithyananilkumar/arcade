@@ -54,8 +54,8 @@ export const SessionBuilder: React.FC<Props> = ({ form }) => {
 
   if (sessions.length === 0) {
     return (
-      <div className="text-center py-12 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-        <p className="text-gray-500 dark:text-gray-400">No sessions scheduled yet. Click 'Add Session' to begin.</p>
+      <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
+        <p className="text-gray-500">No sessions scheduled yet. Click 'Add Session' to begin.</p>
       </div>
     );
   }

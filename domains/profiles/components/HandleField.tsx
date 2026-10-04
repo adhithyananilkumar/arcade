@@ -111,20 +111,20 @@ export function HandleField({
       <div>
         <label
           htmlFor="arcade-handle"
-          className="block text-[12.5px] font-extrabold tracking-tight text-slate-700 dark:text-neutral-200"
+          className="block text-[12.5px] font-extrabold tracking-tight text-slate-700"
         >
           {label}
         </label>
         {description && (
-          <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-400 dark:text-neutral-500">
+          <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-400">
             {description}
           </p>
         )}
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row">
-        <div className="relative flex flex-1 items-center overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors focus-within:border-slate-900 dark:border-neutral-800 dark:bg-black dark:focus-within:border-neutral-400">
-          <span className="pl-3.5 pr-1 text-[14px] font-bold text-slate-300 dark:text-neutral-600">
+        <div className="relative flex flex-1 items-center overflow-hidden rounded-xl border border-slate-200 bg-surface transition-colors focus-within:border-slate-900">
+          <span className="pl-3.5 pr-1 text-[14px] font-bold text-slate-300">
             @
           </span>
           <input
@@ -138,12 +138,12 @@ export function HandleField({
             autoComplete="off"
             maxLength={30}
             placeholder="your-handle"
-            className="w-full bg-transparent py-2.5 pr-3 text-[14px] font-semibold tracking-tight text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300 dark:text-white dark:placeholder:text-neutral-700"
+            className="w-full bg-transparent py-2.5 pr-3 text-[14px] font-semibold tracking-tight text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300"
           />
           {checking && (
             <Loader2
               size={15}
-              className="mr-3 shrink-0 animate-spin text-slate-300 dark:text-neutral-600"
+              className="mr-3 shrink-0 animate-spin text-slate-300"
             />
           )}
         </div>
@@ -152,7 +152,7 @@ export function HandleField({
           type="button"
           onClick={handleSave}
           disabled={!canSave}
-          className="shrink-0 rounded-xl bg-slate-900 px-5 py-2.5 text-[13px] font-extrabold tracking-tight text-white transition-all hover:bg-slate-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
+          className="shrink-0 rounded-xl bg-slate-900 px-5 py-2.5 text-[13px] font-extrabold tracking-tight text-on-ink transition-all hover:bg-slate-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
         >
           {saving ? 'Saving…' : saved ? 'Saved' : 'Save'}
         </button>
@@ -165,7 +165,7 @@ export function HandleField({
               ? 'text-emerald-600 dark:text-emerald-400'
               : status.tone === 'error'
                 ? 'text-rose-600 dark:text-rose-400'
-                : 'text-slate-400 dark:text-neutral-500'
+                : 'text-slate-400'
           }`}
         >
           <status.icon
@@ -184,7 +184,7 @@ export function HandleField({
 
       {result && !result.claimable && result.suggestions.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[11.5px] font-bold text-slate-400 dark:text-neutral-500">
+          <span className="text-[11.5px] font-bold text-slate-400">
             Try
           </span>
           {result.suggestions.map((suggestion) => (
@@ -192,7 +192,7 @@ export function HandleField({
               key={suggestion}
               type="button"
               onClick={() => setValue(suggestion)}
-              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[12px] font-bold text-slate-600 transition-colors hover:border-slate-900 hover:text-slate-900 dark:border-neutral-800 dark:bg-black dark:text-neutral-300 dark:hover:border-neutral-400 dark:hover:text-white"
+              className="rounded-lg border border-slate-200 bg-surface px-2.5 py-1 text-[12px] font-bold text-slate-600 transition-colors hover:border-slate-900 hover:text-slate-900"
             >
               @{suggestion}
             </button>
@@ -204,7 +204,7 @@ export function HandleField({
         <button
           type="button"
           onClick={() => onAppeal(result.normalized)}
-          className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2 text-[12.5px] font-extrabold tracking-tight text-amber-700 transition-colors hover:border-amber-300 hover:bg-amber-100 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-400 dark:hover:bg-amber-950/50"
+          className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2 text-[12.5px] font-extrabold tracking-tight text-amber-700 transition-colors hover:border-amber-300 hover:bg-amber-100 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-400 dark:hover:bg-amber-950/50 dark:hover:border-amber-500/40"
         >
           <Gavel size={13} />
           Appeal for @{result.normalized}

@@ -133,8 +133,8 @@ export function QuizPlayer({ quizId, className = "", onAttemptGraded }: QuizPlay
         <div
           className={`mb-4 flex items-center justify-between gap-4 rounded-xl border px-4 py-3 text-sm font-semibold ${
             result.passed
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border-red-200 bg-red-50 text-red-700"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300"
+              : "border-red-200 bg-red-50 text-red-700 dark:border-red-500/25 dark:bg-red-500/10 dark:text-red-300"
           }`}
         >
           <div className="flex items-center gap-2">
@@ -152,16 +152,16 @@ export function QuizPlayer({ quizId, className = "", onAttemptGraded }: QuizPlay
         {quiz.questions.map((q, qi) => {
           const questionResult = resultByQuestion.get(q.id);
           return (
-            <div key={q.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div key={q.id} className="rounded-xl border border-gray-200 bg-surface p-4 shadow-sm">
               <div className="mb-3 flex items-center gap-2">
-                <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-50 text-xs font-semibold text-indigo-600">
+                <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-50 text-xs font-semibold text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
                   {qi + 1}
                 </span>
                 <span className="text-xs font-medium text-gray-400">{TYPE_LABELS[q.type]}</span>
                 {questionResult && (
                   <span
                     className={`ml-auto flex items-center gap-1 text-xs font-semibold ${
-                      questionResult.correct ? "text-emerald-600" : "text-red-500"
+                      questionResult.correct ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"
                     }`}
                   >
                     {questionResult.correct ? <Check size={13} /> : <X size={13} />}
@@ -180,7 +180,7 @@ export function QuizPlayer({ quizId, className = "", onAttemptGraded }: QuizPlay
                   const showGrading = !!questionResult;
 
                   let boxClass =
-                    "border-gray-300 bg-white text-transparent hover:border-indigo-400";
+                    "border-gray-300 bg-surface text-transparent hover:border-indigo-400";
                   if (showGrading && isCorrectOption) {
                     boxClass = "border-emerald-500 bg-emerald-500 text-white";
                   } else if (showGrading && selected && !isCorrectOption) {
@@ -222,7 +222,7 @@ export function QuizPlayer({ quizId, className = "", onAttemptGraded }: QuizPlay
             <button
               type="button"
               onClick={handleRetake}
-              className="flex items-center gap-1.5 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:border-indigo-300 hover:text-indigo-600"
+              className="flex items-center gap-1.5 rounded-xl border border-gray-300 bg-surface px-4 py-2 text-sm font-medium text-gray-600 hover:border-indigo-300 hover:text-indigo-600 dark:hover:border-indigo-500/40 dark:hover:text-indigo-400"
             >
               <RotateCcw size={14} />
               Retake quiz

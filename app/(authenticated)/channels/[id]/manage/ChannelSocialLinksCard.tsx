@@ -17,28 +17,28 @@ function getPlatformDetails(urlStr: string) {
     const url = new URL(urlStr);
     const host = url.hostname.toLowerCase().replace(/^www\./, '');
     if (host.includes('linkedin')) {
-      return { label: 'LinkedIn', displayHost: host, badgeClass: 'bg-sky-50/90 text-sky-700 border-sky-200/80 hover:bg-sky-600 hover:text-white hover:border-sky-600 shadow-sky-500/10' };
+      return { label: 'LinkedIn', displayHost: host, badgeClass: 'bg-sky-50/90 text-sky-700 border-sky-200/80 hover:bg-sky-600 hover:text-white hover:border-sky-600 shadow-sky-500/10 dark:bg-sky-500/10 dark:text-sky-300 dark:border-sky-500/25' };
     }
     if (host.includes('github')) {
-      return { label: 'GitHub', displayHost: host, badgeClass: 'bg-slate-100/90 text-slate-800 border-slate-300/80 hover:bg-slate-900 hover:text-white hover:border-slate-900 shadow-slate-500/10' };
+      return { label: 'GitHub', displayHost: host, badgeClass: 'bg-slate-100/90 text-slate-800 border-slate-300/80 hover:bg-slate-900 hover:text-on-ink hover:border-slate-900 shadow-slate-500/10' };
     }
     if (host.includes('twitter') || host.includes('x.com')) {
       return { label: 'X (Twitter)', displayHost: host, badgeClass: 'bg-neutral-100/90 text-neutral-800 border-neutral-300/80 hover:bg-black hover:text-white hover:border-black shadow-black/10' };
     }
     if (host.includes('youtube')) {
-      return { label: 'YouTube', displayHost: host, badgeClass: 'bg-rose-50/90 text-rose-700 border-rose-200/80 hover:bg-rose-600 hover:text-white hover:border-rose-600 shadow-rose-500/10' };
+      return { label: 'YouTube', displayHost: host, badgeClass: 'bg-rose-50/90 text-rose-700 border-rose-200/80 hover:bg-rose-600 hover:text-white hover:border-rose-600 shadow-rose-500/10 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/25' };
     }
     if (host.includes('instagram')) {
-      return { label: 'Instagram', displayHost: host, badgeClass: 'bg-pink-50/90 text-pink-700 border-pink-200/80 hover:bg-pink-600 hover:text-white hover:border-pink-600 shadow-pink-500/10' };
+      return { label: 'Instagram', displayHost: host, badgeClass: 'bg-pink-50/90 text-pink-700 border-pink-200/80 hover:bg-pink-600 hover:text-white hover:border-pink-600 shadow-pink-500/10 dark:bg-pink-500/10 dark:text-pink-300 dark:border-pink-500/25' };
     }
-    return { label: host, displayHost: host, badgeClass: 'bg-emerald-50/90 text-emerald-700 border-emerald-200/80 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 shadow-emerald-500/10' };
+    return { label: host, displayHost: host, badgeClass: 'bg-emerald-50/90 text-emerald-700 border-emerald-200/80 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 shadow-emerald-500/10 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25' };
   } catch (e) {
-    return { label: urlStr, displayHost: urlStr, badgeClass: 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-800 hover:text-white' };
+    return { label: urlStr, displayHost: urlStr, badgeClass: 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-800 hover:text-on-ink' };
   }
 }
 
 const PLATFORM_PREVIEWS = [
-  { name: 'GitHub', color: 'hover:bg-slate-900 hover:text-white hover:border-slate-900' },
+  { name: 'GitHub', color: 'hover:bg-slate-900 hover:text-on-ink hover:border-slate-900' },
   { name: 'LinkedIn', color: 'hover:bg-sky-600 hover:text-white hover:border-sky-600' },
   { name: 'X / Twitter', color: 'hover:bg-black hover:text-white hover:border-black' },
   { name: 'Website', color: 'hover:bg-emerald-600 hover:text-white hover:border-emerald-600' },
@@ -94,7 +94,7 @@ export function ChannelSocialLinksCard({ channel, canManageSettings, onUpdate, i
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3.5">
-          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-[0_6px_20px_rgba(16,185,129,0.3)] ring-4 ring-emerald-50/80">
+          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-[0_6px_20px_rgba(16,185,129,0.3)] ring-4 ring-emerald-50/80 dark:ring-emerald-500/25">
             <Share2 size={19} />
           </div>
           <div>
@@ -107,7 +107,7 @@ export function ChannelSocialLinksCard({ channel, canManageSettings, onUpdate, i
           <button
             type="button"
             onClick={startEditing}
-            className="group/btn inline-flex items-center gap-1.5 rounded-full border border-emerald-200/90 bg-white/90 px-4 py-1.5 text-xs font-bold text-emerald-700 shadow-2xs transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-600 hover:to-teal-600 hover:text-white hover:border-transparent hover:shadow-[0_4px_16px_rgba(16,185,129,0.3)] cursor-pointer"
+            className="group/btn inline-flex items-center gap-1.5 rounded-full border border-emerald-200/90 bg-surface/90 px-4 py-1.5 text-xs font-bold text-emerald-700 shadow-2xs transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-600 hover:to-teal-600 hover:text-white hover:border-transparent hover:shadow-[0_4px_16px_rgba(16,185,129,0.3)] cursor-pointer dark:border-emerald-500/25 dark:text-emerald-300"
           >
             <Edit3 size={13} className="transition-transform group-hover/btn:scale-110" />
             <span>Edit links</span>
@@ -137,10 +137,10 @@ export function ChannelSocialLinksCard({ channel, canManageSettings, onUpdate, i
               })}
             </div>
           ) : (
-            <div className="relative overflow-hidden rounded-2xl border-2 border-dashed border-emerald-200/70 bg-gradient-to-r from-emerald-50/50 via-white/80 to-teal-50/40 p-5 backdrop-blur-xs transition-colors hover:border-emerald-300">
+            <div className="relative overflow-hidden rounded-2xl border-2 border-dashed border-emerald-200/70 bg-gradient-to-r from-emerald-50/50 via-surface/80 to-teal-50/40 p-5 backdrop-blur-xs transition-colors hover:border-emerald-300 dark:border-emerald-500/25 dark:from-emerald-500/10 dark:to-teal-500/10 dark:hover:border-emerald-500/40">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-3.5 text-center sm:text-left">
-                  <div className="hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100/80 text-emerald-600 border border-emerald-200/60 shadow-2xs">
+                  <div className="hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100/80 text-emerald-600 border border-emerald-200/60 shadow-2xs dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/25">
                     <Link2 size={18} />
                   </div>
                   <div>
@@ -175,7 +175,7 @@ export function ChannelSocialLinksCard({ channel, canManageSettings, onUpdate, i
                     newLinks[index] = e.target.value;
                     setSocialLinks(newLinks);
                   }}
-                  className="w-full rounded-2xl border border-emerald-200/80 bg-white pl-9.5 pr-4 py-2.5 text-xs font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100/70 shadow-2xs"
+                  className="w-full rounded-2xl border border-emerald-200/80 bg-surface pl-9.5 pr-4 py-2.5 text-xs font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100/70 shadow-2xs dark:border-emerald-500/25 dark:focus:ring-emerald-500/25"
                   placeholder="https://www.linkedin.com/in/username"
                 />
               </div>
@@ -185,7 +185,7 @@ export function ChannelSocialLinksCard({ channel, canManageSettings, onUpdate, i
                   const newLinks = socialLinks.filter((_, i) => i !== index);
                   setSocialLinks(newLinks.length > 0 ? newLinks : ['']);
                 }}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-400 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all cursor-pointer"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-surface text-slate-400 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all cursor-pointer dark:hover:bg-rose-500/10 dark:hover:text-rose-400 dark:hover:border-rose-500/25"
                 title="Remove link"
               >
                 <Trash2 size={15} />
@@ -193,12 +193,12 @@ export function ChannelSocialLinksCard({ channel, canManageSettings, onUpdate, i
             </div>
           ))}
 
-          <div className="flex items-center justify-between pt-3 border-t border-emerald-100/80">
+          <div className="flex items-center justify-between pt-3 border-t border-emerald-100/80 dark:border-emerald-500/25">
             {socialLinks.length < 4 ? (
               <button
                 type="button"
                 onClick={() => setSocialLinks([...socialLinks, ''])}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer dark:text-emerald-400 dark:hover:text-emerald-300"
               >
                 <Plus size={15} /> Add another link
               </button>
@@ -235,7 +235,7 @@ export function ChannelSocialLinksCard({ channel, canManageSettings, onUpdate, i
       )}
 
       {/* Bottom Single Line Supported Platforms Footer Bar */}
-      <div className="flex items-center gap-2.5 pt-3 mt-4 border-t border-emerald-100/70 whitespace-nowrap overflow-x-auto">
+      <div className="flex items-center gap-2.5 pt-3 mt-4 border-t border-emerald-100/70 whitespace-nowrap overflow-x-auto dark:border-emerald-500/25">
         <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 shrink-0">
           Supported:
         </span>
@@ -243,7 +243,7 @@ export function ChannelSocialLinksCard({ channel, canManageSettings, onUpdate, i
           {PLATFORM_PREVIEWS.map((p, i) => (
             <span
               key={i}
-              className={`inline-flex items-center rounded-full border border-slate-200/80 bg-white/90 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600 transition-all whitespace-nowrap shrink-0 ${p.color}`}
+              className={`inline-flex items-center rounded-full border border-slate-200/80 bg-surface/90 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600 transition-all whitespace-nowrap shrink-0 ${p.color}`}
             >
               {p.name}
             </span>

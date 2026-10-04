@@ -43,10 +43,10 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
       </svg>
       
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
-        <div style={{ display: "inline-block", padding: "4px 10px", background: "#FFFFFF", borderRadius: "20px", fontSize: "0.7rem", fontWeight: "800", color: getAccentColor(), boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
+        <div style={{ display: "inline-block", padding: "4px 10px", background: "var(--theme-surface, #FFFFFF)", borderRadius: "20px", fontSize: "0.7rem", fontWeight: "800", color: getAccentColor(), boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
           {category}
         </div>
-        <div style={{ display: "inline-block", padding: "4px 8px", background: isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#6B7280"), borderRadius: "6px", fontSize: "0.7rem", fontWeight: "700", color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        <div style={{ display: "inline-block", padding: "4px 8px", background: isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "var(--theme-n-500, #6B7280)"), borderRadius: "6px", fontSize: "0.7rem", fontWeight: "700", color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.05em" }}>
           {status}
         </div>
       </div>
@@ -67,11 +67,11 @@ export function CategoryEventsView({ category }: { category: string }) {
   const categoryWebinars = data?.content ?? [];
 
   return (
-    <div className="min-h-screen" style={{ background: "#F9FAFB", padding: "40px 20px" }}>
+    <div className="min-h-screen" style={{ background: "var(--theme-n-50, #F9FAFB)", padding: "40px 20px" }}>
       <div className="max-w-7xl mx-auto">
         <button 
           onClick={() => router.back()} 
-          style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "8px", color: "#4B5563", fontWeight: "600", cursor: "pointer", background: "none", border: "none" }}
+          style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "8px", color: "var(--theme-n-600, #4B5563)", fontWeight: "600", cursor: "pointer", background: "none", border: "none" }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="19" y1="12" x2="5" y2="12" />
@@ -80,39 +80,39 @@ export function CategoryEventsView({ category }: { category: string }) {
           Back to Explore
         </button>
 
-        <h1 style={{ fontSize: "2.5rem", fontWeight: "800", color: "#111827", marginBottom: "8px" }}>
+        <h1 style={{ fontSize: "2.5rem", fontWeight: "800", color: "var(--theme-ink, #111827)", marginBottom: "8px" }}>
           {category} Events
         </h1>
-        <p style={{ fontSize: "1.1rem", color: "#6B7280", marginBottom: "40px" }}>
+        <p style={{ fontSize: "1.1rem", color: "var(--theme-n-500, #6B7280)", marginBottom: "40px" }}>
           Live learning, bootcamps, and webinars for {category}.
         </p>
 
         {isLoading && (
-          <p style={{ color: "#6B7280" }}>Loading {category} events…</p>
+          <p style={{ color: "var(--theme-n-500, #6B7280)" }}>Loading {category} events…</p>
         )}
 
         {!isLoading && categoryWebinars.length === 0 && (
           <div
             style={{
-              background: "#FFFFFF",
-              border: "1px dashed #D1D5DB",
+              background: "var(--theme-surface, #FFFFFF)",
+              border: "1px dashed var(--theme-n-300, #D1D5DB)",
               borderRadius: "20px",
               padding: "48px 24px",
               textAlign: "center",
             }}
           >
-            <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#111827", marginBottom: "8px" }}>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--theme-ink, #111827)", marginBottom: "8px" }}>
               No {category} events yet
             </h2>
-            <p style={{ color: "#6B7280" }}>
+            <p style={{ color: "var(--theme-n-500, #6B7280)" }}>
               Nothing is scheduled in this category right now. Browse everything on offer instead.
             </p>
             <button
               onClick={() => router.push("/events")}
               style={{
                 marginTop: "20px",
-                background: "#0A1931",
-                color: "#FFFFFF",
+                background: "var(--theme-ink, #0A1931)",
+                color: "var(--theme-on-ink, #FFFFFF)",
                 border: "none",
                 borderRadius: "999px",
                 padding: "12px 24px",
@@ -141,8 +141,8 @@ export function CategoryEventsView({ category }: { category: string }) {
                 key={i}
                 onClick={() => router.push(`/events/${w.slug || w.id}`)}
                 style={{
-                  background: "#FFFFFF",
-                  border: "1px solid #E5E7EB",
+                  background: "var(--theme-surface, #FFFFFF)",
+                  border: "1px solid var(--theme-n-200, #E5E7EB)",
                   borderRadius: "20px",
                   display: "flex",
                   flexDirection: "column",
@@ -157,7 +157,7 @@ export function CategoryEventsView({ category }: { category: string }) {
                 <div style={{ padding: "20px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                      <span style={{ fontSize: "0.72rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      <span style={{ fontSize: "0.72rem", fontWeight: "800", color: "var(--theme-n-500, #6B7280)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                         {w.category} • {w.duration.toUpperCase()}
                       </span>
                     </div>
@@ -180,16 +180,16 @@ export function CategoryEventsView({ category }: { category: string }) {
                       {w.title}
                     </h3>
 
-                    <div style={{ fontSize: "0.82rem", color: "#6B7280", display: "flex", alignItems: "center", marginBottom: "20px" }}>
+                    <div style={{ fontSize: "0.82rem", color: "var(--theme-n-500, #6B7280)", display: "flex", alignItems: "center", marginBottom: "20px" }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
                       </svg>
-                      <span>Hosted by <strong style={{ color: "#374151", fontWeight: "700" }}>{w.host}</strong></span>
+                      <span>Hosted by <strong style={{ color: "var(--theme-n-700, #374151)", fontWeight: "700" }}>{w.host}</strong></span>
                     </div>
                   </div>
 
-                  <div style={{ borderTop: "1px solid #F3F4F6", paddingTop: "16px", marginTop: "10px" }}>
+                  <div style={{ borderTop: "1px solid var(--theme-n-100, #F3F4F6)", paddingTop: "16px", marginTop: "10px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div style={{ display: "flex", alignItems: "center", color: statusColor }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>

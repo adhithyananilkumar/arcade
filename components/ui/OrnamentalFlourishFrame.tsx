@@ -8,7 +8,7 @@ export interface OrnamentalFlourishFrameProps {
 }
 
 export const OrnamentalFlourishFrame: React.FC<OrnamentalFlourishFrameProps> = ({
-  className = 'text-slate-700 dark:text-slate-300',
+  className = 'text-slate-700',
   strokeWidth = 2.5
 }) => {
   return (

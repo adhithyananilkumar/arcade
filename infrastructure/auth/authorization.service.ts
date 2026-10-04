@@ -23,6 +23,8 @@ export const AuthorizationService = {
     AuthorizationService.canManageInbox(user) ||
     AuthorizationService.canManageRecognition(user) ||
     AuthorizationService.canManageHandles(user) ||
+    AuthorizationService.canManageAppearance(user) ||
+    AuthorizationService.canOpenBugConsole(user) ||
     AuthorizationService.canAccessIamConsole(user),
 
   canManageChannels: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.channels.manage'),
@@ -46,6 +48,13 @@ export const AuthorizationService = {
    */
   canManageHandles: (user: User | null | undefined) =>
     AuthorizationService.hasPermission(user, 'platform.handles.manage'),
+
+  /**
+   * Console -> Appearance: curating the wallpaper gallery glass mode draws from. Choosing your own
+   * theme needs no permission. Mirrors the backend's platform.appearance.manage, the real gate.
+   */
+  canManageAppearance: (user: User | null | undefined) =>
+    AuthorizationService.hasPermission(user, 'platform.appearance.manage'),
 
   /** Accepts platform.content.review, legacy platform.courses.review, or channel.content.review. */
   canReviewContent: (user: User | null | undefined) =>
@@ -116,6 +125,17 @@ export const AuthorizationService = {
   /** Console → Inbox: contact-us submissions and content/lesson reports. */
   canManageInbox: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.inbox.manage'),
 
+  /**
+   * Console → Bugs: working the test-release bug tracker. Presentation hint only — every tracker
+   * endpoint re-checks platform.bugs.manage. Who may FILE a report is not decided here at all: the
+   * bug button asks the backend (/api/v1/bug-reports/intake).
+   */
+  canManageBugs: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.bugs.manage'),
+  /** Console → Bugs → Settings: intake mode, release label, categories (platform.bugs.configure). */
+  canConfigureBugs: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.bugs.configure'),
+  canOpenBugConsole: (user: User | null | undefined) =>
+    AuthorizationService.canManageBugs(user) || AuthorizationService.canConfigureBugs(user),
+
   canManageUsers: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.users.manage'),
   canManageRoles: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.roles.manage'),
 
@@ -128,4 +148,8 @@ export const AuthorizationService = {
   canViewAuditLogs: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.audit.view'),
 
   canViewPayments: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.payments.view'),
+  /** Presentation hint only — the refund endpoint re-checks platform.payments.refund. */
+  canRefundPayments: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.payments.refund'),
+  /** Presentation hint only — the commission endpoints re-check platform.payments.commission. */
+  canManageCommission: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.payments.commission'),
 };

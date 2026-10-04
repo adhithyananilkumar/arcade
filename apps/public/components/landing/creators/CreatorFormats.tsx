@@ -36,7 +36,7 @@ function DesktopTimelineRow({
         whileInView={{ scale: 1, opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.35, delay: idx * 0.11 + 0.1 }}
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 border-[#7A5AF8] z-20 shadow-xs transition-transform duration-300 group-hover/row:scale-125"
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-surface border-2 border-[#7A5AF8] z-20 shadow-xs transition-transform duration-300 group-hover/row:scale-125"
       />
 
       {/* Left Feature (Free) */}
@@ -62,7 +62,7 @@ function DesktopTimelineRow({
           <motion.h4
             whileHover={{ x: 6 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="text-base sm:text-lg font-semibold text-[#1C1C2E] tracking-tight group-hover/left:text-[#7A5AF8] transition-colors duration-300"
+            className="text-base sm:text-lg font-semibold text-ink tracking-tight group-hover/left:text-[#7A5AF8] transition-colors duration-300 dark:group-hover/left:text-[#b1a6ff]"
           >
             {freeItem.text}
           </motion.h4>
@@ -95,7 +95,7 @@ function DesktopTimelineRow({
           <motion.h4
             whileHover={{ x: -6 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="text-base sm:text-lg font-semibold text-[#1C1C2E] tracking-tight group-hover/right:text-[#7A5AF8] transition-colors duration-300"
+            className="text-base sm:text-lg font-semibold text-ink tracking-tight group-hover/right:text-[#7A5AF8] transition-colors duration-300 dark:group-hover/right:text-[#b1a6ff]"
           >
             {paidItem.text}
           </motion.h4>
@@ -223,7 +223,7 @@ export default function CreatorFormats() {
             <span className="w-3 h-3 rounded-full bg-[#F5A623] shadow-xs" />
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-[#7A5AF8] tracking-[0.2em] uppercase font-mono">
+          <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-[#7A5AF8] tracking-[0.2em] uppercase font-mono dark:text-[#b1a6ff]">
             <span className="w-5 h-[2px] bg-[#7A5AF8] rounded-full inline-block" />
             <span>FORMATS & MONETIZATION</span>
             <span className="w-5 h-[2px] bg-[#7A5AF8] rounded-full inline-block" />
@@ -234,7 +234,7 @@ export default function CreatorFormats() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.65, delay: 0.1, ease: "easeOut" }}
-            className="text-3xl sm:text-4xl md:text-5xl font-semibold text-[#1C1C2E] tracking-tight font-serif"
+            className="text-3xl sm:text-4xl md:text-5xl font-semibold text-ink tracking-tight font-serif"
           >
             Flexible layouts, straightforward pricing
           </motion.h2>
@@ -319,7 +319,7 @@ export default function CreatorFormats() {
                   }}
                 >
                   {/* Inner Circular Card Body */}
-                  <div className="bg-white/95 backdrop-blur-md rounded-full w-full h-full p-4 flex flex-col items-center justify-center text-center border border-white/80 shadow-inner">
+                  <div className="bg-surface/95 backdrop-blur-md rounded-full w-full h-full p-4 flex flex-col items-center justify-center text-center border border-surface/80 shadow-inner">
 
                     {/* Icon Container */}
                     <div
@@ -331,7 +331,7 @@ export default function CreatorFormats() {
 
                     {/* Step Title */}
                     <h3
-                      className="text-sm font-extrabold text-[#1C1C2E] leading-tight mb-1"
+                      className="text-sm font-extrabold text-ink leading-tight mb-1"
                       style={{ fontFamily: '"Space Grotesk", sans-serif' }}
                     >
                       {item.title}
@@ -389,7 +389,7 @@ export default function CreatorFormats() {
 
           {/* Section Heading (Centered at top with Word-by-Word Reveal) */}
           <div className="text-center mb-20 sm:mb-24 space-y-3 relative z-10">
-            <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-[#7A5AF8] tracking-[0.2em] uppercase font-mono">
+            <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-[#7A5AF8] tracking-[0.2em] uppercase font-mono dark:text-[#b1a6ff]">
               <span className="w-5 h-[2px] bg-[#7A5AF8] rounded-full inline-block" />
               <span>SET YOUR OWN TERMS</span>
               <span className="w-5 h-[2px] bg-[#7A5AF8] rounded-full inline-block" />
@@ -403,7 +403,7 @@ export default function CreatorFormats() {
                 hidden: {},
                 visible: { transition: { staggerChildren: 0.04 } },
               }}
-              className="text-3xl sm:text-4xl md:text-5xl font-semibold text-[#1C1C2E] tracking-tight font-serif flex flex-wrap justify-center gap-x-2.5 gap-y-1"
+              className="text-3xl sm:text-4xl md:text-5xl font-semibold text-ink tracking-tight font-serif flex flex-wrap justify-center gap-x-2.5 gap-y-1"
             >
               {headingWords.map((word, idx) => (
                 <motion.span
@@ -475,15 +475,15 @@ export default function CreatorFormats() {
                     }}
                     className="flex items-center gap-2 select-none"
                   >
-                    <span className="text-4xl font-extrabold text-[#7A5AF8]/20 font-mono tracking-tight">
+                    <span className="text-4xl font-extrabold text-[#7A5AF8]/20 font-mono tracking-tight dark:text-[#b1a6ff]">
                       01
                     </span>
-                    <span className="text-xs font-bold text-[#7A5AF8] tracking-[0.2em] uppercase">
+                    <span className="text-xs font-bold text-[#7A5AF8] tracking-[0.2em] uppercase dark:text-[#b1a6ff]">
                       FREE
                     </span>
                   </motion.div>
                   <h3
-                    className="text-2xl sm:text-3xl font-bold text-[#1C1C2E] leading-tight tracking-tight"
+                    className="text-2xl sm:text-3xl font-bold text-ink leading-tight tracking-tight"
                     style={{ fontFamily: '"Space Grotesk", sans-serif' }}
                   >
                     Open to everyone
@@ -521,15 +521,15 @@ export default function CreatorFormats() {
                     }}
                     className="flex items-center gap-2 select-none"
                   >
-                    <span className="text-4xl font-extrabold text-[#7A5AF8]/20 font-mono tracking-tight">
+                    <span className="text-4xl font-extrabold text-[#7A5AF8]/20 font-mono tracking-tight dark:text-[#b1a6ff]">
                       02
                     </span>
-                    <span className="text-xs font-bold text-[#7A5AF8] tracking-[0.2em] uppercase">
+                    <span className="text-xs font-bold text-[#7A5AF8] tracking-[0.2em] uppercase dark:text-[#b1a6ff]">
                       PAID
                     </span>
                   </motion.div>
                   <h3
-                    className="text-2xl sm:text-3xl font-bold text-[#1C1C2E] leading-tight tracking-tight"
+                    className="text-2xl sm:text-3xl font-bold text-ink leading-tight tracking-tight"
                     style={{ fontFamily: '"Space Grotesk", sans-serif' }}
                   >
                     Set your own price
@@ -583,7 +583,7 @@ export default function CreatorFormats() {
                     initial={{ scale: 0, opacity: 0 }}
                     whileInView={{ scale: 1, opacity: 1 }}
                     viewport={{ once: true }}
-                    className="absolute -left-[19.5px] sm:-left-[23.5px] top-1.5 w-3 h-3 rounded-full bg-white border-2 border-[#7A5AF8]"
+                    className="absolute -left-[19.5px] sm:-left-[23.5px] top-1.5 w-3 h-3 rounded-full bg-surface border-2 border-[#7A5AF8]"
                   />
                   <motion.div
                     initial={{ opacity: 0, y: -8, filter: "drop-shadow(0 0 0px rgba(122, 90, 248, 0))" }}
@@ -600,14 +600,14 @@ export default function CreatorFormats() {
                     transition={{ duration: 0.7 }}
                     className="flex items-center gap-2 select-none"
                   >
-                    <span className="text-3xl font-extrabold text-[#7A5AF8]/20 font-mono tracking-tight">
+                    <span className="text-3xl font-extrabold text-[#7A5AF8]/20 font-mono tracking-tight dark:text-[#b1a6ff]">
                       01
                     </span>
-                    <span className="text-xs font-bold text-[#7A5AF8] tracking-[0.2em] uppercase">
+                    <span className="text-xs font-bold text-[#7A5AF8] tracking-[0.2em] uppercase dark:text-[#b1a6ff]">
                       FREE
                     </span>
                   </motion.div>
-                  <h3 className="text-xl font-bold text-[#1C1C2E] leading-tight" style={{ fontFamily: '"Space Grotesk", sans-serif' }}>
+                  <h3 className="text-xl font-bold text-ink leading-tight" style={{ fontFamily: '"Space Grotesk", sans-serif' }}>
                     Open to everyone
                   </h3>
                   <p className="text-xs text-zinc-500 font-medium">
@@ -638,7 +638,7 @@ export default function CreatorFormats() {
                         <motion.h4
                           whileHover={{ x: 4 }}
                           transition={{ duration: 0.2 }}
-                          className="text-sm font-semibold text-[#1C1C2E] group-hover/mobile:text-[#7A5AF8] transition-colors duration-300"
+                          className="text-sm font-semibold text-ink group-hover/mobile:text-[#7A5AF8] transition-colors duration-300 dark:group-hover/mobile:text-[#b1a6ff]"
                         >
                           {item.text}
                         </motion.h4>
@@ -665,7 +665,7 @@ export default function CreatorFormats() {
                     initial={{ scale: 0, opacity: 0 }}
                     whileInView={{ scale: 1, opacity: 1 }}
                     viewport={{ once: true }}
-                    className="absolute -left-[19.5px] sm:-left-[23.5px] top-1.5 w-3 h-3 rounded-full bg-white border-2 border-[#7A5AF8]"
+                    className="absolute -left-[19.5px] sm:-left-[23.5px] top-1.5 w-3 h-3 rounded-full bg-surface border-2 border-[#7A5AF8]"
                   />
                   <motion.div
                     initial={{ opacity: 0, y: -8, filter: "drop-shadow(0 0 0px rgba(122, 90, 248, 0))" }}
@@ -682,14 +682,14 @@ export default function CreatorFormats() {
                     transition={{ duration: 0.7 }}
                     className="flex items-center gap-2 select-none"
                   >
-                    <span className="text-3xl font-extrabold text-[#7A5AF8]/20 font-mono tracking-tight">
+                    <span className="text-3xl font-extrabold text-[#7A5AF8]/20 font-mono tracking-tight dark:text-[#b1a6ff]">
                       02
                     </span>
-                    <span className="text-xs font-bold text-[#7A5AF8] tracking-[0.2em] uppercase">
+                    <span className="text-xs font-bold text-[#7A5AF8] tracking-[0.2em] uppercase dark:text-[#b1a6ff]">
                       PAID
                     </span>
                   </motion.div>
-                  <h3 className="text-xl font-bold text-[#1C1C2E] leading-tight" style={{ fontFamily: '"Space Grotesk", sans-serif' }}>
+                  <h3 className="text-xl font-bold text-ink leading-tight" style={{ fontFamily: '"Space Grotesk", sans-serif' }}>
                     Set your own price
                   </h3>
                   <p className="text-xs text-zinc-500 font-medium">
@@ -720,7 +720,7 @@ export default function CreatorFormats() {
                         <motion.h4
                           whileHover={{ x: 4 }}
                           transition={{ duration: 0.2 }}
-                          className="text-sm font-semibold text-[#1C1C2E] group-hover/mobile:text-[#7A5AF8] transition-colors duration-300"
+                          className="text-sm font-semibold text-ink group-hover/mobile:text-[#7A5AF8] transition-colors duration-300 dark:group-hover/mobile:text-[#b1a6ff]"
                         >
                           {item.text}
                         </motion.h4>
@@ -746,7 +746,7 @@ export default function CreatorFormats() {
             className="flex flex-col items-center mt-20 gap-2 relative z-10"
           >
             <span
-              className="text-[1.35rem] sm:text-[1.55rem] text-[#5B21B6] italic"
+              className="text-[1.35rem] sm:text-[1.55rem] text-[#5B21B6] italic dark:text-[#bca2ff]"
               style={{ fontFamily: '"Caveat", cursive' }}
             >
               Choose the path that fits your goals.

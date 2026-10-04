@@ -34,8 +34,8 @@ function Step({
   detail?: string;
 }) {
   const badge = {
-    done: { text: "Passed", className: "bg-emerald-100 text-emerald-800" },
-    required: { text: "Required", className: "bg-amber-100 text-amber-800" },
+    done: { text: "Passed", className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200" },
+    required: { text: "Required", className: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200" },
     bypassed: { text: "Not required", className: "bg-slate-100 text-slate-600" },
     after: { text: "After approval", className: "bg-slate-100 text-slate-600" },
   }[state];
@@ -48,7 +48,7 @@ function Step({
       <span className="mt-0.5 shrink-0 text-slate-500">{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-2">
-          <span className="text-[13px] font-semibold text-[#14142b]">{label}</span>
+          <span className="text-[13px] font-semibold text-ink">{label}</span>
           <span
             className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${badge.className}`}
           >
@@ -80,7 +80,7 @@ export function ReviewPathPanel({
 }: ReviewPathPanelProps) {
   if (loading) {
     return (
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-6" aria-busy="true">
+      <section className="rounded-2xl border border-slate-200/80 bg-surface p-6" aria-busy="true">
         <div className="flex items-center gap-2 text-[13px] text-slate-500">
           <Loader2 size={15} className="animate-spin" />
           Working out your review path…
@@ -91,7 +91,7 @@ export function ReviewPathPanel({
 
   if (error || !preview) {
     return (
-      <section className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-[13px] text-rose-800">
+      <section className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-[13px] text-rose-800 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-200">
         {error ?? "Could not determine the review path for this content."}
       </section>
     );
@@ -100,9 +100,9 @@ export function ReviewPathPanel({
   const blocked = preview.blockingProblems.length > 0;
 
   return (
-    <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_24px_rgba(20,20,43,0.05)]">
+    <section className="rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_8px_24px_rgba(20,20,43,0.05)]">
       <header className="flex flex-wrap items-baseline justify-between gap-2 pb-1">
-        <h2 className="text-[15px] font-bold text-[#14142b]">Review &amp; publish</h2>
+        <h2 className="text-[15px] font-bold text-ink">Review &amp; publish</h2>
         {versionNumber != null ? (
           <span className="text-[12px] font-medium text-slate-500">Version {versionNumber}</span>
         ) : null}
@@ -164,22 +164,22 @@ export function ReviewPathPanel({
       </ol>
 
       {blocked ? (
-        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <p className="flex items-center gap-1.5 text-[13px] font-semibold text-amber-900">
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/25 dark:bg-amber-500/10">
+          <p className="flex items-center gap-1.5 text-[13px] font-semibold text-amber-900 dark:text-amber-200">
             <AlertTriangle size={14} /> Fix these before submitting
           </p>
           <ul className="mt-2 space-y-1">
             {preview.blockingProblems.map((problem) => (
-              <li key={problem} className="text-[12px] leading-relaxed text-amber-900">
+              <li key={problem} className="text-[12px] leading-relaxed text-amber-900 dark:text-amber-200">
                 • {problem}
               </li>
             ))}
           </ul>
         </div>
       ) : preview.directPublication ? (
-        <div className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-          <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-700" />
-          <p className="text-[12px] leading-relaxed text-emerald-900">
+        <div className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-500/25 dark:bg-emerald-500/10">
+          <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-700 dark:text-emerald-300" />
+          <p className="text-[12px] leading-relaxed text-emerald-900 dark:text-emerald-200">
             No review is required for this content. It will be versioned and published immediately —
             a permanent record of exactly what went live is still kept.
           </p>
