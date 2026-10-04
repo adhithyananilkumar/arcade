@@ -1,4 +1,5 @@
 import React from 'react';
+import { ContentArt } from '@/shared/design-system/art';
 import Link from 'next/link';
 import { EventListDto } from '@/domains/events/api/dashboardApi';
 
@@ -18,26 +19,18 @@ interface EventCardProps {
 export default function EventCard({ workshop, onDuplicate, onArchive, onDelete }: EventCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'DRAFT': return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400';
+      case 'DRAFT': return 'bg-zinc-100 text-zinc-600';
       case 'PUBLISHED': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
       case 'ARCHIVED': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
-      default: return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400';
+      default: return 'bg-zinc-100 text-zinc-600';
     }
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden hover:shadow-md transition-shadow group flex flex-col h-full">
-      {/* Cover Image Placeholder */}
-      <div className="h-40 bg-zinc-100 dark:bg-zinc-800 relative w-full overflow-hidden shrink-0">
-        {workshop.coverImageUrl ? (
-          <img src={workshop.coverImageUrl} alt={workshop.title} className="object-cover w-full h-full" />
-        ) : (
-          <div className="flex items-center justify-center w-full h-full text-zinc-400">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
-        )}
+    <div className="bg-surface border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow group flex flex-col h-full">
+      {/* Generated, category-themed artwork */}
+      <div className="h-40 relative w-full overflow-hidden shrink-0">
+        <ContentArt seed={workshop.id} kind="EVENT" category={workshop.category} title={workshop.title} />
         <div className="absolute top-2 right-2 flex gap-2">
           <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(workshop.status)}`}>
             {workshop.status}
@@ -49,11 +42,11 @@ export default function EventCard({ workshop, onDuplicate, onArchive, onDelete }
         <div className="mb-1 text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider">
           {workshop.category || 'Uncategorized'} • {workshop.eventType || 'UNKNOWN'}
         </div>
-        <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100 line-clamp-2 mb-2 flex-1">
+        <h3 className="font-bold text-lg text-zinc-900 line-clamp-2 mb-2 flex-1">
           {workshop.title || 'Untitled Event'}
         </h3>
         
-        <div className="flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400 mb-4">
+        <div className="flex items-center gap-4 text-xs text-zinc-500 mb-4">
           <div className="flex items-center gap-1">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -68,13 +61,13 @@ export default function EventCard({ workshop, onDuplicate, onArchive, onDelete }
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+        <div className="flex items-center justify-between text-xs text-zinc-500 pt-3 border-t border-zinc-100">
           <span>Updated {formatDate(workshop.updatedAt)}</span>
           
           <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <Link 
               href={`/studio/content/event/${workshop.id}`}
-              className="p-1.5 text-zinc-600 hover:text-blue-600 hover:bg-blue-50 dark:text-zinc-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 rounded"
+              className="p-1.5 text-zinc-600 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 rounded"
               title="Dashboard"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -84,7 +77,7 @@ export default function EventCard({ workshop, onDuplicate, onArchive, onDelete }
             </Link>
             <Link 
               href={`/studio/events/${workshop.id}/edit`}
-              className="p-1.5 text-zinc-600 hover:text-blue-600 hover:bg-blue-50 dark:text-zinc-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 rounded"
+              className="p-1.5 text-zinc-600 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 rounded"
               title="Edit Event"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

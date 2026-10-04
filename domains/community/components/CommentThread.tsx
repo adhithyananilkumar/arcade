@@ -99,7 +99,7 @@ function CommentTrigger({ postId }: { postId: number }) {
           padding: '10px 16px',
           border: '1px solid var(--border)',
           borderRadius: 'var(--radius-md)',
-          backgroundColor: '#fff',
+          backgroundColor: 'var(--theme-surface, #fff)',
           marginBottom: 20,
           cursor: 'text',
           transition: 'border-color 0.15s',

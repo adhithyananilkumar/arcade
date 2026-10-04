@@ -36,7 +36,7 @@ export const CONTRIBUTORS_DATA: Contributor[] = [
     name: "Lisha Varghese",
     role: "Project Manager",
     avatar: "/team/lisha_varghese.png?v=2",
-    color: "bg-[#f0f0f0]", // Lighter Gray
+    color: "bg-slate-100", // Lighter Gray
     journey: "Spearheaded project planning and agile delivery across all Arcade engineering pods. Ensured seamless collaboration between design, development, and content teams.",
     milestones: [
       "Streamlined agile workflows reducing delivery cycles by 30%",
@@ -58,7 +58,7 @@ export const CONTRIBUTORS_DATA: Contributor[] = [
     name: "Amal K Jose",
     role: "Lead Developer",
     avatar: "/team/amal_jose.png?v=2",
-    color: "bg-[#ffca28]", // Lighter Yellow
+    color: "bg-[#ffca28] dark:bg-[#ffca28]/15", // Lighter Yellow
     journey: defaultJourney,
     milestones: defaultMilestones
   }

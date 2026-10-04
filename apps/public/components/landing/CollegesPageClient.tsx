@@ -81,7 +81,7 @@ export default function CollegesPageClient() {
               initial="hidden"
               animate="visible"
               custom={0.1}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white border border-zinc-200/60 text-zinc-800 shadow-sm mb-6 cursor-default"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-surface border border-zinc-200/60 text-zinc-800 shadow-sm mb-6 cursor-default"
             >
               <span>🎓</span>
               <span>Arcade for Creators</span>
@@ -135,7 +135,7 @@ export default function CollegesPageClient() {
             >
               <Link
                 href="/register?role=creator"
-                className="w-full sm:w-auto text-center bg-zinc-900 hover:bg-zinc-800 text-white font-medium px-7 py-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+                className="w-full sm:w-auto text-center bg-zinc-900 hover:bg-zinc-800 text-on-ink font-medium px-7 py-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm"
               >
                 <span>Become a Creator</span>
                 <ArrowRight className="w-4 h-4" />
@@ -143,7 +143,7 @@ export default function CollegesPageClient() {
 
               <a
                 href="#learn-more"
-                className="w-full sm:w-auto text-center bg-white hover:bg-zinc-50 text-zinc-700 font-medium px-7 py-4 rounded-xl border border-zinc-200 shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5 text-sm"
+                className="w-full sm:w-auto text-center bg-surface hover:bg-zinc-50 text-zinc-700 font-medium px-7 py-4 rounded-xl border border-zinc-200 shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5 text-sm"
               >
                 <span>Learn More</span>
               </a>
@@ -154,7 +154,7 @@ export default function CollegesPageClient() {
           <div className="lg:col-span-5 flex flex-col items-center justify-center relative w-full pt-8 lg:pt-0">
 
             {/* Outer Decorative Glow */}
-            <div className="absolute inset-0 bg-radial-gradient from-indigo-100/20 to-transparent blur-3xl -z-10" />
+            <div className="absolute inset-0 bg-radial-gradient from-indigo-100/20 to-transparent blur-3xl -z-10 dark:from-indigo-500/15" />
 
             <CollegesEcosystem
               activeFeature={activeFeature}

@@ -34,3 +34,17 @@ export function usePublicCategories(type?: string): PublicCategory[] {
   // degrades the same way it always did.
   return data ?? [];
 }
+
+/**
+ * The same list plus whether it has settled (loaded, or failed for good). For callers whose output
+ * must not change once drawn — generated content artwork picks its theme from the category, and
+ * drawing before the list arrives meant every card redrew itself a moment later.
+ */
+export function usePublicCategoriesStatus(type?: string): { categories: PublicCategory[]; settled: boolean } {
+  const { data, isFetched, isError } = useQuery({
+    queryKey: publicCategoriesKeys.list(type),
+    queryFn: () => api.get<PublicCategory[]>(type ? `/api/v1/public/categories?type=${encodeURIComponent(type)}` : '/api/v1/public/categories'),
+    staleTime: 5 * 60 * 1000,
+  });
+  return { categories: data ?? [], settled: isFetched || isError };
+}

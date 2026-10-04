@@ -38,7 +38,6 @@ interface CourseRenderResponse {
   id: string;
   title: string;
   description: string;
-  coverImageUrl: string;
   status: string;
   modules: Module[];
 }
@@ -163,7 +162,7 @@ export default function CourseDetailConsolePage() {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.back()} 
-            className="flex shrink-0 items-center justify-center size-9 rounded-full bg-white border border-slate-200/80 text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm"
+            className="flex shrink-0 items-center justify-center size-9 rounded-full bg-surface border border-slate-200/80 text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
@@ -177,8 +176,8 @@ export default function CourseDetailConsolePage() {
                 {courseRender && (
                   <span className={cn(
                     "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider",
-                    courseRender.status === 'PUBLISHED' ? "bg-emerald-100 text-emerald-700" :
-                    courseRender.status === 'SUSPENDED' ? "bg-rose-100 text-rose-700" :
+                    courseRender.status === 'PUBLISHED' ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300" :
+                    courseRender.status === 'SUSPENDED' ? "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300" :
                     "bg-slate-100 text-slate-700"
                   )}>
                     {courseRender.status}
@@ -192,7 +191,7 @@ export default function CourseDetailConsolePage() {
                 {courseRender.status === 'SUSPENDED' ? (
                   <button
                     onClick={unsuspendCourse}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors dark:bg-emerald-500/10 dark:border-emerald-500/25 dark:text-emerald-300 dark:hover:bg-emerald-500/15"
                   >
                     <PlayCircle className="h-4 w-4" />
                     Unsuspend
@@ -200,7 +199,7 @@ export default function CourseDetailConsolePage() {
                 ) : (
                   <button
                     onClick={suspendCourse}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100 transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100 transition-colors dark:bg-rose-500/10 dark:border-rose-500/25 dark:text-rose-300 dark:hover:bg-rose-500/15"
                   >
                     <Activity className="h-4 w-4" />
                     Suspend
@@ -217,8 +216,8 @@ export default function CourseDetailConsolePage() {
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-all",
               activeTab === 'analysis' 
-                ? "bg-[#14142b] text-white shadow-sm" 
-                : "bg-white border border-slate-200/80 text-slate-600 hover:bg-slate-50 shadow-sm"
+                ? "bg-ink text-on-ink shadow-sm" 
+                : "bg-surface border border-slate-200/80 text-slate-600 hover:bg-slate-50 shadow-sm"
             )}
           >
             Analysis
@@ -228,8 +227,8 @@ export default function CourseDetailConsolePage() {
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-all",
               activeTab === 'content' 
-                ? "bg-[#14142b] text-white shadow-sm" 
-                : "bg-white border border-slate-200/80 text-slate-600 hover:bg-slate-50 shadow-sm"
+                ? "bg-ink text-on-ink shadow-sm" 
+                : "bg-surface border border-slate-200/80 text-slate-600 hover:bg-slate-50 shadow-sm"
             )}
           >
             Course Content
@@ -248,15 +247,15 @@ export default function CourseDetailConsolePage() {
             </div>
 
             {analysis.reports > 0 && (
-              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">
+              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-500/25 dark:bg-red-500/10 dark:text-red-200">
                 <div className="flex items-center font-medium">
                   <Activity className="mr-2 h-5 w-5" /> Active Reports Detected
                 </div>
-                <p className="mt-1 text-sm text-red-600">This course has been reported by one or more users.</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">This course has been reported by one or more users.</p>
               </div>
             )}
 
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-surface p-6 shadow-sm">
               <h3 className="mb-6 text-lg font-medium text-slate-900">Engagement Overview</h3>
               <div className="h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -277,18 +276,18 @@ export default function CourseDetailConsolePage() {
         )}
 
         {activeTab === 'content' && courseRender && (
-          <div className="mx-auto flex h-[calc(100vh-16rem)] max-w-6xl overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-md">
+          <div className="mx-auto flex h-[calc(100vh-16rem)] max-w-6xl overflow-hidden rounded-2xl border border-slate-200/60 bg-surface shadow-md">
             {/* Sidebar */}
-            <div className="flex w-80 flex-col border-r border-slate-100 bg-[#f8fafc]/50">
+            <div className="flex w-80 flex-col border-r border-slate-100 bg-slate-50/50">
               <div className="border-b border-slate-200/60 bg-slate-50/80 p-5 backdrop-blur-sm">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">Curriculum</h3>
               </div>
               <div className="flex-1 overflow-y-auto p-3 space-y-2">
                 {courseRender.modules.map(module => (
-                  <div key={module.id} className="overflow-hidden rounded-xl border border-slate-200/50 bg-white shadow-sm transition-all">
+                  <div key={module.id} className="overflow-hidden rounded-xl border border-slate-200/50 bg-surface shadow-sm transition-all">
                     <button
                       onClick={() => toggleModule(module.id)}
-                      className="flex w-full items-center justify-between bg-white px-4 py-3.5 text-left hover:bg-slate-50"
+                      className="flex w-full items-center justify-between bg-surface px-4 py-3.5 text-left hover:bg-slate-50"
                     >
                       <span className="font-semibold text-slate-800">{module.title}</span>
                       {expandedModules.has(module.id) ? (
@@ -307,11 +306,11 @@ export default function CourseDetailConsolePage() {
                             className={cn(
                               "group flex w-full items-center px-5 py-2.5 text-left text-sm transition-colors",
                               selectedLesson?.id === lesson.id 
-                                ? "bg-indigo-50/80 font-medium text-indigo-700 border-l-2 border-indigo-600" 
-                                : "text-slate-600 hover:bg-white hover:text-slate-900 border-l-2 border-transparent"
+                                ? "bg-indigo-50/80 font-medium text-indigo-700 border-l-2 border-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300" 
+                                : "text-slate-600 hover:bg-surface hover:text-slate-900 border-l-2 border-transparent"
                             )}
                           >
-                            <FileText className={cn("mr-3 h-4 w-4 shrink-0 transition-colors", selectedLesson?.id === lesson.id ? "text-indigo-600" : "text-slate-400 group-hover:text-indigo-400")} />
+                            <FileText className={cn("mr-3 h-4 w-4 shrink-0 transition-colors", selectedLesson?.id === lesson.id ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 group-hover:text-indigo-400")} />
                             <span className="truncate">{lesson.title}</span>
                           </button>
                         ))}
@@ -326,12 +325,12 @@ export default function CourseDetailConsolePage() {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 overflow-y-auto bg-white p-10 md:p-12 relative">
+            <div className="flex-1 overflow-y-auto bg-surface p-10 md:p-12 relative">
               {selectedLesson ? (
                 <div className="mx-auto max-w-3xl">
                   <h2 className="mb-8 text-4xl font-extrabold tracking-tight text-slate-900">{selectedLesson.title}</h2>
                   {selectedLesson.body ? (
-                    <div className="prose prose-slate max-w-none prose-headings:font-semibold prose-a:text-indigo-600 prose-img:rounded-xl">
+                    <div className="prose prose-slate max-w-none prose-headings:font-semibold prose-a:text-indigo-600 prose-img:rounded-xl dark:prose-a:text-indigo-400">
                       <TiptapContentView body={selectedLesson.body} />
                     </div>
                   ) : (
@@ -358,7 +357,7 @@ export default function CourseDetailConsolePage() {
       {/* Suspend Modal Overlay */}
       {isSuspendModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full max-w-md rounded-2xl bg-surface shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-6">
               <h2 className="text-xl font-bold text-slate-900">Suspend Course</h2>
               <p className="mt-2 text-sm text-slate-500">
@@ -407,7 +406,7 @@ export default function CourseDetailConsolePage() {
 
 function StatCard({ title, value }: { title: string; value: number }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
+    <div className="rounded-xl border border-slate-200 bg-surface p-6 shadow-sm transition-all hover:shadow-md">
       <h3 className="text-sm font-medium text-slate-500">{title}</h3>
       <p className="mt-2 text-3xl font-bold text-slate-900">{value.toLocaleString()}</p>
     </div>

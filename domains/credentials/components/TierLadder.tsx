@@ -40,20 +40,20 @@ export function TierLadder({ tiers, family, current, currentLabel = "This badge"
             className={cn(
               "flex items-center gap-3 rounded-xl border px-3 py-2.5",
               isCurrent
-                ? "border-slate-300 bg-white shadow-sm dark:border-slate-600 dark:bg-slate-900"
-                : "border-slate-200/70 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-900/40"
+                ? "border-slate-300 bg-surface shadow-sm"
+                : "border-slate-200/70 bg-slate-50/60"
             )}
           >
             <div className={cn("w-10 shrink-0", !isCurrent && current != null && "opacity-60")}>
               <CredentialBadge family={family} level={level} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-slate-900 dark:text-white">{tier.label}</p>
-              <p className="mt-0.5 text-xs leading-snug text-slate-600 dark:text-slate-400">{tier.meaning}</p>
-              {!compact && <p className="mt-0.5 text-[11px] leading-snug text-slate-400 dark:text-slate-500">{tier.guidance}</p>}
+              <p className="text-sm font-bold text-slate-900">{tier.label}</p>
+              <p className="mt-0.5 text-xs leading-snug text-slate-600">{tier.meaning}</p>
+              {!compact && <p className="mt-0.5 text-[11px] leading-snug text-slate-400">{tier.guidance}</p>}
             </div>
             {isCurrent && (
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-semibold text-white dark:bg-white dark:text-slate-900">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-semibold text-on-ink">
                 <Check size={11} strokeWidth={3} /> {currentLabel}
               </span>
             )}

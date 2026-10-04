@@ -34,11 +34,11 @@ export function PreviewExamModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[460px]">
         <DialogHeader>
-          <div className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-800">
+          <div className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-200">
             <Award size={14} />
             <span>Creator Preview Simulation</span>
           </div>
-          <DialogTitle className="text-lg font-bold text-[#14142b]">
+          <DialogTitle className="text-lg font-bold text-ink">
             Simulate Student Sitting
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
@@ -59,11 +59,11 @@ export function PreviewExamModal({
               onClick={() => setScore(Math.min(100, Math.max(passPercentage + 15, 80)))}
               className={`flex-1 rounded-xl border p-2.5 text-center text-xs font-semibold transition-all cursor-pointer ${
                 isPassing
-                  ? 'border-emerald-300 bg-emerald-50/80 text-emerald-900 shadow-xs'
-                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  ? 'border-emerald-300 bg-emerald-50/80 text-emerald-900 shadow-xs dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200'
+                  : 'border-slate-200 bg-surface text-slate-700 hover:bg-slate-50'
               }`}
             >
-              <div className="flex items-center justify-center gap-1.5 mb-1 text-emerald-700 font-bold">
+              <div className="flex items-center justify-center gap-1.5 mb-1 text-emerald-700 font-bold dark:text-emerald-300">
                 <CheckCircle2 size={15} />
                 <span>Simulate Pass</span>
               </div>
@@ -75,11 +75,11 @@ export function PreviewExamModal({
               onClick={() => setScore(Math.max(0, passPercentage - 15))}
               className={`flex-1 rounded-xl border p-2.5 text-center text-xs font-semibold transition-all cursor-pointer ${
                 !isPassing
-                  ? 'border-rose-300 bg-rose-50/80 text-rose-900 shadow-xs'
-                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  ? 'border-rose-300 bg-rose-50/80 text-rose-900 shadow-xs dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200'
+                  : 'border-slate-200 bg-surface text-slate-700 hover:bg-slate-50'
               }`}
             >
-              <div className="flex items-center justify-center gap-1.5 mb-1 text-rose-700 font-bold">
+              <div className="flex items-center justify-center gap-1.5 mb-1 text-rose-700 font-bold dark:text-rose-300">
                 <XCircle size={15} />
                 <span>Simulate Fail</span>
               </div>
@@ -90,7 +90,7 @@ export function PreviewExamModal({
           <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
             <div className="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1.5">
               <span>Adjust Score</span>
-              <span className="text-[14px] font-bold tabular-nums text-[#14142b]">{score}%</span>
+              <span className="text-[14px] font-bold tabular-nums text-ink">{score}%</span>
             </div>
             <input
               type="range"
@@ -98,11 +98,11 @@ export function PreviewExamModal({
               max={100}
               value={score}
               onChange={(e) => setScore(Number(e.target.value))}
-              className="w-full accent-[#14142b] cursor-pointer"
+              className="w-full accent-ink cursor-pointer"
             />
             <div className="mt-1 flex justify-between text-[10px] font-medium text-slate-400">
               <span>0%</span>
-              <span className="text-amber-700 font-semibold">Pass: {passPercentage}%</span>
+              <span className="text-amber-700 font-semibold dark:text-amber-300">Pass: {passPercentage}%</span>
               <span>100%</span>
             </div>
           </div>
@@ -119,7 +119,7 @@ export function PreviewExamModal({
           <button
             type="button"
             onClick={() => onSimulate(score)}
-            className="rounded-full bg-[#14142b] px-5 py-2 text-xs font-semibold text-white hover:bg-[#232735] transition-colors cursor-pointer"
+            className="rounded-full bg-ink px-5 py-2 text-xs font-semibold text-on-ink hover:bg-ink-hover transition-colors cursor-pointer"
           >
             Submit Preview Sitting ({score}%)
           </button>

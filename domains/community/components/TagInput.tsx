@@ -35,7 +35,7 @@ export function TagInput({ tags, onChange }: Props) {
         padding: '8px 12px',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius-md)',
-        backgroundColor: '#fff',
+        backgroundColor: 'var(--theme-surface, #fff)',
         alignItems: 'center',
         minHeight: 44,
       }}

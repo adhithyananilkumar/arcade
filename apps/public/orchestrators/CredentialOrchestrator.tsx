@@ -81,7 +81,7 @@ export function CredentialOrchestrator({ code }: { code: string }) {
   return (
     <main className="mx-auto flex min-h-[70vh] max-w-lg flex-col items-center justify-center px-6 pt-24 text-center">
       <SearchX size={34} className="text-slate-300" />
-      <h1 className="mt-4 text-2xl font-black tracking-tight text-[#14142b] dark:text-white">
+      <h1 className="mt-4 text-2xl font-black tracking-tight text-ink">
         {state.kind === "missing" ? "No public credential here" : "Something went wrong"}
       </h1>
       <p className="mt-2 text-sm leading-relaxed text-slate-500">
@@ -89,7 +89,7 @@ export function CredentialOrchestrator({ code }: { code: string }) {
           ? "This credential ID does not exist, or its holder keeps it private. A private credential can still be checked by its ID."
           : state.message}
       </p>
-      <Link href={verifyPath(code)} className="mt-6 rounded-xl bg-[#14142b] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#23234a]">
+      <Link href={verifyPath(code)} className="mt-6 rounded-xl bg-ink px-5 py-2.5 text-sm font-bold text-on-ink hover:bg-[#23234a]">
         Verify this ID
       </Link>
     </main>

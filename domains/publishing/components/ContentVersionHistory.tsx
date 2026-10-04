@@ -38,32 +38,32 @@ const STATUS_STYLE: Record<
   },
   SUBMITTED: {
     label: "Submitted",
-    className: "bg-blue-50 text-blue-700",
+    className: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300",
     icon: <Clock size={12} />,
   },
   IN_REVIEW: {
     label: "In review",
-    className: "bg-amber-50 text-amber-800",
+    className: "bg-amber-50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-200",
     icon: <Eye size={12} />,
   },
   APPROVED: {
     label: "Approved",
-    className: "bg-emerald-50 text-emerald-700",
+    className: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
     icon: <CheckCircle2 size={12} />,
   },
   PUBLISHED: {
     label: "Live",
-    className: "bg-emerald-100 text-emerald-800",
+    className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200",
     icon: <Radio size={12} />,
   },
   REJECTED: {
     label: "Rejected",
-    className: "bg-rose-50 text-rose-700",
+    className: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
     icon: <XCircle size={12} />,
   },
   CHANGES_REQUESTED: {
     label: "Changes requested",
-    className: "bg-orange-50 text-orange-700",
+    className: "bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300",
     icon: <XCircle size={12} />,
   },
   SUPERSEDED: {
@@ -141,13 +141,13 @@ export function ContentVersionHistory({
               }
               className={`rounded-xl border px-4 py-3 transition-colors ${
                 selected
-                  ? "border-[#14142b] bg-[#14142b]/[0.03]"
-                  : "border-slate-200 bg-white hover:border-slate-300"
+                  ? "border-ink bg-ink/[0.03]"
+                  : "border-slate-200 bg-surface hover:border-slate-300"
               } ${interactive ? "cursor-pointer" : ""}`}
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-[13px] font-bold text-[#14142b]">
+                  <span className="text-[13px] font-bold text-ink">
                     Version {v.versionNumber}
                   </span>
                   <span
@@ -157,7 +157,7 @@ export function ContentVersionHistory({
                     {style.label}
                   </span>
                   {v.isCurrentlyReviewed ? (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800">
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800 dark:bg-amber-500/15 dark:text-amber-200">
                       Under review
                     </span>
                   ) : null}
@@ -177,7 +177,7 @@ export function ContentVersionHistory({
                     e.stopPropagation();
                     onRollback(v);
                   }}
-                  className="mt-2 inline-flex items-center gap-1 rounded-full border border-slate-300 px-2.5 py-1 text-[11px] font-semibold text-[#14142b] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="mt-2 inline-flex items-center gap-1 rounded-full border border-slate-300 px-2.5 py-1 text-[11px] font-semibold text-ink hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <RotateCcw size={11} /> Roll back to this
                 </button>

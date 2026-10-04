@@ -48,13 +48,13 @@ export function ChannelOverview({
       {canReview && !channel.isPersonal && openReviewCount > 0 && (
         <Link
           href={tabHref('reviews')}
-          className="flex items-center gap-3 rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-amber-200 bg-amber-50/70 px-5 py-4 transition-colors hover:bg-amber-50"
+          className="flex items-center gap-3 rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-amber-200 bg-amber-50/70 px-5 py-4 transition-colors hover:bg-amber-50 dark:border-amber-500/25 dark:bg-amber-500/10 dark:hover:bg-amber-500/10"
         >
-          <ClipboardCheck size={18} className="shrink-0 text-amber-700" />
-          <p className="flex-1 text-[13px] font-semibold text-amber-900">
+          <ClipboardCheck size={18} className="shrink-0 text-amber-700 dark:text-amber-300" />
+          <p className="flex-1 text-[13px] font-semibold text-amber-900 dark:text-amber-200">
             {openReviewCount} submission{openReviewCount === 1 ? '' : 's'} waiting for your organization&apos;s review
           </p>
-          <ArrowRight size={16} className="text-amber-700" />
+          <ArrowRight size={16} className="text-amber-700 dark:text-amber-300" />
         </Link>
       )}
 
@@ -66,14 +66,14 @@ export function ChannelOverview({
             <>
               <Link
                 href="/studio"
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-3.5 py-1.5 text-[12px] font-semibold text-white hover:bg-[#232735]"
+                className="inline-flex items-center gap-1.5 rounded-full bg-ink px-3.5 py-1.5 text-[12px] font-semibold text-on-ink hover:bg-ink-hover"
               >
                 <Plus size={14} /> Create
               </Link>
               {content.length > 0 && (
                 <Link
                   href={tabHref('content')}
-                  className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[12px] font-semibold text-slate-600 hover:bg-slate-50"
+                  className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-surface px-3.5 py-1.5 text-[12px] font-semibold text-slate-600 hover:bg-slate-50"
                 >
                   View all <ArrowRight size={13} />
                 </Link>

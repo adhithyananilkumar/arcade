@@ -1,6 +1,6 @@
 :root {
-  --border-color: rgba(226, 232, 240, 0.8);
-  --background-card-light: #ffffff;
+  --border-color: color-mix(in oklab, var(--theme-n-200, #e2e8f0) 80%, transparent);
+  --background-card-light: var(--theme-surface, #ffffff);
   --background-card-dark: #0a0a0a;
 }
 

@@ -31,10 +31,10 @@ export const FolderList: React.FC<Props> = ({ form, selectedFolderId, onSelectFo
   return (
     <div className="flex flex-col h-full">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-medium text-gray-900 dark:text-white">Folders</h3>
+        <h3 className="font-medium text-gray-900">Folders</h3>
         <button 
           onClick={() => setIsCreating(true)}
-          className="text-xs text-violet-600 dark:text-violet-400 hover:text-violet-800"
+          className="text-xs text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-200"
         >
           + New
         </button>
@@ -46,7 +46,7 @@ export const FolderList: React.FC<Props> = ({ form, selectedFolderId, onSelectFo
           className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
             selectedFolderId === null 
               ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' 
-              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+              : 'text-gray-600 hover:bg-gray-50'
           }`}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
@@ -60,7 +60,7 @@ export const FolderList: React.FC<Props> = ({ form, selectedFolderId, onSelectFo
             className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
               selectedFolderId === folder.id 
                 ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' 
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                : 'text-gray-600 hover:bg-gray-50'
             }`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
@@ -81,7 +81,7 @@ export const FolderList: React.FC<Props> = ({ form, selectedFolderId, onSelectFo
               }}
               onBlur={handleCreateFolder}
               placeholder="Folder name..."
-              className="w-full text-sm rounded border border-violet-300 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 px-2 py-1 dark:bg-gray-900 dark:border-violet-700 dark:text-white"
+              className="w-full text-sm rounded border border-violet-300 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 px-2 py-1 dark:border-violet-700 dark:focus:ring-violet-500/40"
             />
           </div>
         )}

@@ -85,7 +85,7 @@ export function MyChannels() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100">
             <Tv size={22} className="text-slate-400" />
           </div>
-          <h3 className="text-sm font-bold text-[#14142b]">No channels yet</h3>
+          <h3 className="text-sm font-bold text-ink">No channels yet</h3>
           <p className="mt-1 mb-5 text-sm text-slate-400">
             A channel is where your content lives. Start with a personal channel, or an organisation channel if you work with a team.
           </p>
@@ -115,14 +115,14 @@ export function MyChannels() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <h4 className="truncate text-[15px] font-bold text-[#14142b]">{channel.name}</h4>
+                    <h4 className="truncate text-[15px] font-bold text-ink">{channel.name}</h4>
                     <p className="mt-1 flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-400">
                       {channel.status === 'PENDING' ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 font-semibold text-amber-700">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
                           <Clock size={11} /> Awaiting approval
                         </span>
                       ) : channel.status === 'SUSPENDED' ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 font-semibold text-rose-700">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 font-semibold text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
                           Suspended
                         </span>
                       ) : channel.status === 'REJECTED' ? (
@@ -133,7 +133,7 @@ export function MyChannels() {
                           <XCircle size={11} /> Rejected
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
                           <CheckCircle size={11} /> Active
                         </span>
                       )}
@@ -154,7 +154,7 @@ export function MyChannels() {
                 {channel.status !== 'PENDING' && channel.status !== 'REJECTED' && (
                   <Link
                     href={`/channels/${channel.id}/manage`}
-                    className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#14142b] px-3.5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#232735]"
+                    className="inline-flex shrink-0 items-center gap-1 rounded-full bg-ink px-3.5 py-2 text-[12px] font-semibold text-on-ink transition-colors hover:bg-ink-hover"
                   >
                     Dashboard
                     <ChevronRight size={14} />

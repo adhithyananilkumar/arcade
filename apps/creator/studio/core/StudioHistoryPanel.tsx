@@ -64,7 +64,7 @@ export function StudioHistoryPanel<TRevision = unknown>({
   if (capability.status === "disabled") {
     return (
       <div className="flex flex-col items-center justify-center p-6 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-500">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-500 dark:bg-amber-500/10">
           <AlertCircle size={24} />
         </div>
         <h4 className="mt-3 text-sm font-semibold text-slate-800">History Disabled</h4>
@@ -127,15 +127,15 @@ export function StudioHistoryPanel<TRevision = unknown>({
       </div>
 
       {restoreSuccess && (
-        <div className="flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
-          <CheckCircle2 size={14} className="text-emerald-600" />
+        <div className="flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200">
+          <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400" />
           <span>{restoreSuccess}</span>
         </div>
       )}
 
       {error && (
-        <div className="flex items-center gap-2 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-800">
-          <AlertCircle size={14} className="text-rose-600" />
+        <div className="flex items-center gap-2 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-800 dark:bg-rose-500/10 dark:text-rose-200">
+          <AlertCircle size={14} className="text-rose-600 dark:text-rose-400" />
           <span>{error}</span>
         </div>
       )}
@@ -169,7 +169,7 @@ export function StudioHistoryPanel<TRevision = unknown>({
           return (
             <div
               key={rev.id}
-              className="flex flex-col gap-2 rounded-lg border border-slate-200/80 bg-white p-3 shadow-sm transition-all hover:border-slate-300"
+              className="flex flex-col gap-2 rounded-lg border border-slate-200/80 bg-surface p-3 shadow-sm transition-all hover:border-slate-300"
             >
               <div className="flex items-start justify-between">
                 <div>
@@ -212,7 +212,7 @@ export function StudioHistoryPanel<TRevision = unknown>({
                       type="button"
                       onClick={() => handleRestore(rev)}
                       disabled={restoringId === rev.id}
-                      className="flex items-center gap-1 rounded bg-slate-900 px-2 py-0.5 text-[10px] font-medium text-white transition-colors hover:bg-black disabled:opacity-50"
+                      className="flex items-center gap-1 rounded bg-slate-900 px-2 py-0.5 text-[10px] font-medium text-on-ink transition-colors hover:bg-black disabled:opacity-50"
                       title="Restore to this version"
                     >
                       <RotateCcw size={10} />

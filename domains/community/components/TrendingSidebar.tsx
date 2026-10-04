@@ -15,7 +15,7 @@ export function TrendingSidebar() {
       {tags && tags.length > 0 && (
         <div
           style={{
-            backgroundColor: '#fff',
+            backgroundColor: 'var(--theme-surface, #fff)',
             border: '1px solid var(--border)',
             borderRadius: 'var(--radius-md)',
             overflow: 'hidden',

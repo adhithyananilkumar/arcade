@@ -29,17 +29,17 @@ export function QuizQuestionView({ node, updateAttributes, deleteNode, getPos }:
   }, [segment, explanation, msgCorrect, msgIncorrect, node.attrs, updateAttributes]);
 
   return (
-    <NodeViewWrapper className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden mb-6">
+    <NodeViewWrapper className="rounded-xl border border-gray-200 bg-surface shadow-sm overflow-hidden mb-6">
       {/* Question Header - Native UI Wrapper */}
       <div className="flex flex-wrap items-center gap-3 border-b border-gray-100 bg-gray-50/50 px-4 py-3" contentEditable={false}>
-        <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+        <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
           Q
         </span>
         
         <select
           value={node.attrs.questionType}
           onChange={(e) => updateAttributes({ questionType: e.target.value })}
-          className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 outline-none focus:border-indigo-400"
+          className="rounded-lg border border-gray-200 bg-surface px-2 py-1 text-xs font-medium text-gray-700 outline-none focus:border-indigo-400"
         >
           <option value="text">Text Question</option>
           <option value="photo">Photo Question</option>
@@ -48,7 +48,7 @@ export function QuizQuestionView({ node, updateAttributes, deleteNode, getPos }:
         <select
           value={node.attrs.answerSelectionType}
           onChange={(e) => updateAttributes({ answerSelectionType: e.target.value })}
-          className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 outline-none focus:border-indigo-400"
+          className="rounded-lg border border-gray-200 bg-surface px-2 py-1 text-xs font-medium text-gray-700 outline-none focus:border-indigo-400"
         >
           <option value="single">Single Answer</option>
           <option value="multiple">Multiple Answers</option>
@@ -57,7 +57,7 @@ export function QuizQuestionView({ node, updateAttributes, deleteNode, getPos }:
         <select
           value={node.attrs.difficulty || "MEDIUM"}
           onChange={(e) => updateAttributes({ difficulty: e.target.value })}
-          className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 outline-none focus:border-indigo-400"
+          className="rounded-lg border border-gray-200 bg-surface px-2 py-1 text-xs font-medium text-gray-700 outline-none focus:border-indigo-400"
         >
           <option value="EASY">Easy</option>
           <option value="MEDIUM">Medium</option>
@@ -91,7 +91,7 @@ export function QuizQuestionView({ node, updateAttributes, deleteNode, getPos }:
             title="Delete question"
             onClick={deleteNode}
             onMouseDown={(e) => e.stopPropagation()}
-            className="rounded p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+            className="rounded p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
           >
             <Trash2 size={14} />
           </button>

@@ -316,7 +316,7 @@ function CoverFlow({ cards }: { cards: CertCard[] }) {
                 {/* Top-edge glint */}
                 <div
                   className="absolute inset-x-0 top-0 h-[1.5px] pointer-events-none rounded-t-[24px]"
-                  style={{ background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.90),transparent)" }}
+                  style={{ background: "var(--theme-wash, linear-gradient(90deg,transparent,rgba(255,255,255,0.90),transparent))" }}
                   aria-hidden="true"
                 />
 
@@ -336,18 +336,18 @@ function CoverFlow({ cards }: { cards: CertCard[] }) {
                 {/* Text area */}
                 <div
                   className="flex flex-col gap-3 px-6 pt-4 pb-6"
-                  style={{ background: "rgba(255,255,255,0.58)", flex: 1 }}
+                  style={{ background: "var(--theme-surface, rgba(255,255,255,0.58))", flex: 1 }}
                 >
                   <h3
                     className="text-[16px] font-bold leading-snug tracking-tight"
-                    style={{ color: "#1E3A5F" }}
+                    style={{ color: "oklch(from #1E3A5F max(l, var(--fg-lift, 0)) c h)" }}
                   >
                     {card.title}
                   </h3>
 
                   <p
                     className={`text-[12.5px] leading-[1.65] ${isCenter ? "" : "line-clamp-3"}`}
-                    style={{ color: "#4A6A8A" }}
+                    style={{ color: "var(--theme-n-500, #4A6A8A)" }}
                   >
                     {card.description}
                   </p>
@@ -365,7 +365,7 @@ function CoverFlow({ cards }: { cards: CertCard[] }) {
                           <li
                             key={b}
                             className="flex items-center gap-2 text-[12px] leading-snug"
-                            style={{ color: "#334E6F" }}
+                            style={{ color: "var(--theme-n-600, #334E6F)" }}
                           >
                             <span
                               className="w-[5px] h-[5px] rounded-full shrink-0"
@@ -390,9 +390,9 @@ function CoverFlow({ cards }: { cards: CertCard[] }) {
           onClick={() => manualNavigate((active - 1 + n) % n)}
           className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
           style={{
-            background: "rgba(255,255,255,0.70)",
+            background: "var(--theme-surface, rgba(255,255,255,0.70))",
             border: "1.5px solid rgba(139,198,255,0.45)",
-            color: "#2E6FB4",
+            color: "oklch(from #2E6FB4 max(l, var(--fg-lift, 0)) c h)",
             boxShadow: "0 2px 8px rgba(30,58,95,0.07)",
           }}
           aria-label="Previous card"
@@ -422,9 +422,9 @@ function CoverFlow({ cards }: { cards: CertCard[] }) {
           onClick={() => manualNavigate((active + 1) % n)}
           className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
           style={{
-            background: "rgba(255,255,255,0.70)",
+            background: "var(--theme-surface, rgba(255,255,255,0.70))",
             border: "1.5px solid rgba(139,198,255,0.45)",
-            color: "#2E6FB4",
+            color: "oklch(from #2E6FB4 max(l, var(--fg-lift, 0)) c h)",
             boxShadow: "0 2px 8px rgba(30,58,95,0.07)",
           }}
           aria-label="Next card"
@@ -490,17 +490,17 @@ export default function WhyGetCertifiedSection() {
     <section
       ref={sectionRef}
       className="relative overflow-hidden"
-      style={{ background: "linear-gradient(165deg, #F4F9FF 0%, #EBF3FF 45%, #F2F7FF 100%)" }}
+      style={{ background: "var(--theme-wash, linear-gradient(165deg, #F4F9FF 0%, #EBF3FF 45%, #F2F7FF 100%))" }}
       aria-labelledby="why-certified-heading"
     >
       {/* ── Blobs ── */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         <div className="absolute -top-48 -left-48 w-[750px] h-[750px] rounded-full"
-          style={{ background: "radial-gradient(circle, #D6ECFF 0%, transparent 68%)", opacity: 0.75 }} />
+          style={{ background: "var(--theme-wash, radial-gradient(circle, #D6ECFF 0%, transparent 68%))", opacity: 0.75 }} />
         <div className="absolute -bottom-52 -right-40 w-[650px] h-[650px] rounded-full"
-          style={{ background: "radial-gradient(circle, #C8E6FF 0%, transparent 68%)", opacity: 0.60 }} />
+          style={{ background: "var(--theme-wash, radial-gradient(circle, #C8E6FF 0%, transparent 68%))", opacity: 0.60 }} />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] rounded-full"
-          style={{ background: "radial-gradient(ellipse, rgba(220,238,255,0.90) 0%, transparent 65%)", opacity: 0.65 }} />
+          style={{ background: "var(--theme-wash, radial-gradient(ellipse, rgba(220,238,255,0.90) 0%, transparent 65%))", opacity: 0.65 }} />
       </div>
 
       <div className="relative z-10 pt-24 pb-10 md:pt-32 md:pb-14">
@@ -564,7 +564,7 @@ export default function WhyGetCertifiedSection() {
             variants={paraVariants}
             className="text-[17px] sm:text-[18.5px] md:text-[20px] mx-auto"
             style={{
-              color: "#3D526B",          // darker slate — better contrast on light bg
+              color: "var(--theme-n-600, #3D526B)",          // darker slate — better contrast on light bg
               lineHeight: 1.9,
               fontFamily: "'Inter', 'Plus Jakarta Sans', system-ui, sans-serif",
               fontWeight: 400,
@@ -574,15 +574,15 @@ export default function WhyGetCertifiedSection() {
             } as React.CSSProperties}
           >
             Earn a{" "}
-            <span style={{ color: "#1D4ED8", fontWeight: 600 }}>
+            <span style={{ color: "oklch(from #1D4ED8 max(l, var(--fg-lift, 0)) c h)", fontWeight: 600 }}>
               verified certificate
             </span>{" "}
             that showcases your achievements, strengthens your{" "}
-            <span style={{ color: "#1D4ED8", fontWeight: 600 }}>
+            <span style={{ color: "oklch(from #1D4ED8 max(l, var(--fg-lift, 0)) c h)", fontWeight: 600 }}>
               professional profile
             </span>
             , and highlights your commitment to{" "}
-            <span style={{ color: "#1D4ED8", fontWeight: 600 }}>
+            <span style={{ color: "oklch(from #1D4ED8 max(l, var(--fg-lift, 0)) c h)", fontWeight: 600 }}>
               continuous learning
             </span>{" "}
             through Amal Jyothi College of Engineering.
@@ -606,17 +606,17 @@ export default function WhyGetCertifiedSection() {
           variants={panelVariants}
           className="mx-6 md:mx-10 lg:mx-auto max-w-[1060px] mt-6 rounded-[24px] overflow-hidden"
           style={{
-            background: "linear-gradient(145deg,#EEF7FF 0%,#DCEEFF 100%)",
+            background: "var(--theme-wash, linear-gradient(145deg,#EEF7FF 0%,#DCEEFF 100%))",
             border: "1px solid rgba(139,198,255,0.45)",
             boxShadow: "0 8px 40px rgba(37,99,235,0.08),0 1px 4px rgba(30,58,95,0.05)",
           }}
         >
           <div className="flex flex-col md:flex-row items-center gap-8 px-10 py-10">
             <div className="flex-1 space-y-4 text-center md:text-left">
-              <h3 className="text-xl md:text-2xl font-bold tracking-tight leading-snug" style={{ color: "#1E3A5F" }}>
+              <h3 className="text-xl md:text-2xl font-bold tracking-tight leading-snug" style={{ color: "oklch(from #1E3A5F max(l, var(--fg-lift, 0)) c h)" }}>
                 Why an Arcade Certificate Matters
               </h3>
-              <p className="text-sm md:text-[15px] leading-relaxed max-w-xl" style={{ color: "#4A6A8A" }}>
+              <p className="text-sm md:text-[15px] leading-relaxed max-w-xl" style={{ color: "var(--theme-n-500, #4A6A8A)" }}>
                 Unlike certificates generated by standalone event platforms, Arcade
                 certificates are issued through the official learning ecosystem of
                 Amal Jyothi College of Engineering. They represent verified
@@ -628,7 +628,7 @@ export default function WhyGetCertifiedSection() {
                   <span
                     key={tag}
                     className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] font-semibold"
-                    style={{ background: "rgba(255,255,255,0.82)", border: "1px solid #C8E6FF", color: "#2E6FB4" }}
+                    style={{ background: "var(--theme-surface, rgba(255,255,255,0.82))", border: "1px solid var(--theme-n-200, #C8E6FF)", color: "oklch(from #2E6FB4 max(l, var(--fg-lift, 0)) c h)" }}
                   >
                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "#6AAEF7" }} />
                     {tag}

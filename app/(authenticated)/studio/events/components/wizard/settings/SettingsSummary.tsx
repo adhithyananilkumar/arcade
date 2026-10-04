@@ -11,23 +11,23 @@ export const SettingsSummary: React.FC<Props> = ({ form }) => {
   if (!settings) return null;
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 sticky top-6 shadow-sm">
-      <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-6">
+    <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 sticky top-6 shadow-sm">
+      <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-6">
         Live Summary
       </h3>
       
       <div className="space-y-4">
         {/* Visibility Summary */}
-        <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+        <div className="border-b border-gray-200 pb-4">
           <div className="flex justify-between items-start mb-1">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Event Visibility</span>
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <span className="text-sm text-gray-500">Event Visibility</span>
+            <span className="text-sm font-medium text-gray-900">
               {settings.visibility ? (settings.visibility.charAt(0) + settings.visibility.slice(1).toLowerCase()) : 'N/A'}
             </span>
           </div>
           <div className="flex justify-between items-start mt-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Listing Status</span>
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 text-right">
+            <span className="text-sm text-gray-500">Listing Status</span>
+            <span className="text-sm font-medium text-gray-900 text-right">
               {settings.listingStatus === 'UNLISTED' ? 'Hidden' : (settings.listingStatus ? (settings.listingStatus.charAt(0) + settings.listingStatus.slice(1).toLowerCase()) : 'N/A')}
             </span>
           </div>

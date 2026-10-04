@@ -166,8 +166,8 @@ function IconPicker({ onSelect }: { onSelect: (id: string) => void }) {
             onClick={() => setActiveTab(i)}
             className={`flex-shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
               i === activeTab
-                ? "bg-[#14142b] text-white"
-                : "text-[#14142b]/60 hover:bg-[#14142b]/8 hover:text-[#14142b]"
+                ? "bg-ink text-on-ink"
+                : "text-ink/60 hover:bg-ink/8 hover:text-ink"
             }`}
           >
             {cat.label}
@@ -204,12 +204,12 @@ function IconPicker({ onSelect }: { onSelect: (id: string) => void }) {
 function toolButtonClass(active?: boolean, disabled?: boolean, danger?: boolean) {
   return `flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full transition-colors ${
     active
-      ? "bg-[#14142b] text-white"
+      ? "bg-ink text-on-ink"
       : disabled
-        ? "cursor-not-allowed text-[#14142b]/20"
+        ? "cursor-not-allowed text-ink/20"
         : danger
-          ? "text-red-500 hover:bg-red-50"
-          : "text-[#14142b]/60 hover:bg-[#14142b]/10 hover:text-[#14142b]"
+          ? "text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
+          : "text-ink/60 hover:bg-ink/10 hover:text-ink"
   }`;
 }
 

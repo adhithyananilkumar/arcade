@@ -355,7 +355,7 @@ export default function JourneyTimeline() {
                       height: isActive ? "48%" : "32%",
                       transition: "height 1.5s cubic-bezier(0.25, 1, 0.3, 1), background 1.5s ease",
                       position: "relative",
-                      background: isActive ? "#ffffff" : course.cardBg,
+                      background: isActive ? "var(--theme-surface, #ffffff)" : course.cardBg,
                       zIndex: 3,
                     }}
                   >

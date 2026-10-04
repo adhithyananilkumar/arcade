@@ -8,7 +8,7 @@ export interface BracketPlaqueBorderProps {
 }
 
 export const BracketPlaqueBorder: React.FC<BracketPlaqueBorderProps> = ({
-  className = 'text-slate-300 dark:text-slate-700',
+  className = 'text-slate-300',
   strokeWidth = 2
 }) => {
   return (

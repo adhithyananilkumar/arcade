@@ -157,6 +157,8 @@ export function PublishingWorkflow({
   reviewPathError?: string | null;
 }) {
   const statusKey = status?.toUpperCase();
+  const blocked = (reviewPath?.blockingProblems?.length ?? 0) > 0;
+  const submitLabel = reviewPath?.directPublication ? "Publish" : "Submit for Review";
 
   return (
     <div className="flex flex-col gap-8 w-full max-w-3xl mx-auto py-2">
@@ -168,15 +170,15 @@ export function PublishingWorkflow({
         <DocumentDraftIllustration />
 
         {/* Subtle vertical separator line matching mockup */}
-        <div className="w-px bg-slate-200/80 dark:bg-slate-800 self-stretch my-2 hidden sm:block" />
+        <div className="w-px bg-slate-200/80 dark:border-slate-800 self-stretch my-2 hidden sm:block" />
 
         <div className="flex flex-col gap-3 flex-1 text-center sm:text-left items-center sm:items-start">
           {review?.status === "OPEN" ? (
             <>
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 text-xs font-extrabold">
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 text-xs font-extrabold dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-800">
                 In Review
               </span>
-              <p className="text-xs text-slate-500 leading-relaxed">
+              <p className="text-xs text-slate-500 leading-relaxed dark:text-slate-400">
                 Submitted on {formatDate(review.currentRoundDetail?.submittedAt)} &bull; Review round #{review.currentRound}
               </p>
               <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
@@ -185,24 +187,24 @@ export function PublishingWorkflow({
             </>
           ) : review?.status === "CHANGES_REQUESTED" ? (
             <>
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 px-3 py-1 text-xs font-extrabold">
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 px-3 py-1 text-xs font-extrabold dark:bg-rose-950/60 dark:text-rose-400 dark:border-rose-800">
                 Changes Requested
               </span>
               {review.currentRoundDetail?.decisionReason && (
-                <p className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800 font-medium">
+                <p className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800 font-medium dark:bg-rose-950/40 dark:border-rose-900/50 dark:text-rose-300">
                   {review.currentRoundDetail.decisionReason}
                 </p>
               )}
               <Link
                 href={editHref}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#0B132B] px-5 py-2.5 text-xs font-bold text-white hover:bg-blue-600 transition-colors shadow-sm"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#0B132B] px-5 py-2.5 text-xs font-bold text-white hover:bg-blue-600 transition-colors shadow-sm dark:bg-white dark:text-slate-900"
               >
                 <Pencil size={14} /> Continue Editing
               </Link>
             </>
           ) : statusKey === "PUBLISHED" ? (
             <>
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 text-xs font-extrabold">
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 text-xs font-extrabold dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800">
                 Published
               </span>
               <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
@@ -217,13 +219,24 @@ export function PublishingWorkflow({
               <p className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400">
                 This content has not been submitted for platform review.
               </p>
+
+              {reviewPath && (
+                <div className="w-full text-left">
+                  <ReviewPathPanel
+                    preview={reviewPath}
+                    loading={reviewPathLoading}
+                    error={reviewPathError}
+                  />
+                </div>
+              )}
+
               <button
                 type="button"
                 onClick={onSubmit}
-                disabled={submitting}
+                disabled={submitting || blocked || reviewPathLoading}
                 className="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 px-6 py-2.5 text-xs font-extrabold text-white transition-all shadow-md active:scale-98 cursor-pointer disabled:opacity-50 mt-1"
               >
-                <Send size={14} /> {submitting ? "Submitting…" : "Submit for Review"}
+                <Send size={14} /> {submitting ? "Submitting…" : submitLabel}
               </button>
             </>
           )}
@@ -248,5 +261,3 @@ export function PublishingWorkflow({
     </div>
   );
 }
-
-

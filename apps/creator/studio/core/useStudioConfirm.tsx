@@ -54,14 +54,14 @@ function StudioConfirmDialog({ options, onClose }: { options: StudioConfirmOptio
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={() => !busy && onClose()} />
-      <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={() => !busy && onClose()} />
+      <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <div className="flex gap-3">
-          <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ${danger ? "bg-rose-50" : "bg-slate-100"}`}>
-            {icon ?? <AlertTriangle size={20} className={danger ? "text-rose-500" : "text-[#14142b]"} />}
+          <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ${danger ? "bg-rose-50 dark:bg-rose-500/10" : "bg-slate-100"}`}>
+            {icon ?? <AlertTriangle size={20} className={danger ? "text-rose-500" : "text-ink"} />}
           </div>
           <div className="flex-1 pt-0.5">
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">{title}</h3>
+            <h3 className="text-[15px] font-bold tracking-tight text-ink">{title}</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{message}</p>
           </div>
         </div>
@@ -70,7 +70,7 @@ function StudioConfirmDialog({ options, onClose }: { options: StudioConfirmOptio
             type="button"
             onClick={onClose}
             disabled={busy}
-            className="rounded-full px-4 py-2 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b] disabled:opacity-50"
+            className="rounded-full px-4 py-2 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-ink disabled:opacity-50"
           >
             Cancel
           </button>
@@ -86,7 +86,7 @@ function StudioConfirmDialog({ options, onClose }: { options: StudioConfirmOptio
                 setBusy(false);
               }
             }}
-            className={`rounded-full px-5 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${danger ? "bg-rose-600 hover:bg-rose-700" : "bg-[#14142b] hover:bg-[#232735]"}`}
+            className={`rounded-full px-5 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${danger ? "bg-rose-600 hover:bg-rose-700" : "bg-ink hover:bg-ink-hover"}`}
           >
             {busy ? "Working…" : confirmLabel}
           </button>

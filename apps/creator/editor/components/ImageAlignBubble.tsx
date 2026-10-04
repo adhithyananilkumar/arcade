@@ -54,7 +54,7 @@ export function ImageAlignBubble({ editor }: { editor: Editor }) {
       options={{ placement: "top", offset: 8 }}
       shouldShow={({ editor: e }) => !!findSelectedImage(e)}
     >
-      <div className="flex items-center gap-1 rounded-md border border-gray-200 bg-white p-1 shadow-md">
+      <div className="flex items-center gap-1 rounded-md border border-gray-200 bg-surface p-1 shadow-md">
         {ALIGNMENTS.map(({ value, icon: Icon, label }) => (
           <button
             key={value}
@@ -85,7 +85,7 @@ export function ImageAlignBubble({ editor }: { editor: Editor }) {
             if (!target) return;
             editor.chain().focus().setNodeSelection(target.pos).deleteSelection().run();
           }}
-          className="rounded p-1.5 text-gray-600 hover:bg-red-50 hover:text-red-600"
+          className="rounded p-1.5 text-gray-600 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
         >
           <Trash2 size={14} />
         </button>

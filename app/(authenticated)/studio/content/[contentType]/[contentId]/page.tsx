@@ -50,7 +50,7 @@ function CenteredState({
       <div className="grid size-12 place-items-center rounded-2xl bg-slate-100 text-slate-400">
         <Icon size={24} />
       </div>
-      <h2 className="text-base font-extrabold text-[#14142b]">{title}</h2>
+      <h2 className="text-base font-extrabold text-ink">{title}</h2>
       <p className="max-w-sm text-xs font-medium text-slate-500">{description}</p>
     </div>
   );
@@ -60,7 +60,7 @@ function OverviewSkeleton() {
   return (
     <div
       className="min-h-screen w-full relative"
-      style={{ background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)" }}
+      style={{ background: "var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%))" }}
     >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 pt-24 pb-28 sm:px-6">
         <Skeleton className="h-4 w-32 rounded-full" />
@@ -280,9 +280,9 @@ function ContentOverviewPageContent() {
           <div className="-mb-4">
             <Link
               href={backNav.href}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white/90 px-3.5 py-2 text-xs font-extrabold text-slate-700 shadow-2xs backdrop-blur-md transition-all duration-200 hover:bg-white hover:text-blue-600 hover:border-blue-200 hover:shadow-xs active:scale-[0.98] cursor-pointer group"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-surface/90 px-3.5 py-2 text-xs font-extrabold text-slate-700 shadow-2xs backdrop-blur-md transition-all duration-200 hover:bg-surface hover:text-blue-600 hover:border-blue-200 hover:shadow-xs active:scale-[0.98] cursor-pointer group dark:hover:text-blue-400 dark:hover:border-blue-500/25"
             >
-              <ArrowLeft size={15} className="transition-transform duration-200 group-hover:-translate-x-1 text-slate-500 group-hover:text-blue-600" />
+              <ArrowLeft size={15} className="transition-transform duration-200 group-hover:-translate-x-1 text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
               <span>{backNav.label}</span>
             </Link>
           </div>
@@ -293,7 +293,6 @@ function ContentOverviewPageContent() {
           contentId={contentId}
           title={content.title}
           status={content.status}
-          coverImageUrl={content.coverImageUrl}
           channelName={content.channelName}
           authorName={content.authorName}
           createdAt={content.createdAt}
@@ -305,7 +304,40 @@ function ContentOverviewPageContent() {
           tiedExam={segment === "exam" && !!(content.courseId || content.eventId)}
         />
 
-
+        {segment === "event" && (
+          <div className="flex justify-center -mt-2">
+            <div className="inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-white/95 dark:bg-slate-900/95 dark:border-slate-800 p-1.5 shadow-[0_4px_20px_rgba(20,20,43,0.04)] backdrop-blur-md">
+              {[
+                { id: "OVERVIEW", label: "Overview", icon: LayoutGrid },
+                { id: "pricing", label: "Pricing", icon: Tag },
+                { id: "settings", label: "Settings", icon: SettingsIcon },
+                { id: "participants", label: "Manage Members", icon: Users },
+                { id: "collaborators", label: "Collaborators", icon: UserCog },
+                { id: "publishing", label: "Publishing", icon: Send },
+              ].map((item) => {
+                const active =
+                  activeTab === item.id ||
+                  (item.id === "participants" && activeTab === "people");
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setActiveTab(item.id as OverviewTab)}
+                    className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                      active
+                        ? "bg-blue-600 text-white shadow-sm"
+                        : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white"
+                    }`}
+                  >
+                    <Icon size={14} className={active ? "text-white" : "text-slate-400"} />
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {segment === "event" ? (
           <EventOverviewTab
@@ -361,4 +393,3 @@ export default function ContentOverviewPage() {
     </Suspense>
   );
 }
-

@@ -15,7 +15,7 @@ function SkeletonBlock({
         width: w,
         height: h,
         borderRadius: r,
-        backgroundColor: '#e4e8f0',
+        backgroundColor: 'var(--theme-n-200, #e4e8f0)',
         animation: 'pulse 1.5s ease-in-out infinite',
       }}
     />
@@ -26,7 +26,7 @@ function PostCardSkeleton() {
   return (
     <div
       style={{
-        backgroundColor: '#fff',
+        backgroundColor: 'var(--theme-surface, #fff)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius-md)',
         padding: 20,

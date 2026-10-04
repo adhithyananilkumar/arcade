@@ -1,5 +1,6 @@
 'use client';
 
+import { ContentArt } from '@/shared/design-system/art';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { courseRoutes } from '@/shared/routes/content.routes';
 import { motion } from 'framer-motion';
@@ -109,10 +110,10 @@ const RECOMMEND_HOVER_BORDERS = [
 ];
 
 const COURSE_ICON_CONFIG = [
-  { bg: 'bg-[#4C6FFF]/12', text: 'text-[#4C6FFF]', border: 'border-[#4C6FFF]/25', icon: Code2 },
+  { bg: 'bg-[#4C6FFF]/12', text: 'text-[#4C6FFF] dark:text-[#8db1ff]', border: 'border-[#4C6FFF]/25', icon: Code2 },
   { bg: 'bg-[#1DB876]/12', text: 'text-[#1DB876]', border: 'border-[#1DB876]/25', icon: Brain },
   { bg: 'bg-[#FF6B4A]/12', text: 'text-[#FF6B4A]', border: 'border-[#FF6B4A]/25', icon: Zap },
-  { bg: 'bg-[#9B5DE5]/12', text: 'text-[#9B5DE5]', border: 'border-[#9B5DE5]/25', icon: Palette },
+  { bg: 'bg-[#9B5DE5]/12', text: 'text-[#9B5DE5] dark:text-[#ca9dff]', border: 'border-[#9B5DE5]/25', icon: Palette },
   { bg: 'bg-[#0EA5E9]/12', text: 'text-[#0EA5E9]', border: 'border-[#0EA5E9]/25', icon: Cloud },
   { bg: 'bg-[#F59E0B]/12', text: 'text-[#F59E0B]', border: 'border-[#F59E0B]/25', icon: Terminal },
 ];
@@ -167,6 +168,8 @@ function eventToCard(e: EventDto, index: number): EventCard {
     tone: EVENT_TONES[index % EVENT_TONES.length],
     href: `/events/${e.slug || e.id}`,
     statusLabel: typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1),
+    channelName: e.channelName,
+    channelIconUrl: e.channelIconUrl,
   };
 }
 
@@ -295,10 +298,10 @@ export default function LearnerHomePage() {
     return {
       id: pick.resourceId,
       title: pick.title ?? 'Your course',
-      coverImageUrl: pick.imageUrl,
       // Passed through verbatim: null stays null and renders as "Not tracked", never as 0%.
       progress: pick.progressPercent,
-      authorName: null,
+      channelName: pick.channelName,
+      channelIconUrl: pick.channelIconUrl,
     };
   }, [myCourses]);
 
@@ -365,7 +368,7 @@ export default function LearnerHomePage() {
     <div
       className="relative w-full min-h-screen"
       style={{
-        background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)',
+        background: 'var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%))',
       }}
     >
       <div
@@ -399,12 +402,12 @@ export default function LearnerHomePage() {
                   }}
                   style={{ fontSize: 'calc(min(3rem, 8.5vw) * var(--fit, 1))' }}
                 >
-                  <span className="font-script font-bold tracking-wide text-[#14142b] dark:text-slate-100 leading-tight">
+                  <span className="font-script font-bold tracking-wide text-ink leading-tight">
                     {parsedGreeting.line1}
                   </span>
                   {/* 3 Sparkle lines accent (matching top-right accent in Image 2) */}
                   <svg
-                    className="ml-1 -mt-3 size-[0.5em] min-w-5 min-h-5 text-[#4C6FFF] shrink-0"
+                    className="ml-1 -mt-3 size-[0.5em] min-w-5 min-h-5 text-[#4C6FFF] shrink-0 dark:text-[#8db1ff]"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -425,7 +428,7 @@ export default function LearnerHomePage() {
                 style={{ fontSize: 'calc(min(3.5rem, 8.5vw) * var(--fit, 1))' }}
               >
                 {parsedGreeting.line2 && (
-                  <span className="font-bold tracking-tight leading-none text-[#14142b] cursor-default">
+                  <span className="font-bold tracking-tight leading-none text-ink cursor-default">
                     {parsedGreeting.line2}
                   </span>
                 )}
@@ -443,9 +446,9 @@ export default function LearnerHomePage() {
             </p>
 
             <form onSubmit={handleSearch} className="relative mt-7 w-full max-w-lg">
-              <div className="group relative flex items-center w-full rounded-full border border-slate-200/80 bg-white/95 px-4.5 py-2.5 transition-all focus-within:border-[#4C6FFF]/60">
+              <div className="group relative flex items-center w-full rounded-full border border-slate-200/80 bg-surface/95 px-4.5 py-2.5 transition-all focus-within:border-[#4C6FFF]/60">
                 {/* Left Search Icon */}
-                <div className="pointer-events-none flex items-center pr-3 text-slate-400 group-focus-within:text-[#2962D6] transition-colors shrink-0">
+                <div className="pointer-events-none flex items-center pr-3 text-slate-400 group-focus-within:text-[#2962D6] transition-colors shrink-0 dark:group-focus-within:text-[#7eb5ff]">
                   <Search size={19} strokeWidth={2.2} />
                 </div>
 
@@ -467,7 +470,7 @@ export default function LearnerHomePage() {
                   }}
                   readOnly
                   placeholder="Search courses, skills, mentors…"
-                  className="block w-full cursor-pointer bg-transparent py-1 text-[14px] sm:text-[15px] font-medium text-[#14142b] outline-none placeholder:text-slate-400"
+                  className="block w-full cursor-pointer bg-transparent py-1 text-[14px] sm:text-[15px] font-medium text-ink outline-none placeholder:text-slate-400"
                 />
               </div>
             </form>
@@ -475,7 +478,7 @@ export default function LearnerHomePage() {
             {/* Trending course topics pill cloud to fill the gap below search */}
             <div className="mt-5 w-full max-w-lg space-y-2.5">
               <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                <TrendingUp size={13} className="text-[#4C6FFF]" />
+                <TrendingUp size={13} className="text-[#4C6FFF] dark:text-[#8db1ff]" />
                 <span>Trending topics</span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -487,7 +490,7 @@ export default function LearnerHomePage() {
                       setSelectedTopicForSearch(topic);
                       setSuperSearchOpen(true);
                     }}
-                    className="inline-flex items-center rounded-tl-[1.1rem] rounded-br-[1.1rem] rounded-tr-xs rounded-bl-xs border border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-800/90 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-[#2962D6] dark:hover:border-[#3B82F6] hover:text-[#2962D6] dark:hover:text-[#3B82F6] hover:bg-[#2962D6]/5 dark:hover:bg-[#3B82F6]/10 transition-all cursor-pointer select-none"
+                    className="inline-flex items-center rounded-tl-[1.1rem] rounded-br-[1.1rem] rounded-tr-xs rounded-bl-xs border border-slate-200/90 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:border-[#2962D6] dark:hover:border-[#3B82F6] hover:text-[#2962D6] dark:hover:text-[#3B82F6] hover:bg-[#2962D6]/5 dark:hover:bg-[#3B82F6]/10 transition-all cursor-pointer select-none"
                   >
                     <span>{topic}</span>
                   </button>
@@ -522,12 +525,12 @@ export default function LearnerHomePage() {
           (!resumeCourse && (loading || recommendedCourses.length > 1))) && (
           <section className="space-y-3.5">
             <div className="flex items-end justify-between gap-4">
-              <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
+              <h2 className="text-xl font-bold tracking-tight text-ink">
                 {resumeCourse ? 'Recommended for you' : 'More recommendations'}
               </h2>
               <Link
                 href="/search"
-                className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-colors hover:text-[#3a5ae6]"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-colors hover:text-[#3a5ae6] dark:text-[#8db1ff] dark:hover:text-[#8cb1ff]"
               >
                 View all <ChevronRight size={15} />
               </Link>
@@ -538,16 +541,16 @@ export default function LearnerHomePage() {
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div
                     key={i}
-                    className="h-[96px] animate-pulse rounded-lg border border-slate-200 bg-white/70"
+                    className="h-[96px] animate-pulse rounded-lg border border-slate-200 bg-surface/70"
                   />
                 ))}
               </div>
             ) : (resumeCourse ? recommendedCourses : recommendedCourses.slice(1)).length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-200 bg-white/60 px-5 py-10 text-center">
+              <div className="rounded-lg border border-dashed border-slate-200 bg-surface/60 px-5 py-10 text-center">
                 <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-md bg-slate-100">
                   <BookOpen size={18} className="text-slate-400" />
                 </div>
-                <h3 className="mb-0.5 text-base font-bold text-[#14142b]">No courses yet</h3>
+                <h3 className="mb-0.5 text-base font-bold text-ink">No courses yet</h3>
                 <p className="text-sm font-medium text-slate-500">
                   Published courses will show up here.
                 </p>
@@ -567,26 +570,23 @@ export default function LearnerHomePage() {
                   >
                     <Link
                       href={courseRoutes.landing(course.id)}
-                      className={`group flex items-center overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/80 bg-white/95 p-3.5 sm:p-4 shadow-[0_4px_18px_rgba(20,20,43,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(20,20,43,0.07)] ${RECOMMEND_HOVER_BORDERS[i % RECOMMEND_HOVER_BORDERS.length]}`}
+                      className={`group flex items-center overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/80 bg-surface/95 p-3.5 sm:p-4 shadow-[0_4px_18px_rgba(20,20,43,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(20,20,43,0.07)] ${RECOMMEND_HOVER_BORDERS[i % RECOMMEND_HOVER_BORDERS.length]}`}
                     >
                       <div className="relative h-[80px] w-[96px] shrink-0 overflow-hidden rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-xs rounded-bl-xs bg-slate-100 sm:h-[88px] sm:w-[110px]">
-                        <img
-                          src={
-                            course.coverImageUrl ||
-                            'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80'
-                          }
-                          alt=""
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
+                        <div className="h-full w-full transition-transform duration-500 group-hover:scale-105">
+                          <ContentArt seed={course.id} kind="COURSE" categoryId={course.categoryId} title={course.title} />
+                        </div>
                       </div>
 
                       <div className="flex min-w-0 flex-1 flex-col justify-center pl-3.5 pr-2 sm:pl-4">
-                        <div className="mb-0.5 flex items-center gap-2">
-                          <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                            {course.authorName || 'Instructor'}
-                          </span>
-                        </div>
-                        <h3 className="truncate text-[15px] font-bold tracking-tight text-[#14142b]">
+                        {course.channel?.name && (
+                          <div className="mb-1 flex min-w-0 items-center">
+                            <span className="truncate text-[11.5px] font-semibold text-slate-500">
+                              {course.channel.name}
+                            </span>
+                          </div>
+                        )}
+                        <h3 className="truncate text-[15px] font-bold tracking-tight text-ink">
                           {course.title}
                         </h3>
                         <p className="mt-0.5 line-clamp-1 text-[12px] font-medium text-slate-500">
@@ -596,7 +596,7 @@ export default function LearnerHomePage() {
                       </div>
 
                       <div className="hidden items-center pr-2 sm:flex">
-                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 text-slate-400 transition-colors group-hover:border-current group-hover:text-[#14142b]">
+                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 text-slate-400 transition-colors group-hover:border-current group-hover:text-ink">
                           <ArrowUpRight size={15} />
                         </span>
                       </div>

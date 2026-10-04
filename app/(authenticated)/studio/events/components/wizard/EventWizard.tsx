@@ -52,7 +52,6 @@ export const EventWizard: React.FC<EventWizardProps> = ({ eventId: propEventId, 
         form.handleChange('language', data.language || 'en');
         form.handleChange('visibility', data.visibility || 'PRIVATE');
         if (data.priceAmount !== undefined) form.handleChange('priceAmount', data.priceAmount);
-        if (data.coverImageUrl) form.handleChange('coverImageUrl', data.coverImageUrl);
         if (data.tags) form.handleChange('tags', data.tags);
       }).catch((err) => {
         console.error('Failed to load existing workshop:', err);
@@ -86,8 +85,6 @@ export const EventWizard: React.FC<EventWizardProps> = ({ eventId: propEventId, 
         description: form.formData.description,
         category: form.formData.category,
         tags: form.formData.tags,
-        thumbnailUrl: form.formData.thumbnailUrl,
-        coverImageUrl: form.formData.coverImageUrl,
         promoVideoUrl: form.formData.promoVideoUrl,
         meetingUrl: form.formData.meetingUrl,
         eventType: form.formData.eventType,

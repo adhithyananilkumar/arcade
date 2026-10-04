@@ -16,9 +16,9 @@ export const ResourcesStep: React.FC<Props> = ({ form }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 flex flex-col md:flex-row min-h-[600px]">
+    <div className="bg-surface rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col md:flex-row min-h-[600px]">
       {/* Sidebar - Folders */}
-      <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 pr-0 md:pr-6 pb-6 md:pb-0 mb-6 md:mb-0">
+      <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-gray-200 pr-0 md:pr-6 pb-6 md:pb-0 mb-6 md:mb-0">
         <FolderList 
           form={form} 
           selectedFolderId={selectedFolderId} 

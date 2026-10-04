@@ -8,6 +8,8 @@ export type ConsoleSurface =
   | 'EXAMS'
   | 'PAYMENTS'
   | 'INBOX'
+  | 'BUGS'
+  | 'APPEARANCE'
   | 'IAM'
   | 'SYSTEM';
 

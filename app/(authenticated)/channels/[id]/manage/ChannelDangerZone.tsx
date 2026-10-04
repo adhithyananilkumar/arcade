@@ -300,11 +300,11 @@ export function ChannelDangerZone({ channel }: Props) {
 
       {/* Delete Channel Card */}
       {isOwner && (
-        <Card className="border-red-200 bg-red-50/60 dark:bg-red-950/20">
+        <Card className="border-red-200 bg-red-50/60 dark:bg-red-950/20 dark:border-red-500/25">
           <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h4 className="font-semibold text-gray-900 dark:text-gray-100">Delete this channel</h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <h4 className="font-semibold text-gray-900">Delete this channel</h4>
+              <p className="text-sm text-gray-600 mt-1">
                 {isSuspended
                   ? 'This channel is already suspended — there is nothing further to request.'
                   : 'Once approved, your channel will be suspended. Its content stays owned by the channel and remains publicly visible for up to 6 months before being unlisted, giving you time to appeal or reactivate.'}
@@ -327,7 +327,7 @@ export function ChannelDangerZone({ channel }: Props) {
         <CardContent className="p-6">
           {loadingTransfer ? (
             <div className="flex items-center gap-2 text-sm text-gray-500 py-2">
-              <Loader2 size={16} className="animate-spin text-amber-600" /> Loading transfer details...
+              <Loader2 size={16} className="animate-spin text-amber-600 dark:text-amber-400" /> Loading transfer details...
             </div>
           ) : transferRequest && transferRequest.status === 'PENDING' ? (
             user?.id === transferRequest.proposedOwnerId ? (
@@ -335,27 +335,27 @@ export function ChannelDangerZone({ channel }: Props) {
               <div className="space-y-4">
                 <div>
                   <h4 className="font-bold text-amber-800 dark:text-amber-400 text-base flex items-center gap-2">
-                    <Crown size={18} className="text-amber-600" />
+                    <Crown size={18} className="text-amber-600 dark:text-amber-400" />
                     Pending Ownership Transfer Request
                   </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-gray-600 mt-1">
                     You have been requested to become the new owner of this channel.
                   </p>
                 </div>
-                <div className="bg-white/90 dark:bg-neutral-900/90 rounded-xl p-4 border border-amber-200/80 dark:border-amber-800/40 space-y-2 text-sm">
+                <div className="bg-surface/90 rounded-xl p-4 border border-amber-200/80 dark:border-amber-800/40 space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400 font-medium">Requested By:</span>
-                    <span className="text-gray-900 dark:text-gray-100 font-semibold">{transferRequest.currentOwnerName}</span>
+                    <span className="text-gray-500 font-medium">Requested By:</span>
+                    <span className="text-gray-900 font-semibold">{transferRequest.currentOwnerName}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500 dark:text-gray-400 font-medium">Status:</span>
+                    <span className="text-gray-500 font-medium">Status:</span>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300">
                       Pending Acceptance
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400 font-medium">Expires:</span>
-                    <span className="text-gray-900 dark:text-gray-200">{new Date(transferRequest.expiresAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span>
+                    <span className="text-gray-500 font-medium">Expires:</span>
+                    <span className="text-gray-900">{new Date(transferRequest.expiresAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span>
                   </div>
                 </div>
                 <div className="flex gap-3 pt-1">
@@ -371,7 +371,7 @@ export function ChannelDangerZone({ channel }: Props) {
                     variant="outline"
                     onClick={handleDeclineTransfer}
                     disabled={actionLoading}
-                    className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+                    className="border-slate-300 text-slate-700 hover:bg-slate-100"
                   >
                     {actionLoading && <Loader2 size={16} className="animate-spin mr-1" />}
                     Decline
@@ -384,13 +384,13 @@ export function ChannelDangerZone({ channel }: Props) {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <h4 className="font-bold text-amber-800 dark:text-amber-400 text-base flex items-center gap-2">
-                      <ShieldAlert size={18} className="text-amber-600" />
+                      <ShieldAlert size={18} className="text-amber-600 dark:text-amber-400" />
                       Ownership Transfer Requested
                     </h4>
                     <p className="text-sm text-amber-900 dark:text-amber-300 mt-1 font-medium">
                       A request has been sent to <span className="font-bold">{transferRequest.proposedOwnerName}</span>.
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    <p className="text-xs text-gray-500 mt-0.5">
                       Ownership remains unchanged until the request is accepted.
                     </p>
                   </div>
@@ -404,20 +404,20 @@ export function ChannelDangerZone({ channel }: Props) {
                     Cancel Request
                   </Button>
                 </div>
-                <div className="bg-white/90 dark:bg-neutral-900/90 rounded-xl p-4 border border-amber-200/80 dark:border-amber-800/40 space-y-2.5 text-sm">
+                <div className="bg-surface/90 rounded-xl p-4 border border-amber-200/80 dark:border-amber-800/40 space-y-2.5 text-sm">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500 dark:text-gray-400 font-medium">Proposed Owner:</span>
-                    <span className="text-gray-900 dark:text-gray-100 font-bold">{transferRequest.proposedOwnerName}</span>
+                    <span className="text-gray-500 font-medium">Proposed Owner:</span>
+                    <span className="text-gray-900 font-bold">{transferRequest.proposedOwnerName}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500 dark:text-gray-400 font-medium">Status:</span>
+                    <span className="text-gray-500 font-medium">Status:</span>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
                       Pending Response
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500 dark:text-gray-400 font-medium">Expires On:</span>
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">
+                    <span className="text-gray-500 font-medium">Expires On:</span>
+                    <span className="text-gray-700 font-medium">
                       {new Date(transferRequest.expiresAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}
                     </span>
                   </div>
@@ -429,10 +429,10 @@ export function ChannelDangerZone({ channel }: Props) {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h4 className="font-bold text-amber-800 dark:text-amber-400 text-base flex items-center gap-2">
-                  <Crown size={18} className="text-amber-600" />
+                  <Crown size={18} className="text-amber-600 dark:text-amber-400" />
                   Transfer Ownership
                 </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 max-w-xl">
+                <p className="text-sm text-gray-600 mt-1 max-w-xl">
                   Transfer ownership of this channel to another active staff member. Ownership changes only after the selected member accepts the request.
                 </p>
               </div>
@@ -452,12 +452,12 @@ export function ChannelDangerZone({ channel }: Props) {
 
       {/* Transfer Ownership Minimal Enterprise Desktop Modal */}
       <Dialog open={isTransferModalOpen} onOpenChange={setIsTransferModalOpen}>
-        <DialogContent className="max-w-3xl w-full sm:max-w-3xl p-6 sm:p-8 overflow-hidden rounded-2xl border border-slate-200 dark:border-neutral-800 shadow-2xl bg-white dark:bg-neutral-900">
-          <DialogHeader className="p-0 pb-4 border-b border-slate-100 dark:border-neutral-800">
-            <DialogTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">
+        <DialogContent className="max-w-3xl w-full sm:max-w-3xl p-6 sm:p-8 overflow-hidden rounded-2xl border border-slate-200 shadow-2xl bg-surface">
+          <DialogHeader className="p-0 pb-4 border-b border-slate-100">
+            <DialogTitle className="text-lg font-bold text-slate-900">
               Transfer Ownership
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            <DialogDescription className="text-xs text-slate-500 mt-1">
               Transfer this channel to another staff member. Ownership changes only after the selected member accepts.
             </DialogDescription>
           </DialogHeader>
@@ -467,7 +467,7 @@ export function ChannelDangerZone({ channel }: Props) {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
               {/* LEFT COLUMN: Search & Staff Picker (approx 58% -> 7 Cols) */}
               <div className="md:col-span-7 space-y-2.5">
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <label className="block text-xs font-semibold text-slate-700">
                   Select new owner
                 </label>
 
@@ -479,15 +479,15 @@ export function ChannelDangerZone({ channel }: Props) {
                     placeholder="Search staff by name or email..."
                     value={staffSearchQuery}
                     onChange={(e) => setStaffSearchQuery(e.target.value)}
-                    className="pl-8.5 h-9 bg-slate-50 dark:bg-neutral-950 border-slate-200 dark:border-neutral-800 text-xs focus:border-amber-500 focus:ring-amber-500 rounded-lg"
+                    className="pl-8.5 h-9 bg-slate-50 border-slate-200 text-xs focus:border-amber-500 focus:ring-amber-500 rounded-lg"
                   />
                 </div>
 
                 {/* Staff List */}
-                <div className="max-h-[190px] overflow-y-auto rounded-lg border border-slate-200 dark:border-neutral-800 divide-y divide-slate-100 dark:divide-neutral-800/60 bg-white dark:bg-neutral-950">
+                <div className="max-h-[190px] overflow-y-auto rounded-lg border border-slate-200 divide-y divide-slate-100 bg-surface">
                   {loadingStaff ? (
                     <div className="p-6 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-                      <Loader2 size={14} className="animate-spin text-amber-600" /> Loading staff members...
+                      <Loader2 size={14} className="animate-spin text-amber-600 dark:text-amber-400" /> Loading staff members...
                     </div>
                   ) : filteredStaff.length === 0 ? (
                     <div className="p-6 text-center text-xs text-slate-500">
@@ -507,7 +507,7 @@ export function ChannelDangerZone({ channel }: Props) {
                           className={`flex items-center justify-between px-3 py-2.5 cursor-pointer transition-colors ${
                             isSelected
                               ? 'bg-amber-50/70 dark:bg-amber-950/20 border-l-2 border-amber-600'
-                              : 'hover:bg-slate-50 dark:hover:bg-neutral-900'
+                              : 'hover:bg-slate-50'
                           }`}
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
@@ -515,10 +515,10 @@ export function ChannelDangerZone({ channel }: Props) {
                               {displayName.charAt(0).toUpperCase()}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
+                              <p className="text-xs font-semibold text-slate-900 truncate">
                                 {displayName}
                               </p>
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                              <p className="text-[11px] text-slate-500 truncate">
                                 {staff.email}
                               </p>
                             </div>
@@ -528,7 +528,7 @@ export function ChannelDangerZone({ channel }: Props) {
                             name="proposedOwner"
                             checked={isSelected}
                             onChange={() => setSelectedStaffId(staff.userId)}
-                            className="h-3.5 w-3.5 text-amber-600 border-slate-300 focus:ring-amber-500 cursor-pointer shrink-0"
+                            className="h-3.5 w-3.5 text-amber-600 border-slate-300 focus:ring-amber-500 cursor-pointer shrink-0 dark:text-amber-400"
                           />
                         </label>
                       );
@@ -539,32 +539,32 @@ export function ChannelDangerZone({ channel }: Props) {
 
               {/* RIGHT COLUMN: Compact Important Checklist (approx 42% -> 5 Cols) */}
               <div className="md:col-span-5 space-y-2.5">
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <label className="block text-xs font-semibold text-slate-700">
                   Important
                 </label>
-                <div className="rounded-lg border border-slate-200 dark:border-neutral-800 bg-slate-50/60 dark:bg-neutral-950 p-3.5 space-y-2 text-xs text-slate-600 dark:text-slate-300">
+                <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-3.5 space-y-2 text-xs text-slate-600">
                   <div className="flex items-start gap-2">
-                    <Check size={14} className="text-amber-600 shrink-0 mt-0.5" />
+                    <Check size={14} className="text-amber-600 shrink-0 mt-0.5 dark:text-amber-400" />
                     <span>Ownership changes only after acceptance.</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Check size={14} className="text-amber-600 shrink-0 mt-0.5" />
+                    <Check size={14} className="text-amber-600 shrink-0 mt-0.5 dark:text-amber-400" />
                     <span>Selected staff member becomes the owner.</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Check size={14} className="text-amber-600 shrink-0 mt-0.5" />
+                    <Check size={14} className="text-amber-600 shrink-0 mt-0.5 dark:text-amber-400" />
                     <span>You become a staff member.</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Check size={14} className="text-amber-600 shrink-0 mt-0.5" />
+                    <Check size={14} className="text-amber-600 shrink-0 mt-0.5 dark:text-amber-400" />
                     <span>Owner-only permissions are removed.</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Check size={14} className="text-amber-600 shrink-0 mt-0.5" />
+                    <Check size={14} className="text-amber-600 shrink-0 mt-0.5 dark:text-amber-400" />
                     <span>You can leave the channel after transfer.</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Check size={14} className="text-amber-600 shrink-0 mt-0.5" />
+                    <Check size={14} className="text-amber-600 shrink-0 mt-0.5 dark:text-amber-400" />
                     <span>Until acceptance you remain the owner.</span>
                   </div>
                 </div>
@@ -578,22 +578,22 @@ export function ChannelDangerZone({ channel }: Props) {
                   type="checkbox"
                   checked={ack1}
                   onChange={(e) => setAck1(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer shrink-0"
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer shrink-0 dark:text-amber-400"
                 />
-                <span className="text-xs text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200">
+                <span className="text-xs text-slate-600 group-hover:text-slate-900">
                   I understand that after this request is accepted I will no longer be the owner of this channel.
                 </span>
               </label>
             </div>
 
             {/* Footer */}
-            <div className="pt-3 flex justify-end gap-2.5 border-t border-slate-100 dark:border-neutral-800">
+            <div className="pt-3 flex justify-end gap-2.5 border-t border-slate-100">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={handleCloseTransferModal}
                 disabled={actionLoading}
-                className="h-8 px-3 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800 font-medium"
+                className="h-8 px-3 text-xs text-slate-600 hover:bg-slate-100 font-medium"
               >
                 Cancel
               </Button>
@@ -612,12 +612,12 @@ export function ChannelDangerZone({ channel }: Props) {
 
       {/* Final Confirmation Modal */}
       <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
-        <DialogContent className="max-w-2xl w-full sm:max-w-2xl p-6 sm:p-8 overflow-hidden rounded-2xl border border-slate-200 dark:border-neutral-800 shadow-2xl bg-white dark:bg-neutral-900">
-          <DialogHeader className="p-0 pb-3 border-b border-slate-100 dark:border-neutral-800">
-            <DialogTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">
+        <DialogContent className="max-w-2xl w-full sm:max-w-2xl p-6 sm:p-8 overflow-hidden rounded-2xl border border-slate-200 shadow-2xl bg-surface">
+          <DialogHeader className="p-0 pb-3 border-b border-slate-100">
+            <DialogTitle className="text-lg font-bold text-slate-900">
               Confirm Ownership Transfer
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            <DialogDescription className="text-xs text-slate-500 mt-1">
               You are about to request ownership transfer of this channel. Please verify the details below before continuing.
             </DialogDescription>
           </DialogHeader>
@@ -625,7 +625,7 @@ export function ChannelDangerZone({ channel }: Props) {
           <form onSubmit={handleSendTransferRequest} className="space-y-4 pt-3">
             {/* Channel Name Field */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Channel Name
               </label>
               <Input
@@ -633,13 +633,13 @@ export function ChannelDangerZone({ channel }: Props) {
                 value={confirmChannelName}
                 onChange={(e) => setConfirmChannelName(e.target.value)}
                 placeholder="Channel name"
-                className="h-9 bg-slate-50 dark:bg-neutral-950 border-slate-200 dark:border-neutral-800 text-xs focus:border-amber-500 focus:ring-amber-500 rounded-lg text-slate-900 dark:text-slate-100"
+                className="h-9 bg-slate-50 border-slate-200 text-xs focus:border-amber-500 focus:ring-amber-500 rounded-lg text-slate-900"
               />
             </div>
 
             {/* Current Owner Email Field + Send OTP Button */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Current Owner Email
               </label>
               <Input
@@ -650,7 +650,7 @@ export function ChannelDangerZone({ channel }: Props) {
                   setIsOtpVerified(false);
                 }}
                 placeholder="Current owner email"
-                className="h-9 bg-slate-50 dark:bg-neutral-950 border-slate-200 dark:border-neutral-800 text-xs focus:border-amber-500 focus:ring-amber-500 rounded-lg text-slate-900 dark:text-slate-100"
+                className="h-9 bg-slate-50 border-slate-200 text-xs focus:border-amber-500 focus:ring-amber-500 rounded-lg text-slate-900"
               />
               <div className="flex justify-end mt-1.5">
                 <Button
@@ -658,7 +658,7 @@ export function ChannelDangerZone({ channel }: Props) {
                   variant="outline"
                   onClick={handleSendOtp}
                   disabled={isSendingOtp || !confirmOwnerEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(confirmOwnerEmail.trim())}
-                  className="h-7 text-xs px-3 border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-400 font-semibold"
+                  className="h-7 text-xs px-3 border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-400 font-semibold dark:hover:bg-amber-500/10"
                 >
                   {isSendingOtp && <Loader2 size={12} className="animate-spin mr-1" />}
                   Send OTP
@@ -668,7 +668,7 @@ export function ChannelDangerZone({ channel }: Props) {
 
             {/* OTP Field + Verify OTP Button */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 OTP
               </label>
               <Input
@@ -681,7 +681,7 @@ export function ChannelDangerZone({ channel }: Props) {
                 placeholder="6-digit OTP"
                 disabled={!isOtpSent}
                 maxLength={6}
-                className="h-9 bg-slate-50 dark:bg-neutral-950 border-slate-200 dark:border-neutral-800 text-xs focus:border-amber-500 focus:ring-amber-500 rounded-lg text-slate-900 dark:text-slate-100 disabled:opacity-50"
+                className="h-9 bg-slate-50 border-slate-200 text-xs focus:border-amber-500 focus:ring-amber-500 rounded-lg text-slate-900 disabled:opacity-50"
               />
               <div className="flex justify-end mt-1.5">
                 <Button
@@ -689,7 +689,7 @@ export function ChannelDangerZone({ channel }: Props) {
                   variant="outline"
                   onClick={handleVerifyOtp}
                   disabled={isVerifyingOtp || !isOtpSent || !otp.trim()}
-                  className="h-7 text-xs px-3 border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-400 font-semibold"
+                  className="h-7 text-xs px-3 border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-400 font-semibold dark:hover:bg-amber-500/10"
                 >
                   {isVerifyingOtp && <Loader2 size={12} className="animate-spin mr-1" />}
                   Verify OTP
@@ -726,22 +726,22 @@ export function ChannelDangerZone({ channel }: Props) {
                   checked={confirmCheckbox}
                   onChange={(e) => setConfirmCheckbox(e.target.checked)}
                   disabled={!isOtpVerified}
-                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer shrink-0 disabled:opacity-50"
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer shrink-0 disabled:opacity-50 dark:text-amber-400"
                 />
-                <span className="text-xs text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 font-medium">
+                <span className="text-xs text-slate-600 group-hover:text-slate-900 font-medium">
                   I confirm that the entered information is correct.
                 </span>
               </label>
             </div>
 
             {/* Footer Buttons */}
-            <div className="pt-3 flex justify-end gap-2.5 border-t border-slate-100 dark:border-neutral-800">
+            <div className="pt-3 flex justify-end gap-2.5 border-t border-slate-100">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => setIsConfirmModalOpen(false)}
                 disabled={actionLoading}
-                className="h-8 px-3 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800 font-medium"
+                className="h-8 px-3 text-xs text-slate-600 hover:bg-slate-100 font-medium"
               >
                 Cancel
               </Button>
@@ -768,18 +768,18 @@ export function ChannelDangerZone({ channel }: Props) {
 
       {/* Delete Modal */}
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className="max-w-2xl w-full sm:max-w-2xl p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-neutral-800 shadow-2xl bg-white dark:bg-neutral-900">
+        <DialogContent className="max-w-2xl w-full sm:max-w-2xl p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-2xl bg-surface">
           <DialogHeader>
-            <DialogTitle className="text-xl text-red-600 flex items-center gap-2">
+            <DialogTitle className="text-xl text-red-600 flex items-center gap-2 dark:text-red-400">
               <AlertTriangle size={20} />
               Request Channel Deletion
             </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleDeleteSubmit} className="space-y-5 mt-4">
-            <div className="rounded-xl bg-blue-50 p-4 border border-blue-100 flex gap-3">
-              <Info className="text-blue-600 shrink-0 mt-0.5" size={18} />
-              <p className="text-sm text-blue-800">
+            <div className="rounded-xl bg-blue-50 p-4 border border-blue-100 flex gap-3 dark:bg-blue-500/10 dark:border-blue-500/25">
+              <Info className="text-blue-600 shrink-0 mt-0.5 dark:text-blue-400" size={18} />
+              <p className="text-sm text-blue-800 dark:text-blue-200">
                 Your content ownership will be transferred to arcade management and you won't be able to manage your uploaded contents.
               </p>
             </div>
@@ -792,7 +792,7 @@ export function ChannelDangerZone({ channel }: Props) {
                 onChange={e => setDeleteReason(e.target.value)}
                 rows={3}
                 placeholder="Why are you deleting this channel?"
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                className="w-full rounded-xl border border-gray-300 bg-surface px-4 py-2.5 text-gray-900 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               />
             </div>
 
@@ -828,7 +828,7 @@ export function ChannelDangerZone({ channel }: Props) {
                   type="checkbox"
                   checked={deleteDeclaration}
                   onChange={e => setDeleteDeclaration(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-600 cursor-pointer"
+                  className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-600 cursor-pointer dark:text-red-400"
                 />
               </div>
               <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">

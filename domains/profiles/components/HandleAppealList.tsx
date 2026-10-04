@@ -51,7 +51,7 @@ const STATUS_STYLE: Record<
   WITHDRAWN: {
     label: 'Withdrawn',
     className:
-      'bg-slate-100 text-slate-500 border-slate-200 dark:bg-neutral-900 dark:text-neutral-400 dark:border-neutral-800',
+      'bg-slate-100 text-slate-500 border-slate-200',
     icon: Undo2,
   },
 };
@@ -112,17 +112,17 @@ export function HandleAppealList({
         return (
           <li
             key={appeal.id}
-            className="rounded-[18px] border border-slate-100 bg-white p-5 dark:border-neutral-900 dark:bg-black"
+            className="rounded-[18px] border border-slate-100 bg-surface p-5"
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[15px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+                  <span className="text-[15px] font-extrabold tracking-tight text-slate-900">
                     @{appeal.requestedHandle}
                   </span>
                   <HandleAppealStatusPill status={appeal.status} />
                 </div>
-                <p className="mt-1 text-[12px] font-bold text-slate-400 dark:text-neutral-500">
+                <p className="mt-1 text-[12px] font-bold text-slate-400">
                   Filed {formatDate(appeal.createdAt)}
                   {appeal.currentHolderName && ` · held by ${appeal.currentHolderName}`}
                 </p>
@@ -132,14 +132,14 @@ export function HandleAppealList({
                 <button
                   type="button"
                   onClick={() => onWithdraw(appeal.id)}
-                  className="shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 text-[12px] font-extrabold tracking-tight text-slate-500 transition-colors hover:border-slate-900 hover:text-slate-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-400 dark:hover:text-white"
+                  className="shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 text-[12px] font-extrabold tracking-tight text-slate-500 transition-colors hover:border-slate-900 hover:text-slate-900"
                 >
                   Withdraw
                 </button>
               )}
             </div>
 
-            <p className="mt-3 line-clamp-3 text-[12.5px] font-medium leading-relaxed text-slate-500 dark:text-neutral-400">
+            <p className="mt-3 line-clamp-3 text-[12.5px] font-medium leading-relaxed text-slate-500">
               {appeal.justification}
             </p>
 
@@ -148,18 +148,18 @@ export function HandleAppealList({
                 href={appeal.evidenceUrl}
                 target="_blank"
                 rel="noopener noreferrer nofollow"
-                className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-extrabold text-indigo-500 transition-colors hover:text-indigo-600 dark:text-indigo-400"
+                className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-extrabold text-indigo-500 transition-colors hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-400"
               >
                 Supporting link <ExternalLink size={12} />
               </a>
             )}
 
             {appeal.decisionNote && (
-              <div className="mt-4 rounded-xl bg-slate-50 px-3.5 py-3 dark:bg-neutral-950">
-                <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-400 dark:text-neutral-600">
+              <div className="mt-4 rounded-xl bg-slate-50 px-3.5 py-3">
+                <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-400">
                   Arcade&apos;s note
                 </p>
-                <p className="mt-1 text-[12.5px] font-medium leading-relaxed text-slate-600 dark:text-neutral-300">
+                <p className="mt-1 text-[12.5px] font-medium leading-relaxed text-slate-600">
                   {appeal.decisionNote}
                 </p>
               </div>

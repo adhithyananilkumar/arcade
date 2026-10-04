@@ -19,14 +19,14 @@ const TYPE_META: Record<
     desc: "Flexible container for videos, activities, and resources. Supports Online, Offline, and Hybrid delivery modes.",
     icon: Wrench,
     color: "text-violet-500",
-    bg: "bg-violet-50",
+    bg: "bg-violet-50 dark:bg-violet-500/10",
   },
   webinar: {
     label: "Webinar",
     desc: "Live sessions with Zoom meeting URL, date, time, timezone, and supporting materials.",
     icon: Radio,
     color: "text-blue-500",
-    bg: "bg-blue-50",
+    bg: "bg-blue-50 dark:bg-blue-500/10",
   },
 };
 
@@ -55,8 +55,8 @@ export default async function ContentTypeComingSoonPage({ params }: Props) {
   const Icon = meta.icon;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-10 max-w-md w-full text-center">
+    <div className="theme-page-bg min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="bg-surface rounded-3xl shadow-sm border border-gray-200 p-10 max-w-md w-full text-center">
         <div
           className={`w-14 h-14 rounded-2xl ${meta.bg} flex items-center justify-center mx-auto mb-5`}
         >
@@ -64,7 +64,7 @@ export default async function ContentTypeComingSoonPage({ params }: Props) {
         </div>
         <h1 className="text-xl font-bold text-gray-900 mb-2">{meta.label}</h1>
         <p className="text-sm text-gray-500 leading-relaxed mb-6">{meta.desc}</p>
-        <div className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-600 text-xs font-semibold px-4 py-2 rounded-full mb-8">
+        <div className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-600 text-xs font-semibold px-4 py-2 rounded-full mb-8 dark:bg-indigo-500/10 dark:text-indigo-400">
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
           Coming in the next phase
         </div>

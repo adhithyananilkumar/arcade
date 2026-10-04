@@ -7,7 +7,7 @@
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--theme-surface, #ffffff);
 }
 
 .creators-bg-mesh {
@@ -56,7 +56,7 @@
   left: 8%;
   width: 580px;
   height: 580px;
-  background: radial-gradient(circle, rgba(232, 236, 251, 0.85) 0%, transparent 70%);
+  background: var(--theme-wash, radial-gradient(circle, rgba(232, 236, 251, 0.85) 0%, transparent 70%));
 }
 
 .blob-2 {
@@ -64,7 +64,7 @@
   right: 6%;
   width: 620px;
   height: 620px;
-  background: radial-gradient(circle, rgba(227, 249, 245, 0.80) 0%, transparent 70%);
+  background: var(--theme-wash, radial-gradient(circle, rgba(227, 249, 245, 0.80) 0%, transparent 70%));
 }
 
 .blob-3 {
@@ -72,7 +72,7 @@
   left: 10%;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(232, 236, 251, 0.75) 0%, transparent 70%);
+  background: var(--theme-wash, radial-gradient(circle, rgba(232, 236, 251, 0.75) 0%, transparent 70%));
 }
 
 .blob-4 {
@@ -80,7 +80,7 @@
   right: 10%;
   width: 640px;
   height: 640px;
-  background: radial-gradient(circle, rgba(227, 249, 245, 0.85) 0%, transparent 70%);
+  background: var(--theme-wash, radial-gradient(circle, rgba(227, 249, 245, 0.85) 0%, transparent 70%));
 }
 
 .creators-bg-noise {

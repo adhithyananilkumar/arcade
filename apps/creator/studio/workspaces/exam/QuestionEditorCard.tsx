@@ -88,8 +88,8 @@ export function QuestionEditorCard({
   return (
     <div className="flex flex-col gap-4">
       {/* ── Meta row ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/50 bg-white/70 px-4 py-3 shadow-sm backdrop-blur-md">
-        <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-xl bg-[#14142b] text-xs font-bold text-white shadow-sm">
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/50 bg-surface/70 px-4 py-3 shadow-sm backdrop-blur-md">
+        <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-xl bg-ink text-xs font-bold text-on-ink shadow-sm">
           {navigation.index + 1}
         </span>
 
@@ -98,7 +98,7 @@ export function QuestionEditorCard({
           disabled={readOnly}
           onChange={(e) => actions.setType(q.key, e.target.value as BankQuestionType)}
           aria-label="Question type"
-          className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-[#14142b] outline-none focus:border-indigo-300 disabled:bg-slate-50"
+          className="rounded-lg border border-slate-200 bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink outline-none focus:border-indigo-300 disabled:bg-slate-50 dark:focus:border-indigo-500/40"
         >
           {(Object.keys(TYPE_LABELS) as BankQuestionType[]).map((t) => (
             <option key={t} value={t}>
@@ -148,7 +148,7 @@ export function QuestionEditorCard({
                   },
                 })
               }
-              className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-rose-50 hover:text-rose-600"
+              className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
             >
               <Trash2 size={14} />
             </button>
@@ -177,7 +177,7 @@ export function QuestionEditorCard({
       </div>
 
       {/* ── Answers ───────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-white/50 bg-white/70 p-5 shadow-sm backdrop-blur-md">
+      <div className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
         {q.type === "SENTENCE" ? (
           <>
             <label
@@ -193,7 +193,7 @@ export function QuestionEditorCard({
               disabled={readOnly}
               onChange={(e) => actions.setSampleAnswer(q.key, e.target.value)}
               placeholder="What a correct answer looks like…"
-              className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-[#14142b] outline-none placeholder:text-slate-300 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+              className="w-full resize-y rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-slate-300 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/25"
             />
           </>
         ) : (
@@ -225,7 +225,7 @@ export function QuestionEditorCard({
                     onChange={(e) => actions.setOptionText(q.key, o.key, e.target.value)}
                     placeholder="Answer option"
                     aria-label="Answer option"
-                    className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-[#14142b] outline-none placeholder:text-slate-300 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+                    className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-slate-300 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/25"
                   />
                   {!readOnly && q.type !== "TRUE_FALSE" && q.options.length > 2 && (
                     <button
@@ -245,7 +245,7 @@ export function QuestionEditorCard({
               <button
                 type="button"
                 onClick={() => actions.addOption(q.key)}
-                className="mt-3 flex items-center gap-1.5 rounded-xl border border-dashed border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-400 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-[#14142b]"
+                className="mt-3 flex items-center gap-1.5 rounded-xl border border-dashed border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-400 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-ink"
               >
                 <Plus size={14} />
                 Add option
@@ -270,12 +270,12 @@ export function QuestionEditorCard({
           type="button"
           disabled={!navigation.onPrevious}
           onClick={leaveVia(navigation.onPrevious)}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-white/50 bg-white/70 px-4 py-2 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-colors hover:bg-white disabled:opacity-40"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-white/50 bg-surface/70 px-4 py-2 text-xs font-bold text-ink shadow-sm backdrop-blur-md transition-colors hover:bg-surface disabled:opacity-40"
         >
           <ArrowLeft size={14} /> Previous
         </button>
 
-        <span className="text-[11px] font-semibold text-[#14142b]/40">
+        <span className="text-[11px] font-semibold text-ink/40">
           {navigation.index + 1} of {navigation.total}
         </span>
 
@@ -284,7 +284,7 @@ export function QuestionEditorCard({
             <button
               type="button"
               onClick={leaveVia(navigation.onAdd)}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#14142b] px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-black"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink shadow-sm transition-colors hover:bg-ink-hover"
             >
               <Plus size={14} /> Add question
             </button>
@@ -295,7 +295,7 @@ export function QuestionEditorCard({
           <button
             type="button"
             onClick={leaveVia(navigation.onNext)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-white/50 bg-white/70 px-4 py-2 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-colors hover:bg-white"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-white/50 bg-surface/70 px-4 py-2 text-xs font-bold text-ink shadow-sm backdrop-blur-md transition-colors hover:bg-surface"
           >
             Next <ArrowRight size={14} />
           </button>
@@ -315,7 +315,7 @@ function PointsInput({
   onChange: (value: number) => void;
 }) {
   return (
-    <span className="relative flex items-center overflow-hidden rounded-lg border border-slate-200 bg-white transition-all focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-300">
+    <span className="relative flex items-center overflow-hidden rounded-lg border border-slate-200 bg-surface transition-all focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-300">
       <input
         type="number"
         min={0}
@@ -326,7 +326,7 @@ function PointsInput({
           if (!Number.isNaN(val)) onChange(Math.max(0, val));
         }}
         aria-label="Points"
-        className="w-12 appearance-none border-none bg-transparent px-2 py-1.5 text-center text-xs font-semibold text-[#14142b] outline-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        className="w-12 appearance-none border-none bg-transparent px-2 py-1.5 text-center text-xs font-semibold text-ink outline-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
       />
       <span className="flex flex-col border-l border-slate-200 bg-slate-50">
         <button
@@ -334,7 +334,7 @@ function PointsInput({
           disabled={disabled}
           onClick={() => onChange(value + 1)}
           aria-label="Increase points"
-          className="flex h-[13.5px] w-[18px] items-center justify-center text-slate-400 transition-colors hover:bg-slate-200 hover:text-[#14142b]"
+          className="flex h-[13.5px] w-[18px] items-center justify-center text-slate-400 transition-colors hover:bg-slate-200 hover:text-ink"
         >
           <ChevronUp size={10} strokeWidth={3} />
         </button>
@@ -343,7 +343,7 @@ function PointsInput({
           disabled={disabled}
           onClick={() => onChange(Math.max(0, value - 1))}
           aria-label="Decrease points"
-          className="flex h-[13.5px] w-[18px] items-center justify-center border-t border-slate-200 text-slate-400 transition-colors hover:bg-slate-200 hover:text-[#14142b]"
+          className="flex h-[13.5px] w-[18px] items-center justify-center border-t border-slate-200 text-slate-400 transition-colors hover:bg-slate-200 hover:text-ink"
         >
           <ChevronDown size={10} strokeWidth={3} />
         </button>

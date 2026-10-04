@@ -193,10 +193,10 @@ export default function CollegesEcosystem({ activeFeature, setActiveFeature }: C
       fullTitle: "Self-Hosted Forums & Clubs",
       description: "Connect student communities and foster professional technical networks natively on Arcade.",
       bgGradient: "linear-gradient(135deg, #F0F4FF 0%, #E0E7FF 100%)",
-      activeClass: "text-indigo-600 border-indigo-200 bg-indigo-50/50 shadow-[0_0_15px_rgba(99,102,241,0.2)]",
-      badgeClass: "bg-indigo-100/70 text-indigo-700 border-indigo-200/50",
-      textColor: "group-hover:text-indigo-600",
-      activeText: "text-indigo-600 font-bold",
+      activeClass: "text-indigo-600 border-indigo-200 bg-indigo-50/50 shadow-[0_0_15px_rgba(99,102,241,0.2)] dark:text-indigo-400 dark:border-indigo-500/25 dark:bg-indigo-500/10",
+      badgeClass: "bg-indigo-100/70 text-indigo-700 border-indigo-200/50 dark:bg-indigo-500/15 dark:text-indigo-300 dark:border-indigo-500/25",
+      textColor: "group-hover:text-indigo-600 dark:group-hover:text-indigo-400",
+      activeText: "text-indigo-600 font-bold dark:text-indigo-400",
       targetX: 0,
       targetY: -147,
     },
@@ -209,10 +209,10 @@ export default function CollegesEcosystem({ activeFeature, setActiveFeature }: C
       fullTitle: "Comprehensive Creator Tools",
       description: "Build, curate, and scale professional educational tracks and syllabus structures with ease.",
       bgGradient: "linear-gradient(135deg, #FFFDF0 0%, #FEF3C7 100%)",
-      activeClass: "text-amber-600 border-amber-200 bg-amber-50/50 shadow-[0_0_15px_rgba(245,158,11,0.2)]",
-      badgeClass: "bg-amber-100/70 text-amber-700 border-amber-200/50",
-      textColor: "group-hover:text-amber-600",
-      activeText: "text-amber-600 font-bold",
+      activeClass: "text-amber-600 border-amber-200 bg-amber-50/50 shadow-[0_0_15px_rgba(245,158,11,0.2)] dark:text-amber-400 dark:border-amber-500/25 dark:bg-amber-500/10",
+      badgeClass: "bg-amber-100/70 text-amber-700 border-amber-200/50 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/25",
+      textColor: "group-hover:text-amber-600 dark:group-hover:text-amber-400",
+      activeText: "text-amber-600 font-bold dark:text-amber-400",
       targetX: 126,
       targetY: 0,
     },
@@ -225,10 +225,10 @@ export default function CollegesEcosystem({ activeFeature, setActiveFeature }: C
       fullTitle: "Integrated Coding Playgrounds",
       description: "Run interactive terminals and custom sandbox workspace environments directly in the browser.",
       bgGradient: "linear-gradient(135deg, #F0FDF4 0%, #CCFBF1 100%)",
-      activeClass: "text-teal-600 border-teal-200 bg-teal-50/50 shadow-[0_0_15px_rgba(20,184,166,0.2)]",
-      badgeClass: "bg-teal-100/70 text-teal-700 border-teal-200/50",
-      textColor: "group-hover:text-teal-600",
-      activeText: "text-teal-600 font-bold",
+      activeClass: "text-teal-600 border-teal-200 bg-teal-50/50 shadow-[0_0_15px_rgba(20,184,166,0.2)] dark:text-teal-400 dark:border-teal-500/25 dark:bg-teal-500/10",
+      badgeClass: "bg-teal-100/70 text-teal-700 border-teal-200/50 dark:bg-teal-500/15 dark:text-teal-300 dark:border-teal-500/25",
+      textColor: "group-hover:text-teal-600 dark:group-hover:text-teal-400",
+      activeText: "text-teal-600 font-bold dark:text-teal-400",
       targetX: -126,
       targetY: 0,
     },
@@ -241,10 +241,10 @@ export default function CollegesEcosystem({ activeFeature, setActiveFeature }: C
       fullTitle: "Direct Student Certification",
       description: "Issue encrypted, tamper-proof certificates and verified skills achievements to students.",
       bgGradient: "linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)",
-      activeClass: "text-emerald-600 border-emerald-200 bg-emerald-50/50 shadow-[0_0_15px_rgba(16,185,129,0.2)]",
-      badgeClass: "bg-emerald-100/70 text-emerald-700 border-emerald-200/50",
-      textColor: "group-hover:text-emerald-600",
-      activeText: "text-emerald-600 font-bold",
+      activeClass: "text-emerald-600 border-emerald-200 bg-emerald-50/50 shadow-[0_0_15px_rgba(16,185,129,0.2)] dark:text-emerald-400 dark:border-emerald-500/25 dark:bg-emerald-500/10",
+      badgeClass: "bg-emerald-100/70 text-emerald-700 border-emerald-200/50 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/25",
+      textColor: "group-hover:text-emerald-600 dark:group-hover:text-emerald-400",
+      activeText: "text-emerald-600 font-bold dark:text-emerald-400",
       targetX: 0,
       targetY: 147,
     },
@@ -314,7 +314,7 @@ export default function CollegesEcosystem({ activeFeature, setActiveFeature }: C
                 e.stopPropagation();
                 setSelectedNode(null);
               }}
-              className="absolute top-5 right-5 p-1.5 rounded-full bg-black/5 hover:bg-black/10 text-zinc-500 hover:text-zinc-800 transition-colors border border-zinc-200/40 cursor-pointer z-10"
+              className="absolute top-5 right-5 p-1.5 rounded-full bg-slate-950/5 hover:bg-slate-950/10 text-zinc-500 hover:text-zinc-800 transition-colors border border-zinc-200/40 cursor-pointer z-10"
             >
               <X className="w-4 h-4" />
             </motion.button>
@@ -329,7 +329,7 @@ export default function CollegesEcosystem({ activeFeature, setActiveFeature }: C
             >
               <div 
                 style={{ background: `${activeNodeInfo.color}15`, color: activeNodeInfo.color, borderColor: `${activeNodeInfo.color}30` }} 
-                className="w-16 h-16 rounded-full flex items-center justify-center border border-zinc-200/30 shadow-md bg-white"
+                className="w-16 h-16 rounded-full flex items-center justify-center border border-zinc-200/30 shadow-md bg-surface"
               >
                 {activeNodeInfo.icon}
               </div>
@@ -392,7 +392,7 @@ export default function CollegesEcosystem({ activeFeature, setActiveFeature }: C
           transformOrigin: "left center",
           backfaceVisibility: "hidden"
         }}
-        className="absolute inset-0 w-full h-full bg-white z-10 pointer-events-none"
+        className="absolute inset-0 w-full h-full bg-surface z-10 pointer-events-none"
       >
         <div className="relative w-full h-full flex items-center justify-center">
           <BackgroundSVG activeFeature={activeFeature} isExpanded={isExpanded} />
@@ -412,7 +412,7 @@ export default function CollegesEcosystem({ activeFeature, setActiveFeature }: C
           transformOrigin: "right center",
           backfaceVisibility: "hidden"
         }}
-        className="absolute inset-0 w-full h-full bg-white z-10 pointer-events-none"
+        className="absolute inset-0 w-full h-full bg-surface z-10 pointer-events-none"
       >
         <div className="relative w-full h-full flex items-center justify-center">
           <BackgroundSVG activeFeature={activeFeature} isExpanded={isExpanded} />
@@ -435,7 +435,7 @@ export default function CollegesEcosystem({ activeFeature, setActiveFeature }: C
             e.stopPropagation();
             setIsExpanded(!isExpanded);
           }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white border border-zinc-200 shadow-md flex items-center justify-center z-30 cursor-pointer hover:scale-110 active:scale-95 transition-all duration-200"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-surface border border-zinc-200 shadow-md flex items-center justify-center z-30 cursor-pointer hover:scale-110 active:scale-95 transition-all duration-200"
         >
           <motion.div 
             animate={{ rotate: isExpanded ? 45 : 0 }} 
@@ -450,7 +450,7 @@ export default function CollegesEcosystem({ activeFeature, setActiveFeature }: C
             <>
               <span className="absolute inset-0 rounded-full border-2 border-indigo-400/60 animate-ping pointer-events-none" style={{ animationDuration: "2s" }} />
               <span className="absolute inset-0 rounded-full border-2 border-purple-400/40 animate-ping pointer-events-none" style={{ animationDuration: "3s", animationDelay: "0.5s" }} />
-              <span className="absolute inset-0 rounded-full border border-indigo-300/30 animate-ping pointer-events-none" style={{ animationDuration: "4s", animationDelay: "1s" }} />
+              <span className="absolute inset-0 rounded-full border border-indigo-300/30 animate-ping pointer-events-none dark:border-indigo-500/40" style={{ animationDuration: "4s", animationDelay: "1s" }} />
             </>
           )}
         </div>
@@ -506,7 +506,7 @@ export default function CollegesEcosystem({ activeFeature, setActiveFeature }: C
                     borderColor: isActive ? node.color : "rgb(244, 244, 245)"
                   }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  className={`w-12 h-12 rounded-full bg-white border-2 flex items-center justify-center transition-all duration-300 shadow-md ${
+                  className={`w-12 h-12 rounded-full bg-surface border-2 flex items-center justify-center transition-all duration-300 shadow-md ${
                     isActive ? node.activeClass : "text-zinc-500 border-zinc-100 hover:border-zinc-200"
                   }`}
                 >

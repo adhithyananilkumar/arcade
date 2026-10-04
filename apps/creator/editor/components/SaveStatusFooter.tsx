@@ -63,7 +63,7 @@ export function SaveStatusFooter({
     <div className="flex items-center justify-between px-8 py-2 border-t border-gray-100 text-xs text-gray-400">
       <span>{characters} characters</span>
       {status === "saving" && <span>Saving…</span>}
-      {status === "saved" && <span className="text-green-600">Saved</span>}
+      {status === "saved" && <span className="text-green-600 dark:text-green-400">Saved</span>}
     </div>
   );
 }

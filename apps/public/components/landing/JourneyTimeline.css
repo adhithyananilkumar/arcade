@@ -25,7 +25,7 @@
   font-size: clamp(2rem, 3.5vw, 2.6rem);
   font-weight: 700;
   letter-spacing: -0.035em;
-  color: #12141C;
+  color: var(--theme-ink, #12141C);
   margin: 0;
   line-height: 1.2;
 }
@@ -58,12 +58,12 @@
   flex-shrink: 0;
   border-radius: 24px;
   overflow: hidden;
-  border: 1.5px solid rgba(20, 20, 43, 0.06);
+  border: 1.5px solid color-mix(in oklab, var(--theme-ink, #14142b) 6%, transparent);
   display: flex;
   flex-direction: column;
   transition: border-color 0.4s ease, box-shadow 0.4s ease, opacity 0.4s ease;
   will-change: width, height, transform, opacity;
-  background: #ffffff;
+  background: var(--theme-surface, #ffffff);
   transform-origin: bottom center;
 }
 
@@ -82,7 +82,7 @@
 }
 
 .jt-card--side:hover {
-  border-color: rgba(20, 20, 43, 0.12);
+  border-color: color-mix(in oklab, var(--theme-ink, #14142b) 12%, transparent);
   box-shadow: 0 8px 24px rgba(20, 20, 43, 0.06);
 }
 
@@ -212,7 +212,7 @@
   font-family: 'Space Grotesk', sans-serif;
   font-size: 18px;
   font-weight: 700;
-  color: #12141C;
+  color: var(--theme-ink, #12141C);
   margin: 0 0 6px 0;
   letter-spacing: -0.015em;
   line-height: 1.25;
@@ -223,18 +223,18 @@
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: #64748b;
+  color: var(--theme-n-500, #64748b);
   font-weight: 500;
 }
 
 .jt-card__info-sep {
-  color: #cbd5e1;
+  color: var(--theme-n-300, #cbd5e1);
   user-select: none;
 }
 
 .jt-card__info-desc {
   font-size: 12px;
-  color: #475569;
+  color: var(--theme-n-600, #475569);
   line-height: 1.6;
   margin: 12px 0;
   display: -webkit-box;
@@ -258,11 +258,11 @@
 }
 
 .jt-card__info-rating {
-  color: #1e293b;
+  color: var(--theme-ink, #1e293b);
 }
 
 .jt-card__info-count {
-  color: #94a3b8;
+  color: var(--theme-n-400, #94a3b8);
   font-weight: 500;
 }
 
@@ -358,7 +358,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #cbd5e1;
+  background-color: var(--theme-n-300, #cbd5e1);
   border: none;
   outline: none;
   cursor: pointer;
@@ -367,7 +367,7 @@
 }
 
 .jt-dot-btn:hover {
-  background-color: #94a3b8;
+  background-color: var(--theme-n-400, #94a3b8);
 }
 
 .jt-dot-btn--active {

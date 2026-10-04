@@ -101,14 +101,14 @@ export function BadgeDefinitionDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 p-4 backdrop-blur-sm dark:bg-black/60">
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[22px] border border-slate-100 bg-white p-6 shadow-2xl dark:border-neutral-900 dark:bg-black">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 p-4 backdrop-blur-sm">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[22px] border border-slate-100 bg-surface p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-[17px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+            <h2 className="text-[17px] font-extrabold tracking-tight text-slate-900">
               New custom badge
             </h2>
-            <p className="mt-1 text-[12.5px] font-medium text-slate-500 dark:text-neutral-400">
+            <p className="mt-1 text-[12.5px] font-medium text-slate-500">
               For recognition the standard catalog doesn&apos;t cover. Once
               created it can be granted to anyone it applies to.
             </p>
@@ -117,15 +117,15 @@ export function BadgeDefinitionDialog({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-slate-50 hover:text-slate-600 dark:text-neutral-600 dark:hover:bg-neutral-900"
+            className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-slate-50 hover:text-slate-600"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Live preview: the effect and colour choices are hard to judge as form values. */}
-        <div className="mt-6 flex items-center justify-center gap-3 rounded-[18px] border border-slate-100 bg-slate-50/60 py-7 dark:border-neutral-900 dark:bg-neutral-950">
-          <span className="text-[16px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+        <div className="mt-6 flex items-center justify-center gap-3 rounded-[18px] border border-slate-100 bg-slate-50/60 py-7">
+          <span className="text-[16px] font-extrabold tracking-tight text-slate-900">
             {displayName.trim() || 'Badge preview'}
           </span>
           <VerifiedBadge
@@ -147,7 +147,7 @@ export function BadgeDefinitionDialog({
 
         <div className="mt-6 space-y-5">
           <div>
-            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700 dark:text-neutral-200">
+            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700">
               Name
             </label>
             <input
@@ -155,32 +155,32 @@ export function BadgeDefinitionDialog({
               onChange={(e) => setDisplayName(e.target.value)}
               maxLength={120}
               placeholder="Community Mentor"
-              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-[13.5px] font-semibold text-slate-900 outline-none focus:border-slate-900 dark:border-neutral-800 dark:bg-black dark:text-white dark:focus:border-neutral-400"
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-surface px-3.5 py-2.5 text-[13.5px] font-semibold text-slate-900 outline-none focus:border-slate-900"
             />
             {code && (
-              <p className="mt-1.5 font-mono text-[11px] font-bold text-slate-400 dark:text-neutral-600">
+              <p className="mt-1.5 font-mono text-[11px] font-bold text-slate-400">
                 {code}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700 dark:text-neutral-200">
+            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700">
               Description
             </label>
-            <p className="mt-1 text-[11.5px] font-medium text-slate-400 dark:text-neutral-500">
+            <p className="mt-1 text-[11.5px] font-medium text-slate-400">
               Shown on the hover card when a grant has no note of its own.
             </p>
             <input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Supports new learners in the Arcade community."
-              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-[13px] font-semibold text-slate-900 outline-none focus:border-slate-900 dark:border-neutral-800 dark:bg-black dark:text-white dark:focus:border-neutral-400"
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-surface px-3.5 py-2.5 text-[13px] font-semibold text-slate-900 outline-none focus:border-slate-900"
             />
           </div>
 
           <div>
-            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700 dark:text-neutral-200">
+            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700">
               Applies to
             </label>
             <div className="mt-2 flex gap-2">
@@ -191,8 +191,8 @@ export function BadgeDefinitionDialog({
                   onClick={() => setAppliesTo(option)}
                   className={`flex-1 rounded-xl border px-3 py-2 text-[12.5px] font-extrabold tracking-tight transition-colors ${
                     appliesTo === option
-                      ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-black'
-                      : 'border-slate-200 text-slate-500 dark:border-neutral-800 dark:text-neutral-400'
+                      ? 'border-slate-900 bg-slate-900 text-on-ink'
+                      : 'border-slate-200 text-slate-500'
                   }`}
                 >
                   {option === 'USER'
@@ -206,7 +206,7 @@ export function BadgeDefinitionDialog({
           </div>
 
           <div>
-            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700 dark:text-neutral-200">
+            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700">
               Icon
             </label>
             <div className="mt-2 grid grid-cols-9 gap-1.5">
@@ -218,14 +218,14 @@ export function BadgeDefinitionDialog({
                   aria-label={name}
                   className={`flex aspect-square items-center justify-center rounded-lg border transition-colors ${
                     icon === name
-                      ? 'border-slate-900 bg-slate-50 dark:border-neutral-400 dark:bg-neutral-900'
-                      : 'border-slate-200 hover:border-slate-300 dark:border-neutral-800'
+                      ? 'border-slate-900 bg-slate-50'
+                      : 'border-slate-200 hover:border-slate-300'
                   }`}
                 >
                   <BadgeIcon
                     name={name}
                     size={15}
-                    className="text-slate-600 dark:text-neutral-300"
+                    className="text-slate-600"
                   />
                 </button>
               ))}
@@ -233,7 +233,7 @@ export function BadgeDefinitionDialog({
           </div>
 
           <div>
-            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700 dark:text-neutral-200">
+            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700">
               Colour
             </label>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -246,7 +246,7 @@ export function BadgeDefinitionDialog({
                   style={{ backgroundColor: color }}
                   className={`h-8 w-8 rounded-lg transition-transform ${
                     accentColor === color
-                      ? 'ring-2 ring-slate-900 ring-offset-2 dark:ring-white dark:ring-offset-black'
+                      ? 'ring-2 ring-slate-900 ring-offset-2'
                       : 'hover:scale-105'
                   }`}
                 />
@@ -255,7 +255,7 @@ export function BadgeDefinitionDialog({
           </div>
 
           <div>
-            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700 dark:text-neutral-200">
+            <label className="block text-[12.5px] font-extrabold tracking-tight text-slate-700">
               Effect
             </label>
             <div className="mt-2 flex gap-2">
@@ -266,8 +266,8 @@ export function BadgeDefinitionDialog({
                   onClick={() => setEffect(option)}
                   className={`flex-1 rounded-xl border px-3 py-2 text-[12.5px] font-extrabold tracking-tight transition-colors ${
                     effect === option
-                      ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-black'
-                      : 'border-slate-200 text-slate-500 dark:border-neutral-800 dark:text-neutral-400'
+                      ? 'border-slate-900 bg-slate-900 text-on-ink'
+                      : 'border-slate-200 text-slate-500'
                   }`}
                 >
                   {option === 'NONE' ? 'Flat' : option === 'GLOW' ? 'Glow' : 'Prism'}
@@ -281,7 +281,7 @@ export function BadgeDefinitionDialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl px-4 py-2.5 text-[13px] font-extrabold tracking-tight text-slate-500 transition-colors hover:bg-slate-50 dark:text-neutral-400 dark:hover:bg-neutral-900"
+            className="rounded-xl px-4 py-2.5 text-[13px] font-extrabold tracking-tight text-slate-500 transition-colors hover:bg-slate-50"
           >
             Cancel
           </button>
@@ -289,7 +289,7 @@ export function BadgeDefinitionDialog({
             type="button"
             onClick={submit}
             disabled={!canSubmit}
-            className="rounded-xl bg-slate-900 px-5 py-2.5 text-[13px] font-extrabold tracking-tight text-white transition-all hover:bg-slate-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
+            className="rounded-xl bg-slate-900 px-5 py-2.5 text-[13px] font-extrabold tracking-tight text-on-ink transition-all hover:bg-slate-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {submitting ? 'Creating…' : 'Create badge'}
           </button>

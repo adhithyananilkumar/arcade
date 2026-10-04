@@ -73,7 +73,7 @@ export default function ContentStudioLayout({
   }, [hasAdminAccess, isLayoutLoading, isAuthorized, router]);
 
   if (!hasAdminAccess && isLayoutLoading) {
-    return <div className="flex-1 flex items-center justify-center min-h-screen bg-slate-50"><p className="text-gray-500 font-medium animate-pulse">Loading Studio...</p></div>;
+    return <div className="theme-page-bg flex-1 flex items-center justify-center min-h-screen bg-slate-50"><p className="text-gray-500 font-medium animate-pulse">Loading Studio...</p></div>;
   }
 
   if (!isAuthorized) {

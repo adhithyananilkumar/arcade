@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { API_V1_BASE_URL } from '@/infrastructure/config/env';
+import { edgeClientHeaders } from '../_lib/edgeClient';
 import { refreshCookieOptions } from '../_lib/refreshCookie';
 
 const BACKEND_URL = API_V1_BASE_URL;
@@ -31,8 +32,7 @@ export async function POST(request: Request) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Forwarded-For': request.headers.get('x-forwarded-for') || '',
-        'User-Agent': request.headers.get('user-agent') || '',
+        ...edgeClientHeaders(request),
       },
       body: JSON.stringify({ refreshToken }),
     });

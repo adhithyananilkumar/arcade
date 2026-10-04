@@ -219,7 +219,7 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
         onChange={handleIconSelect}
       />
 
-      <div className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
+      <div className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-surface shadow-sm">
         {/* Full Hero Banner with all floating elements */}
         <div className="relative group/banner w-full overflow-hidden bg-slate-900">
           <ChannelDoodleBanner
@@ -266,7 +266,7 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
           <div className="absolute bottom-0 inset-x-0 z-20 flex flex-col gap-4 p-5 sm:flex-row sm:items-end sm:justify-between sm:p-6">
             {/* Left: Avatar + Identity Info */}
             <div className="flex flex-col gap-3.5 sm:flex-row sm:items-end min-w-0">
-              <div className="relative group/avatar flex h-20 w-20 sm:h-24 sm:w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-white/90 bg-slate-900 text-white shadow-2xl backdrop-blur-md">
+              <div className="relative group/avatar flex h-20 w-20 sm:h-24 sm:w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-surface/90 bg-slate-900 text-on-ink shadow-2xl backdrop-blur-md">
                 {channel.iconUrl ? (
                   <img src={getAvatarUrl(channel.iconUrl)} alt={channel.name} className="h-full w-full object-cover" />
                 ) : (
@@ -317,8 +317,9 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
                   </svg>
                 )}
 
-                {/* Logo / Profile Avatar hover camera button */}
-                {canEdit && (
+                {/* Logo / Profile Avatar hover camera button. A personal channel has no logo of its
+                    own — it always shows the owner's profile picture — so there is nothing to change. */}
+                {canEdit && !channel.isPersonal && (
                   <button
                     type="button"
                     onClick={() => iconInputRef.current?.click()}
@@ -389,7 +390,7 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
                 <button
                   type="button"
                   onClick={onEditProfile}
-                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-white text-slate-900 hover:bg-slate-100 px-3.5 py-1.5 text-[12px] font-bold shadow-lg transition-all active:scale-95"
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-surface text-slate-900 hover:bg-slate-100 px-3.5 py-1.5 text-[12px] font-bold shadow-lg transition-all active:scale-95"
                 >
                   <Edit3 size={13} /> Edit profile
                 </button>
@@ -455,7 +456,7 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
         </div>
 
         {channel.description && (
-          <p className="px-6 py-4 text-[13px] font-medium leading-relaxed text-slate-600 sm:px-7 dark:text-slate-300">
+          <p className="px-6 py-4 text-[13px] font-medium leading-relaxed text-slate-600 sm:px-7">
             {channel.description}
           </p>
         )}
@@ -464,10 +465,10 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
       {socialOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
           <div onClick={() => setSocialOpen(false)} className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-xl overflow-hidden rounded-3xl border border-slate-200 bg-white p-2 shadow-2xl">
+          <div className="relative z-10 w-full max-w-xl overflow-hidden rounded-3xl border border-slate-200 bg-surface p-2 shadow-2xl">
             <div className="mb-2 flex items-center justify-between border-b border-slate-100 px-5 pb-3 pt-3">
               <div>
-                <h3 className="text-[15px] font-bold text-[#14142b]">Social links</h3>
+                <h3 className="text-[15px] font-bold text-ink">Social links</h3>
                 <p className="text-[12px] font-medium text-slate-500">Shown on the channel&apos;s public page.</p>
               </div>
               <button

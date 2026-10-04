@@ -87,7 +87,7 @@ export default function ExploreEmptyState({
             cy="42"
             r="23"
             fill="#FFFFFF"
-            stroke="#0F172A"
+            stroke="var(--theme-ink, #0F172A)"
             strokeWidth="2.4"
           />
 
@@ -103,12 +103,12 @@ export default function ExploreEmptyState({
           {/* Question Mark Upper Hook */}
           <path
             d="M38 37 C 38 32, 49 32, 49 38 C 49 42, 44 43, 44 47"
-            stroke="#0F172A"
+            stroke="var(--theme-ink, #0F172A)"
             strokeWidth="2.6"
             strokeLinecap="round"
           />
           {/* Question Mark Dot */}
-          <circle cx="44" cy="52" r="1.6" fill="#0F172A" />
+          <circle cx="44" cy="52" r="1.6" fill="var(--theme-ink, #0F172A)" />
 
           {/* Magnifying Glass Straight Handle */}
           <line
@@ -116,7 +116,7 @@ export default function ExploreEmptyState({
             y1="59"
             x2="78"
             y2="76"
-            stroke="#0F172A"
+            stroke="var(--theme-ink, #0F172A)"
             strokeWidth="3.2"
             strokeLinecap="round"
           />
@@ -128,7 +128,7 @@ export default function ExploreEmptyState({
         style={{
           fontSize: "1.25rem",
           fontWeight: "700",
-          color: "var(--l-ink, #1F2937)",
+          color: "var(--l-ink, var(--theme-ink, #1F2937))",
           fontFamily: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
           letterSpacing: "-0.015em",
           margin: "0 0 8px 0"
@@ -140,7 +140,7 @@ export default function ExploreEmptyState({
       <p
         style={{
           fontSize: "0.92rem",
-          color: "#6B7280",
+          color: "var(--theme-n-500, #6B7280)",
           lineHeight: "1.55",
           maxWidth: "420px",
           margin: "0 0 22px 0",

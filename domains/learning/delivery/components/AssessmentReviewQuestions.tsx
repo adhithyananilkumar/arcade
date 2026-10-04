@@ -29,17 +29,17 @@ const DIFFICULTY_CONFIG: Record<
 > = {
   EASY: {
     label: "Easy",
-    badge: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    badge: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25",
     pill: "bg-emerald-500",
   },
   MEDIUM: {
     label: "Medium",
-    badge: "bg-amber-50 text-amber-700 border-amber-200",
+    badge: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/25",
     pill: "bg-amber-500",
   },
   HARD: {
     label: "Hard",
-    badge: "bg-rose-50 text-rose-700 border-rose-200",
+    badge: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/25",
     pill: "bg-rose-500",
   },
 };
@@ -150,7 +150,7 @@ export function AssessmentReviewQuestions({
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs animate-pulse space-y-4"
+              className="rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-xs animate-pulse space-y-4"
             >
               <div className="flex gap-2">
                 <div className="h-6 w-8 rounded-md bg-slate-200" />
@@ -169,12 +169,12 @@ export function AssessmentReviewQuestions({
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-6 text-rose-900">
+      <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-6 text-rose-900 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-200">
         <div className="flex items-center gap-2 font-semibold">
-          <AlertCircle size={18} className="text-rose-600" />
+          <AlertCircle size={18} className="text-rose-600 dark:text-rose-400" />
           Unable to inspect questions
         </div>
-        <p className="mt-1 text-sm text-rose-700">{error}</p>
+        <p className="mt-1 text-sm text-rose-700 dark:text-rose-300">{error}</p>
         <button
           type="button"
           onClick={() => {
@@ -196,14 +196,14 @@ export function AssessmentReviewQuestions({
   return (
     <div className={`space-y-6 pt-2 ${className}`}>
       {/* Question Bank Header & Stats */}
-      <div className="rounded-2xl border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/50 to-indigo-50/20 p-5 shadow-xs">
+      <div className="rounded-2xl border border-slate-200/90 bg-gradient-to-br from-surface via-slate-50/50 to-indigo-50/20 p-5 shadow-xs dark:to-indigo-500/10">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#14142b] text-white">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ink text-on-ink">
                 <FileQuestion size={16} />
               </span>
-              <h3 className="text-[17px] font-bold tracking-tight text-[#14142b]">
+              <h3 className="text-[17px] font-bold tracking-tight text-ink">
                 Question Paper & Assessment Blueprint
               </h3>
             </div>
@@ -213,15 +213,15 @@ export function AssessmentReviewQuestions({
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 shadow-2xs">
+            <div className="rounded-xl border border-slate-200 bg-surface px-3 py-1.5 shadow-2xs">
               <span className="text-[11px] font-medium text-slate-400 block">Total Questions</span>
-              <span className="text-[15px] font-bold text-[#14142b]">
+              <span className="text-[15px] font-bold text-ink">
                 {questions.length} {questions.length === 1 ? "item" : "items"}
               </span>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 shadow-2xs">
+            <div className="rounded-xl border border-slate-200 bg-surface px-3 py-1.5 shadow-2xs">
               <span className="text-[11px] font-medium text-slate-400 block">Total Marks</span>
-              <span className="text-[15px] font-bold text-indigo-600">
+              <span className="text-[15px] font-bold text-indigo-600 dark:text-indigo-400">
                 {totalPoints} {totalPoints === 1 ? "mark" : "marks"}
               </span>
             </div>
@@ -241,7 +241,7 @@ export function AssessmentReviewQuestions({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search questions, options, tags..."
-                className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 py-1.5 text-xs text-[#14142b] placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
+                className="w-full rounded-xl border border-slate-200 bg-surface pl-9 pr-3 py-1.5 text-xs text-ink placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all dark:focus:ring-indigo-500/25"
               />
             </div>
 
@@ -251,8 +251,8 @@ export function AssessmentReviewQuestions({
                 onClick={() => setDifficultyFilter("ALL")}
                 className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
                   difficultyFilter === "ALL"
-                    ? "bg-[#14142b] text-white shadow-xs"
-                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                    ? "bg-ink text-on-ink shadow-xs"
+                    : "bg-surface border border-slate-200 text-slate-600 hover:bg-slate-50"
                 }`}
               >
                 All ({questions.length})
@@ -264,8 +264,8 @@ export function AssessmentReviewQuestions({
                   onClick={() => setDifficultyFilter(diff)}
                   className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
                     difficultyFilter === diff
-                      ? "bg-[#14142b] text-white shadow-xs"
-                      : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                      ? "bg-ink text-on-ink shadow-xs"
+                      : "bg-surface border border-slate-200 text-slate-600 hover:bg-slate-50"
                   }`}
                 >
                   {DIFFICULTY_CONFIG[diff].label} ({countsByDifficulty[diff]})
@@ -279,10 +279,10 @@ export function AssessmentReviewQuestions({
       {/* Empty State */}
       {questions.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-12 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-200">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/25">
             <FileQuestion size={24} />
           </div>
-          <h4 className="mt-4 text-[16px] font-bold text-[#14142b]">
+          <h4 className="mt-4 text-[16px] font-bold text-ink">
             No questions in this assessment yet
           </h4>
           <p className="mt-1 text-[13px] text-slate-500 max-w-md mx-auto">
@@ -301,7 +301,7 @@ export function AssessmentReviewQuestions({
               setSearch("");
               setDifficultyFilter("ALL");
             }}
-            className="mt-2 text-xs font-bold text-indigo-600 hover:text-indigo-800 underline"
+            className="mt-2 text-xs font-bold text-indigo-600 hover:text-indigo-800 underline dark:text-indigo-400 dark:hover:text-indigo-200"
           >
             Reset filters
           </button>
@@ -324,12 +324,12 @@ export function AssessmentReviewQuestions({
             return (
               <div
                 key={q.id || idx}
-                className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs hover:border-slate-300 transition-all space-y-4"
+                className="rounded-2xl border border-slate-200/90 bg-surface p-6 shadow-xs hover:border-slate-300 transition-all space-y-4"
               >
                 {/* Question top badges */}
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#14142b] text-[11px] font-bold text-white shadow-2xs">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-ink text-[11px] font-bold text-on-ink shadow-2xs">
                       {idx + 1}
                     </span>
                     <span className="text-[12px] font-semibold text-slate-500">
@@ -350,7 +350,7 @@ export function AssessmentReviewQuestions({
                     {q.tags?.map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 text-[10px] font-semibold text-indigo-700"
+                        className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:border-indigo-500/25 dark:text-indigo-300"
                       >
                         <Tag size={10} /> {tag}
                       </span>
@@ -359,7 +359,7 @@ export function AssessmentReviewQuestions({
                 </div>
 
                 {/* Prompt content */}
-                <div className="text-[14px] leading-relaxed text-[#14142b] font-medium">
+                <div className="text-[14px] leading-relaxed text-ink font-medium">
                   {hasPromptContent ? (
                     <TiptapContentView body={promptJsonString} />
                   ) : (
@@ -385,7 +385,7 @@ export function AssessmentReviewQuestions({
                             key={opt.id || optIdx}
                             className={`relative flex items-start gap-3 rounded-xl border p-3 text-xs transition-all ${
                               isCorrect
-                                ? "border-emerald-500 bg-emerald-50/70 text-emerald-950 font-medium shadow-2xs"
+                                ? "border-emerald-500 bg-emerald-50/70 text-emerald-950 font-medium shadow-2xs dark:bg-emerald-500/10 dark:text-emerald-200"
                                 : "border-slate-200/90 bg-slate-50/40 text-slate-700"
                             }`}
                           >
@@ -393,7 +393,7 @@ export function AssessmentReviewQuestions({
                               className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-lg text-[10px] font-bold ${
                                 isCorrect
                                   ? "bg-emerald-600 text-white"
-                                  : "border border-slate-300 bg-white text-slate-600"
+                                  : "border border-slate-300 bg-surface text-slate-600"
                               }`}
                             >
                               {letter}
@@ -419,11 +419,11 @@ export function AssessmentReviewQuestions({
 
                 {/* Explanation / Solution Key */}
                 {q.sampleAnswer && q.sampleAnswer.trim() && (
-                  <div className="rounded-xl border border-amber-200/80 bg-amber-50/50 p-3.5 text-xs text-amber-950 space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold text-amber-900 text-[11px] uppercase tracking-wider">
-                      <Lightbulb size={13} className="text-amber-600" /> Explanation / Answer Key
+                  <div className="rounded-xl border border-amber-200/80 bg-amber-50/50 p-3.5 text-xs text-amber-950 space-y-1 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
+                    <div className="flex items-center gap-1.5 font-bold text-amber-900 text-[11px] uppercase tracking-wider dark:text-amber-200">
+                      <Lightbulb size={13} className="text-amber-600 dark:text-amber-400" /> Explanation / Answer Key
                     </div>
-                    <p className="text-[13px] leading-relaxed text-amber-900">
+                    <p className="text-[13px] leading-relaxed text-amber-900 dark:text-amber-200">
                       {q.sampleAnswer}
                     </p>
                   </div>

@@ -1,10 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { toast } from "sonner";
 import {
-  Camera,
   Layers,
   FileText,
   Users,
@@ -17,12 +14,10 @@ import {
   Calendar,
   Globe,
   Shield,
-  Loader2,
   Radio,
   Tv,
 } from "lucide-react";
-import { api } from "@/infrastructure/http/api";
-import { updateEvent } from "@/domains/events/api/event";
+import { ContentArt } from "@/shared/design-system/art";
 import type { OverviewData } from "../../lib/fetchOverviewData";
 import type { OverviewTab } from "../ContentOverviewNav";
 import type { Metric } from "../sections/MetricsGrid";
@@ -44,11 +39,28 @@ function humanizeKey(key: string): string {
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
+/** Analytics keys that carry money, in minor units. */
+const MONEY_KEYS = new Set([
+  "totalRevenue",
+  "pendingRevenue",
+  "refundedRevenue",
+  "netRevenue",
+  "platformCommission",
+  "organizerEarnings",
+]);
+
 function analyticsToMetrics(analytics?: Record<string, unknown>): Metric[] {
   if (!analytics) return [];
+  const currency = (analytics.currency as string) || "INR";
   return Object.entries(analytics)
     .filter(([, value]) => typeof value === "number" || typeof value === "string")
-    .map(([key, value]) => ({ label: humanizeKey(key), value: value as string | number }));
+    .map(([key, value]) => ({
+      label: humanizeKey(key),
+      value:
+        MONEY_KEYS.has(key) && typeof value === "number"
+          ? new Intl.NumberFormat("en-IN", { style: "currency", currency }).format(value / 100)
+          : (value as string | number),
+    }));
 }
 
 export function getEventMetrics(data: OverviewData): Metric[] {
@@ -91,54 +103,9 @@ export function EventOverviewTab({
   submitting: boolean;
   onSelectTab?: (tab: OverviewTab) => void;
 }) {
-  const [isUploadingCover, setIsUploadingCover] = useState(false);
-
   const eventSummary = data.eventSummary?.status === "ok" ? data.eventSummary.data : null;
   const eventDetails = data.eventDetails?.status === "ok" ? data.eventDetails.data : null;
   const content = data.content;
-
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploadingCover(true);
-    try {
-      // 1. Presign
-      const { key, uploadUrl, publicUrl } = await api.post<any>("/api/media/presign", {
-        fileName: file.name,
-        contentType: file.type,
-      });
-
-      // 2. Upload via proxy
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("uploadUrl", uploadUrl);
-
-      const uploadRes = await fetch("/api/internal/media/upload", {
-        method: "POST",
-        body: formData,
-      });
-      if (!uploadRes.ok) throw new Error("Failed to upload file to storage");
-
-      // 3. Register metadata
-      await api.post("/api/media/metadata", {
-        key,
-        fileName: file.name,
-        contentType: file.type,
-        sizeBytes: file.size,
-      });
-
-      // 4. Update event
-      await updateEvent(contentId, { coverImageUrl: publicUrl });
-      toast.success("Cover image updated successfully");
-      onChanged();
-    } catch (error) {
-      console.error("Cover upload error:", error);
-      toast.error("Failed to upload cover image");
-    } finally {
-      setIsUploadingCover(false);
-    }
-  };
 
   // ── Pricing Tab ─────────────────────────────────────────────────────────────
   if (tab === "pricing") {
@@ -227,7 +194,7 @@ export function EventOverviewTab({
   if (tab === "analytics") {
     if (data.eventAnalytics?.status === "error") {
       return (
-        <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700">
+        <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-300">
           <AlertTriangle size={14} /> Analytics temporarily unavailable — try again shortly.
         </div>
       );
@@ -245,13 +212,18 @@ export function EventOverviewTab({
   }
 
   // ── Default: Overview Tab ───────────────────────────────────────────────────
-  const coverUrl = eventDetails?.coverImageUrl || content?.coverImageUrl;
   const sessionsCount = eventSummary?.sessionsCount ?? 0;
   const resourcesCount = eventSummary?.resourcesCount ?? 0;
   const registrationsCount = data.eventParticipants?.status === "ok" ? data.eventParticipants.data.length : 0;
-  const revenue = (data.eventAnalytics?.status === "ok" ? (data.eventAnalytics.data.totalRevenue as number) : 0) || 0;
-  const currency = eventDetails?.currency || "INR";
-  const formattedRevenue = new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(revenue);
+  // Analytics amounts are minor units (paise); they were formatted as rupees before, overstating 100×.
+  const analytics = data.eventAnalytics?.status === "ok" ? data.eventAnalytics.data : null;
+  const revenue = ((analytics?.totalRevenue as number) || 0) / 100;
+  const earnings = analytics?.organizerEarnings == null ? null : (analytics.organizerEarnings as number) / 100;
+  const commission = ((analytics?.platformCommission as number) || 0) / 100;
+  const currency = (analytics?.currency as string) || eventDetails?.currency || "INR";
+  const money = (major: number) =>
+    new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(major);
+  const formattedRevenue = money(revenue);
 
   const completionPct = eventSummary?.completionPercentage ?? (data.eventReadiness?.status === "ok" ? data.eventReadiness.data.completionPercentage : 0);
 
@@ -265,45 +237,9 @@ export function EventOverviewTab({
 
   return (
     <div className="flex flex-col gap-8 w-full">
-      {/* Top Banner / Cover Image with hover change overlay */}
-      <div className="relative group overflow-hidden rounded-3xl border border-slate-200/80 bg-slate-900 shadow-[0_8px_30px_rgba(20,20,43,0.06)] h-56 sm:h-72 w-full transition-all">
-        {coverUrl ? (
-          <img
-            src={coverUrl}
-            alt={content?.title || "Event cover"}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-950 text-slate-400 p-6 text-center">
-            <Camera size={36} className="text-slate-500 mb-2" />
-            <p className="text-sm font-bold text-slate-200">No cover image uploaded</p>
-            <p className="text-xs text-slate-400 mt-1 max-w-sm">
-              Add a vibrant thumbnail to make your workshop and webinar stand out to learners.
-            </p>
-          </div>
-        )}
-
-        {/* Change Cover Hover Overlay */}
-        <label className="absolute inset-0 bg-black/50 backdrop-blur-xs flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer text-white">
-          {isUploadingCover ? (
-            <div className="flex flex-col items-center gap-2">
-              <Loader2 size={24} className="animate-spin text-white" />
-              <span className="text-xs font-bold uppercase tracking-wider">Uploading to R2...</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 rounded-xl bg-white/20 backdrop-blur-md px-5 py-2.5 border border-white/30 text-xs font-extrabold hover:bg-white/30 transition-all shadow-lg active:scale-95">
-              <Camera size={16} />
-              <span>{coverUrl ? "Change Cover Image" : "Upload Cover Image"}</span>
-            </div>
-          )}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleCoverUpload}
-            disabled={isUploadingCover}
-            className="hidden"
-          />
-        </label>
+      {/* Generated, category-themed artwork — uploaded covers were removed platform-wide */}
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 shadow-[0_8px_30px_rgba(20,20,43,0.06)] h-56 sm:h-72 w-full">
+        <ContentArt seed={contentId} kind="EVENT" category={eventDetails?.category} title={content?.title} />
       </div>
 
       {/* Readiness Check Card */}
@@ -316,16 +252,16 @@ export function EventOverviewTab({
         {/* Left Column (2 cols): Details & Stats */}
         <div className="lg:col-span-2 space-y-6">
           {/* Key Details Card */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+          <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-              <h3 className="text-sm font-bold text-[#14142b] flex items-center gap-2">
-                <Sparkles size={16} className="text-blue-600" />
+              <h3 className="text-sm font-bold text-ink flex items-center gap-2">
+                <Sparkles size={16} className="text-blue-600 dark:text-blue-400" />
                 Event Details
               </h3>
               <button
                 type="button"
                 onClick={() => onSelectTab?.("settings")}
-                className="text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
+                className="text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer dark:text-blue-400 dark:hover:text-blue-300"
               >
                 Edit in Settings →
               </button>
@@ -336,7 +272,7 @@ export function EventOverviewTab({
                 <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                   Visibility
                 </div>
-                <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-700">
+                <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
                   {eventDetails?.visibility || "PUBLIC"}
                 </span>
               </div>
@@ -345,7 +281,7 @@ export function EventOverviewTab({
                 <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                   Delivery Mode
                 </div>
-                <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-700">
+                <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
                   {eventDetails?.deliveryMode || "ONLINE"}
                 </span>
               </div>
@@ -354,7 +290,7 @@ export function EventOverviewTab({
                 <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                   Language
                 </div>
-                <span className="inline-flex items-center rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-bold text-violet-700">
+                <span className="inline-flex items-center rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-bold text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
                   {formatLanguage(eventDetails?.language)}
                 </span>
               </div>
@@ -363,7 +299,7 @@ export function EventOverviewTab({
                 <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                   Event Type
                 </div>
-                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
+                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
                   {eventDetails?.eventType || "WORKSHOP"}
                 </span>
               </div>
@@ -371,53 +307,57 @@ export function EventOverviewTab({
           </div>
 
           {/* Statistics Grid Card */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
-            <h3 className="text-sm font-bold text-[#14142b] border-b border-slate-100 pb-3 mb-4">
+          <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+            <h3 className="text-sm font-bold text-ink border-b border-slate-100 pb-3 mb-4">
               Event Metrics
             </h3>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-white border border-slate-200/60 shadow-2xs">
+              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-surface border border-slate-200/60 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   <Calendar size={13} className="text-blue-500" />
                   Sessions
                 </div>
-                <div className="text-2xl font-black text-[#14142b]">{sessionsCount}</div>
+                <div className="text-2xl font-black text-ink">{sessionsCount}</div>
                 <div className="text-[11px] text-slate-400 mt-0.5">Workshop days</div>
               </div>
 
-              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-white border border-slate-200/60 shadow-2xs">
+              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-surface border border-slate-200/60 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   <FileText size={13} className="text-indigo-500" />
                   Resources
                 </div>
-                <div className="text-2xl font-black text-[#14142b]">{resourcesCount}</div>
+                <div className="text-2xl font-black text-ink">{resourcesCount}</div>
                 <div className="text-[11px] text-slate-400 mt-0.5">Attached files</div>
               </div>
 
-              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-white border border-slate-200/60 shadow-2xs">
+              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-surface border border-slate-200/60 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   <Users size={13} className="text-emerald-500" />
                   Registrations
                 </div>
-                <div className="text-2xl font-black text-[#14142b]">{registrationsCount}</div>
+                <div className="text-2xl font-black text-ink">{registrationsCount}</div>
                 <div className="text-[11px] text-slate-400 mt-0.5">Joined attendees</div>
               </div>
 
-              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-white border border-slate-200/60 shadow-2xs">
+              <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-surface border border-slate-200/60 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   <DollarSign size={13} className="text-amber-500" />
                   Revenue
                 </div>
-                <div className="text-2xl font-black text-[#14142b]">{formattedRevenue}</div>
-                <div className="text-[11px] text-slate-400 mt-0.5">Gross ticket sales</div>
+                <div className="text-2xl font-black text-ink">{formattedRevenue}</div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  {earnings != null && revenue > 0
+                    ? `Gross · you earn ${money(earnings)} after refunds${commission > 0 ? ` and ${money(commission)} platform commission` : ""}`
+                    : "Gross ticket sales"}
+                </div>
               </div>
             </div>
           </div>
 
           {/* Setup Checklist */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
-            <h3 className="text-sm font-bold text-[#14142b] border-b border-slate-100 pb-3 mb-4">
+          <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+            <h3 className="text-sm font-bold text-ink border-b border-slate-100 pb-3 mb-4">
               Complete Your Setup
             </h3>
 
@@ -427,9 +367,9 @@ export function EventOverviewTab({
                   key={item.name}
                   type="button"
                   onClick={item.action}
-                  className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200/80 bg-white hover:border-blue-400 hover:bg-blue-50/40 transition-all text-left group cursor-pointer shadow-2xs"
+                  className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200/80 bg-surface hover:border-blue-400 hover:bg-blue-50/40 transition-all text-left group cursor-pointer shadow-2xs dark:hover:bg-blue-500/10"
                 >
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
+                  <span className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors dark:group-hover:text-blue-400">
                     {item.name}
                   </span>
                   {item.complete ? (
@@ -446,11 +386,11 @@ export function EventOverviewTab({
         {/* Right Column (1 col): Progress & Recent Activity */}
         <div className="space-y-6">
           {/* Progress Card */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
-            <h3 className="text-sm font-bold text-[#14142b] mb-3">Setup Progress</h3>
+          <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+            <h3 className="text-sm font-bold text-ink mb-3">Setup Progress</h3>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-slate-500">Readiness</span>
-              <span className="text-sm font-extrabold text-blue-600">{completionPct}%</span>
+              <span className="text-sm font-extrabold text-blue-600 dark:text-blue-400">{completionPct}%</span>
             </div>
             <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
               <div
@@ -461,8 +401,8 @@ export function EventOverviewTab({
           </div>
 
           {/* Recent Activity Card */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
-            <h3 className="text-sm font-bold text-[#14142b] flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
+          <div className="rounded-2xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_4px_16px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+            <h3 className="text-sm font-bold text-ink flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
               <Clock size={16} className="text-slate-500" />
               Recent Activity
             </h3>
@@ -471,7 +411,7 @@ export function EventOverviewTab({
               <div className="relative border-l-2 border-slate-100 ml-2 space-y-5 pb-1">
                 {eventSummary.recentActivity.slice(0, 5).map((log, idx) => (
                   <div key={idx} className="relative pl-5">
-                    <div className="absolute -left-[5px] mt-1 size-2 rounded-full bg-blue-600 ring-4 ring-white" />
+                    <div className="absolute -left-[5px] mt-1 size-2 rounded-full bg-blue-600 ring-4 ring-surface" />
                     <div className="text-xs font-bold text-slate-900 leading-snug">{log.action}</div>
                     {log.description && (
                       <div className="text-[11px] text-slate-500 mt-0.5">{log.description}</div>
@@ -491,7 +431,7 @@ export function EventOverviewTab({
               <div className="relative border-l-2 border-slate-100 ml-2 space-y-5 pb-1">
                 {data.statusHistory.data.slice(0, 5).map((entry, idx) => (
                   <div key={idx} className="relative pl-5">
-                    <div className="absolute -left-[5px] mt-1 size-2 rounded-full bg-blue-600 ring-4 ring-white" />
+                    <div className="absolute -left-[5px] mt-1 size-2 rounded-full bg-blue-600 ring-4 ring-surface" />
                     <div className="text-xs font-bold text-slate-900 leading-snug">{entry.label}</div>
                     {entry.actorName && (
                       <div className="text-[11px] text-slate-500 mt-0.5">by {entry.actorName}</div>

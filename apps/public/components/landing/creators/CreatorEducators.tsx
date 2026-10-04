@@ -55,13 +55,13 @@ export default function CreatorEducators() {
         
         {/* Section Header */}
         <div className="sec-head text-center max-w-2xl mx-auto mb-16 space-y-3">
-          <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-[#7A5AF8] tracking-[0.2em] uppercase font-mono">
+          <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-[#7A5AF8] tracking-[0.2em] uppercase font-mono dark:text-[#b1a6ff]">
             <span className="w-5 h-[2px] bg-[#7A5AF8] rounded-full inline-block" />
             <span>BUILT FOR EVERY EDUCATOR</span>
             <span className="w-5 h-[2px] bg-[#7A5AF8] rounded-full inline-block" />
           </div>
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-[#1C1C2E] tracking-tight font-serif leading-[1.15]">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-ink tracking-tight font-serif leading-[1.15]">
             A professional platform, whoever you are
           </h2>
           
@@ -74,7 +74,7 @@ export default function CreatorEducators() {
         <div className="relative hidden lg:block w-full h-[500px] my-10 select-none">
           
           {/* Central Horizontal Axis Divider Line */}
-          <div className="absolute left-0 right-0 top-[250px] h-[1.5px] bg-[#DEE0FA] z-0 pointer-events-none" />
+          <div className="absolute left-0 right-0 top-[250px] h-[1.5px] bg-[#DEE0FA] z-0 pointer-events-none dark:bg-[#dee0fa]/15" />
 
           {/* 6 Step Columns Grid (max-w-[1400px]) */}
           <div className="grid grid-cols-6 h-full relative z-10 max-w-[1420px] mx-auto">
@@ -87,7 +87,7 @@ export default function CreatorEducators() {
                   
                   {/* Upgraded Large White Rectangular Card */}
                   <div
-                    className="absolute w-[235px] h-[160px] bg-white border border-[#DEE0FA] rounded-[24px] p-6 shadow-[0_8px_24px_rgba(25,25,98,0.03)] hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center text-center group-hover:-translate-y-0.5"
+                    className="absolute w-[235px] h-[160px] bg-surface border border-[#DEE0FA] rounded-[24px] p-6 shadow-[0_8px_24px_rgba(25,25,98,0.03)] hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center text-center group-hover:-translate-y-0.5 dark:border-[#dee0fa]/30"
                     style={{
                       top: isUp ? "0px" : "auto",
                       bottom: !isUp ? "0px" : "auto",
@@ -119,7 +119,7 @@ export default function CreatorEducators() {
 
                   {/* Enlarged Circular Icon Node (Axis Center Anchor) */}
                   <div 
-                    className="absolute top-[250px] -translate-y-1/2 w-14 h-14 rounded-full border-4 border-white flex items-center justify-center shadow-md transition-all duration-400 group-hover:scale-110 z-10"
+                    className="absolute top-[250px] -translate-y-1/2 w-14 h-14 rounded-full border-4 border-surface flex items-center justify-center shadow-md transition-all duration-400 group-hover:scale-110 z-10"
                     style={{ 
                       backgroundColor: item.color, 
                       boxShadow: "0 6px 16px rgba(25, 25, 98, 0.14)" 
@@ -142,7 +142,7 @@ export default function CreatorEducators() {
             return (
               <div
                 key={idx}
-                className="bg-white border border-[#DEE0FA] hover:border-[#7A5AF8] rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 group"
+                className="bg-surface border border-[#DEE0FA] hover:border-[#7A5AF8] rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 group dark:border-[#dee0fa]/30"
               >
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 text-white shadow-md transition-transform duration-300 group-hover:scale-110"

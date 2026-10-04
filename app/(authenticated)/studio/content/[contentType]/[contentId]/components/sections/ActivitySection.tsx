@@ -89,7 +89,7 @@ export function ActivitySection({
 }) {
   if (unavailable) {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/20 px-4 py-3 text-xs font-medium text-amber-700 dark:text-amber-300">
+      <div className="flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-300">
         <AlertTriangle size={14} /> Temporarily unavailable — try again shortly.
       </div>
     );

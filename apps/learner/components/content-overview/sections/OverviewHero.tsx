@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ArrowLeft, Play, RotateCcw, Trophy } from 'lucide-react';
 import type { ContentOverviewModel } from '../contentOverview.types';
+import { ContentArt } from '@/shared/design-system/art';
 
 /**
  * The top of the hub: what this is, how far in you are, and the one button that matters.
@@ -17,26 +18,20 @@ export function OverviewHero({ model }: { model: ContentOverviewModel }) {
   const isComplete = progress.state === 'COMPLETED';
 
   return (
-    <header className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/80 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70">
-      {model.coverImageUrl && (
-        <>
-          <img
-            src={model.coverImageUrl}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 h-full w-full object-cover opacity-20"
-          />
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/80 to-white/95 dark:from-slate-900/90 dark:via-slate-900/85 dark:to-slate-900/95"
-          />
-        </>
-      )}
+    <header className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-surface/80 backdrop-blur-sm">
+      {/* The content's generated artwork, washed back so the text stays the focus. */}
+      <div aria-hidden className="absolute inset-0 opacity-25">
+        <ContentArt seed={model.contentId} kind={model.contentType} category={model.category} categoryId={model.categoryId} title={model.title} />
+      </div>
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-gradient-to-br from-surface/90 via-surface/75 to-surface/95"
+      />
 
       <div className="relative p-6 sm:p-8">
         <Link
           href={model.landingHref}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-slate-800"
         >
           <ArrowLeft size={13} />
           {model.contentType === 'COURSE' ? 'Course page' : 'Event page'}
@@ -55,11 +50,11 @@ export function OverviewHero({ model }: { model: ContentOverviewModel }) {
                 )}
               </p>
             )}
-            <h1 className="mt-1 text-2xl font-bold leading-tight text-slate-900 sm:text-3xl dark:text-white">
+            <h1 className="mt-1 text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
               {model.title}
             </h1>
             {model.subtitle && (
-              <p className="mt-2 max-w-2xl text-[15px] text-slate-500 dark:text-slate-400">
+              <p className="mt-2 max-w-2xl text-[15px] text-slate-500">
                 {model.subtitle}
               </p>
             )}
@@ -71,7 +66,7 @@ export function OverviewHero({ model }: { model: ContentOverviewModel }) {
             {resume && (
               <Link
                 href={resume.href}
-                className="group flex min-w-0 items-center gap-2.5 rounded-2xl bg-slate-900 px-5 py-3.5 text-white shadow-sm transition hover:bg-slate-800 active:scale-[0.98] dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                className="group flex min-w-0 items-center gap-2.5 rounded-2xl bg-slate-900 px-5 py-3.5 text-on-ink shadow-sm transition hover:bg-slate-800 active:scale-[0.98]"
               >
                 {isComplete ? <RotateCcw size={17} /> : <Play size={17} className="fill-current" />}
                 <span className="min-w-0 text-left">
@@ -111,7 +106,7 @@ function ProgressRing({ progress }: { progress: ContentOverviewModel['progress']
           r={RADIUS}
           fill="none"
           strokeWidth="5"
-          className="stroke-slate-200 dark:stroke-slate-700"
+          className="stroke-slate-200"
         />
         <circle
           cx="32"
@@ -130,7 +125,7 @@ function ProgressRing({ progress }: { progress: ContentOverviewModel['progress']
           <Trophy size={20} className="text-emerald-500" />
         ) : (
           <>
-            <span className="text-[15px] font-bold leading-none tabular-nums text-slate-900 dark:text-white">
+            <span className="text-[15px] font-bold leading-none tabular-nums text-slate-900">
               {progress.percent}
             </span>
             <span className="text-[9px] font-semibold leading-none text-slate-400">%</span>

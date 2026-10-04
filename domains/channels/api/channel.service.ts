@@ -172,10 +172,12 @@ export interface ChannelContentItem {
   type: string;
   title: string;
   description?: string | null;
-  coverImageUrl?: string | null;
   status: string;
   createdAt: string;
   updatedAt: string;
+  channelName?: string | null;
+  /** The channel's picture; for a personal channel, its owner's profile picture. */
+  channelIconUrl?: string | null;
   authorId?: string | null;
   authorName?: string | null;
   authorUsername?: string | null;

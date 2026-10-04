@@ -210,7 +210,6 @@ export interface ExamResponse {
   authorAvatarUrl: string | null;
   title: string;
   description: string | null;
-  coverImageUrl: string | null;
   purpose: string | null;
   /** Tiptap JSON, serialized. */
   instructions: string | null;
@@ -241,7 +240,6 @@ export interface ExamResponse {
 export interface ExamRequest {
   title?: string;
   description?: string;
-  coverImageUrl?: string;
   channelId?: string;
   courseId?: string;
   eventId?: string;
@@ -745,7 +743,6 @@ export interface AssessmentLandingResponse {
   examId: string;
   title: string;
   description: string | null;
-  coverImageUrl: string | null;
   purpose: string | null;
   /** Tiptap document. */
   instructions: unknown | null;
@@ -830,9 +827,10 @@ export interface ExamHubCard {
   examId: string;
   title: string;
   description: string | null;
-  coverImageUrl: string | null;
   purpose: string | null;
   channelName: string | null;
+  /** The channel's picture; for a personal channel, its owner's profile picture. */
+  channelIconUrl: string | null;
   certification: boolean;
   plans: ExamHubPlan[];
   tieType: ExamTieType | null;

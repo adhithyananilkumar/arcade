@@ -59,12 +59,12 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
   // 1. Loading State
   if (loadingStatus) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 sticky top-6 animate-pulse">
-        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-6"></div>
-        <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-full mb-6"></div>
+      <div className="bg-surface rounded-xl shadow-lg border border-gray-100 p-6 sticky top-6 animate-pulse">
+        <div className="h-8 bg-gray-200 rounded w-1/2 mb-6"></div>
+        <div className="h-12 bg-gray-200 rounded w-full mb-6"></div>
         <div className="space-y-4">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+            <div key={i} className="h-5 bg-gray-200 rounded w-3/4"></div>
           ))}
         </div>
       </div>
@@ -75,7 +75,7 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
   if (registration) {
     const status = registration.registrationStatus;
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 sticky top-6 overflow-hidden">
+      <div className="bg-surface rounded-xl shadow-lg border border-gray-100 p-6 sticky top-6 overflow-hidden">
         {/* Status Header */}
         <div className={`-mx-6 -mt-6 p-4 mb-6 text-white text-center font-medium shadow-sm flex items-center justify-center gap-2 ${
           status === 'APPROVED' || status === 'COMPLETED' ? 'bg-emerald-500' : 
@@ -92,9 +92,9 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
         </div>
 
         <div className="space-y-4 mb-6">
-          <div className="flex justify-between items-center text-sm border-b border-gray-100 dark:border-gray-700 pb-3">
-            <span className="text-gray-500 dark:text-gray-400">Date Registered</span>
-            <span className="font-medium text-gray-900 dark:text-white">
+          <div className="flex justify-between items-center text-sm border-b border-gray-100 pb-3">
+            <span className="text-gray-500">Date Registered</span>
+            <span className="font-medium text-gray-900">
               {new Date(registration.registrationDate).toLocaleDateString()}
             </span>
           </div>
@@ -134,9 +134,9 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
 
   // 3. Not Registered State (Default)
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 sticky top-6">
+    <div className="bg-surface rounded-xl shadow-lg border border-gray-100 p-6 sticky top-6">
       <div className="mb-6">
-        <span className="text-3xl font-bold text-gray-900 dark:text-white">
+        <span className="text-3xl font-bold text-gray-900">
           {pricing?.pricingModel === PricingModel.FREE ? 'Free' : formatCurrency(pricing?.price || 0, pricing?.currency || 'USD')}
         </span>
         {pricing?.pricingModel !== PricingModel.FREE && pricing?.earlyBirdEnabled && (
@@ -163,7 +163,7 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
         />
       </div>
 
-      <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
+      <div className="space-y-4 text-sm text-gray-600">
         <div className="flex items-center gap-3">
           <MapPin className="w-5 h-5 text-gray-400" />
           <span>{basicInfo.deliveryMode === 'ONLINE' ? 'Online Event' : 'In-Person'}</span>

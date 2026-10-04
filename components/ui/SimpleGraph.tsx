@@ -168,7 +168,7 @@ export function SimpleGraph({
                 }}
               >
                 <div className="flex flex-col items-center">
-                  <div className="rounded-xl border border-slate-200/90 bg-white/95 px-3.5 py-2 shadow-xl backdrop-blur-md text-center min-w-[120px]">
+                  <div className="rounded-xl border border-slate-200/90 bg-surface/95 px-3.5 py-2 shadow-xl backdrop-blur-md text-center min-w-[120px]">
                     <div className="flex items-center justify-center gap-1.5 mb-0.5">
                       <span
                         className="text-xs font-bold uppercase tracking-wider"
@@ -184,7 +184,7 @@ export function SimpleGraph({
                     )}
                   </div>
                   {/* Tooltip Pointer Arrow */}
-                  <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white" />
+                  <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-surface" />
                 </div>
               </motion.div>
             )}

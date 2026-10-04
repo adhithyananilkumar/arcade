@@ -43,26 +43,26 @@ export function LessonReviewFeedback({
 
   if (loading) {
     return (
-      <div className={`flex items-center justify-center bg-white ${className}`}>
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-[#14142b]" />
+      <div className={`flex items-center justify-center bg-surface ${className}`}>
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-ink" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className={`flex items-center justify-center bg-white px-6 text-center ${className}`}>
-        <p className="text-[12px] font-medium text-rose-600">{error}</p>
+      <div className={`flex items-center justify-center bg-surface px-6 text-center ${className}`}>
+        <p className="text-[12px] font-medium text-rose-600 dark:text-rose-400">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className={`flex flex-col overflow-hidden bg-white ${className}`}>
+    <div className={`flex flex-col overflow-hidden bg-surface ${className}`}>
       {!hideHeader && (
         <div className="flex shrink-0 items-center gap-2 border-b border-slate-100 bg-slate-50/80 px-4 py-3">
-          <MessageSquare size={15} className="text-[#14142b]" />
-          <h3 className="text-[13px] font-bold text-[#14142b]">Reviewer feedback</h3>
+          <MessageSquare size={15} className="text-ink" />
+          <h3 className="text-[13px] font-bold text-ink">Reviewer feedback</h3>
           <span className="ml-auto rounded-full bg-slate-200/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-500">
             Internal
           </span>
@@ -75,7 +75,7 @@ export function LessonReviewFeedback({
             <span className="grid size-12 place-items-center rounded-2xl bg-slate-50">
               <MessageSquare size={20} className="text-slate-300" />
             </span>
-            <p className="text-[13px] font-semibold text-[#14142b]">No feedback yet</p>
+            <p className="text-[13px] font-semibold text-ink">No feedback yet</p>
             <p className="max-w-[200px] text-[11px] leading-relaxed text-slate-400">
               Leave notes for the author — visible only to reviewers and creators.
             </p>
@@ -106,8 +106,8 @@ export function LessonReviewFeedback({
                 <div
                   className={`px-3.5 py-2.5 text-[13px] leading-relaxed ${
                     mine
-                      ? "rounded-2xl rounded-tr-md bg-[#14142b] text-white"
-                      : "rounded-2xl rounded-tl-md border border-slate-100 bg-slate-50 text-[#14142b]"
+                      ? "rounded-2xl rounded-tr-md bg-ink text-on-ink"
+                      : "rounded-2xl rounded-tl-md border border-slate-100 bg-slate-50 text-ink"
                   }`}
                 >
                   {c.content}
@@ -127,12 +127,12 @@ export function LessonReviewFeedback({
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           placeholder="Write internal feedback…"
-          className="min-w-0 flex-1 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-[13px] text-[#14142b] outline-none placeholder:text-slate-400 focus:border-[#14142b]/25 focus:ring-4 focus:ring-slate-200/60"
+          className="min-w-0 flex-1 rounded-full border border-slate-200 bg-surface px-4 py-2.5 text-[13px] text-ink outline-none placeholder:text-slate-400 focus:border-ink/25 focus:ring-4 focus:ring-slate-200/60"
         />
         <button
           type="submit"
           disabled={!newComment.trim() || sending}
-          className="grid size-10 shrink-0 place-items-center rounded-full bg-[#14142b] text-white shadow-[0_6px_14px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-40"
+          className="grid size-10 shrink-0 place-items-center rounded-full bg-ink text-on-ink shadow-[0_6px_14px_rgba(20,20,43,0.18)] transition-colors hover:bg-ink-hover disabled:opacity-40"
         >
           <Send size={15} />
         </button>

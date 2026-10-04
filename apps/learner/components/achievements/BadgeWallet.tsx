@@ -95,7 +95,7 @@ export function BadgeWallet({ data, tiers, search, onOpen }: BadgeWalletProps) {
           ))}
           <LevelInfo tiers={tiers} />
         </div>
-        <div className="flex items-center gap-1 rounded-full border border-slate-200/80 bg-white/70 p-1 dark:border-slate-800 dark:bg-slate-900/70">
+        <div className="flex items-center gap-1 rounded-full border border-slate-200/80 bg-surface/70 p-1 dark:border-slate-800">
           {FAMILY_FILTERS.map((f) => (
             <button
               key={f.key}
@@ -145,7 +145,7 @@ function LevelInfo({ tiers }: { tiers: BadgeTierInfo[] }) {
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[min(92vw,420px)] gap-3 p-4">
         <div>
-          <p className="text-sm font-bold text-slate-900 dark:text-white">Arcade badge levels</p>
+          <p className="text-sm font-bold text-slate-900">Arcade badge levels</p>
           <p className="mt-1 text-xs leading-relaxed text-slate-500">
             Every badge is issued by Arcade at one of three levels, the same for every channel. Effort is counted in
             credits (1 credit = 30 learning hours), as in NCrF and SWAYAM.
@@ -158,7 +158,7 @@ function LevelInfo({ tiers }: { tiers: BadgeTierInfo[] }) {
         )}
         <p className="text-[11px] leading-relaxed text-slate-500">
           Badges are awarded automatically at 100% completion and can be verified by anyone from their credential page.{' '}
-          <Link href="/credentials/standards" className="font-semibold text-[#2962D6] hover:underline">
+          <Link href="/credentials/standards" className="font-semibold text-[#2962D6] hover:underline dark:text-[#7eb5ff]">
             Read the standard
           </Link>
         </p>
@@ -170,7 +170,7 @@ function LevelInfo({ tiers }: { tiers: BadgeTierInfo[] }) {
 // ── Cards matching My Learning design system ─────────────────────────────────────────────
 
 const CARD =
-  'group relative flex h-full flex-col items-center justify-between overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white/95 p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm transition-all hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] dark:border-slate-800 dark:bg-slate-900/95';
+  'group relative flex h-full flex-col items-center justify-between overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm transition-all hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)]';
 
 const GLOW = (
   <div
@@ -198,12 +198,12 @@ function EarnedCard({ badge, index, onOpen }: { badge: IssuedBadge; index: numbe
         <div className="w-28 drop-shadow-md transition-transform duration-300 group-hover/badge:scale-105 group-active/badge:scale-95 sm:w-32">
           <CredentialBadge family={badge.badgeClass.family.key} level={level} title={badge.name} issuerLogoUrl={badge.issuerLogoUrl} revoked={badge.revoked} />
         </div>
-        <span className="mt-4 line-clamp-1 text-center text-base font-bold tracking-tight text-[#14142b] transition-colors group-hover/badge:text-[#2962D6] dark:text-white sm:text-lg">
+        <span className="mt-4 line-clamp-1 text-center text-base font-bold tracking-tight text-ink transition-colors group-hover/badge:text-[#2962D6] sm:text-lg dark:group-hover/badge:text-[#7eb5ff]">
           {badge.name}
         </span>
-        <span className="mt-1 h-[40px] px-1 text-center text-[13px] leading-5 text-slate-500 line-clamp-2 dark:text-slate-400">
+        <span className="mt-1 h-[40px] px-1 text-center text-[13px] leading-5 text-slate-500 line-clamp-2">
           {badge.revoked ? (
-            <span className="inline-flex items-center gap-1 font-semibold text-rose-600">
+            <span className="inline-flex items-center gap-1 font-semibold text-rose-600 dark:text-rose-400">
               <ShieldAlert size={12} /> Revoked
             </span>
           ) : (
@@ -231,13 +231,13 @@ function ProgressCard({ badge, index }: { badge: InProgressBadge; index: number 
         <div className="relative w-28 sm:w-32">
           <CredentialBadge family={badge.badgeClass.family.key} level={level} title={badge.name} issuerLogoUrl={badge.issuerLogoUrl} locked />
           <span className="absolute inset-0 flex items-center justify-center">
-            <Lock className="h-8 w-8 text-slate-700 drop-shadow-md dark:text-white" />
+            <Lock className="h-8 w-8 text-slate-700 drop-shadow-md dark:text-slate-300" />
           </span>
         </div>
-        <span className="mt-4 line-clamp-1 text-center text-base font-bold tracking-tight text-[#14142b] dark:text-white sm:text-lg">
+        <span className="mt-4 line-clamp-1 text-center text-base font-bold tracking-tight text-ink sm:text-lg">
           {badge.name}
         </span>
-        <span className="mt-1 text-center text-[13px] leading-5 text-slate-500 dark:text-slate-400">
+        <span className="mt-1 text-center text-[13px] leading-5 text-slate-500">
           {badge.badgeClass.tier.label} · {badge.progressPercent}% complete
         </span>
         <div className="mt-2 h-1.5 w-full max-w-[180px] overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">

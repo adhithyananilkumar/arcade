@@ -27,9 +27,9 @@ export const ScheduleStep: React.FC<Props> = ({ form }) => {
 
   return (
     <div className="space-y-6 flex flex-col xl:flex-row xl:space-y-0 xl:space-x-8">
-      <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 max-w-4xl">
+      <div className="flex-1 bg-surface rounded-lg shadow-sm border border-gray-200 p-8 max-w-4xl">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Event Schedule</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Event Schedule</h2>
           <button
             type="button"
             onClick={() => {
@@ -55,20 +55,20 @@ export const ScheduleStep: React.FC<Props> = ({ form }) => {
 
       <div className="w-full xl:w-80 flex-shrink-0 space-y-6">
         {summary && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Summary</h3>
+          <div className="bg-surface rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Summary</h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">Total Sessions</span>
-                <span className="font-medium text-gray-900 dark:text-gray-100">{summary.totalSessions}</span>
+                <span className="text-gray-500">Total Sessions</span>
+                <span className="font-medium text-gray-900">{summary.totalSessions}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">Start Date</span>
-                <span className="font-medium text-gray-900 dark:text-gray-100">{summary.startDate}</span>
+                <span className="text-gray-500">Start Date</span>
+                <span className="font-medium text-gray-900">{summary.startDate}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">End Date</span>
-                <span className="font-medium text-gray-900 dark:text-gray-100">{summary.endDate}</span>
+                <span className="text-gray-500">End Date</span>
+                <span className="font-medium text-gray-900">{summary.endDate}</span>
               </div>
             </div>
           </div>

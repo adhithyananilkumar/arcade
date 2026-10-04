@@ -73,8 +73,8 @@ export default function CreatorEnquiry() {
   return (
     <section className="relative py-16 lg:py-24 overflow-hidden bg-transparent" id="enquiry">
       {/* Background blobs for soft aura */}
-      <div className="absolute top-1/3 left-1/4 w-72 h-72 rounded-full opacity-10 bg-indigo-300 blur-3xl pointer-events-none -z-10" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full opacity-10 bg-purple-300 blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-1/3 left-1/4 w-72 h-72 rounded-full opacity-10 bg-indigo-300 blur-3xl pointer-events-none -z-10 dark:bg-indigo-500/30" />
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full opacity-10 bg-purple-300 blur-3xl pointer-events-none -z-10 dark:bg-purple-500/30" />
 
       {/* Grid container placed only on the central, fitting to the desktop */}
       <div className="max-w-5xl mx-auto px-6 relative z-10">
@@ -83,12 +83,12 @@ export default function CreatorEnquiry() {
 
           {/* Left Column: Heading and Paragraph (Col 5) */}
           <div className="md:col-span-5 flex flex-col justify-center space-y-4">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#7A5AF8] tracking-widest uppercase font-mono">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#7A5AF8] tracking-widest uppercase font-mono dark:text-[#b1a6ff]">
               <span className="w-3 h-[2px] bg-[#7A5AF8] rounded-full inline-block" />
               <span>INQUIRY DESK</span>
             </div>
 
-            <h2 className="text-3xl sm:text-4xl font-semibold text-[#1C1C2E] tracking-tight font-serif leading-tight">
+            <h2 className="text-3xl sm:text-4xl font-semibold text-ink tracking-tight font-serif leading-tight">
               Have a Question<br />
               Lets Connect
             </h2>
@@ -118,7 +118,7 @@ export default function CreatorEnquiry() {
                       <motion.div
                         className={`w-6 h-6 rounded-full border flex items-center justify-center text-[10px] font-bold transition-all ${activeStep === 1
                           ? "bg-[#3B2FC9] border-[#3B2FC9] text-white shadow-sm"
-                          : "bg-white border-slate-200 text-slate-400"
+                          : "bg-surface border-slate-200 text-slate-400"
                           }`}
                         animate={{ scale: activeStep === 1 ? 1.1 : 1 }}
                       >
@@ -128,7 +128,7 @@ export default function CreatorEnquiry() {
                     </div>
 
                     <div className="flex-1 pb-6" onClick={() => setActiveStep(1)}>
-                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-2 transition-colors ${activeStep === 1 ? "text-[#7A5AF8]" : "text-slate-400"
+                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-2 transition-colors ${activeStep === 1 ? "text-[#7A5AF8] dark:text-[#b1a6ff]" : "text-slate-400"
                         }`}>
                         Identify Yourself
                       </label>
@@ -141,7 +141,7 @@ export default function CreatorEnquiry() {
                             onFocus={() => setActiveStep(1)}
                             placeholder="Full Name"
                             className={`w-full text-xs sm:text-sm font-semibold border-b bg-transparent py-2 px-0 outline-hidden transition-all placeholder:text-slate-300 text-slate-800 ${errors.name
-                              ? "border-rose-400 text-rose-800"
+                              ? "border-rose-400 text-rose-800 dark:text-rose-200"
                               : "border-slate-200 focus:border-[#3B2FC9]"
                               }`}
                           />
@@ -156,7 +156,7 @@ export default function CreatorEnquiry() {
                             onFocus={() => setActiveStep(1)}
                             placeholder="Email Address"
                             className={`w-full text-xs sm:text-sm font-semibold border-b bg-transparent py-2 px-0 outline-hidden transition-all placeholder:text-slate-300 text-slate-800 ${errors.email
-                              ? "border-rose-400 text-rose-800"
+                              ? "border-rose-400 text-rose-800 dark:text-rose-200"
                               : "border-slate-200 focus:border-[#3B2FC9]"
                               }`}
                           />
@@ -172,7 +172,7 @@ export default function CreatorEnquiry() {
                       <motion.div
                         className={`w-6 h-6 rounded-full border flex items-center justify-center text-[10px] font-bold transition-all ${activeStep === 2
                           ? "bg-[#3B2FC9] border-[#3B2FC9] text-white shadow-sm"
-                          : "bg-white border-slate-200 text-slate-400"
+                          : "bg-surface border-slate-200 text-slate-400"
                           }`}
                         animate={{ scale: activeStep === 2 ? 1.1 : 1 }}
                       >
@@ -182,7 +182,7 @@ export default function CreatorEnquiry() {
                     </div>
 
                     <div className="flex-1 pb-6" onClick={() => setActiveStep(2)}>
-                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-2 transition-colors ${activeStep === 2 ? "text-[#7A5AF8]" : "text-slate-400"
+                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-2 transition-colors ${activeStep === 2 ? "text-[#7A5AF8] dark:text-[#b1a6ff]" : "text-slate-400"
                         }`}>
                         Individual or Organization
                       </label>
@@ -199,7 +199,7 @@ export default function CreatorEnquiry() {
                               }}
                               className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 border ${isSelected
                                 ? "bg-[#3B2FC9] border-[#3B2FC9] text-white shadow-md shadow-indigo-500/10 scale-[1.02]"
-                                : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
+                                : "bg-surface border-slate-200 text-slate-700 hover:border-slate-300"
                                 }`}
                             >
                               {type === "Individual" ? (
@@ -221,7 +221,7 @@ export default function CreatorEnquiry() {
                       <motion.div
                         className={`w-6 h-6 rounded-full border flex items-center justify-center text-[10px] font-bold transition-all ${activeStep === 3
                           ? "bg-[#3B2FC9] border-[#3B2FC9] text-white shadow-sm"
-                          : "bg-white border-slate-200 text-slate-400"
+                          : "bg-surface border-slate-200 text-slate-400"
                           }`}
                         animate={{ scale: activeStep === 3 ? 1.1 : 1 }}
                       >
@@ -231,7 +231,7 @@ export default function CreatorEnquiry() {
                     </div>
 
                     <div className="flex-1 pb-6" onClick={() => setActiveStep(3)}>
-                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-2 transition-colors ${activeStep === 3 ? "text-[#7A5AF8]" : "text-slate-400"
+                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-2 transition-colors ${activeStep === 3 ? "text-[#7A5AF8] dark:text-[#b1a6ff]" : "text-slate-400"
                         }`}>
                         Enquiry Topics
                       </label>
@@ -244,8 +244,8 @@ export default function CreatorEnquiry() {
                               key={topic}
                               onClick={() => handleTopicToggle(topic)}
                               className={`px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all duration-200 cursor-pointer ${selected
-                                ? "bg-[#3B2FC9]/10 border-[#3B2FC9] text-[#3B2FC9]"
-                                : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-800"
+                                ? "bg-[#3B2FC9]/10 border-[#3B2FC9] text-[#3B2FC9] dark:text-[#9badff]"
+                                : "bg-surface border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-800"
                                 }`}
                             >
                               {topic}
@@ -262,7 +262,7 @@ export default function CreatorEnquiry() {
                       <motion.div
                         className={`w-6 h-6 rounded-full border flex items-center justify-center text-[10px] font-bold transition-all ${activeStep === 4
                           ? "bg-[#3B2FC9] border-[#3B2FC9] text-white shadow-sm"
-                          : "bg-white border-slate-200 text-slate-400"
+                          : "bg-surface border-slate-200 text-slate-400"
                           }`}
                         animate={{ scale: activeStep === 4 ? 1.1 : 1 }}
                       >
@@ -271,7 +271,7 @@ export default function CreatorEnquiry() {
                     </div>
 
                     <div className="flex-1" onClick={() => setActiveStep(4)}>
-                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-2 transition-colors ${activeStep === 4 ? "text-[#7A5AF8]" : "text-slate-400"
+                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-2 transition-colors ${activeStep === 4 ? "text-[#7A5AF8] dark:text-[#b1a6ff]" : "text-slate-400"
                         }`}>
                         Enquiry Details
                       </label>
@@ -282,9 +282,9 @@ export default function CreatorEnquiry() {
                           onChange={(e) => setMessage(e.target.value)}
                           onFocus={() => setActiveStep(4)}
                           placeholder="Write your query here. If looking for specific details, please specify..."
-                          className={`w-full text-xs sm:text-sm font-medium border bg-white/50 rounded-xl p-3.5 outline-hidden transition-all placeholder:text-slate-300 text-slate-800 resize-none ${errors.message
+                          className={`w-full text-xs sm:text-sm font-medium border bg-surface/50 rounded-xl p-3.5 outline-hidden transition-all placeholder:text-slate-300 text-slate-800 resize-none ${errors.message
                             ? "border-rose-400 focus:border-rose-500"
-                            : "border-slate-200 focus:border-[#3B2FC9] focus:bg-white"
+                            : "border-slate-200 focus:border-[#3B2FC9] focus:bg-surface"
                             }`}
                         />
                         {errors.message && <p className="text-[10px] text-rose-500 font-bold">{errors.message}</p>}
@@ -292,7 +292,7 @@ export default function CreatorEnquiry() {
                         <button
                           type="submit"
                           disabled={isSubmitting}
-                          className="w-full bg-[#3B2FC9] hover:bg-[#2C21B2] disabled:bg-indigo-300 text-white font-extrabold text-xs py-3 px-6 rounded-xl transition-all duration-300 shadow-md shadow-indigo-500/10 cursor-pointer flex items-center justify-center gap-2 uppercase tracking-wider"
+                          className="w-full bg-[#3B2FC9] hover:bg-[#2C21B2] disabled:bg-indigo-300 text-white font-extrabold text-xs py-3 px-6 rounded-xl transition-all duration-300 shadow-md shadow-indigo-500/10 cursor-pointer flex items-center justify-center gap-2 uppercase tracking-wider dark:disabled:bg-indigo-500/30"
                         >
                           {isSubmitting ? (
                             <>
@@ -331,7 +331,7 @@ export default function CreatorEnquiry() {
 
                   <div className="space-y-1">
                     <h3 className="text-xl font-bold text-slate-900">Enquiry Registered!</h3>
-                    <p className="text-[10px] font-semibold text-[#7A5AF8]">Ticket: #{Math.floor(100000 + Math.random() * 900000)}</p>
+                    <p className="text-[10px] font-semibold text-[#7A5AF8] dark:text-[#b1a6ff]">Ticket: #{Math.floor(100000 + Math.random() * 900000)}</p>
                   </div>
 
                   <div className="w-full max-w-sm border border-slate-100 bg-slate-50/50 rounded-2xl p-4 text-left text-[11px] text-slate-600 font-semibold space-y-2 relative overflow-hidden">
@@ -349,7 +349,7 @@ export default function CreatorEnquiry() {
                     </div>
                     <div className="flex justify-between pb-0.5">
                       <span className="text-slate-400">Focus Topics:</span>
-                      <span className="text-[#3B2FC9] font-bold">{selectedTopics.join(", ")}</span>
+                      <span className="text-[#3B2FC9] font-bold dark:text-[#9badff]">{selectedTopics.join(", ")}</span>
                     </div>
                   </div>
 
@@ -359,7 +359,7 @@ export default function CreatorEnquiry() {
 
                   <button
                     onClick={handleReset}
-                    className="border border-slate-200 hover:border-slate-300 text-slate-600 font-bold text-[10px] px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer bg-white"
+                    className="border border-slate-200 hover:border-slate-300 text-slate-600 font-bold text-[10px] px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer bg-surface"
                   >
                     <span>Submit another inquiry</span>
                     <ArrowRight className="w-3 h-3" />

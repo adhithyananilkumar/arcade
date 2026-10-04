@@ -75,7 +75,6 @@ interface ContentSummary {
   type: "COURSE" | "ROADMAP" | string;
   title: string;
   description?: string | null;
-  coverImageUrl?: string | null;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -131,17 +130,17 @@ function StatusBadge({ status }: { status: string }) {
   const key = status?.toUpperCase() || "DRAFT";
   const config: Record<string, { bg: string; dot: string; label: string }> = {
     DRAFT: {
-      bg: "bg-amber-500/10 border-amber-500/20 text-amber-800",
+      bg: "bg-amber-500/10 border-amber-500/20 text-amber-800 dark:text-amber-200",
       dot: "bg-amber-500",
       label: "Draft",
     },
     SUBMITTED: {
-      bg: "bg-blue-500/10 border-blue-500/20 text-blue-800",
+      bg: "bg-blue-500/10 border-blue-500/20 text-blue-800 dark:text-blue-200",
       dot: "bg-blue-500 animate-pulse",
       label: "In Review",
     },
     PUBLISHED: {
-      bg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-800",
+      bg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-200",
       dot: "bg-emerald-500 animate-pulse",
       label: "Published",
     },
@@ -166,28 +165,28 @@ function TypeBadge({ type }: { type: string }) {
   const t = type?.toUpperCase();
   if (t === "ROADMAP") {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12">
-        <Map size={11} strokeWidth={2.4} className="text-amber-800" /> Roadmap
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12 dark:text-amber-200">
+        <Map size={11} strokeWidth={2.4} className="text-amber-800 dark:text-amber-200" /> Roadmap
       </span>
     );
   }
   if (t === "WORKSHOP" || t === "EVENT") {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12">
-        <Calendar size={11} strokeWidth={2.4} className="text-amber-800" /> Event
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12 dark:text-amber-200">
+        <Calendar size={11} strokeWidth={2.4} className="text-amber-800 dark:text-amber-200" /> Event
       </span>
     );
   }
   if (t === "QUIZ" || t === "EXAM") {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12">
-        <FileQuestion size={11} strokeWidth={2.4} className="text-amber-800" /> Exam
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12 dark:text-amber-200">
+        <FileQuestion size={11} strokeWidth={2.4} className="text-amber-800 dark:text-amber-200" /> Exam
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12">
-      <BookOpen size={11} strokeWidth={2.4} className="text-amber-800" /> Course
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12 dark:text-amber-200">
+      <BookOpen size={11} strokeWidth={2.4} className="text-amber-800 dark:text-amber-200" /> Course
     </span>
   );
 }
@@ -206,60 +205,51 @@ const TYPE_CONFIG: Record<
   ROADMAP: {
     label: "Roadmap",
     icon: Map,
-    color: "text-fuchsia-700",
+    color: "text-fuchsia-700 dark:text-fuchsia-300",
     bgGradient: "from-fuchsia-500/15 to-purple-500/10",
     border: "border-fuchsia-500/20",
-    badgeBg: "bg-fuchsia-50 text-fuchsia-800 border-fuchsia-200",
+    badgeBg: "bg-fuchsia-50 text-fuchsia-800 border-fuchsia-200 dark:bg-fuchsia-500/10 dark:text-fuchsia-200 dark:border-fuchsia-500/25",
   },
   COURSE: {
     label: "Course",
     icon: BookOpen,
-    color: "text-indigo-700",
+    color: "text-indigo-700 dark:text-indigo-300",
     bgGradient: "from-indigo-500/15 to-blue-500/10",
     border: "border-indigo-500/20",
-    badgeBg: "bg-indigo-50 text-indigo-800 border-indigo-200",
+    badgeBg: "bg-indigo-50 text-indigo-800 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-200 dark:border-indigo-500/25",
   },
   EVENT: {
     label: "Event",
     icon: Calendar,
-    color: "text-violet-700",
+    color: "text-violet-700 dark:text-violet-300",
     bgGradient: "from-violet-500/15 to-purple-500/10",
     border: "border-violet-500/20",
-    badgeBg: "bg-violet-50 text-violet-800 border-violet-200",
+    badgeBg: "bg-violet-50 text-violet-800 border-violet-200 dark:bg-violet-500/10 dark:text-violet-200 dark:border-violet-500/25",
   },
   WORKSHOP: {
     label: "Workshop",
     icon: Calendar,
-    color: "text-violet-700",
+    color: "text-violet-700 dark:text-violet-300",
     bgGradient: "from-violet-500/15 to-purple-500/10",
     border: "border-violet-500/20",
-    badgeBg: "bg-violet-50 text-violet-800 border-violet-200",
+    badgeBg: "bg-violet-50 text-violet-800 border-violet-200 dark:bg-violet-500/10 dark:text-violet-200 dark:border-violet-500/25",
   },
   QUIZ: {
     label: "Quiz",
     icon: FileQuestion,
-    color: "text-rose-700",
+    color: "text-rose-700 dark:text-rose-300",
     bgGradient: "from-rose-500/15 to-orange-500/10",
     border: "border-rose-500/20",
-    badgeBg: "bg-rose-50 text-rose-800 border-rose-200",
+    badgeBg: "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:border-rose-500/25",
   },
   EXAM: {
     label: "Exam",
     icon: ClipboardCheck,
-    color: "text-orange-700",
+    color: "text-orange-700 dark:text-orange-300",
     bgGradient: "from-orange-500/15 to-amber-500/10",
     border: "border-orange-500/20",
-    badgeBg: "bg-orange-50 text-orange-800 border-orange-200",
+    badgeBg: "bg-orange-50 text-orange-800 border-orange-200 dark:bg-orange-500/10 dark:text-orange-200 dark:border-orange-500/25",
   },
-};
-
-const TYPE_DEFAULT_COVERS: Record<string, string> = {
-  COURSE: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=80",
-  ROADMAP: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80",
-  EVENT: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=80",
-  WORKSHOP: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=80",
-  QUIZ: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800&auto=format&fit=crop&q=80",
-  EXAM: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800&auto=format&fit=crop&q=80",
 };
 
 // ── New Course creation modal ───────────────────────────────────────────────────
@@ -298,34 +288,34 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b] cursor-pointer"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer"
         >
           <X size={18} />
         </button>
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
             <BookOpen size={20} strokeWidth={2.4} />
           </div>
           <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Course</h3>
+            <h3 className="text-[15px] font-bold tracking-tight text-ink">New Course</h3>
             <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
           </div>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
             {error}
           </div>
         )}
 
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label htmlFor="course-name" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+            <label htmlFor="course-name" className="mb-1.5 block text-[13px] font-semibold text-ink">
               Course title <span className="text-rose-500">*</span>
             </label>
             <input
@@ -336,14 +326,14 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Intro to Spring Boot"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
           {!channelsLoading && channels.length > 0 && (
             <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           )}
           {!channelsLoading && channels.length === 0 && (
-            <p className="text-sm text-rose-600">
+            <p className="text-sm text-rose-600 dark:text-rose-400">
               You need a channel with content-authoring rights before you can create a course.
             </p>
           )}
@@ -351,14 +341,14 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b] cursor-pointer"
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!name.trim() || !channelId || creating}
-              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60 cursor-pointer"
+              className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-ink-hover disabled:opacity-60 cursor-pointer"
             >
               {creating ? "Creating…" : "Create Course"}
             </button>
@@ -406,34 +396,34 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b] cursor-pointer"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer"
         >
           <X size={18} />
         </button>
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-fuchsia-50 text-fuchsia-600">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-fuchsia-50 text-fuchsia-600 dark:bg-fuchsia-500/10 dark:text-fuchsia-400">
             <Map size={20} strokeWidth={2.4} />
           </div>
           <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Roadmap</h3>
+            <h3 className="text-[15px] font-bold tracking-tight text-ink">New Roadmap</h3>
             <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
           </div>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
             {error}
           </div>
         )}
 
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label htmlFor="roadmap-title" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+            <label htmlFor="roadmap-title" className="mb-1.5 block text-[13px] font-semibold text-ink">
               Roadmap Title <span className="text-red-500">*</span>
             </label>
             <input
@@ -444,14 +434,14 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Java Backend Path"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
           {!channelsLoading && channels.length > 0 && (
             <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           )}
           {!channelsLoading && channels.length === 0 && (
-            <p className="text-sm text-rose-600">
+            <p className="text-sm text-rose-600 dark:text-rose-400">
               You need a channel with content-authoring rights before you can create a roadmap.
             </p>
           )}
@@ -459,14 +449,14 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b] cursor-pointer"
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={creating}
-              className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-all hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
             >
               {creating ? "Creating..." : "Create Roadmap"}
             </button>
@@ -528,35 +518,35 @@ function CreateEventModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b] cursor-pointer"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer"
         >
           <X size={18} />
         </button>
 
         <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400">
             <Calendar size={20} strokeWidth={2.4} />
           </div>
           <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Event</h3>
+            <h3 className="text-[15px] font-bold tracking-tight text-ink">New Event</h3>
             <p className="text-[12px] font-medium text-slate-500">Choose event type and give it a title.</p>
           </div>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
             {error}
           </div>
         )}
 
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+            <label className="mb-1.5 block text-[13px] font-semibold text-ink">
               Event Type <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -565,13 +555,13 @@ function CreateEventModal({
                 onClick={() => setEventType("WORKSHOP")}
                 className={`flex flex-col items-start rounded-xl border p-3 text-left transition-all cursor-pointer ${
                   eventType === "WORKSHOP"
-                    ? "border-violet-600 bg-violet-50/50 ring-2 ring-violet-600/20"
+                    ? "border-violet-600 bg-violet-50/50 ring-2 ring-violet-600/20 dark:bg-violet-500/10"
                     : "border-slate-200 bg-slate-50/60 hover:bg-slate-100/60"
                 }`}
               >
                 <div className="flex w-full items-center justify-between">
-                  <span className="text-xs font-bold text-[#14142b]">Workshop</span>
-                  {eventType === "WORKSHOP" && <Check size={14} className="text-violet-600" />}
+                  <span className="text-xs font-bold text-ink">Workshop</span>
+                  {eventType === "WORKSHOP" && <Check size={14} className="text-violet-600 dark:text-violet-400" />}
                 </div>
                 <p className="mt-1 text-[11px] leading-tight text-slate-500">
                   Interactive sessions with agenda & modules
@@ -583,13 +573,13 @@ function CreateEventModal({
                 onClick={() => setEventType("WEBINAR")}
                 className={`flex flex-col items-start rounded-xl border p-3 text-left transition-all cursor-pointer ${
                   eventType === "WEBINAR"
-                    ? "border-violet-600 bg-violet-50/50 ring-2 ring-violet-600/20"
+                    ? "border-violet-600 bg-violet-50/50 ring-2 ring-violet-600/20 dark:bg-violet-500/10"
                     : "border-slate-200 bg-slate-50/60 hover:bg-slate-100/60"
                 }`}
               >
                 <div className="flex w-full items-center justify-between">
-                  <span className="text-xs font-bold text-[#14142b]">Webinar</span>
-                  {eventType === "WEBINAR" && <Check size={14} className="text-violet-600" />}
+                  <span className="text-xs font-bold text-ink">Webinar</span>
+                  {eventType === "WEBINAR" && <Check size={14} className="text-violet-600 dark:text-violet-400" />}
                 </div>
                 <p className="mt-1 text-[11px] leading-tight text-slate-500">
                   Live presentation or Q&A stream session
@@ -599,7 +589,7 @@ function CreateEventModal({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+            <label className="mb-1.5 block text-[13px] font-semibold text-ink">
               Title <span className="text-red-500">*</span>
             </label>
             <input
@@ -609,7 +599,7 @@ function CreateEventModal({
               placeholder={eventType === "WORKSHOP" ? "e.g. Full-Stack Web Development Workshop" : "e.g. Intro to AI Webinar"}
               maxLength={120}
               autoFocus
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-violet-600 focus:bg-white focus:ring-2 focus:ring-violet-600/20"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-violet-600 focus:bg-surface focus:ring-2 focus:ring-violet-600/20"
             />
           </div>
 
@@ -663,31 +653,31 @@ function RenameRoadmapModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink"
         >
           <X size={18} />
         </button>
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-            <Pencil size={20} className="text-[#14142b]" />
+            <Pencil size={20} className="text-ink" />
           </div>
-          <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">Rename Roadmap</h3>
+          <h3 className="text-[15px] font-bold tracking-tight text-ink">Rename Roadmap</h3>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
             {error}
           </div>
         )}
 
         <form onSubmit={handleUpdate} className="space-y-4">
           <div>
-            <label htmlFor="rename-title" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+            <label htmlFor="rename-title" className="mb-1.5 block text-[13px] font-semibold text-ink">
               Roadmap Title <span className="text-red-500">*</span>
             </label>
             <input
@@ -697,11 +687,11 @@ function RenameRoadmapModal({
               autoFocus
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
           <div>
-            <label htmlFor="rename-desc" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+            <label htmlFor="rename-desc" className="mb-1.5 block text-[13px] font-semibold text-ink">
               Description <span className="font-medium text-slate-400">(optional)</span>
             </label>
             <textarea
@@ -709,21 +699,21 @@ function RenameRoadmapModal({
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
+              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-ink"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!title.trim() || updating}
-              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
+              className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-ink-hover disabled:opacity-60"
             >
               {updating ? "Saving…" : "Save Changes"}
             </button>
@@ -760,13 +750,13 @@ function DeleteRoadmapModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
+      <div className="relative w-full max-w-sm rounded-2xl bg-surface p-6 shadow-2xl">
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
-            <Trash2 size={20} className="text-red-600" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10">
+            <Trash2 size={20} className="text-red-600 dark:text-red-400" />
           </div>
-          <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">Delete Roadmap</h3>
+          <h3 className="text-[15px] font-bold tracking-tight text-ink">Delete Roadmap</h3>
         </div>
         <p className="text-sm text-gray-600 mb-6">
           Are you sure you want to delete <strong>{item.title}</strong>? This action cannot be
@@ -774,7 +764,7 @@ function DeleteRoadmapModal({
         </p>
 
         {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
             {error}
           </div>
         )}
@@ -784,7 +774,7 @@ function DeleteRoadmapModal({
             type="button"
             onClick={onClose}
             disabled={deleting}
-            className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+            className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-ink"
           >
             Cancel
           </button>
@@ -841,7 +831,6 @@ function ContentCard({
   const typeKey = item.type?.toUpperCase() || "COURSE";
   const typeInfo = TYPE_CONFIG[typeKey] ?? TYPE_CONFIG.COURSE;
   const TypeIcon = typeInfo.icon;
-  const coverImage = item.coverImageUrl || TYPE_DEFAULT_COVERS[typeKey] || TYPE_DEFAULT_COVERS.COURSE;
 
   async function handleDuplicateSegmentAware() {
     setMenuOpen(false);
@@ -866,7 +855,19 @@ function ContentCard({
       if (result) await result;
       toast.success("Archived");
     } else if (confirmAction === "delete") {
-      await deleteContent(segment, item.id, item.title);
+      // A null request means this type has no delete — never report one that did not happen.
+      const request = deleteContent(segment, item.id, item.title);
+      if (!request) {
+        toast.error("This content can't be deleted here.");
+        setConfirmAction(null);
+        return;
+      }
+      try {
+        await request;
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Could not delete");
+        return;
+      }
       toast.success("Deleted");
     }
     setConfirmAction(null);
@@ -883,7 +884,7 @@ function ContentCard({
       spotlightColor="rgba(217, 119, 6, 0.06)"
       spotlightSize={360}
       onClick={channelSuspended || isPendingInvitation ? undefined : handleCardActivate}
-      className={`group relative flex flex-col justify-between overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] rounded-tr-xl rounded-bl-xl border border-amber-900/12 bg-[#FFFDF7]/90 hover:bg-[#FFFDF7] p-5 shadow-[0_4px_20px_rgba(78,41,17,0.03)] hover:shadow-[0_8px_30px_rgba(78,41,17,0.06)] hover:border-amber-900/25 transition-all duration-200 ${
+      className={`group relative flex flex-col justify-between overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] rounded-tr-xl rounded-bl-xl border border-amber-900/12 bg-surface/90 hover:bg-surface p-5 shadow-[0_4px_20px_rgba(78,41,17,0.03)] hover:shadow-[0_8px_30px_rgba(78,41,17,0.06)] hover:border-amber-900/25 transition-all duration-200 ${
         channelSuspended || isPendingInvitation ? "" : "cursor-pointer"
       }`}
     >
@@ -892,14 +893,14 @@ function ContentCard({
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             <span
-              className="text-[11px] font-extrabold uppercase tracking-wider text-amber-900/70 truncate max-w-[260px]"
+              className="text-[11px] font-extrabold uppercase tracking-wider text-amber-900/70 truncate max-w-[260px] dark:text-amber-200"
               title={item.channelName}
             >
               {item.channelName || "Personal Channel"}
             </span>
           </div>
 
-          <h3 className="line-clamp-1 text-base sm:text-[17px] font-bold tracking-tight text-[#14142b] group-hover:text-amber-950 transition-colors leading-snug">
+          <h3 className="line-clamp-1 text-base sm:text-[17px] font-bold tracking-tight text-ink group-hover:text-amber-950 transition-colors leading-snug dark:group-hover:text-amber-200">
             {item.title}
           </h3>
 
@@ -918,7 +919,7 @@ function ContentCard({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
-            <Clock size={12} className="text-amber-800/60" />
+            <Clock size={12} className="text-amber-800/60 dark:text-amber-200" />
             <span>
               {new Date(item.updatedAt).toLocaleDateString("en-IN", {
                 day: "numeric",
@@ -933,7 +934,7 @@ function ContentCard({
               <button
                 type="button"
                 onClick={() => router.push(editorHref(segment, item.id))}
-                className="flex h-7 w-7 items-center justify-center rounded-lg border border-amber-900/15 bg-white/80 text-slate-600 hover:bg-white hover:text-[#14142b] transition-colors cursor-pointer"
+                className="flex h-7 w-7 items-center justify-center rounded-lg border border-amber-900/15 bg-surface/80 text-slate-600 hover:bg-surface hover:text-ink transition-colors cursor-pointer"
                 title="Direct Edit"
               >
                 <Pencil size={12} />
@@ -957,7 +958,7 @@ function ContentCard({
                       toast.error(err instanceof Error ? err.message : "Failed to accept");
                     }
                   }}
-                  className="rounded-lg bg-[#14142b] px-3 py-1 text-xs font-bold text-white hover:bg-[#232735] transition-colors cursor-pointer"
+                  className="rounded-lg bg-ink px-3 py-1 text-xs font-bold text-on-ink hover:bg-ink-hover transition-colors cursor-pointer"
                 >
                   Accept
                 </button>
@@ -972,7 +973,7 @@ function ContentCard({
                       toast.error(err instanceof Error ? err.message : "Failed to decline");
                     }
                   }}
-                  className="rounded-lg border border-amber-900/15 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-amber-50 transition-colors cursor-pointer"
+                  className="rounded-lg border border-amber-900/15 bg-surface px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-amber-50 transition-colors cursor-pointer dark:hover:bg-amber-500/10"
                 >
                   Decline
                 </button>
@@ -980,9 +981,9 @@ function ContentCard({
             ) : (
               <Link
                 href={openHref}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#14142b] px-3.5 py-1.5 text-xs font-bold text-white transition-all shadow-3xs hover:bg-[#232735] hover:shadow-2xs cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-1.5 text-xs font-bold text-on-ink transition-all shadow-3xs hover:bg-ink-hover hover:shadow-2xs cursor-pointer"
               >
-                <TypeIcon size={12} className="text-amber-400/90" />
+                <TypeIcon size={12} className="text-amber-400/90 dark:text-amber-600" />
                 <span>
                   {!isExam && !isRoadmap && item.status === "SUBMITTED"
                     ? "Review"
@@ -992,7 +993,7 @@ function ContentCard({
                     ? "Open Exam"
                     : "Open"}
                 </span>
-                <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5 text-amber-200/80" />
+                <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5 text-amber-200/80 dark:text-amber-700/80" />
               </Link>
             )}
           </div>
@@ -1049,10 +1050,10 @@ function ContentTable({
   const router = useRouter();
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-amber-900/12 bg-[#FFFDF7]/90 backdrop-blur-md shadow-[0_4px_24px_rgba(78,41,17,0.03)]">
+    <div className="overflow-hidden rounded-2xl border border-amber-900/12 bg-surface/90 backdrop-blur-md shadow-[0_4px_24px_rgba(78,41,17,0.03)]">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
-          <thead className="border-b border-amber-900/10 bg-amber-900/[0.03] text-[11px] font-extrabold uppercase tracking-wider text-amber-900/60">
+          <thead className="border-b border-amber-900/10 bg-amber-900/[0.03] text-[11px] font-extrabold uppercase tracking-wider text-amber-900/60 dark:text-amber-200">
             <tr>
               <th className="px-5 py-3.5">Creation</th>
               <th className="px-4 py-3.5">Type</th>
@@ -1077,11 +1078,11 @@ function ContentTable({
                 >
                   {/* Title & Author */}
                   <td className="px-5 py-3.5 max-w-xs">
-                    <div className="font-bold text-[#14142b] group-hover:text-amber-950 transition-colors truncate text-[13px]">
+                    <div className="font-bold text-ink group-hover:text-amber-950 transition-colors truncate text-[13px] dark:group-hover:text-amber-200">
                       {item.title}
                     </div>
                     {item.authorName && (
-                      <div className="text-[10.5px] font-semibold text-amber-900/60 uppercase tracking-wider flex items-center gap-1.5 mt-0.5">
+                      <div className="text-[10.5px] font-semibold text-amber-900/60 uppercase tracking-wider flex items-center gap-1.5 mt-0.5 dark:text-amber-200">
                         <User size={10} />
                         <span className="truncate">{item.authorName}</span>
                       </div>
@@ -1122,7 +1123,7 @@ function ContentTable({
                         <button
                           type="button"
                           onClick={() => router.push(editorHref(segment, item.id))}
-                          className="rounded-lg border border-amber-900/12 bg-white/90 p-1.5 text-slate-600 hover:bg-[#14142b] hover:text-white hover:border-[#14142b] transition-all cursor-pointer shadow-3xs"
+                          className="rounded-lg border border-amber-900/12 bg-surface/90 p-1.5 text-slate-600 hover:bg-ink hover:text-on-ink hover:border-ink transition-all cursor-pointer shadow-3xs"
                           title="Edit"
                         >
                           <Pencil size={13} />
@@ -1130,7 +1131,7 @@ function ContentTable({
                       )}
                       <Link
                         href={openHref}
-                        className="inline-flex items-center gap-1 rounded-lg bg-[#14142b] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#232735] transition-all shadow-3xs cursor-pointer"
+                        className="inline-flex items-center gap-1 rounded-lg bg-ink px-3.5 py-1.5 text-xs font-bold text-on-ink hover:bg-ink-hover transition-all shadow-3xs cursor-pointer"
                       >
                         <span>Open</span>
                         <ArrowRight size={11} className="text-amber-300" />
@@ -1161,12 +1162,12 @@ function ChannelRequiredModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-[#14142b]/40 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-ink/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.2)] transition-all">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.2)] transition-all">
         <div className="flex items-start justify-between">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
             <Lock size={24} />
           </div>
           <button
@@ -1179,7 +1180,7 @@ function ChannelRequiredModal({
         </div>
 
         <div className="mt-4">
-          <h3 className="text-lg font-bold tracking-tight text-[#14142b]">
+          <h3 className="text-lg font-bold tracking-tight text-ink">
             Feature Locked
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-slate-500">
@@ -1191,7 +1192,7 @@ function ChannelRequiredModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full bg-[#14142b] px-5 py-2 text-xs font-semibold text-white shadow-md transition-colors hover:bg-[#232735] cursor-pointer"
+            className="rounded-full bg-ink px-5 py-2 text-xs font-semibold text-on-ink shadow-md transition-colors hover:bg-ink-hover cursor-pointer"
           >
             Cancel
           </button>
@@ -1382,7 +1383,7 @@ export default function DashboardPage() {
     <div
       className="relative flex min-h-screen flex-1 flex-col"
       style={{
-        background: "linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%)",
+        background: "var(--theme-wash, linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%))",
       }}
     >
       <ChannelRequiredModal
@@ -1418,7 +1419,7 @@ export default function DashboardPage() {
         <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-bold text-[#14142b] leading-[1.15] tracking-normal select-none"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-bold text-ink leading-[1.15] tracking-normal select-none"
               style={{ fontFamily: "'Dancing Script', 'Caveat', cursive" }}
             >
               <ShinyText text="Arcade Studio" speed={4.5} />
@@ -1437,7 +1438,7 @@ export default function DashboardPage() {
                     setSortDropdownOpen(false);
                     setDropdownOpen(false);
                   }}
-                  className="inline-flex items-center gap-2 rounded-full border border-amber-900/10 bg-white/95 px-3.5 py-2 text-[12px] font-bold text-slate-700 transition-colors hover:border-amber-900/25 hover:text-[#14142b] outline-none cursor-pointer shadow-3xs"
+                  className="inline-flex items-center gap-2 rounded-full border border-amber-900/10 bg-surface/95 px-3.5 py-2 text-[12px] font-bold text-slate-700 transition-colors hover:border-amber-900/25 hover:text-ink outline-none cursor-pointer shadow-3xs"
                 >
                   <span>{CHANNEL_CHIPS.find((c) => c.id === channelFilter)?.label ?? "All channels"}</span>
                   <ChevronDown
@@ -1448,7 +1449,7 @@ export default function DashboardPage() {
                 {channelDropdownOpen && (
                   <>
                     <div className="fixed inset-0 z-30" onClick={() => setChannelDropdownOpen(false)} />
-                    <div className="absolute right-0 z-40 mt-1.5 min-w-[170px] rounded-2xl border border-amber-900/10 bg-white p-1.5 shadow-xl">
+                    <div className="absolute right-0 z-40 mt-1.5 min-w-[170px] rounded-2xl border border-amber-900/10 bg-surface p-1.5 shadow-xl">
                       {CHANNEL_CHIPS.map((chip) => {
                         const isSelected = channelFilter === chip.id;
                         return (
@@ -1460,11 +1461,11 @@ export default function DashboardPage() {
                               setChannelDropdownOpen(false);
                             }}
                             className={`flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors cursor-pointer ${
-                              isSelected ? "bg-amber-50 text-amber-950 font-bold" : "text-slate-700 hover:bg-slate-50"
+                              isSelected ? "bg-amber-50 text-amber-950 font-bold dark:bg-amber-500/10 dark:text-amber-200" : "text-slate-700 hover:bg-slate-50"
                             }`}
                           >
                             <span>{chip.label}</span>
-                            {isSelected && <Check size={13} className="text-amber-700" />}
+                            {isSelected && <Check size={13} className="text-amber-700 dark:text-amber-300" />}
                           </button>
                         );
                       })}
@@ -1476,12 +1477,12 @@ export default function DashboardPage() {
 
             <Link
               href="/studio/review"
-              className="inline-flex items-center gap-1.5 rounded-full border border-amber-900/10 bg-white/90 px-3.5 py-2 text-[12px] font-bold text-slate-700 transition-colors hover:border-amber-900/25 hover:text-[#14142b] shadow-3xs"
+              className="inline-flex items-center gap-1.5 rounded-full border border-amber-900/10 bg-surface/90 px-3.5 py-2 text-[12px] font-bold text-slate-700 transition-colors hover:border-amber-900/25 hover:text-ink shadow-3xs"
             >
               <ClipboardCheck size={14} />
               <span>Review</span>
               {statusCounts.SUBMITTED > 0 ? (
-                <span className="rounded-full bg-amber-100 text-amber-800 px-1.5 py-0.5 text-[10px] font-extrabold">
+                <span className="rounded-full bg-amber-100 text-amber-800 px-1.5 py-0.5 text-[10px] font-extrabold dark:bg-amber-500/15 dark:text-amber-200">
                   {statusCounts.SUBMITTED}
                 </span>
               ) : (
@@ -1491,7 +1492,7 @@ export default function DashboardPage() {
 
             <Link
               href="/trash"
-              className="inline-flex items-center gap-1.5 rounded-full border border-amber-900/10 bg-white/90 px-3.5 py-2 text-[12px] font-bold text-slate-700 transition-colors hover:border-amber-900/25 hover:text-[#14142b] shadow-3xs"
+              className="inline-flex items-center gap-1.5 rounded-full border border-amber-900/10 bg-surface/90 px-3.5 py-2 text-[12px] font-bold text-slate-700 transition-colors hover:border-amber-900/25 hover:text-ink shadow-3xs"
             >
               <Trash2 size={14} />
               <span>Trash</span>
@@ -1503,7 +1504,7 @@ export default function DashboardPage() {
               <button
                 id="create-content-btn"
                 onClick={handleCreateContentClick}
-                className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-bold text-white shadow-sm transition-all hover:bg-[#232735] active:scale-[0.98] disabled:opacity-75 cursor-pointer"
+                className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-[13px] font-bold text-on-ink shadow-sm transition-all hover:bg-ink-hover active:scale-[0.98] disabled:opacity-75 cursor-pointer"
               >
                 {channelsLoading ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -1521,11 +1522,11 @@ export default function DashboardPage() {
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setDropdownOpen(false)} />
                   <div
-                    className="absolute right-0 z-40 mt-2 w-72 sm:w-80 overflow-hidden rounded-2xl border border-amber-900/12 bg-[#FFFDF7]/98 backdrop-blur-xl p-1.5 shadow-[0_16px_40px_rgba(20,20,43,0.14),0_2px_8px_rgba(78,41,17,0.04)] animate-in fade-in zoom-in-95 duration-150"
+                    className="absolute right-0 z-40 mt-2 w-72 sm:w-80 overflow-hidden rounded-2xl border border-amber-900/12 bg-surface/98 backdrop-blur-xl p-1.5 shadow-[0_16px_40px_rgba(20,20,43,0.14),0_2px_8px_rgba(78,41,17,0.04)] animate-in fade-in zoom-in-95 duration-150"
                     role="menu"
                   >
                     <div className="px-3 py-2 mb-1 border-b border-amber-900/10 flex items-center justify-between">
-                      <p className="text-[11px] font-extrabold uppercase tracking-wider text-amber-900/70">
+                      <p className="text-[11px] font-extrabold uppercase tracking-wider text-amber-900/70 dark:text-amber-200">
                         Create New
                       </p>
                       <span className="text-[10px] font-semibold text-slate-400">Select format</span>
@@ -1540,11 +1541,11 @@ export default function DashboardPage() {
                           className="group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left transition-all hover:bg-amber-900/8 active:bg-amber-900/12 cursor-pointer"
                         >
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amber-900/10 bg-white/90 text-amber-900 shadow-3xs group-hover:border-amber-900/20 group-hover:bg-[#14142b] group-hover:text-amber-300 transition-colors">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amber-900/10 bg-surface/90 text-amber-900 shadow-3xs group-hover:border-amber-900/20 group-hover:bg-ink group-hover:text-amber-300 transition-colors dark:text-amber-200">
                               <type.icon size={15} strokeWidth={2.2} />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-xs font-bold text-[#14142b] group-hover:text-amber-950 transition-colors">
+                              <p className="text-xs font-bold text-ink group-hover:text-amber-950 transition-colors dark:group-hover:text-amber-200">
                                 {type.label}
                               </p>
                               <p className="text-[11px] font-medium text-slate-500 truncate leading-tight">
@@ -1554,7 +1555,7 @@ export default function DashboardPage() {
                           </div>
                           <ArrowRight
                             size={13}
-                            className="shrink-0 text-slate-300 transition-all duration-150 group-hover:translate-x-0.5 group-hover:text-amber-900 opacity-40 group-hover:opacity-100"
+                            className="shrink-0 text-slate-300 transition-all duration-150 group-hover:translate-x-0.5 group-hover:text-amber-900 opacity-40 group-hover:opacity-100 dark:group-hover:text-amber-200"
                           />
                         </button>
                       ))}
@@ -1578,7 +1579,7 @@ export default function DashboardPage() {
                 onClick={() => setStatusFilter(tab.id)}
                 className={`relative pb-3 text-[13px] sm:text-sm font-bold transition-colors cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 ${
                   active
-                    ? "text-[#14142b]"
+                    ? "text-ink"
                     : "text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -1586,14 +1587,14 @@ export default function DashboardPage() {
                 <span
                   className={`rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums ${
                     active
-                      ? "bg-[#14142b] text-white shadow-3xs"
-                      : "bg-white/80 border border-slate-200/80 text-slate-500"
+                      ? "bg-ink text-on-ink shadow-3xs"
+                      : "bg-surface/80 border border-slate-200/80 text-slate-500"
                   }`}
                 >
                   {count}
                 </span>
                 {active && (
-                  <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#14142b] rounded-full" />
+                  <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-ink rounded-full" />
                 )}
               </button>
             );
@@ -1610,7 +1611,7 @@ export default function DashboardPage() {
               placeholder="Search creations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-amber-900/10 bg-white/95 pl-9 pr-8 py-2 text-xs font-semibold text-slate-800 placeholder-slate-400 outline-none transition-all focus:border-[#14142b] focus:ring-2 focus:ring-amber-200 shadow-3xs"
+              className="w-full rounded-xl border border-amber-900/10 bg-surface/95 pl-9 pr-8 py-2 text-xs font-semibold text-slate-800 placeholder-slate-400 outline-none transition-all focus:border-ink focus:ring-2 focus:ring-amber-200 shadow-3xs dark:focus:ring-amber-500/25"
             />
             {searchQuery && (
               <button
@@ -1634,7 +1635,7 @@ export default function DashboardPage() {
                   setSortDropdownOpen(false);
                   setChannelDropdownOpen(false);
                 }}
-                className="inline-flex items-center gap-2 rounded-xl border border-amber-900/10 bg-white/95 px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-amber-900/25 hover:text-[#14142b] transition-all cursor-pointer shadow-3xs"
+                className="inline-flex items-center gap-2 rounded-xl border border-amber-900/10 bg-surface/95 px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-amber-900/25 hover:text-ink transition-all cursor-pointer shadow-3xs"
               >
                 <span>{TYPE_CHIPS.find((c) => c.id === typeFilter)?.label ?? "All types"}</span>
                 <ChevronDown
@@ -1645,7 +1646,7 @@ export default function DashboardPage() {
               {typeDropdownOpen && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setTypeDropdownOpen(false)} />
-                  <div className="absolute left-0 sm:left-auto sm:right-0 z-40 mt-1.5 w-44 rounded-2xl border border-amber-900/10 bg-white p-1.5 shadow-xl">
+                  <div className="absolute left-0 sm:left-auto sm:right-0 z-40 mt-1.5 w-44 rounded-2xl border border-amber-900/10 bg-surface p-1.5 shadow-xl">
                     {TYPE_CHIPS.map((chip) => {
                       const isSelected = typeFilter === chip.id;
                       return (
@@ -1657,11 +1658,11 @@ export default function DashboardPage() {
                             setTypeDropdownOpen(false);
                           }}
                           className={`flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors cursor-pointer ${
-                            isSelected ? "bg-amber-50 text-amber-950 font-bold" : "text-slate-700 hover:bg-slate-50"
+                            isSelected ? "bg-amber-50 text-amber-950 font-bold dark:bg-amber-500/10 dark:text-amber-200" : "text-slate-700 hover:bg-slate-50"
                           }`}
                         >
                           <span>{chip.label}</span>
-                          {isSelected && <Check size={13} className="text-amber-700" />}
+                          {isSelected && <Check size={13} className="text-amber-700 dark:text-amber-300" />}
                         </button>
                       );
                     })}
@@ -1679,7 +1680,7 @@ export default function DashboardPage() {
                   setTypeDropdownOpen(false);
                   setChannelDropdownOpen(false);
                 }}
-                className="inline-flex items-center gap-2 rounded-xl border border-amber-900/10 bg-white/95 px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-amber-900/25 hover:text-[#14142b] transition-all cursor-pointer shadow-3xs"
+                className="inline-flex items-center gap-2 rounded-xl border border-amber-900/10 bg-surface/95 px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-amber-900/25 hover:text-ink transition-all cursor-pointer shadow-3xs"
               >
                 <ArrowUpDown size={12} className="text-slate-400" />
                 <span>{SORT_OPTIONS.find((s) => s.id === sortBy)?.label ?? "Recently updated"}</span>
@@ -1691,7 +1692,7 @@ export default function DashboardPage() {
               {sortDropdownOpen && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setSortDropdownOpen(false)} />
-                  <div className="absolute right-0 z-40 mt-1.5 w-48 rounded-2xl border border-amber-900/10 bg-white p-1.5 shadow-xl">
+                  <div className="absolute right-0 z-40 mt-1.5 w-48 rounded-2xl border border-amber-900/10 bg-surface p-1.5 shadow-xl">
                     {SORT_OPTIONS.map((opt) => {
                       const isSelected = sortBy === opt.id;
                       return (
@@ -1703,11 +1704,11 @@ export default function DashboardPage() {
                             setSortDropdownOpen(false);
                           }}
                           className={`flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors cursor-pointer ${
-                            isSelected ? "bg-amber-50 text-amber-950 font-bold" : "text-slate-700 hover:bg-slate-50"
+                            isSelected ? "bg-amber-50 text-amber-950 font-bold dark:bg-amber-500/10 dark:text-amber-200" : "text-slate-700 hover:bg-slate-50"
                           }`}
                         >
                           <span>{opt.label}</span>
-                          {isSelected && <Check size={13} className="text-amber-700" />}
+                          {isSelected && <Check size={13} className="text-amber-700 dark:text-amber-300" />}
                         </button>
                       );
                     })}
@@ -1717,13 +1718,13 @@ export default function DashboardPage() {
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center rounded-xl border border-amber-900/10 bg-white/95 p-0.5 shadow-3xs">
+            <div className="flex items-center rounded-xl border border-amber-900/10 bg-surface/95 p-0.5 shadow-3xs">
               <button
                 type="button"
                 onClick={() => setViewMode("grid")}
                 className={`rounded-lg p-1.5 text-xs transition-colors cursor-pointer ${
                   viewMode === "grid"
-                    ? "bg-[#14142b] text-white shadow-xs"
+                    ? "bg-ink text-on-ink shadow-xs"
                     : "text-slate-400 hover:text-slate-700"
                 }`}
                 title="Grid View"
@@ -1735,7 +1736,7 @@ export default function DashboardPage() {
                 onClick={() => setViewMode("table")}
                 className={`rounded-lg p-1.5 text-xs transition-colors cursor-pointer ${
                   viewMode === "table"
-                    ? "bg-[#14142b] text-white shadow-xs"
+                    ? "bg-ink text-on-ink shadow-xs"
                     : "text-slate-400 hover:text-slate-700"
                 }`}
                 title="Table View"
@@ -1750,7 +1751,7 @@ export default function DashboardPage() {
         {loadingItems ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="animate-pulse rounded-2xl border border-slate-200 bg-white p-5">
+              <div key={i} className="animate-pulse rounded-2xl border border-slate-200 bg-surface p-5">
                 <div className="mb-3 h-4 w-2/3 rounded bg-slate-100" />
                 <div className="mb-2 h-3 w-full rounded bg-slate-50" />
                 <div className="mb-4 h-3 w-3/4 rounded bg-slate-50" />
@@ -1762,21 +1763,21 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-200 bg-white/70 py-20 text-center">
+          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-200 bg-surface/70 py-20 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
               <BookOpen size={24} />
             </div>
             <div>
-              <p className="text-sm font-bold text-[#14142b]">No creations yet</p>
+              <p className="text-sm font-bold text-ink">No creations yet</p>
               <p className="mt-1 text-xs text-slate-400">
                 Click &quot;Create Content&quot; to build your first course, event or exam.
               </p>
             </div>
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-slate-200/80 bg-white/80 py-16 text-center">
+          <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-slate-200/80 bg-surface/80 py-16 text-center">
             <GraduationCap size={28} className="text-slate-300" />
-            <p className="text-sm font-bold text-[#14142b]">No creations found</p>
+            <p className="text-sm font-bold text-ink">No creations found</p>
             <p className="text-xs text-slate-400">Try changing your search query or filters.</p>
             <button
               type="button"
@@ -1786,7 +1787,7 @@ export default function DashboardPage() {
                 setChannelFilter("ALL");
                 setSearchQuery("");
               }}
-              className="mt-1 text-[12px] font-bold text-indigo-600 hover:underline cursor-pointer"
+              className="mt-1 text-[12px] font-bold text-indigo-600 hover:underline cursor-pointer dark:text-indigo-400"
             >
               Reset filters
             </button>

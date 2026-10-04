@@ -8,7 +8,7 @@ export default function CreatorTrust() {
       <div className="wrap">
         <div className="trust-inner">
           <div>
-            <span className="eyebrow" style={{ color: "#DDDEFB", borderBottom: "none" }}>Platform Trust</span>
+            <span className="eyebrow" style={{ color: "var(--theme-n-200, #DDDEFB)", borderBottom: "none" }}>Platform Trust</span>
             <h2 className="mt-4">Trusted Learning Starts Here</h2>
             <p>Every creator and organization completes identity verification before publishing content. Combined with Arcade's review process, this helps maintain a trusted ecosystem where learners can confidently enroll in high-quality educational content.</p>
           </div>

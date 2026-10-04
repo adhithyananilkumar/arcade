@@ -37,7 +37,7 @@ function ForumPageContent() {
         <div 
           onClick={() => setShowCreator(true)}
           style={{
-            backgroundColor: '#fff',
+            backgroundColor: 'var(--theme-surface, #fff)',
             border: '1px solid var(--border)',
             borderRadius: 'var(--radius-md)',
             padding: '16px 20px',
@@ -164,7 +164,7 @@ function ForumPageContent() {
               padding: '0 16px',
               borderRadius: 'var(--radius-sm)',
               border: '1px solid var(--border)',
-              backgroundColor: '#fff',
+              backgroundColor: 'var(--theme-surface, #fff)',
               fontSize: 13,
               cursor: page === 0 ? 'not-allowed' : 'pointer',
               opacity: page === 0 ? 0.4 : 1,
@@ -183,7 +183,7 @@ function ForumPageContent() {
               padding: '0 16px',
               borderRadius: 'var(--radius-sm)',
               border: '1px solid var(--border)',
-              backgroundColor: '#fff',
+              backgroundColor: 'var(--theme-surface, #fff)',
               fontSize: 13,
               cursor: data.last ? 'not-allowed' : 'pointer',
               opacity: data.last ? 0.4 : 1,

@@ -33,7 +33,7 @@ export const PublishingChecklist: React.FC<Props> = ({ validation, onNavigateToS
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Publishing Checklist</h3>
+        <h3 className="text-lg font-medium text-gray-900">Publishing Checklist</h3>
         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
           isReady 
             ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
@@ -44,11 +44,11 @@ export const PublishingChecklist: React.FC<Props> = ({ validation, onNavigateToS
       </div>
 
       <div className="space-y-2">
-        <div className="flex justify-between text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div className="flex justify-between text-sm font-medium text-gray-700">
           <span>Progress</span>
           <span>{percentage}%</span>
         </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+        <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
             className={`h-2 rounded-full ${isReady ? 'bg-green-500' : 'bg-violet-600'}`} 
             style={{ width: `${percentage}%` }}
@@ -57,8 +57,8 @@ export const PublishingChecklist: React.FC<Props> = ({ validation, onNavigateToS
       </div>
 
       {issues.length > 0 && (
-        <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+        <div className="space-y-4 pt-4 border-t border-gray-100">
+          <h4 className="text-sm font-medium text-gray-900 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-yellow-500" />
             Issues to Resolve
           </h4>
@@ -86,7 +86,7 @@ export const PublishingChecklist: React.FC<Props> = ({ validation, onNavigateToS
       )}
 
       {isReady && (
-        <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+        <div className="pt-4 border-t border-gray-100">
           <div className="flex items-center gap-2 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/10 p-4 rounded-lg border border-green-200 dark:border-green-900/50">
             <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
             <p className="text-sm font-medium">All checks passed! Your {rootTerm} is ready to be published.</p>

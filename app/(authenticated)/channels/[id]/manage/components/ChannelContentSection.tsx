@@ -19,8 +19,9 @@ import type { ChannelContentItem } from '@/domains/channels';
 import { Panel } from '@/shared/design-system/ui/panel';
 import { cn } from '@/shared/utils/utils';
 import { CONTENT_STATUSES, ContentStatusPill, contentHref, statusOf, typeLabel } from './contentStatus';
+import { UnifiedContentCard } from '@/shared/design-system/ui/cards';
+import { ContentArt } from '@/shared/design-system/art';
 
-import { LetterVectorArt } from '@/apps/learner/components/my-learning/LetterVectorArt';
 
 interface CardProps {
   item: ChannelContentItem;
@@ -32,95 +33,23 @@ interface CardProps {
 /** One content item styled with the LibraryCard aesthetic. */
 export function ContentCard({ item, channelId, openReviews }: CardProps) {
   const href = contentHref(item, channelId, openReviews);
-  const typeStr = item.type?.toUpperCase() || '';
-
-  const TypeIcon =
-    typeStr === 'COURSE'
-      ? BookOpen
-      : typeStr === 'WORKSHOP' || typeStr === 'EVENT' || typeStr === 'WEBINAR'
-      ? Calendar
-      : typeStr === 'EXAM' || typeStr === 'ASSESSMENT'
-      ? GraduationCap
-      : typeStr === 'ROADMAP'
-      ? Map
-      : FileText;
 
   return (
-    <div className="group relative flex h-full flex-col justify-between overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white/95 p-4 sm:p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95">
-      {/* Decorative ambient background glow */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-12 -bottom-12 h-44 w-44 rounded-full bg-gradient-to-br from-[#4C6FFF]/10 via-[#1DB876]/8 to-transparent blur-2xl"
-      />
-
-      <div className="relative z-10 flex flex-1 flex-col justify-between gap-4">
-        {/* Vector Letter Banner or Cover Image */}
-        <div className="relative h-40 sm:h-44 w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 shadow-xs transition-transform duration-500 group-hover:scale-[1.02] dark:border-slate-800">
-          {item.coverImageUrl ? (
-            <img
-              src={item.coverImageUrl}
-              alt={item.title || ''}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <LetterVectorArt
-              title={item.title || 'Untitled'}
-              id={item.id}
-            />
-          )}
-
-          {/* Floating Top Badges */}
-          <div className="absolute inset-x-2.5 top-2.5 flex items-center justify-between gap-1.5 pointer-events-none z-10">
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#12141C]/80 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-xs">
-              <TypeIcon size={10} />
-              {typeLabel(item.type)}
-            </span>
-            <ContentStatusPill status={item.status} />
-          </div>
-        </div>
-
-        {/* Title and details */}
-        <div className="space-y-1.5">
-          <h4 className="line-clamp-2 text-base font-bold tracking-tight text-[#14142b] transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
-            {item.title || 'Untitled'}
-          </h4>
-
-          {item.authorName && (
-            <p className="flex items-center gap-1 text-[11.5px] font-medium text-slate-500 dark:text-slate-400">
-              <User size={11} className="text-slate-400 shrink-0" />
-              <span className="truncate">
-                {item.authorName}
-                {item.authorUsername && <span className="text-slate-400"> (@{item.authorUsername})</span>}
-              </span>
-            </p>
-          )}
-
-          <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
-            Updated {new Date(item.updatedAt).toLocaleDateString()}
-          </p>
-        </div>
-
-        {/* Bottom CTA Action */}
-        <div className="pt-1">
-          {href ? (
-            <Link
-              href={href}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#12141C] hover:bg-[#232735] text-white px-4 py-2.5 text-[13px] font-semibold transition-all shadow-sm hover:shadow-md dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
-            >
-              <span>Manage</span>
-              <ArrowUpRight size={14} />
-            </Link>
-          ) : (
-            <span
-              className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-slate-100 px-4 py-2.5 text-[13px] font-semibold text-slate-400 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500"
-              aria-disabled="true"
-            >
-              Unavailable
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
+    <UnifiedContentCard
+      id={item.id}
+      title={item.title || 'Untitled'}
+      type={item.type}
+      typeLabel={typeLabel(item.type)}
+      statusNode={<ContentStatusPill status={item.status} />}
+      description={item.description}
+      channelName={item.channelName}
+      channelIconUrl={item.channelIconUrl}
+      dateText={`Updated ${new Date(item.updatedAt).toLocaleDateString()}`}
+      actionHref={href || undefined}
+      actionLabel="Manage"
+      disabledAction={!href}
+      disabledActionLabel="Unavailable"
+    />
   );
 }
 
@@ -142,16 +71,10 @@ export function ContentRow({ item, channelId, openReviews, compact }: RowProps) 
           compact ? 'h-10 w-14' : 'h-12 w-[4.5rem]',
         )}
       >
-        {item.coverImageUrl ? (
-          <img src={item.coverImageUrl} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-slate-300">
-            <FileText size={16} />
-          </div>
-        )}
+        <ContentArt seed={item.id} kind={item.type} title={item.title} />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13.5px] font-semibold text-[#14142b] dark:text-white">{item.title || 'Untitled'}</p>
+        <p className="truncate text-[13.5px] font-semibold text-ink">{item.title || 'Untitled'}</p>
         <p className="truncate text-[12px] font-medium text-slate-500">
           {typeLabel(item.type)}
           {item.authorName && <> · {item.authorUsername ? `@${item.authorUsername}` : item.authorName}</>}
@@ -167,7 +90,7 @@ export function ContentRow({ item, channelId, openReviews, compact }: RowProps) 
   return (
     <li>
       {href ? (
-        <Link href={href} className={cn(rowClass, 'transition-colors hover:bg-slate-50 dark:hover:bg-neutral-900')}>
+        <Link href={href} className={cn(rowClass, 'transition-colors hover:bg-slate-50')}>
           {body}
         </Link>
       ) : (
@@ -237,8 +160,8 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
               className={cn(
                 'inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-1.5 text-[12px] font-semibold transition-colors',
                 status === f.id
-                  ? 'bg-[#14142b] text-white'
-                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50',
+                  ? 'bg-ink text-on-ink'
+                  : 'border border-slate-200 bg-surface text-slate-600 hover:bg-slate-50',
               )}
             >
               {f.label}
@@ -260,7 +183,7 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
               value={type}
               onChange={(e) => setType(e.target.value)}
               aria-label="Content type"
-              className="h-9 cursor-pointer rounded-full border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+              className="h-9 cursor-pointer rounded-full border border-slate-200 bg-surface px-3 text-[12px] font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
             >
               <option value="ALL">All types</option>
               {types.map((t) => (
@@ -278,17 +201,17 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search title or author"
-              className="h-9 w-full rounded-full border border-slate-200 bg-white pl-9 pr-3 text-[12.5px] font-medium text-slate-800 placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+              className="h-9 w-full rounded-full border border-slate-200 bg-surface pl-9 pr-3 text-[12.5px] font-medium text-slate-800 placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
             />
           </div>
 
-          <div className="hidden sm:flex items-center rounded-full border border-slate-200 bg-white p-0.5">
+          <div className="hidden sm:flex items-center rounded-full border border-slate-200 bg-surface p-0.5">
             <button
               type="button"
               onClick={() => setViewMode('grid')}
               className={cn(
                 'flex h-7.5 w-7.5 items-center justify-center rounded-full transition-colors',
-                viewMode === 'grid' ? 'bg-[#14142b] text-white' : 'text-slate-500 hover:text-slate-800',
+                viewMode === 'grid' ? 'bg-ink text-on-ink' : 'text-slate-500 hover:text-slate-800',
               )}
               title="Grid view"
             >
@@ -299,7 +222,7 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
               onClick={() => setViewMode('list')}
               className={cn(
                 'flex h-7.5 w-7.5 items-center justify-center rounded-full transition-colors',
-                viewMode === 'list' ? 'bg-[#14142b] text-white' : 'text-slate-500 hover:text-slate-800',
+                viewMode === 'list' ? 'bg-ink text-on-ink' : 'text-slate-500 hover:text-slate-800',
               )}
               title="List view"
             >
@@ -310,8 +233,8 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-200 bg-white/60 px-6 py-14 text-center dark:border-neutral-800 dark:bg-neutral-900/60">
-          <p className="text-[14px] font-semibold text-[#14142b] dark:text-white">
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-surface/60 px-6 py-14 text-center">
+          <p className="text-[14px] font-semibold text-ink">
             {content.length === 0 ? 'No content yet' : 'Nothing matches these filters'}
           </p>
           <p className="mt-1 text-[12.5px] font-medium text-slate-500">
@@ -328,7 +251,7 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
         </div>
       ) : (
         <Panel padded={false} className="p-2">
-          <ul className="divide-y divide-slate-100 dark:divide-neutral-800">
+          <ul className="divide-y divide-slate-100">
             {filtered.map((item) => (
               <ContentRow key={item.id} item={item} channelId={channelId} openReviews={openReviews} />
             ))}

@@ -101,62 +101,62 @@ const ERA_HEADERS: Record<number, string> = {
 };
 
 const ERA_TITLE_COLORS: Record<number, string> = {
-  0: "text-rose-800",
-  1: "text-amber-700",
-  2: "text-purple-600",
-  3: "text-emerald-600"
+  0: "text-rose-800 dark:text-rose-200",
+  1: "text-amber-700 dark:text-amber-300",
+  2: "text-purple-600 dark:text-purple-400",
+  3: "text-emerald-600 dark:text-emerald-400"
 };
 
 const ERA_OUTER_THEMES: Record<number, { mainCard: string; rightCard: string }> = {
   0: {
-    mainCard: "bg-gradient-to-br from-blue-50/70 via-sky-50/40 to-slate-50/70 border-blue-100/90",
-    rightCard: "bg-blue-50/40 border-blue-100/80"
+    mainCard: "bg-gradient-to-br from-blue-50/70 via-sky-50/40 to-slate-50/70 border-blue-100/90 dark:from-blue-500/10 dark:via-sky-500/10 dark:border-blue-500/25",
+    rightCard: "bg-blue-50/40 border-blue-100/80 dark:bg-blue-500/10 dark:border-blue-500/25"
   },
   1: {
-    mainCard: "bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-slate-50/70 border-amber-100/90",
-    rightCard: "bg-amber-50/40 border-amber-100/80"
+    mainCard: "bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-slate-50/70 border-amber-100/90 dark:from-amber-500/10 dark:via-orange-500/10 dark:border-amber-500/25",
+    rightCard: "bg-amber-50/40 border-amber-100/80 dark:bg-amber-500/10 dark:border-amber-500/25"
   },
   2: {
-    mainCard: "bg-gradient-to-br from-purple-50/70 via-fuchsia-50/40 to-slate-50/70 border-purple-100/90",
-    rightCard: "bg-purple-50/40 border-purple-100/80"
+    mainCard: "bg-gradient-to-br from-purple-50/70 via-fuchsia-50/40 to-slate-50/70 border-purple-100/90 dark:from-purple-500/10 dark:via-fuchsia-500/10 dark:border-purple-500/25",
+    rightCard: "bg-purple-50/40 border-purple-100/80 dark:bg-purple-500/10 dark:border-purple-500/25"
   },
   3: {
-    mainCard: "bg-gradient-to-br from-emerald-50/70 via-teal-50/40 to-slate-50/70 border-emerald-100/90",
-    rightCard: "bg-emerald-50/40 border-emerald-100/80"
+    mainCard: "bg-gradient-to-br from-emerald-50/70 via-teal-50/40 to-slate-50/70 border-emerald-100/90 dark:from-emerald-500/10 dark:via-teal-500/10 dark:border-emerald-500/25",
+    rightCard: "bg-emerald-50/40 border-emerald-100/80 dark:bg-emerald-500/10 dark:border-emerald-500/25"
   }
 };
 
 const PLACARD_THEMES = [
   {
     // 0: Vibrant Blue
-    boxBg: "bg-gradient-to-r from-blue-100 via-sky-100 to-indigo-100",
-    border: "border-blue-300",
-    text: "text-blue-950 font-bold",
-    numberColor: "text-blue-600",
+    boxBg: "bg-gradient-to-r from-blue-100 via-sky-100 to-indigo-100 dark:from-blue-500/15 dark:via-sky-500/15 dark:to-indigo-500/15",
+    border: "border-blue-300 dark:border-blue-500/40",
+    text: "text-blue-950 font-bold dark:text-blue-200",
+    numberColor: "text-blue-600 dark:text-blue-400",
     shadow: "shadow-xs hover:shadow-md hover:border-blue-400"
   },
   {
     // 1: Vibrant Warm Amber
-    boxBg: "bg-gradient-to-r from-amber-100 via-orange-100 to-yellow-100",
-    border: "border-amber-300",
-    text: "text-amber-950 font-bold",
-    numberColor: "text-amber-700",
+    boxBg: "bg-gradient-to-r from-amber-100 via-orange-100 to-yellow-100 dark:from-amber-500/15 dark:via-orange-500/15 dark:to-yellow-500/15",
+    border: "border-amber-300 dark:border-amber-500/40",
+    text: "text-amber-950 font-bold dark:text-amber-200",
+    numberColor: "text-amber-700 dark:text-amber-300",
     shadow: "shadow-xs hover:shadow-md hover:border-amber-400"
   },
   {
     // 2: Vibrant Purple
-    boxBg: "bg-gradient-to-r from-purple-100 via-fuchsia-100 to-violet-100",
-    border: "border-purple-300",
-    text: "text-purple-950 font-bold",
-    numberColor: "text-purple-600",
+    boxBg: "bg-gradient-to-r from-purple-100 via-fuchsia-100 to-violet-100 dark:from-purple-500/15 dark:via-fuchsia-500/15 dark:to-violet-500/15",
+    border: "border-purple-300 dark:border-purple-500/40",
+    text: "text-purple-950 font-bold dark:text-purple-200",
+    numberColor: "text-purple-600 dark:text-purple-400",
     shadow: "shadow-xs hover:shadow-md hover:border-purple-400"
   },
   {
     // 3: Vibrant Emerald Green
-    boxBg: "bg-gradient-to-r from-emerald-100 via-teal-100 to-green-100",
-    border: "border-emerald-300",
-    text: "text-emerald-950 font-bold",
-    numberColor: "text-emerald-600",
+    boxBg: "bg-gradient-to-r from-emerald-100 via-teal-100 to-green-100 dark:from-emerald-500/15 dark:via-teal-500/15 dark:to-green-500/15",
+    border: "border-emerald-300 dark:border-emerald-500/40",
+    text: "text-emerald-950 font-bold dark:text-emerald-200",
+    numberColor: "text-emerald-600 dark:text-emerald-400",
     shadow: "shadow-xs hover:shadow-md hover:border-emerald-400"
   }
 ];
@@ -191,30 +191,30 @@ const ERA_STANDARDS: Record<number, string[]> = {
 const PHILOSOPHY_THEMES = [
   {
     // Card 1: Vibrant Blue (Design Systems theme)
-    heading: "text-blue-600",
-    border: "border-blue-300/90 hover:border-blue-400",
-    badge: "bg-blue-50/90 text-blue-600 border border-blue-200/80",
+    heading: "text-blue-600 dark:text-blue-400",
+    border: "border-blue-300/90 hover:border-blue-400 dark:border-blue-500/40",
+    badge: "bg-blue-50/90 text-blue-600 border border-blue-200/80 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/25",
     glowColor: "37, 99, 235"
   },
   {
     // Card 2: Warm Amber (Interaction & Motion theme)
-    heading: "text-amber-800",
-    border: "border-amber-300/90 hover:border-amber-400",
-    badge: "bg-amber-50/90 text-amber-800 border border-amber-200/80",
+    heading: "text-amber-800 dark:text-amber-200",
+    border: "border-amber-300/90 hover:border-amber-400 dark:border-amber-500/40",
+    badge: "bg-amber-50/90 text-amber-800 border border-amber-200/80 dark:bg-amber-500/10 dark:text-amber-200 dark:border-amber-500/25",
     glowColor: "180, 83, 9"
   },
   {
     // Card 3: Soft Purple (Figma theme)
-    heading: "text-purple-600",
-    border: "border-purple-300/90 hover:border-purple-400",
-    badge: "bg-purple-50/90 text-purple-600 border border-purple-200/80",
+    heading: "text-purple-600 dark:text-purple-400",
+    border: "border-purple-300/90 hover:border-purple-400 dark:border-purple-500/40",
+    badge: "bg-purple-50/90 text-purple-600 border border-purple-200/80 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/25",
     glowColor: "147, 51, 234"
   },
   {
     // Card 4: Mint / Emerald Green (Prototyping theme)
-    heading: "text-emerald-700",
-    border: "border-emerald-300/90 hover:border-emerald-400",
-    badge: "bg-emerald-50/90 text-emerald-700 border border-emerald-200/80",
+    heading: "text-emerald-700 dark:text-emerald-300",
+    border: "border-emerald-300/90 hover:border-emerald-400 dark:border-emerald-500/40",
+    badge: "bg-emerald-50/90 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25",
     glowColor: "4, 120, 87"
   }
 ];
@@ -227,7 +227,7 @@ export default function FoundersPage() {
   const activeMilestone = TIMELINE_MILESTONES[activeEraIndex] || TIMELINE_MILESTONES[0];
 
   return (
-    <main className="min-h-screen bg-white text-slate-900 font-sans relative">
+    <main className="min-h-screen bg-surface text-slate-900 font-sans relative">
 
       {/* ── HERO SECTION WITH SOFT GRADIENT WASH ── */}
       <div className="relative w-full arcade-wash border-b border-slate-100 min-h-[95vh] flex flex-col items-center justify-center pt-16 overflow-hidden">
@@ -305,7 +305,7 @@ export default function FoundersPage() {
         </motion.div>
       </div>
       {/* ── MAIN BODY (PURE WHITE BACKGROUND) ── */}
-      <div className="w-full bg-white">
+      <div className="w-full bg-surface">
         <div className="mx-auto max-w-6xl px-5 pt-10 sm:pt-12 pb-20 sm:px-8 space-y-28">
           {/* --- FOUNDERS CIRCULAR GRID SECTION (MATCHING REFERENCE IMAGE) --- */}
           <section className="space-y-16 pt-6 pb-4">
@@ -351,7 +351,7 @@ export default function FoundersPage() {
                     </div>
 
                     {/* Name */}
-                    <h3 className="text-base sm:text-lg font-bold text-slate-900 font-sans mt-4 group-hover:text-indigo-600 transition-colors">
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 font-sans mt-4 group-hover:text-indigo-600 transition-colors dark:group-hover:text-indigo-400">
                       {founder.name}
                     </h3>
 
@@ -395,7 +395,7 @@ export default function FoundersPage() {
               <div className="relative flex items-center justify-center pt-4 w-full max-w-6xl mx-auto">
                 {/* Left Flourish Line */}
                 <div className="hidden lg:block absolute -left-8 xl:-left-20 top-[235px] -translate-y-1/2 group">
-                  <FlourishLine className="w-[120px] xl:w-[220px] h-auto text-slate-700/60 drop-shadow-sm transition-all duration-700 group-hover:text-indigo-600 group-hover:opacity-100 group-hover:drop-shadow-md" />
+                  <FlourishLine className="w-[120px] xl:w-[220px] h-auto text-slate-700/60 drop-shadow-sm transition-all duration-700 group-hover:text-indigo-600 group-hover:opacity-100 group-hover:drop-shadow-md dark:group-hover:text-indigo-400" />
                 </div>
 
                 {/* Centered Founders */}
@@ -420,7 +420,7 @@ export default function FoundersPage() {
                         />
                       </div>
 
-                      <h3 className="text-base sm:text-lg font-bold text-slate-900 font-sans mt-4 group-hover:text-indigo-600 transition-colors">
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900 font-sans mt-4 group-hover:text-indigo-600 transition-colors dark:group-hover:text-indigo-400">
                         {founder.name}
                       </h3>
 
@@ -460,7 +460,7 @@ export default function FoundersPage() {
 
                 {/* Right Flourish Line (Flipped) */}
                 <div className="hidden lg:block absolute -right-8 xl:-right-20 top-[235px] -translate-y-1/2 group">
-                  <FlourishLine className="w-[120px] xl:w-[220px] h-auto text-slate-700/60 drop-shadow-sm transition-all duration-700 group-hover:text-indigo-600 group-hover:opacity-100 group-hover:drop-shadow-md transform scale-x-[-1]" />
+                  <FlourishLine className="w-[120px] xl:w-[220px] h-auto text-slate-700/60 drop-shadow-sm transition-all duration-700 group-hover:text-indigo-600 group-hover:opacity-100 group-hover:drop-shadow-md transform scale-x-[-1] dark:group-hover:text-indigo-400" />
                 </div>
               </div>
             </div>

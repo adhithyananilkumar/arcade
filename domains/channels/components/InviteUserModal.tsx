@@ -62,11 +62,11 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }: InviteUserModalP
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ type: 'spring', duration: 0.5, bounce: 0.3 }}
-              className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl pointer-events-auto"
+              className="w-full max-w-md overflow-hidden rounded-2xl bg-surface shadow-2xl pointer-events-auto"
             >
               <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
                 <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <Send className="text-indigo-600" size={18} />
+                  <Send className="text-indigo-600 dark:text-indigo-400" size={18} />
                   Invite User to Create a Channel
                 </h2>
                 <button

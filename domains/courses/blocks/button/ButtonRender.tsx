@@ -8,7 +8,7 @@ export function ButtonRender({ node }: BlockRenderProps) {
   const className =
     variant === "primary"
       ? "inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
-      : "inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-800 shadow-sm transition-colors hover:bg-gray-50";
+      : "inline-flex items-center rounded-lg border border-gray-300 bg-surface px-4 py-2 text-sm font-semibold text-gray-800 shadow-sm transition-colors hover:bg-gray-50";
 
   if (!url) {
     return (

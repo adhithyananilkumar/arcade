@@ -19,10 +19,10 @@ import { CredentialBadge, credentialsApi, type BadgeLevel, type CredentialKind, 
 import { cn } from "@/shared/utils/utils";
 
 const LOOK = {
-  VALID: { icon: ShieldCheck, title: "Valid", cls: "border-emerald-200 bg-emerald-50 text-emerald-900" },
-  REVOKED: { icon: ShieldAlert, title: "Revoked", cls: "border-amber-200 bg-amber-50 text-amber-900" },
-  EXPIRED: { icon: TimerOff, title: "Expired", cls: "border-amber-200 bg-amber-50 text-amber-900" },
-  TAMPERED: { icon: ShieldX, title: "Failed verification", cls: "border-rose-200 bg-rose-50 text-rose-900" },
+  VALID: { icon: ShieldCheck, title: "Valid", cls: "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-200" },
+  REVOKED: { icon: ShieldAlert, title: "Revoked", cls: "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200" },
+  EXPIRED: { icon: TimerOff, title: "Expired", cls: "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200" },
+  TAMPERED: { icon: ShieldX, title: "Failed verification", cls: "border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-200" },
   NOT_FOUND: { icon: ShieldQuestion, title: "No such credential", cls: "border-slate-200 bg-slate-50 text-slate-800" },
 } as const;
 
@@ -41,33 +41,48 @@ function heading(result: VerifyResult) {
 export function VerifyCredentialOrchestrator() {
   const params = useSearchParams();
   const router = useRouter();
-  const initial = params.get("id") ?? "";
-  const [input, setInput] = useState(initial);
+  const fromUrl = params.get("id") ?? "";
+  const [input, setInput] = useState(fromUrl);
+  // Each lookup is its own request object, so checking the same ID twice still runs. The lookup
+  // used to be keyed on the URL alone: submitting the ID already in the address bar left the URL
+  // unchanged, the effect never re-ran, and the button spun forever.
+  const [request, setRequest] = useState<{ code: string } | null>(fromUrl ? { code: fromUrl } : null);
   const [result, setResult] = useState<VerifyResult | null>(null);
-  const [checking, setChecking] = useState(Boolean(initial));
   const [error, setError] = useState<string | null>(null);
+  const checking = request !== null && result === null && error === null;
+
+  // Back/forward or a link to another ID changes the URL without a submit.
+  useEffect(() => {
+    if (!fromUrl) return;
+    setInput(fromUrl);
+    setRequest((current) => (current?.code === fromUrl ? current : { code: fromUrl }));
+  }, [fromUrl]);
 
   useEffect(() => {
-    if (!initial) return;
+    if (!request) return;
     let cancelled = false;
+    setResult(null);
+    setError(null);
     credentialsApi
-      .verify(initial)
-      .then((r) => !cancelled && setResult(r))
-      .catch((e) => !cancelled && setError(e instanceof Error ? e.message : "Verification is unavailable right now."))
-      .finally(() => !cancelled && setChecking(false));
+      .verify(request.code)
+      .then((r) => {
+        if (!cancelled) setResult(r);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Verification is unavailable right now.");
+      });
     return () => {
       cancelled = true;
     };
-  }, [initial]);
+  }, [request]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const id = input.trim();
     if (!id) return;
-    setResult(null);
-    setError(null);
-    setChecking(true);
-    router.replace(`/credentials/verify?id=${encodeURIComponent(id)}`);
+    setRequest({ code: id });
+    // Keeps the address shareable; the lookup itself no longer depends on it.
+    router.replace(`/credentials/verify?id=${encodeURIComponent(id)}`, { scroll: false });
   };
 
   const look = result ? LOOK[result.status] : null;
@@ -76,10 +91,10 @@ export function VerifyCredentialOrchestrator() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-2xl px-4 pb-24 pt-28 sm:px-6">
       <div className="text-center">
-        <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#14142b] text-white shadow-lg">
+        <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-ink text-on-ink shadow-lg">
           <ShieldCheck size={22} />
         </span>
-        <h1 className="mt-4 text-3xl font-black tracking-tight text-[#14142b] dark:text-white sm:text-4xl">Verify a credential</h1>
+        <h1 className="mt-4 text-3xl font-black tracking-tight text-ink sm:text-4xl">Verify a credential</h1>
         <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-500">
           Enter the ID printed on an Arcade badge, certificate or grade card — e.g.{" "}
           <span className="font-mono font-bold">ARC-…</span>, <span className="font-mono font-bold">CERT-…</span> or{" "}
@@ -97,19 +112,19 @@ export function VerifyCredentialOrchestrator() {
             placeholder="CERT-XXXX-XXXX-XXXX"
             autoComplete="off"
             spellCheck={false}
-            className="w-full rounded-2xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 font-mono text-sm font-bold uppercase tracking-wider text-slate-900 shadow-sm placeholder:font-sans placeholder:normal-case placeholder:tracking-normal placeholder:text-slate-400 focus:border-[#2962D6] focus:outline-none focus:ring-2 focus:ring-[#2962D6]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+            className="w-full rounded-2xl border border-slate-200 bg-surface py-3.5 pl-11 pr-4 font-mono text-sm font-bold uppercase tracking-wider text-slate-900 shadow-sm placeholder:font-sans placeholder:normal-case placeholder:tracking-normal placeholder:text-slate-400 focus:border-[#2962D6] focus:outline-none focus:ring-2 focus:ring-[#2962D6]/20"
           />
         </label>
         <button
           type="submit"
           disabled={checking || !input.trim()}
-          className="inline-flex items-center gap-2 rounded-2xl bg-[#14142b] px-5 text-sm font-bold text-white hover:bg-[#23234a] disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-2xl bg-ink px-5 text-sm font-bold text-on-ink hover:bg-[#23234a] disabled:opacity-50"
         >
           {checking ? <Loader2 size={16} className="animate-spin" /> : "Verify"}
         </button>
       </form>
 
-      {error && <p className="mt-6 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">{error}</p>}
+      {error && <p className="mt-6 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">{error}</p>}
 
       {result && look && (
         <section className={cn("mt-8 rounded-3xl border p-5 sm:p-6", look.cls)} aria-live="polite">
@@ -122,8 +137,8 @@ export function VerifyCredentialOrchestrator() {
           </div>
 
           {!result.badgeClass && result.name && result.kind && (
-            <div className="mt-5 flex items-start gap-4 rounded-2xl bg-white/80 p-4">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#14142b] text-white">
+            <div className="mt-5 flex items-start gap-4 rounded-2xl bg-surface/80 p-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-ink text-on-ink">
                 {result.kind === "GRADE_CARD" ? <ClipboardList size={20} /> : <Award size={20} />}
               </span>
               <dl className="grid min-w-0 flex-1 gap-x-4 gap-y-1.5 text-sm text-slate-800 sm:grid-cols-2">
@@ -147,7 +162,7 @@ export function VerifyCredentialOrchestrator() {
           )}
 
           {result.badgeClass && result.name && (
-            <div className="mt-5 flex items-center gap-4 rounded-2xl bg-white/80 p-4">
+            <div className="mt-5 flex items-center gap-4 rounded-2xl bg-surface/80 p-4">
               <div className="w-20 shrink-0">
                 <CredentialBadge
                   family={result.badgeClass.family.key}
@@ -172,7 +187,7 @@ export function VerifyCredentialOrchestrator() {
           {result.publicPage && result.publicPath && result.status !== "NOT_FOUND" && (
             <Link
               href={result.publicPath}
-              className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[#2962D6] hover:underline"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[#2962D6] hover:underline dark:text-[#7eb5ff]"
             >
               Open the full credential page <ArrowRight size={14} />
             </Link>

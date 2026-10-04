@@ -290,6 +290,66 @@ function saveBlob(blob: Blob, fileName: string) {
 
 // ── Exports ────────────────────────────────────────────────────────────────────
 
+/**
+ * POST a raw body (a Blob) to the API with progress — the JSON/FormData `api.post` cannot report
+ * upload progress. Attaches the access token and retries once after a token refresh.
+ */
+export function apiUploadWithProgress<T>(
+  path: string,
+  body: Blob,
+  contentType: string,
+  onProgress?: (percent: number) => void,
+  signal?: AbortSignal,
+): Promise<T> {
+  const send = (retried: boolean): Promise<T> =>
+    new Promise<T>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const onAbort = () => xhr.abort();
+      signal?.addEventListener("abort", onAbort);
+      const cleanup = () => signal?.removeEventListener("abort", onAbort);
+      xhr.open("POST", `${BASE_URL}${path}`);
+      xhr.withCredentials = true;
+      const token = getAccessToken();
+      if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      xhr.setRequestHeader("Content-Type", contentType);
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgress?.(Math.round((e.loaded / e.total) * 100));
+      };
+      xhr.onload = () => {
+        cleanup();
+        if (xhr.status === 401 && !retried) {
+          refreshTokens().then((ok) => (ok ? send(true).then(resolve, reject) : reject(new ApiError(401, "Unauthorized"))));
+          return;
+        }
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            resolve((xhr.responseText ? JSON.parse(xhr.responseText) : undefined) as T);
+          } catch {
+            resolve(undefined as T);
+          }
+          return;
+        }
+        let message = `API error ${xhr.status}`;
+        try {
+          message = JSON.parse(xhr.responseText)?.message ?? message;
+        } catch {
+          // keep the generic message
+        }
+        reject(new ApiError(xhr.status, xhr.status >= 500 ? "Something went wrong on our side. Please try again." : message));
+      };
+      xhr.onerror = () => {
+        cleanup();
+        reject(new ApiError(NETWORK_ERROR_STATUS, `Cannot reach the Arcade API at ${BASE_URL}.`));
+      };
+      xhr.onabort = () => {
+        cleanup();
+        reject(new DOMException("Upload cancelled", "AbortError"));
+      };
+      xhr.send(body);
+    });
+  return send(false);
+}
+
 export const api = {
   get: <T>(path: string, options?: ApiRequestOptions) => request<T>(path, { method: "GET", cache: "no-store", ...options }),
   post: <T>(path: string, body?: unknown, options?: ApiRequestOptions) =>

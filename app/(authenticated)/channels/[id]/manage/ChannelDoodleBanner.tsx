@@ -57,11 +57,9 @@ export function ChannelDoodleBanner({ bannerUrl, className = "h-40 w-full sm:h-5
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`relative w-full overflow-hidden bg-[#F5F0E6] text-black ${className}`}
+      className={`relative w-full overflow-hidden bg-slate-100 text-slate-950 ${className}`}
       style={{
-        backgroundColor: '#F5F0E6',
-        backgroundImage: `radial-gradient(#14142b 0.8px, transparent 0.8px)`,
-        backgroundSize: '24px 24px',
+        backgroundColor: 'var(--theme-n-100, #F5F0E6)',
       }}
     >
       {/* Background Doodles */}

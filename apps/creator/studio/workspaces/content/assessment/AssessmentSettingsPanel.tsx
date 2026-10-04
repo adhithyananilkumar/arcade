@@ -102,7 +102,7 @@ export function AssessmentSettingsPanel({
     <div className="mx-auto w-full max-w-3xl px-1 py-2">
       <header className="mb-7">
         <div className="mb-3 flex items-center gap-2">
-          <span className="grid size-7 place-items-center rounded-lg bg-[#14142b]/[0.06] text-[#14142b]">
+          <span className="grid size-7 place-items-center rounded-lg bg-ink/[0.06] text-ink">
             <GraduationCap size={15} />
           </span>
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
@@ -124,13 +124,13 @@ export function AssessmentSettingsPanel({
           }}
           disabled={readOnly}
           placeholder="Assessment title"
-          className="w-full border-0 bg-transparent p-0 text-[1.6rem] font-bold leading-tight tracking-tight text-[#14142b] outline-none placeholder:text-slate-300"
+          className="w-full border-0 bg-transparent p-0 text-[1.6rem] font-bold leading-tight tracking-tight text-ink outline-none placeholder:text-slate-300"
         />
 
-        {error && <p className="mt-2 text-[12px] font-semibold text-rose-600">{error}</p>}
+        {error && <p className="mt-2 text-[12px] font-semibold text-rose-600 dark:text-rose-400">{error}</p>}
       </header>
 
-      <section className="mb-7 rounded-xl border border-slate-200 bg-white px-4 py-3.5">
+      <section className="mb-7 rounded-xl border border-slate-200 bg-surface px-4 py-3.5">
         <span
           className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${planTypeMeta(assessment.planType).chip}`}
         >
@@ -153,7 +153,7 @@ export function AssessmentSettingsPanel({
           Shown on the assessment&apos;s page, above the Start button — what it covers, how to sit
           it, anything a candidate should know first.
         </p>
-        <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+        <div className="rounded-xl border border-slate-200 bg-surface px-4 py-3">
           <ArcadeEditor
             key={assessment.id}
             initialContent={initialInstructions.current}
@@ -167,7 +167,7 @@ export function AssessmentSettingsPanel({
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-3.5">
-        <h2 className="text-[13px] font-semibold text-[#14142b]">Questions & timing</h2>
+        <h2 className="text-[13px] font-semibold text-ink">Questions & timing</h2>
         <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">
           This assessment is a <strong className="font-semibold text-slate-600">plan</strong> on the
           course&apos;s exam. Every assessment in this course shares that exam and its question bank;
@@ -178,26 +178,26 @@ export function AssessmentSettingsPanel({
           <dl className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[12px]">
             <span className="flex gap-1.5">
               <dt className="font-medium text-slate-400">Duration</dt>
-              <dd className="font-semibold text-[#14142b]">{plan.durationMinutes} min</dd>
+              <dd className="font-semibold text-ink">{plan.durationMinutes} min</dd>
             </span>
             <span className="flex gap-1.5">
               <dt className="font-medium text-slate-400">Attempts</dt>
-              <dd className="font-semibold text-[#14142b]">{plan.maxAttempts}</dd>
+              <dd className="font-semibold text-ink">{plan.maxAttempts}</dd>
             </span>
             {(plan.planType !== "ASSESSMENT" || plan.graded) && (
               <span className="flex gap-1.5">
                 <dt className="font-medium text-slate-400">Pass mark</dt>
-                <dd className="font-semibold text-[#14142b]">{plan.passPercentage}%</dd>
+                <dd className="font-semibold text-ink">{plan.passPercentage}%</dd>
               </span>
             )}
             <span className="flex gap-1.5">
               <dt className="font-medium text-slate-400">Questions</dt>
-              <dd className="font-semibold text-[#14142b]">{plan.totalQuestions}</dd>
+              <dd className="font-semibold text-ink">{plan.totalQuestions}</dd>
             </span>
             {plan.proctoringRequired && (
               <span className="flex gap-1.5">
                 <dt className="font-medium text-slate-400">Proctored</dt>
-                <dd className="font-semibold text-[#14142b]">Yes</dd>
+                <dd className="font-semibold text-ink">Yes</dd>
               </span>
             )}
           </dl>
@@ -205,7 +205,7 @@ export function AssessmentSettingsPanel({
         {plan && plan.totalQuestions === 0 && (
           // Honest rather than silent: a plan with no selection rules generates an empty paper and
           // the attempt would be refused at start.
-          <p className="mt-2.5 text-[12px] font-semibold text-amber-700">
+          <p className="mt-2.5 text-[12px] font-semibold text-amber-700 dark:text-amber-300">
             No questions selected yet — set this assessment&apos;s question selection before
             publishing, or candidates won&apos;t be able to start it.
           </p>
@@ -213,7 +213,7 @@ export function AssessmentSettingsPanel({
         <button
           type="button"
           onClick={() => onEditExam(assessment.examId)}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#232735]"
+          className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-on-ink transition-colors hover:bg-ink-hover"
         >
           {plan ? "Edit questions & plan" : "Open exam"}
           <ExternalLink size={13} />

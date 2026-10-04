@@ -48,7 +48,7 @@ export function QuestionTagEditor({
         {tags.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center gap-1 rounded-full bg-indigo-50 py-1 pl-2.5 pr-1 text-[11px] font-semibold text-indigo-700"
+            className="inline-flex items-center gap-1 rounded-full bg-indigo-50 py-1 pl-2.5 pr-1 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
           >
             {tag}
             {!disabled && (
@@ -56,7 +56,7 @@ export function QuestionTagEditor({
                 type="button"
                 onClick={() => onChange(tags.filter((t) => t !== tag))}
                 title={`Remove ${tag}`}
-                className="rounded-full p-0.5 text-indigo-400 transition-colors hover:bg-indigo-100 hover:text-indigo-700"
+                className="rounded-full p-0.5 text-indigo-400 transition-colors hover:bg-indigo-100 hover:text-indigo-700 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-300"
               >
                 <X size={11} />
               </button>
@@ -79,7 +79,7 @@ export function QuestionTagEditor({
             onBlur={() => commit(draft)}
             placeholder={tags.length === 0 ? "Add a tag…" : ""}
             aria-label="Add a tag"
-            className="min-w-[110px] flex-1 rounded-lg border border-transparent bg-transparent px-1.5 py-1 text-xs text-[#14142b] outline-none placeholder:text-slate-300 focus:border-slate-200 focus:bg-white"
+            className="min-w-[110px] flex-1 rounded-lg border border-transparent bg-transparent px-1.5 py-1 text-xs text-ink outline-none placeholder:text-slate-300 focus:border-slate-200 focus:bg-surface"
           />
         )}
       </div>
@@ -92,7 +92,7 @@ export function QuestionTagEditor({
               key={s}
               type="button"
               onClick={() => onChange([...tags, s])}
-              className="rounded-full border border-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-500 transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
+              className="rounded-full border border-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-500 transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 dark:hover:border-indigo-500/25 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-300"
             >
               {s}
             </button>

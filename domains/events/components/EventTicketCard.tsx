@@ -70,7 +70,7 @@ export function EventTicketCard({ ticket, className }: EventTicketCardProps) {
 
       {admissible ? (
         <div className="flex flex-col items-center gap-3">
-          <div className="relative rounded-lg bg-white p-3">
+          <div className="relative rounded-lg bg-surface p-3">
             <canvas ref={canvasRef} aria-label="Ticket QR code" />
             {rendering && (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -78,7 +78,7 @@ export function EventTicketCard({ ticket, className }: EventTicketCardProps) {
               </div>
             )}
           </div>
-          {qrError && <p className="text-center text-sm text-amber-600">{qrError}</p>}
+          {qrError && <p className="text-center text-sm text-amber-600 dark:text-amber-400">{qrError}</p>}
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2 rounded-lg bg-muted/40 py-8">

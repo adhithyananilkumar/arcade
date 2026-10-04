@@ -20,54 +20,35 @@
 function Block({ className }: { className: string }) {
   return (
     <div
-      className={`animate-pulse rounded-xl bg-slate-100 dark:bg-neutral-900 ${className}`}
+      className={`animate-pulse rounded-xl bg-slate-100 ${className}`}
     />
   );
 }
 
-export function ProfileSkeleton({ variant = 'user' }: { variant?: 'user' | 'channel' }) {
+export function ProfileSkeleton() {
   return (
-    <div aria-busy="true" aria-live="polite" className="space-y-10">
+    <div aria-busy="true" aria-live="polite" className="space-y-8">
       <span className="sr-only">Loading profile…</span>
 
-      {variant === 'channel' && <Block className="h-36 w-full !rounded-[22px] sm:h-48" />}
-
-      <div
-        className={`flex flex-col gap-7 md:flex-row md:gap-9 ${
-          variant === 'channel' ? '-mt-12 items-end' : 'items-start pt-4'
-        }`}
-      >
-        <Block
-          className={
-            variant === 'channel'
-              ? 'h-24 w-24 !rounded-[22px] sm:h-28 sm:w-28'
-              : 'h-[112px] w-[112px] !rounded-full'
-          }
-        />
-        <div className="flex-1 space-y-3">
-          <Block className="h-8 w-56" />
-          <Block className="h-4 w-32" />
+      <div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-surface">
+        <Block className="h-24 w-full !rounded-none sm:h-28" />
+        <div className="space-y-3 px-6 pb-6 sm:px-8">
+          <Block className="-mt-12 h-24 w-24 !rounded-2xl border-4 border-surface sm:-mt-14 sm:h-28 sm:w-28" />
+          <Block className="h-8 w-64" />
+          <Block className="h-4 w-80 max-w-full" />
           <Block className="h-4 w-full max-w-xl" />
-          <Block className="h-4 w-full max-w-md" />
-          <div className="flex gap-6 pt-3">
-            <Block className="h-4 w-24" />
-            <Block className="h-4 w-24" />
-            <Block className="h-4 w-24" />
-          </div>
         </div>
       </div>
 
-      <div className="flex gap-3">
-        <Block className="h-9 w-24" />
-        <Block className="h-9 w-24" />
-        <Block className="h-9 w-24" />
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        <div className="space-y-6 lg:col-span-4">
+          <Block className="h-32 w-full !rounded-2xl" />
+          <Block className="h-32 w-full !rounded-2xl" />
+        </div>
+        <Block className="h-72 w-full !rounded-2xl lg:col-span-8" />
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {[0, 1, 2].map((i) => (
-          <Block key={i} className="h-60 w-full !rounded-[20px]" />
-        ))}
-      </div>
+      <Block className="h-80 w-full !rounded-3xl" />
     </div>
   );
 }

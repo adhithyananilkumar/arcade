@@ -15,10 +15,10 @@ import {
 } from "../api/contentSchedule";
 
 const STATE_LABEL: Record<ScheduleState, { text: string; cls: string }> = {
-  OPEN: { text: "Open now", cls: "bg-emerald-50 text-emerald-700" },
-  NOT_YET_OPEN: { text: "Not open yet", cls: "bg-sky-50 text-sky-700" },
-  CLOSED: { text: "Closed", cls: "bg-slate-100 text-slate-600" },
-  NEVER: { text: "Never opens", cls: "bg-rose-50 text-rose-700" },
+  OPEN: { text: "Open now", cls: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300" },
+  NOT_YET_OPEN: { text: "Not open yet", cls: "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300" },
+  CLOSED: { text: "Closed", cls: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400" },
+  NEVER: { text: "Never opens", cls: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300" },
 };
 
 /** `<input type="datetime-local">` speaks local wall time; the API speaks instants. */
@@ -41,6 +41,25 @@ interface Draft {
   enrollmentClosesAt: string;
   accessStartsAt: string;
   accessEndsAt: string;
+}
+
+type Field = keyof Draft;
+
+/** Bounds for the pickers. Without a max, Chrome accepts five- and six-digit years ("24224"). */
+const MIN_INPUT = "2000-01-01T00:00";
+const MAX_INPUT = "2099-12-31T23:59";
+
+/**
+ * Why a picker's contents can't be used, or null. A datetime-local input reports an empty value
+ * while any part is unfinished (a missing hour, say), so a half-typed date used to read as
+ * "no limit": the draft matched what was saved and the button sat disabled on "Saved" with no
+ * hint why.
+ */
+function problemOf(input: HTMLInputElement): string | null {
+  const v = input.validity;
+  if (v.badInput) return "Finish the date and time — every part, including the hour.";
+  if (v.rangeUnderflow || v.rangeOverflow) return "Pick a date between 2000 and 2099.";
+  return null;
 }
 
 function draftOf(s: ContentScheduleResponse | null): Draft {
@@ -66,6 +85,7 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
   const [draft, setDraft] = useState<Draft>(draftOf(null));
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [problems, setProblems] = useState<Partial<Record<Field, string>>>({});
 
   const load = useCallback(
     () =>
@@ -97,6 +117,18 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
   }, [contentType, contentId]);
 
   const dirty = JSON.stringify(draft) !== JSON.stringify(draftOf(schedule));
+  const hasProblems = Object.values(problems).some(Boolean);
+  // Same rule the server applies; caught here so the reason shows next to the fields.
+  const orderProblem =
+    (draft.enrollmentOpensAt && draft.enrollmentClosesAt && draft.enrollmentOpensAt >= draft.enrollmentClosesAt) ||
+    (draft.accessStartsAt && draft.accessEndsAt && draft.accessStartsAt >= draft.accessEndsAt)
+      ? "Each window has to close after it opens."
+      : null;
+
+  const edit = (field: Field) => (value: string, problem: string | null) => {
+    setDraft((d) => ({ ...d, [field]: value }));
+    setProblems((p) => ({ ...p, [field]: problem ?? undefined }));
+  };
 
   const save = async () => {
     setSaving(true);
@@ -110,6 +142,7 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
       });
       setSchedule(saved);
       setDraft(draftOf(saved));
+      setProblems({});
       toast.success("Schedule saved");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Couldn't save the schedule");
@@ -122,6 +155,7 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
     setSaving(true);
     try {
       await contentScheduleApi.clear(contentType, contentId);
+      setProblems({});
       await load();
       toast.success("Schedule cleared — always open");
     } catch (err) {
@@ -168,9 +202,11 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
               hint={`When learners can ${noun === "Enrollment" ? "enroll" : "register"} in this course.`}
               opens={draft.enrollmentOpensAt}
               closes={draft.enrollmentClosesAt}
+              opensProblem={problems.enrollmentOpensAt}
+              closesProblem={problems.enrollmentClosesAt}
               disabled={readOnly || saving}
-              onOpens={(v) => setDraft({ ...draft, enrollmentOpensAt: v })}
-              onCloses={(v) => setDraft({ ...draft, enrollmentClosesAt: v })}
+              onOpens={edit("enrollmentOpensAt")}
+              onCloses={edit("enrollmentClosesAt")}
               icon={UserPlus}
               iconBgClass="bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
             />
@@ -179,18 +215,24 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
               hint={contentType === "EXAM" ? "When the exam can be sat." : "When enrolled learners can access the course."}
               opens={draft.accessStartsAt}
               closes={draft.accessEndsAt}
+              opensProblem={problems.accessStartsAt}
+              closesProblem={problems.accessEndsAt}
               disabled={readOnly || saving}
-              onOpens={(v) => setDraft({ ...draft, accessStartsAt: v })}
-              onCloses={(v) => setDraft({ ...draft, accessEndsAt: v })}
+              onOpens={edit("accessStartsAt")}
+              onCloses={edit("accessEndsAt")}
               icon={Lock}
               iconBgClass="bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400"
             />
           </div>
 
           {schedule && schedule.origins.some((o) => o !== "CREATOR") && (
-            <p className="mt-1 rounded-xl bg-amber-50 px-3.5 py-2 text-[11px] font-medium text-amber-800">
+            <p className="mt-1 rounded-xl bg-amber-50 px-3.5 py-2 text-[11px] font-medium text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
               A platform rule also applies, so the effective window may be narrower than what you set.
             </p>
+          )}
+
+          {!readOnly && orderProblem && !hasProblems && (
+            <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-[11px] font-medium text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">{orderProblem}</p>
           )}
 
           {!readOnly && (
@@ -199,18 +241,18 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
                 type="button"
                 onClick={clear}
                 disabled={saving}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-2xs cursor-pointer disabled:opacity-50"
               >
-                <Clock size={14} className="text-slate-500" /> Always open
+                <Clock size={14} className="text-slate-500 dark:text-slate-400" /> Always open
               </button>
               <button
                 type="button"
                 onClick={save}
-                disabled={!dirty || saving}
+                disabled={!dirty || saving || hasProblems || !!orderProblem}
                 className="inline-flex items-center gap-2 rounded-xl bg-[#0B132B] hover:bg-blue-600 dark:bg-white dark:text-slate-900 px-6 py-2.5 text-xs font-extrabold text-white transition-all shadow-md cursor-pointer disabled:opacity-50"
               >
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-                {dirty ? "Save schedule" : "Save schedule"}
+                {hasProblems ? "Fix the dates above" : dirty ? "Save schedule" : "Saved"}
               </button>
             </div>
           )}
@@ -234,6 +276,8 @@ function WindowFields({
   hint,
   opens,
   closes,
+  opensProblem,
+  closesProblem,
   disabled,
   onOpens,
   onCloses,
@@ -244,9 +288,11 @@ function WindowFields({
   hint: string;
   opens: string;
   closes: string;
+  opensProblem?: string;
+  closesProblem?: string;
   disabled?: boolean;
-  onOpens: (v: string) => void;
-  onCloses: (v: string) => void;
+  onOpens: (v: string, problem: string | null) => void;
+  onCloses: (v: string, problem: string | null) => void;
   icon: typeof UserPlus;
   iconBgClass: string;
 }) {
@@ -269,12 +315,21 @@ function WindowFields({
             <input
               type="datetime-local"
               value={opens}
+              min={MIN_INPUT}
+              max={MAX_INPUT}
               disabled={disabled}
-              onChange={(e) => onOpens(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 pr-10 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+              aria-invalid={!!opensProblem}
+              onChange={(e) => onOpens(e.target.value, problemOf(e.target))}
+              onBlur={(e) => onOpens(e.target.value, problemOf(e.target))}
+              className={`w-full rounded-2xl border bg-white dark:bg-slate-900 p-3 pr-10 text-xs font-medium text-slate-900 dark:text-white outline-none focus:ring-4 ${
+                opensProblem
+                  ? "border-rose-300 focus:border-rose-400 dark:border-rose-500/40 focus:ring-rose-500/10"
+                  : "border-slate-200 dark:border-slate-800 focus:border-blue-500 focus:ring-blue-500/10"
+              }`}
             />
             <Calendar size={16} className="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none" />
           </div>
+          {opensProblem && <span className="mt-1 block text-[10px] font-medium text-rose-600 dark:text-rose-400">{opensProblem}</span>}
         </div>
 
         <div className="flex flex-col gap-1">
@@ -283,12 +338,21 @@ function WindowFields({
             <input
               type="datetime-local"
               value={closes}
+              min={MIN_INPUT}
+              max={MAX_INPUT}
               disabled={disabled}
-              onChange={(e) => onCloses(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 pr-10 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+              aria-invalid={!!closesProblem}
+              onChange={(e) => onCloses(e.target.value, problemOf(e.target))}
+              onBlur={(e) => onCloses(e.target.value, problemOf(e.target))}
+              className={`w-full rounded-2xl border bg-white dark:bg-slate-900 p-3 pr-10 text-xs font-medium text-slate-900 dark:text-white outline-none focus:ring-4 ${
+                closesProblem
+                  ? "border-rose-300 focus:border-rose-400 dark:border-rose-500/40 focus:ring-rose-500/10"
+                  : "border-slate-200 dark:border-slate-800 focus:border-blue-500 focus:ring-blue-500/10"
+              }`}
             />
             <Calendar size={16} className="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none" />
           </div>
+          {closesProblem && <span className="mt-1 block text-[10px] font-medium text-rose-600 dark:text-rose-400">{closesProblem}</span>}
         </div>
       </div>
     </div>

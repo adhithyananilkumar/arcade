@@ -25,9 +25,9 @@ const TABS: Tab[] = [
 ];
 
 const STATUS_STYLE: Record<string, string> = {
-  OPEN: "border-amber-200 bg-amber-50 text-amber-800",
-  CHANGES_REQUESTED: "border-rose-200 bg-rose-50 text-rose-700",
-  COMPLETED: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  OPEN: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200",
+  CHANGES_REQUESTED: "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300",
+  COMPLETED: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300",
 };
 
 export function ChannelReviewQueue({ channelId }: { channelId: string }) {
@@ -73,7 +73,7 @@ export function ChannelReviewQueue({ channelId }: { channelId: string }) {
               setTab(t);
             }}
             className={`inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-1.5 text-[12px] font-semibold transition-colors ${
-              tab.id === t.id ? "bg-[#14142b] text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+              tab.id === t.id ? "bg-ink text-on-ink" : "border border-slate-200 bg-surface text-slate-600 hover:bg-slate-50"
             }`}
           >
             {t.label}
@@ -91,26 +91,26 @@ export function ChannelReviewQueue({ channelId }: { channelId: string }) {
         <button
           type="button"
           onClick={refresh}
-          className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[12px] font-semibold text-slate-600 hover:bg-slate-50"
+          className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3.5 py-1.5 text-[12px] font-semibold text-slate-600 hover:bg-slate-50"
         >
           <RefreshCw size={13} /> Refresh
         </button>
       </div>
 
       {error ? (
-        <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] font-medium text-rose-700">{error}</p>
+        <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] font-medium text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">{error}</p>
       ) : items === null ? (
         <div className="flex justify-center py-16">
           <Loader2 className="animate-spin text-slate-400" size={22} />
         </div>
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-white/60 px-6 py-14 text-center">
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-surface/60 px-6 py-14 text-center">
           <Inbox size={26} className="text-slate-300" />
-          <p className="text-[14px] font-semibold text-[#14142b]">Nothing here</p>
+          <p className="text-[14px] font-semibold text-ink">Nothing here</p>
           <p className="text-[12px] font-medium text-slate-500">Submissions from this channel&apos;s creators appear here.</p>
         </div>
       ) : (
-        <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-surface">
           {items.map((item) => (
             <li key={item.id}>
               <Link
@@ -118,7 +118,7 @@ export function ChannelReviewQueue({ channelId }: { channelId: string }) {
                 className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-slate-50"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px] font-semibold text-[#14142b]">{item.title}</p>
+                  <p className="truncate text-[14px] font-semibold text-ink">{item.title}</p>
                   <p className="text-[12px] font-medium text-slate-500">
                     {item.contentType} · {item.submissionKind === "FIRST_PUBLICATION" ? "First publish" : "Update"} · round{" "}
                     {item.round} · @{item.ownerUsername ?? item.ownerName}

@@ -2,8 +2,8 @@
   --purple-primary: rgba(132, 0, 255, 1);
   --purple-glow: rgba(132, 0, 255, 0.2);
   --purple-border: rgba(132, 0, 255, 0.8);
-  --border-color: #E2E8F0;
-  --background-card: #FFFFFF;
+  --border-color: var(--theme-n-200, #E2E8F0);
+  --background-card: var(--theme-surface, #FFFFFF);
 }
 
 .card-grid {

@@ -77,7 +77,7 @@ export function PostCard({ post, index = 0 }: Props) {
         className="forum-card group"
         style={{
           position: 'relative',
-          backgroundColor: '#fff',
+          backgroundColor: 'var(--theme-surface, #fff)',
           border: '1px solid var(--border)',
           borderRadius: 'var(--radius-md)',
           padding: '16px 20px',
@@ -132,7 +132,7 @@ export function PostCard({ post, index = 0 }: Props) {
               alignItems: 'center',
               gap: 4,
               padding: '2px 8px',
-              backgroundColor: '#ECFDF5',
+              backgroundColor: 'var(--theme-n-50, #ECFDF5)',
               border: '1px solid #86EFAC',
               borderRadius: 'var(--radius-full)',
               fontSize: 11,
@@ -143,7 +143,7 @@ export function PostCard({ post, index = 0 }: Props) {
             </span>
           )}
           {post.isPinned && (
-            <span style={{ fontSize: 11, fontWeight: 600, color: '#059669', backgroundColor: '#ecfdf5', borderRadius: 'var(--radius-full)', padding: '2px 8px' }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: '#059669', backgroundColor: 'var(--theme-n-50, #ecfdf5)', borderRadius: 'var(--radius-full)', padding: '2px 8px' }}>
               Pinned
             </span>
           )}
@@ -306,7 +306,7 @@ export function PostCard({ post, index = 0 }: Props) {
                       bottom: '100%',
                       right: 0,
                       marginBottom: 8,
-                      backgroundColor: '#fff',
+                      backgroundColor: 'var(--theme-surface, #fff)',
                       border: '1px solid var(--border)',
                       borderRadius: 'var(--radius-sm)',
                       boxShadow: 'var(--shadow-md)',

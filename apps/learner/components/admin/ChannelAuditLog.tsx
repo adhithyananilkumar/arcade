@@ -24,27 +24,27 @@ import {
 
 const ACTION_STYLES: Record<string, { badge: string; dot: string; icon: typeof CheckCircle2 }> = {
   APPROVED: {
-    badge: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    badge: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300',
     dot: 'bg-emerald-500',
     icon: CheckCircle2
   },
   REACTIVATED: {
-    badge: 'border-teal-200 bg-teal-50 text-teal-700',
+    badge: 'border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-500/25 dark:bg-teal-500/10 dark:text-teal-300',
     dot: 'bg-teal-500',
     icon: ShieldCheck
   },
   SUSPENDED: {
-    badge: 'border-rose-200 bg-rose-50 text-rose-700',
+    badge: 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300',
     dot: 'bg-rose-500',
     icon: ShieldOff
   },
   DELETION_APPROVED: {
-    badge: 'border-rose-300 bg-rose-100/80 text-rose-800',
+    badge: 'border-rose-300 bg-rose-100/80 text-rose-800 dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-200',
     dot: 'bg-rose-600',
     icon: AlertTriangle
   },
   DELETION_REQUESTED: {
-    badge: 'border-amber-200 bg-amber-50 text-amber-700',
+    badge: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-300',
     dot: 'bg-amber-500',
     icon: AlertTriangle
   },
@@ -144,7 +144,7 @@ export function ChannelAuditLog() {
             <button
               type="button"
               onClick={() => setDropdownOpen((prev) => !prev)}
-              className={`inline-flex items-center gap-2 rounded-xl border bg-white px-3 py-1.5 text-xs font-semibold shadow-2xs transition-all ${
+              className={`inline-flex items-center gap-2 rounded-xl border bg-surface px-3 py-1.5 text-xs font-semibold shadow-2xs transition-all ${
                 dropdownOpen
                   ? 'border-slate-400 ring-2 ring-slate-100 text-slate-900'
                   : 'border-slate-200/90 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
@@ -161,7 +161,7 @@ export function ChannelAuditLog() {
             </button>
 
             {dropdownOpen && (
-              <div className="absolute left-0 top-full z-50 mt-1.5 min-w-[210px] rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-[0_12px_30px_rgba(20,20,43,0.12)] backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-100">
+              <div className="absolute left-0 top-full z-50 mt-1.5 min-w-[210px] rounded-2xl border border-slate-200/90 bg-surface p-1.5 shadow-[0_12px_30px_rgba(20,20,43,0.12)] backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-100">
                 <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Filter by Action
                 </div>
@@ -203,7 +203,7 @@ export function ChannelAuditLog() {
               placeholder="Search channel or admin..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-slate-200/90 bg-white py-1.5 pl-8 pr-7 text-xs font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100 transition-all"
+              className="w-full rounded-xl border border-slate-200/90 bg-surface py-1.5 pl-8 pr-7 text-xs font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100 transition-all"
             />
             {searchQuery && (
               <button
@@ -221,7 +221,7 @@ export function ChannelAuditLog() {
             type="button"
             onClick={() => { void fetchLogs(); }}
             title="Refresh audit log"
-            className="flex size-8 items-center justify-center rounded-xl border border-slate-200/90 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-800 shadow-2xs transition-colors"
+            className="flex size-8 items-center justify-center rounded-xl border border-slate-200/90 bg-surface text-slate-500 hover:bg-slate-50 hover:text-slate-800 shadow-2xs transition-colors"
           >
             <RefreshCw size={13} className={loading ? 'animate-spin text-slate-800' : ''} />
           </button>
@@ -229,7 +229,7 @@ export function ChannelAuditLog() {
       </div>
 
       {/* Main Table View */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
+      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-surface shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left border-collapse">
             <thead>
@@ -295,8 +295,8 @@ export function ChannelAuditLog() {
                       {/* Channel Column */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3.5">
-                          <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 via-slate-50 to-indigo-100/70 text-indigo-600 overflow-hidden shrink-0 border border-indigo-200/50 shadow-2xs font-bold text-sm">
-                            {entry.channelName ? entry.channelName.charAt(0).toUpperCase() : <Tv size={16} className="text-indigo-600" />}
+                          <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 via-slate-50 to-indigo-100/70 text-indigo-600 overflow-hidden shrink-0 border border-indigo-200/50 shadow-2xs font-bold text-sm dark:from-indigo-500/10 dark:to-indigo-500/15 dark:text-indigo-400 dark:border-indigo-500/25">
+                            {entry.channelName ? entry.channelName.charAt(0).toUpperCase() : <Tv size={16} className="text-indigo-600 dark:text-indigo-400" />}
                           </div>
                           <span className="font-bold text-xs text-slate-900 truncate max-w-[220px]">
                             {entry.channelName || 'Unknown Channel'}
@@ -380,7 +380,7 @@ export function ChannelAuditLog() {
                   type="button"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-surface px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft size={13} />
                   <span>Prev</span>
@@ -392,7 +392,7 @@ export function ChannelAuditLog() {
                   type="button"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-surface px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <span>Next</span>
                   <ChevronRight size={13} />

@@ -92,8 +92,8 @@ export function IdentityCapture({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5">
-      <p className="text-[14px] font-semibold text-[#14142b]">Verify your identity</p>
+    <div className="rounded-2xl border border-slate-200 bg-surface p-5">
+      <p className="text-[14px] font-semibold text-ink">Verify your identity</p>
       <p className="mt-1 text-[12px] font-medium text-slate-500">
         {rejected
           ? 'Your previous photo was not accepted. Take a clear, well-lit photo of your face.'
@@ -119,7 +119,7 @@ export function IdentityCapture({
           <button
             type="button"
             onClick={capture}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-[#232735]"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-on-ink hover:bg-ink-hover"
           >
             <Camera size={15} /> Take photo
           </button>
@@ -127,13 +127,13 @@ export function IdentityCapture({
           <button
             type="button"
             onClick={startCamera}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2.5 text-[13px] font-semibold text-slate-700 hover:bg-slate-50"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-300 bg-surface px-4 py-2.5 text-[13px] font-semibold text-slate-700 hover:bg-slate-50"
           >
             {photo ? <RefreshCw size={15} /> : <Camera size={15} />}
             {photo ? 'Retake' : 'Use camera'}
           </button>
         )}
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2.5 text-[13px] font-semibold text-slate-700 hover:bg-slate-50">
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-300 bg-surface px-4 py-2.5 text-[13px] font-semibold text-slate-700 hover:bg-slate-50">
           <Upload size={15} /> Upload
           <input
             type="file"
@@ -153,7 +153,7 @@ export function IdentityCapture({
             type="button"
             onClick={submit}
             disabled={submitting}
-            className="ml-auto inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-[#232735] disabled:opacity-60"
+            className="ml-auto inline-flex cursor-pointer items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-on-ink hover:bg-ink-hover disabled:opacity-60"
           >
             {submitting && <Loader2 size={15} className="animate-spin" />}
             Submit photo

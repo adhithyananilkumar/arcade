@@ -35,7 +35,7 @@ export function SectionEditView({ node, updateAttributes, selected }: NodeViewPr
   return (
     <NodeViewWrapper
       className={`group relative my-2 overflow-hidden rounded-lg border ${
-        selected ? "border-indigo-400 ring-1 ring-indigo-200" : "border-gray-200"
+        selected ? "border-indigo-400 ring-1 ring-indigo-200 dark:ring-indigo-500/25" : "border-gray-200"
       }`}
       data-drag-handle
     >
@@ -56,7 +56,7 @@ export function SectionEditView({ node, updateAttributes, selected }: NodeViewPr
 
         <div
           contentEditable={false}
-          className="absolute right-2 top-2 z-10 flex items-center gap-1 rounded-md border border-gray-200 bg-white/95 p-1 opacity-0 shadow-sm backdrop-blur transition-opacity group-hover:opacity-100"
+          className="absolute right-2 top-2 z-10 flex items-center gap-1 rounded-md border border-gray-200 bg-surface/95 p-1 opacity-0 shadow-sm backdrop-blur transition-opacity group-hover:opacity-100"
         >
           <button
             type="button"
@@ -77,7 +77,7 @@ export function SectionEditView({ node, updateAttributes, selected }: NodeViewPr
                     onClick={() => updateAttributes({ focalPoint: f })}
                     title={`Focus ${f}`}
                     className={`px-1.5 py-1 text-[10px] capitalize ${
-                      focalPoint === f ? "bg-indigo-600 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
+                      focalPoint === f ? "bg-indigo-600 text-white" : "bg-surface text-gray-600 hover:bg-gray-50"
                     }`}
                   >
                     {f}
@@ -98,7 +98,7 @@ export function SectionEditView({ node, updateAttributes, selected }: NodeViewPr
                 type="button"
                 onClick={() => updateAttributes({ backgroundImage: null })}
                 title="Remove background"
-                className="rounded p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                className="rounded p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
               >
                 <Trash2 size={14} />
               </button>

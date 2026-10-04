@@ -216,8 +216,8 @@ export default function CreatorJourney() {
                     <span
                       className={`mobile-milestone-num text-white transition-colors duration-300`}
                       style={{
-                        backgroundColor: isCompleted || isActive ? signatureColor : "#e4e4e7",
-                        color: isCompleted || isActive ? "#ffffff" : "#a1a1aa"
+                        backgroundColor: isCompleted || isActive ? signatureColor : "var(--theme-n-200, #e4e4e7)",
+                        color: isCompleted || isActive ? "#ffffff" : "var(--theme-n-400, #a1a1aa)"
                       }}
                     >
                       {isCompleted ? (

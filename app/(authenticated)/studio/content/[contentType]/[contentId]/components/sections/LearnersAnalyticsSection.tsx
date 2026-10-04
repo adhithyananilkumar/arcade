@@ -689,7 +689,7 @@ export function LearnersAnalyticsSection({
             onClick={() => setIsLearnersModalOpen(false)}
           >
             <div
-              className="flex flex-col w-full max-w-3xl max-h-[85vh] bg-white rounded-[28px] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+              className="flex flex-col w-full max-w-3xl max-h-[85vh] bg-surface rounded-[28px] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
@@ -718,18 +718,18 @@ export function LearnersAnalyticsSection({
               {/* Status Breakdown & Search */}
               <div className="p-6 pb-3 flex flex-col gap-4">
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-2xl border border-blue-200 bg-blue-50/40 p-3 flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Total Enrolled</span>
+                  <div className="rounded-2xl border border-blue-200 bg-blue-50/40 p-3 flex flex-col dark:border-blue-500/25 dark:bg-blue-500/10">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Total Enrolled</span>
                     <span className="text-xl font-black text-slate-900 mt-0.5">{effectiveLearners.length}</span>
                   </div>
-                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-3 flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">In Progress</span>
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-3 flex flex-col dark:border-emerald-500/25 dark:bg-emerald-500/10">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">In Progress</span>
                     <span className="text-xl font-black text-slate-900 mt-0.5">
                       {effectiveLearners.filter((l) => l.status === "Ongoing").length}
                     </span>
                   </div>
-                  <div className="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-3 flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">Completed</span>
+                  <div className="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-3 flex flex-col dark:border-indigo-500/25 dark:bg-indigo-500/10">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Completed</span>
                     <span className="text-xl font-black text-slate-900 mt-0.5">
                       {effectiveLearners.filter((l) => l.status === "Completed").length}
                     </span>
@@ -743,7 +743,7 @@ export function LearnersAnalyticsSection({
                     placeholder="Search student by name or email..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:outline-hidden shadow-2xs"
+                    className="w-full rounded-xl border border-slate-200 bg-surface py-2 pl-9 pr-3 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:outline-hidden shadow-2xs"
                   />
                 </div>
               </div>
@@ -757,7 +757,7 @@ export function LearnersAnalyticsSection({
                       className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3.5 hover:bg-slate-50/80 px-2 rounded-xl transition-colors"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="grid size-10 shrink-0 place-items-center rounded-full bg-slate-900 text-white font-black text-xs shadow-2xs">
+                        <div className="grid size-10 shrink-0 place-items-center rounded-full bg-slate-900 text-on-ink font-black text-xs shadow-2xs">
                           {learner.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex flex-col min-w-0">
@@ -773,12 +773,12 @@ export function LearnersAnalyticsSection({
                       <div className="flex items-center gap-4 shrink-0 sm:ml-auto">
                         <div>
                           {learner.status === "Completed" ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200 px-2.5 py-0.5 text-[10px] font-black uppercase">
-                              <CheckCircle2 size={10} className="text-blue-600" /> Completed
+                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200 px-2.5 py-0.5 text-[10px] font-black uppercase dark:bg-blue-500/15 dark:text-blue-200 dark:border-blue-500/25">
+                              <CheckCircle2 size={10} className="text-blue-600 dark:text-blue-400" /> Completed
                             </span>
                           ) : learner.status === "Ongoing" ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 text-[10px] font-black uppercase">
-                              <Radio size={10} className="text-emerald-600" /> In Progress
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 text-[10px] font-black uppercase dark:bg-emerald-500/15 dark:text-emerald-200 dark:border-emerald-500/40">
+                              <Radio size={10} className="text-emerald-600 dark:text-emerald-400" /> In Progress
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-0.5 text-[10px] font-black uppercase">
@@ -813,7 +813,7 @@ export function LearnersAnalyticsSection({
                   ))
                 ) : (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <div className="size-12 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center mb-2 text-blue-500">
+                    <div className="size-12 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center mb-2 text-blue-500 dark:bg-blue-500/10 dark:border-blue-500/25">
                       <Users size={20} />
                     </div>
                     <p className="text-sm font-bold text-slate-700">
@@ -835,7 +835,7 @@ export function LearnersAnalyticsSection({
                 </span>
                 <button
                   onClick={() => setIsLearnersModalOpen(false)}
-                  className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
+                  className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-on-ink hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
                 >
                   Close
                 </button>
@@ -851,11 +851,11 @@ export function LearnersAnalyticsSection({
             onClick={() => setIsReviewsModalOpen(false)}
           >
             <div
-              className="flex flex-col w-full max-w-4xl max-h-[88vh] bg-white rounded-[32px] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+              className="flex flex-col w-full max-w-4xl max-h-[88vh] bg-surface rounded-[32px] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="flex items-center justify-between px-7 py-5 border-b border-slate-100 bg-amber-50/30">
+              <div className="flex items-center justify-between px-7 py-5 border-b border-slate-100 bg-amber-50/30 dark:bg-amber-500/10">
                 <div className="flex items-center gap-3">
                   <div className="grid size-11 place-items-center rounded-2xl bg-amber-500 text-white shadow-sm">
                     <MessageSquare size={22} />
@@ -881,7 +881,7 @@ export function LearnersAnalyticsSection({
               <div className="p-6 pb-3 flex flex-col gap-4 border-b border-slate-100 bg-slate-50/40">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="flex flex-col items-center justify-center bg-white border border-amber-200/80 rounded-2xl px-5 py-2.5 shadow-2xs">
+                    <div className="flex flex-col items-center justify-center bg-surface border border-amber-200/80 rounded-2xl px-5 py-2.5 shadow-2xs dark:border-amber-500/25">
                       <span className="text-3xl font-black text-slate-900">{avgRating ?? "0.0"}</span>
                       <div className="flex items-center gap-0.5 mt-0.5">
                         {[1, 2, 3, 4, 5].map((s) => (
@@ -905,7 +905,7 @@ export function LearnersAnalyticsSection({
                         className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                           modalStarFilter === null
                             ? "bg-amber-500 text-white shadow-xs"
-                            : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                            : "bg-surface border border-slate-200 text-slate-600 hover:bg-slate-100"
                         }`}
                       >
                         All ({sortedReviews.length})
@@ -919,7 +919,7 @@ export function LearnersAnalyticsSection({
                             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                               modalStarFilter === stars
                                 ? "bg-amber-500 text-white shadow-xs"
-                                : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                                : "bg-surface border border-slate-200 text-slate-600 hover:bg-slate-100"
                             }`}
                           >
                             <span>{stars} ★</span>
@@ -937,7 +937,7 @@ export function LearnersAnalyticsSection({
                       placeholder="Search feedback text or student..."
                       value={reviewSearchQuery}
                       onChange={(e) => setReviewSearchQuery(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs font-medium text-slate-700 placeholder-slate-400 focus:border-amber-400 focus:outline-none shadow-2xs"
+                      className="w-full rounded-xl border border-slate-200 bg-surface py-2 pl-9 pr-3 text-xs font-medium text-slate-700 placeholder-slate-400 focus:border-amber-400 focus:outline-none shadow-2xs"
                     />
                   </div>
                 </div>
@@ -949,7 +949,7 @@ export function LearnersAnalyticsSection({
                   modalFilteredReviews.map((review) => (
                     <div
                       key={review.id}
-                      className="pt-3.5 first:pt-0 flex flex-col gap-2 p-4 rounded-2xl border border-amber-100/90 bg-white hover:border-amber-300/80 transition-all shadow-2xs"
+                      className="pt-3.5 first:pt-0 flex flex-col gap-2 p-4 rounded-2xl border border-amber-100/90 bg-surface hover:border-amber-300/80 transition-all shadow-2xs dark:border-amber-500/25 dark:hover:border-amber-500/40"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -978,7 +978,7 @@ export function LearnersAnalyticsSection({
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1 bg-amber-50/80 border border-amber-200/80 px-2.5 py-1 rounded-full">
+                        <div className="flex items-center gap-1 bg-amber-50/80 border border-amber-200/80 px-2.5 py-1 rounded-full dark:bg-amber-500/10 dark:border-amber-500/25">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
                               key={star}
@@ -990,7 +990,7 @@ export function LearnersAnalyticsSection({
                               }
                             />
                           ))}
-                          <span className="text-xs font-black text-amber-900 ml-1">{review.rating}.0</span>
+                          <span className="text-xs font-black text-amber-900 ml-1 dark:text-amber-200">{review.rating}.0</span>
                         </div>
                       </div>
 
@@ -1003,7 +1003,7 @@ export function LearnersAnalyticsSection({
                   ))
                 ) : (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <div className="size-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-2 text-amber-500">
+                    <div className="size-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-2 text-amber-500 dark:bg-amber-500/10 dark:border-amber-500/25">
                       <MessageSquare size={20} />
                     </div>
                     <p className="text-sm font-bold text-slate-700">No reviews match your filter.</p>
@@ -1021,7 +1021,7 @@ export function LearnersAnalyticsSection({
                 </span>
                 <button
                   onClick={() => setIsReviewsModalOpen(false)}
-                  className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
+                  className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-on-ink hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
                 >
                   Close
                 </button>
@@ -1147,11 +1147,9 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
   const [description, setDescription] = useState("");
   const [learningOutcomes, setLearningOutcomes] = useState("");
   const [duration, setDuration] = useState("");
-  const [coverImageUrl, setCoverImageUrl] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -1162,7 +1160,6 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
         setDescription(data.description ?? "");
         setLearningOutcomes(data.learningOutcomes ?? "");
         setDuration(data.duration ?? "");
-        setCoverImageUrl(data.coverImageUrl ?? "");
         setIsLoading(false);
       })
       .catch(() => {
@@ -1175,46 +1172,6 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
     };
   }, [contentId]);
 
-  /**
-   * Three-step upload, matching the rest of the app: presign, PUT through the internal proxy
-   * (the storage origin does not allow browser CORS), then register the object's metadata.
-   * The URL is only held in form state — it is persisted by "Save overview" like every other
-   * field here.
-   */
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    try {
-      const { key, uploadUrl, publicUrl } = await api.post<{
-        key: string;
-        uploadUrl: string;
-        publicUrl: string;
-      }>("/api/media/presign", { fileName: file.name, contentType: file.type });
-
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("uploadUrl", uploadUrl);
-      const uploadRes = await fetch("/api/internal/media/upload", { method: "POST", body: formData });
-      if (!uploadRes.ok) throw new Error("Upload failed");
-
-      await api.post("/api/media/metadata", {
-        key,
-        fileName: file.name,
-        contentType: file.type,
-        sizeBytes: file.size,
-      });
-
-      setCoverImageUrl(publicUrl);
-      toast.success("Image uploaded. Save the overview to apply it.");
-    } catch {
-      toast.error("Could not upload that image");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -1224,7 +1181,6 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
         description,
         learningOutcomes,
         duration,
-        coverImageUrl,
       });
       toast.success("Course overview saved");
     } catch {
@@ -1234,6 +1190,8 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
     }
   };
 
+  if (isLoading) {
+    return (
   if (isLoading) {
     return (
       <div className="flex items-center justify-center rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 py-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
@@ -1499,6 +1457,13 @@ export function CoursePricingEditor({ contentId }: { contentId: string }) {
           </div>
         )}
       </div>
+
+      {pricingModel === "PAID" && (
+        <p className="flex items-start gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 p-3 text-xs font-medium text-slate-700 dark:text-slate-300 max-w-xl">
+          <span className="mt-[1px] text-[10px]">💡</span> A 20% platform fee applies to all
+          paid courses.
+        </p>
+      )}
 
       <div className="flex justify-end pt-1">
         <button

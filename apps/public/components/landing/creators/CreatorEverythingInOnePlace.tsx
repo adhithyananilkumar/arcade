@@ -73,8 +73,8 @@ export default function CreatorEverythingInOnePlace() {
         <div key={animKey} className="relative min-w-[1200px] h-[360px] w-full">
 
           {/* Background blobs */}
-          <div className="pointer-events-none absolute -top-12 left-1/4 w-72 h-72 rounded-full opacity-10 bg-indigo-300 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 right-1/4 w-72 h-72 rounded-full opacity-10 bg-emerald-300 blur-3xl" />
+          <div className="pointer-events-none absolute -top-12 left-1/4 w-72 h-72 rounded-full opacity-10 bg-indigo-300 blur-3xl dark:bg-indigo-500/30" />
+          <div className="pointer-events-none absolute bottom-0 right-1/4 w-72 h-72 rounded-full opacity-10 bg-emerald-300 blur-3xl dark:bg-emerald-500/30" />
 
           {/* SVG Wave Line */}
           <svg
@@ -143,10 +143,10 @@ export default function CreatorEverythingInOnePlace() {
                 >
                   <div style={{ filter: 'drop-shadow(0 6px 16px rgba(36, 81, 214, 0.12))' }}>
                     <div
-                      className="flex items-center justify-center w-14 h-14 bg-white border border-slate-100 transition-all duration-500 hover:scale-110 hover:bg-[#2451D6] hover:border-[#2451D6] hover:shadow-[0_0_20px_rgba(36,81,214,0.3)] group/hex"
+                      className="flex items-center justify-center w-14 h-14 bg-surface border border-slate-100 transition-all duration-500 hover:scale-110 hover:bg-[#2451D6] hover:border-[#2451D6] hover:shadow-[0_0_20px_rgba(36,81,214,0.3)] group/hex"
                       style={{ clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' }}
                     >
-                      <Icon className="w-5 h-5 text-[#2451D6] transition-colors duration-300 group-hover/hex:text-white" />
+                      <Icon className="w-5 h-5 text-[#2451D6] transition-colors duration-300 group-hover/hex:text-white dark:text-[#85b3ff]" />
                     </div>
                   </div>
                 </div>
@@ -170,7 +170,7 @@ export default function CreatorEverythingInOnePlace() {
                   </span>
                   {/* Content */}
                   <div className="relative z-10 p-2 transition-all duration-300 group-hover/card:-translate-y-1">
-                    <h4 className="text-[17px] sm:text-[18px] font-black text-slate-800 mb-1.5 transition-colors duration-300 group-hover/card:text-[#2451D6]">
+                    <h4 className="text-[17px] sm:text-[18px] font-black text-slate-800 mb-1.5 transition-colors duration-300 group-hover/card:text-[#2451D6] dark:group-hover/card:text-[#85b3ff]">
                       {node.title}
                     </h4>
                     <p className="text-[13px] sm:text-[14px] font-semibold text-slate-500 leading-normal">

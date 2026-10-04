@@ -416,7 +416,7 @@ export default function ExamEnginePage() {
     return (
       <div
         className="flex min-h-screen items-center justify-center text-[13px] font-medium text-slate-500"
-        style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
+        style={{ background: 'var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%))' }}
       >
         <HonorCodeModal
           isOpen={true}
@@ -436,13 +436,13 @@ export default function ExamEnginePage() {
     return (
       <div
         className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center"
-        style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
+        style={{ background: 'var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%))' }}
       >
-        <p className="max-w-md text-[14px] font-semibold text-rose-600">{loadError}</p>
+        <p className="max-w-md text-[14px] font-semibold text-rose-600 dark:text-rose-400">{loadError}</p>
         <button
           type="button"
           onClick={() => router.push(leaveTo)}
-          className="cursor-pointer rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-[#232735]"
+          className="cursor-pointer rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-on-ink hover:bg-ink-hover"
         >
           Go back
         </button>
@@ -454,10 +454,10 @@ export default function ExamEnginePage() {
     return (
       <div
         className="flex min-h-screen items-center justify-center text-[13px] font-medium text-slate-500"
-        style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
+        style={{ background: 'var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%))' }}
       >
-        <div className="flex items-center gap-3 rounded-2xl bg-white px-6 py-4 shadow-sm border border-slate-200/80">
-          <Loader2 size={18} className="animate-spin text-indigo-600" />
+        <div className="flex items-center gap-3 rounded-2xl bg-surface px-6 py-4 shadow-sm border border-slate-200/80">
+          <Loader2 size={18} className="animate-spin text-indigo-600 dark:text-indigo-400" />
           <span>Loading exam environment…</span>
         </div>
       </div>
@@ -474,8 +474,8 @@ export default function ExamEnginePage() {
 
   return (
     <div
-      className="relative flex min-h-screen flex-col font-sans selection:bg-[#14142b]/10"
-      style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 28%, #FFFFFF 70%)' }}
+      className="relative flex min-h-screen flex-col font-sans selection:bg-ink/10"
+      style={{ background: 'var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 28%, #FFFFFF 70%))' }}
     >
       {/* Proctoring Warning Modal */}
       <AnimatePresence>
@@ -484,18 +484,18 @@ export default function ExamEnginePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-[#14142b]/50 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4 backdrop-blur-sm"
           >
             <motion.div
               initial={{ scale: 0.95, y: 10 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 10 }}
-              className="w-full max-w-md rounded-3xl border border-slate-200/80 bg-white p-7 text-center shadow-[0_24px_60px_rgba(20,20,43,0.22)]"
+              className="w-full max-w-md rounded-3xl border border-slate-200/80 bg-surface p-7 text-center shadow-[0_24px_60px_rgba(20,20,43,0.22)]"
             >
-              <div className="mx-auto mb-5 grid size-14 place-items-center rounded-2xl bg-rose-50 border border-rose-100">
-                <AlertTriangle className="text-rose-600" size={26} />
+              <div className="mx-auto mb-5 grid size-14 place-items-center rounded-2xl bg-rose-50 border border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/25">
+                <AlertTriangle className="text-rose-600 dark:text-rose-400" size={26} />
               </div>
-              <h2 className="text-[1.25rem] font-bold tracking-tight text-[#14142b]">
+              <h2 className="text-[1.25rem] font-bold tracking-tight text-ink">
                 You left the exam window
               </h2>
               <p className="mt-2 text-[13px] font-medium leading-relaxed text-slate-500">
@@ -508,7 +508,7 @@ export default function ExamEnginePage() {
               <button
                 type="button"
                 onClick={handleReturnToFullscreen}
-                className="mt-6 w-full rounded-full bg-[#14142b] py-3 text-[13px] font-semibold text-white hover:bg-[#232735] transition-colors shadow-sm"
+                className="mt-6 w-full rounded-full bg-ink py-3 text-[13px] font-semibold text-on-ink hover:bg-ink-hover transition-colors shadow-sm"
               >
                 Return to exam
               </button>
@@ -532,15 +532,15 @@ export default function ExamEnginePage() {
               initial={{ opacity: 0, scale: 0.95, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 12 }}
-              className="relative w-full max-w-md overflow-hidden rounded-3xl border border-black/5 bg-white p-6 sm:p-7 shadow-[0_24px_60px_rgba(20,20,43,0.18)] z-10"
+              className="relative w-full max-w-md overflow-hidden rounded-3xl border border-slate-950/5 bg-surface p-6 sm:p-7 shadow-[0_24px_60px_rgba(20,20,43,0.18)] z-10"
             >
               {/* Header with Close */}
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+                  <div className="flex size-7 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
                     <User size={15} />
                   </div>
-                  <h3 className="text-[15px] font-bold text-[#14142b]">Candidate Profile</h3>
+                  <h3 className="text-[15px] font-bold text-ink">Candidate Profile</h3>
                 </div>
                 <button
                   type="button"
@@ -553,7 +553,7 @@ export default function ExamEnginePage() {
 
               {/* Candidate Bio Header */}
               <div className="mt-5 flex items-center gap-4 rounded-2xl bg-slate-50/80 p-4 border border-slate-100">
-                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-white shadow-xs bg-white">
+                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-surface shadow-xs bg-surface">
                   {user?.avatarUrl ? (
                     <img
                       src={getAvatarUrl(user.avatarUrl)}
@@ -562,16 +562,16 @@ export default function ExamEnginePage() {
                       referrerPolicy="no-referrer"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-indigo-50 text-base font-black text-indigo-600">
+                    <div className="flex h-full w-full items-center justify-center bg-indigo-50 text-base font-black text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
                       {candidateName.charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h4 className="truncate text-base font-bold text-[#14142b]">{candidateName}</h4>
+                  <h4 className="truncate text-base font-bold text-ink">{candidateName}</h4>
                   <p className="truncate text-xs text-slate-500 font-medium">{user?.email || 'Registered Candidate'}</p>
                   <div className="mt-1.5 flex items-center gap-1.5">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-100">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25">
                       <ShieldCheck size={11} /> Verified Sitting
                     </span>
                   </div>
@@ -581,36 +581,36 @@ export default function ExamEnginePage() {
               {/* Details Grid */}
               <div className="mt-4 space-y-3">
                 {/* Attempt ID */}
-                <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white p-3.5 shadow-xs">
+                <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-surface p-3.5 shadow-xs">
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Exam Attempt ID</p>
-                    <p className="mt-0.5 font-mono text-[13px] font-bold text-[#14142b]">{attemptId || 'N/A'}</p>
+                    <p className="mt-0.5 font-mono text-[13px] font-bold text-ink">{attemptId || 'N/A'}</p>
                   </div>
                   <button
                     type="button"
                     onClick={handleCopyAttemptId}
                     className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
                   >
-                    {copiedAttemptId ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                    {copiedAttemptId ? <Check size={13} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={13} />}
                     <span>{copiedAttemptId ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
 
                 {/* Session Stats */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-2xl border border-slate-100 bg-white p-3.5 shadow-xs">
+                  <div className="rounded-2xl border border-slate-100 bg-surface p-3.5 shadow-xs">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Time Remaining</p>
-                    <div className="mt-1 flex items-center gap-1.5 font-mono text-[15px] font-bold text-[#14142b]">
+                    <div className="mt-1 flex items-center gap-1.5 font-mono text-[15px] font-bold text-ink">
                       <Clock size={15} className={urgent ? 'text-rose-500' : 'text-slate-400'} />
                       <span>{formatTime(timeLeft)}</span>
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-100 bg-white p-3.5 shadow-xs">
+                  <div className="rounded-2xl border border-slate-100 bg-surface p-3.5 shadow-xs">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Violations</p>
                     <div className="mt-1 flex items-center gap-1.5 font-mono text-[15px] font-bold">
                       <ShieldAlert size={15} className={violations > 0 ? 'text-rose-500' : 'text-slate-400'} />
-                      <span className={violations > 0 ? 'text-rose-600' : 'text-emerald-600'}>
+                      <span className={violations > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}>
                         {rules.maxViolations > 0 ? `${violations} / ${rules.maxViolations}` : `${violations}`}
                       </span>
                     </div>
@@ -618,9 +618,9 @@ export default function ExamEnginePage() {
                 </div>
 
                 {/* Status Notice */}
-                <div className="rounded-2xl border border-indigo-50 bg-indigo-50/50 p-3.5 text-xs font-medium leading-relaxed text-indigo-950">
+                <div className="rounded-2xl border border-indigo-50 bg-indigo-50/50 p-3.5 text-xs font-medium leading-relaxed text-indigo-950 dark:border-indigo-500/25 dark:bg-indigo-500/10 dark:text-indigo-200">
                   <div className="flex items-start gap-2">
-                    <Info size={15} className="mt-0.5 shrink-0 text-indigo-600" />
+                    <Info size={15} className="mt-0.5 shrink-0 text-indigo-600 dark:text-indigo-400" />
                     <span>
                       {isPreview
                         ? 'You are previewing this exam paper. Responses are not submitted to official records.'
@@ -637,7 +637,7 @@ export default function ExamEnginePage() {
                 <button
                   type="button"
                   onClick={() => setCandidateModalOpen(false)}
-                  className="w-full rounded-full bg-[#14142b] py-3 text-[13px] font-semibold text-white hover:bg-[#232735] transition-colors shadow-sm"
+                  className="w-full rounded-full bg-ink py-3 text-[13px] font-semibold text-on-ink hover:bg-ink-hover transition-colors shadow-sm"
                 >
                   Resume Exam
                 </button>
@@ -662,16 +662,16 @@ export default function ExamEnginePage() {
               initial={{ opacity: 0, scale: 0.95, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 12 }}
-              className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-black/5 bg-white p-6 sm:p-8 shadow-[0_24px_60px_rgba(20,20,43,0.2)] z-10"
+              className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-slate-950/5 bg-surface p-6 sm:p-8 shadow-[0_24px_60px_rgba(20,20,43,0.2)] z-10"
             >
               {/* Top Header */}
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex size-9 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                  <div className="flex size-9 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
                     <Send size={17} />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-[#14142b]">Ready to Submit Exam?</h3>
+                    <h3 className="text-base font-bold text-ink">Ready to Submit Exam?</h3>
                     <p className="text-xs text-slate-500 font-medium">Please review your sitting summary before finalizing.</p>
                   </div>
                 </div>
@@ -689,7 +689,7 @@ export default function ExamEnginePage() {
               {/* Statistics Grid */}
               <div className="mt-5 grid grid-cols-3 gap-2.5">
                 <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3.5 text-center">
-                  <span className="block text-xl font-extrabold text-[#14142b] tabular-nums">
+                  <span className="block text-xl font-extrabold text-ink tabular-nums">
                     {answeredCount}
                   </span>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -699,11 +699,11 @@ export default function ExamEnginePage() {
 
                 <div className={`rounded-2xl border p-3.5 text-center ${
                   unansweredCount > 0 
-                    ? 'border-rose-100 bg-rose-50/60 text-rose-700' 
+                    ? 'border-rose-100 bg-rose-50/60 text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300' 
                     : 'border-slate-100 bg-slate-50/80 text-slate-700'
                 }`}>
                   <span className={`block text-xl font-extrabold tabular-nums ${
-                    unansweredCount > 0 ? 'text-rose-600' : 'text-[#14142b]'
+                    unansweredCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-ink'
                   }`}>
                     {unansweredCount}
                   </span>
@@ -714,11 +714,11 @@ export default function ExamEnginePage() {
 
                 <div className={`rounded-2xl border p-3.5 text-center ${
                   markedForReview.size > 0 
-                    ? 'border-amber-100 bg-amber-50/60 text-amber-800' 
+                    ? 'border-amber-100 bg-amber-50/60 text-amber-800 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200' 
                     : 'border-slate-100 bg-slate-50/80 text-slate-700'
                 }`}>
                   <span className={`block text-xl font-extrabold tabular-nums ${
-                    markedForReview.size > 0 ? 'text-amber-600' : 'text-[#14142b]'
+                    markedForReview.size > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-ink'
                   }`}>
                     {markedForReview.size}
                   </span>
@@ -731,9 +731,9 @@ export default function ExamEnginePage() {
               {/* Attention Warning Notice */}
               <div className="mt-4 space-y-3">
                 {(unansweredCount > 0 || markedForReview.size > 0) && (
-                  <div className="rounded-2xl border border-amber-200/80 bg-amber-50/80 p-4 text-xs leading-relaxed text-amber-900">
+                  <div className="rounded-2xl border border-amber-200/80 bg-amber-50/80 p-4 text-xs leading-relaxed text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
                     <div className="flex items-start gap-2.5">
-                      <AlertCircle size={16} className="mt-0.5 shrink-0 text-amber-600" />
+                      <AlertCircle size={16} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
                       <div>
                         <span className="font-bold">Items requiring attention: </span>
                         {unansweredCount > 0 && (
@@ -760,7 +760,7 @@ export default function ExamEnginePage() {
 
                 <div className="flex items-center justify-between px-1 text-xs text-slate-500">
                   <span>Time remaining:</span>
-                  <span className="font-mono font-bold text-[#14142b]">{formatTime(timeLeft)}</span>
+                  <span className="font-mono font-bold text-ink">{formatTime(timeLeft)}</span>
                 </div>
               </div>
 
@@ -770,7 +770,7 @@ export default function ExamEnginePage() {
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => setConfirmSubmitOpen(false)}
-                  className="flex-1 rounded-full border border-slate-200 bg-white py-3 text-[13px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 cursor-pointer"
+                  className="flex-1 rounded-full border border-slate-200 bg-surface py-3 text-[13px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   Continue Exam
                 </button>
@@ -778,7 +778,7 @@ export default function ExamEnginePage() {
                   type="button"
                   disabled={isSubmitting}
                   onClick={executeFinalSubmit}
-                  className="flex-1 rounded-full bg-[#14142b] py-3 text-[13px] font-semibold text-white hover:bg-[#232735] transition-colors shadow-sm disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex-1 rounded-full bg-ink py-3 text-[13px] font-semibold text-on-ink hover:bg-ink-hover transition-colors shadow-sm disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>
@@ -812,7 +812,7 @@ export default function ExamEnginePage() {
               className="h-6 w-auto"
             />
             <span className="hidden sm:inline-block h-3.5 w-px bg-slate-200" />
-            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-[#14142b]/5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#14142b]">
+            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-ink/5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ink">
               {isPreview ? 'Preview' : rules.proctored ? 'Proctored' : 'Exam Session'}
             </span>
           </div>
@@ -822,10 +822,10 @@ export default function ExamEnginePage() {
         <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center">
           <div
             className={`flex h-12 items-center gap-2.5 rounded-full px-5 font-mono text-[14px] font-bold tabular-nums apple-glass-dock shadow-none [box-shadow:none] transition-colors ${
-              urgent ? 'bg-rose-50 text-rose-700 border-rose-200/80 shadow-xs' : 'text-[#14142b]'
+              urgent ? 'bg-rose-50 text-rose-700 border-rose-200/80 shadow-xs dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/25' : 'text-ink'
             }`}
           >
-            <Clock size={16} className={urgent ? 'text-rose-600 animate-pulse' : 'text-slate-400'} />
+            <Clock size={16} className={urgent ? 'text-rose-600 animate-pulse dark:text-rose-400' : 'text-slate-400'} />
             <span>{formatTime(timeLeft)}</span>
           </div>
         </div>
@@ -835,18 +835,18 @@ export default function ExamEnginePage() {
           <button
             type="button"
             onClick={() => setCandidateModalOpen(true)}
-            className="group flex h-12 items-center gap-2.5 rounded-full pl-4 pr-1.5 apple-glass-dock shadow-none [box-shadow:none] text-slate-800 hover:bg-white/95 transition-all cursor-pointer"
+            className="group flex h-12 items-center gap-2.5 rounded-full pl-4 pr-1.5 apple-glass-dock shadow-none [box-shadow:none] text-slate-800 hover:bg-surface/95 transition-all cursor-pointer"
             title="View candidate & sitting info"
           >
             <div className="flex flex-col text-left">
-              <span className="max-w-[110px] truncate text-[12px] font-bold leading-tight text-[#14142b] group-hover:text-indigo-600 transition-colors">
+              <span className="max-w-[110px] truncate text-[12px] font-bold leading-tight text-ink group-hover:text-indigo-600 transition-colors dark:group-hover:text-indigo-400">
                 {candidateName}
               </span>
               <span className="font-mono text-[9px] font-semibold text-slate-400 leading-none">
                 ID: {shortAttemptId}
               </span>
             </div>
-            <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-black/5 shadow-xs bg-slate-100">
+            <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-slate-950/5 shadow-xs bg-slate-100">
               {user?.avatarUrl ? (
                 <img
                   src={getAvatarUrl(user.avatarUrl)}
@@ -855,7 +855,7 @@ export default function ExamEnginePage() {
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-indigo-50 text-[11px] font-black text-indigo-600">
+                <div className="flex h-full w-full items-center justify-center bg-indigo-50 text-[11px] font-black text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
                   {candidateName.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -872,31 +872,31 @@ export default function ExamEnginePage() {
             {/* Question Header */}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <span className="flex size-7 items-center justify-center rounded-full bg-[#14142b] text-[12px] font-bold text-white shadow-xs">
+                <span className="flex size-7 items-center justify-center rounded-full bg-ink text-[12px] font-bold text-on-ink shadow-xs">
                   {currentIdx + 1}
                 </span>
-                <span className="text-[14px] font-bold tracking-tight text-[#14142b]">
+                <span className="text-[14px] font-bold tracking-tight text-ink">
                   Question {currentIdx + 1} of {questions.length}
                 </span>
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="rounded-full bg-white/90 border border-slate-200/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-700 shadow-xs">
+                <span className="rounded-full bg-surface/90 border border-slate-200/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-700 shadow-xs">
                   {currentQ.points} pt{currentQ.points === 1 ? '' : 's'}
                 </span>
-                <span className="rounded-full bg-white/90 border border-slate-200/80 px-3 py-1 text-[11px] font-semibold text-slate-500 shadow-xs">
+                <span className="rounded-full bg-surface/90 border border-slate-200/80 px-3 py-1 text-[11px] font-semibold text-slate-500 shadow-xs">
                   {currentQ.type === 'MULTIPLE' ? 'Multi-Choice' : currentQ.type === 'SENTENCE' ? 'Written Answer' : 'Single Choice'}
                 </span>
               </div>
             </div>
 
             {/* Question Prompt */}
-            <div className="text-[1.1rem] md:text-[1.2rem] leading-relaxed font-medium text-[#14142b]">
+            <div className="text-[1.1rem] md:text-[1.2rem] leading-relaxed font-medium text-ink">
               <TiptapContentView body={promptBody(currentQ.prompt)} emptyMessage="" />
             </div>
 
             {currentQ.type === 'MULTIPLE' && (
-              <div className="flex items-center gap-1.5 text-[12px] font-semibold text-indigo-600">
+              <div className="flex items-center gap-1.5 text-[12px] font-semibold text-indigo-600 dark:text-indigo-400">
                 <Sparkles size={14} />
                 <span>Select all options that apply.</span>
               </div>
@@ -910,7 +910,7 @@ export default function ExamEnginePage() {
                   onChange={(e) => handleTextAnswer(e.target.value)}
                   rows={8}
                   placeholder="Type your comprehensive answer here…"
-                  className="w-full resize-y rounded-2xl border border-slate-200/90 bg-white p-5 text-[14px] font-medium leading-relaxed text-[#14142b] shadow-xs outline-none transition-all placeholder:text-slate-400 focus:border-[#14142b] focus:shadow-sm"
+                  className="w-full resize-y rounded-2xl border border-slate-200/90 bg-surface p-5 text-[14px] font-medium leading-relaxed text-ink shadow-xs outline-none transition-all placeholder:text-slate-400 focus:border-ink focus:shadow-sm"
                 />
                 <div className="mt-2.5 flex items-center justify-between text-[11px] font-medium text-slate-400">
                   <span>Autosaved as you type</span>
@@ -933,8 +933,8 @@ export default function ExamEnginePage() {
                       aria-pressed={selected}
                       className={`group flex w-full items-center rounded-2xl border p-4 text-left transition-all cursor-pointer ${
                         selected
-                          ? 'border-[#14142b] bg-white ring-1 ring-[#14142b] shadow-[0_4px_18px_rgba(20,20,43,0.08)]'
-                          : 'border-slate-200/80 bg-white shadow-xs hover:border-slate-300 hover:shadow-sm'
+                          ? 'border-ink bg-surface ring-1 ring-ink shadow-[0_4px_18px_rgba(20,20,43,0.08)]'
+                          : 'border-slate-200/80 bg-surface shadow-xs hover:border-slate-300 hover:shadow-sm'
                       }`}
                     >
                       {/* Option Letter Tag / Indicator */}
@@ -943,7 +943,7 @@ export default function ExamEnginePage() {
                           multi ? 'rounded-lg' : 'rounded-full'
                         } ${
                           selected
-                            ? 'bg-[#14142b] text-white'
+                            ? 'bg-ink text-on-ink'
                             : 'border border-slate-200 bg-slate-50 text-slate-600 group-hover:border-slate-300'
                         }`}
                       >
@@ -955,7 +955,7 @@ export default function ExamEnginePage() {
                       </span>
                       <span
                         className={`text-[14.5px] leading-relaxed flex-1 ${
-                          selected ? 'font-semibold text-[#14142b]' : 'font-medium text-slate-700'
+                          selected ? 'font-semibold text-ink' : 'font-medium text-slate-700'
                         }`}
                       >
                         {opt.text}
@@ -973,11 +973,11 @@ export default function ExamEnginePage() {
                 onClick={toggleReview}
                 className={`inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-[12px] font-semibold transition-all shadow-xs cursor-pointer ${
                   isReviewed
-                    ? 'bg-amber-50 text-amber-800 border border-amber-300 shadow-xs'
-                    : 'border border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50'
+                    ? 'bg-amber-50 text-amber-800 border border-amber-300 shadow-xs dark:bg-amber-500/10 dark:text-amber-200 dark:border-amber-500/40'
+                    : 'border border-slate-200/80 bg-surface text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <Flag size={14} className={isReviewed ? 'fill-amber-600 text-amber-600' : 'text-slate-400'} />
+                <Flag size={14} className={isReviewed ? 'fill-amber-600 text-amber-600 dark:fill-amber-400 dark:text-amber-400' : 'text-slate-400'} />
                 <span>{isReviewed ? 'Marked for Review' : 'Mark for Review'}</span>
               </button>
 
@@ -986,7 +986,7 @@ export default function ExamEnginePage() {
                   type="button"
                   onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
                   disabled={currentIdx === 0}
-                  className="inline-flex h-11 items-center gap-1.5 rounded-full border border-slate-200/80 bg-white px-5 text-[12px] font-semibold text-slate-700 shadow-xs hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 transition-all cursor-pointer"
+                  className="inline-flex h-11 items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface px-5 text-[12px] font-semibold text-slate-700 shadow-xs hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 transition-all cursor-pointer"
                 >
                   <ChevronLeft size={16} />
                   <span>Previous</span>
@@ -996,7 +996,7 @@ export default function ExamEnginePage() {
                   type="button"
                   onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
                   disabled={currentIdx === questions.length - 1}
-                  className="inline-flex h-11 items-center gap-1.5 rounded-full bg-[#14142b] px-6 text-[12px] font-semibold text-white shadow-xs hover:bg-[#232735] transition-all disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                  className="inline-flex h-11 items-center gap-1.5 rounded-full bg-ink px-6 text-[12px] font-semibold text-on-ink shadow-xs hover:bg-ink-hover transition-all disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                 >
                   <span>Next</span>
                   <ChevronRight size={16} />
@@ -1013,7 +1013,7 @@ export default function ExamEnginePage() {
                 <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Exam Progress
                 </h3>
-                <span className="text-[12px] font-bold text-[#14142b]">
+                <span className="text-[12px] font-bold text-ink">
                   {answeredCount} / {questions.length}
                 </span>
               </div>
@@ -1027,16 +1027,16 @@ export default function ExamEnginePage() {
               </div>
 
               <div className="mt-3.5 grid grid-cols-2 gap-2.5">
-                <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 text-center shadow-xs">
-                  <div className="text-xl font-extrabold tabular-nums text-[#14142b]">
+                <div className="rounded-2xl border border-slate-200/80 bg-surface p-3.5 text-center shadow-xs">
+                  <div className="text-xl font-extrabold tabular-nums text-ink">
                     {answeredCount}
                   </div>
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     Answered
                   </div>
                 </div>
-                <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 text-center shadow-xs">
-                  <div className="text-xl font-extrabold tabular-nums text-amber-600">
+                <div className="rounded-2xl border border-slate-200/80 bg-surface p-3.5 text-center shadow-xs">
+                  <div className="text-xl font-extrabold tabular-nums text-amber-600 dark:text-amber-400">
                     {markedForReview.size}
                   </div>
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -1057,9 +1057,9 @@ export default function ExamEnginePage() {
                   const isRev = markedForReview.has(q.id);
                   const isActive = currentIdx === idx;
 
-                  let bgClass = 'border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50';
-                  if (hasAnswer) bgClass = 'border-[#14142b] bg-[#14142b] text-white';
-                  if (isRev && !hasAnswer) bgClass = 'border-amber-300 bg-amber-50 text-amber-800 font-bold';
+                  let bgClass = 'border-slate-200/90 bg-surface text-slate-700 hover:border-slate-300 hover:bg-slate-50';
+                  if (hasAnswer) bgClass = 'border-ink bg-ink text-on-ink';
+                  if (isRev && !hasAnswer) bgClass = 'border-amber-300 bg-amber-50 text-amber-800 font-bold dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200';
                   if (isRev && hasAnswer) bgClass = 'border-amber-400 bg-amber-500 text-white font-bold';
 
                   return (
@@ -1073,7 +1073,7 @@ export default function ExamEnginePage() {
                     >
                       {idx + 1}
                       {isRev && (
-                        <span className="absolute -top-1 -right-1 size-2.5 rounded-full bg-amber-500 ring-2 ring-white" />
+                        <span className="absolute -top-1 -right-1 size-2.5 rounded-full bg-amber-500 ring-2 ring-surface" />
                       )}
                     </button>
                   );
@@ -1087,7 +1087,7 @@ export default function ExamEnginePage() {
                 type="button"
                 onClick={() => setConfirmSubmitOpen(true)}
                 disabled={isSubmitting}
-                className="w-full rounded-full bg-[#14142b] py-3.5 text-[13px] font-semibold text-white hover:bg-[#232735] transition-all shadow-sm disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full rounded-full bg-ink py-3.5 text-[13px] font-semibold text-on-ink hover:bg-ink-hover transition-all shadow-sm disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <CheckCircle2 size={16} />
                 <span>Submit Exam</span>

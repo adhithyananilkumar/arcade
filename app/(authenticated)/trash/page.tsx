@@ -50,7 +50,7 @@ function PermanentDeleteModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="relative w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl">
         <button
           type="button"
           onClick={onClose}
@@ -58,7 +58,7 @@ function PermanentDeleteModal({
         >
           <X size={18} />
         </button>
-        <h3 className="text-base font-semibold text-red-700">Permanently delete course</h3>
+        <h3 className="text-base font-semibold text-red-700 dark:text-red-300">Permanently delete course</h3>
         <p className="mt-1 text-sm text-gray-600">
           This <span className="font-medium">cannot be undone</span>. The course and all of its
           modules, lessons, and drafts will be permanently removed.
@@ -72,9 +72,9 @@ function PermanentDeleteModal({
           value={confirmText}
           onChange={(e) => setConfirmText(e.target.value)}
           placeholder={course.title}
-          className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-red-400 focus:ring-1 focus:ring-red-300"
+          className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-red-400 focus:ring-1 focus:ring-red-300 dark:focus:ring-red-500/40"
         />
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
         <div className="mt-4 flex justify-end gap-2">
           <button
             type="button"
@@ -135,7 +135,7 @@ export default function TrashPage() {
         />
       )}
 
-      <header className="border-b border-gray-200 bg-white px-8 py-5">
+      <header className="border-b border-gray-200 bg-surface px-8 py-5">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div>
             <Link
@@ -176,7 +176,7 @@ export default function TrashPage() {
             {courses.map((course) => (
               <div
                 key={course.id}
-                className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-5"
+                className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-surface p-5"
               >
                 <div>
                   <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-gray-800">
@@ -194,7 +194,7 @@ export default function TrashPage() {
                     type="button"
                     disabled={restoringId === course.id}
                     onClick={() => restore(course.id)}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-indigo-50 py-1.5 text-xs font-semibold text-indigo-600 transition-colors hover:bg-indigo-100 disabled:opacity-60"
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-indigo-50 py-1.5 text-xs font-semibold text-indigo-600 transition-colors hover:bg-indigo-100 disabled:opacity-60 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/15"
                   >
                     <RotateCcw size={12} />
                     {restoringId === course.id ? "Restoring…" : "Restore"}
@@ -202,7 +202,7 @@ export default function TrashPage() {
                   <button
                     type="button"
                     onClick={() => setPurgeTarget(course)}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-red-50 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-100"
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-red-50 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/15"
                   >
                     <Trash2 size={12} />
                     Delete

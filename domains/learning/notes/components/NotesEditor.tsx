@@ -35,8 +35,8 @@ const FONT_SIZES: { label: string; value: string | null }[] = [
   { label: 'Large', value: '18px' },
 ];
 
-const toolbarButtonClass = (active: boolean, activeClassName = 'bg-[#14142b] text-white hover:bg-[#14142b]') =>
-  active ? activeClassName : 'text-slate-500 hover:bg-white/60';
+const toolbarButtonClass = (active: boolean, activeClassName = 'bg-ink text-on-ink hover:bg-ink') =>
+  active ? activeClassName : 'text-slate-500 hover:bg-surface/60';
 
 /**
  * A deliberately small rich text editor for learner notes — its own `useEditor` config rather than
@@ -110,9 +110,9 @@ export function NotesEditor({ content, onChange, placeholder, saveStatus }: Note
 
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-2 flex flex-shrink-0 flex-wrap items-center gap-0.5 rounded-full border border-white/40 bg-white/50 px-1.5 py-1 backdrop-blur-md">
+      <div className="mb-2 flex flex-shrink-0 flex-wrap items-center gap-0.5 rounded-full border border-white/40 bg-surface/50 px-1.5 py-1 backdrop-blur-md">
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex h-7 items-center gap-1 rounded-full px-2 text-[12px] font-semibold text-slate-600 hover:bg-white/60">
+          <DropdownMenuTrigger className="flex h-7 items-center gap-1 rounded-full px-2 text-[12px] font-semibold text-slate-600 hover:bg-surface/60">
             {currentFontLabel}
             <ChevronDown size={12} />
           </DropdownMenuTrigger>
@@ -126,7 +126,7 @@ export function NotesEditor({ content, onChange, placeholder, saveStatus }: Note
         </DropdownMenu>
 
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex h-7 items-center gap-1 rounded-full px-2 text-[12px] font-semibold text-slate-600 hover:bg-white/60">
+          <DropdownMenuTrigger className="flex h-7 items-center gap-1 rounded-full px-2 text-[12px] font-semibold text-slate-600 hover:bg-surface/60">
             {currentSizeLabel}
             <ChevronDown size={12} />
           </DropdownMenuTrigger>
@@ -176,7 +176,7 @@ export function NotesEditor({ content, onChange, placeholder, saveStatus }: Note
           variant="ghost"
           size="icon-sm"
           onClick={() => editor.chain().focus().toggleHighlight().run()}
-          className={toolbarButtonClass(toolbarState.highlight, 'bg-amber-200 text-amber-900 hover:bg-amber-200')}
+          className={toolbarButtonClass(toolbarState.highlight, 'bg-amber-200 text-amber-900 hover:bg-amber-200 dark:bg-amber-500/20 dark:text-amber-200 dark:hover:bg-amber-500/20')}
           title="Highlight"
         >
           <Highlighter size={13} />

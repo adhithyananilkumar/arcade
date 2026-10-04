@@ -10,7 +10,7 @@ export function ToggleEditView({ node, updateAttributes, selected }: NodeViewPro
 
   return (
     <NodeViewWrapper
-      className={`my-2 rounded-lg border p-3 ${selected ? "border-indigo-400 ring-1 ring-indigo-200" : "border-gray-200"}`}
+      className={`my-2 rounded-lg border p-3 ${selected ? "border-indigo-400 ring-1 ring-indigo-200 dark:ring-indigo-500/25" : "border-gray-200"}`}
       data-drag-handle
     >
       <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-gray-400">

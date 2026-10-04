@@ -141,11 +141,11 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
           <Loader2 size={16} className="animate-spin text-slate-400" />
         </div>
       ) : error || !catalogue || !assignment ? (
-        <p className="mt-2 rounded-xl bg-rose-50 px-3.5 py-2 text-xs font-medium text-rose-700">{error ?? "Unavailable."}</p>
+        <p className="mt-2 rounded-xl bg-rose-50 px-3.5 py-2 text-xs font-medium text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">{error ?? "Unavailable."}</p>
       ) : (
         <>
           {assignment.lockedReason && (
-            <p className="mt-1 flex items-start gap-2 rounded-xl bg-amber-50 px-3.5 py-2 text-xs font-medium text-amber-800">
+            <p className="mt-1 flex items-start gap-2 rounded-xl bg-amber-50 px-3.5 py-2 text-xs font-medium text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
               <Lock size={12} className="mt-0.5 shrink-0" /> {assignment.lockedReason}
             </p>
           )}
@@ -163,7 +163,7 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
                   label={`Level ${draft} ${assignment.family.label} badge`}
                 />
               ) : (
-                <div className="flex aspect-[240/256] w-40 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 text-slate-400">
+                <div className="flex aspect-[240/256] w-40 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 text-slate-400 dark:border-slate-700">
                   <Award size={28} />
                   <span className="mt-2 text-xs font-bold">No badge</span>
                 </div>
@@ -174,9 +174,9 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
               <p className="text-sm font-extrabold text-slate-900 dark:text-white">
                 {draftTier ? draftTier.label : "Choose a level"}
               </p>
-              <p className="mt-2 text-[11px] leading-relaxed text-slate-500">{EARNED_BY[contentType]}</p>
+              <p className="mt-2 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">{EARNED_BY[contentType]}</p>
               {assignment.awardedCount > 0 && (
-                <p className="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+                <p className="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
                   <ShieldCheck size={12} /> {assignment.awardedCount} issued
                 </p>
               )}
@@ -193,7 +193,7 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
                 disabled={locked || saving}
               />
               {assignment.awardedCount > 0 && dirty && (
-                <p className="mt-3 rounded-lg bg-sky-50 px-3 py-2 text-[11px] font-medium text-sky-800">
+                <p className="mt-3 rounded-lg bg-sky-50 px-3 py-2 text-[11px] font-medium text-sky-800 dark:bg-sky-500/10 dark:text-sky-200">
                   The {assignment.awardedCount} badge{assignment.awardedCount === 1 ? "" : "s"} already issued keep the level
                   they were earned at. The new level applies to learners who finish from now on.
                 </p>
@@ -208,7 +208,7 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
                   type="button"
                   onClick={remove}
                   disabled={saving}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-surface px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-800 dark:hover:bg-slate-800 dark:text-slate-300"
                 >
                   <Trash2 size={13} /> Award no badge
                 </button>

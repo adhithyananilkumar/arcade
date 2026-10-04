@@ -58,7 +58,7 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="relative w-full max-w-2xl bg-white text-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden z-10 my-6"
+            className="relative w-full max-w-2xl bg-surface text-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden z-10 my-6"
           >
             {/* Close Button */}
             <button
@@ -72,14 +72,14 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
             {/* Header Banner Background (Faded Soft Gradient & Reduced Height) */}
             <div className="h-16 sm:h-20 bg-gradient-to-r from-blue-500/25 via-indigo-500/20 to-teal-400/25 relative overflow-hidden">
               <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px]" />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/30 to-white" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/30 to-surface" />
             </div>
 
             {/* Body */}
             <div className="px-6 sm:px-8 pb-7 -mt-10 sm:-mt-12 relative z-10 space-y-6">
               {/* Image & Quick Info Header */}
               <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 text-center sm:text-left pb-5 border-b border-slate-100">
-                <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-4 border-white shadow-xl bg-purple-50 shrink-0">
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-4 border-surface shadow-xl bg-purple-50 shrink-0 dark:bg-purple-500/10">
                   <Image
                     src={founder.image}
                     alt={founder.name}
@@ -92,7 +92,7 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
                   <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight font-serif">
                     {founder.name}
                   </h2>
-                  <p className="text-sm font-medium text-blue-600">
+                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
                     {founder.role}
                   </p>
                 </div>
@@ -114,7 +114,7 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
                       href={founder.social.github}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-900 hover:text-white transition-all duration-200"
+                      className="p-2.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-900 hover:text-on-ink transition-all duration-200"
                     >
                       <GithubIcon className="w-4 h-4" />
                     </a>

@@ -54,34 +54,34 @@ const BADGE_COLORS = [
 /** Card palettes, cycled by position. Presentation only — nothing here is content. */
 const PASTEL_THEMES = [
   {
-    cardBg: "bg-[#EFF6FF]",
-    borderColor: "border-[#DBEAFE]",
-    borderTopColor: "border-[#DBEAFE]",
-    textColor: "text-[#1E3A8A]",
+    cardBg: "bg-slate-100",
+    borderColor: "border-[#DBEAFE] dark:border-[#dbeafe]/30",
+    borderTopColor: "border-[#DBEAFE] dark:border-[#dbeafe]/30",
+    textColor: "text-[#1E3A8A] dark:text-[#8db4ff]",
     roleColor: "text-[#3B82F6]",
     badgeBg: "bg-[#2563eb]",
   },
   {
-    cardBg: "bg-[#F5F3FF]",
-    borderColor: "border-[#EDE9FE]",
-    borderTopColor: "border-[#EDE9FE]",
-    textColor: "text-[#4C1D95]",
-    roleColor: "text-[#8B5CF6]",
+    cardBg: "bg-slate-100",
+    borderColor: "border-[#EDE9FE] dark:border-[#ede9fe]/30",
+    borderTopColor: "border-[#EDE9FE] dark:border-[#ede9fe]/30",
+    textColor: "text-[#4C1D95] dark:text-[#bda1ff]",
+    roleColor: "text-[#8B5CF6] dark:text-[#bca2ff]",
     badgeBg: "bg-[#6366f1]",
   },
   {
-    cardBg: "bg-[#ECFDF5]",
-    borderColor: "border-[#D1FAE5]",
-    borderTopColor: "border-[#D1FAE5]",
-    textColor: "text-[#065F46]",
+    cardBg: "bg-[#ECFDF5] dark:bg-[#ecfdf5]/15",
+    borderColor: "border-[#D1FAE5] dark:border-[#d1fae5]/30",
+    borderTopColor: "border-[#D1FAE5] dark:border-[#d1fae5]/30",
+    textColor: "text-[#065F46] dark:text-[#7fc9ac]",
     roleColor: "text-[#10B981]",
     badgeBg: "bg-[#059669]",
   },
   {
-    cardBg: "bg-[#FFF7ED]",
-    borderColor: "border-[#FFEDD5]",
-    borderTopColor: "border-[#FFEDD5]",
-    textColor: "text-[#7C2D12]",
+    cardBg: "bg-slate-50",
+    borderColor: "border-[#FFEDD5] dark:border-[#ffedd5]/30",
+    borderTopColor: "border-[#FFEDD5] dark:border-[#ffedd5]/30",
+    textColor: "text-[#7C2D12] dark:text-[#f79d80]",
     roleColor: "text-[#F59E0B]",
     badgeBg: "bg-[#d97706]",
   },
@@ -178,9 +178,9 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="absolute right-1 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 shadow-2xs transition-all hover:bg-slate-50 active:scale-95 cursor-pointer"
+            className="absolute right-1 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-4 py-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 shadow-2xs transition-all hover:bg-slate-50 active:scale-95 cursor-pointer"
           >
-            <Plus size={13} className="text-blue-600" /> Add Review
+            <Plus size={13} className="text-blue-600 dark:text-blue-400" /> Add Review
           </button>
         </div>
 
@@ -232,7 +232,7 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in">
-          <div className="w-full max-w-lg rounded-3xl border border-gray-200 bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-lg rounded-3xl border border-gray-200 bg-surface p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
               <h3 className="text-base font-bold text-gray-900">Write a Real-time Review</h3>
               <button

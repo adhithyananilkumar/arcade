@@ -101,15 +101,15 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="relative flex flex-col items-center">
             {/* 3D Metallic Gold Ring */}
-            <div className="h-7 w-3 sm:w-3.5 rounded-full bg-gradient-to-r from-[#D9A736] via-[#FFE27A] to-[#A8791E] border border-[#8C6112] shadow-[0_3px_6px_rgba(0,0,0,0.32),0_1px_1px_rgba(255,255,255,0.85)_inset]">
-              <div className="h-5 w-1 mx-auto mt-0.5 rounded-full bg-gradient-to-r from-[#FFF4CF] to-[#FFE27A] opacity-90" />
+            <div className="h-7 w-3 sm:w-3.5 rounded-full bg-gradient-to-r from-[#D9A736] via-[#FFE27A] to-[#A8791E] border border-[#8C6112] shadow-[0_3px_6px_rgba(0,0,0,0.32),0_1px_1px_rgba(255,255,255,0.85)_inset] dark:via-[#ffe27a]/15">
+              <div className="h-5 w-1 mx-auto mt-0.5 rounded-full bg-gradient-to-r from-[#FFF4CF] to-[#FFE27A] opacity-90 dark:to-[#ffe27a]/15 dark:from-[#fff4cf]/15" />
             </div>
           </div>
         ))}
       </div>
 
       {/* Main Calendar Card Body - Fixed Dimensions */}
-      <div className="relative w-full h-[375px] rounded-t-3xl bg-[#FAF8F3] p-6 pb-6 pt-7 shadow-[0_16px_40px_rgba(20,20,40,0.08)] border border-stone-200/90 dark:bg-[#1A1C23] dark:border-slate-800 z-10 flex flex-col justify-between">
+      <div className="relative w-full h-[375px] rounded-t-3xl bg-slate-50 p-6 pb-6 pt-7 shadow-[0_16px_40px_rgba(20,20,40,0.08)] border border-stone-200/90 z-10 flex flex-col justify-between">
         <div>
           {/* 6 Square Punched Holes showing Arcade Blue Background */}
           <div className="absolute top-2 inset-x-0 z-10 flex justify-between px-6 sm:px-8 pointer-events-none">
@@ -123,7 +123,7 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
           
           {/* Top Header: Arcade Blue Month Title + Compact Flame Counter Badge + Navigation */}
           <div className="mb-5 flex items-center justify-between gap-3">
-            <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#4C6FFF]">
+            <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#4C6FFF] dark:text-[#8db1ff]">
               {monthLabel}
             </h2>
 
@@ -139,7 +139,7 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
                   type="button"
                   aria-label="Previous month"
                   onClick={handlePrevMonth}
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-stone-400 hover:bg-stone-200/60 hover:text-stone-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-stone-400 hover:bg-stone-200/60 hover:text-stone-700 transition-colors cursor-pointer"
                 >
                   <ChevronLeft size={17} />
                 </button>
@@ -147,7 +147,7 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
                   type="button"
                   aria-label="Next month"
                   onClick={handleNextMonth}
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-stone-400 hover:bg-stone-200/60 hover:text-stone-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-stone-400 hover:bg-stone-200/60 hover:text-stone-700 transition-colors cursor-pointer"
                 >
                   <ChevronRight size={17} />
                 </button>
@@ -156,7 +156,7 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
           </div>
 
           {/* Weekday Headers: Bold Black S M T W T F S */}
-          <div className="mb-3 grid grid-cols-7 text-center text-sm font-black text-black dark:text-white">
+          <div className="mb-3 grid grid-cols-7 text-center text-sm font-black text-slate-950">
             {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
               <span key={`${d}-${i}`}>{d}</span>
             ))}
@@ -227,7 +227,7 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
                                 {cell.day}
                               </span>
                             ) : (
-                              <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full text-sm font-semibold text-stone-500 dark:text-slate-400 hover:text-black dark:hover:text-white transition-colors">
+                              <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full text-sm font-semibold text-stone-500 hover:text-slate-950 transition-colors">
                                 {cell.day}
                               </span>
                             )}
@@ -245,7 +245,7 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
         {/* Scalloped Ticket Bottom Cutout Edge */}
         <div className="absolute -bottom-2.5 inset-x-0 h-3 overflow-hidden pointer-events-none">
           <svg
-            className="w-full h-full text-[#FAF8F3] dark:text-[#1A1C23]"
+            className="w-full h-full text-slate-50"
             viewBox="0 0 240 12"
             preserveAspectRatio="none"
             fill="currentColor"

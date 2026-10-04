@@ -6,8 +6,11 @@ import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
-import { getCourseAttribution, type AttributableCourse } from "./courseAttribution";
+import { getCourseChannel, type AttributableCourse, type CardChannel } from "./courseAttribution";
 import ExploreEmptyState from "./ExploreEmptyState";
+import { UnifiedContentCard } from "@/shared/design-system/ui/cards";
+import { ContentCardsGridSkeleton } from "./ContentCardsGridSkeleton";
+
 function hexToRgbStr(hex: string): string {
   hex = hex.replace(/^#/, "");
   if (hex.length === 3) {
@@ -61,11 +64,7 @@ interface EnrichedCourse {
   rating: number;
   reviewsCount: number;
   categoryTag: string;
-  instructor: {
-    name: string;
-    role: string;
-    avatarUrl: string;
-  };
+  channel: CardChannel | null;
 }
 
 function getEnrichedCourse(course: { title: string; duration: string; level: string; desc: string; category?: string } & AttributableCourse, index: number, categoryName: string): EnrichedCourse {
@@ -101,14 +100,14 @@ function getEnrichedCourse(course: { title: string; duration: string; level: str
     categoryTag = course.category || "General";
   }
 
-  const instructor = getCourseAttribution(course as AttributableCourse);
+  const channel = getCourseChannel(course as AttributableCourse);
 
   return {
     ...course,
     rating,
     reviewsCount,
     categoryTag,
-    instructor
+    channel
   };
 }
 
@@ -411,11 +410,11 @@ const FilterPillButton: React.FC<FilterPillButtonProps> = ({
         gap: "8px",
         padding: "8px 16px",
         borderRadius: "10px",
-        border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1.5px solid rgba(20, 23, 31, 0.06)",
-        background: isActive ? activeData.colors.secondary : "rgba(255, 255, 255, 0.65)",
+        border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1.5px solid var(--theme-n-900, rgba(20, 23, 31, 0.06))",
+        background: isActive ? activeData.colors.secondary : "var(--theme-surface, rgba(255, 255, 255, 0.65))",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
-        color: isActive ? activeData.colors.primary : "#5E606A",
+        color: isActive ? activeData.colors.primary : "var(--theme-n-600, #5E606A)",
         fontSize: "0.82rem",
         fontWeight: "700",
         cursor: "pointer",
@@ -514,230 +513,36 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   realRating,
   realReviewsCount
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isOverflowing, setIsOverflowing] = useState(false);
-  const descRef = useRef<HTMLParagraphElement>(null);
-  const { status } = useAuthStore();
-
   const enriched = getEnrichedCourse(course, index, activeCategoryName);
   const courseSlug = slugify(course.title);
-
-  const handleCourseClick = () => {
-    router.push(courseRoutes.landing(course.id || courseSlug));
-  };
-
-  useEffect(() => {
-    if (descRef.current) {
-      setIsOverflowing(descRef.current.scrollHeight > 45);
-    }
-  }, [course.desc]);
+  const href = courseRoutes.landing(course.id || courseSlug);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <BorderGlow
-        edgeSensitivity={30}
-        glowColor={hexToHslStr(activeData.colors.primary)}
-        backgroundColor="#FFFFFF"
-        borderRadius={14}
-        glowRadius={40}
-        glowIntensity={0.3}
-        coneSpread={25}
-        animated={false}
-        colors={[`${activeData.colors.primary}40`, '#E6E3F1', `${activeData.colors.primary}40`]}
-        fillOpacity={0.08}
-        className="w-full h-full"
-      >
-        <div
-          style={{
-            background: "#FFFFFF",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            position: "relative",
-            width: "100%",
-            height: "100%",
-            minHeight: "360px"
-          }}
-          className="course-card-premium"
-        >
-          <div
-            style={{
-              height: "90px",
-              position: "relative",
-              overflow: "hidden",
-              background: `
-                radial-gradient(circle at 25% 25%, ${activeData.colors.primary}12, transparent 55%),
-                repeating-linear-gradient(135deg, ${activeData.colors.primary}08 0 2px, transparent 2px 14px),
-                #F9FAFB
-              `,
-              borderBottom: "1px solid #E6E3F1",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
-            <div style={{ color: activeData.colors.primary, opacity: 0.25 }}>
-              {getCourseGlyph(course.title, index, activeData.colors.primary)}
-            </div>
+    <UnifiedContentCard
+      id={course.id || `course-${index}`}
+      title={course.title}
+      description={course.desc || course.description}
+      type="COURSE"
+      typeLabel={enriched.categoryTag || 'Course'}
+      category={course.category || activeCategoryName}
+      channelName={enriched.channel?.name}
+      channelIconUrl={enriched.channel?.iconUrl}
+      metaTags={[
+        course.duration ? course.duration : null,
+        course.level ? course.level : null,
+      ].filter(Boolean)}
+      metadataBadges={
+        realReviewsCount > 0 ? (
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-500">
+            <span className="text-amber-500">★</span>
+            <span className="font-bold text-slate-800">{realRating.toFixed(1)}</span>
+            <span className="text-slate-400">({realReviewsCount} {realReviewsCount === 1 ? 'Review' : 'Reviews'})</span>
           </div>
-
-          <div style={{ padding: "16px 16px 14px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "8px" }}>
-            <div>
-              <h3 style={{ fontSize: "1.05rem", fontWeight: "800", color: "var(--l-ink)", margin: "0 0 6px", lineHeight: "1.3", fontFamily: "'Space Grotesk', sans-serif" }}>
-                {course.title}
-              </h3>
-
-              <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.82rem", color: "#5A5870", fontWeight: "600" }}>
-                  <span style={{ color: "#F59E0B", fontSize: "0.95rem" }}>★</span>
-                  <span style={{ fontWeight: "700", color: "var(--l-ink)" }}>{realReviewsCount > 0 ? realRating.toFixed(1) : "0.0"}</span>
-                  <span style={{ color: "#8886A0" }}>({realReviewsCount} {realReviewsCount === 1 ? "Review" : "Reviews"})</span>
-                </div>
-              </div>
-
-              <div style={{ position: "relative", marginBottom: "12px" }}>
-                <p
-                  ref={descRef}
-                  style={isExpanded ? {
-                    fontSize: "0.86rem",
-                    color: "#5A5870",
-                    lineHeight: "1.5",
-                    margin: 0
-                  } : {
-                    fontSize: "0.86rem",
-                    color: "#5A5870",
-                    lineHeight: "1.5",
-                    margin: 0,
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                    maxHeight: "3em"
-                  }}
-                >
-                  {course.desc}
-                </p>
-                {isOverflowing && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsExpanded(!isExpanded);
-                    }}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: activeData.colors.primary,
-                      fontSize: "0.8rem",
-                      fontWeight: "800",
-                      cursor: "pointer",
-                      padding: "2px 0 0 0",
-                      marginTop: "4px",
-                      display: "block",
-                      outline: "none"
-                    }}
-                  >
-                    {isExpanded ? "Read less" : "Read more"}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Attribution + CTA are pinned to the bottom of the card, so cards in a row line
-                their buttons up regardless of how long each description runs. */}
-            <div style={{ display: "flex", flexDirection: "column", marginTop: "auto" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-                <img
-                  src={enriched.instructor.avatarUrl}
-                  alt={enriched.instructor.name}
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    border: "1px solid #E6E3F1"
-                  }}
-                />
-                <div style={{ display: "flex", flexDirection: "column", lineHeight: "1.3" }}>
-                  <span style={{ fontSize: "0.84rem", fontWeight: "700", color: "var(--l-ink)" }}>
-                    {enriched.instructor.name}
-                  </span>
-                  <span style={{ fontSize: "0.68rem", color: "#8886A0", fontWeight: "600" }}>
-                    {enriched.instructor.role}
-                  </span>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
-                <button
-                  onClick={handleCourseClick}
-                  style={{
-                    width: "100%",
-                    background: activeData.colors.secondary,
-                    color: activeData.colors.primary,
-                    border: "none",
-                    padding: "10px 16px",
-                    borderRadius: "10px",
-                    fontSize: "0.85rem",
-                    fontWeight: "700",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                    transition: "all 0.25s ease"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = activeData.colors.secondary.replace('0.08', '0.16');
-                    e.currentTarget.style.transform = "translateY(-1px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = activeData.colors.secondary;
-                    e.currentTarget.style.transform = "none";
-                  }}
-                >
-                  Enroll Now
-                </button>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #E6E3F1", paddingTop: "10px", marginTop: "2px" }}>
-              <span
-                onClick={handleCourseClick}
-                style={{
-                  fontSize: "0.85rem",
-                  fontWeight: "700",
-                  color: "#5A5870",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  cursor: "pointer",
-                  transition: "color 0.2s"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = activeData.colors.primary;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "#5A5870";
-                }}
-              >
-                View Course
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="view-arrow" style={{ transition: "transform .15s" }}>
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </span>
-
-              <span style={{ fontSize: "0.84rem", color: "#8886A0", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 7v5l3 2" />
-                </svg>
-                {course.duration}
-              </span>
-            </div>
-          </div>
-        </div>
-      </BorderGlow>
-    </div>
+        ) : null
+      }
+      actionHref={href}
+      actionLabel="Enroll Now"
+    />
   );
 };
 
@@ -749,6 +554,7 @@ interface CoursesViewProps {
   courseSearchQuery: string;
   setCourseSearchQuery: (q: string) => void;
   courseStats: Record<string, { averageRating: number; reviewsCount: number }>;
+  isLoading?: boolean;
 }
 
 export default function CoursesView({
@@ -758,7 +564,8 @@ export default function CoursesView({
   isEmbeddedHub,
   courseSearchQuery,
   setCourseSearchQuery,
-  courseStats
+  courseStats,
+  isLoading = false
 }: CoursesViewProps) {
   const coursesSectionRef = useRef<HTMLDivElement>(null);
   const filtersGridRef = useRef<HTMLDivElement>(null);
@@ -822,7 +629,7 @@ export default function CoursesView({
           </h2>
         </div>
         {sortedCourses.length > 0 && (
-          <span style={{ fontSize: "0.82rem", fontWeight: "600", color: "#6B7280" }}>
+          <span style={{ fontSize: "0.82rem", fontWeight: "600", color: "var(--theme-n-500, #6B7280)" }}>
             {sortedCourses.length} {sortedCourses.length === 1 ? "course available" : "courses available"}
           </span>
         )}
@@ -838,11 +645,11 @@ export default function CoursesView({
           flexWrap: "wrap",
           marginBottom: "28px",
           padding: "10px 16px",
-          background: "rgba(255, 255, 255, 0.75)",
+          background: "var(--theme-surface, rgba(255, 255, 255, 0.75))",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
           borderRadius: "14px",
-          border: "1px solid rgba(20, 23, 31, 0.08)",
+          border: "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.02)"
         }}
       >
@@ -855,7 +662,7 @@ export default function CoursesView({
               gap: "6px",
               fontSize: "0.82rem",
               fontWeight: "800",
-              color: "#4B5563",
+              color: "var(--theme-n-600, #4B5563)",
               textTransform: "uppercase",
               letterSpacing: "0.04em",
               paddingRight: "4px"
@@ -879,9 +686,9 @@ export default function CoursesView({
                     borderRadius: "8px",
                     fontSize: "0.82rem",
                     fontWeight: isActive ? "700" : "600",
-                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid rgba(20, 23, 31, 0.08)",
-                    background: isActive ? `${activeData.colors.primary}18` : "#FFFFFF",
-                    color: isActive ? activeData.colors.primary : "#4B5563",
+                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
+                    background: isActive ? `${activeData.colors.primary}18` : "var(--theme-surface, #FFFFFF)",
+                    color: isActive ? activeData.colors.primary : "var(--theme-n-600, #4B5563)",
                     cursor: "pointer",
                     transition: "all 0.2s ease"
                   }}
@@ -902,7 +709,7 @@ export default function CoursesView({
               gap: "6px",
               fontSize: "0.82rem",
               fontWeight: "800",
-              color: "#4B5563",
+              color: "var(--theme-n-600, #4B5563)",
               textTransform: "uppercase",
               letterSpacing: "0.04em"
             }}
@@ -931,9 +738,9 @@ export default function CoursesView({
                     borderRadius: "8px",
                     fontSize: "0.82rem",
                     fontWeight: isActive ? "700" : "600",
-                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid rgba(20, 23, 31, 0.08)",
-                    background: isActive ? `${activeData.colors.primary}18` : "#FFFFFF",
-                    color: isActive ? activeData.colors.primary : "#4B5563",
+                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
+                    background: isActive ? `${activeData.colors.primary}18` : "var(--theme-surface, #FFFFFF)",
+                    color: isActive ? activeData.colors.primary : "var(--theme-n-600, #4B5563)",
                     cursor: "pointer",
                     transition: "all 0.2s ease"
                   }}
@@ -946,7 +753,9 @@ export default function CoursesView({
         </div>
       </div>
 
-      {sortedCourses.length === 0 ? (
+      {isLoading ? (
+        <ContentCardsGridSkeleton count={6} />
+      ) : sortedCourses.length === 0 ? (
         <ExploreEmptyState
           title={courseSearchQuery.trim() ? "No matching courses found" : "No courses found"}
           description={
@@ -965,7 +774,7 @@ export default function CoursesView({
           accentColor={activeData.colors.primary}
         />
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
           {sortedCourses.map((course: any, index: number) => {
             const stats = courseStats[course.id] || { averageRating: 0.0, reviewsCount: 0 };
             return (

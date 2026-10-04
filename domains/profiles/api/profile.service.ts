@@ -18,7 +18,9 @@
 
 import { api, ApiError } from '@/infrastructure/http/api';
 import type {
+  ChannelAddress,
   ChannelProfile,
+  PublicActivity,
   HandleResolution,
   UserProfile,
 } from '../types/profile.types';
@@ -45,6 +47,25 @@ export const ProfileService = {
     return api.get<UserProfile>(
       `/api/v1/public/profiles/${encodeURIComponent(handle)}`,
     );
+  },
+
+  /**
+   * The learning heatmap, or null when the owner keeps their learning private — the backend
+   * answers 404 for a hidden heatmap exactly as for a missing profile.
+   */
+  async getPublicActivity(handle: string): Promise<PublicActivity | null> {
+    try {
+      return await api.get<PublicActivity>(
+        `/api/v1/public/profiles/${encodeURIComponent(handle)}/activity`,
+      );
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) return null;
+      throw error;
+    }
+  },
+
+  getChannelAddress(channelId: string): Promise<ChannelAddress> {
+    return api.get<ChannelAddress>(`/api/v1/public/channels/${channelId}/address`);
   },
 
   getChannelProfileByHandle(handle: string): Promise<ChannelProfile> {

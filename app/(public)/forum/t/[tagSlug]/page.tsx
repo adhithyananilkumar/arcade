@@ -71,9 +71,9 @@ export default function TagPage({ params }: Props) {
 
       {data && data.totalPages > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 24 }}>
-          <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} style={{ height: 34, padding: '0 16px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', backgroundColor: '#fff', fontSize: 13, cursor: page === 0 ? 'not-allowed' : 'pointer', opacity: page === 0 ? 0.4 : 1 }}>Previous</button>
+          <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} style={{ height: 34, padding: '0 16px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', backgroundColor: 'var(--theme-surface, #fff)', fontSize: 13, cursor: page === 0 ? 'not-allowed' : 'pointer', opacity: page === 0 ? 0.4 : 1 }}>Previous</button>
           <span style={{ fontSize: 13, color: 'var(--text-muted)', padding: '0 8px', lineHeight: '34px' }}>{page + 1} / {data.totalPages}</span>
-          <button onClick={() => setPage((p) => p + 1)} disabled={data.last} style={{ height: 34, padding: '0 16px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', backgroundColor: '#fff', fontSize: 13, cursor: data.last ? 'not-allowed' : 'pointer', opacity: data.last ? 0.4 : 1 }}>Next</button>
+          <button onClick={() => setPage((p) => p + 1)} disabled={data.last} style={{ height: 34, padding: '0 16px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', backgroundColor: 'var(--theme-surface, #fff)', fontSize: 13, cursor: data.last ? 'not-allowed' : 'pointer', opacity: data.last ? 0.4 : 1 }}>Next</button>
         </div>
       )}
     </div>

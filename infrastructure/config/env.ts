@@ -37,3 +37,11 @@ export const GOOGLE_OAUTH_URL = `${RAW_API_ORIGIN}/oauth2/authorization/google`;
 /** Hocuspocus/yjs collaboration server WS origin — a separate service from the main backend, not derived from API_ORIGIN. */
 export const COLLAB_WS_URL =
   process.env.NEXT_PUBLIC_COLLABORATION_URL || process.env.NEXT_PUBLIC_COLLAB_WS_URL || "ws://localhost:1234";
+
+/**
+ * Which build of the UI is running, stamped onto bug reports. An explicit NEXT_PUBLIC_APP_VERSION
+ * wins; otherwise the short commit SHA Vercel exposes at build time; locally, "dev".
+ */
+export const APP_VERSION =
+  process.env.NEXT_PUBLIC_APP_VERSION ||
+  (process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ? process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7) : "dev");

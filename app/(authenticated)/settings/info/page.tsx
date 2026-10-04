@@ -345,16 +345,16 @@ export default function PersonalInfoPage() {
       transition={{ duration: 0.2 }}
     >
       {/* 1. Personal Information */}
-      <div>
+      <div className="theme-glass-panel">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
           {/* Name */}
-        <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3">
+        <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="text-slate-400 dark:text-neutral-400 shrink-0">
+            <div className="text-slate-400 shrink-0">
               <User size={18} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Name</h3>
+              <h3 className="text-xs font-semibold text-slate-900">Name</h3>
               {editingField === 'name' ? (
                 <div className="flex items-center gap-1.5 mt-1">
                   <input
@@ -362,39 +362,39 @@ export default function PersonalInfoPage() {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="First name"
-                    className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                    className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 bg-slate-50 text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-500"
                   />
                   <input
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Last name"
-                    className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                    className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 bg-slate-50 text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-500"
                   />
                   {renderSaveCancelButtons("Name")}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+                <p className="text-xs text-slate-500 mt-0.5 truncate">
                   {[user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Not set'}
                 </p>
               )}
             </div>
           </div>
           {editingField !== 'name' && (
-            <button onClick={() => setEditingField('name')} className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
+            <button onClick={() => setEditingField('name')} className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors">
               <Edit2 size={14} />
             </button>
           )}
         </div>
 
         {/* Nickname — private: only its owner ever sees it (greeting + nav pill) */}
-        <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3">
+        <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="text-slate-400 dark:text-neutral-400 shrink-0">
+            <div className="text-slate-400 shrink-0">
               <Smile size={18} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Nickname</h3>
+              <h3 className="text-xs font-semibold text-slate-900">Nickname</h3>
               {editingField === 'nickname' ? (
                 <div className="flex items-center gap-1.5 mt-1">
                   <div className="relative w-full">
@@ -404,7 +404,7 @@ export default function PersonalInfoPage() {
                       onChange={(e) => setNickname(formatNicknameInput(e.target.value))}
                       placeholder="e.g. Dr. Rubin"
                       autoComplete="nickname"
-                      className="w-full px-2 py-1 pr-10 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                      className="w-full px-2 py-1 pr-10 text-xs rounded-lg border border-slate-300 bg-slate-50 text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-500"
                     />
                     <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold tabular-nums text-slate-400">
                       {nicknameLength(nickname.trim())}/{NICKNAME_MAX_LENGTH}
@@ -413,28 +413,28 @@ export default function PersonalInfoPage() {
                   {renderSaveCancelButtons('Nickname', handleSaveNickname)}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+                <p className="text-xs text-slate-500 mt-0.5 truncate">
                   {user?.nickname || 'Not set'} <span className="text-slate-400">· only you see this</span>
                 </p>
               )}
             </div>
           </div>
           {editingField !== 'nickname' && (
-            <button onClick={() => setEditingField('nickname')} className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
+            <button onClick={() => setEditingField('nickname')} className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors">
               <Edit2 size={14} />
             </button>
           )}
         </div>
 
         {/* Email (read-only — not editable from the ordinary profile editor) */}
-        <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3">
+        <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="text-slate-400 dark:text-neutral-400 shrink-0">
+            <div className="text-slate-400 shrink-0">
               <Mail size={18} />
             </div>
             <div className="min-w-0">
-              <h3 className="text-xs font-semibold text-slate-900 dark:text-white truncate">Email</h3>
-              <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate" title={userEmail}>
+              <h3 className="text-xs font-semibold text-slate-900 truncate">Email</h3>
+              <p className="text-xs text-slate-500 mt-0.5 truncate" title={userEmail}>
                 {userEmail || 'Not set'}
               </p>
             </div>
@@ -442,7 +442,7 @@ export default function PersonalInfoPage() {
           {userEmail && (
             <button
               onClick={handleCopyEmail}
-              className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
+              className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors"
               title="Copy Email"
             >
               {copiedEmail ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
@@ -451,13 +451,13 @@ export default function PersonalInfoPage() {
         </div>
 
         {/* Phone */}
-        <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3">
+        <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="text-slate-400 dark:text-neutral-400 shrink-0">
+            <div className="text-slate-400 shrink-0">
               <Phone size={18} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Phone</h3>
+              <h3 className="text-xs font-semibold text-slate-900">Phone</h3>
               {editingField === 'phone' ? (
                 <div className="flex items-center gap-1.5 mt-1 w-full">
                   <div className="flex-1 min-w-0">
@@ -480,33 +480,33 @@ export default function PersonalInfoPage() {
                   })}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+                <p className="text-xs text-slate-500 mt-0.5 truncate">
                   {user?.mobileNumber || 'Not set'}
                 </p>
               )}
             </div>
           </div>
           {editingField !== 'phone' && (
-            <button onClick={() => setEditingField('phone')} className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
+            <button onClick={() => setEditingField('phone')} className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors">
               <Edit2 size={14} />
             </button>
           )}
         </div>
 
         {/* Gender */}
-        <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3">
+        <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="text-slate-400 dark:text-neutral-400 shrink-0">
+            <div className="text-slate-400 shrink-0">
               <User size={18} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Gender</h3>
+              <h3 className="text-xs font-semibold text-slate-900">Gender</h3>
               {editingField === 'gender' ? (
                 <div className="flex items-center gap-1.5 mt-1">
                   <select
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
-                    className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                    className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 bg-slate-50 text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-500"
                   >
                     <option value="">Prefer not to say</option>
                     <option value="female">Female</option>
@@ -516,27 +516,27 @@ export default function PersonalInfoPage() {
                   {renderSaveCancelButtons("Gender")}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+                <p className="text-xs text-slate-500 mt-0.5 truncate">
                   {user?.gender || 'Not set'}
                 </p>
               )}
             </div>
           </div>
           {editingField !== 'gender' && (
-            <button onClick={() => setEditingField('gender')} className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
+            <button onClick={() => setEditingField('gender')} className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors">
               <Edit2 size={14} />
             </button>
           )}
         </div>
 
         {/* Address — the backend has exactly one address field, not separate home/work/other. */}
-        <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3 md:col-span-2">
+        <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-center justify-between gap-3 md:col-span-2">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="text-slate-400 dark:text-neutral-400 shrink-0">
+            <div className="text-slate-400 shrink-0">
               <MapPin size={18} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Address</h3>
+              <h3 className="text-xs font-semibold text-slate-900">Address</h3>
               {editingField === 'address' ? (
                 <div className="flex items-center gap-1.5 mt-1">
                   <input
@@ -544,19 +544,19 @@ export default function PersonalInfoPage() {
                     value={address}
                     placeholder="Enter address"
                     onChange={(e) => setAddress(e.target.value)}
-                    className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                    className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 bg-slate-50 text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-500"
                   />
                   {renderSaveCancelButtons("Address")}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+                <p className="text-xs text-slate-500 mt-0.5 truncate">
                   {user?.address || 'Not set'}
                 </p>
               )}
             </div>
           </div>
           {editingField !== 'address' && (
-            <button onClick={() => setEditingField('address')} className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
+            <button onClick={() => setEditingField('address')} className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors">
               <Edit2 size={14} />
             </button>
           )}
@@ -566,25 +566,25 @@ export default function PersonalInfoPage() {
 
       {/* 2. Instructor profile — individual field sections matching Name/Phone/Gender/Address */}
       {isContentStaff && (
-        <div className="mt-6 pt-5 border-t border-slate-100 dark:border-neutral-800/60">
+        <div className="theme-glass-panel mt-6 pt-5 border-t border-slate-100">
           <div className="py-2.5 px-3 mb-1">
-            <h3 className="text-xs font-semibold text-slate-900 dark:text-white">
+            <h3 className="text-xs font-semibold text-slate-900">
               Instructor profile
             </h3>
-            <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Shown next to your name on the courses you publish.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
             {/* Specialities */}
-            <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3">
+            <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="text-slate-400 dark:text-neutral-400 shrink-0">
+                <div className="text-slate-400 shrink-0">
                   <Award size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Specialities</h3>
+                  <h3 className="text-xs font-semibold text-slate-900">Specialities</h3>
                   {editingField === 'specialities' ? (
                     <div className="flex items-center gap-1.5 mt-1">
                       <input
@@ -592,12 +592,12 @@ export default function PersonalInfoPage() {
                         value={specialitiesInput}
                         onChange={(e) => setSpecialitiesInput(e.target.value)}
                         placeholder="e.g. React, Cloud Architecture"
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 bg-slate-50 text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-500"
                       />
                       {renderSaveCancelButtons("Specialities", () => handleSaveInstructorField('specialities'))}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate" title={user?.specialities?.join(', ')}>
+                    <p className="text-xs text-slate-500 mt-0.5 truncate" title={user?.specialities?.join(', ')}>
                       {user?.specialities?.length ? user.specialities.join(', ') : 'Not set'}
                     </p>
                   )}
@@ -606,7 +606,7 @@ export default function PersonalInfoPage() {
               {editingField !== 'specialities' && (
                 <button
                   onClick={() => setEditingField('specialities')}
-                  className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors"
                   title="Edit Specialities"
                 >
                   <Edit2 size={14} />
@@ -615,13 +615,13 @@ export default function PersonalInfoPage() {
             </div>
 
             {/* Experience */}
-            <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3">
+            <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="text-slate-400 dark:text-neutral-400 shrink-0">
+                <div className="text-slate-400 shrink-0">
                   <Briefcase size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Experience</h3>
+                  <h3 className="text-xs font-semibold text-slate-900">Experience</h3>
                   {editingField === 'experience' ? (
                     <div className="flex items-center gap-1.5 mt-1">
                       <input
@@ -631,12 +631,12 @@ export default function PersonalInfoPage() {
                         value={experienceInput}
                         onChange={(e) => setExperienceInput(e.target.value)}
                         placeholder="Years of experience"
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 bg-slate-50 text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-500"
                       />
                       {renderSaveCancelButtons("Experience", () => handleSaveInstructorField('experience'))}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+                    <p className="text-xs text-slate-500 mt-0.5 truncate">
                       {user?.experienceYears != null
                         ? `${user.experienceYears} ${user.experienceYears === 1 ? 'year' : 'years'}`
                         : 'Not set'}
@@ -647,7 +647,7 @@ export default function PersonalInfoPage() {
               {editingField !== 'experience' && (
                 <button
                   onClick={() => setEditingField('experience')}
-                  className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors"
                   title="Edit Experience"
                 >
                   <Edit2 size={14} />
@@ -656,13 +656,13 @@ export default function PersonalInfoPage() {
             </div>
 
             {/* Bio */}
-            <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3 md:col-span-2">
+            <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-center justify-between gap-3 md:col-span-2">
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="text-slate-400 dark:text-neutral-400 shrink-0">
+                <div className="text-slate-400 shrink-0">
                   <FileText size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Bio</h3>
+                  <h3 className="text-xs font-semibold text-slate-900">Bio</h3>
                   {editingField === 'bio' ? (
                     <div className="flex items-center gap-1.5 mt-1">
                       <input
@@ -671,12 +671,12 @@ export default function PersonalInfoPage() {
                         value={bioInput}
                         onChange={(e) => setBioInput(e.target.value)}
                         placeholder="Short intro for learners (max 250 chars)"
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 bg-slate-50 text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-500"
                       />
                       {renderSaveCancelButtons("Bio", () => handleSaveInstructorField('bio'))}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate" title={user?.bio}>
+                    <p className="text-xs text-slate-500 mt-0.5 truncate" title={user?.bio}>
                       {user?.bio || 'Not set'}
                     </p>
                   )}
@@ -685,7 +685,7 @@ export default function PersonalInfoPage() {
               {editingField !== 'bio' && (
                 <button
                   onClick={() => setEditingField('bio')}
-                  className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors"
                   title="Edit Bio"
                 >
                   <Edit2 size={14} />
@@ -697,19 +697,19 @@ export default function PersonalInfoPage() {
       )}
 
       {/* 3. Public Profile */}
-      <div className="mt-6 pt-5 border-t border-slate-100 dark:border-neutral-800/60">
+      <div className="theme-glass-panel mt-6 pt-5 border-t border-slate-100">
         <div className="py-2.5 px-3 mb-1 flex items-center justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <h3 className="text-xs font-semibold text-slate-900 dark:text-white">
+            <h3 className="text-xs font-semibold text-slate-900">
               Public profile
             </h3>
-            <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Information that appears publicly on your profile page.
             </p>
           </div>
           <Link
             href="/profile"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 transition-colors dark:hover:text-sky-300"
             title="View your profile"
           >
             <span>View profile</span>
@@ -719,13 +719,13 @@ export default function PersonalInfoPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
           {/* Handle */}
-          <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-start justify-between gap-3 md:col-span-2">
+          <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-start justify-between gap-3 md:col-span-2">
             <div className="flex items-start gap-3 flex-1 min-w-0">
-              <div className="text-slate-400 dark:text-neutral-400 shrink-0 mt-0.5">
+              <div className="text-slate-400 shrink-0 mt-0.5">
                 <AtSign size={18} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Handle</h3>
+                <h3 className="text-xs font-semibold text-slate-900">Handle</h3>
                 {editingField === 'handle' ? (
                   <div className="mt-2 space-y-2">
                     <HandleField
@@ -738,14 +738,14 @@ export default function PersonalInfoPage() {
                     <div className="flex justify-end pt-1">
                       <button
                         onClick={cancelEdit}
-                        className="text-xs text-slate-500 hover:text-slate-700 dark:text-neutral-400 dark:hover:text-white transition-colors"
+                        className="text-xs text-slate-500 hover:text-slate-700 transition-colors"
                       >
                         Close
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">
                     {handle ? `@${handle}` : 'Not set'}
                   </p>
                 )}
@@ -754,7 +754,7 @@ export default function PersonalInfoPage() {
             {editingField !== 'handle' && (
               <button
                 onClick={() => setEditingField('handle')}
-                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
+                className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors"
                 title="Edit Handle"
               >
                 <Edit2 size={14} />
@@ -773,13 +773,13 @@ export default function PersonalInfoPage() {
           )}
 
           {/* Headline */}
-          <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3">
+          <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="text-slate-400 dark:text-neutral-400 shrink-0">
+              <div className="text-slate-400 shrink-0">
                 <Sparkles size={18} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Headline</h3>
+                <h3 className="text-xs font-semibold text-slate-900">Headline</h3>
                 {editingField === 'headline' ? (
                   <div className="flex items-center gap-1.5 mt-1">
                     <input
@@ -788,12 +788,12 @@ export default function PersonalInfoPage() {
                       value={headlineInput}
                       onChange={(e) => setHeadlineInput(e.target.value)}
                       placeholder="e.g. Systems engineer, teaching distributed systems"
-                      className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                      className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 bg-slate-50 text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-500"
                     />
                     {renderSaveCancelButtons("Headline", () => handleSavePresentationField('headline'))}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate" title={user?.headline}>
+                  <p className="text-xs text-slate-500 mt-0.5 truncate" title={user?.headline}>
                     {user?.headline || 'Not set'}
                   </p>
                 )}
@@ -802,7 +802,7 @@ export default function PersonalInfoPage() {
             {editingField !== 'headline' && (
               <button
                 onClick={() => setEditingField('headline')}
-                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
+                className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors"
                 title="Edit Headline"
               >
                 <Edit2 size={14} />
@@ -811,13 +811,13 @@ export default function PersonalInfoPage() {
           </div>
 
           {/* Public Location */}
-          <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3">
+          <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="text-slate-400 dark:text-neutral-400 shrink-0">
+              <div className="text-slate-400 shrink-0">
                 <Globe size={18} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Location</h3>
+                <h3 className="text-xs font-semibold text-slate-900">Location</h3>
                 {editingField === 'location' ? (
                   <div className="flex items-center gap-1.5 mt-1">
                     <input
@@ -826,12 +826,12 @@ export default function PersonalInfoPage() {
                       value={locationInput}
                       onChange={(e) => setLocationInput(e.target.value)}
                       placeholder="e.g. Kerala, India"
-                      className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                      className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 bg-slate-50 text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-500"
                     />
                     {renderSaveCancelButtons("Location", () => handleSavePresentationField('location'))}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate" title={user?.location}>
+                  <p className="text-xs text-slate-500 mt-0.5 truncate" title={user?.location}>
                     {user?.location || 'Not set'}
                   </p>
                 )}
@@ -840,7 +840,7 @@ export default function PersonalInfoPage() {
             {editingField !== 'location' && (
               <button
                 onClick={() => setEditingField('location')}
-                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
+                className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors"
                 title="Edit Location"
               >
                 <Edit2 size={14} />
@@ -849,15 +849,15 @@ export default function PersonalInfoPage() {
           </div>
 
           {/* Show Learning Activity on Profile */}
-          <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3 md:col-span-2">
+          <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-center justify-between gap-3 md:col-span-2">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="text-slate-400 dark:text-neutral-400 shrink-0">
+              <div className="text-slate-400 shrink-0">
                 <Eye size={18} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Show learning activity on profile</h3>
-                <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
-                  Display certificates and course progress on your public profile.
+                <h3 className="text-xs font-semibold text-slate-900">Show learning activity on profile</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Show your achievements, certificates and learning heatmap on your public profile.
                 </p>
               </div>
             </div>
@@ -870,12 +870,12 @@ export default function PersonalInfoPage() {
               className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
                 showLearnerActivity
                   ? 'bg-sky-600 dark:bg-sky-500'
-                  : 'bg-slate-200 dark:bg-neutral-700'
+                  : 'bg-slate-200'
               }`}
             >
               <span className="sr-only">Toggle learning activity</span>
               <span
-                className={`inline-flex h-4 w-4 transform items-center justify-center rounded-full bg-white shadow transition-transform ${
+                className={`inline-flex h-4 w-4 transform items-center justify-center rounded-full bg-surface shadow transition-transform ${
                   showLearnerActivity ? 'translate-x-6' : 'translate-x-1'
                 }`}
               >
@@ -889,7 +889,7 @@ export default function PersonalInfoPage() {
           {/* Handle Appeals */}
           {appeals.length > 0 && (
             <div className="md:col-span-2 pt-2">
-              <h4 className="text-xs font-semibold text-slate-900 dark:text-white mb-2">Handle appeals</h4>
+              <h4 className="text-xs font-semibold text-slate-900 mb-2">Handle appeals</h4>
               <HandleAppealList appeals={appeals} onWithdraw={withdrawAppeal} />
             </div>
           )}

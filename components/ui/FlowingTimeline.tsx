@@ -175,10 +175,10 @@ export default function FlowingTimeline() {
           const isEven = index % 2 === 0;
           
           const COLORS = [
-            { bg: "#2563eb", text: "text-blue-600", ring: "border-blue-400/30" },
-            { bg: "#ea580c", text: "text-orange-600", ring: "border-orange-400/30" },
-            { bg: "#9333ea", text: "text-purple-600", ring: "border-purple-400/30" },
-            { bg: "#059669", text: "text-emerald-600", ring: "border-emerald-400/30" }
+            { bg: "#2563eb", text: "text-blue-600 dark:text-blue-400", ring: "border-blue-400/30" },
+            { bg: "#ea580c", text: "text-orange-600 dark:text-orange-400", ring: "border-orange-400/30" },
+            { bg: "#9333ea", text: "text-purple-600 dark:text-purple-400", ring: "border-purple-400/30" },
+            { bg: "#059669", text: "text-emerald-600 dark:text-emerald-400", ring: "border-emerald-400/30" }
           ];
           const color = COLORS[index % COLORS.length];
           
@@ -204,7 +204,7 @@ export default function FlowingTimeline() {
                   
                   return (
                     <div key={i} className={`flex flex-col items-center gap-2 ${widthClass}`}>
-                      <div className={`relative w-full ${isRubin ? "aspect-[3/4]" : "aspect-square"} bg-white overflow-hidden`}>
+                      <div className={`relative w-full ${isRubin ? "aspect-[3/4]" : "aspect-square"} bg-surface overflow-hidden`}>
                         <Image src={profile.avatar} alt={profile.name} fill className={imageClasses} unoptimized />
                       </div>
                       <div className="text-center pt-2">
@@ -227,7 +227,7 @@ export default function FlowingTimeline() {
                   
                   return (
                     <div key={i} className={`flex flex-col items-center gap-2 ${widthClass}`}>
-                      <div className={`relative w-full ${isRubin ? "aspect-[3/4]" : "aspect-square"} bg-white overflow-hidden`}>
+                      <div className={`relative w-full ${isRubin ? "aspect-[3/4]" : "aspect-square"} bg-surface overflow-hidden`}>
                         <Image src={profile.avatar} alt={profile.name} fill className={imageClasses} unoptimized />
                       </div>
                       <div className="text-center pt-2">
@@ -245,7 +245,7 @@ export default function FlowingTimeline() {
                   whileInView={{ scale: 1.1, backgroundColor: "#ffffff" }}
                   viewport={{ once: false, margin: "-200px" }}
                   transition={{ duration: 0.4 }}
-                  className="w-14 h-14 md:w-16 md:h-16 rounded-full border-4 border-slate-100 bg-white shadow-xl shadow-blue-500/10 flex items-center justify-center relative group"
+                  className="w-14 h-14 md:w-16 md:h-16 rounded-full border-4 border-slate-100 bg-surface shadow-xl shadow-blue-500/10 flex items-center justify-center relative group"
                 >
                   <span className="text-lg md:text-xl font-bold text-slate-800 font-sans tracking-tighter">
                     {item.num}

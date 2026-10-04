@@ -309,7 +309,7 @@ export function CredentialView({
               <div className="relative flex items-center justify-center">
                 <div className="w-full border-t border-slate-200/70" />
                 <div className="absolute bg-[#FAFBFD] px-4 text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold">
-                  CRITERIA & STANDARD
+                  CRITERIA &amp; STANDARD
                 </div>
               </div>
 

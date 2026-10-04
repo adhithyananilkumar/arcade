@@ -29,25 +29,25 @@ function GateRow({
   const tone = bypassed
     ? "text-slate-500"
     : isCurrent
-      ? "text-amber-700"
-      : "text-emerald-700";
+      ? "text-amber-700 dark:text-amber-300"
+      : "text-emerald-700 dark:text-emerald-300";
 
   return (
     <div className="flex items-start gap-3 py-2.5">
       <div className={`mt-0.5 ${tone}`}>{icon}</div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-[13px] font-semibold text-[#14142b]">{label}</span>
+          <span className="text-[13px] font-semibold text-ink">{label}</span>
           {bypassed ? (
             <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-600">
               Bypassed
             </span>
           ) : isCurrent ? (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800">
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800 dark:bg-amber-500/15 dark:text-amber-200">
               Current stage
             </span>
           ) : required ? (
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800">
+            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200">
               Required
             </span>
           ) : (
@@ -84,11 +84,11 @@ export function ReviewPolicySummary({
 }: ReviewPolicySummaryProps) {
   return (
     <section
-      className={`rounded-2xl border border-slate-200/80 bg-white ${compact ? "p-4" : "p-6"} shadow-[0_8px_24px_rgba(20,20,43,0.05)]`}
+      className={`rounded-2xl border border-slate-200/80 bg-surface ${compact ? "p-4" : "p-6"} shadow-[0_8px_24px_rgba(20,20,43,0.05)]`}
     >
       <div className="flex items-center gap-2 pb-2">
-        <ShieldCheck size={16} className="text-[#14142b]" />
-        <h2 className="text-[14px] font-bold text-[#14142b]">Review policy</h2>
+        <ShieldCheck size={16} className="text-ink" />
+        <h2 className="text-[14px] font-bold text-ink">Review policy</h2>
       </div>
 
       <div className="divide-y divide-slate-100">

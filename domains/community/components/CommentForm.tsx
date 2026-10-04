@@ -58,7 +58,7 @@ export function CommentForm({ postId, parentId, placeholder = 'Write a comment..
           fontFamily: 'inherit',
           outline: 'none',
           transition: 'border-color 0.15s, box-shadow 0.15s',
-          backgroundColor: status !== 'authenticated' ? 'var(--surface)' : '#fff',
+          backgroundColor: status !== 'authenticated' ? 'var(--surface)' : 'var(--theme-surface, #fff)',
         }}
         onFocus={(e) => {
           e.currentTarget.style.borderColor = 'var(--arcade-blue)';

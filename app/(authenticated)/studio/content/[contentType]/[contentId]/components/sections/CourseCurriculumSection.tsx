@@ -11,7 +11,7 @@ export function CourseCurriculumSection() {
           <div className="flex items-center justify-between">
             <h3 className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
               <BookOpen size={18} className="text-[#205ca8] dark:text-blue-400" />
-              Curriculum & Structure Breakdown
+              Curriculum &amp; Structure Breakdown
             </h3>
             <span className="rounded-full border border-blue-200/80 bg-blue-50 text-[#205ca8] dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-300 px-3 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider">
               12 Modules
@@ -67,7 +67,7 @@ export function CourseCurriculumSection() {
           <div className="flex items-center justify-between">
             <h3 className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
               <Target size={18} className="text-[#205ca8] dark:text-blue-400" />
-              Target Skills & Outcomes
+              Target Skills &amp; Outcomes
             </h3>
             <span className="rounded-full border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider">
               Intermediate - Advanced
