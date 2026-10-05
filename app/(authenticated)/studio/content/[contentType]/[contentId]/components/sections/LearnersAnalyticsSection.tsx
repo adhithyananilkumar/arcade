@@ -26,101 +26,6 @@ export interface FeedbackRecord {
   createdAt: string;
 }
 
-const FIRST_NAMES = [
-  "Aarav", "Diya", "Rohan", "Ananya", "Vikram", "Sneha", "Aditya", "Pooja",
-  "Rahul", "Kavya", "Siddharth", "Ishita", "Arjun", "Meera", "Karan", "Tanvi",
-  "Nikhil", "Priyanka", "Varun", "Rhea", "Manish", "Divya", "Gaurav", "Simran",
-  "Abhishek", "Neha", "Akash", "Shruti", "Harsh", "Swati", "Sanjay", "Ritu",
-  "Deepak", "Aarti", "Sameer", "Preeti", "Alok", "Shweta", "Rajesh", "Komal"
-];
-
-const LAST_NAMES = [
-  "Sharma", "Patel", "Verma", "Iyer", "Malhotra", "Nair", "Kapoor", "Joshi",
-  "Gupta", "Reddy", "Mehta", "Bhat", "Deshmukh", "Chopra", "Menon", "Saxena",
-  "Rao", "Singhania", "Choudhury", "Bose", "Trivedi", "Banerjee", "Ghosh", "Dubey"
-];
-
-/** Mock 100 enrolled learners for realistic testing */
-const MOCK_TEST_LEARNERS: LearnerRecord[] = Array.from({ length: 100 }, (_, i) => {
-  const firstName = FIRST_NAMES[i % FIRST_NAMES.length];
-  const lastName = LAST_NAMES[(i * 3 + 7) % LAST_NAMES.length];
-  const name = `${firstName} ${lastName}`;
-  const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i > 35 ? i : ""}@example.com`;
-
-  const statusType = i % 5;
-  let status = "Ongoing";
-  let progressPercentage = 25 + ((i * 19) % 70);
-
-  if (statusType === 0 || statusType === 1) {
-    status = "Completed";
-    progressPercentage = 100;
-  } else if (statusType === 4 && i % 2 === 0) {
-    status = "Not started";
-    progressPercentage = 0;
-  }
-
-  const day = 1 + (i % 28);
-  const month = i % 2 === 0 ? "09" : "08";
-  const enrolledAt = `2026-${month}-${day.toString().padStart(2, "0")}T${(10 + (i % 12)).toString().padStart(2, "0")}:30:00Z`;
-
-  return {
-    userId: `usr-${i + 1}`,
-    name,
-    email,
-    status,
-    progressPercentage,
-    enrolledAt,
-  };
-});
-
-/** Mock reviews totaling an average rating of 4.6 / 5 */
-const MOCK_TEST_REVIEWS: FeedbackRecord[] = [
-  {
-    id: "rev-1",
-    userId: "usr-4",
-    userName: "Ananya Iyer",
-    userAvatarUrl: null,
-    rating: 5,
-    reviewText: "Outstanding course structure! The practical assignments and module explanations are crystal clear.",
-    createdAt: "2026-09-30T09:15:00Z",
-  },
-  {
-    id: "rev-2",
-    userId: "usr-1",
-    userName: "Aarav Sharma",
-    userAvatarUrl: null,
-    rating: 5,
-    reviewText: "Very insightful and easy to follow. Helped me land practical confidence with the tools quickly.",
-    createdAt: "2026-09-28T15:40:00Z",
-  },
-  {
-    id: "rev-3",
-    userId: "usr-5",
-    userName: "Vikram Malhotra",
-    userAvatarUrl: null,
-    rating: 5,
-    reviewText: "The best comprehensive walkthrough I've taken so far. Highly recommend to everyone!",
-    createdAt: "2026-09-25T11:20:00Z",
-  },
-  {
-    id: "rev-4",
-    userId: "usr-2",
-    userName: "Diya Patel",
-    userAvatarUrl: null,
-    rating: 4,
-    reviewText: "Great pacing and relevant examples throughout each chapter.",
-    createdAt: "2026-09-22T08:05:00Z",
-  },
-  {
-    id: "rev-5",
-    userId: "usr-3",
-    userName: "Rohan Verma",
-    userAvatarUrl: null,
-    rating: 4,
-    reviewText: "Engaging content from start to finish. Looking forward to advanced modules.",
-    createdAt: "2026-09-18T14:50:00Z",
-  },
-];
 
 function useAnimatedCounter(target: number, durationMs = 1200) {
   const [count, setCount] = useState(0);
@@ -172,24 +77,17 @@ export function LearnersAnalyticsSection({
   const [learners, setLearners] = useState<LearnerRecord[] | null>(null);
   useEffect(() => {
     if (!contentId || segment !== "course") {
-      setLearners(segment === "course" ? null : MOCK_TEST_LEARNERS);
+      setLearners([]);
       return;
     }
     let cancelled = false;
     api
       .get<LearnerRecord[]>(`/api/courses/${contentId}/learners`)
       .then((rows) => {
-        if (!cancelled) {
-          const liveRows = rows || [];
-          const filled =
-            liveRows.length >= 100
-              ? liveRows
-              : [...liveRows, ...MOCK_TEST_LEARNERS.slice(liveRows.length)];
-          setLearners(filled);
-        }
+        if (!cancelled) setLearners(rows || []);
       })
       .catch(() => {
-        if (!cancelled) setLearners(MOCK_TEST_LEARNERS);
+        if (!cancelled) setLearners([]);
       });
     return () => {
       cancelled = true;
@@ -199,17 +97,17 @@ export function LearnersAnalyticsSection({
   const [reviews, setReviews] = useState<FeedbackRecord[] | null>(null);
   useEffect(() => {
     if (!contentId || segment !== "course") {
-      setReviews(segment === "course" ? null : MOCK_TEST_REVIEWS);
+      setReviews([]);
       return;
     }
     let cancelled = false;
     api
       .get<FeedbackRecord[]>(`/api/courses/${contentId}/reviews`)
       .then((rows) => {
-        if (!cancelled) setReviews(rows && rows.length > 0 ? rows : MOCK_TEST_REVIEWS);
+        if (!cancelled) setReviews(rows || []);
       })
       .catch(() => {
-        if (!cancelled) setReviews(MOCK_TEST_REVIEWS);
+        if (!cancelled) setReviews([]);
       });
     return () => {
       cancelled = true;
@@ -217,12 +115,7 @@ export function LearnersAnalyticsSection({
   }, [contentId, segment]);
 
   const query = searchQuery.trim().toLowerCase();
-  const effectiveLearners =
-    learners && learners.length >= 100
-      ? learners
-      : learners && learners.length > 0
-      ? [...learners, ...MOCK_TEST_LEARNERS.slice(learners.length)]
-      : MOCK_TEST_LEARNERS;
+  const effectiveLearners = learners ?? [];
   const filteredLearners = effectiveLearners.filter(
     (l) =>
       query.length === 0 ||
@@ -231,7 +124,7 @@ export function LearnersAnalyticsSection({
   );
 
   const reviewQuery = reviewSearchQuery.trim().toLowerCase();
-  const effectiveReviews = reviews ?? MOCK_TEST_REVIEWS;
+  const effectiveReviews = reviews ?? [];
 
   // Sort reviews so latest feedbacks are always on top
   const sortedReviews = [...effectiveReviews].sort(
@@ -354,7 +247,7 @@ export function LearnersAnalyticsSection({
 
               {/* Review Items */}
               <div className="flex flex-col divide-y divide-slate-100 flex-1 justify-center my-1">
-                {reviews === null && !MOCK_TEST_REVIEWS ? (
+                {reviews === null ? (
                   <div className="flex items-center justify-center py-10 text-slate-400">
                     <Loader2 size={20} className="animate-spin text-[#205ca8] dark:text-[#7cbaff]" />
                   </div>
@@ -444,7 +337,7 @@ export function LearnersAnalyticsSection({
                   </h3>
                 </div>
                 <span className="text-xs font-mono font-bold text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full">
-                  {effectiveLearners.filter((l) => l.progressPercentage === 100).length || 342} Claims Issued
+                  {effectiveLearners.filter((l) => l.progressPercentage === 100).length} Claims Issued
                 </span>
               </div>
 
@@ -452,14 +345,22 @@ export function LearnersAnalyticsSection({
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 flex flex-col gap-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Issued</span>
                   <span className="text-2xl font-black text-slate-900">
-                    {effectiveLearners.filter((l) => l.progressPercentage === 100).length || 342}
+                    {effectiveLearners.filter((l) => l.progressPercentage === 100).length}
                   </span>
                   <span className="text-[11px] text-slate-500">Verified course certificates</span>
                 </div>
 
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 flex flex-col gap-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Claim Rate</span>
-                  <span className="text-2xl font-black text-slate-900">88%</span>
+                  <span className="text-2xl font-black text-slate-900">
+                    {effectiveLearners.length > 0
+                      ? `${Math.round(
+                          (effectiveLearners.filter((l) => l.progressPercentage === 100).length /
+                            effectiveLearners.length) *
+                            100
+                        )}%`
+                      : "0%"}
+                  </span>
                   <span className="text-[11px] text-slate-500">Of course completers</span>
                 </div>
 
@@ -483,38 +384,38 @@ export function LearnersAnalyticsSection({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {effectiveLearners
-                      .filter((l) => l.progressPercentage === 100)
-                      .slice(0, 5)
-                      .map((l, idx) => (
-                        <tr key={l.userId || idx} className="hover:bg-slate-50/50">
-                          <td className="px-4 py-3 font-bold text-slate-900">{l.name}</td>
-                          <td className="px-4 py-3">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25">
-                              <CheckCircle2 size={11} /> Completed
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-slate-500">{l.enrolledAt ? new Date(l.enrolledAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "Recent"}</td>
-                          <td className="px-4 py-3 text-right font-mono text-[11px] text-slate-400">CERT-8924-{idx + 101}</td>
-                        </tr>
-                      ))}
-                    {effectiveLearners.filter((l) => l.progressPercentage === 100).length === 0 && (
-                      [
-                        { name: "Aarav Sharma", date: "24 Sep 2026", id: "CERT-8924-101" },
-                        { name: "Diya Patel", date: "20 Sep 2026", id: "CERT-8924-102" },
-                        { name: "Rohan Verma", date: "18 Sep 2026", id: "CERT-8924-103" },
-                      ].map((mock, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50/50">
-                          <td className="px-4 py-3 font-bold text-slate-900">{mock.name}</td>
-                          <td className="px-4 py-3">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25">
-                              <CheckCircle2 size={11} /> Completed
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-slate-500">{mock.date}</td>
-                          <td className="px-4 py-3 text-right font-mono text-[11px] text-slate-400">{mock.id}</td>
-                        </tr>
-                      ))
+                    {effectiveLearners.filter((l) => l.progressPercentage === 100).length > 0 ? (
+                      effectiveLearners
+                        .filter((l) => l.progressPercentage === 100)
+                        .slice(0, 5)
+                        .map((l, idx) => (
+                          <tr key={l.userId || idx} className="hover:bg-slate-50/50">
+                            <td className="px-4 py-3 font-bold text-slate-900">{l.name}</td>
+                            <td className="px-4 py-3">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25">
+                                <CheckCircle2 size={11} /> Completed
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-slate-500">
+                              {l.enrolledAt
+                                ? new Date(l.enrolledAt).toLocaleDateString("en-GB", {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                  })
+                                : "Recent"}
+                            </td>
+                            <td className="px-4 py-3 text-right font-mono text-[11px] text-slate-400">
+                              CERT-{l.userId?.slice(-6).toUpperCase() || (idx + 101)}
+                            </td>
+                          </tr>
+                        ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8 text-center text-slate-400 text-xs">
+                          No certificates issued yet. Learners who complete the course will appear here.
+                        </td>
+                      </tr>
                     )}
                   </tbody>
                 </table>
