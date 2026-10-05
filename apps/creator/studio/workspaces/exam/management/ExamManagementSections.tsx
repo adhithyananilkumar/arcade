@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Boxes, ClipboardList, Eye, Loader2, PenLine, Plus, SlidersHorizontal, Users } from "lucide-react";
+import { Boxes, ClipboardList, Eye, Loader2, PenLine, Plus, Users, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import {
   createExamPlan,
@@ -20,7 +20,7 @@ import {
 import { PoolsWorkspace } from "./PoolsWorkspace";
 import { PlanWorkspace } from "./PlanWorkspace";
 import { ExamPreviewWorkspace } from "./ExamPreviewWorkspace";
-import { ExamSettingsWorkspace } from "./ExamSettingsWorkspace";
+import { WorkspaceHeading, WorkspaceLoading } from "../../../core/StudioWorkspaceKit";
 import { ExamAttemptsWorkspace } from "./ExamAttemptsWorkspace";
 import { ExamMarkingWorkspace } from "./ExamMarkingWorkspace";
 import { NewPlanMenu } from "./NewPlanMenu";
@@ -39,16 +39,37 @@ import { NewPlanMenu } from "./NewPlanMenu";
  * right. On narrow screens the two stack.
  */
 
-type TabId = "plans" | "pools" | "preview" | "settings" | "attempts" | "marking";
+/** The exam dashboard tabs this component renders; the page owns the tab bar itself. */
+export type ExamManagementTab = "plans" | "pools" | "preview" | "attempts" | "marking";
 
-const TABS: { id: TabId; label: string; icon: typeof ClipboardList }[] = [
-  { id: "plans", label: "Exam plans", icon: ClipboardList },
-  { id: "pools", label: "Question pools", icon: Boxes },
-  { id: "preview", label: "Preview", icon: Eye },
-  { id: "settings", label: "Settings", icon: SlidersHorizontal },
-  { id: "attempts", label: "Attempts & results", icon: Users },
-  { id: "marking", label: "Marking", icon: PenLine },
-];
+const HEADINGS: Record<ExamManagementTab, { icon: LucideIcon; title: string; description: string }> = {
+  plans: {
+    icon: ClipboardList,
+    title: "Exam plans",
+    description:
+      "How this exam is sat. Each plan sets its own duration, attempts, pass mark and security, and draws its questions from the pools.",
+  },
+  pools: {
+    icon: Boxes,
+    title: "Question pools",
+    description: "Groups of questions from the bank that plans draw from — a saved filter, or a hand-picked set.",
+  },
+  preview: {
+    icon: Eye,
+    title: "Preview",
+    description: "Exactly what a candidate sees for a plan, without starting a real attempt.",
+  },
+  attempts: {
+    icon: Users,
+    title: "Attempts & results",
+    description: "Every sitting of this exam, its score and outcome.",
+  },
+  marking: {
+    icon: PenLine,
+    title: "Marking",
+    description: "Answers that need a person to mark them before a result is final.",
+  },
+};
 
 const DEFAULT_PLAN_NAME: Record<ExamPlanType, string> = {
   CERTIFICATION: "Certification",
@@ -56,14 +77,7 @@ const DEFAULT_PLAN_NAME: Record<ExamPlanType, string> = {
   ASSESSMENT: "Assessment",
 };
 
-export function ExamManagementSections({
-  exam,
-  onExamChange,
-}: {
-  exam: ExamResponse;
-  onExamChange: (exam: ExamResponse) => void;
-}) {
-  const [tab, setTab] = useState<TabId>("plans");
+export function ExamManagementSections({ exam, tab }: { exam: ExamResponse; tab: ExamManagementTab }) {
 
   const [bankId, setBankId] = useState<string | null>(null);
   const [sections, setSections] = useState<SectionResponse[]>([]);
@@ -158,29 +172,15 @@ export function ExamManagementSections({
     <NewPlanMenu exam={exam} plans={plans} creating={creatingPlan} onCreate={addPlan} variant={variant} />
   );
 
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            aria-current={tab === t.id ? "page" : undefined}
-            className={`inline-flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition-all ${
-              tab === t.id ? "bg-ink text-on-ink shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-          >
-            <t.icon size={14} /> {t.label}
-          </button>
-        ))}
-      </div>
+  const heading = HEADINGS[tab];
 
-      <div className="rounded-[24px] border-[1.5px] border-indigo-400/80 bg-gradient-to-b from-indigo-50/30 via-surface to-surface p-5 shadow-[4px_-4px_0px_0px_#C7D2FE] dark:from-indigo-500/10">
+  return (
+    <div className="flex flex-col gap-6">
+      <WorkspaceHeading icon={heading.icon} title={heading.title} description={heading.description} />
+
+      <div>
         {loading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 size={18} className="animate-spin text-slate-400" />
-          </div>
+          <WorkspaceLoading />
         ) : tab === "plans" ? (
           <ListDetail
             items={plans.map((plan) => ({
@@ -258,8 +258,6 @@ export function ExamManagementSections({
             )}
             <ExamPreviewWorkspace exam={exam} plan={activePlan} />
           </div>
-        ) : tab === "settings" ? (
-          <ExamSettingsWorkspace key={exam.id} exam={exam} onChange={onExamChange} readOnly={readOnly} />
         ) : tab === "marking" ? (
           <ExamMarkingWorkspace examId={exam.id} />
         ) : (
@@ -311,10 +309,11 @@ function ListDetail({
               key={item.id}
               type="button"
               onClick={() => onSelect(item.id)}
-              className={`flex w-full flex-col gap-0.5 rounded-xl border px-3 py-2 text-left transition-all ${
+              aria-current={item.id === activeId ? "true" : undefined}
+              className={`flex w-full cursor-pointer flex-col gap-0.5 rounded-2xl border px-3.5 py-2.5 text-left transition-all ${
                 item.id === activeId
-                  ? "border-ink bg-ink text-on-ink"
-                  : "border-slate-200 bg-surface hover:border-slate-300"
+                  ? "border-[#205ca8] bg-blue-50/80 text-[#205ca8] ring-1 ring-[#205ca8] dark:border-blue-400 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-400"
+                  : "border-slate-200/90 bg-surface text-slate-800 hover:border-slate-300"
               }`}
             >
               <span className="flex items-center gap-1.5">
@@ -323,20 +322,14 @@ function ListDetail({
                 </span>
                 {item.badge && (
                   <span
-                    className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${
-                      item.id === activeId ? "bg-white/20 text-white" : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
-                    }`}
+                    className="shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
                   >
                     {item.badge}
                   </span>
                 )}
               </span>
               {item.subtitle && (
-                <span
-                  className={`truncate text-[10px] font-medium ${
-                    item.id === activeId ? "text-white/60" : "text-slate-400"
-                  }`}
-                >
+                <span className="truncate text-[10px] font-medium text-slate-400">
                   {item.subtitle}
                 </span>
               )}
@@ -350,7 +343,7 @@ function ListDetail({
             type="button"
             onClick={onCreate}
             disabled={creating}
-            className="mt-1 flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-300 px-3 py-2 text-xs font-bold text-slate-500 transition-colors hover:border-slate-400 hover:bg-surface hover:text-ink disabled:opacity-50"
+            className="mt-1 flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-dashed border-slate-300 px-3 py-2.5 text-xs font-bold text-slate-500 transition-colors hover:border-slate-400 hover:bg-surface hover:text-ink disabled:opacity-50"
           >
             {creating ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
             {createLabel}

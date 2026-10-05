@@ -16,12 +16,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/shared/design-system/ui/a
 import { Button } from '@/shared/design-system/ui/button';
 import { Input } from '@/shared/design-system/ui/input';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { WorkspaceRow, WorkspaceRows } from '@/apps/creator/studio/core/StudioWorkspaceKit';
 
 interface Props {
+  /** "rows" on the Content Overview (numbered rows); the wizard keeps its cards. */
+  layout?: 'card' | 'rows';
   eventId: string;
 }
 
-export function EventCollaboratorsManager({ eventId }: Props) {
+export function EventCollaboratorsManager({ eventId, layout = 'card' }: Props) {
   const { user } = useAuthStore();
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,6 +109,129 @@ export function EventCollaboratorsManager({ eventId }: Props) {
     );
   }
 
+  const inviteForm = (
+    <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-3">
+      <div className="relative flex-1">
+        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+        <Input
+          type="email"
+          placeholder="Enter user's email address"
+          className="pl-10"
+          value={inviteEmail}
+          onChange={(e) => setInviteEmail(e.target.value)}
+          required
+        />
+      </div>
+      <div className="w-full sm:w-48">
+        <select
+          className="w-full h-10 px-3 rounded-lg border border-zinc-200 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          value={inviteRole}
+          onChange={(e) => setInviteRole(e.target.value as any)}
+          disabled={!isOwner}
+        >
+          <option value="OWNER">Owner (Full Admin)</option>
+          <option value="MANAGER">Manager (Can manage workshop)</option>
+          <option value="EDITOR">Editor (Can edit content)</option>
+          <option value="VIEWER">Viewer (Read-only)</option>
+        </select>
+      </div>
+      <Button type="submit" disabled={inviting} className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2">
+        {inviting ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Plus className="w-4 h-4" />
+        )}
+        Add Collaborator
+      </Button>
+    </form>
+  );
+
+  const roster = collaborators.length === 0 ? (
+  <div className="p-12 text-center text-zinc-500">
+    No collaborators added yet.
+  </div>
+) : (
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>User</TableHead>
+        <TableHead>Role Policy</TableHead>
+        <TableHead>Status</TableHead>
+        <TableHead className="text-right">Actions</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      {collaborators.map((c) => (
+        <TableRow key={c.userId}>
+          <TableCell className="flex items-center gap-3">
+            <Avatar className="w-9 h-9">
+              {c.avatarUrl && <AvatarImage src={c.avatarUrl} alt={c.name} />}
+              <AvatarFallback className="bg-indigo-100 text-indigo-700 font-bold dark:bg-indigo-500/15 dark:text-indigo-300">
+                {c.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="font-semibold text-zinc-900 text-sm flex items-center gap-1.5">
+                {c.name}
+                {c.role === 'OWNER' && <Shield className="w-3.5 h-3.5 text-amber-500" />}
+              </div>
+              <div className="text-xs text-zinc-500">{c.email}</div>
+            </div>
+          </TableCell>
+          <TableCell>
+            {c.id === null || !canManage ? (
+              <Badge variant="secondary" className="bg-zinc-100 text-zinc-700">{c.role}</Badge>
+            ) : (
+              <select
+                className="h-8 px-2 rounded border border-zinc-200 bg-surface text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                value={c.role}
+                onChange={(e) => handleRoleChange(c.id || c.userId, e.target.value as any)}
+                disabled={c.userId === user?.id || !canManage}
+              >
+                <option value="OWNER">Owner</option>
+                <option value="MANAGER">Manager</option>
+                <option value="EDITOR">Editor</option>
+                <option value="VIEWER">Viewer</option>
+              </select>
+            )}
+          </TableCell>
+          <TableCell>
+            <Badge className={c.status === 'ACCEPTED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}>
+              {c.status}
+            </Badge>
+          </TableCell>
+          <TableCell className="text-right">
+            {c.id !== null && c.userId !== user?.id && canManage && (
+              <Button
+                variant="ghost"
+                onClick={() => handleRemove(c.id || c.userId)}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/10 p-2 rounded-lg dark:text-red-400 dark:hover:text-red-300"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
+          </TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+);
+
+  if (layout === 'rows') {
+    return (
+      <WorkspaceRows>
+        {canManage && (
+          <WorkspaceRow step={1} title="Add a collaborator" description="Give another person edit or view access to this event under a role.">
+            {inviteForm}
+          </WorkspaceRow>
+        )}
+        <WorkspaceRow step={canManage ? 2 : 1} title="Team" description="Everyone with access to this event, their role and whether they have accepted." wide>
+          <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-surface">{roster}</div>
+        </WorkspaceRow>
+      </WorkspaceRows>
+    );
+  }
+
   return (
     <div className="space-y-8 max-w-5xl mx-auto p-4">
       {/* Invite collaborator box - Only visible to OWNER or MANAGER */}
@@ -119,40 +245,7 @@ export function EventCollaboratorsManager({ eventId }: Props) {
             Grant other users edit or view access to this workshop and webinar contents under role-based policies.
           </p>
 
-          <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-              <Input
-                type="email"
-                placeholder="Enter user's email address"
-                className="pl-10"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="w-full sm:w-48">
-              <select
-                className="w-full h-10 px-3 rounded-lg border border-zinc-200 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                value={inviteRole}
-                onChange={(e) => setInviteRole(e.target.value as any)}
-                disabled={!isOwner}
-              >
-                <option value="OWNER">Owner (Full Admin)</option>
-                <option value="MANAGER">Manager (Can manage workshop)</option>
-                <option value="EDITOR">Editor (Can edit content)</option>
-                <option value="VIEWER">Viewer (Read-only)</option>
-              </select>
-            </div>
-            <Button type="submit" disabled={inviting} className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2">
-              {inviting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Plus className="w-4 h-4" />
-              )}
-              Add Collaborator
-            </Button>
-          </form>
+          {inviteForm}
         </div>
       )}
 
@@ -162,76 +255,7 @@ export function EventCollaboratorsManager({ eventId }: Props) {
           <h3 className="font-bold text-zinc-900">Collaborator Roster</h3>
         </div>
         
-        {collaborators.length === 0 ? (
-          <div className="p-12 text-center text-zinc-500">
-            No collaborators added yet.
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Role Policy</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {collaborators.map((c) => (
-                <TableRow key={c.userId}>
-                  <TableCell className="flex items-center gap-3">
-                    <Avatar className="w-9 h-9">
-                      {c.avatarUrl && <AvatarImage src={c.avatarUrl} alt={c.name} />}
-                      <AvatarFallback className="bg-indigo-100 text-indigo-700 font-bold dark:bg-indigo-500/15 dark:text-indigo-300">
-                        {c.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-semibold text-zinc-900 text-sm flex items-center gap-1.5">
-                        {c.name}
-                        {c.role === 'OWNER' && <Shield className="w-3.5 h-3.5 text-amber-500" />}
-                      </div>
-                      <div className="text-xs text-zinc-500">{c.email}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {c.id === null || !canManage ? (
-                      <Badge variant="secondary" className="bg-zinc-100 text-zinc-700">{c.role}</Badge>
-                    ) : (
-                      <select
-                        className="h-8 px-2 rounded border border-zinc-200 bg-surface text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                        value={c.role}
-                        onChange={(e) => handleRoleChange(c.id || c.userId, e.target.value as any)}
-                        disabled={c.userId === user?.id || !canManage}
-                      >
-                        <option value="OWNER">Owner</option>
-                        <option value="MANAGER">Manager</option>
-                        <option value="EDITOR">Editor</option>
-                        <option value="VIEWER">Viewer</option>
-                      </select>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={c.status === 'ACCEPTED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}>
-                      {c.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {c.id !== null && c.userId !== user?.id && canManage && (
-                      <Button
-                        variant="ghost"
-                        onClick={() => handleRemove(c.id || c.userId)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/10 p-2 rounded-lg dark:text-red-400 dark:hover:text-red-300"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+        {roster}
       </div>
     </div>
   );

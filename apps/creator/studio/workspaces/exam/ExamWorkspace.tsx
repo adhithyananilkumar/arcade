@@ -28,6 +28,7 @@ import {
   Plus,
   ToggleLeft,
   Trash2,
+  SlidersHorizontal,
   UploadCloud,
 } from "lucide-react";
 import {
@@ -182,6 +183,16 @@ export function ExamWorkspace({ examId }: { examId: string }) {
       router.push(`/studio/content/exam/${examId}`);
     }
   }, [exam?.tieType, exam?.tiedContentId, examId, router, saveManager]);
+
+  /** The exam's own dashboard, opened on Exam plans — saving first, like every exit here. */
+  const tieType = exam?.tieType ?? null;
+  const tiedContentId = exam?.tiedContentId ?? null;
+  const handleOpenExamSettings = useCallback(async () => {
+    await saveManager.flush();
+    const params = new URLSearchParams({ tab: "plans" });
+    if (tiedContentId) params.set(tieType === "COURSE" ? "fromCourse" : "fromEvent", tiedContentId);
+    router.push(`/studio/content/exam/${examId}?${params.toString()}`);
+  }, [tieType, tiedContentId, examId, router, saveManager]);
 
   /**
    * Opening a section closes whatever question was open — the canvas always shows something
@@ -641,13 +652,26 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         onTogglePanel={() => panel.setOpen(!panel.open)}
         workspaceActionsBefore={
           exam.tieType ? (
-            <span
-              title={`This exam is tied to ${exam.tiedContentTitle ?? "its " + exam.tieType.toLowerCase()} and is reviewed and published with it.`}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface/70 px-3 py-1.5 text-[11px] font-semibold text-slate-600 backdrop-blur-md"
-            >
-              {exam.tieType === "COURSE" ? "Course exam" : "Event exam"}
-              {exam.tiedContentTitle ? ` · ${exam.tiedContentTitle}` : ""}
-            </span>
+            <>
+              <span
+                title={`This exam is tied to ${exam.tiedContentTitle ?? "its " + exam.tieType.toLowerCase()} and is reviewed and published with it.`}
+                className="hidden lg:inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface/70 px-3 py-1.5 text-[11px] font-semibold text-slate-600 backdrop-blur-md"
+              >
+                {exam.tieType === "COURSE" ? "Course exam" : "Event exam"}
+                {exam.tiedContentTitle ? ` · ${exam.tiedContentTitle}` : ""}
+              </span>
+              {/* A linked exam's back arrow returns to its course/event editor, so its own
+                  dashboard (plans, pools, settings) needs a door of its own. */}
+              <button
+                type="button"
+                onClick={handleOpenExamSettings}
+                title="Open this exam's dashboard on its plans: duration, attempts, pass mark, pools and settings"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 bg-surface/80 px-3 py-1.5 text-[11px] font-bold text-slate-700 backdrop-blur-md transition-colors hover:border-blue-200 hover:text-blue-600 dark:hover:border-blue-500/25 dark:hover:text-blue-400"
+              >
+                <SlidersHorizontal size={13} />
+                <span className="hidden sm:inline">Exam settings</span>
+              </button>
+            </>
           ) : undefined
         }
         primaryAction={

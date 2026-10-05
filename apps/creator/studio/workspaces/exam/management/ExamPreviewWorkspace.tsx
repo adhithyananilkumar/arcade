@@ -75,7 +75,7 @@ export function ExamPreviewWorkspace({
   return (
     <div className="flex flex-col gap-4">
       {/* ── Candidate-facing cover ──────────────────────────────────────── */}
-      <section className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
+      <section className="border-t border-slate-200/70 pt-6 first:border-t-0 first:pt-0">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -135,7 +135,7 @@ export function ExamPreviewWorkspace({
           </div>
         )}
       </section>
-      <section className="rounded-2xl border border-white/50 bg-surface/80 p-6 shadow-sm backdrop-blur-md">
+      <section className="border-t border-slate-200/70 pt-6 first:border-t-0 first:pt-0">
         <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-500">{plan.name}</span>
         <h2 className="mt-1 text-xl font-black tracking-tight text-ink">{exam.title}</h2>
         {exam.description && (
@@ -179,10 +179,10 @@ export function ExamPreviewWorkspace({
       </section>
 
       {/* ── A real generated paper ──────────────────────────────────────── */}
-      <section className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
+      <section className="border-t border-slate-200/70 pt-6 first:border-t-0 first:pt-0">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-black tracking-tight text-ink">Sample paper</h3>
+            <h3 className="text-base font-extrabold tracking-tight text-slate-900">Sample paper</h3>
             <p className="mt-0.5 text-[11px] text-slate-500">
               {plan.fixedPaper
                 ? "Every candidate sits this same selection."

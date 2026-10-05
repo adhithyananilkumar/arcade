@@ -41,10 +41,12 @@ export interface BadgeTierPanelProps {
   readOnly?: boolean;
   /** "card" for an overview page; "plain" inside a dialog that already has a frame. */
   variant?: "card" | "plain";
+  /** Drop the built-in heading — the host (a numbered Content Overview row) supplies it. */
+  bare?: boolean;
   onSaved?: (assignment: BadgeAssignment) => void;
 }
 
-export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "card", onSaved }: BadgeTierPanelProps) {
+export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "card", bare = false, onSaved }: BadgeTierPanelProps) {
   const [catalogue, setCatalogue] = useState<BadgeCatalogue | null>(null);
   const [assignment, setAssignment] = useState<BadgeAssignment | null>(null);
   const [draft, setDraft] = useState<BadgeLevel | null>(null);
@@ -109,32 +111,39 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
 
   const body = (
     <div className="flex flex-col gap-5 py-2">
-      {/* 02 Numbered Step Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3.5">
-          <div className="flex size-9 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 font-extrabold text-sm shrink-0 mt-0.5">
-            02
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <h3 className="text-xl font-black text-slate-900 tracking-tight">
-              Completion badge
-            </h3>
-            <p className="text-xs font-medium text-slate-500">
-              Choose the recognition learners receive after completing this course.
-            </p>
-          </div>
-        </div>
+      {bare ? (
+        assignment && <div className="flex">
         {assignment && (
           <span
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-extrabold shadow-2xs",
+              "inline-flex w-fit items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-extrabold shadow-2xs",
               savedLevel ? TIER_STYLE[savedLevel].chip : "border-slate-200 bg-surface text-slate-600"
             )}
           >
             {assignment.tier ? assignment.tier.label : "Ribbon badge"}
           </span>
         )}
-      </div>
+        </div>
+      ) : (
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-0.5">
+            <h3 className="text-base font-extrabold tracking-tight text-slate-900">Completion badge</h3>
+            <p className="text-xs font-medium text-slate-500">
+              Choose the recognition learners receive after completing this {NOUN[contentType]}.
+            </p>
+          </div>
+        {assignment && (
+          <span
+            className={cn(
+              "inline-flex w-fit items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-extrabold shadow-2xs",
+              savedLevel ? TIER_STYLE[savedLevel].chip : "border-slate-200 bg-surface text-slate-600"
+            )}
+          >
+            {assignment.tier ? assignment.tier.label : "Ribbon badge"}
+          </span>
+        )}
+        </div>
+      )}
 
       {loading ? (
         <div className="flex justify-center py-10">
@@ -208,7 +217,7 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
                   type="button"
                   onClick={remove}
                   disabled={saving}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-surface px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200/90 bg-surface px-5 py-2.5 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 disabled:opacity-50"
                 >
                   <Trash2 size={13} /> Award no badge
                 </button>
@@ -217,7 +226,7 @@ export function BadgeTierPanel({ contentType, contentId, readOnly, variant = "ca
                 type="button"
                 onClick={save}
                 disabled={!dirty || draft == null || saving}
-                className="inline-flex items-center gap-2 rounded-xl bg-ink hover:bg-blue-600 px-6 py-2.5 text-xs font-extrabold text-on-ink transition-all shadow-md cursor-pointer disabled:opacity-50"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-ink px-7 py-2.5 text-xs font-extrabold text-on-ink shadow-md transition-all hover:bg-[#205ca8] disabled:opacity-50"
               >
                 {saving ? <Loader2 size={13} className="animate-spin" /> : <Award size={13} />}
                 {savedLevel == null ? "Save badge" : "Save level"}

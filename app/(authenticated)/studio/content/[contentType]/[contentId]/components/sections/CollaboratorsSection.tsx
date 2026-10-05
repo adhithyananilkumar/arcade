@@ -129,6 +129,7 @@ export function CollaboratorsSection({
   unavailable,
   canManage = true,
   onChanged,
+  bare = false,
 }: {
   segment: ContentTypeSegment;
   contentId: string;
@@ -136,8 +137,11 @@ export function CollaboratorsSection({
   unavailable?: boolean;
   canManage?: boolean;
   onChanged?: () => void;
+  /** Drop the built-in heading — the host (a numbered Content Overview row) supplies it. */
+  bare?: boolean;
 }) {
   const [adding, setAdding] = useState(false);
+  const noun = segment === "event" ? "event" : segment === "exam" ? "exam" : "course";
 
   if (unavailable) {
     return (
@@ -149,22 +153,12 @@ export function CollaboratorsSection({
 
   return (
     <div className="flex flex-col gap-5 py-2">
-      {/* 04 Numbered Step Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3.5">
-          <div className="flex size-9 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 font-extrabold text-sm shrink-0 mt-0.5">
-            04
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <h3 className="text-xl font-black text-slate-900 tracking-tight">
-              Collaborators
-            </h3>
-            <p className="text-xs font-medium text-slate-500">
-              Invite team members to manage or edit this course together.
-            </p>
-          </div>
+      {!bare && (
+        <div className="flex flex-col gap-0.5">
+          <h3 className="text-base font-extrabold tracking-tight text-slate-900">Collaborators</h3>
+          <p className="text-xs font-medium text-slate-500">Invite team members to manage or edit this {noun} together.</p>
         </div>
-      </div>
+      )}
 
       {adding ? (
         <AddCollaboratorForm
@@ -177,13 +171,13 @@ export function CollaboratorsSection({
           onCancel={() => setAdding(false)}
         />
       ) : !collaborators || collaborators.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-8 sm:p-10 rounded-3xl border border-dashed border-slate-200 bg-surface/60 text-center gap-2.5">
+        <div className="flex flex-col items-center justify-center gap-2.5 rounded-3xl border border-dashed border-slate-200 px-6 py-8 text-center">
           <div className="flex size-10 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
             <Users size={18} />
           </div>
           <h4 className="text-sm font-extrabold text-slate-900">No collaborators added</h4>
           <p className="text-xs text-slate-500 max-w-sm">
-            Invite team members to manage or edit this course together.
+            Invite team members to manage or edit this {noun} together.
           </p>
           {canManage && (
             <button
@@ -196,22 +190,16 @@ export function CollaboratorsSection({
           )}
         </div>
       ) : (
-        <div className="rounded-[22px] border border-slate-200/80 bg-surface/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md flex flex-col gap-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/70 pb-4">
-            <div className="flex flex-col gap-1">
-              <h3 className="text-base font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-                <Users size={18} className="text-[#205ca8] dark:text-blue-400" />
-                Collaborators &amp; Team Access
-              </h3>
-              <p className="text-xs font-medium text-slate-500">
-                Active team members with authoring and management privileges
-              </p>
-            </div>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs font-semibold text-slate-500">
+              {collaborators.length} {collaborators.length === 1 ? "person has" : "people have"} access
+            </p>
             {canManage && !adding && (
               <button
                 type="button"
                 onClick={() => setAdding(true)}
-                className="inline-flex items-center gap-2 rounded-xl bg-ink hover:bg-blue-600 px-4 py-2 text-xs font-bold text-on-ink shadow-xs transition-all cursor-pointer self-start sm:self-auto"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-xs font-bold text-on-ink shadow-md transition-all hover:bg-[#205ca8]"
               >
                 <Plus size={14} /> Add collaborator
               </button>

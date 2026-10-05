@@ -3,7 +3,7 @@
 import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { BookOpen, Calendar, Check, ExternalLink, Link2, Loader2, Unlink } from "lucide-react";
+import { BookOpen, Calendar, Check, ClipboardList, ExternalLink, Link2, Loader2, Pencil, Unlink } from "lucide-react";
 import { toast } from "sonner";
 import {
   listTieCandidates,
@@ -16,19 +16,25 @@ import {
 import { SchedulePanel } from "@/domains/publishing";
 import { BadgeTierPanel } from "../../../credentials/BadgeTierPanel";
 import { formatMoney } from "@/shared/utils/money";
+import {
+  WorkspaceRow,
+  WorkspaceRows,
+  WorkspaceSaveBar,
+  workspaceField,
+  workspaceSecondaryButton,
+} from "../../../core/StudioWorkspaceKit";
+
+/** The exam editor (question bank). */
+const questionBankHref = (examId: string) => `/studio/exam/${examId}/edit`;
+
+const fillButton =
+  "inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-ink px-6 py-3 text-xs font-extrabold text-on-ink shadow-md transition-all hover:bg-[#205ca8] disabled:cursor-not-allowed disabled:opacity-40";
 
 /**
- * Exam Content settings — the examination itself, not how it is offered.
- *
- * <p>This split is the one thing this screen has to teach. Duration, attempts, pass mark,
- * proctoring and delivery all belong to a <em>plan</em>, because the same exam can be practised
- * loosely and sat under supervision. What lives here is what is true of the examination however it
- * is run: what it is called, what it is for, and where it sits in the platform.
- *
- * <p>The previous settings screen mixed the two, which is why it read as a pile of fields — a
- * creator could not tell which of them a second plan would override.
+ * An exam's Overview tab: what the examination is called and how it is described, plus the way
+ * into its question bank. The exam's counterpart of the course's Overview & Outcomes tab.
  */
-export function ExamSettingsWorkspace({
+export function ExamAboutWorkspace({
   exam,
   onChange,
   readOnly,
@@ -42,10 +48,7 @@ export function ExamSettingsWorkspace({
   const [purpose, setPurpose] = useState(exam.purpose ?? "");
   const [saving, setSaving] = useState(false);
 
-  const dirty =
-    title !== exam.title ||
-    description !== (exam.description ?? "") ||
-    purpose !== (exam.purpose ?? "");
+  const dirty = title !== exam.title || description !== (exam.description ?? "") || purpose !== (exam.purpose ?? "");
 
   const save = async () => {
     if (!title.trim()) {
@@ -60,14 +63,132 @@ export function ExamSettingsWorkspace({
         purpose: purpose.trim(),
       });
       onChange(updated);
-      toast.success("Saved");
+      toast.success("Exam overview saved");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't save these settings");
+      toast.error(err instanceof Error ? err.message : "Couldn't save the overview");
     } finally {
       setSaving(false);
     }
   };
 
+  const questionBankRow = (
+    <WorkspaceRow
+      step={1}
+      title="Question bank"
+      description="Write and organise this exam's questions in Studio. Every plan draws from this bank."
+    >
+      <div>
+        <Link
+          href={questionBankHref(exam.id)}
+          className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-xs font-extrabold text-white shadow-sm transition-all hover:bg-blue-700 active:scale-[0.98]"
+        >
+          <Pencil size={14} /> Edit question bank
+        </Link>
+      </div>
+    </WorkspaceRow>
+  );
+
+  // A linked exam is named and described by its course or event (the server refuses edits to
+  // these fields), so it shows what it inherited and where to change it — no form.
+  if (exam.tieType) {
+    const noun = exam.tieType === "COURSE" ? "course" : "event";
+    const parentHref = exam.tiedContentId ? `/studio/content/${noun}/${exam.tiedContentId}` : null;
+    return (
+      <WorkspaceRows>
+        {questionBankRow}
+        <WorkspaceRow
+          step={2}
+          title="Name & description"
+          description={`Set automatically from the ${noun} this exam belongs to. Rename the ${noun} and its exam follows.`}
+          aside={
+            parentHref && (
+              <Link href={parentHref} className="text-xs font-bold text-[#205ca8] hover:underline dark:text-blue-400">
+                Open the {noun} →
+              </Link>
+            )
+          }
+        >
+          <dl className="flex flex-col gap-4">
+            <div>
+              <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Title</dt>
+              <dd className="mt-1 text-sm font-bold text-ink">{exam.title}</dd>
+            </div>
+            {exam.purpose && (
+              <div>
+                <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Purpose</dt>
+                <dd className="mt-1 text-sm font-medium text-slate-600">{exam.purpose}</dd>
+              </div>
+            )}
+            {exam.description && (
+              <div>
+                <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Description</dt>
+                <dd className="mt-1 whitespace-pre-wrap text-sm font-medium text-slate-600">{exam.description}</dd>
+              </div>
+            )}
+          </dl>
+        </WorkspaceRow>
+      </WorkspaceRows>
+    );
+  }
+
+  return (
+    <WorkspaceRows>
+      {questionBankRow}
+
+      <WorkspaceRow step={2} title="Exam title" description="How the examination is named wherever it appears.">
+        <input id="exam-title" value={title} disabled={readOnly} onChange={(e) => setTitle(e.target.value)} className={workspaceField.input} />
+      </WorkspaceRow>
+
+      <WorkspaceRow step={3} title="About this exam" description="Shown to candidates before they start.">
+        <textarea
+          id="exam-description"
+          value={description}
+          disabled={readOnly}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="What the exam covers, what to bring, how it is marked…"
+          className={workspaceField.textarea}
+        />
+      </WorkspaceRow>
+
+      <WorkspaceRow
+        step={4}
+        title="Purpose"
+        description="A label for your own reference. Nothing in the platform behaves differently because of what you write here."
+      >
+        <input
+          id="exam-purpose"
+          value={purpose}
+          disabled={readOnly}
+          placeholder="e.g. Entrance test, Final assessment"
+          onChange={(e) => setPurpose(e.target.value)}
+          className={workspaceField.input}
+        />
+      </WorkspaceRow>
+
+      {!readOnly && <WorkspaceSaveBar onSave={save} saving={saving} dirty={dirty} label="Save overview" savedLabel="Overview saved" />}
+    </WorkspaceRows>
+  );
+}
+
+/**
+ * Exam settings — where the examination sits and how it is offered, not how it is sat.
+ *
+ * <p>Duration, attempts, pass mark, proctoring and delivery belong to a <em>plan</em>, because the
+ * same exam can be practised loosely and sat under supervision; the last row says so and links
+ * there. What lives here is true of the examination however it is run.
+ */
+export function ExamSettingsWorkspace({
+  exam,
+  onChange,
+  readOnly,
+  onOpenPlans,
+}: {
+  exam: ExamResponse;
+  onChange: (exam: ExamResponse) => void;
+  readOnly?: boolean;
+  onOpenPlans?: () => void;
+}) {
+  const noun = exam.tieType === "COURSE" ? "course" : "event";
   const placement =
     exam.tieType && exam.tiedContentId
       ? {
@@ -76,135 +197,87 @@ export function ExamSettingsWorkspace({
           icon: exam.tieType === "COURSE" ? BookOpen : Calendar,
         }
       : null;
+  // Numbering follows the rows actually shown (the badge row is standalone-only).
+  const steps = ["placement", "fee", "category", "schedule", ...(exam.tieType ? [] : ["badge"]), "conduct"];
+  const n = (key: string) => steps.indexOf(key) + 1;
 
   return (
-    <div className="flex flex-col gap-4">
-      <section className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
-        <h3 className="text-sm font-black tracking-tight text-ink">About this exam</h3>
-        <p className="mt-1 text-xs leading-relaxed text-slate-500">
-          How the examination is described wherever it appears.
-        </p>
+    <WorkspaceRows>
+      <WorkspaceRow
+        step={n("placement")}
+        title="Placement"
+        description={
+          placement
+            ? `This exam is the assessment system of its ${noun}: its completion and assessment plans live inside it, a certification plan requires completing it, and it is reviewed and published with the ${noun}.`
+            : "Standalone — learners find this exam in Explore > Exams and register for it. Tie it to one of your courses or events to make it that content's assessment system instead. A course or event can have only one exam."
+        }
+      >
+        {placement ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href={placement.href} className={workspaceSecondaryButton}>
+              <placement.icon size={14} className="text-slate-400" />
+              {placement.label}
+              <ExternalLink size={12} className="text-slate-300" />
+            </Link>
+            {!readOnly && <UntieButton exam={exam} onChange={onChange} />}
+          </div>
+        ) : readOnly ? (
+          <p className="text-sm font-bold text-ink">Standalone</p>
+        ) : (
+          <TiePicker exam={exam} onChange={onChange} />
+        )}
+      </WorkspaceRow>
 
-        <div className="mt-4 flex flex-col gap-4">
-          <Field label="Title" htmlFor="exam-title">
-            <input
-              id="exam-title"
-              value={title}
-              disabled={readOnly}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/25"
-            />
-          </Field>
+      <WorkspaceRow
+        step={n("fee")}
+        title="Registration fee"
+        description={
+          exam.tieType
+            ? `Set by the platform's exam standard for a tied exam. Assessments inside the ${noun} are included with enrolment.`
+            : "What learners pay to register in Explore > Exams. Leave empty for free."
+        }
+      >
+        <PricingSection exam={exam} onChange={onChange} readOnly={readOnly} />
+      </WorkspaceRow>
 
-          <Field
-            label="Description"
-            htmlFor="exam-description"
-            hint="Shown to candidates before they start."
-          >
-            <textarea
-              id="exam-description"
-              rows={3}
-              value={description}
-              disabled={readOnly}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full resize-y rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/25"
-            />
-          </Field>
+      <WorkspaceRow step={n("category")} title="Category" description="Where learners find this exam in Explore > Exams.">
+        <CategorySection exam={exam} onChange={onChange} readOnly={readOnly} />
+      </WorkspaceRow>
 
-          <Field
-            label="Purpose"
-            htmlFor="exam-purpose"
-            hint="A label for your own reference — describe it however fits. Nothing in the platform behaves differently because of what you write here."
-          >
-            <input
-              id="exam-purpose"
-              value={purpose}
-              disabled={readOnly}
-              placeholder="e.g. Entrance test, Final assessment"
-              onChange={(e) => setPurpose(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-slate-300 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/25"
-            />
-          </Field>
-        </div>
+      <WorkspaceRow
+        step={n("schedule")}
+        title="Schedule"
+        description={
+          exam.tieType
+            ? `Assessments inside the ${noun} follow its schedule. This applies only to the exam's certification: when learners can register for it in Explore > Exams, and when it can be sat.`
+            : "When learners can register for this exam, and when it can be sat."
+        }
+        wide
+      >
+        <SchedulePanel contentType="EXAM" contentId={exam.id} readOnly={readOnly} bare />
+      </WorkspaceRow>
 
-        {!readOnly && (
-          <div className="mt-5 flex justify-end">
-            <button
-              type="button"
-              onClick={save}
-              disabled={!dirty || saving}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink transition-colors hover:bg-ink-hover disabled:opacity-40"
-            >
-              {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
-              {dirty ? "Save changes" : "Saved"}
+      {/* A tied exam completes its course or event, and that content's badge is the one earned. */}
+      {!exam.tieType && (
+        <WorkspaceRow step={n("badge")} title="Completion badge" description="The recognition candidates receive for passing this exam." wide>
+          <BadgeTierPanel contentType="EXAM" contentId={exam.id} readOnly={readOnly} bare />
+        </WorkspaceRow>
+      )}
+
+      <WorkspaceRow
+        step={n("conduct")}
+        title="Conducting this exam"
+        description="Duration, attempts, pass mark and security are set on each exam plan, within the platform's standard for its type."
+      >
+        {onOpenPlans && (
+          <div>
+            <button type="button" onClick={onOpenPlans} className={workspaceSecondaryButton}>
+              <ClipboardList size={14} /> Open exam plans
             </button>
           </div>
         )}
-      </section>
-
-      <section className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
-        <h3 className="text-sm font-black tracking-tight text-ink">Tied content</h3>
-        {placement ? (
-          <>
-            <p className="mt-1 text-xs leading-relaxed text-slate-500">
-              This exam is the assessment system of its {exam.tieType === "COURSE" ? "course" : "event"}. Its
-              completion and assessment plans live inside it, a certification plan requires completing it,
-              and the platform&apos;s locked exam standards apply to every plan. It is reviewed and published
-              with the {exam.tieType === "COURSE" ? "course" : "event"}.
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Link
-                href={placement.href}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-surface px-3.5 py-2 text-xs font-bold text-ink transition-colors hover:bg-slate-50"
-              >
-                <placement.icon size={14} className="text-slate-400" />
-                {placement.label}
-                <ExternalLink size={12} className="text-slate-300" />
-              </Link>
-              {!readOnly && <UntieButton exam={exam} onChange={onChange} />}
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="mt-1 text-xs leading-relaxed text-slate-500">
-              Standalone — learners find this exam in Explore &gt; Exams and register for it. Tie it to one
-              of your courses or events to make it that content&apos;s assessment system instead. A course
-              or event can have only one exam.
-            </p>
-            {!readOnly && <TiePicker exam={exam} onChange={onChange} />}
-          </>
-        )}
-      </section>
-
-      <PricingSection exam={exam} onChange={onChange} readOnly={readOnly} />
-      <CategorySection exam={exam} onChange={onChange} readOnly={readOnly} />
-
-      {!exam.tieType && <SchedulePanel contentType="EXAM" contentId={exam.id} readOnly={readOnly} />}
-      {/* A tied exam completes its course or event, and that content's badge is the one earned. */}
-      {!exam.tieType && <BadgeTierPanel contentType="EXAM" contentId={exam.id} readOnly={readOnly} />}
-      {exam.tieType && (
-        <section className="rounded-2xl border border-white/50 bg-surface/50 p-5 shadow-sm backdrop-blur-md">
-          <h3 className="text-sm font-black tracking-tight text-ink">Schedule</h3>
-          <p className="mt-1 text-xs leading-relaxed text-slate-500">
-            Assessments inside the {exam.tieType === "COURSE" ? "course" : "event"} follow its schedule. The
-            schedule below applies only to this exam&apos;s certification: when learners can register for it
-            in Explore &gt; Exams, and when it can be sat.
-          </p>
-          <div className="mt-3">
-            <SchedulePanel contentType="EXAM" contentId={exam.id} readOnly={readOnly} />
-          </div>
-        </section>
-      )}
-
-      <section className="rounded-2xl border border-white/50 bg-surface/50 p-5 shadow-sm backdrop-blur-md">
-        <h3 className="text-sm font-black tracking-tight text-ink">Conducting this exam</h3>
-        <p className="mt-1 text-xs leading-relaxed text-slate-500">
-          Duration, attempts, pass mark and security are set on each{" "}
-          <strong className="font-bold text-ink">exam plan</strong>, within the platform&apos;s
-          standard for its type. Open the Plans tab to configure them.
-        </p>
-      </section>
-    </div>
+      </WorkspaceRow>
+    </WorkspaceRows>
   );
 }
 
@@ -240,24 +313,26 @@ function TiePicker({ exam, onChange }: { exam: ExamResponse; onChange: (exam: Ex
   };
 
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-2">
+    <div className="flex flex-col gap-2.5 sm:flex-row">
       <select
         value={type}
+        aria-label="Content type"
         onChange={(e) => {
           setOptions(null);
           setTarget("");
           setType(e.target.value as ExamTieType);
         }}
-        className="rounded-xl border border-slate-200 bg-surface px-3 py-2 text-xs font-semibold text-ink"
+        className={`${workspaceField.select} sm:w-36`}
       >
         <option value="COURSE">Course</option>
         <option value="EVENT">Event</option>
       </select>
       <select
         value={target}
+        aria-label={`Choose a ${type.toLowerCase()}`}
         onChange={(e) => setTarget(e.target.value)}
         disabled={!options || options.length === 0}
-        className="min-w-[220px] flex-1 rounded-xl border border-slate-200 bg-surface px-3 py-2 text-xs font-semibold text-ink disabled:bg-slate-50"
+        className={`${workspaceField.select} min-w-0 flex-1`}
       >
         <option value="">
           {options === null ? "Loading…" : options.length === 0 ? `You have no ${type.toLowerCase()}s` : `Choose a ${type.toLowerCase()}`}
@@ -268,12 +343,7 @@ function TiePicker({ exam, onChange }: { exam: ExamResponse; onChange: (exam: Ex
           </option>
         ))}
       </select>
-      <button
-        type="button"
-        onClick={tie}
-        disabled={!target || busy}
-        className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink hover:bg-ink-hover disabled:opacity-40"
-      >
+      <button type="button" onClick={tie} disabled={!target || busy} className={fillButton}>
         {busy ? <Loader2 size={13} className="animate-spin" /> : <Link2 size={13} />} Tie
       </button>
     </div>
@@ -303,7 +373,7 @@ function UntieButton({ exam, onChange }: { exam: ExamResponse; onChange: (exam: 
           setBusy(false);
         }
       }}
-      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-surface px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
+      className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200/90 bg-surface px-5 py-2.5 text-xs font-bold text-slate-600 shadow-2xs hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
     >
       {busy ? <Loader2 size={13} className="animate-spin" /> : <Unlink size={13} />} Untie
     </button>
@@ -312,7 +382,7 @@ function UntieButton({ exam, onChange }: { exam: ExamResponse; onChange: (exam: 
 
 /**
  * Where the exam is shelved in Explore > Exams. The categories are the super-user-managed ones
- * scoped to exams (type EXAMS, or ALL); none picked is "Other".
+ * scoped to exams (type EXAMS, or ALL); none picked is "Other". Saves on change.
  */
 function CategorySection({
   exam,
@@ -324,10 +394,7 @@ function CategorySection({
   readOnly?: boolean;
 }) {
   const publicCategories = usePublicCategories();
-  const categories = useMemo(
-    () => publicCategories.filter((c) => c.type === "EXAMS" || c.type === "ALL"),
-    [publicCategories]
-  );
+  const categories = useMemo(() => publicCategories.filter((c) => c.type === "EXAMS" || c.type === "ALL"), [publicCategories]);
   const [saving, setSaving] = useState(false);
 
   const save = async (categoryId: string) => {
@@ -343,25 +410,20 @@ function CategorySection({
   };
 
   return (
-    <section className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
-      <h3 className="text-sm font-black tracking-tight text-ink">Category</h3>
-      <p className="mt-1 text-xs leading-relaxed text-slate-500">
-        Where learners find this exam in Explore &gt; Exams.
-      </p>
-      <select
-        value={exam.categoryId ?? ""}
-        disabled={readOnly || saving}
-        onChange={(e) => save(e.target.value)}
-        className="mt-3 w-64 rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-indigo-300 disabled:bg-slate-50 dark:focus:border-indigo-500/40"
-      >
-        {categories.map((cat) => (
-          <option key={cat.id} value={cat.id}>
-            {cat.name}
-          </option>
-        ))}
-        <option value="">Other</option>
-      </select>
-    </section>
+    <select
+      value={exam.categoryId ?? ""}
+      disabled={readOnly || saving}
+      onChange={(e) => save(e.target.value)}
+      aria-label="Category"
+      className={workspaceField.select}
+    >
+      {categories.map((cat) => (
+        <option key={cat.id} value={cat.id}>
+          {cat.name}
+        </option>
+      ))}
+      <option value="">Other</option>
+    </select>
   );
 }
 
@@ -396,71 +458,38 @@ function PricingSection({
     }
   };
 
-  return (
-    <section className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
-      <h3 className="text-sm font-black tracking-tight text-ink">Registration fee</h3>
-      {exam.tieType ? (
-        <p className="mt-1 text-xs leading-relaxed text-slate-500">
-          The certification fee for a tied exam is set by the platform&apos;s exam standard:{" "}
-          <b className="text-ink">
-            {exam.registrationFeeMinor > 0 ? formatMoney(exam.registrationFeeMinor, currency) : "free"}
-          </b>
-          . Assessments inside the {exam.tieType === "COURSE" ? "course" : "event"} are included with enrolment.
-        </p>
-      ) : (
-        <>
-          <p className="mt-1 text-xs leading-relaxed text-slate-500">
-            What learners pay to register for this exam in Explore &gt; Exams. Leave empty for free.
-            {exam.registrationFeeMinor !== (exam.priceAmountMinor ?? 0) &&
-              ` The platform standard currently makes it ${formatMoney(exam.registrationFeeMinor, currency)}.`}
-          </p>
-          <div className="mt-3 flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-400">{currency}</span>
-            <input
-              type="number"
-              min={0}
-              step="0.01"
-              value={price}
-              disabled={readOnly}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="Free"
-              className="w-32 rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-indigo-300 disabled:bg-slate-50 dark:focus:border-indigo-500/40"
-            />
-            {!readOnly && (
-              <button
-                type="button"
-                onClick={save}
-                disabled={saving || price === current}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink hover:bg-ink-hover disabled:opacity-40"
-              >
-                {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />} Save
-              </button>
-            )}
-          </div>
-        </>
-      )}
-    </section>
-  );
-}
+  if (exam.tieType) {
+    return <p className="text-sm font-bold text-ink">{exam.registrationFeeMinor > 0 ? formatMoney(exam.registrationFeeMinor, currency) : "Free"}</p>;
+  }
 
-function Field({
-  label,
-  htmlFor,
-  hint,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
   return (
-    <div>
-      <label htmlFor={htmlFor} className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">
-        {label}
-      </label>
-      {children}
-      {hint && <p className="mt-1.5 text-[11px] leading-relaxed text-slate-400">{hint}</p>}
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2.5 sm:flex-row">
+        <div className="relative flex flex-1 items-center">
+          <span className="pointer-events-none absolute left-4 text-sm font-bold text-slate-400">{currency === "INR" ? "₹" : currency}</span>
+          <input
+            type="number"
+            min={0}
+            step="0.01"
+            value={price}
+            disabled={readOnly}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="Free"
+            aria-label="Registration fee"
+            className={workspaceField.inputWithIcon}
+          />
+        </div>
+        {!readOnly && (
+          <button type="button" onClick={save} disabled={saving || price === current} className={fillButton}>
+            {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />} Save fee
+          </button>
+        )}
+      </div>
+      {exam.registrationFeeMinor !== (exam.priceAmountMinor ?? 0) && (
+        <p className="px-1 text-[11px] font-medium text-slate-500">
+          The platform standard currently makes it {formatMoney(exam.registrationFeeMinor, currency)}.
+        </p>
+      )}
     </div>
   );
 }

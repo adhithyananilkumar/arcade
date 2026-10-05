@@ -12,14 +12,10 @@ import {
   Archive,
   Trash2,
   Send,
-  FileText,
-  Radio,
-  Tv,
-  BookOpen,
-  CheckCircle2,
+  ExternalLink,
 } from "lucide-react";
 import type { ContentTypeSegment } from "../lib/contentTypeRouting";
-import { CONTENT_TYPE_LABEL, editorHref, previewHref } from "../lib/contentTypeRouting";
+import { editorHref, previewHref } from "../lib/contentTypeRouting";
 import type { ReviewResponse } from "@/domains/publishing";
 import {
   submitForReview,
@@ -30,24 +26,6 @@ import {
   SUPPORTS_TITLE_CONFIRM_DELETE,
 } from "../lib/contentActions";
 import { ConfirmActionModal } from "./ConfirmActionModal";
-
-function formatDateLine(value?: string | null) {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (isNaN(date.getTime())) return "—";
-  const dateStr = date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-  const timeStr = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
-  return `${dateStr}, ${timeStr}`;
-}
-
-function formatDateParts(value?: string | null) {
-  if (!value) return { dateStr: "—", timeStr: "" };
-  const date = new Date(value);
-  if (isNaN(date.getTime())) return { dateStr: "—", timeStr: "" };
-  const dateStr = date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-  const timeStr = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
-  return { dateStr, timeStr };
-}
 
 type ActionBtnVariant = "primary" | "secondary";
 
@@ -100,9 +78,10 @@ export function ContentOverviewHeader({
   review,
   channelSuspended,
   onJumpToPublishing,
-  showMetadataRail = true,
-  showStatusSubtext = false,
   tiedExam = false,
+  onPreview,
+  parent,
+  leading,
 }: {
   segment: ContentTypeSegment;
   contentId: string;
@@ -115,10 +94,14 @@ export function ContentOverviewHeader({
   review: ReviewResponse | null;
   channelSuspended?: boolean;
   onJumpToPublishing: () => void;
-  showMetadataRail?: boolean;
-  showStatusSubtext?: boolean;
   /** An exam tied to a course or event: reviewed with its parent, so it offers no submit of its own. */
   tiedExam?: boolean;
+  /** For types whose preview is a tab rather than a route (an exam previews per plan). */
+  onPreview?: () => void;
+  /** A linked exam's course or event, offered in the overflow menu. */
+  parent?: { href: string; label: string } | null;
+  /** Left end of the action line, e.g. "Back to Course Dashboard". */
+  leading?: React.ReactNode;
 }) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -128,9 +111,11 @@ export function ContentOverviewHeader({
   const statusKey = status?.toUpperCase();
   const reviewStatus = review?.status ?? null;
   const preview = previewHref(segment, contentId);
-  const duplicate = DUPLICATE_ACTION[segment];
+  // A linked exam belongs to its course or event: copying or deleting it on its own is not a
+  // thing a creator should do from here, so the menu offers the way back to the parent instead.
+  const duplicate = tiedExam ? null : DUPLICATE_ACTION[segment];
   const canArchive = segment === "event" && statusKey !== "ARCHIVED";
-  const canDelete = true;
+  const canDelete = !tiedExam;
 
   async function handleDuplicate() {
     if (!duplicate) return;
@@ -192,6 +177,15 @@ export function ContentOverviewHeader({
 
   const primaryActions: { key: string; label: string; icon: typeof Pencil; onClick?: () => void; href?: string; variant: ActionBtnVariant }[] = [];
   if (preview) primaryActions.push({ key: "preview", label: "Preview", icon: Eye, href: preview, variant: "secondary" });
+  else if (onPreview) primaryActions.push({ key: "preview", label: "Preview", icon: Eye, onClick: onPreview, variant: "secondary" });
+  // An exam's "content" is its question bank; the editor for it is always the way in.
+  const edit = {
+    key: "edit",
+    label: segment === "exam" ? "Edit Questions" : "Edit Content",
+    icon: Pencil,
+    href: editorHref(segment, contentId),
+    variant: "primary" as const,
+  };
 
   if (reviewStatus === "OPEN") {
     primaryActions.push({ key: "view-review", label: "View Review", icon: Send, onClick: onJumpToPublishing, variant: "primary" });
@@ -200,118 +194,119 @@ export function ContentOverviewHeader({
   } else if (statusKey === "ARCHIVED") {
     // Preview only
   } else if (statusKey === "PUBLISHED") {
-    if (segment !== "exam") {
-      primaryActions.push({ key: "edit", label: "Edit Content", icon: Pencil, href: editorHref(segment, contentId), variant: "primary" });
-    } else if (supportsReviewSubmission(segment, tiedExam)) {
+    primaryActions.push(edit);
+    if (segment === "exam" && supportsReviewSubmission(segment, tiedExam)) {
       // Learners keep the published version; edits since then reach them only through review.
       primaryActions.push({ key: "submit", label: "Submit changes for Review", icon: Send, onClick: handleSubmit, variant: "secondary" });
     }
   } else {
-    if (segment !== "exam") {
-      primaryActions.push({ key: "edit", label: "Edit Content", icon: Pencil, href: editorHref(segment, contentId), variant: "primary" });
-    }
+    primaryActions.push(edit);
     if (supportsReviewSubmission(segment, tiedExam)) {
       primaryActions.push({ key: "submit", label: "Submit for Review", icon: Send, onClick: handleSubmit, variant: "secondary" });
     }
   }
 
-  const createdParts = formatDateParts(createdAt);
-  const updatedParts = formatDateParts(updatedAt);
+  const showMenu = (duplicate || canArchive || canDelete || parent) && !channelSuspended;
 
   return (
-    <div className="flex flex-col items-center justify-center pt-10 sm:pt-12 pb-1 w-full">
-      {/* Main Centered Content Title & Metadata */}
-      <div className="flex flex-col items-center justify-center text-center gap-1.5 max-w-4xl mx-auto">
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Satisfy&family=Alex+Brush&display=swap');`}</style>
+    <div className="flex w-full flex-col gap-4 pb-1">
+      {/* Back link, when this dashboard was opened from a parent course or event. */}
+      {leading && <div className="flex">{leading}</div>}
 
+      <div className="mx-auto flex max-w-4xl flex-col items-center justify-center text-center">
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Satisfy&family=Alex+Brush&display=swap');`}</style>
         <h1
-          className="text-4xl font-bold tracking-wide bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 bg-clip-text text-transparent sm:text-5xl lg:text-6xl py-0.5 leading-tight text-center"
-          style={{
-            fontFamily: "'Dancing Script', 'Satisfy', 'Great Vibes', 'Alex Brush', cursive",
-          }}
+          className="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 bg-clip-text py-0.5 text-center text-4xl font-bold leading-tight tracking-wide text-transparent sm:text-5xl lg:text-6xl"
+          style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Great Vibes', 'Alex Brush', cursive" }}
         >
           {title}
         </h1>
 
-        {/* SINGLE ROW BELOW HEADING: Preview, Edit Content, 3-Dots Menu. */}
-        {showMetadataRail && (
-          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1.5">
-            {/* Action Buttons: Preview & Edit Content */}
-            {channelSuspended ? (
-              <span
-                className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300"
-                title="This channel is suspended — editing is disabled until it's reactivated"
-              >
-                Editing Disabled
-              </span>
-            ) : (
-              primaryActions.map((action) => (
-                <ActionButton
-                  key={action.key}
-                  label={busy && action.key === "submit" ? "Submitting…" : action.label}
-                  icon={action.icon}
-                  href={action.href}
-                  onClick={action.onClick}
-                  variant={action.variant}
-                />
-              ))
-            )}
+        {/* Preview · Edit · Submit · more — under the name, on every tab. */}
+        <div className="flex flex-wrap items-center justify-center gap-2.5 pt-3">
+          {channelSuspended ? (
+            <span
+              className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300"
+              title="This channel is suspended — editing is disabled until it is reactivated"
+            >
+              Editing Disabled
+            </span>
+          ) : (
+            primaryActions.map((action) => (
+              <ActionButton
+                key={action.key}
+                label={busy && action.key === "submit" ? "Submitting…" : action.label}
+                icon={action.icon}
+                href={action.href}
+                onClick={action.onClick}
+                variant={action.variant}
+              />
+            ))
+          )}
 
-            {/* 3-Dots Overflow Menu Button */}
-            {(duplicate || canArchive || canDelete) && !channelSuspended && (
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen((v) => !v)}
-                  className="grid size-9 place-items-center rounded-full border border-slate-200 bg-surface text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 cursor-pointer shadow-2xs"
-                  aria-label="More actions"
-                >
-                  <MoreVertical size={16} />
-                </button>
-                {menuOpen && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                    <div className="absolute right-0 z-20 mt-2 w-48 rounded-2xl border border-slate-200 bg-surface p-1.5 shadow-xl">
-                      {duplicate && (
-                        <button
-                          onClick={() => {
-                            setMenuOpen(false);
-                            handleDuplicate();
-                          }}
-                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50 cursor-pointer text-left"
-                        >
-                          <Copy size={14} /> Duplicate
-                        </button>
-                      )}
-                      {canArchive && (
-                        <button
-                          onClick={() => {
-                            setMenuOpen(false);
-                            setConfirmAction("archive");
-                          }}
-                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50 cursor-pointer text-left"
-                        >
-                          <Archive size={14} /> Archive
-                        </button>
-                      )}
-                      {canDelete && (
-                        <button
-                          onClick={() => {
-                            setMenuOpen(false);
-                            setConfirmAction("delete");
-                          }}
-                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer text-left dark:text-rose-400 dark:hover:bg-rose-500/10"
-                        >
-                          <Trash2 size={14} /> Delete
-                        </button>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+          {showMenu && (
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setMenuOpen((v) => !v)}
+                className="grid size-9 place-items-center rounded-full border border-slate-200 bg-surface text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 cursor-pointer shadow-2xs"
+                aria-label="More actions"
+                aria-expanded={menuOpen}
+              >
+                <MoreVertical size={16} />
+              </button>
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                  <div className="absolute right-0 z-20 mt-2 w-52 rounded-2xl border border-slate-200 bg-surface p-1.5 shadow-xl">
+                    {parent && (
+                      <Link
+                        href={parent.href}
+                        onClick={() => setMenuOpen(false)}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-800 hover:bg-slate-50"
+                      >
+                        <ExternalLink size={14} /> <span className="truncate">{parent.label}</span>
+                      </Link>
+                    )}
+                    {duplicate && (
+                      <button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          handleDuplicate();
+                        }}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50 cursor-pointer text-left"
+                      >
+                        <Copy size={14} /> Duplicate
+                      </button>
+                    )}
+                    {canArchive && (
+                      <button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setConfirmAction("archive");
+                        }}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50 cursor-pointer text-left"
+                      >
+                        <Archive size={14} /> Archive
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setConfirmAction("delete");
+                        }}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer text-left dark:text-rose-400 dark:hover:bg-rose-500/10"
+                      >
+                        <Trash2 size={14} /> Delete
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
       {confirmAction === "delete" && (
         <ConfirmActionModal
