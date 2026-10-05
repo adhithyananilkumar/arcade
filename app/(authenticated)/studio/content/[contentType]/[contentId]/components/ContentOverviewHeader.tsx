@@ -224,6 +224,10 @@ export function ContentOverviewHeader({
       <div className="flex flex-col items-center justify-center text-center gap-1.5 max-w-4xl mx-auto">
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Satisfy&family=Alex+Brush&display=swap');`}</style>
 
+        <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          {CONTENT_TYPE_LABEL[segment] ?? segment}
+        </span>
+
         <h1
           className="text-4xl font-bold tracking-wide bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 bg-clip-text text-transparent sm:text-5xl lg:text-6xl py-0.5 leading-tight text-center"
           style={{

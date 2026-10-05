@@ -1097,7 +1097,11 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
         breadcrumb={
           activeLessonId ? (
             <div className="flex items-center gap-1.5 text-gray-500">
-              {activeLessonId && modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title && (
+              <span className="rounded-md bg-ink/5 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ink/50">
+                {adapter.terminology.root}
+              </span>
+              <span className="text-gray-300">·</span>
+              {modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title && (
                 <>
                   <span className="block max-w-[15vw] truncate font-medium">
                     {modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title}
@@ -1108,7 +1112,13 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
               <span className="block max-w-[20vw] truncate text-ink">{activeLessonTitle}</span>
             </div>
           ) : (
-            <span className="block max-w-[40vw] truncate text-ink">{title || adapter.terminology.root}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="rounded-md bg-ink/5 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ink/50">
+                {adapter.terminology.root}
+              </span>
+              <span className="text-gray-300">·</span>
+              <span className="block max-w-[40vw] truncate text-ink">{title || adapter.terminology.root}</span>
+            </div>
           )
         }
         collaborators={effectiveCollabState.collaborators}
