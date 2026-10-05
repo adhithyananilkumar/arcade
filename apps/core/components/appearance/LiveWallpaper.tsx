@@ -205,7 +205,7 @@ export function LiveWallpaperStatus() {
           ) : (
             <>
               <span className="relative grid size-6 place-items-center">
-                <Loader2 size={15} className="animate-spin text-[#4c6fff]" />
+                <Loader2 size={15} className="animate-spin text-[#4c6fff] dark:text-[#8db1ff]" />
               </span>
               <span>
                 {downloadingNow ? 'Preparing live wallpaper' : 'Loading live wallpaper'}

@@ -87,7 +87,7 @@ export function BadgeWallet({ data, tiers, search, onOpen }: BadgeWalletProps) {
                 'cursor-pointer select-none rounded-full border px-4 py-1.5 text-xs font-bold transition-all',
                 status === s
                   ? 'border-transparent bg-[#2962D6] text-white shadow-xs dark:bg-[#3B82F6]'
-                  : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+                  : 'border-slate-200/80 bg-surface/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900'
               )}
             >
               {s}
@@ -95,7 +95,7 @@ export function BadgeWallet({ data, tiers, search, onOpen }: BadgeWalletProps) {
           ))}
           <LevelInfo tiers={tiers} />
         </div>
-        <div className="flex items-center gap-1 rounded-full border border-slate-200/80 bg-surface/70 p-1 dark:border-slate-800">
+        <div className="flex items-center gap-1 rounded-full border border-slate-200/80 bg-surface/70 p-1">
           {FAMILY_FILTERS.map((f) => (
             <button
               key={f.key}
@@ -104,8 +104,8 @@ export function BadgeWallet({ data, tiers, search, onOpen }: BadgeWalletProps) {
               className={cn(
                 'rounded-full px-3 py-1 text-[11px] font-bold transition-colors cursor-pointer',
                 family === f.key
-                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-slate-900 text-on-ink'
+                  : 'text-slate-500 hover:text-slate-900'
               )}
             >
               {f.label}
@@ -139,7 +139,7 @@ function LevelInfo({ tiers }: { tiers: BadgeTierInfo[] }) {
       <PopoverTrigger
         aria-label="About badge levels"
         title="About badge levels"
-        className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white/80 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/80 dark:hover:bg-slate-800 dark:hover:text-white cursor-pointer"
+        className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-surface/80 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 cursor-pointer"
       >
         <Info size={15} />
       </PopoverTrigger>
@@ -231,7 +231,7 @@ function ProgressCard({ badge, index }: { badge: InProgressBadge; index: number 
         <div className="relative w-28 sm:w-32">
           <CredentialBadge family={badge.badgeClass.family.key} level={level} title={badge.name} issuerLogoUrl={badge.issuerLogoUrl} locked />
           <span className="absolute inset-0 flex items-center justify-center">
-            <Lock className="h-8 w-8 text-slate-700 drop-shadow-md dark:text-slate-300" />
+            <Lock className="h-8 w-8 text-slate-700 drop-shadow-md" />
           </span>
         </div>
         <span className="mt-4 line-clamp-1 text-center text-base font-bold tracking-tight text-ink sm:text-lg">
@@ -240,14 +240,14 @@ function ProgressCard({ badge, index }: { badge: InProgressBadge; index: number 
         <span className="mt-1 text-center text-[13px] leading-5 text-slate-500">
           {badge.badgeClass.tier.label} · {badge.progressPercent}% complete
         </span>
-        <div className="mt-2 h-1.5 w-full max-w-[180px] overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+        <div className="mt-2 h-1.5 w-full max-w-[180px] overflow-hidden rounded-full bg-slate-100">
           <div
             className="h-full rounded-full bg-gradient-to-r from-[#2962D6] to-[#27C5D8]"
             style={{ width: `${Math.max(2, badge.progressPercent)}%` }}
           />
         </div>
         {badge.contentPath && (
-          <Link href={badge.contentPath} className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition dark:bg-white dark:text-slate-900">
+          <Link href={badge.contentPath} className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-1.5 text-xs font-bold text-on-ink hover:bg-slate-800 transition">
             Continue <ArrowRight size={12} />
           </Link>
         )}
@@ -262,15 +262,15 @@ function EmptyBadgeState({ filtered }: { filtered: boolean }) {
       <div className="relative mb-3 flex items-center justify-center select-none">
         <svg width="110" height="100" viewBox="0 0 110 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
           <ellipse cx="55" cy="50" rx="38" ry="32" className="fill-[#2962D6]/10 dark:fill-[#3B82F6]/15" />
-          <path d="M55 20L65 30H78V43L88 53L78 63V76H65L55 86L45 76H32V63L22 53L32 43V30H45L55 20Z" className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200" strokeWidth="2" strokeLinejoin="round" />
+          <path d="M55 20L65 30H78V43L88 53L78 63V76H65L55 86L45 76H32V63L22 53L32 43V30H45L55 20Z" className="fill-white stroke-slate-800" strokeWidth="2" strokeLinejoin="round" />
           <circle cx="55" cy="53" r="14" className="fill-[#2962D6]/20 dark:fill-[#3B82F6]/30 stroke-[#2962D6] dark:stroke-[#3B82F6]" strokeWidth="2" />
           <path d="M50 53L53.5 56.5L60 50" stroke="#2962D6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
-      <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+      <h3 className="text-base sm:text-lg font-bold text-slate-900">
         {filtered ? 'No matching badges' : 'No badges yet'}
       </h3>
-      <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
+      <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-sm mx-auto leading-relaxed">
         {filtered
           ? 'Try another filter or search term.'
           : 'Complete a course, attend an event or pass an exam that awards a badge to earn your first milestone.'}
@@ -278,7 +278,7 @@ function EmptyBadgeState({ filtered }: { filtered: boolean }) {
       {!filtered && (
         <Link
           href="/explore"
-          className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-slate-900 dark:bg-white px-5 py-2.5 text-xs sm:text-sm font-bold text-white dark:text-slate-900 hover:opacity-90 transition shadow-sm"
+          className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-5 py-2.5 text-xs sm:text-sm font-bold text-on-ink hover:opacity-90 transition shadow-sm"
         >
           <Award className="h-4 w-4" />
           Explore courses

@@ -474,7 +474,7 @@ export default function ExamEnginePage() {
 
   return (
     <div
-      className="relative flex min-h-screen flex-col font-sans selection:bg-ink/10"
+      className="relative flex min-h-screen flex-col font-sans selection:bg-ink/10 theme-page-bg theme-wallpaper-frost"
       style={{ background: 'var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 28%, #FFFFFF 70%))' }}
     >
       {/* Proctoring Warning Modal */}

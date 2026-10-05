@@ -67,7 +67,7 @@ export function CategoryEventsView({ category }: { category: string }) {
   const categoryWebinars = data?.content ?? [];
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--theme-n-50, #F9FAFB)", padding: "40px 20px" }}>
+    <div className="min-h-screen theme-page-bg theme-wallpaper-frost" style={{ background: "var(--theme-n-50, #F9FAFB)", padding: "40px 20px" }}>
       <div className="max-w-7xl mx-auto">
         <button 
           onClick={() => router.back()} 

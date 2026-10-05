@@ -17,7 +17,7 @@ import {
 const STATE_LABEL: Record<ScheduleState, { text: string; cls: string }> = {
   OPEN: { text: "Open now", cls: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300" },
   NOT_YET_OPEN: { text: "Not open yet", cls: "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300" },
-  CLOSED: { text: "Closed", cls: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400" },
+  CLOSED: { text: "Closed", cls: "bg-slate-100 text-slate-600" },
   NEVER: { text: "Never opens", cls: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300" },
 };
 
@@ -174,10 +174,10 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
             01
           </div>
           <div className="flex flex-col gap-0.5">
-            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+            <h3 className="text-xl font-black text-slate-900 tracking-tight">
               Schedule
             </h3>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-medium text-slate-500">
               Define when learners can enroll and access your course.
             </p>
           </div>
@@ -241,15 +241,15 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
                 type="button"
                 onClick={clear}
                 disabled={saving}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200/90 bg-surface px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer disabled:opacity-50"
               >
-                <Clock size={14} className="text-slate-500 dark:text-slate-400" /> Always open
+                <Clock size={14} className="text-slate-500" /> Always open
               </button>
               <button
                 type="button"
                 onClick={save}
                 disabled={!dirty || saving || hasProblems || !!orderProblem}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#0B132B] hover:bg-blue-600 dark:bg-white dark:text-slate-900 px-6 py-2.5 text-xs font-extrabold text-white transition-all shadow-md cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl bg-ink hover:bg-blue-600 px-6 py-2.5 text-xs font-extrabold text-on-ink transition-all shadow-md cursor-pointer disabled:opacity-50"
               >
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                 {hasProblems ? "Fix the dates above" : dirty ? "Save schedule" : "Saved"}
@@ -303,14 +303,14 @@ function WindowFields({
           <Icon size={18} />
         </div>
         <div className="flex flex-col">
-          <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">{title}</h4>
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{hint}</p>
+          <h4 className="text-sm font-extrabold text-slate-900">{title}</h4>
+          <p className="text-xs font-medium text-slate-500">{hint}</p>
         </div>
       </div>
 
       <div className="flex flex-col gap-3 mt-1">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Opens</label>
+          <label className="text-xs font-bold text-slate-700">Opens</label>
           <div className="relative">
             <input
               type="datetime-local"
@@ -321,10 +321,10 @@ function WindowFields({
               aria-invalid={!!opensProblem}
               onChange={(e) => onOpens(e.target.value, problemOf(e.target))}
               onBlur={(e) => onOpens(e.target.value, problemOf(e.target))}
-              className={`w-full rounded-2xl border bg-white dark:bg-slate-900 p-3 pr-10 text-xs font-medium text-slate-900 dark:text-white outline-none focus:ring-4 ${
+              className={`w-full rounded-2xl border bg-surface p-3 pr-10 text-xs font-medium text-slate-900 outline-none focus:ring-4 ${
                 opensProblem
                   ? "border-rose-300 focus:border-rose-400 dark:border-rose-500/40 focus:ring-rose-500/10"
-                  : "border-slate-200 dark:border-slate-800 focus:border-blue-500 focus:ring-blue-500/10"
+                  : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"
               }`}
             />
             <Calendar size={16} className="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none" />
@@ -333,7 +333,7 @@ function WindowFields({
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Closes</label>
+          <label className="text-xs font-bold text-slate-700">Closes</label>
           <div className="relative">
             <input
               type="datetime-local"
@@ -344,10 +344,10 @@ function WindowFields({
               aria-invalid={!!closesProblem}
               onChange={(e) => onCloses(e.target.value, problemOf(e.target))}
               onBlur={(e) => onCloses(e.target.value, problemOf(e.target))}
-              className={`w-full rounded-2xl border bg-white dark:bg-slate-900 p-3 pr-10 text-xs font-medium text-slate-900 dark:text-white outline-none focus:ring-4 ${
+              className={`w-full rounded-2xl border bg-surface p-3 pr-10 text-xs font-medium text-slate-900 outline-none focus:ring-4 ${
                 closesProblem
                   ? "border-rose-300 focus:border-rose-400 dark:border-rose-500/40 focus:ring-rose-500/10"
-                  : "border-slate-200 dark:border-slate-800 focus:border-blue-500 focus:ring-blue-500/10"
+                  : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"
               }`}
             />
             <Calendar size={16} className="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none" />

@@ -257,17 +257,17 @@ function ContentOverviewPageContent() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-1 flex-col overflow-hidden w-full text-slate-900 dark:text-slate-100 font-sans">
+    <div className="relative flex min-h-screen flex-1 flex-col overflow-hidden w-full text-slate-900 font-sans">
       {/* Decorative clean ambient light background */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 dark:hidden -z-10"
         style={{
-          background: `
+          background: `var(--theme-wash, 
             radial-gradient(ellipse 55% 40% at 8% 12%, rgba(41, 98, 214, 0.12) 0%, transparent 60%),
             radial-gradient(ellipse 50% 35% at 92% 20%, rgba(39, 197, 216, 0.10) 0%, transparent 60%),
             linear-gradient(to bottom, #FAFBFD 0%, #F6F8FD 35%, #FFFFFF 70%)
-          `,
+          )`,
         }}
       />
       <div
@@ -306,7 +306,7 @@ function ContentOverviewPageContent() {
 
         {segment === "event" && (
           <div className="flex justify-center -mt-2">
-            <div className="inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-white/95 dark:bg-slate-900/95 dark:border-slate-800 p-1.5 shadow-[0_4px_20px_rgba(20,20,43,0.04)] backdrop-blur-md">
+            <div className="inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-surface/95 p-1.5 shadow-[0_4px_20px_rgba(20,20,43,0.04)] backdrop-blur-md">
               {[
                 { id: "OVERVIEW", label: "Overview", icon: LayoutGrid },
                 { id: "pricing", label: "Pricing", icon: Tag },
@@ -327,7 +327,7 @@ function ContentOverviewPageContent() {
                     className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                       active
                         ? "bg-blue-600 text-white shadow-sm"
-                        : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white"
+                        : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
                     }`}
                   >
                     <Icon size={14} className={active ? "text-white" : "text-slate-400"} />

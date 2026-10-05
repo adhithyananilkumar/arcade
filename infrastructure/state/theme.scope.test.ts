@@ -41,15 +41,15 @@ describe('theme scope', () => {
   });
 
   it('signed out: public, onboarding and sign-in pages always keep the standard design', () => {
-    const pages = [...pagesIn('(public)'), ...pagesIn('(onboarding)'), '/', '/sign', '/forgot-password'];
+    const pages = [...pagesIn('(marketing)'), ...pagesIn('(public)'), ...pagesIn('(onboarding)'), '/sign', '/forgot-password'];
     expect(pages.filter((url) => themedOnFirstPaint(url, false))).toEqual([]);
   });
 
-  it('signed in: public pages open in the app shell and take the theme — except landing, sign-in and onboarding', () => {
-    const shelled = pagesIn('(public)').filter((url) => url !== '/');
+  it('signed in: public pages open in the app shell and take the theme — except the marketing site, sign-in and onboarding', () => {
+    const shelled = pagesIn('(public)');
     expect(shelled.length).toBeGreaterThan(10);
     expect(shelled.filter((url) => !themedOnFirstPaint(url, true))).toEqual([]);
-    for (const url of ['/', '/sign', '/forgot-password', '/reset-password', '/verify-email', '/oauth2/redirect', ...pagesIn('(onboarding)')]) {
+    for (const url of [...pagesIn('(marketing)'), '/sign', '/forgot-password', '/reset-password', '/verify-email', '/oauth2/redirect', ...pagesIn('(onboarding)')]) {
       expect(themedOnFirstPaint(url, true), url).toBe(false);
     }
   });

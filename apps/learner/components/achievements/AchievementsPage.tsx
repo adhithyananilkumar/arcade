@@ -50,8 +50,8 @@ function TabButton({
       onClick={onClick}
       className={`relative px-5 sm:px-6 py-2 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm font-black tracking-tight transition-all duration-200 select-none cursor-pointer min-w-[120px] text-center ${
         active
-          ? 'bg-white dark:bg-slate-900 text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6] shadow-xs'
-          : 'bg-slate-100/80 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700/60 hover:bg-slate-200/70 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white'
+          ? 'bg-surface text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6] shadow-xs'
+          : 'bg-slate-100/80 text-slate-700 border border-slate-200/70 hover:bg-slate-200/70 hover:text-slate-900'
       }`}
     >
       <span className="relative z-10">{label}</span>
@@ -82,7 +82,7 @@ function CertificateDoodle() {
           width="50"
           height="60"
           rx="8"
-          className="fill-white dark:fill-slate-900 stroke-slate-800 dark:stroke-slate-200"
+          className="fill-white stroke-slate-800"
           strokeWidth="2"
         />
         <path d="M40 32H70M40 40H62M40 48H66" stroke="#2962D6" strokeWidth="2" strokeLinecap="round" />
@@ -173,7 +173,7 @@ export default function AchievementsPage() {
   }, [certificates, searchQuery]);
 
   return (
-    <div className="relative min-h-screen w-full text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/40">
+    <div className="relative min-h-screen w-full text-slate-900 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/40">
       {/* Background — vibrant ambient gradient matching My Learning */}
       <div
         aria-hidden
@@ -274,7 +274,7 @@ export default function AchievementsPage() {
                       }
                     }}
                     placeholder={activeTab === 'certificates' ? 'Search certificates...' : 'Search badges...'}
-                    className="w-full pl-9 pr-8 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm bg-transparent border border-slate-200/80 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-300 dark:focus:ring-slate-700 transition-all font-medium"
+                    className="w-full pl-9 pr-8 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm bg-transparent border border-slate-200/80 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-300 transition-all font-medium"
                   />
                   <button
                     type="button"
@@ -282,7 +282,7 @@ export default function AchievementsPage() {
                       setSearchQuery('');
                       setIsSearchOpen(false);
                     }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-0.5 rounded-full hover:bg-slate-100 transition"
                     aria-label="Close search"
                     title="Close search"
                   >
@@ -298,7 +298,7 @@ export default function AchievementsPage() {
                   transition={{ duration: 0.15 }}
                   type="button"
                   onClick={() => setIsSearchOpen(true)}
-                  className="p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer"
+                  className="p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors flex items-center justify-center cursor-pointer"
                   aria-label="Open search"
                   title="Search"
                 >
@@ -318,7 +318,7 @@ export default function AchievementsPage() {
           ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 animate-pulse" aria-busy>
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="h-72 rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl bg-slate-200/70 dark:bg-slate-800/70" />
+                <div key={i} className="h-72 rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl bg-slate-200/70" />
               ))}
             </div>
           )
@@ -333,20 +333,20 @@ export default function AchievementsPage() {
             {!certificates && !certificatesError && (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 animate-pulse" aria-busy>
                 {[0, 1, 2].map((i) => (
-                  <div key={i} className="h-72 rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl bg-slate-200/70 dark:bg-slate-800/70" />
+                  <div key={i} className="h-72 rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl bg-slate-200/70" />
                 ))}
               </div>
             )}
             {certificates && certificates.length === 0 && (
               <div className="py-10 px-4 text-center flex flex-col items-center justify-center">
                 <CertificateDoodle />
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">No certificates yet</h3>
-                <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
+                <h3 className="text-base sm:text-lg font-bold text-slate-900">No certificates yet</h3>
+                <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-sm mx-auto leading-relaxed">
                   Certificates are awarded when you pass a certification exam. Each one is sealed by Arcade, verifiable by its ID, and downloadable as a PDF.
                 </p>
                 <Link
                   href={examRoutes.catalogue}
-                  className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-slate-900 dark:bg-white px-5 py-2.5 text-xs sm:text-sm font-bold text-white dark:text-slate-900 hover:opacity-90 transition shadow-sm"
+                  className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-5 py-2.5 text-xs sm:text-sm font-bold text-on-ink hover:opacity-90 transition shadow-sm"
                 >
                   <Award className="h-4 w-4" />
                   Browse exams
@@ -355,8 +355,8 @@ export default function AchievementsPage() {
             )}
             {certificates && certificates.length > 0 && filteredCertificates.length === 0 && (
               <div className="py-10 px-4 text-center flex flex-col items-center justify-center">
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">No matching certificates</h3>
-                <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
+                <h3 className="text-base sm:text-lg font-bold text-slate-900">No matching certificates</h3>
+                <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-sm mx-auto leading-relaxed">
                   No certificates matched &ldquo;{searchQuery}&rdquo;. Try a different search term.
                 </p>
               </div>
@@ -388,7 +388,7 @@ export default function AchievementsPage() {
 
                     <div className="relative z-10 flex flex-1 flex-col justify-between gap-4">
                       {/* The certificate face in miniature */}
-                      <div className="relative w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-3 transition-transform duration-500 group-hover:scale-[1.02]">
+                      <div className="relative w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 bg-slate-50/70 p-3 transition-transform duration-500 group-hover:scale-[1.02]">
                         <CertificateFace certificate={cert} className="shadow-md" />
                       </div>
 
@@ -408,7 +408,7 @@ export default function AchievementsPage() {
                             </span>
                           )}
                           {!cert.publicVisible && !inactive && (
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 border-slate-200 text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 border-slate-200 text-slate-500">
                               <EyeOff size={11} />
                               Private
                             </span>

@@ -40,6 +40,7 @@
   --glass-a: 0.68;
   --wallpaper-dim: 0.2;
   --glass-blur: 22px;
+  --wallpaper-frost-blur: 36px;
   --focus-ring: 0 0 0 3px rgba(32, 92, 168, 0.15);
 }
 
@@ -139,6 +140,7 @@
    * untouched; every other appearance supplies its own.
    */
   --theme-surface: var(--surface);
+  --theme-surface-raised: var(--surface-raised);
   --theme-ink: var(--ink);
   --theme-on-ink: var(--on-ink);
   --theme-wash: var(--page-wash);
@@ -278,6 +280,8 @@
   --n-950: oklch(0.13 0.04 264);
   /* light text tone: dimming washes the wallpaper towards white so dark text stays legible */
   --wallpaper-scrim: oklch(0.99 0.004 250 / var(--wallpaper-dim));
+  /* reading pages (theme-wallpaper-frost) add a light veil on top of the viewer's dimming */
+  --wallpaper-frost-scrim: oklch(0.99 0.004 250 / calc(var(--wallpaper-dim) + 0.18));
 }
 
 /* ── Glass · dark ────────────────────────────────────────────────────── */
@@ -297,6 +301,7 @@
   --n-950: oklch(0.985 0.003 262);
   /* dark text tone: dimming darkens the wallpaper behind light text */
   --wallpaper-scrim: oklch(0.1 0.02 262 / var(--wallpaper-dim));
+  --wallpaper-frost-scrim: oklch(0.1 0.02 262 / calc(var(--wallpaper-dim) + 0.22));
 }
 
 /*
@@ -320,6 +325,40 @@
 }
 
 /*
+ * Reading pages (Explore, content pages, the course player, exams) tag their full-height wrapper
+ * `theme-wallpaper-frost`: while one is on screen the wallpaper itself is blurred and veiled, so
+ * text and cards read on any photo without boxing the page into panels. One filter on the fixed
+ * wallpaper layer, not a backdrop blur per element. Pair it with `theme-page-bg` so the wrapper's
+ * own ground steps aside. The scale hides the soft, see-through edge a blur leaves at the borders.
+ */
+:root[data-material="glass"]:has(.theme-wallpaper-frost) .arcade-wallpaper {
+  filter: blur(var(--wallpaper-frost-blur)) saturate(140%);
+  transform: scale(1.1);
+}
+
+:root[data-material="glass"]:has(.theme-wallpaper-frost) .arcade-wallpaper::after {
+  background: var(--wallpaper-frost-scrim);
+}
+
+/*
+ * The wallpaper behind a reading page is already frosted, so its cards, pills and bars can be
+ * lighter glass than elsewhere. Overridden on the wrapper (not :root) so menus and dialogs, which
+ * resolve --popover at the root, keep their usual weight. `--theme-*` mirrors are re-pointed too,
+ * because they were resolved at the root. High contrast keeps its near-opaque glass.
+ */
+:root[data-material="glass"]:not([data-contrast="high"]) .theme-wallpaper-frost {
+  --surface: oklch(1 0 0 / calc(var(--glass-a) * 0.72));
+  --surface-raised: oklch(1 0 0 / calc(var(--glass-a) * 0.85));
+  --theme-surface: var(--surface);
+  --theme-surface-raised: var(--surface-raised);
+}
+
+:root.dark[data-material="glass"]:not([data-contrast="high"]) .theme-wallpaper-frost {
+  --surface: oklch(0.17 0.015 262 / calc(var(--glass-a) * 0.72));
+  --surface-raised: oklch(0.2 0.015 262 / calc(var(--glass-a) * 0.85));
+}
+
+/*
  * A section that sits straight on the page in solid themes (Settings → Personal info groups)
  * becomes its own frosted island under glass — like Console's cards — so it never lies directly
  * on a busy photo. No effect in solid themes.
@@ -332,6 +371,17 @@
   border-radius: 24px;
   padding: 1rem 1.25rem;
   box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.35), 0 10px 40px -12px rgba(0, 0, 0, 0.18);
+}
+
+/* Roomier variant for hero blocks and tab bodies (public course page). */
+:root[data-material="glass"] .theme-glass-panel.theme-glass-roomy {
+  padding: 1.5rem 1.5rem;
+}
+
+@media (min-width: 640px) {
+  :root[data-material="glass"] .theme-glass-panel.theme-glass-roomy {
+    padding: 2.25rem 2.5rem;
+  }
 }
 
 /*
@@ -418,7 +468,7 @@
   background-image: var(--wallpaper-image, none);
   background-size: cover;
   background-position: center;
-  transition: background-image 0.4s ease;
+  transition: background-image 0.4s ease, filter 0.4s ease, transform 0.4s ease;
 }
 
 .arcade-wallpaper::after {
@@ -495,6 +545,66 @@
     radial-gradient(55% 60% at 90% 30%, #9be7c4 0%, transparent 60%),
     radial-gradient(70% 60% at 60% 100%, #fff3b0 0%, transparent 65%),
     linear-gradient(180deg, #f3fbef, #e3f5ee);
+}
+:root[data-wallpaper="sakura"] {
+  --wallpaper-color: #f6dfe8;
+  --wallpaper-image:
+    radial-gradient(55% 60% at 12% 18%, #ffc4d8 0%, transparent 62%),
+    radial-gradient(50% 55% at 88% 20%, #d8c9ff 0%, transparent 60%),
+    radial-gradient(65% 60% at 72% 100%, #bfe2ff 0%, transparent 65%),
+    radial-gradient(40% 35% at 38% 48%, #fff6ec 0%, transparent 70%),
+    linear-gradient(165deg, #fdf3f7, #eef0fb);
+}
+:root[data-wallpaper="glacier"] {
+  --wallpaper-color: #dcebf4;
+  --wallpaper-image:
+    radial-gradient(60% 55% at 14% 86%, #b9e4f4 0%, transparent 62%),
+    radial-gradient(50% 55% at 88% 72%, #d1f4ec 0%, transparent 60%),
+    radial-gradient(55% 50% at 82% 8%, #c8d6ff 0%, transparent 62%),
+    radial-gradient(45% 40% at 32% 22%, #ffffff 0%, transparent 70%),
+    linear-gradient(180deg, #f1f7fc, #e1ebf6);
+}
+:root[data-wallpaper="dune"] {
+  --wallpaper-color: #f3e4d4;
+  --wallpaper-image:
+    radial-gradient(55% 55% at 86% 14%, #ffd6a8 0%, transparent 60%),
+    radial-gradient(60% 60% at 10% 82%, #f4c3b4 0%, transparent 62%),
+    radial-gradient(45% 40% at 28% 20%, #fff2cf 0%, transparent 68%),
+    radial-gradient(50% 45% at 92% 96%, #e5d3f0 0%, transparent 65%),
+    linear-gradient(175deg, #fcf5ec, #f2e5d6);
+}
+:root[data-wallpaper="midnight"] {
+  --wallpaper-color: #111830;
+  --wallpaper-image:
+    radial-gradient(circle 1.5px at 18% 22%, #ffffffcc 0%, transparent 100%),
+    radial-gradient(circle 1px at 64% 12%, #ffffffaa 0%, transparent 100%),
+    radial-gradient(circle 1.5px at 82% 38%, #ffffff99 0%, transparent 100%),
+    radial-gradient(circle 1px at 36% 64%, #ffffff88 0%, transparent 100%),
+    radial-gradient(55% 50% at 82% 8%, #2c3d94 0%, transparent 62%),
+    radial-gradient(60% 60% at 8% 92%, #4a3596 0%, transparent 62%),
+    radial-gradient(50% 45% at 100% 100%, #1c6a86 0%, transparent 60%),
+    linear-gradient(170deg, #0c1124, #151b36);
+}
+:root[data-wallpaper="nebula"] {
+  --wallpaper-color: #1a0f2e;
+  --wallpaper-image:
+    radial-gradient(circle 1.5px at 24% 16%, #ffffffcc 0%, transparent 100%),
+    radial-gradient(circle 1px at 58% 30%, #ffffffaa 0%, transparent 100%),
+    radial-gradient(circle 1.5px at 90% 58%, #ffffff99 0%, transparent 100%),
+    radial-gradient(circle 1px at 12% 70%, #ffffff88 0%, transparent 100%),
+    radial-gradient(50% 50% at 86% 18%, #b8327f 0%, transparent 60%),
+    radial-gradient(55% 60% at 14% 30%, #5f2bc8 0%, transparent 62%),
+    radial-gradient(45% 40% at 68% 96%, #18b4c8aa 0%, transparent 65%),
+    linear-gradient(200deg, #150b29, #0b1026);
+}
+:root[data-wallpaper="pine"] {
+  --wallpaper-color: #0f2019;
+  --wallpaper-image:
+    radial-gradient(40% 35% at 76% 14%, #d9b03a55 0%, transparent 68%),
+    radial-gradient(60% 60% at 16% 18%, #1f7a5a 0%, transparent 62%),
+    radial-gradient(55% 55% at 92% 84%, #2d5c88 0%, transparent 62%),
+    radial-gradient(50% 45% at 30% 100%, #14503f 0%, transparent 65%),
+    linear-gradient(185deg, #0e1f19, #0a1512);
 }
 
 /* ── Glass surfaces ──────────────────────────────────────────────────── */

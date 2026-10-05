@@ -2,8 +2,9 @@
 
 **Scope: the theme applies wherever the signed-in app shell (`LearnerShell`) is shown** — the
 `(authenticated)` routes, and the public pages (explore, courses, events, profiles) when a member views
-them. Signed-out visitors, the landing page, sign-in flows and onboarding always render Arcade's standard
-light design. `LearnerShell` mounts `ThemeScope`; `AppearanceController` applies the appearance while
+them. Signed-out visitors, the marketing site (the `(marketing)` route group: landing, About, Creators,
+Contributors, Founders, Privacy, Terms, Reach-us — whose `MarketingShell` never reads the session), sign-in
+flows and onboarding always render Arcade's standard light design. `LearnerShell` mounts `ThemeScope`; `AppearanceController` applies the appearance while
 one is mounted and clears it otherwise. For first paint the boot script mirrors this with
 `themedOnFirstPaint` (theme.store.ts: a dashboard route, or a persisted signed-in user outside
 `OUTSIDE_APP_SHELL_ROUTE`), pinned by `theme.scope.test.ts`.
@@ -50,6 +51,12 @@ All tokens live in `app/themes.css`.
   add `theme-page-layer` so it steps aside for the glass wallpaper and the high-contrast ground.
 - **A page's own full-height wrapper** (`min-h-screen bg-surface …`): add `theme-page-bg` so it
   turns transparent under glass and the wallpaper shows around the page's cards.
+- **Reading pages** (Explore, course/event/exam pages, the course player, exam attempt): add
+  `theme-page-bg theme-wallpaper-frost` to the page wrapper. While it is on screen the wallpaper itself
+  is blurred and veiled (one filter on the wallpaper layer), so content reads without boxing it into
+  panels. Prefer this over `theme-glass-panel` for whole pages.
+  Inside that wrapper `--surface` / `--surface-raised` (and their `--theme-*` mirrors) are lighter
+  glass, so cards and pills there need no extra work as long as they use the surface tokens.
 - **Content that sits directly on the page** (no card behind it, like Settings rows): add
   `theme-glass-panel` to its container — one frosted panel under glass, nothing in solid themes.
 - **Inline-styled surfaces** (`background: var(--theme-surface, …)`) get the same frost as

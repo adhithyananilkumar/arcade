@@ -58,7 +58,7 @@ export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) 
   const isComplete = model.progress.state === 'COMPLETED';
 
   return (
-    <div className="min-h-screen w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="min-h-screen w-full bg-surface theme-page-bg text-slate-900">
       <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8 space-y-8">
       {/* Top Hero Banner */}
       <OverviewHero model={model} />
@@ -75,27 +75,27 @@ export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) 
 
           {/* Course Description & Outcomes */}
           <div className="space-y-4">
-            <p className="text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300 font-normal">
+            <p className="text-sm sm:text-base leading-relaxed text-slate-600 font-normal">
               {model.description ||
                 'Great design goes beyond appearance — it creates intuitive, enjoyable user experiences. This course teaches design principles and UX thinking to create interfaces people love to use.'}
             </p>
 
             {/* What You'll Learn Section */}
             <div className="pt-2">
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900">
                 What You&apos;ll Learn:
               </h2>
 
-              <ul className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+              <ul className="mt-3 space-y-2 text-sm text-slate-600">
                 {outcomes.map((outcome) => (
                   <li key={outcome} className="flex items-start gap-2.5">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-900 dark:bg-slate-200" />
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-900" />
                     <span>{outcome}</span>
                   </li>
                 ))}
               </ul>
 
-              <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">
+              <p className="mt-4 text-sm text-slate-600">
                 Through real projects, you&apos;ll go from user problem to clickable prototype with confidence.
               </p>
             </div>
@@ -114,16 +114,16 @@ export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) 
 
         {/* Right Sidebar Column */}
         <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
-          {/* Prominent Action Button matching reference image */}
+          {/* Primary action — same ink button as the dashboard's "Continue Learning" */}
           {model.resume && (
             <Link
               href={model.resume.href}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-6 py-3.5 text-center text-base font-semibold text-white shadow-md transition-all hover:bg-[#1D4ED8] active:scale-[0.98]"
+              className="group flex w-full items-center justify-center gap-2.5 rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md bg-ink px-6 py-3.5 text-center text-[15px] font-semibold text-on-ink shadow-[0_8px_24px_-8px_rgba(20,20,43,0.45)] transition-all hover:-translate-y-0.5 hover:bg-ink-hover hover:shadow-[0_12px_28px_-8px_rgba(20,20,43,0.5)] active:translate-y-0 active:scale-[0.98]"
             >
               {isComplete ? (
-                <RotateCcw size={18} />
+                <RotateCcw size={17} className="transition-transform duration-300 group-hover:-rotate-90" />
               ) : (
-                <Play size={18} className="fill-current" />
+                <Play size={17} className="fill-current" />
               )}
               <span>{model.resume.label}</span>
             </Link>

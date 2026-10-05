@@ -11,15 +11,15 @@ export function ReadinessCard({
   continueHref: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
+    <div className="overflow-hidden rounded-[22px] border border-slate-200/80 bg-surface/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="flex items-center gap-2 text-sm font-extrabold text-slate-900 dark:text-white">
-          <span className="grid size-7 place-items-center rounded-xl bg-blue-50 text-[#205ca8] border border-blue-100 dark:bg-slate-800 dark:text-blue-400 dark:border-slate-700">
+        <h2 className="flex items-center gap-2 text-sm font-extrabold text-slate-900">
+          <span className="grid size-7 place-items-center rounded-xl bg-blue-50 text-[#205ca8] border border-blue-100 dark:text-blue-400 dark:bg-blue-500/10 dark:border-blue-500/25">
             <CheckCircle2 size={15} />
           </span>
           <span>Content readiness</span>
         </h2>
-        <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700">
+        <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-mono font-bold text-slate-700 border border-slate-200/60">
           {readiness.isReady ? "Ready to submit" : `${readiness.issues.length} item${readiness.issues.length === 1 ? "" : "s"} need attention`}
         </span>
       </div>
@@ -27,7 +27,7 @@ export function ReadinessCard({
       {readiness.issues.length > 0 && (
         <ul className="mb-4 flex flex-col gap-2">
           {readiness.issues.map((issue, i) => (
-            <li key={i} className="flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-400 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 p-3 rounded-xl">
+            <li key={i} className="flex items-start gap-2.5 text-xs text-slate-600 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 p-3 rounded-xl">
               <AlertCircle size={15} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
               <span>
                 <strong className="font-bold text-amber-900 dark:text-amber-200">{issue.section}:</strong> {issue.issue}

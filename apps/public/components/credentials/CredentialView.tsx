@@ -108,14 +108,14 @@ export function CredentialView({
   };
 
   return (
-    <main className="landing-root relative min-h-screen w-full text-[#0f172a] font-sans py-8 sm:py-12 px-6 sm:px-12 lg:px-20 selection:bg-blue-100 selection:text-blue-900">
+    <main className="landing-root relative min-h-screen w-full text-ink font-sans py-8 sm:py-12 px-6 sm:px-12 lg:px-20 selection:bg-blue-100 selection:text-blue-900 dark:selection:bg-blue-500/15 dark:selection:text-blue-200">
       
       {/* ATMOSPHERIC PASTEL BACKDROP (EXACT MATCH FOR REACH US PAGE) */}
       <div
         className="fixed inset-0 pointer-events-none -z-10"
         style={{
-          backgroundColor: "#FAFBFD",
-          backgroundImage: `
+          backgroundColor: "var(--theme-surface, #FAFBFD)",
+          backgroundImage: `var(--theme-wash, 
             radial-gradient(ellipse 70% 40% at 50% 0%, rgba(224, 236, 255, 0.25) 0%, transparent 70%),
             radial-gradient(ellipse 60% 40% at 10% 25%, rgba(233, 225, 254, 0.20) 0%, transparent 65%),
             radial-gradient(ellipse 60% 40% at 90% 75%, rgba(253, 232, 240, 0.18) 0%, transparent 65%),
@@ -126,7 +126,7 @@ export function CredentialView({
               #F8F6FD 70%,
               #FAF9FB 100%
             )
-          `,
+          )`,
         }}
       />
 
@@ -171,13 +171,13 @@ export function CredentialView({
             
             {/* Level / Document Eyebrow Text */}
             <div className="inline-flex items-center gap-2">
-              <span className="text-xs font-mono uppercase tracking-wider text-[#205ca8] font-bold">
+              <span className="text-xs font-mono uppercase tracking-wider text-[#205ca8] font-bold dark:text-[#7cbaff]">
                 {eyebrowText}
               </span>
             </div>
 
             {/* Course Title (Black/Deep Navy bold serif) */}
-            <h1 className="text-3xl sm:text-4xl lg:text-[44px] tracking-tight leading-[1.1] font-serif font-bold text-[#0B132B]">
+            <h1 className="text-3xl sm:text-4xl lg:text-[44px] tracking-tight leading-[1.1] font-serif font-bold text-ink">
               {name}
             </h1>
 
@@ -186,9 +186,9 @@ export function CredentialView({
               <p className="text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold">
                 CONFERRED UPON
               </p>
-              <p className="text-3xl sm:text-4xl font-serif italic text-[#0B132B] tracking-tight leading-snug">
+              <p className="text-3xl sm:text-4xl font-serif italic text-ink tracking-tight leading-snug">
                 {recipientHandle ? (
-                  <Link href={`/${recipientHandle}`} className="hover:text-[#205ca8] transition-colors inline-flex items-center gap-1.5">
+                  <Link href={`/${recipientHandle}`} className="hover:text-[#205ca8] transition-colors inline-flex items-center gap-1.5 dark:hover:text-[#7cbaff]">
                     <span>{recipientName}</span>
                     <ArrowUpRight className="w-4.5 h-4.5 text-slate-400 shrink-0" />
                   </Link>
@@ -207,7 +207,7 @@ export function CredentialView({
                 <p className="text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold">
                   ISSUED BY
                 </p>
-                <p className="text-base sm:text-lg font-bold text-[#0B132B] font-bricolage leading-snug">
+                <p className="text-base sm:text-lg font-bold text-ink font-bricolage leading-snug">
                   {issuerName} <span className="text-xs font-normal text-slate-500 font-sans">via Arcade</span>
                 </p>
               </div>
@@ -216,7 +216,7 @@ export function CredentialView({
                 <p className="text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold">
                   DATE OF ISSUANCE
                 </p>
-                <p className="text-base sm:text-lg font-bold text-[#0B132B] font-bricolage leading-snug">
+                <p className="text-base sm:text-lg font-bold text-ink font-bricolage leading-snug">
                   {longDate(issuedAt)}
                 </p>
               </div>
@@ -226,16 +226,16 @@ export function CredentialView({
                   CREDENTIAL IDENTIFICATION
                 </p>
                 <div className="flex items-center justify-center sm:justify-start gap-1.5">
-                  <span className="font-mono text-sm font-bold text-[#0B132B]">
+                  <span className="font-mono text-sm font-bold text-ink">
                     {credentialCode}
                   </span>
                   <button
                     type="button"
                     onClick={() => copy(credentialCode, "id")}
-                    className="p-1 text-slate-400 hover:text-[#205ca8] transition-colors"
+                    className="p-1 text-slate-400 hover:text-[#205ca8] transition-colors dark:hover:text-[#7cbaff]"
                     title="Copy Credential ID"
                   >
-                    {copied === "id" ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                    {copied === "id" ? <Check size={14} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={14} />}
                   </button>
                 </div>
               </div>
@@ -250,7 +250,7 @@ export function CredentialView({
                 href={linkedInAddToProfileUrl({ credentialCode, name, issuedAt, url })}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0B132B] hover:bg-[#205ca8] text-white font-medium text-xs tracking-wide shadow-sm hover:shadow-md transition-all group"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-ink hover:bg-[#205ca8] text-on-ink font-medium text-xs tracking-wide shadow-sm hover:shadow-md transition-all group"
               >
                 <LinkedInGlyph size={14} />
                 <span>Add to LinkedIn Profile</span>
@@ -262,7 +262,7 @@ export function CredentialView({
                 href={linkedInShareUrl(url)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-slate-300/80 bg-white/80 hover:border-[#205ca8] hover:text-[#205ca8] text-slate-700 font-medium text-xs transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-slate-300/80 bg-surface/80 hover:border-[#205ca8] hover:text-[#205ca8] text-slate-700 font-medium text-xs transition-all shadow-sm dark:hover:text-[#7cbaff]"
               >
                 <Share2 size={13} />
                 <span>Share Post</span>
@@ -276,23 +276,23 @@ export function CredentialView({
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-slate-300/80 bg-white/80 hover:border-[#205ca8] hover:text-[#205ca8] text-slate-700 font-medium text-xs transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-slate-300/80 bg-surface/80 hover:border-[#205ca8] hover:text-[#205ca8] text-slate-700 font-medium text-xs transition-all shadow-sm dark:hover:text-[#7cbaff]"
               >
                 <span>Post on X</span>
               </a>
               <button
                 type="button"
                 onClick={() => copy(url, "link")}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-slate-300/80 bg-white/80 hover:border-[#205ca8] hover:text-[#205ca8] text-slate-700 font-medium text-xs transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-slate-300/80 bg-surface/80 hover:border-[#205ca8] hover:text-[#205ca8] text-slate-700 font-medium text-xs transition-all shadow-sm dark:hover:text-[#7cbaff]"
               >
-                {copied === "link" ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                {copied === "link" ? <Check size={13} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={13} />}
                 <span>Copy Link</span>
               </button>
               <button
                 type="button"
                 onClick={download}
                 disabled={downloading}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-slate-300/80 bg-white/80 hover:border-[#205ca8] hover:text-[#205ca8] text-slate-700 font-medium text-xs transition-all shadow-sm disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-slate-300/80 bg-surface/80 hover:border-[#205ca8] hover:text-[#205ca8] text-slate-700 font-medium text-xs transition-all shadow-sm disabled:opacity-50 dark:hover:text-[#7cbaff]"
               >
                 {downloading ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
                 <span>{isBadge ? "Badge Image" : "Download PDF"}</span>
@@ -308,7 +308,7 @@ export function CredentialView({
             <div className="space-y-4">
               <div className="relative flex items-center justify-center">
                 <div className="w-full border-t border-slate-200/70" />
-                <div className="absolute bg-[#FAFBFD] px-4 text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold">
+                <div className="absolute bg-surface px-4 text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold">
                   CRITERIA &amp; STANDARD
                 </div>
               </div>
@@ -319,7 +319,7 @@ export function CredentialView({
 
               {isBadge && tier && (
                 <div className="inline-flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500 pt-1">
-                  <span className="font-bold text-[#0B132B] font-bricolage">
+                  <span className="font-bold text-ink font-bricolage">
                     Level {tier.level}
                   </span>
                   <span>·</span>

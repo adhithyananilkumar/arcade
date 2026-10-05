@@ -63,7 +63,7 @@ export function getActivityTheme(type?: string, title?: string) {
   }
   if (text.includes("BOOTCAMP") || text.includes("START")) {
     return {
-      nodeBg: "bg-[#0B132B] text-white dark:bg-slate-700",
+      nodeBg: "bg-ink text-on-ink",
       label: "Cohort",
       Icon: Rocket,
     };
@@ -102,7 +102,7 @@ export function ActivitySection({
   return (
     <div className="relative w-full pl-10 sm:pl-12 space-y-4 my-2">
       {/* Dashed Vertical Connecting Line */}
-      <div className="absolute left-[19px] sm:left-[23px] top-4 bottom-4 w-0 border-l-2 border-dashed border-slate-300 dark:border-slate-700 pointer-events-none" />
+      <div className="absolute left-[19px] sm:left-[23px] top-4 bottom-4 w-0 border-l-2 border-dashed border-slate-300 pointer-events-none" />
 
       {entries.map((entry) => {
         const theme = getActivityTheme(entry.type, entry.title);
@@ -117,29 +117,29 @@ export function ActivitySection({
             </div>
 
             {/* Clean Timeline Card */}
-            <div className="relative flex flex-col justify-between gap-2.5 p-4 sm:p-5 rounded-[20px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md transition-all duration-200 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)]">
+            <div className="relative flex flex-col justify-between gap-2.5 p-4 sm:p-5 rounded-[20px] border border-slate-200/80 bg-surface/95 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md transition-all duration-200 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)]">
               {/* Single Top Row: Title + Badge + Action By + Timestamp */}
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2.5 min-w-0">
-                  <h4 className="text-xs sm:text-sm font-extrabold tracking-tight text-slate-900 dark:text-white truncate">
+                  <h4 className="text-xs sm:text-sm font-extrabold tracking-tight text-slate-900 truncate">
                     {titleText}
                   </h4>
-                  <span className="inline-flex items-center rounded-full border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 shrink-0">
+                  <span className="inline-flex items-center rounded-full border border-slate-200/80 bg-slate-100 px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-700 shrink-0">
                     {theme.label}
                   </span>
-                  <span className="text-slate-300 dark:text-slate-700">·</span>
-                  <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400">
-                    <div className="grid size-5 place-items-center rounded-full bg-[#0B132B] dark:bg-white text-white dark:text-slate-900 font-extrabold text-[9px]">
+                  <span className="text-slate-300">·</span>
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+                    <div className="grid size-5 place-items-center rounded-full bg-ink text-on-ink font-extrabold text-[9px]">
                       {entry.actorName ? entry.actorName.charAt(0).toUpperCase() : "A"}
                     </div>
                     <span className="text-[11px]">
-                      Action by: <strong className="text-slate-900 dark:text-white font-bold">{entry.actorName}</strong>
+                      Action by: <strong className="text-slate-900 font-bold">{entry.actorName}</strong>
                     </span>
                   </div>
                 </div>
 
                 {/* Timestamp */}
-                <span className="flex items-center gap-1 text-[11px] font-mono font-semibold text-slate-400 dark:text-slate-500 shrink-0">
+                <span className="flex items-center gap-1 text-[11px] font-mono font-semibold text-slate-400 shrink-0">
                   <Clock size={12} />
                   {new Date(entry.createdAt).toLocaleString("en-IN", {
                     day: "numeric",
@@ -152,8 +152,8 @@ export function ActivitySection({
               </div>
 
               {/* Description */}
-              <p className="text-xs font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
-                &ldquo;{titleText}&rdquo; was updated by <span className="font-bold text-slate-800 dark:text-slate-200">{entry.actorName}</span>.
+              <p className="text-xs font-medium text-slate-600 leading-relaxed">
+                &ldquo;{titleText}&rdquo; was updated by <span className="font-bold text-slate-800">{entry.actorName}</span>.
               </p>
             </div>
           </div>

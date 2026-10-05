@@ -174,9 +174,12 @@ export const APP_THEME_ROUTE_SOURCE =
   '|^/exams/.+';
 export const APP_THEME_ROUTE = new RegExp(APP_THEME_ROUTE_SOURCE);
 
-/** Pages that never use the app shell, even for a member: landing, sign-in flows, onboarding. */
+/**
+ * Pages that never use the app shell, even for a member: the marketing site (the (marketing) route
+ * group — landing, About, Creators…), sign-in flows, onboarding.
+ */
 export const OUTSIDE_APP_SHELL_SOURCE =
-  '^/$|^/(?:sign|forgot-password|reset-password|verify-email|oauth2|onboarding|dev-editor-perf)(?:/|$)';
+  '^/$|^/(?:about|contributors|creators|founders|privacy|terms|reach-us|sign|forgot-password|reset-password|verify-email|oauth2|onboarding|dev-editor-perf)(?:/|$)';
 export const OUTSIDE_APP_SHELL_ROUTE = new RegExp(OUTSIDE_APP_SHELL_SOURCE);
 
 export const AUTH_STORAGE_KEY = 'arcade-auth-storage';

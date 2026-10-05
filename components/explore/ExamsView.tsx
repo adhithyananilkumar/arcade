@@ -117,11 +117,11 @@ export default function ExamsView({
           flexWrap: "wrap",
           marginBottom: "28px",
           padding: "10px 16px",
-          background: "var(--theme-surface, rgba(255, 255, 255, 0.75))",
+          background: "var(--theme-surface-raised, rgba(255, 255, 255, 0.75))",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
           borderRadius: "14px",
-          border: "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
+          border: "1px solid var(--theme-n-200, rgba(20, 23, 31, 0.08))",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.02)"
         }}
       >
@@ -162,8 +162,8 @@ export default function ExamsView({
                     borderRadius: "8px",
                     fontSize: "0.82rem",
                     fontWeight: isActive ? "700" : "600",
-                    border: isActive ? `1.5px solid ${activeColor}` : "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
-                    background: isActive ? `${activeColor}18` : "var(--theme-surface, #FFFFFF)",
+                    border: isActive ? `1.5px solid ${activeColor}` : "1px solid var(--theme-n-200, rgba(20, 23, 31, 0.08))",
+                    background: isActive ? `linear-gradient(${activeColor}18, ${activeColor}18), var(--theme-surface-raised, #FFFFFF)` : "var(--theme-surface-raised, #FFFFFF)",
                     color: isActive ? activeColor : "var(--theme-n-600, #4B5563)",
                     cursor: "pointer",
                     transition: "all 0.2s ease"
@@ -213,8 +213,8 @@ export default function ExamsView({
                     borderRadius: "8px",
                     fontSize: "0.82rem",
                     fontWeight: isActive ? "700" : "600",
-                    border: isActive ? `1.5px solid ${activeColor}` : "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
-                    background: isActive ? `${activeColor}18` : "var(--theme-surface, #FFFFFF)",
+                    border: isActive ? `1.5px solid ${activeColor}` : "1px solid var(--theme-n-200, rgba(20, 23, 31, 0.08))",
+                    background: isActive ? `linear-gradient(${activeColor}18, ${activeColor}18), var(--theme-surface-raised, #FFFFFF)` : "var(--theme-surface-raised, #FFFFFF)",
                     color: isActive ? activeColor : "var(--theme-n-600, #4B5563)",
                     cursor: "pointer",
                     transition: "all 0.2s ease"

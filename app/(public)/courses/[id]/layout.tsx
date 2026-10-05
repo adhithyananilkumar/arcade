@@ -86,7 +86,7 @@ export default function CourseLayout({
     children: React.ReactNode
 }>) {
     return (
-        <div className={`${inter.variable} ${fraunces.variable} bg-paper antialiased min-h-screen`} style={{ fontFamily: "var(--font-inter), sans-serif" }}>
+        <div className={`${inter.variable} ${fraunces.variable} antialiased min-h-screen`} style={{ fontFamily: "var(--font-inter), sans-serif" }}>
             {children}
             {process.env.NODE_ENV === 'production' && <Analytics />}
         </div>

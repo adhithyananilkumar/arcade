@@ -54,7 +54,7 @@ export default function ExamPage() {
 
   if (error || !landing) {
     return (
-      <main className="arcade-wash flex min-h-screen items-center justify-center px-4">
+      <main className="arcade-wash theme-page-bg theme-wallpaper-frost flex min-h-screen items-center justify-center px-4">
         {error ? (
           <p className="text-center text-[14px] font-semibold text-rose-600 dark:text-rose-400">{error}</p>
         ) : (

@@ -1,11 +1,12 @@
 "use client";
 
 /**
- * PublicShell — client wrapper for the (public) layout.
+ * PublicShell — client wrapper for the (public) layout: explore, courses, events, exams, forum,
+ * credentials, profiles. These are content pages a member keeps using, so a signed-in viewer gets
+ * them inside the app shell (navbar, dock, theme); a visitor gets the marketing nav.
  *
- * On the landing route ("/"), wraps content in IntroProvider so the
- * intro animation plays and HeroNav/Footer are hidden until it finishes.
- * On all other public routes, nav and footer render immediately as normal.
+ * The marketing site (landing, About, Creators…) is NOT here — it lives in (marketing) and never
+ * reads the session. See MarketingShell.
  *
  * The one exception is `domain/<handle>`: profile routes supply their own
  * chrome through `ProfileShell`, which picks the marketing nav or the signed-in
@@ -16,7 +17,6 @@
 
 import { usePathname, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { IntroProvider, useIntroContext } from "@/apps/public/components/intro/IntroProvider";
 import HeroNav from "./HeroNav";
 import Footer from "./Footer";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
@@ -26,18 +26,6 @@ import LearnerShell from "@/apps/learner/layout/LearnerShell";
 function useIsProfileRoute(): boolean {
   const params = useParams();
   return !!params?.username;
-}
-
-/** Inner shell — reads IntroContext (which is available when isLanding is true) */
-function ShellInner({ children }: { children: React.ReactNode }) {
-  const { introActive } = useIntroContext();
-
-  return (
-    <>
-      {!introActive && <HeroNav />}
-      {children}
-    </>
-  );
 }
 
 /** Outer shell — used for non-landing pages where no intro context exists */
@@ -78,16 +66,5 @@ export default function PublicShell({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const isLanding = pathname === "/";
-
-  if (isLanding) {
-    return (
-      <IntroProvider>
-        <ShellInner>{children}</ShellInner>
-      </IntroProvider>
-    );
-  }
-
   return <ShellOuter>{children}</ShellOuter>;
 }

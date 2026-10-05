@@ -307,7 +307,7 @@ export default function EventDetailPage() {
   const targetOverviewHref = eventRoutes.overview(event.slug || event.id);
 
   return (
-    <main className="min-h-screen w-full arcade-wash text-ink">
+    <main className="min-h-screen w-full arcade-wash text-ink theme-page-bg theme-wallpaper-frost">
       <div className="mx-auto max-w-6xl px-5 pt-28 pb-28 sm:px-8 sm:pt-32 sm:pb-36">
         <div className="max-w-4xl">
           <div>

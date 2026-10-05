@@ -12,7 +12,7 @@ export function OverviewVideoPlayer({ posterUrl, title }: OverviewVideoPlayerPro
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/80 bg-slate-900 shadow-sm dark:border-slate-800">
+    <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/80 bg-slate-900 shadow-sm">
       {!isPlaying ? (
         <div className="group relative aspect-[16/9] w-full overflow-hidden cursor-pointer" onClick={() => setIsPlaying(true)}>
           <img
@@ -31,7 +31,7 @@ export function OverviewVideoPlayer({ posterUrl, title }: OverviewVideoPlayerPro
 
           {/* Centered Play Button */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-white/90 text-blue-600 shadow-2xl backdrop-blur-md transition-all duration-300 group-hover:scale-110 group-hover:bg-white dark:bg-slate-900/90 dark:text-blue-400">
+            <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-surface/90 text-blue-600 shadow-2xl backdrop-blur-md transition-all duration-300 group-hover:scale-110 group-hover:bg-surface dark:text-blue-400">
               <Play size={28} className="ml-1 fill-current" />
             </div>
           </div>

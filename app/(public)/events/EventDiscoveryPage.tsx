@@ -19,7 +19,7 @@ export function EventDiscoveryPage() {
   }, [search]);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-background">
+    <div className="min-h-screen bg-slate-50 dark:bg-background theme-page-bg theme-wallpaper-frost">
       <div className="max-w-7xl mx-auto px-4 py-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">Events</h1>
         <p className="text-gray-500 mb-8">

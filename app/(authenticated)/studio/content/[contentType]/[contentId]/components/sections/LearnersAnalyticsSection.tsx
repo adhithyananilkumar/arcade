@@ -349,7 +349,7 @@ export function LearnersAnalyticsSection({
       {/* Section Navigation Tabs (Rounded pill style matching mockup) */}
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-center">
-          <div className="inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-white/95 p-1.5 shadow-[0_4px_20px_rgba(20,20,43,0.04)] backdrop-blur-md overflow-x-auto scrollbar-none max-w-full">
+          <div className="inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-surface/95 p-1.5 shadow-[0_4px_20px_rgba(20,20,43,0.04)] backdrop-blur-md overflow-x-auto scrollbar-none max-w-full">
             {segment === "course" && (
               <button
                 onClick={() => setActiveSubTab("overview")}
@@ -431,13 +431,13 @@ export function LearnersAnalyticsSection({
             {/* Left Card: Enrollments (Clickable to view details) */}
             <div
               onClick={() => setIsLearnersModalOpen(true)}
-              className="lg:col-span-4 rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md flex flex-col justify-between min-h-[350px] cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all group relative"
+              className="lg:col-span-4 rounded-[22px] border border-slate-200/80 bg-surface/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md flex flex-col justify-between min-h-[350px] cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all group relative"
             >
               {/* Top Header */}
               <div className="flex items-center justify-between gap-2.5">
                 <div className="flex items-center gap-2.5">
                   <Users size={20} className="text-[#205ca8] dark:text-blue-400 group-hover:scale-110 transition-transform" />
-                  <h3 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">Enrollments</h3>
+                  <h3 className="text-lg font-extrabold tracking-tight text-slate-900">Enrollments</h3>
                 </div>
                 <span className="text-[11px] font-mono font-bold text-[#205ca8] bg-blue-50/80 border border-blue-200/60 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/50 group-hover:bg-[#205ca8] group-hover:text-white px-3 py-1 rounded-full transition-all flex items-center gap-0.5">
                   View details <ChevronRight size={12} />
@@ -446,17 +446,17 @@ export function LearnersAnalyticsSection({
 
               {/* Center Metric Count */}
               <div className="flex flex-col items-center justify-center my-6 text-center">
-                <span className="text-5xl sm:text-6xl font-extrabold text-[#0B132B] dark:text-white tracking-tight group-hover:text-[#205ca8] transition-colors">
+                <span className="text-5xl sm:text-6xl font-extrabold text-ink tracking-tight group-hover:text-[#205ca8] transition-colors dark:group-hover:text-[#7cbaff]">
                   {animatedLearnerCount}
                 </span>
                 <span className="text-sm font-bold text-[#205ca8] dark:text-blue-400 mt-1">Active learners</span>
               </div>
 
               {/* Bottom Rating Info */}
-              <div className="flex flex-col gap-2 pt-4 border-t border-slate-200/70 dark:border-slate-800">
+              <div className="flex flex-col gap-2 pt-4 border-t border-slate-200/70">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Average Rating</span>
-                  <span className="text-sm font-extrabold text-slate-900 dark:text-white">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">Average Rating</span>
+                  <span className="text-sm font-extrabold text-slate-900">
                     {avgRating ? avgRating : "0.0"}{" "}
                     <span className="text-slate-400 font-normal">/ 5</span>
                   </span>
@@ -472,7 +472,7 @@ export function LearnersAnalyticsSection({
                         className={
                           isFilled
                             ? "fill-amber-400 text-amber-400"
-                            : "fill-transparent text-slate-300 dark:text-slate-700 stroke-[1.5]"
+                            : "fill-transparent text-slate-300 stroke-[1.5]"
                         }
                       />
                     );
@@ -482,12 +482,12 @@ export function LearnersAnalyticsSection({
             </div>
 
             {/* Right Card: Student Reviews & Feedback */}
-            <div className="lg:col-span-8 rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md flex flex-col justify-between min-h-[350px]">
+            <div className="lg:col-span-8 rounded-[22px] border border-slate-200/80 bg-surface/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md flex flex-col justify-between min-h-[350px]">
               {/* Header with Title, View All button, and Search */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/70 dark:border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/70">
                 <div className="flex items-center gap-2.5">
                   <MessageSquare size={20} className="text-[#205ca8] dark:text-blue-400" />
-                  <h3 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
+                  <h3 className="text-lg font-extrabold tracking-tight text-slate-900">
                     Student Reviews &amp; Feedback
                   </h3>
                 </div>
@@ -499,12 +499,12 @@ export function LearnersAnalyticsSection({
                       placeholder="Search reviews..."
                       value={reviewSearchQuery}
                       onChange={(e) => setReviewSearchQuery(e.target.value)}
-                      className="w-full rounded-full border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 py-1.5 pl-9 pr-3 text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:border-[#205ca8] focus:outline-none focus:ring-4 focus:ring-blue-500/10"
+                      className="w-full rounded-full border border-slate-200/80 bg-slate-50 py-1.5 pl-9 pr-3 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-[#205ca8] focus:outline-none focus:ring-4 focus:ring-blue-500/10"
                     />
                   </div>
                   <button
                     onClick={() => setIsReviewsModalOpen(true)}
-                    className="shrink-0 text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-[#0B132B] hover:text-white dark:hover:bg-white dark:hover:text-slate-900 border border-slate-200/80 dark:border-slate-700 px-3 py-1.5 rounded-full transition-all flex items-center gap-1 cursor-pointer"
+                    className="shrink-0 text-[11px] font-mono font-bold text-slate-700 bg-slate-100 hover:bg-ink hover:text-on-ink border border-slate-200/80 px-3 py-1.5 rounded-full transition-all flex items-center gap-1 cursor-pointer"
                   >
                     View all ({sortedReviews.length}) <ChevronRight size={12} />
                   </button>
@@ -512,20 +512,20 @@ export function LearnersAnalyticsSection({
               </div>
 
               {/* Review Items */}
-              <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-800 flex-1 justify-center my-1">
+              <div className="flex flex-col divide-y divide-slate-100 flex-1 justify-center my-1">
                 {reviews === null && !MOCK_TEST_REVIEWS ? (
                   <div className="flex items-center justify-center py-10 text-slate-400">
-                    <Loader2 size={20} className="animate-spin text-[#205ca8]" />
+                    <Loader2 size={20} className="animate-spin text-[#205ca8] dark:text-[#7cbaff]" />
                   </div>
                 ) : filteredReviews.length > 0 ? (
                   filteredReviews.slice(0, 4).map((review) => (
                     <div
                       key={review.id}
                       onClick={() => setIsReviewsModalOpen(true)}
-                      className="flex items-center justify-between py-3.5 px-2 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 rounded-xl transition-colors group cursor-pointer"
+                      className="flex items-center justify-between py-3.5 px-2 hover:bg-slate-50/80 rounded-xl transition-colors group cursor-pointer"
                     >
                       <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                        <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 flex items-center justify-center shrink-0">
+                        <div className="size-10 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0">
                           {review.userAvatarUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -539,7 +539,7 @@ export function LearnersAnalyticsSection({
                         </div>
                         <div className="flex flex-col min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                            <span className="text-xs font-bold text-slate-900 truncate">
                               {review.userName}
                             </span>
                             <span className="text-[10px] font-mono font-medium text-slate-400">
@@ -549,7 +549,7 @@ export function LearnersAnalyticsSection({
                               })}
                             </span>
                           </div>
-                          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate max-w-xs sm:max-w-md">
+                          <span className="text-[11px] font-medium text-slate-500 truncate max-w-xs sm:max-w-md">
                             {review.reviewText || "No written feedback provided"}
                           </span>
                         </div>
@@ -563,27 +563,27 @@ export function LearnersAnalyticsSection({
                               className={
                                 star <= review.rating
                                   ? "fill-amber-400 text-amber-400"
-                                  : "fill-transparent text-slate-300 dark:text-slate-700 stroke-[1.5]"
+                                  : "fill-transparent text-slate-300 stroke-[1.5]"
                               }
                             />
                           ))}
                         </div>
                         <ChevronRight
                           size={16}
-                          className="text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all"
+                          className="text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 transition-all"
                         />
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="flex flex-col items-center justify-center py-10 text-center my-auto">
-                    <div className="size-12 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 flex items-center justify-center mb-3">
+                    <div className="size-12 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center mb-3">
                       <MessageSquare size={20} className="text-[#205ca8] dark:text-blue-400" />
                     </div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                    <p className="text-sm font-bold text-slate-900">
                       {reviewQuery.length > 0 ? "No reviews match your search" : "No student reviews yet"}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mt-1">
+                    <p className="text-xs text-slate-500 max-w-xs mt-1">
                       {reviewQuery.length > 0
                         ? "Try searching for a different student or keyword."
                         : "Learners will be able to review and rate this course after completing their modules."}
@@ -594,35 +594,35 @@ export function LearnersAnalyticsSection({
             </div>
 
             {/* Certificate Recipients & Issued Credentials (merged into Course Insights) */}
-            <div className="lg:col-span-12 rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md flex flex-col gap-5">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200/70 dark:border-slate-800">
+            <div className="lg:col-span-12 rounded-[22px] border border-slate-200/80 bg-surface/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md flex flex-col gap-5">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200/70">
                 <div className="flex items-center gap-2.5">
                   <Award size={20} className="text-[#205ca8] dark:text-blue-400" />
-                  <h3 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
+                  <h3 className="text-lg font-extrabold tracking-tight text-slate-900">
                     Certificate Recipients &amp; Issued Credentials
                   </h3>
                 </div>
-                <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1 rounded-full">
+                <span className="text-xs font-mono font-bold text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full">
                   {effectiveLearners.filter((l) => l.progressPercentage === 100).length || 342} Claims Issued
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 flex flex-col gap-1">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 flex flex-col gap-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Issued</span>
-                  <span className="text-2xl font-black text-slate-900 dark:text-white">
+                  <span className="text-2xl font-black text-slate-900">
                     {effectiveLearners.filter((l) => l.progressPercentage === 100).length || 342}
                   </span>
                   <span className="text-[11px] text-slate-500">Verified course certificates</span>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 flex flex-col gap-1">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 flex flex-col gap-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Claim Rate</span>
-                  <span className="text-2xl font-black text-slate-900 dark:text-white">88%</span>
+                  <span className="text-2xl font-black text-slate-900">88%</span>
                   <span className="text-[11px] text-slate-500">Of course completers</span>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 flex flex-col gap-1">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 flex flex-col gap-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Credential Type</span>
                   <span className="text-base font-bold text-blue-600 dark:text-blue-400 mt-1">
                     Digital Certificate &amp; Badge
@@ -631,9 +631,9 @@ export function LearnersAnalyticsSection({
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900">
-                <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
-                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-[10px] font-mono uppercase tracking-wider text-slate-500">
+              <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-surface">
+                <table className="w-full text-left text-xs text-slate-600">
+                  <thead className="bg-slate-50 text-[10px] font-mono uppercase tracking-wider text-slate-500">
                     <tr>
                       <th className="px-4 py-3">Recipient Name</th>
                       <th className="px-4 py-3">Completion Status</th>
@@ -641,15 +641,15 @@ export function LearnersAnalyticsSection({
                       <th className="px-4 py-3 text-right">Certificate ID</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-slate-100">
                     {effectiveLearners
                       .filter((l) => l.progressPercentage === 100)
                       .slice(0, 5)
                       .map((l, idx) => (
                         <tr key={l.userId || idx} className="hover:bg-slate-50/50">
-                          <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">{l.name}</td>
+                          <td className="px-4 py-3 font-bold text-slate-900">{l.name}</td>
                           <td className="px-4 py-3">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25">
                               <CheckCircle2 size={11} /> Completed
                             </span>
                           </td>
@@ -664,9 +664,9 @@ export function LearnersAnalyticsSection({
                         { name: "Rohan Verma", date: "18 Sep 2026", id: "CERT-8924-103" },
                       ].map((mock, idx) => (
                         <tr key={idx} className="hover:bg-slate-50/50">
-                          <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">{mock.name}</td>
+                          <td className="px-4 py-3 font-bold text-slate-900">{mock.name}</td>
                           <td className="px-4 py-3">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/25">
                               <CheckCircle2 size={11} /> Completed
                             </span>
                           </td>
@@ -1087,15 +1087,15 @@ export function LearnersAnalyticsSection({
 
 export function SettingsHeaderBanner({ segment = "course" }: { segment?: string }) {
   return (
-    <div className="relative flex flex-col sm:flex-row items-center justify-between gap-6 pb-6 pt-2 border-b border-slate-200/80 dark:border-slate-800">
+    <div className="relative flex flex-col sm:flex-row items-center justify-between gap-6 pb-6 pt-2 border-b border-slate-200/80">
       <div className="flex flex-col gap-2 text-center sm:text-left">
-        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/80 px-3.5 py-1 text-xs font-extrabold">
+        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/80 px-3.5 py-1 text-xs font-extrabold dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/25">
           {segment === "event" ? "Event Settings" : "Course Settings"}
         </span>
-        <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+        <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
           Configure your {segment === "event" ? "event" : "course"}
         </h2>
-        <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 max-w-lg">
+        <p className="text-xs sm:text-sm font-medium text-slate-500 max-w-lg">
           Set the schedule, completion recognition, pricing and collaboration settings.
         </p>
       </div>
@@ -1105,7 +1105,7 @@ export function SettingsHeaderBanner({ segment = "course" }: { segment?: string 
         <div className="absolute inset-0 bg-blue-100/60 dark:bg-blue-950/40 rounded-full blur-2xs scale-90" />
 
         {/* Flip Calendar Card */}
-        <div className="relative w-20 h-22 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md flex flex-col p-2.5 gap-1.5 rotate-3">
+        <div className="relative w-20 h-22 bg-surface rounded-2xl border border-slate-200 shadow-md flex flex-col p-2.5 gap-1.5 rotate-3">
           <div className="flex justify-around items-center border-b border-slate-100 pb-1">
             <div className="size-1.5 rounded-full bg-slate-300" />
             <div className="size-1.5 rounded-full bg-slate-300" />
@@ -1117,13 +1117,13 @@ export function SettingsHeaderBanner({ segment = "course" }: { segment?: string 
               <div
                 key={i}
                 className={`size-2 rounded-2xs ${
-                  i === 5 ? "bg-blue-600" : i % 3 === 0 ? "bg-blue-100" : "bg-slate-100"
+                  i === 5 ? "bg-blue-600" : i % 3 === 0 ? "bg-blue-100 dark:bg-blue-500/15" : "bg-slate-100"
                 }`}
               />
             ))}
           </div>
           {/* Clock badge floating on bottom-left */}
-          <div className="absolute -bottom-2 -left-3 bg-white dark:bg-slate-900 text-blue-600 p-2 rounded-full border border-blue-100 shadow-md">
+          <div className="absolute -bottom-2 -left-3 bg-surface text-blue-600 p-2 rounded-full border border-blue-100 shadow-md dark:text-blue-400 dark:border-blue-500/25">
             <Clock size={16} />
           </div>
         </div>
@@ -1192,8 +1192,8 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 py-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
-        <Loader2 size={24} className="animate-spin text-[#205ca8]" />
+      <div className="flex items-center justify-center rounded-[22px] border border-slate-200/80 bg-surface/95 py-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
+        <Loader2 size={24} className="animate-spin text-[#205ca8] dark:text-[#7cbaff]" />
       </div>
     );
   }
@@ -1201,14 +1201,14 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
   // Saving from a form that never loaded would write blanks over the real values.
   if (loadFailed) {
     return (
-      <div className="rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
+      <div className="rounded-[22px] border border-slate-200/80 bg-surface/95 p-6 text-center text-xs font-semibold text-slate-500 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
         Couldn&rsquo;t load this course&rsquo;s overview. Reload the page to try again.
       </div>
     );
   }
 
   return (
-    <div className="w-full flex flex-col divide-y divide-slate-200/70 dark:divide-slate-800">
+    <div className="w-full flex flex-col divide-y divide-slate-200/70">
       {/* 01: Course length */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start py-8 first:pt-0">
         <div className="md:col-span-4 flex items-start gap-3.5">
@@ -1216,8 +1216,8 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
             01
           </div>
           <div className="flex flex-col">
-            <h4 className="text-base font-extrabold text-slate-900 dark:text-white">Course length</h4>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+            <h4 className="text-base font-extrabold text-slate-900">Course length</h4>
+            <p className="text-xs font-medium text-slate-500 mt-1 leading-relaxed">
               Shown as-is on the course page. Leave blank to show &ldquo;Self-paced&rdquo;.
             </p>
           </div>
@@ -1232,7 +1232,7 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
               placeholder="e.g. 4h 30m"
-              className="w-full rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 py-3.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:border-[#205ca8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-2xs"
+              className="w-full rounded-2xl border border-slate-200/90 bg-surface py-3.5 pl-11 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:border-[#205ca8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-2xs"
             />
           </div>
         </div>
@@ -1245,8 +1245,8 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
             02
           </div>
           <div className="flex flex-col">
-            <h4 className="text-base font-extrabold text-slate-900 dark:text-white">About this course</h4>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+            <h4 className="text-base font-extrabold text-slate-900">About this course</h4>
+            <p className="text-xs font-medium text-slate-500 mt-1 leading-relaxed">
               Write a brief overview of what this course is about.
             </p>
           </div>
@@ -1258,7 +1258,7 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Write a brief overview of what this course is about..."
-            className="min-h-[140px] w-full rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:border-[#205ca8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-2xs leading-relaxed"
+            className="min-h-[140px] w-full rounded-2xl border border-slate-200/90 bg-surface p-4 text-sm text-slate-800 placeholder-slate-400 focus:border-[#205ca8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-2xs leading-relaxed"
           />
         </div>
       </div>
@@ -1270,8 +1270,8 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
             03
           </div>
           <div className="flex flex-col">
-            <h4 className="text-base font-extrabold text-slate-900 dark:text-white">What learners will walk away with</h4>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+            <h4 className="text-base font-extrabold text-slate-900">What learners will walk away with</h4>
+            <p className="text-xs font-medium text-slate-500 mt-1 leading-relaxed">
               One per line. Each line becomes a ticked bullet on the course page.
             </p>
           </div>
@@ -1283,7 +1283,7 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
             value={learningOutcomes}
             onChange={(e) => setLearningOutcomes(e.target.value)}
             placeholder={"One outcome per line, e.g.\nA working design system in Figma\nA recorded portfolio case study"}
-            className="min-h-[140px] w-full rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:border-[#205ca8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-2xs leading-relaxed"
+            className="min-h-[140px] w-full rounded-2xl border border-slate-200/90 bg-surface p-4 text-sm text-slate-800 placeholder-slate-400 focus:border-[#205ca8] focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-2xs leading-relaxed"
           />
         </div>
       </div>
@@ -1293,7 +1293,7 @@ function CourseOverviewEditor({ contentId }: { contentId: string }) {
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="inline-flex items-center gap-2.5 rounded-full bg-[#0B132B] hover:bg-[#205ca8] dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 px-8 py-3 text-xs sm:text-sm font-extrabold text-white transition-all shadow-md active:scale-98 cursor-pointer disabled:opacity-50"
+          className="inline-flex items-center gap-2.5 rounded-full bg-ink hover:bg-[#205ca8] px-8 py-3 text-xs sm:text-sm font-extrabold text-on-ink transition-all shadow-md active:scale-98 cursor-pointer disabled:opacity-50"
         >
           {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
           <span>{isSaving ? "Saving..." : "Save overview"}</span>
@@ -1379,8 +1379,8 @@ export function CoursePricingEditor({ contentId }: { contentId: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 py-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
-        <Loader2 size={24} className="animate-spin text-[#205ca8]" />
+      <div className="flex items-center justify-center rounded-[22px] border border-slate-200/80 bg-surface/95 py-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
+        <Loader2 size={24} className="animate-spin text-[#205ca8] dark:text-[#7cbaff]" />
       </div>
     );
   }
@@ -1388,7 +1388,7 @@ export function CoursePricingEditor({ contentId }: { contentId: string }) {
   // Saving from a form that never loaded would write blanks over the real values.
   if (loadFailed) {
     return (
-      <div className="rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
+      <div className="rounded-[22px] border border-slate-200/80 bg-surface/95 p-6 text-center text-xs font-semibold text-slate-500 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
         Couldn&rsquo;t load this course&rsquo;s pricing. Reload the page to try again.
       </div>
     );
@@ -1402,10 +1402,10 @@ export function CoursePricingEditor({ contentId }: { contentId: string }) {
           03
         </div>
         <div className="flex flex-col gap-0.5">
-          <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h3 className="text-xl font-black text-slate-900 tracking-tight">
             Course Pricing
           </h3>
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          <p className="text-xs font-medium text-slate-500">
             Set how learners can access this course.
           </p>
         </div>
@@ -1417,7 +1417,7 @@ export function CoursePricingEditor({ contentId }: { contentId: string }) {
             <div className="p-2.5 rounded-xl bg-rose-50 text-rose-500 dark:bg-rose-950/60 dark:text-rose-400 shrink-0">
               <Tag size={18} />
             </div>
-            <label htmlFor="pricing-model" className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <label htmlFor="pricing-model" className="text-xs font-bold text-slate-700">
               Pricing model
             </label>
           </div>
@@ -1425,7 +1425,7 @@ export function CoursePricingEditor({ contentId }: { contentId: string }) {
             id="pricing-model"
             value={pricingModel}
             onChange={(e) => setPricingModel(e.target.value as "FREE" | "PAID")}
-            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 cursor-pointer shadow-2xs"
+            className="w-full rounded-2xl border border-slate-200 bg-surface p-3.5 text-xs font-bold text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 cursor-pointer shadow-2xs"
           >
             <option value="FREE">Free</option>
             <option value="PAID">Paid</option>
@@ -1434,7 +1434,7 @@ export function CoursePricingEditor({ contentId }: { contentId: string }) {
 
         {pricingModel === "PAID" && (
           <div className="flex flex-col gap-2">
-            <label htmlFor="price-amount" className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <label htmlFor="price-amount" className="text-xs font-bold text-slate-700">
               Price amount ({currency})
             </label>
             <div className="relative">
@@ -1449,7 +1449,7 @@ export function CoursePricingEditor({ contentId }: { contentId: string }) {
                 value={priceAmount}
                 onChange={(e) => setPriceAmount(e.target.value ? parseFloat(e.target.value) : "")}
                 placeholder="e.g. 499.00"
-                className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 pl-10 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                className="w-full rounded-2xl border border-slate-200 bg-surface p-3 pl-10 text-xs font-bold text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
               />
             </div>
           </div>
@@ -1457,7 +1457,7 @@ export function CoursePricingEditor({ contentId }: { contentId: string }) {
       </div>
 
       {pricingModel === "PAID" && (
-        <p className="flex items-start gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 p-3 text-xs font-medium text-slate-700 dark:text-slate-300 max-w-xl">
+        <p className="flex items-start gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-medium text-slate-700 max-w-xl">
           <span className="mt-[1px] text-[10px]">💡</span> A 20% platform fee applies to all
           paid courses.
         </p>
@@ -1467,7 +1467,7 @@ export function CoursePricingEditor({ contentId }: { contentId: string }) {
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="flex items-center gap-2 rounded-xl bg-[#0B132B] hover:bg-blue-600 dark:bg-white dark:text-slate-900 px-6 py-2.5 text-xs font-extrabold text-white transition-all shadow-md cursor-pointer disabled:opacity-50"
+          className="flex items-center gap-2 rounded-xl bg-ink hover:bg-blue-600 px-6 py-2.5 text-xs font-extrabold text-on-ink transition-all shadow-md cursor-pointer disabled:opacity-50"
         >
           {isSaving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
           {isSaving ? "Saving..." : "Save pricing"}
@@ -1476,12 +1476,12 @@ export function CoursePricingEditor({ contentId }: { contentId: string }) {
 
       {history && history.length > 0 && (
         <div className="mt-2">
-          <h4 className="mb-3 border-b border-slate-200/70 dark:border-slate-800 pb-2 text-sm font-bold text-slate-800 dark:text-white">
+          <h4 className="mb-3 border-b border-slate-200/70 pb-2 text-sm font-bold text-slate-800">
             Pricing history
           </h4>
-          <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-              <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-mono uppercase tracking-wider text-slate-500">
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-surface shadow-xs">
+            <table className="w-full text-left text-sm text-slate-600">
+              <thead className="bg-slate-50 text-xs font-mono uppercase tracking-wider text-slate-500">
                 <tr>
                   <th className="px-4 py-2">Model</th>
                   <th className="px-4 py-2">Price</th>
@@ -1489,10 +1489,10 @@ export function CoursePricingEditor({ contentId }: { contentId: string }) {
                   <th className="px-4 py-2 text-right">When</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-slate-100">
                 {history.map((entry) => (
                   <tr key={entry.id}>
-                    <td className="px-4 py-2 font-bold text-slate-800 dark:text-white">{entry.pricingModel}</td>
+                    <td className="px-4 py-2 font-bold text-slate-800">{entry.pricingModel}</td>
                     <td className="px-4 py-2">
                       {entry.pricingModel === "PAID" && entry.priceAmount != null
                         ? formatMoney(entry.priceAmount, entry.currency || "INR")
@@ -1568,15 +1568,15 @@ function CourseCategoryEditor({ contentId }: { contentId: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 py-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
-        <Loader2 size={24} className="animate-spin text-[#205ca8]" />
+      <div className="flex items-center justify-center rounded-[22px] border border-slate-200/80 bg-surface/95 py-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
+        <Loader2 size={24} className="animate-spin text-[#205ca8] dark:text-[#7cbaff]" />
       </div>
     );
   }
 
   if (loadFailed) {
     return (
-      <div className="rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
+      <div className="rounded-[22px] border border-slate-200/80 bg-surface/95 p-6 text-center text-xs font-semibold text-slate-500 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
         Couldn&rsquo;t load this course&rsquo;s category. Reload the page to try again.
       </div>
     );
@@ -1585,24 +1585,24 @@ function CourseCategoryEditor({ contentId }: { contentId: string }) {
   const selectedCategory = publicCategories.find((c) => c.id === categoryId);
 
   return (
-    <div className="flex flex-col gap-6 rounded-[22px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
-      <h3 className="flex items-center gap-2 text-base font-extrabold tracking-tight text-slate-900 dark:text-white">
+    <div className="flex flex-col gap-6 rounded-[22px] border border-slate-200/80 bg-surface/95 p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
+      <h3 className="flex items-center gap-2 text-base font-extrabold tracking-tight text-slate-900">
         <Tag size={18} className="text-[#205ca8] dark:text-blue-400" />
         Course Category
       </h3>
-      <p className="-mt-4 text-[11px] font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+      <p className="-mt-4 text-[11px] font-medium leading-relaxed text-slate-500">
         Categorising this course helps learners find it in Explore search filters and topic feeds.
       </p>
 
       <div className="flex flex-col gap-3">
-        <label htmlFor="course-category-select" className="text-sm font-bold text-slate-700 dark:text-slate-300">
+        <label htmlFor="course-category-select" className="text-sm font-bold text-slate-700">
           Selected Category
         </label>
         <select
           id="course-category-select"
           value={categoryId ?? "OTHER"}
           onChange={(e) => setCategoryId(e.target.value === "OTHER" ? null : e.target.value)}
-          className="h-[46px] w-full max-w-md rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 text-sm font-medium text-slate-800 dark:text-white focus:border-[#205ca8] focus:outline-none focus:ring-4 focus:ring-blue-500/10"
+          className="h-[46px] w-full max-w-md rounded-xl border border-slate-200 bg-surface p-3 text-sm font-medium text-slate-800 focus:border-[#205ca8] focus:outline-none focus:ring-4 focus:ring-blue-500/10"
         >
           {publicCategories.map((cat) => (
             <option key={cat.id} value={cat.id}>
@@ -1613,7 +1613,7 @@ function CourseCategoryEditor({ contentId }: { contentId: string }) {
         </select>
 
         {selectedCategory && selectedCategory.description && (
-          <p className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 rounded-xl p-3 max-w-md">
+          <p className="text-xs text-slate-600 bg-slate-50 border border-slate-200/80 rounded-xl p-3 max-w-md">
             {selectedCategory.description}
           </p>
         )}
@@ -1623,7 +1623,7 @@ function CourseCategoryEditor({ contentId }: { contentId: string }) {
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="flex items-center gap-2 rounded-xl bg-[#0B132B] hover:bg-[#205ca8] dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 px-6 py-2.5 text-xs font-bold text-white transition-all shadow-xs cursor-pointer disabled:opacity-50"
+          className="flex items-center gap-2 rounded-xl bg-ink hover:bg-[#205ca8] px-6 py-2.5 text-xs font-bold text-on-ink transition-all shadow-xs cursor-pointer disabled:opacity-50"
         >
           {isSaving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
           {isSaving ? "Saving..." : "Save category"}

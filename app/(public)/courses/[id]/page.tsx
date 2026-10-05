@@ -188,7 +188,7 @@ function Avatar({
   return (
     <span
       aria-hidden="true"
-      className="grid shrink-0 place-items-center rounded-full font-semibold text-paper"
+      className="grid shrink-0 place-items-center rounded-full font-semibold text-white"
       style={{
         ...commonStyle,
         fontSize: size * 0.38,
@@ -248,7 +248,7 @@ function HeroNav() {
     <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4">
       <nav
         aria-label="Primary"
-        className="flex w-full max-w-6xl items-center justify-between gap-4 rounded-2xl border border-line/80 bg-paper/85 px-5 py-3 shadow-[0_8px_30px_rgba(20,22,28,0.06)] backdrop-blur-md"
+        className="flex w-full max-w-6xl items-center justify-between gap-4 rounded-2xl border border-line/80 bg-surface/85 px-5 py-3 shadow-[0_8px_30px_rgba(20,22,28,0.06)] backdrop-blur-md"
       >
         <Link href="/" className="font-serif text-xl font-semibold tracking-tight text-blue">
           arcade<span className="text-ink">.</span>
@@ -273,7 +273,7 @@ function HeroNav() {
           </Link>
           <Link
             href="#"
-            className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-paper transition-transform hover:-translate-y-0.5"
+            className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-on-ink transition-transform hover:-translate-y-0.5"
           >
             Get Started
           </Link>
@@ -438,7 +438,7 @@ function CourseHero({
             {metaData.map(({ icon: Icon, label }) => (
               <span
                 key={label}
-                className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-2 text-[13px] font-medium text-ink"
+                className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-2 text-[13px] font-medium text-ink"
               >
                 <Icon size={14} className="text-subtle shrink-0" />
                 <span>{label}</span>
@@ -545,7 +545,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
     <div>
       {/* Segmented tab control */}
       <div className="flex justify-center">
-        <div className="inline-flex flex-wrap justify-center gap-1 rounded-full border border-line bg-paper p-1.5 shadow-sm">
+        <div className="theme-glass-chip inline-flex flex-wrap justify-center gap-1 rounded-full border border-line bg-surface p-1.5 shadow-sm">
           {tabs.map((t) => {
             const isActive = tab === t
             return (
@@ -555,7 +555,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
                 onClick={() => setTab(t)}
                 aria-pressed={isActive}
                 className={`relative rounded-full px-4 py-2 text-[13px] font-semibold transition-colors duration-200 sm:px-5 ${
-                  isActive ? "text-paper" : "text-subtle hover:text-ink"
+                  isActive ? "text-on-ink" : "text-subtle hover:text-ink"
                 }`}
               >
                 {isActive && (
@@ -572,7 +572,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
         </div>
       </div>
 
-      <div key={tab} className="arcade-fade mt-16 sm:mt-20">
+      <div key={tab} className="arcade-fade mt-10 sm:mt-14">
         {tab === "Overview" && (
           <div className="grid gap-12 md:grid-cols-2 md:gap-16">
             <AnimatedItem index={0} style={{ cursor: "default" }}>
@@ -625,7 +625,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
               ].map(({ icon: Icon, label }) => (
                 <span
                   key={label}
-                  className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink shadow-2xs"
+                  className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[13px] font-medium text-ink shadow-2xs"
                 >
                   <Icon size={14} className="text-subtle" /> {label}
                 </span>
@@ -639,7 +639,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
                 return (
                   <div
                     key={m.id}
-                    className="overflow-hidden rounded-2xl border border-line bg-paper transition-all duration-200 hover:border-slate-300 hover:shadow-xs"
+                    className="overflow-hidden rounded-2xl border border-line bg-surface transition-all duration-200 hover:border-slate-300 hover:shadow-xs"
                   >
                     <button
                       type="button"
@@ -687,7 +687,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
                 )
               })}
               {modules.length === 0 && (
-                <p className="rounded-2xl border border-line bg-paper px-5 py-8 text-center text-[15px] italic text-subtle/75">
+                <p className="rounded-2xl border border-line bg-surface px-5 py-8 text-center text-[15px] italic text-subtle/75">
                   This course hasn&apos;t published a syllabus yet.
                 </p>
               )}
@@ -700,7 +700,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
             {(course?.collaborators ?? []).map((person) => (
               <div
                 key={person.id}
-                className="w-full rounded-3xl border border-line bg-paper p-8 shadow-sm transition-all"
+                className="w-full rounded-3xl border border-line bg-surface p-8 shadow-sm transition-all"
               >
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
                   <Avatar
@@ -711,7 +711,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
                   />
                   <div className="flex-1">
                     {orgName && (
-                      <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-line bg-paper/60 px-2.5 py-1 text-[12px] font-medium text-subtle">
+                      <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-line bg-surface/60 px-2.5 py-1 text-[12px] font-medium text-subtle">
                         <BadgeCheck size={13} className="text-ink" /> {orgName}
                       </div>
                     )}
@@ -745,7 +745,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
                     {person.specialities!.map((e) => (
                       <span
                         key={e}
-                        className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[12px] font-semibold text-ink transition-all hover:border-ink hover:scale-105"
+                        className="rounded-full border border-line bg-surface px-3.5 py-1.5 text-[12px] font-semibold text-ink transition-all hover:border-ink hover:scale-105"
                       >
                         {e}
                       </span>
@@ -773,7 +773,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
             ))}
 
             {(course?.collaborators?.length ?? 0) === 0 && (
-              <div className="w-full rounded-3xl border border-line bg-paper p-8 text-center text-[15px] italic text-subtle/75">
+              <div className="w-full rounded-3xl border border-line bg-surface p-8 text-center text-[15px] italic text-subtle/75">
                 No instructor information available for this course.
               </div>
             )}
@@ -784,11 +784,11 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
           <div className="flex w-full flex-col gap-8 max-w-3xl mx-auto">
             {/* Badge Section (if course has badge) */}
             {hasBadge && (
-              <div className="rounded-3xl border border-line bg-paper p-8 shadow-sm">
+              <div className="rounded-3xl border border-line bg-surface p-8 shadow-sm">
                 <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-center">
                   <CourseBadge type={badgeInfo.type} />
                   <div>
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-ink mb-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-ink mb-2">
                       <Sparkles size={13} className="text-amber" /> Verifiable Badge
                     </span>
                     <h3 className="font-serif text-2xl font-light text-ink">
@@ -814,8 +814,8 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
 
             {/* Certification & Exam Section (if certification / exam is available) */}
             {hasCertification && (
-              <div className="flex w-full flex-col items-center gap-5 rounded-3xl border border-line bg-paper p-8 text-center shadow-sm sm:p-10">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wide text-ink">
+              <div className="flex w-full flex-col items-center gap-5 rounded-3xl border border-line bg-surface p-8 text-center shadow-sm sm:p-10">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wide text-ink">
                   <Award size={14} className="text-ink" /> Official Certification
                 </span>
                 <div>
@@ -833,7 +833,7 @@ function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: Co
                 </div>
                 <Link
                   href={examRoutes.landing(certification?.examId || (params?.id as string))}
-                  className="mt-2 inline-flex items-center gap-2 rounded-full bg-ink px-7 py-3 text-[13px] font-semibold text-paper shadow-sm transition-all hover:bg-ink/90 active:scale-[0.98]"
+                  className="mt-2 inline-flex items-center gap-2 rounded-full bg-ink px-7 py-3 text-[13px] font-semibold text-on-ink shadow-sm transition-all hover:bg-ink/90 active:scale-[0.98]"
                 >
                   View Exam Details <ChevronRight size={16} />
                 </Link>
@@ -890,7 +890,7 @@ function ReviewsBlock({ courseId }: { courseId?: string }) {
     return (
       <section aria-labelledby="reviews-heading">
         <div className="mb-8 flex flex-col items-center gap-3 text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-subtle">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-subtle">
             <Star size={13} className="text-amber" fill="var(--color-amber)" strokeWidth={0} /> Reviews
           </span>
           <h2 id="reviews-heading" className="font-serif text-3xl font-light text-ink text-balance sm:text-4xl">
@@ -910,7 +910,7 @@ function ReviewsBlock({ courseId }: { courseId?: string }) {
   return (
     <section aria-labelledby="reviews-heading">
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-subtle">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-subtle">
           <Star size={13} className="text-amber" fill="var(--color-amber)" strokeWidth={0} /> Reviews
         </span>
         <h2 id="reviews-heading" className="font-serif text-3xl font-light text-ink text-balance sm:text-4xl">
@@ -944,14 +944,14 @@ function ReviewsBlock({ courseId }: { courseId?: string }) {
           return (
             <div
               key={r.id}
-              className={`mb-4 break-inside-avoid rounded-2xl p-6 ${dark ? "bg-ink" : "border border-line bg-paper"}`}
+              className={`mb-4 break-inside-avoid rounded-2xl p-6 ${dark ? "bg-ink" : "border border-line bg-surface"}`}
             >
               {r.reviewText ? (
-                <p className={`text-[15px] leading-relaxed ${dark ? "font-medium text-paper" : "text-ink"}`}>
+                <p className={`text-[15px] leading-relaxed ${dark ? "font-medium text-on-ink" : "text-ink"}`}>
                   &ldquo;{r.reviewText}&rdquo;
                 </p>
               ) : (
-                <p className={`text-[15px] italic leading-relaxed ${dark ? "text-paper/70" : "text-subtle/75"}`}>
+                <p className={`text-[15px] italic leading-relaxed ${dark ? "text-on-ink/70" : "text-subtle/75"}`}>
                   Rated this course {r.rating} out of 5.
                 </p>
               )}
@@ -959,7 +959,7 @@ function ReviewsBlock({ courseId }: { courseId?: string }) {
                 className={`mt-5 flex items-center justify-between border-t pt-4 ${dark ? "border-white/10" : "border-line"}`}
               >
                 <div>
-                  <p className={`text-[13px] font-semibold ${dark ? "text-paper" : "text-ink"}`}>{r.userName}</p>
+                  <p className={`text-[13px] font-semibold ${dark ? "text-on-ink" : "text-ink"}`}>{r.userName}</p>
                   <p className={`flex items-center gap-0.5 text-[11px] ${dark ? "text-white/50" : "text-subtle"}`}>
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
@@ -994,7 +994,7 @@ function EnrollCta({ onEnroll, initialState = "NOT_ENROLLED", pendingReason, pri
         color="rgba(255,255,255,0.06)"
         className="arcade-spin pointer-events-none absolute -right-8 -top-8"
       />
-      <h2 className="mx-auto max-w-2xl font-serif text-3xl font-light leading-tight text-paper text-balance sm:text-4xl">
+      <h2 className="mx-auto max-w-2xl font-serif text-3xl font-light leading-tight text-on-ink text-balance sm:text-4xl">
         Light the path to your next <span className="italic text-amber">step.</span>
       </h2>
       <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-white/60">
@@ -1017,7 +1017,7 @@ function EnrollCta({ onEnroll, initialState = "NOT_ENROLLED", pendingReason, pri
             />
           </div>
         )}
-        <button className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-white/10">
+        <button className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-on-ink transition-colors hover:bg-white/10">
           See how it works →
         </button>
       </div>
@@ -1135,7 +1135,7 @@ export default function CoursePage() {
   const pendingReason = myEnrollment?.enrollment?.requiresPayment ? "PAYMENT" : "REQUIREMENTS";
 
   return (
-    <main className="min-h-screen w-full arcade-wash text-ink">
+    <main className="min-h-screen w-full arcade-wash text-ink theme-page-bg theme-wallpaper-frost">
       <div className="mx-auto max-w-6xl px-5 pt-28 pb-28 sm:px-8 sm:pt-32 sm:pb-36">
         <CourseHero 
           title={displayTitle} 

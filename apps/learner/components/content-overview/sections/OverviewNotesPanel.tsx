@@ -53,9 +53,9 @@ export function OverviewNotesPanel({
   );
 
   return (
-    <section className="rounded-tl-[2rem] rounded-tr-[2rem] rounded-br-[2rem] rounded-bl-xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm p-6">
       <header className="flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-slate-100">
+        <h2 className="flex items-center gap-2 text-sm font-bold text-slate-900">
           <NotebookPen size={16} className="text-blue-600 dark:text-blue-400" />
           Your notes
         </h2>
@@ -72,13 +72,13 @@ export function OverviewNotesPanel({
 
       {!isLoading && (!data || data.noteCount === 0) && (
         <div className="mt-3 space-y-3">
-          <p className="text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">
+          <p className="text-[13px] leading-relaxed text-slate-500">
             Nothing written yet. Notes you take while working through this appear here, so you can
             pick up your own train of thought before you start again.
           </p>
           <Link
             href={notesHref}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
           >
             <Plus size={13} />
             Add your first note
@@ -95,7 +95,7 @@ export function OverviewNotesPanel({
             </p>
             <Link
               href={notesHref}
-              className="flex items-center gap-0.5 text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400"
+              className="flex items-center gap-0.5 text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
             >
               All {data.noteCount}
               <ArrowUpRight size={13} />

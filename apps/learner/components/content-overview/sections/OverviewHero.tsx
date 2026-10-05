@@ -18,7 +18,7 @@ export function OverviewHero({ model }: { model: ContentOverviewModel }) {
       <div className="mx-auto max-w-3xl space-y-3">
         {/* Title in Cursive Script Font */}
         <div className="relative inline-block px-4">
-          <h1 className={`${dancingScript.className} text-4xl sm:text-5xl md:text-6xl font-bold tracking-normal text-slate-900 dark:text-white leading-tight`}>
+          <h1 className={`${dancingScript.className} text-4xl sm:text-5xl md:text-6xl font-bold tracking-normal text-slate-900 leading-tight`}>
             {model.title}
           </h1>
 
@@ -41,7 +41,7 @@ export function OverviewHero({ model }: { model: ContentOverviewModel }) {
         </div>
 
         {/* Subtitle */}
-        <p className="mx-auto max-w-2xl pt-2 text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-300 font-normal">
+        <p className="mx-auto max-w-2xl pt-2 text-sm leading-relaxed text-slate-600 sm:text-base font-normal">
           {model.subtitle || model.description || defaultSubtitle}
         </p>
       </div>

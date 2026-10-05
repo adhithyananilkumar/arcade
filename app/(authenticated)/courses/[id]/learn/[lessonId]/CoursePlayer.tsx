@@ -394,14 +394,14 @@ export function CoursePlayer({
 
   return (
     <div
-      className="relative min-h-screen w-full"
+      className="relative min-h-screen w-full theme-page-bg theme-wallpaper-frost"
       style={{
         background: 'var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%))',
       }}
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[320px]"
+        className="theme-page-layer pointer-events-none absolute inset-x-0 top-0 h-[320px]"
         style={{
           backgroundImage:
             'radial-gradient(ellipse 45% 40% at 8% 20%, rgba(255,107,74,0.1) 0%, transparent 55%), radial-gradient(ellipse 40% 35% at 92% 10%, rgba(20,20,43,0.06) 0%, transparent 50%)',

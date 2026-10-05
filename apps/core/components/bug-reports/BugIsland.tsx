@@ -26,7 +26,6 @@ import {
   ExternalLink,
   Inbox,
   LayoutList,
-  Minus,
   Sparkles,
   X,
 } from 'lucide-react';
@@ -47,26 +46,8 @@ import { captureEnvironment, installConsoleCapture, recentConsoleEntries } from 
 
 /** Never float over these: an exam sitting must not gain an extra control. */
 const HIDDEN_ROUTES = [/^\/exams\/[^/]+\/(attempt|terminated)\/?$/];
-const TUCK_KEY = 'arcade.bugIsland.tucked';
 
 type View = { name: 'report' } | { name: 'mine' } | { name: 'detail'; id: string } | { name: 'sent'; report: BugReportDetail };
-
-function readTucked(): boolean {
-  try {
-    return localStorage.getItem(TUCK_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-function writeTucked(value: boolean) {
-  try {
-    if (value) localStorage.setItem(TUCK_KEY, '1');
-    else localStorage.removeItem(TUCK_KEY);
-  } catch {
-    // storage unavailable — tucking just won't persist
-  }
-}
 
 function errorMessage(err: unknown, fallback: string) {
   return err instanceof Error && err.message ? err.message : fallback;
@@ -78,7 +59,6 @@ export function BugIsland() {
   const queryClient = useQueryClient();
   const reduceMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
-  const [tucked, setTucked] = useState(false);
   const [view, setView] = useState<View>({ name: 'report' });
   const [composerKey, setComposerKey] = useState(0);
   const [detail, setDetail] = useState<BugReportDetail | null>(null);
@@ -102,11 +82,6 @@ export function BugIsland() {
   });
   const mine = mineQuery.data ?? [];
   const waitingOnMe = mine.filter((r) => r.status === 'NEEDS_INFO' || r.status === 'RESOLVED').length;
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is only readable after mount
-    setTucked(readTucked());
-  }, []);
 
   useEffect(() => {
     if (enabled) installConsoleCapture();
@@ -177,19 +152,6 @@ export function BugIsland() {
     setTimeout(() => setCopiedKey(false), 2000);
   };
 
-  const tuck = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setOpen(false);
-    setTucked(true);
-    writeTucked(true);
-  };
-
-  const untuck = () => {
-    setTucked(false);
-    writeTucked(false);
-    setOpen(true);
-  };
-
   if (!enabled || HIDDEN_ROUTES.some((r) => r.test(pathname))) return null;
 
   const spring = reduceMotion
@@ -218,79 +180,32 @@ export function BugIsland() {
 
       <div data-capture-ignore className="fixed bottom-24 right-4 z-[70] sm:bottom-6 sm:right-6">
         <AnimatePresence initial={false} mode="wait">
-          {tucked && !open ? (
+          {!open ? (
             <motion.button
-              key="tucked-tab"
+              key="floating-button"
               type="button"
-              initial={{ x: 20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 20, opacity: 0 }}
-              whileHover={{ x: -3 }}
-              whileTap={{ scale: 0.95 }}
-              transition={spring}
-              onClick={untuck}
-              aria-label="Report a bug"
-              title="Report a bug (click to open)"
-              className="fixed right-0 top-1/2 z-[70] -translate-y-1/2 cursor-pointer rounded-l-2xl border-y border-l border-slate-200/80 bg-surface/90 py-3.5 pl-2.5 pr-2 text-slate-800 shadow-[0_8px_24px_rgba(15,23,42,0.15)] backdrop-blur-xl transition-colors hover:border-indigo-300 hover:bg-surface hover:text-indigo-600 dark:hover:border-indigo-500/30 dark:hover:text-indigo-400"
-            >
-              <div className="relative flex items-center justify-center">
-                <Bug size={16} className="transition-transform duration-200 group-hover:scale-110" />
-                {waitingOnMe > 0 && (
-                  <span className="absolute -left-1.5 -top-1.5 flex h-3 w-3">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fuchsia-400 opacity-75" />
-                    <span className="relative inline-flex h-3 w-3 rounded-full border-2 border-surface bg-fuchsia-500" />
-                  </span>
-                )}
-              </div>
-            </motion.button>
-          ) : !open ? (
-            <motion.div
-              key="floating-pill"
               initial={{ scale: 0.9, opacity: 0, y: 12 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 8 }}
-              whileHover={{ scale: 1.025, y: -1 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               transition={spring}
-              className="group relative flex items-center rounded-full border border-slate-200/80 bg-surface/90 p-1.5 text-slate-800 shadow-[0_12px_36px_-6px_rgba(20,20,43,0.22)] backdrop-blur-xl transition-all duration-200 hover:border-indigo-300/80 hover:shadow-[0_16px_40px_-6px_rgba(79,70,229,0.25)] dark:hover:border-indigo-500/30"
+              onClick={() => {
+                setView({ name: 'report' });
+                setOpen(true);
+              }}
+              aria-label="Report a bug"
+              title="Report a bug"
+              className="apple-glass-dock relative grid size-12 cursor-pointer place-items-center rounded-full text-slate-700 transition-colors hover:text-indigo-600"
             >
-              <button
-                type="button"
-                onClick={() => {
-                  setView({ name: 'report' });
-                  setOpen(true);
-                }}
-                className="relative flex cursor-pointer items-center gap-2.5 rounded-full py-1 pl-1 pr-3 text-[13px] font-semibold text-slate-800 transition hover:text-indigo-600 dark:hover:text-indigo-400"
-              >
-                {/* Icon Container with subtle gradient & ping animation */}
-                <span className="relative flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500/15 via-purple-500/15 to-indigo-500/10 text-indigo-600 ring-1 ring-indigo-500/20 transition-transform duration-200 group-hover:scale-105 dark:text-indigo-400">
-                  <Bug size={14} />
-                  {waitingOnMe > 0 && (
-                    <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fuchsia-400 opacity-75" />
-                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full border-2 border-surface bg-fuchsia-500" />
-                    </span>
-                  )}
+              <Bug size={19} />
+              {waitingOnMe > 0 && (
+                <span className="absolute right-2 top-2 flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fuchsia-400 opacity-75" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full border-2 border-surface bg-fuchsia-500" />
                 </span>
-                <span className="font-medium tracking-tight">Report a bug</span>
-                {intake?.releaseLabel && (
-                  <span className="hidden rounded-full border border-slate-200/80 bg-slate-100/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 md:inline">
-                    {intake.releaseLabel}
-                  </span>
-                )}
-              </button>
-
-              {/* Tuck away button */}
-              <button
-                type="button"
-                onClick={tuck}
-                aria-label="Tuck the bug button to the side"
-                title="Tuck to side"
-                className="ml-0.5 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full text-slate-400 opacity-70 transition-all duration-200 hover:bg-slate-950/5 hover:text-slate-800 hover:opacity-100 group-hover:opacity-100"
-              >
-                <Minus size={13} />
-              </button>
-            </motion.div>
+              )}
+            </motion.button>
           ) : (
             <motion.section
               key="modal-dialog"

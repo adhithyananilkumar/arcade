@@ -59,7 +59,7 @@ export function OverviewSyllabus({
 
   if (sections.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+      <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
         There is no published content here yet.
       </div>
     );
@@ -67,7 +67,7 @@ export function OverviewSyllabus({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+      <h2 className="text-xl font-bold tracking-tight text-slate-900">
         Course Curriculum
       </h2>
 
@@ -79,7 +79,7 @@ export function OverviewSyllabus({
           return (
             <div
               key={section.id}
-              className="rounded-tl-[2rem] rounded-tr-[2rem] rounded-br-[2rem] rounded-bl-xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+              className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm p-5 sm:p-6"
             >
               <div className="flex items-center justify-between gap-4 pb-2">
                 <div>
@@ -95,7 +95,7 @@ export function OverviewSyllabus({
                   type="button"
                   onClick={() => toggle(section.id)}
                   aria-expanded={!isCollapsed}
-                  className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                  className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
                 >
                   <ChevronDown
                     size={18}
@@ -140,7 +140,7 @@ function SyllabusRow({
       className={`group flex items-center justify-between rounded-xl px-4 py-3.5 text-sm font-medium transition-all ${
         isCurrent
           ? 'bg-blue-50 text-blue-900 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-100 dark:border-blue-800'
-          : 'bg-[#F8FAFC] text-slate-700 hover:bg-[#F1F5F9] dark:bg-slate-800/60 dark:text-slate-300 dark:hover:bg-slate-800'
+          : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
       }`}
     >
       <div className="flex items-center gap-3 min-w-0">
@@ -153,7 +153,7 @@ function SyllabusRow({
         ) : (
           <Icon size={17} className="shrink-0 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
         )}
-        <span className="truncate text-slate-800 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">
+        <span className="truncate text-slate-800 group-hover:text-slate-900">
           {item.title}
         </span>
       </div>

@@ -200,7 +200,7 @@ export function WallpaperTile({ selected, onSelect, name, tone, background, imag
         <span className="theme-fixed absolute inset-0 grid place-items-center bg-black/45 backdrop-blur-[1px]">
           <span className="text-[13px] font-bold tabular-nums text-white drop-shadow">{progress}%</span>
           <span className="absolute inset-x-2 bottom-2 h-1 overflow-hidden rounded-full bg-white/25">
-            <span className="block h-full rounded-full bg-white transition-[width] duration-200" style={{ width: `${progress}%` }} />
+            <span className="block h-full rounded-full bg-surface transition-[width] duration-200" style={{ width: `${progress}%` }} />
           </span>
         </span>
       )}

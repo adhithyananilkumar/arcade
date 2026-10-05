@@ -76,7 +76,7 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
       </svg>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
-        <div style={{ display: "inline-block", padding: "4px 10px", background: "var(--theme-surface, #FFFFFF)", borderRadius: "20px", fontSize: "0.7rem", fontWeight: "800", color: getAccentColor(), boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
+        <div style={{ display: "inline-block", padding: "4px 10px", background: "var(--theme-surface-raised, #FFFFFF)", borderRadius: "20px", fontSize: "0.7rem", fontWeight: "800", color: getAccentColor(), boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
           {category}
         </div>
         <div style={{ display: "inline-block", padding: "4px 8px", background: isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "var(--theme-n-500, #6B7280)"), borderRadius: "6px", fontSize: "0.7rem", fontWeight: "700", color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.05em" }}>
@@ -1186,7 +1186,7 @@ const CategoryPillButton: React.FC<CategoryPillButtonProps> = ({
         gap: "6px",
         padding: "8px 16px",
         borderRadius: "20px",
-        background: isActive ? "var(--theme-n-100, #EEF4FE)" : "var(--theme-surface, rgba(255, 255, 255, 0.85))",
+        background: isActive ? "var(--theme-n-100, #EEF4FE)" : "var(--theme-surface-raised, rgba(255, 255, 255, 0.85))",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
         color: isActive ? "#1A73E8" : "var(--theme-n-700, #3C4043)",
@@ -1560,7 +1560,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
 
   return (
     <div
-      className="landing-root"
+      className="landing-root theme-page-bg theme-wallpaper-frost"
       style={{
         background: mode === "events" ? "var(--theme-wash, linear-gradient(135deg, #FDF4FF 0%, #F5F3FF 50%, #E0F2FE 100%))" : // Pastel lavender-violet-blue sunset mix
             "var(--theme-n-50, #f8fafc)",
@@ -1578,9 +1578,9 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
         }
         .hover-card-y:hover {
           transform: translateY(-4px) !important;
-          background: rgba(255, 255, 255, 0.85) !important;
+          background: var(--theme-surface-raised, rgba(255, 255, 255, 0.85)) !important;
           box-shadow: 0 12px 30px -8px rgba(20, 23, 31, 0.06) !important;
-          border-color: rgba(20, 23, 31, 0.12) !important;
+          border-color: var(--theme-n-300, rgba(20, 23, 31, 0.12)) !important;
         }
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
@@ -1688,10 +1688,10 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
           --glow-radius: 400px;
           --glow-color: 139, 92, 246;
           position: relative;
-          background: rgba(255, 255, 255, 0.65) !important;
+          background: var(--theme-surface, rgba(255, 255, 255, 0.65)) !important;
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
-          border: 1px solid rgba(20, 23, 31, 0.06) !important;
+          border: 1px solid var(--theme-n-200, rgba(20, 23, 31, 0.06)) !important;
           border-radius: 24px !important;
           padding: 48px 48px;
           color: var(--l-ink) !important;
@@ -1825,14 +1825,14 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
         }
 
         .google-category-pill {
-          border: 1.5px solid rgba(60, 64, 67, 0.16);
+          border: 1px solid var(--theme-n-200, rgba(60, 64, 67, 0.16));
           position: relative;
           transition: all 0.25s ease;
         }
 
         .google-category-pill:hover:not(.active) {
           color: #1a73e8 !important;
-          background: #ffffff !important;
+          background: var(--theme-surface-raised, #ffffff) !important;
           animation: googleBorderCycle 3s linear infinite;
         }
 
@@ -1885,10 +1885,10 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
               fontSize: "0.85rem",
               fontWeight: "600",
               color: "var(--theme-ink, rgba(20, 20, 43, 0.55))",
-              background: "var(--theme-surface, rgba(255, 255, 255, 0.75))",
+              background: "var(--theme-surface-raised, rgba(255, 255, 255, 0.75))",
               backdropFilter: "blur(8px)",
               WebkitBackdropFilter: "blur(8px)",
-              border: "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.08))",
+              border: "1px solid var(--theme-n-200, rgba(20, 23, 31, 0.08))",
               padding: "9px 16px",
               borderRadius: "20px",
               boxShadow: "0 2px 8px -2px rgba(0, 0, 0, 0.03)"
@@ -1920,10 +1920,10 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
             style={{
               display: "inline-flex",
               alignItems: "center",
-              background: "var(--theme-surface, rgba(255, 255, 255, 0.9))",
+              background: "var(--theme-surface-raised, rgba(255, 255, 255, 0.9))",
               backdropFilter: "blur(12px)",
               WebkitBackdropFilter: "blur(12px)",
-              border: "1px solid var(--theme-n-700, rgba(60, 64, 67, 0.12))",
+              border: "1px solid var(--theme-n-200, rgba(60, 64, 67, 0.12))",
               borderRadius: "24px",
               padding: "4px",
               boxShadow: "0 1px 3px rgba(60, 64, 67, 0.08)",
@@ -1975,28 +1975,28 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "7px",
-                    background: isSelected ? activeData.colors.primary : "transparent",
-                    color: isSelected ? "#FFFFFF" : "var(--theme-n-600, #5F6368)",
+                    background: isSelected ? "var(--theme-ink, #14142B)" : "transparent",
+                    color: isSelected ? "var(--theme-on-ink, #FFFFFF)" : "var(--theme-n-600, #5F6368)",
                     border: "none",
                     borderRadius: "20px",
                     padding: "7px 15px",
                     fontSize: "0.83rem",
                     fontWeight: isSelected ? "700" : "500",
                     cursor: "pointer",
-                    boxShadow: isSelected ? `0 2px 8px -1px ${activeData.colors.primary}45` : "none",
+                    boxShadow: isSelected ? "0 4px 12px -4px rgba(20, 20, 43, 0.35)" : "none",
                     transition: "all 0.2s cubic-bezier(0.2, 0, 0, 1)",
                     whiteSpace: "nowrap"
                   }}
                   onMouseEnter={(e) => {
                     if (!isSelected) {
-                      e.currentTarget.style.background = "rgba(60, 64, 67, 0.08)";
-                      e.currentTarget.style.color = "#202124";
+                      e.currentTarget.style.background = "var(--theme-n-100, rgba(60, 64, 67, 0.08))";
+                      e.currentTarget.style.color = "var(--theme-ink, #202124)";
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isSelected) {
                       e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.color = "#5F6368";
+                      e.currentTarget.style.color = "var(--theme-n-600, #5F6368)";
                     }
                   }}
                 >
@@ -2087,8 +2087,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                     height: "48px",
                     padding: courseSearchQuery ? "0 46px 0 52px" : "0 22px 0 52px",
                     borderRadius: "24px",
-                    border: "1.5px solid var(--theme-n-700, rgba(60, 64, 67, 0.18))",
-                    background: "var(--theme-surface, #FFFFFF)",
+                    border: "1px solid var(--theme-n-200, rgba(60, 64, 67, 0.18))",
+                    background: "var(--theme-surface-raised, #FFFFFF)",
                     color: "var(--theme-ink, #202124)",
                     fontSize: "0.94rem",
                     fontWeight: "500",
@@ -2101,7 +2101,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                     e.currentTarget.style.boxShadow = "0 1px 6px rgba(26, 115, 232, 0.25), 0 0 0 3px rgba(26, 115, 232, 0.12)";
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(60, 64, 67, 0.18)";
+                    e.currentTarget.style.borderColor = "var(--theme-n-200, rgba(60, 64, 67, 0.18))";
                     e.currentTarget.style.boxShadow = "0 1px 6px rgba(32, 33, 36, 0.08)";
                   }}
                 />
@@ -2119,7 +2119,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                       height: "24px",
                       borderRadius: "50%",
                       border: "none",
-                      background: "var(--theme-n-700, rgba(60, 64, 67, 0.08))",
+                      background: "var(--theme-n-100, rgba(60, 64, 67, 0.08))",
                       color: "var(--theme-n-600, #5F6368)",
                       display: "flex",
                       alignItems: "center",
@@ -2130,8 +2130,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                       lineHeight: "1",
                       transition: "all 0.15s ease"
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(60, 64, 67, 0.16)"; e.currentTarget.style.color = "#202124"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(60, 64, 67, 0.08)"; e.currentTarget.style.color = "#5F6368"; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "var(--theme-n-200, rgba(60, 64, 67, 0.16))"; e.currentTarget.style.color = "var(--theme-ink, #202124)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "var(--theme-n-100, rgba(60, 64, 67, 0.08))"; e.currentTarget.style.color = "var(--theme-n-600, #5F6368)"; }}
                   >
                     ×
                   </button>
@@ -2241,8 +2241,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                     height: "48px",
                     padding: courseSearchQuery ? "0 46px 0 52px" : "0 22px 0 52px",
                     borderRadius: "24px",
-                    border: "1.5px solid var(--theme-n-700, rgba(60, 64, 67, 0.18))",
-                    background: "var(--theme-surface, #FFFFFF)",
+                    border: "1px solid var(--theme-n-200, rgba(60, 64, 67, 0.18))",
+                    background: "var(--theme-surface-raised, #FFFFFF)",
                     color: "var(--theme-ink, #202124)",
                     fontSize: "0.94rem",
                     fontWeight: "500",
@@ -2255,7 +2255,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                     e.currentTarget.style.boxShadow = "0 1px 6px rgba(26, 115, 232, 0.25), 0 0 0 3px rgba(26, 115, 232, 0.12)";
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(60, 64, 67, 0.18)";
+                    e.currentTarget.style.borderColor = "var(--theme-n-200, rgba(60, 64, 67, 0.18))";
                     e.currentTarget.style.boxShadow = "0 1px 6px rgba(32, 33, 36, 0.08)";
                   }}
                 />
@@ -2273,7 +2273,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                       height: "24px",
                       borderRadius: "50%",
                       border: "none",
-                      background: "var(--theme-n-700, rgba(60, 64, 67, 0.08))",
+                      background: "var(--theme-n-100, rgba(60, 64, 67, 0.08))",
                       color: "var(--theme-n-600, #5F6368)",
                       display: "flex",
                       alignItems: "center",
@@ -2284,8 +2284,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                       lineHeight: "1",
                       transition: "all 0.15s ease"
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(60, 64, 67, 0.16)"; e.currentTarget.style.color = "#202124"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(60, 64, 67, 0.08)"; e.currentTarget.style.color = "#5F6368"; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "var(--theme-n-200, rgba(60, 64, 67, 0.16))"; e.currentTarget.style.color = "var(--theme-ink, #202124)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "var(--theme-n-100, rgba(60, 64, 67, 0.08))"; e.currentTarget.style.color = "var(--theme-n-600, #5F6368)"; }}
                   >
                     ×
                   </button>
@@ -2330,8 +2330,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                 width: "32px",
                 height: "32px",
                 borderRadius: "50%",
-                background: "var(--theme-surface, #FFFFFF)",
-                border: "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.12))",
+                background: "var(--theme-surface-raised, #FFFFFF)",
+                border: "1px solid var(--theme-n-200, rgba(20, 23, 31, 0.12))",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
                 display: "flex",
                 alignItems: "center",
@@ -2362,8 +2362,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                 width: "32px",
                 height: "32px",
                 borderRadius: "50%",
-                background: "var(--theme-surface, #FFFFFF)",
-                border: "1px solid var(--theme-n-900, rgba(20, 23, 31, 0.12))",
+                background: "var(--theme-surface-raised, #FFFFFF)",
+                border: "1px solid var(--theme-n-200, rgba(20, 23, 31, 0.12))",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
                 display: "flex",
                 alignItems: "center",
@@ -2485,8 +2485,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
             width: "44px",
             height: "44px",
             borderRadius: "50%",
-            background: "var(--theme-surface, #FFFFFF)",
-            border: "1px solid var(--theme-n-700, rgba(60, 64, 67, 0.16))",
+            background: "var(--theme-surface-raised, #FFFFFF)",
+            border: "1px solid var(--theme-n-200, rgba(60, 64, 67, 0.16))",
             color: "#1A73E8",
             display: "flex",
             alignItems: "center",

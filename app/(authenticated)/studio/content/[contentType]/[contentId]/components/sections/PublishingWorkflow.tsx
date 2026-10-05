@@ -19,7 +19,7 @@ function WorkflowStepper({ statusKey, reviewStatus }: { statusKey?: string; revi
     <div className="flex items-center justify-center py-4 sm:py-6 w-full">
       <div className="flex items-center gap-16 sm:gap-28 relative max-w-md w-full justify-between">
         {/* Connecting dashed line behind circles */}
-        <div className="absolute top-5 left-8 right-8 h-0 border-b-2 border-dashed border-slate-200 dark:border-slate-800 z-0" />
+        <div className="absolute top-5 left-8 right-8 h-0 border-b-2 border-dashed border-slate-200 z-0" />
 
         {/* Step 1: Draft */}
         <div className="flex flex-col items-center gap-2 z-10">
@@ -27,7 +27,7 @@ function WorkflowStepper({ statusKey, reviewStatus }: { statusKey?: string; revi
             className={`flex size-11 items-center justify-center rounded-full transition-all ${
               isDraft
                 ? "bg-blue-50 text-blue-600 border-2 border-blue-600 dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-500 shadow-2xs"
-                : "bg-white text-slate-400 border border-slate-200 dark:bg-slate-900 dark:border-slate-800"
+                : "bg-surface text-slate-400 border border-slate-200"
             }`}
           >
             <Pencil size={18} className={isDraft ? "text-blue-600 dark:text-blue-400" : "text-slate-400"} />
@@ -43,7 +43,7 @@ function WorkflowStepper({ statusKey, reviewStatus }: { statusKey?: string; revi
             className={`flex size-11 items-center justify-center rounded-full transition-all ${
               isReview
                 ? "bg-blue-600 text-white border-2 border-blue-600 shadow-2xs"
-                : "bg-white text-slate-400 border border-slate-200 dark:bg-slate-900 dark:border-slate-800"
+                : "bg-surface text-slate-400 border border-slate-200"
             }`}
           >
             <Eye size={18} className={isReview ? "text-white" : "text-slate-400"} />
@@ -59,7 +59,7 @@ function WorkflowStepper({ statusKey, reviewStatus }: { statusKey?: string; revi
             className={`flex size-11 items-center justify-center rounded-full transition-all ${
               isPublished
                 ? "bg-emerald-600 text-white border-2 border-emerald-600 shadow-2xs"
-                : "bg-white text-slate-400 border border-slate-200 dark:bg-slate-900 dark:border-slate-800"
+                : "bg-surface text-slate-400 border border-slate-200"
             }`}
           >
             <Flag size={18} className={isPublished ? "text-white" : "text-slate-400"} />
@@ -80,11 +80,11 @@ function DocumentDraftIllustration() {
       <div className="absolute inset-0 bg-blue-50/70 dark:bg-blue-950/40 rounded-full blur-2xs scale-95" />
 
       {/* Document page with lines */}
-      <div className="relative w-20 h-24 bg-white dark:bg-slate-900 rounded-2xl border border-blue-100/90 dark:border-blue-900/50 shadow-[0_8px_24px_rgba(32,92,168,0.08)] flex flex-col p-3 gap-2">
+      <div className="relative w-20 h-24 bg-surface rounded-2xl border border-blue-100/90 dark:border-blue-900/50 shadow-[0_8px_24px_rgba(32,92,168,0.08)] flex flex-col p-3 gap-2">
         <div className="w-10 h-2 bg-blue-100 dark:bg-blue-950 rounded-full" />
-        <div className="w-14 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full" />
-        <div className="w-12 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full" />
-        <div className="w-8 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full" />
+        <div className="w-14 h-1.5 bg-slate-100 rounded-full" />
+        <div className="w-12 h-1.5 bg-slate-100 rounded-full" />
+        <div className="w-8 h-1.5 bg-slate-100 rounded-full" />
 
         {/* Diagonal Blue Pencil Writing on Paper */}
         <div className="absolute -bottom-1 -right-1 bg-blue-600 text-white p-2 rounded-xl shadow-md rotate-12 flex items-center justify-center">
@@ -101,7 +101,7 @@ function EmptyPublishingHistory() {
       {/* Graphic center container with blue circular aura */}
       <div className="relative flex items-center justify-center size-32 mb-2">
         {/* Soft circular aura background */}
-        <div className="absolute size-24 bg-blue-50/80 dark:bg-slate-800/50 rounded-full" />
+        <div className="absolute size-24 bg-blue-50/80 rounded-full dark:bg-blue-500/10" />
 
         {/* Curving dashed line SVG sweeping behind */}
         <svg className="absolute inset-0 size-full overflow-visible pointer-events-none" viewBox="0 0 100 100">
@@ -115,20 +115,20 @@ function EmptyPublishingHistory() {
         </svg>
 
         {/* Paper Document scroll with Clock icon badge */}
-        <div className="relative w-14 h-16 bg-white dark:bg-slate-900 rounded-xl border border-blue-100 dark:border-slate-800 flex flex-col p-2.5 gap-1.5 shadow-2xs">
+        <div className="relative w-14 h-16 bg-surface rounded-xl border border-blue-100 flex flex-col p-2.5 gap-1.5 shadow-2xs dark:border-blue-500/25">
           <div className="w-8 h-1.5 bg-blue-100 dark:bg-blue-950 rounded-full" />
-          <div className="w-9 h-1 bg-slate-100 dark:bg-slate-800 rounded-full" />
-          <div className="w-6 h-1 bg-slate-100 dark:bg-slate-800 rounded-full" />
+          <div className="w-9 h-1 bg-slate-100 rounded-full" />
+          <div className="w-6 h-1 bg-slate-100 rounded-full" />
 
           {/* Blue Clock Badge */}
-          <div className="absolute -bottom-2 -right-2 bg-blue-600 text-white p-1.5 rounded-full border-2 border-white dark:border-slate-900 shadow-xs">
+          <div className="absolute -bottom-2 -right-2 bg-blue-600 text-white p-1.5 rounded-full border-2 border-surface shadow-xs">
             <Clock size={13} />
           </div>
         </div>
       </div>
 
-      <h4 className="text-base font-extrabold text-slate-900 dark:text-white">No publishing history yet</h4>
-      <p className="text-xs font-medium text-slate-500 dark:text-slate-400 max-w-sm mt-1 leading-relaxed">
+      <h4 className="text-base font-extrabold text-slate-900">No publishing history yet</h4>
+      <p className="text-xs font-medium text-slate-500 max-w-sm mt-1 leading-relaxed">
         This content is still in draft and has not entered the platform review process.
       </p>
     </div>
@@ -166,11 +166,11 @@ export function PublishingWorkflow({
       <WorkflowStepper statusKey={statusKey} reviewStatus={review?.status} />
 
       {/* 2. Main Workflow Action Card (Illustration + Vertical Divider + Details + Submit Button) */}
-      <div className="flex flex-col sm:flex-row items-center gap-6 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
+      <div className="flex flex-col sm:flex-row items-center gap-6 p-6 sm:p-8 rounded-3xl border border-slate-200/80 bg-surface/95 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
         <DocumentDraftIllustration />
 
         {/* Subtle vertical separator line matching mockup */}
-        <div className="w-px bg-slate-200/80 dark:border-slate-800 self-stretch my-2 hidden sm:block" />
+        <div className="w-px bg-slate-200/80 self-stretch my-2 hidden sm:block" />
 
         <div className="flex flex-col gap-3 flex-1 text-center sm:text-left items-center sm:items-start">
           {review?.status === "OPEN" ? (
@@ -178,10 +178,10 @@ export function PublishingWorkflow({
               <span className="inline-flex items-center gap-1.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 text-xs font-extrabold dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-800">
                 In Review
               </span>
-              <p className="text-xs text-slate-500 leading-relaxed dark:text-slate-400">
+              <p className="text-xs text-slate-500 leading-relaxed">
                 Submitted on {formatDate(review.currentRoundDetail?.submittedAt)} &bull; Review round #{review.currentRound}
               </p>
-              <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+              <p className="text-xs font-medium text-slate-600">
                 Awaiting a reviewer decision. You will be notified here once it is reviewed.
               </p>
             </>
@@ -197,7 +197,7 @@ export function PublishingWorkflow({
               )}
               <Link
                 href={editHref}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#0B132B] px-5 py-2.5 text-xs font-bold text-white hover:bg-blue-600 transition-colors shadow-sm dark:bg-white dark:text-slate-900"
+                className="inline-flex items-center gap-2 rounded-xl bg-ink px-5 py-2.5 text-xs font-bold text-on-ink hover:bg-blue-600 transition-colors shadow-sm"
               >
                 <Pencil size={14} /> Continue Editing
               </Link>
@@ -207,7 +207,7 @@ export function PublishingWorkflow({
               <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 text-xs font-extrabold dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800">
                 Published
               </span>
-              <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+              <p className="text-xs font-medium text-slate-600">
                 This course is live and accessible to enrolled learners on the platform.
               </p>
             </>
@@ -216,7 +216,7 @@ export function PublishingWorkflow({
               <span className="inline-flex items-center gap-1.5 rounded-md bg-[#FFF3E0] text-[#E65100] dark:bg-amber-950/60 dark:text-amber-400 font-extrabold px-3 py-1 text-xs">
                 Draft
               </span>
-              <p className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400">
+              <p className="text-xs sm:text-sm font-medium text-slate-600">
                 This content has not been submitted for platform review.
               </p>
 
@@ -246,10 +246,10 @@ export function PublishingWorkflow({
       {/* 3. Publishing History Section */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-4">
-          <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 shrink-0">
+          <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 shrink-0">
             PUBLISHING HISTORY
           </h3>
-          <div className="h-px bg-slate-200/80 dark:bg-slate-800 flex-1" />
+          <div className="h-px bg-slate-200/80 flex-1" />
         </div>
 
         {historyEntries && historyEntries.length > 0 ? (

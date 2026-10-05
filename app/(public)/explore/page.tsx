@@ -1219,6 +1219,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
   // RENDER OPTION B: Main Explore Hub Dashboard
   return (
     <div
+      className="theme-page-bg theme-wallpaper-frost"
       style={{
         background: `var(--theme-wash, 
           radial-gradient(ellipse 55% 40% at 8% 12%, rgba(59, 130, 246, 0.16) 0%, transparent 60%),
@@ -1366,7 +1367,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
             style={{
               position: "relative",
               background: activeTab === "courses" ? "var(--theme-n-100, #EFF6FF)" : "var(--theme-surface, #FFFFFF)",
-              border: activeTab === "courses" ? "3px solid #3B82F6" : "2px solid var(--theme-n-200, #E5E7EB)",
+              border: activeTab === "courses" ? "3px solid #3B82F6" : "1px solid var(--theme-n-200, #E5E7EB)",
               borderRadius: "20px",
               padding: "24px 20px",
               cursor: "pointer",
@@ -1445,7 +1446,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
             style={{
               position: "relative",
               background: activeTab === "bootcamps" ? "var(--theme-n-100, #F5F3FF)" : "var(--theme-surface, #FFFFFF)",
-              border: activeTab === "bootcamps" ? "3px solid #8B5CF6" : "2px solid var(--theme-n-200, #E5E7EB)",
+              border: activeTab === "bootcamps" ? "3px solid #8B5CF6" : "1px solid var(--theme-n-200, #E5E7EB)",
               borderRadius: "20px",
               padding: "24px 20px",
               cursor: "pointer",
@@ -1523,7 +1524,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
             style={{
               position: "relative",
               background: activeTab === "exams" ? "var(--theme-n-100, #EFF4FC)" : "var(--theme-surface, #FFFFFF)",
-              border: activeTab === "exams" ? "3px solid var(--theme-ink, #0A1931)" : "2px solid var(--theme-n-200, #E5E7EB)",
+              border: activeTab === "exams" ? "3px solid var(--theme-ink, #0A1931)" : "1px solid var(--theme-n-200, #E5E7EB)",
               borderRadius: "20px",
               padding: "24px 20px",
               cursor: "pointer",
