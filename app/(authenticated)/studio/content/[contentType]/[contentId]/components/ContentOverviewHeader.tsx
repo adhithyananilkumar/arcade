@@ -190,7 +190,10 @@ export function ContentOverviewHeader({
     variant: "primary" as const,
   };
 
-  if (reviewStatus === "OPEN") {
+  // The content's own status decides "in review" too: the review record can fail to load (a
+  // collaborator outside the channel gets 403 on it), and Submit would then show for content the
+  // server already holds in review — every press a 422.
+  if (reviewStatus === "OPEN" || (statusKey === "SUBMITTED" && reviewStatus !== "CHANGES_REQUESTED")) {
     primaryActions.push({ key: "view-review", label: "View Review", icon: Send, onClick: onJumpToPublishing, variant: "primary" });
   } else if (reviewStatus === "CHANGES_REQUESTED") {
     primaryActions.push({ key: "resolve", label: "Resolve Changes", icon: Send, onClick: onJumpToPublishing, variant: "primary" });
@@ -218,12 +221,12 @@ export function ContentOverviewHeader({
 
       <div className="mx-auto flex max-w-4xl flex-col items-center justify-center text-center">
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Satisfy&family=Alex+Brush&display=swap');`}</style>
-        <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <span className="rounded-full bg-slate-100 px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">
           {tiedTo === "course" ? "Course Exam" : tiedTo === "event" ? "Event Exam" : CONTENT_TYPE_LABEL[segment] ?? segment}
         </span>
 
         <h1
-          className="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 bg-clip-text py-0.5 text-center text-4xl font-bold leading-tight tracking-wide text-transparent sm:text-5xl lg:text-6xl"
+          className="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 bg-clip-text dark:via-indigo-200 dark:to-blue-300 py-0.5 text-center text-4xl font-bold leading-tight tracking-wide text-transparent sm:text-5xl lg:text-6xl"
           style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Great Vibes', 'Alex Brush', cursive" }}
         >
           {title}

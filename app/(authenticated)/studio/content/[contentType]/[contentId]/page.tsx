@@ -298,10 +298,12 @@ function ContentOverviewPageContent() {
 
   return (
     <div className="relative flex min-h-screen flex-1 flex-col overflow-hidden w-full text-slate-900 font-sans">
-      {/* Decorative clean ambient light background */}
+      {/* Page backdrop. One layer: --theme-wash is the themed page ground (dark, high contrast);
+          the light gradient is only its fallback. A separate `dark:block bg-slate-950` layer used
+          to paint dark mode, but slate already flips there, so it painted a near-white page. */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 dark:hidden -z-10"
+        className="theme-page-layer pointer-events-none fixed inset-0 -z-10"
         style={{
           background: `var(--theme-wash,
             radial-gradient(ellipse 55% 40% at 8% 12%, rgba(41, 98, 214, 0.12) 0%, transparent 60%),
@@ -310,7 +312,6 @@ function ContentOverviewPageContent() {
           )`,
         }}
       />
-      <div aria-hidden className="pointer-events-none fixed inset-0 hidden dark:block -z-10 bg-slate-950" />
 
       <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 pt-4 pb-12 sm:px-6 sm:pt-6 lg:pt-7">
         <ContentOverviewHeader

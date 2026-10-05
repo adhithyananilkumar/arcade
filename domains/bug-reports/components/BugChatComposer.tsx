@@ -144,7 +144,7 @@ export function BugChatComposer({
             <kbd className="rounded border border-slate-200 bg-slate-50 px-1 font-sans text-[10px]">Enter</kbd> to send
           </span>
           {near && (
-            <span className="ml-auto text-[10.5px] tabular-nums text-amber-600">
+            <span className="ml-auto text-[10.5px] tabular-nums text-amber-600 dark:text-amber-400">
               {body.length}/{MAX_LENGTH}
             </span>
           )}

@@ -303,7 +303,7 @@ export function BugIsland() {
               }}
               aria-label="Report a bug"
               title="Report a bug · drag to move"
-              className={`apple-glass-dock relative grid size-12 touch-none select-none place-items-center rounded-full text-slate-700 transition-colors hover:text-indigo-600 ${
+              className={`apple-glass-dock relative grid size-12 touch-none select-none place-items-center rounded-full text-slate-700 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 ${
                 dragAt ? 'cursor-grabbing shadow-2xl' : 'cursor-pointer'
               }`}
             >
