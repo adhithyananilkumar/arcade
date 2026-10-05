@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FileQuestion, Plus, Search, X } from "lucide-react";
+import { Check, FileQuestion, Plus, Search, X } from "lucide-react";
 import {
   promptToPlainText,
   searchBankQuestions,
@@ -44,6 +44,7 @@ export function QuestionListPreview({
   reloadKey,
   onOpenQuestion,
   onAddQuestion,
+  onFinish,
   readOnly,
 }: {
   bankId: string | null;
@@ -54,6 +55,7 @@ export function QuestionListPreview({
   reloadKey: number;
   onOpenQuestion: (question: BankQuestionResponse) => void;
   onAddQuestion?: () => void;
+  onFinish?: () => void;
   readOnly?: boolean;
 }) {
   const [search, setSearch] = useState("");
@@ -289,6 +291,16 @@ export function QuestionListPreview({
               className="flex items-center justify-center gap-1.5 rounded-2xl border border-dashed border-slate-300 px-4 py-3 text-xs font-bold text-slate-400 transition-colors hover:border-slate-400 hover:bg-surface/60 hover:text-ink"
             >
               <Plus size={14} /> Add question
+            </button>
+          )}
+
+          {onFinish && (
+            <button
+              type="button"
+              onClick={onFinish}
+              className="flex items-center justify-center gap-1.5 rounded-2xl bg-ink px-4 py-2.5 text-xs font-bold text-on-ink shadow-sm transition-colors hover:bg-ink-hover cursor-pointer"
+            >
+              <Check size={14} strokeWidth={2.5} /> Finish
             </button>
           )}
         </>

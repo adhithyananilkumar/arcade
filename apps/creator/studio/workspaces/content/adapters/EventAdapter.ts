@@ -1,7 +1,7 @@
 import { api } from "@/infrastructure/http/api";
 import { ContentDataAdapter, ContentMeta, ContainerNode, ExamSummary, LeafNode, RootBadgeNode, Terminology } from "../types";
 import type { Event, EventSession } from "@/app/(authenticated)/studio/events/types";
-import { createEventExam, getEventExam, untieExam, updateExam } from "@/domains/assessments";
+import { createEventExam, getEventExam, getExamQuestionBank, untieExam, updateExam } from "@/domains/assessments";
 
 export class EventAdapter implements ContentDataAdapter {
   private eventId: string;
@@ -155,16 +155,22 @@ export class EventAdapter implements ContentDataAdapter {
 
   async listExams(contentId: string): Promise<ExamSummary[]> {
     const exam = await getEventExam(contentId);
-    return exam ? [{ id: exam.id, title: exam.title, published: exam.published }] : [];
+    if (!exam) return [];
+    try {
+      const bank = await getExamQuestionBank(exam.id);
+      return [{ id: exam.id, title: exam.title, published: exam.published, questionCount: bank.questionCount }];
+    } catch {
+      return [{ id: exam.id, title: exam.title, published: exam.published, questionCount: 0 }];
+    }
   }
 
   async createAndAttachExam(contentId: string, title: string): Promise<ExamSummary> {
     const exam = await createEventExam(contentId);
     if (exam.planCount === 0 && title && exam.title !== title) {
       const renamed = await updateExam(exam.id, { title });
-      return { id: renamed.id, title: renamed.title, published: renamed.published };
+      return { id: renamed.id, title: renamed.title, published: renamed.published, questionCount: 0 };
     }
-    return { id: exam.id, title: exam.title, published: exam.published };
+    return { id: exam.id, title: exam.title, published: exam.published, questionCount: 0 };
   }
 
   async detachExam(_contentId: string, examId: string): Promise<void> {

@@ -172,6 +172,17 @@ export function ExamWorkspace({ examId }: { examId: string }) {
     [activeSectionId, saveManager]
   );
 
+  const handleFinish = useCallback(async () => {
+    await saveManager.flush();
+    if (exam?.tieType === "COURSE" && exam.tiedContentId) {
+      router.push(`/studio/course/${exam.tiedContentId}/edit`);
+    } else if (exam?.tieType === "EVENT" && exam.tiedContentId) {
+      router.push(`/studio/events/${exam.tiedContentId}/edit`);
+    } else {
+      router.push(`/studio/content/exam/${examId}`);
+    }
+  }, [exam?.tieType, exam?.tiedContentId, examId, router, saveManager]);
+
   /**
    * Opening a section closes whatever question was open — the canvas always shows something
    * belonging to the section the tree has expanded. Done here rather than in an effect so
@@ -589,11 +600,14 @@ export function ExamWorkspace({ examId }: { examId: string }) {
   return (
     <StudioEditorFrame>
       <StudioEditorTopBar
-        onBack={async () => {
-          await saveManager.flush();
-          router.push(`/studio/content/exam/${examId}`);
-        }}
-        backTitle="Back to the exam overview"
+        onBack={handleFinish}
+        backTitle={
+          exam.tieType === "COURSE"
+            ? "Back to course editor"
+            : exam.tieType === "EVENT"
+            ? "Back to event editor"
+            : "Back to exam overview"
+        }
         breadcrumb={
           activeQuestion && activeSection ? (
             <div className="flex items-center gap-1.5 text-gray-500">
@@ -748,6 +762,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
                   ? () => addQuestionTo(activeSectionId || sections[0].id)
                   : undefined
               }
+              onFinish={handleFinish}
             />
           )}
         </div>
