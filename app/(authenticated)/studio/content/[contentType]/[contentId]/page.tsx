@@ -325,6 +325,7 @@ function ContentOverviewPageContent() {
           review={review}
           onJumpToPublishing={() => selectTab("publishing")}
           tiedExam={tiedExam}
+          tiedTo={tiedExam ? (tiedCourseId ? "course" : tiedEventId ? "event" : null) : null}
           onPreview={segment === "exam" ? () => selectTab("preview") : undefined}
           parent={parentLink}
           leading={

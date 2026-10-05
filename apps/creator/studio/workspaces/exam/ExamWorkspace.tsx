@@ -28,7 +28,7 @@ import {
   Plus,
   ToggleLeft,
   Trash2,
-  SlidersHorizontal,
+  Settings,
   UploadCloud,
 } from "lucide-react";
 import {
@@ -608,6 +608,9 @@ export function ExamWorkspace({ examId }: { examId: string }) {
     </>
   );
 
+  // A linked exam is its course's or event's exam; say so where the type is named.
+  const examKindLabel = exam.tieType === "COURSE" ? "Course Exam" : exam.tieType === "EVENT" ? "Event Exam" : "Exam";
+
   return (
     <StudioEditorFrame>
       <StudioEditorTopBar
@@ -623,7 +626,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
           activeQuestion && activeSection ? (
             <div className="flex items-center gap-1.5 text-gray-500">
               <span className="rounded-md bg-ink/5 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ink/50">
-                Exam
+                {examKindLabel}
               </span>
               <span className="text-gray-300">·</span>
               <span className="block max-w-[15vw] truncate font-medium">{activeSection.title}</span>
@@ -635,7 +638,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
           ) : (
             <div className="flex items-center gap-1.5 text-gray-500">
               <span className="rounded-md bg-ink/5 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ink/50">
-                Exam
+                {examKindLabel}
               </span>
               <span className="text-gray-300">·</span>
               <span className="block max-w-[28vw] truncate text-ink">{exam.title}</span>
@@ -658,29 +661,16 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         }}
         panelOpen={panel.open}
         onTogglePanel={() => panel.setOpen(!panel.open)}
-        workspaceActionsBefore={
-          exam.tieType ? (
-            <>
-              <span
-                title={`This exam is tied to ${exam.tiedContentTitle ?? "its " + exam.tieType.toLowerCase()} and is reviewed and published with it.`}
-                className="hidden lg:inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface/70 px-3 py-1.5 text-[11px] font-semibold text-slate-600 backdrop-blur-md"
-              >
-                {exam.tieType === "COURSE" ? "Course exam" : "Event exam"}
-                {exam.tiedContentTitle ? ` · ${exam.tiedContentTitle}` : ""}
-              </span>
-              {/* A linked exam's back arrow returns to its course/event editor, so its own
-                  dashboard (plans, pools, settings) needs a door of its own. */}
-              <button
-                type="button"
-                onClick={handleOpenExamSettings}
-                title="Open this exam's dashboard on its plans: duration, attempts, pass mark, pools and settings"
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 bg-surface/80 px-3 py-1.5 text-[11px] font-bold text-slate-700 backdrop-blur-md transition-colors hover:border-blue-200 hover:text-blue-600 dark:hover:border-blue-500/25 dark:hover:text-blue-400"
-              >
-                <SlidersHorizontal size={13} />
-                <span className="hidden sm:inline">Exam settings</span>
-              </button>
-            </>
-          ) : undefined
+        // A linked exam's back arrow returns to its course/event editor, so its own dashboard
+        // (plans, pools, settings) gets a door of its own, right beside Back.
+        secondaryNav={
+          exam.tieType
+            ? {
+                icon: <Settings size={16} />,
+                title: "Exam settings — plans, pools and settings for this exam",
+                onClick: handleOpenExamSettings,
+              }
+            : null
         }
         primaryAction={
           !readOnly && !exam.tieType

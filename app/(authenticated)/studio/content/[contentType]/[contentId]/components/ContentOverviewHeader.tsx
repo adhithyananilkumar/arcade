@@ -79,6 +79,7 @@ export function ContentOverviewHeader({
   channelSuspended,
   onJumpToPublishing,
   tiedExam = false,
+  tiedTo,
   onPreview,
   parent,
   leading,
@@ -96,6 +97,8 @@ export function ContentOverviewHeader({
   onJumpToPublishing: () => void;
   /** An exam tied to a course or event: reviewed with its parent, so it offers no submit of its own. */
   tiedExam?: boolean;
+  /** What a linked exam belongs to, so its type reads "Course Exam" / "Event Exam". */
+  tiedTo?: "course" | "event" | null;
   /** For types whose preview is a tab rather than a route (an exam previews per plan). */
   onPreview?: () => void;
   /** A linked exam's course or event, offered in the overflow menu. */
@@ -216,7 +219,7 @@ export function ContentOverviewHeader({
       <div className="mx-auto flex max-w-4xl flex-col items-center justify-center text-center">
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Satisfy&family=Alex+Brush&display=swap');`}</style>
         <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          {CONTENT_TYPE_LABEL[segment] ?? segment}
+          {tiedTo === "course" ? "Course Exam" : tiedTo === "event" ? "Event Exam" : CONTENT_TYPE_LABEL[segment] ?? segment}
         </span>
 
         <h1

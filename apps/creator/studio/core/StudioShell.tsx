@@ -67,10 +67,20 @@ export interface StudioPrimaryAction {
   title?: string;
 }
 
+/** A round icon button beside Back: a second way out of the editor (e.g. an exam's settings). */
+export interface StudioNavAction {
+  icon: ReactNode;
+  /** Tooltip and accessible name. */
+  title: string;
+  onClick: () => void;
+  disabled?: boolean;
+}
+
 export function StudioEditorTopBar({
   onBack,
   backDisabled,
   backTitle = "Save and return to Content Studio",
+  secondaryNav,
   breadcrumb,
   saveState,
   collaborators = [],
@@ -84,6 +94,8 @@ export function StudioEditorTopBar({
   onBack: () => void;
   backDisabled?: boolean;
   backTitle?: string;
+  /** Rendered right after Back, in the same style. Omit/`null` for none. */
+  secondaryNav?: StudioNavAction | null;
   /** Contents of the centered pill — a breadcrumb, or the content title when nothing is open. */
   breadcrumb: ReactNode;
   /**
@@ -137,6 +149,19 @@ export function StudioEditorTopBar({
           >
             <ArrowLeft size={16} />
           </button>
+
+          {secondaryNav && (
+            <button
+              type="button"
+              onClick={secondaryNav.onClick}
+              disabled={secondaryNav.disabled}
+              title={secondaryNav.title}
+              aria-label={secondaryNav.title}
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/40 bg-surface/60 text-ink shadow-sm transition-all duration-300 hover:bg-surface hover:shadow-md disabled:opacity-60 backdrop-blur-md"
+            >
+              {secondaryNav.icon}
+            </button>
+          )}
         </div>
 
         {/* Center: breadcrumb / title pill */}
