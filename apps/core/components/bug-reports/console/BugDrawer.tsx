@@ -2,16 +2,20 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, ClipboardCopy, ExternalLink, FileCode2, ImagePlus, Link2, Loader2, Lock, Send, UserCheck, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { ChevronDown, ClipboardCopy, Download, ExternalLink, FileCode2, ImagePlus, Link2, Loader2, UserCheck, X } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   absoluteTime,
   BugAttachmentGallery,
+  BugChatComposer,
   BugImpactBadge,
   BugStatusBadge,
   BugTimeline,
   BugTriageService,
+  buildBugReportExport,
   CategoryIcon,
+  downloadJson,
   IMPACT_LABEL,
   PersonAvatar,
   PRIORITY_LABEL,
@@ -23,6 +27,7 @@ import {
   type BugPriority,
   type BugReportDetail,
   type BugResolution,
+  type BugTimelineFilter,
   type BugSeverity,
   type BugStatus,
   type TriageField,
@@ -119,10 +124,16 @@ export function BugDrawer({
   const [note, setNote] = useState('');
   const [notifyReporter, setNotifyReporter] = useState(true);
 
-  const [comment, setComment] = useState('');
-  const [internal, setInternal] = useState(false);
-  const [techOpen, setTechOpen] = useState(true);
+  const [techOpen, setTechOpen] = useState(false);
+  const [feed, setFeed] = useState<BugTimelineFilter>('all');
+  const [exporting, setExporting] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Portalled to <body>: inside the app shell's stacking context the floating navbar and the bug
+  // island would paint over the drawer.
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -212,10 +223,34 @@ export function BugDrawer({
     if (ok) setTarget(null);
   };
 
-  const sendComment = async () => {
-    if (!comment.trim()) return;
-    const ok = await act('comment', () => BugTriageService.comment(bugId, comment.trim(), internal));
-    if (ok) setComment('');
+  const sendComment = async (body: string, internal: boolean) => {
+    const ok = await act('comment', () => BugTriageService.comment(bugId, body, internal));
+    if (ok) {
+      if (feed === 'events') setFeed('all');
+      requestAnimationFrame(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }));
+    }
+    return ok;
+  };
+
+  const exportJson = async () => {
+    if (!detail) return;
+    setExporting(true);
+    try {
+      const data = await buildBugReportExport(detail, {
+        trackerUrl: permalink,
+        exportedBy: user ? { id: user.id, name: user.fullName, email: user.email, avatarUrl: null } : null,
+        names,
+      });
+      downloadJson(`${detail.summary.key}.json`, data);
+      const linked = data.screenshots.filter((x) => 'url' in x).length;
+      toast.success(
+        linked ? `${detail.summary.key}.json downloaded — ${linked} screenshot link${linked > 1 ? 's' : ''} expire in ~30 min` : `${detail.summary.key}.json downloaded`,
+      );
+    } catch (err) {
+      toast.error(errorMessage(err, 'Could not build the export.'));
+    } finally {
+      setExporting(false);
+    }
   };
 
   const permalink = typeof window !== 'undefined' ? `${window.location.origin}/console/bugs?bug=${bugId}` : '';
@@ -229,19 +264,32 @@ export function BugDrawer({
   const s = detail?.summary;
   const env = flatten(detail?.environment);
 
-  return (
-    <div className="fixed inset-0 z-[80] flex justify-end" role="dialog" aria-modal="true" aria-label="Bug report">
-      <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 cursor-default bg-slate-900/30 backdrop-blur-[2px]" />
-      <aside className="relative flex h-full w-full max-w-[720px] flex-col overflow-y-auto bg-surface shadow-2xl">
-        <header className="sticky top-0 z-10 border-b border-slate-100 bg-surface/95 px-5 py-3.5 backdrop-blur">
+  const commentCount = detail?.activity.filter((e) => e.kind === 'COMMENT').length ?? 0;
+  const iconButton =
+    'cursor-pointer rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-40';
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[110] flex justify-end" role="dialog" aria-modal="true" aria-label={s ? `${s.key}: ${s.title}` : 'Bug report'}>
+      <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 cursor-default bg-slate-900/40 backdrop-blur-[3px]" />
+      <aside className="relative flex h-full w-full max-w-[760px] flex-col overflow-hidden border-l border-slate-200/80 bg-surface shadow-2xl">
+        <header className="shrink-0 border-b border-slate-200/80 bg-surface px-5 pb-4 pt-4">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="font-mono text-[12px] font-bold text-slate-500">{s?.key ?? '…'}</span>
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => s && copy(s.key, s.key)}
+                title="Copy ID"
+                className="cursor-pointer rounded-md font-mono text-[12px] font-bold text-slate-500 hover:text-slate-800"
+              >
+                {s?.key ?? '…'}
+              </button>
               {s && <BugStatusBadge status={s.status} />}
               {s && <BugImpactBadge impact={s.impact} />}
             </div>
-            <div className="flex items-center gap-1">
-              <button type="button" onClick={() => copy(permalink, 'Link')} title="Copy link" className="cursor-pointer rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+            <div className="flex shrink-0 items-center gap-0.5">
+              <button type="button" onClick={() => copy(permalink, 'Link')} title="Copy link" aria-label="Copy link" className={iconButton}>
                 <Link2 size={16} />
               </button>
               <button
@@ -249,21 +297,39 @@ export function BugDrawer({
                 disabled={!detail}
                 onClick={() => detail && copy(toMarkdown(detail, permalink), 'Markdown')}
                 title="Copy as Markdown (for GitHub / Linear)"
-                className="cursor-pointer rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Copy as Markdown"
+                className={iconButton}
               >
                 <ClipboardCopy size={16} />
               </button>
-              <button type="button" onClick={onClose} aria-label="Close" className="cursor-pointer rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+              <button
+                type="button"
+                disabled={!detail || exporting}
+                onClick={exportJson}
+                title="Download the full report as JSON — description, context, console, screenshots and every activity entry"
+                className="ml-1 inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3 py-1.5 text-[12px] font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {exporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />} JSON
+              </button>
+              <span className="mx-1 h-5 w-px bg-slate-200" aria-hidden />
+              <button type="button" onClick={onClose} aria-label="Close" title="Close (Esc)" className={iconButton}>
                 <X size={18} />
               </button>
             </div>
           </div>
-          {s && <h2 className="mt-1.5 text-[17px] font-bold leading-snug tracking-tight text-ink">{s.title}</h2>}
+          {s ? (
+            <h2 className="mt-2 line-clamp-3 text-[17px] font-bold leading-snug tracking-tight text-ink" title={s.title}>
+              {s.title}
+            </h2>
+          ) : (
+            <div className="mt-2 h-6 w-2/3 animate-pulse rounded bg-slate-100" />
+          )}
         </header>
 
+        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {error && <p className="m-5 rounded-xl bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">{error}</p>}
         {!detail && !error && (
-          <div className="flex flex-1 items-center justify-center">
+          <div className="flex h-full items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
           </div>
         )}
@@ -521,55 +587,56 @@ export function BugDrawer({
 
             {/* Activity */}
             <section>
-              <h3 className="mb-3 text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Activity</h3>
-              <BugTimeline activity={detail.activity} audience="staff" names={names} />
-            </section>
-
-            <section className="sticky bottom-0 -mx-5 border-t border-slate-100 bg-surface px-5 pb-5 pt-3">
-              <div className="mb-2 flex gap-1 rounded-full bg-slate-100 p-0.5 text-[11.5px] font-semibold">
-                <button
-                  type="button"
-                  onClick={() => setInternal(false)}
-                  className={`flex-1 cursor-pointer rounded-full py-1 ${!internal ? 'bg-surface text-slate-900 shadow-xs' : 'text-slate-500'}`}
-                >
-                  Reply to reporter
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setInternal(true)}
-                  className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1 rounded-full py-1 ${internal ? 'bg-amber-100 text-amber-900 shadow-xs dark:bg-amber-500/15 dark:text-amber-200' : 'text-slate-500'} dark:bg-amber-500/15 dark:text-amber-200`}
-                >
-                  <Lock size={11} /> Internal note
-                </button>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <h3 className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Activity</h3>
+                <div role="tablist" aria-label="Show" className="inline-flex gap-0.5 rounded-full bg-slate-100 p-0.5 text-[11px] font-semibold">
+                  {(
+                    [
+                      ['all', `All ${detail.activity.length}`],
+                      ['comments', `Messages ${commentCount}`],
+                      ['events', `Changes ${detail.activity.length - commentCount}`],
+                    ] as [BugTimelineFilter, string][]
+                  ).map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      role="tab"
+                      aria-selected={feed === key}
+                      onClick={() => setFeed(key)}
+                      className={`cursor-pointer rounded-full px-2.5 py-0.5 transition ${feed === key ? 'bg-surface text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex items-end gap-2">
-                <textarea
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) sendComment();
-                  }}
-                  rows={2}
-                  maxLength={4000}
-                  placeholder={internal ? 'Only staff will see this… (Ctrl+Enter to send)' : 'The reporter will be notified… (Ctrl+Enter to send)'}
-                  className={`min-w-0 flex-1 resize-none rounded-xl border px-3 py-2 text-[12.5px] focus:outline-none focus:ring-2 ${
-                    internal ? 'border-amber-300 bg-amber-50/50 focus:ring-amber-100 dark:border-amber-500/40 dark:bg-amber-500/10 dark:focus:ring-amber-500/25' : 'border-slate-200 focus:border-indigo-300 focus:ring-indigo-100 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/25'
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={sendComment}
-                  disabled={!comment.trim() || saving === 'comment'}
-                  aria-label="Send"
-                  className="cursor-pointer rounded-full bg-ink p-2.5 text-on-ink hover:bg-ink-hover disabled:opacity-40"
-                >
-                  {saving === 'comment' ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-                </button>
-              </div>
+              <BugTimeline activity={detail.activity} audience="staff" names={names} viewerId={user?.id} filter={feed} />
             </section>
           </div>
         )}
+        </div>
+
+        {detail?.allowedActions.includes('COMMENT') || detail?.allowedActions.includes('NOTE') ? (
+          <footer className="shrink-0 border-t border-slate-200/80 bg-surface px-5 pb-4 pt-3">
+            <BugChatComposer
+              allowInternal={detail.allowedActions.includes('NOTE')}
+              onSend={sendComment}
+              onAttach={
+                detail.allowedActions.includes('ATTACH')
+                  ? async (file) => {
+                      await act('attach', async () => BugTriageService.attach(bugId, await prepareImageForUpload(file), file.name), 'Screenshot added');
+                    }
+                  : undefined
+              }
+              placeholder={{
+                reply: `Reply to ${s?.reporter?.name?.split(' ')[0] ?? 'the reporter'} — they'll be notified`,
+                internal: 'Only staff will see this note',
+              }}
+            />
+          </footer>
+        ) : null}
       </aside>
-    </div>
+    </div>,
+    document.body,
   );
 }
