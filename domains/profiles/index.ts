@@ -30,6 +30,10 @@ export type { HandleAvailabilityState } from './hooks/useHandleAvailability';
 
 export { ProfileHero } from './components/ProfileHero';
 export type { ProfileHeroProps, ProfileKind } from './components/ProfileHero';
+export { LearnerProfileView } from './components/LearnerProfileView';
+export type { LearnerProfileViewProps } from './components/LearnerProfileView';
+export { InstructorProfileView } from './components/InstructorProfileView';
+export type { InstructorProfileViewProps } from './components/InstructorProfileView';
 export {
   AboutPanel,
   AchievementsPanel,

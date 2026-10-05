@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import {
@@ -39,8 +39,13 @@ import {
   Globe,
   Eye,
   Smile,
+  Camera,
+  Trash2,
+  Sliders,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 
 /**
  * Personal info settings. Every field here has a real backend source
@@ -74,6 +79,60 @@ export default function PersonalInfoPage() {
   const [appeals, setAppeals] = useState<HandleAppeal[]>([]);
   const [appealsLoading, setAppealsLoading] = useState(true);
   const [appealFor, setAppealFor] = useState<string | null>(null);
+
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [avatarCropFile, setAvatarCropFile] = useState<File | null>(null);
+  const [avatarCropSrc, setAvatarCropSrc] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    setAvatarCropSrc(null);
+    setAvatarCropFile(file);
+  };
+
+  const handleEditCurrentAvatar = () => {
+    if (user?.avatarUrl) {
+      setAvatarCropFile(null);
+      setAvatarCropSrc(getAvatarUrl(user.avatarUrl) ?? null);
+    } else {
+      avatarInputRef.current?.click();
+    }
+  };
+
+  const handleAvatarCropped = async (croppedFile: File) => {
+    setAvatarCropFile(null);
+    setAvatarCropSrc(null);
+    setIsUploadingAvatar(true);
+    try {
+      const updated = await UserService.uploadAvatar(croppedFile);
+      updateUser(updated);
+      toast.success('Profile picture updated successfully!');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to upload profile picture');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    setIsUploadingAvatar(true);
+    try {
+      const updated = await UserService.removeAvatar();
+      updateUser(updated);
+      toast.success('Profile picture removed');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to remove profile picture');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
 
   const handle = user?.username ?? null;
   const showLearnerActivity = user?.showLearnerActivity ?? true;
@@ -346,6 +405,75 @@ export default function PersonalInfoPage() {
     >
       {/* 1. Personal Information */}
       <div className="theme-glass-panel">
+        {/* Profile Picture Card */}
+        <div className="mb-4 p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center gap-4 justify-between">
+          <div className="flex items-center gap-4">
+            <div className="relative group/avatar h-16 w-16 shrink-0 rounded-full border-2 border-white shadow-md overflow-hidden bg-slate-200 dark:border-slate-800 dark:bg-slate-800">
+              {user?.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={getAvatarUrl(user.avatarUrl)}
+                  alt={user.fullName || 'User'}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center font-bold text-slate-400 text-lg">
+                  {user?.firstName?.charAt(0) || user?.fullName?.charAt(0) || 'U'}
+                </div>
+              )}
+              {isUploadingAvatar && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white">
+                  <Loader2 size={18} className="animate-spin" />
+                </div>
+              )}
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white">Profile picture</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                PNG, JPG or WEBP up to 5MB. Visible publicly on your profile and courses.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {user?.avatarUrl && (
+              <button
+                type="button"
+                onClick={handleEditCurrentAvatar}
+                disabled={isUploadingAvatar}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 px-3.5 py-1.5 text-xs font-semibold shadow-2xs transition-all active:scale-95 disabled:opacity-50"
+                title="Crop, zoom, and adjust current photo"
+              >
+                <Sliders size={13} />
+                <span>Crop & adjust</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={isUploadingAvatar}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white px-3.5 py-1.5 text-xs font-semibold shadow-xs transition-all active:scale-95 disabled:opacity-50"
+            >
+              {isUploadingAvatar ? <Loader2 size={13} className="animate-spin" /> : <Camera size={13} />}
+              <span>{user?.avatarUrl ? 'Change photo' : 'Upload photo'}</span>
+            </button>
+
+            {user?.avatarUrl && (
+              <button
+                type="button"
+                onClick={handleRemoveAvatar}
+                disabled={isUploadingAvatar}
+                className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-slate-600 px-3 py-1.5 text-xs font-semibold shadow-2xs transition-all active:scale-95 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                title="Remove photo"
+              >
+                <Trash2 size={13} />
+                <span>Remove</span>
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
           {/* Name */}
         <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-center justify-between gap-3">
@@ -895,6 +1023,29 @@ export default function PersonalInfoPage() {
           )}
         </div>
       </div>
+
+      {/* Hidden Avatar File Input */}
+      <input
+        type="file"
+        ref={avatarInputRef}
+        className="hidden"
+        accept="image/jpeg, image/png, image/webp"
+        onChange={handleAvatarSelect}
+      />
+
+      {/* Avatar Image Crop & Adjustment Studio Modal */}
+      <ImageCropModal
+        open={avatarCropFile !== null || avatarCropSrc !== null}
+        file={avatarCropFile}
+        imageSrc={avatarCropSrc}
+        aspectRatio={1}
+        title="Crop & Adjust Profile Picture"
+        onCancel={() => {
+          setAvatarCropFile(null);
+          setAvatarCropSrc(null);
+        }}
+        onCropped={handleAvatarCropped}
+      />
     </motion.div>
   );
 }

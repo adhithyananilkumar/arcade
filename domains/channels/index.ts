@@ -42,6 +42,7 @@ export {
   useMyChannelInvitations,
   myChannelInvitationsKey,
 } from './components/PendingChannelInvitations';
+export { ChannelDoodleBanner } from './components/ChannelDoodleBanner';
 export { useStudioAccess } from './hooks/useStudioAccess';
 export { useEligibleChannels } from './hooks/useEligibleChannels';
 export {
