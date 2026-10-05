@@ -185,7 +185,15 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
     return days <= 1 ? 'Expires today' : `Expires in ${days} days`;
   };
 
+  // Policies can be created by a co-manager (or in another tab) while this page is open; re-read
+  // them whenever a picker opens so a new policy is always selectable.
+  const refreshRoles = () => {
+    if (!canManageStaff) return;
+    roleService.getChannelRoles(channelId).then(setRoles).catch(() => undefined);
+  };
+
   const openEditRoles = (member: ChannelStaff) => {
+    refreshRoles();
     setEditRolesTarget(member);
     setEditRoleIds(member.roles.map((r) => r.id));
   };
@@ -304,7 +312,10 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
 
             {canManageStaff && (
               <Button
-                onClick={() => setIsInviteModalOpen(true)}
+                onClick={() => {
+                  refreshRoles();
+                  setIsInviteModalOpen(true);
+                }}
                 disabled={isSuspended}
                 title={isSuspended ? 'Channel is suspended' : undefined}
                 className="rounded-full bg-ink text-on-ink hover:bg-ink-hover px-4.5 py-2 text-xs font-bold shadow-xs cursor-pointer shrink-0"
@@ -464,7 +475,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
         </>
       ) : (
         <div className="pt-1">
-          <ChannelPolicyManager channelId={channelId} permissions={permissions} isSuspended={isSuspended} hideHeader={true} />
+          <ChannelPolicyManager channelId={channelId} permissions={permissions} isSuspended={isSuspended} hideHeader={true} onRolesChange={setRoles} />
         </div>
       )}
 
