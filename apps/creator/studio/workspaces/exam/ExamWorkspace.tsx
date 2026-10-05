@@ -625,10 +625,6 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         breadcrumb={
           activeQuestion && activeSection ? (
             <div className="flex items-center gap-1.5 text-gray-500">
-              <span className="rounded-md bg-ink/5 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ink/50">
-                {examKindLabel}
-              </span>
-              <span className="text-gray-300">·</span>
               <span className="block max-w-[15vw] truncate font-medium">{activeSection.title}</span>
               <span className="text-gray-400">/</span>
               <span className="block max-w-[20vw] truncate text-ink">
@@ -637,10 +633,6 @@ export function ExamWorkspace({ examId }: { examId: string }) {
             </div>
           ) : (
             <div className="flex items-center gap-1.5 text-gray-500">
-              <span className="rounded-md bg-ink/5 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ink/50">
-                {examKindLabel}
-              </span>
-              <span className="text-gray-300">·</span>
               <span className="block max-w-[28vw] truncate text-ink">{exam.title}</span>
               {activeSection && (
                 <>
