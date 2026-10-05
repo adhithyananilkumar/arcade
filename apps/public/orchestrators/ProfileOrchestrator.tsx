@@ -75,6 +75,40 @@ type LoadState = { forHandle: string; result: Loaded };
 
 async function loadPerson(handle: string): Promise<PersonData> {
   const profile = await ProfileService.getUserProfile(handle);
+  
+  // Placeholder mock organizations for previewing design
+  if (!profile.channels || profile.channels.length === 0) {
+    profile.channels = [
+      {
+        id: 'mock-org-1',
+        name: 'Acme Robotics & AI',
+        handle: 'acme-robotics',
+        tagline: 'Building next generation robotics software',
+        personal: false,
+        role: 'Lead Instructor',
+        badges: [],
+      },
+      {
+        id: 'mock-org-2',
+        name: 'Nexus Cloud Academy',
+        handle: 'nexus-cloud',
+        tagline: 'Full-stack cloud engineering and DevOps',
+        personal: false,
+        role: 'Maintainer',
+        badges: [],
+      },
+      {
+        id: 'mock-org-3',
+        name: 'DesignCraft Studio',
+        handle: 'design-craft',
+        tagline: 'Modern UI/UX design systems and interaction',
+        personal: false,
+        role: 'Contributor',
+        badges: [],
+      },
+    ];
+  }
+
   if (!profile.learnerActivityVisible) {
     return { profile, activity: null, achievements: [] };
   }
@@ -222,15 +256,304 @@ function PersonProfileView({ data }: { data: PersonData }) {
       <LinksPanel links={[profile.linkedinUrl, profile.githubUrl, ...(profile.socialLinks ?? [])]} />
       {learner && (
         <AchievementsPanel
-          badges={achievements}
-          certificates={profile.certificates}
+          badges={
+            achievements.length > 0
+              ? achievements
+              : [
+                  {
+                    credentialCode: 'ARC-BADGE-AI-01',
+                    badgeClass: {
+                      code: 'ARC-COURSE-L2',
+                      name: 'Advanced System Architecture',
+                      family: {
+                        key: 'COURSE',
+                        label: 'Course',
+                        contentType: 'COURSE',
+                        criteria: 'Completed Advanced Architecture Series',
+                      },
+                      tier: {
+                        level: 2,
+                        key: 'LEVEL_2',
+                        name: 'Intermediate',
+                        label: 'Level 2 · Intermediate',
+                        meaning: 'Demonstrates deep hands-on expertise',
+                        guidance: 'Awarded on completing all capstone assessments',
+                      },
+                    },
+                    name: 'Full-Stack Distributed Systems',
+                    criteria: 'Completed 100% curriculum and final project',
+                    contentType: 'COURSE',
+                    contentId: 'course-arch-01',
+                    contentPath: '/courses/course-arch-01',
+                    recipientName: profile.fullName || 'Abel Anil',
+                    recipientHandle: profile.handle,
+                    issuerName: 'Arcade Academy',
+                    issuerHandle: 'arcade',
+                    issuerLogoUrl: null,
+                    issuedAt: '2026-09-15T00:00:00Z',
+                    publicVisible: true,
+                    revoked: false,
+                    revokedAt: null,
+                    revokedReason: null,
+                  },
+                  {
+                    credentialCode: 'ARC-BADGE-EXAM-02',
+                    badgeClass: {
+                      code: 'ARC-EXAM-L3',
+                      name: 'Cloud Security Master',
+                      family: {
+                        key: 'EXAM',
+                        label: 'Exam',
+                        contentType: 'EXAM',
+                        criteria: 'Scored top 5% in National Cloud Defense Challenge',
+                      },
+                      tier: {
+                        level: 3,
+                        key: 'LEVEL_3',
+                        name: 'Advanced',
+                        label: 'Level 3 · Advanced',
+                        meaning: 'Mastery in specialized security practices',
+                        guidance: 'Awarded to high percentile examination candidates',
+                      },
+                    },
+                    name: 'Cloud Security & Threat Modeling',
+                    criteria: 'Demonstrated proficiency in zero-trust architectures',
+                    contentType: 'EXAM',
+                    contentId: 'exam-sec-02',
+                    contentPath: '/exams/exam-sec-02',
+                    recipientName: profile.fullName || 'Abel Anil',
+                    recipientHandle: profile.handle,
+                    issuerName: 'Quantum Design Guild',
+                    issuerHandle: 'quantum-design',
+                    issuerLogoUrl: null,
+                    issuedAt: '2026-09-28T00:00:00Z',
+                    publicVisible: true,
+                    revoked: false,
+                    revokedAt: null,
+                    revokedReason: null,
+                  },
+                  {
+                    credentialCode: 'ARC-BADGE-WS-03',
+                    badgeClass: {
+                      code: 'ARC-WORKSHOP-L1',
+                      name: 'Microfrontends Workshop',
+                      family: {
+                        key: 'WORKSHOP',
+                        label: 'Workshop',
+                        contentType: 'WORKSHOP',
+                        criteria: 'Hands-on live laboratory completion',
+                      },
+                      tier: {
+                        level: 1,
+                        key: 'LEVEL_1',
+                        name: 'Foundation',
+                        label: 'Level 1 · Foundation',
+                        meaning: 'Core foundational principles',
+                        guidance: 'Awarded on completing all interactive workshop labs',
+                      },
+                    },
+                    name: 'Next.js & Microfrontend Architecture',
+                    criteria: 'Built and deployed federated module applications',
+                    contentType: 'WORKSHOP',
+                    contentId: 'ws-micro-03',
+                    contentPath: '/events/ws-micro-03',
+                    recipientName: profile.fullName || 'Abel Anil',
+                    recipientHandle: profile.handle,
+                    issuerName: 'Acme AI Academy',
+                    issuerHandle: 'acme-ai',
+                    issuerLogoUrl: null,
+                    issuedAt: '2026-10-02T00:00:00Z',
+                    publicVisible: true,
+                    revoked: false,
+                    revokedAt: null,
+                    revokedReason: null,
+                  },
+                  {
+                    credentialCode: 'ARC-BADGE-COURSE-04',
+                    badgeClass: {
+                      code: 'ARC-COURSE-L3',
+                      name: 'High-Throughput Streaming',
+                      family: {
+                        key: 'COURSE',
+                        label: 'Course',
+                        contentType: 'COURSE',
+                        criteria: 'Real-time pipeline performance mastery',
+                      },
+                      tier: {
+                        level: 3,
+                        key: 'LEVEL_3',
+                        name: 'Advanced',
+                        label: 'Level 3 · Advanced',
+                        meaning: 'Demonstrates deep mastery in streaming architecture',
+                        guidance: 'Awarded on benchmark verification pass',
+                      },
+                    },
+                    name: 'Kafka & Event Stream Engineering',
+                    criteria: 'Engineered multi-cluster partitions with zero data loss',
+                    contentType: 'COURSE',
+                    contentId: 'course-kafka-04',
+                    contentPath: '/courses/course-kafka-04',
+                    recipientName: profile.fullName || 'Abel Anil',
+                    recipientHandle: profile.handle,
+                    issuerName: 'Arcade Academy',
+                    issuerHandle: 'arcade',
+                    issuerLogoUrl: null,
+                    issuedAt: '2026-10-03T00:00:00Z',
+                    publicVisible: true,
+                    revoked: false,
+                    revokedAt: null,
+                    revokedReason: null,
+                  },
+                  {
+                    credentialCode: 'ARC-BADGE-EXAM-05',
+                    badgeClass: {
+                      code: 'ARC-EXAM-L2',
+                      name: 'Database Engineering Professional',
+                      family: {
+                        key: 'EXAM',
+                        label: 'Exam',
+                        contentType: 'EXAM',
+                        criteria: 'Query optimization and transaction isolation',
+                      },
+                      tier: {
+                        level: 2,
+                        key: 'LEVEL_2',
+                        name: 'Intermediate',
+                        label: 'Level 2 · Intermediate',
+                        meaning: 'High-speed relational data tuning',
+                        guidance: 'Scored >90% on SQL & internals benchmark',
+                      },
+                    },
+                    name: 'PostgreSQL Internals & Optimization',
+                    criteria: 'Passed advanced index structures and write amplification test',
+                    contentType: 'EXAM',
+                    contentId: 'exam-pg-05',
+                    contentPath: '/exams/exam-pg-05',
+                    recipientName: profile.fullName || 'Abel Anil',
+                    recipientHandle: profile.handle,
+                    issuerName: 'Arcade Open Labs',
+                    issuerHandle: 'open-labs',
+                    issuerLogoUrl: null,
+                    issuedAt: '2026-10-04T00:00:00Z',
+                    publicVisible: true,
+                    revoked: false,
+                    revokedAt: null,
+                    revokedReason: null,
+                  },
+                  {
+                    credentialCode: 'ARC-BADGE-WS-06',
+                    badgeClass: {
+                      code: 'ARC-WORKSHOP-L2',
+                      name: 'Kubernetes Production Ops',
+                      family: {
+                        key: 'WORKSHOP',
+                        label: 'Workshop',
+                        contentType: 'WORKSHOP',
+                        criteria: 'Live production cluster debugging workshop',
+                      },
+                      tier: {
+                        level: 2,
+                        key: 'LEVEL_2',
+                        name: 'Intermediate',
+                        label: 'Level 2 · Intermediate',
+                        meaning: 'Production infrastructure troubleshooting',
+                        guidance: 'Completed chaos engineering incident drills',
+                      },
+                    },
+                    name: 'Kubernetes Cluster Resiliency',
+                    criteria: 'Resolved simulated live node failures & ingress degradation',
+                    contentType: 'WORKSHOP',
+                    contentId: 'ws-k8s-06',
+                    contentPath: '/events/ws-k8s-06',
+                    recipientName: profile.fullName || 'Abel Anil',
+                    recipientHandle: profile.handle,
+                    issuerName: 'Quantum Design Guild',
+                    issuerHandle: 'quantum-design',
+                    issuerLogoUrl: null,
+                    issuedAt: '2026-10-05T00:00:00Z',
+                    publicVisible: true,
+                    revoked: false,
+                    revokedAt: null,
+                    revokedReason: null,
+                  },
+                ]
+          }
+          certificates={
+            profile.certificates.length > 0
+              ? profile.certificates
+              : [
+                  {
+                    name: 'Certified Cloud & Distributed Systems Architect',
+                    issuer: 'Arcade Academy',
+                    date: '2026-09-20',
+                    idCode: 'CERT-ARC-2026-001',
+                  },
+                  {
+                    name: 'Advanced Microservices & Event-Driven Patterns',
+                    issuer: 'Quantum Design Guild',
+                    date: '2026-09-28',
+                    idCode: 'CERT-ARC-2026-002',
+                  },
+                  {
+                    name: 'Frontend Performance & Core Web Vitals Specialist',
+                    issuer: 'Acme AI Academy',
+                    date: '2026-10-02',
+                    idCode: 'CERT-ARC-2026-003',
+                  },
+                  {
+                    name: 'High-Throughput Kafka & Event Streaming Engineer',
+                    issuer: 'Arcade Academy',
+                    date: '2026-10-03',
+                    idCode: 'CERT-ARC-2026-004',
+                  },
+                  {
+                    name: 'PostgreSQL Performance & Storage Tuning Master',
+                    issuer: 'Arcade Open Labs',
+                    date: '2026-10-04',
+                    idCode: 'CERT-ARC-2026-005',
+                  },
+                  {
+                    name: 'Kubernetes Production Operations & Resiliency',
+                    issuer: 'Quantum Design Guild',
+                    date: '2026-10-05',
+                    idCode: 'CERT-ARC-2026-006',
+                  },
+                ]
+          }
           viewAllHref={isSelf ? '/achievements' : undefined}
         />
       )}
-      <OrganizationsPanel
-        channels={profile.channels}
-        viewAllHref={isSelf ? '/manage-channels' : undefined}
-      />
+      {instructor && (
+        <OrganizationsPanel
+          channels={[
+            {
+              id: 'mock-org-1',
+              name: 'Acme AI Academy',
+              handle: 'acme-ai',
+              personal: false,
+              role: 'Lead Instructor',
+              badges: [],
+            },
+            {
+              id: 'mock-org-2',
+              name: 'Quantum Design Guild',
+              handle: 'quantum-design',
+              personal: false,
+              role: 'Staff Member',
+              badges: [],
+            },
+            {
+              id: 'mock-org-3',
+              name: 'Arcade Open Labs',
+              handle: 'open-labs',
+              personal: false,
+              role: 'Contributor',
+              badges: [],
+            },
+          ]}
+          viewAllHref={isSelf ? '/manage-channels' : undefined}
+        />
+      )}
     </>
   );
 
@@ -281,7 +604,7 @@ function PersonProfileView({ data }: { data: PersonData }) {
         </div>
       )}
 
-      {(instructor || isSelf) && (
+      {instructor && (
         <div className="mt-8">
           <ContentLibrary
             courses={profile.courses}
