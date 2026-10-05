@@ -83,6 +83,20 @@ export interface CheckInResponse {
 
 export type EventInvitationStatus = 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
 
+/** One address's result in a bulk invite. */
+export interface BulkInviteResult {
+  email: string;
+  outcome: 'INVITED' | 'ALREADY_INVITED' | 'INVALID' | 'FAILED';
+  message: string | null;
+  invitation: EventInvitation | null;
+}
+
+export interface BulkInviteResponse {
+  invited: number;
+  skipped: number;
+  results: BulkInviteResult[];
+}
+
 export interface EventInvitation {
   id: string;
   eventId: string;

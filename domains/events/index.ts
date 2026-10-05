@@ -70,6 +70,7 @@ export {
   useCancelTicketMutation,
   useCheckInMutation,
   useInviteToEventMutation,
+  useBulkInviteToEventMutation,
   useRevokeInvitationMutation,
 } from './api/events.queries';
 
@@ -106,6 +107,8 @@ export type {
   CheckInResponse,
   IssueGuestTicketRequest,
   EventInvitation,
+  BulkInviteResult,
+  BulkInviteResponse,
   EventInvitationStatus,
   EventInvitationValidation,
   MyEventRegistration,

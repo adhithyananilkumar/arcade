@@ -159,7 +159,19 @@ export function useCheckInMutation(eventId: string) {
 export function useInviteToEventMutation(eventId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (email: string) => EventInvitationService.invite(eventId, email),
+    mutationFn: ({ email, validityDays }: { email: string; validityDays?: number }) =>
+      EventInvitationService.invite(eventId, email, validityDays),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: eventKeys.invitations(eventId) });
+    },
+  });
+}
+
+export function useBulkInviteToEventMutation(eventId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ emails, validityDays }: { emails: string[]; validityDays?: number }) =>
+      EventInvitationService.inviteMany(eventId, emails, validityDays),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: eventKeys.invitations(eventId) });
     },
