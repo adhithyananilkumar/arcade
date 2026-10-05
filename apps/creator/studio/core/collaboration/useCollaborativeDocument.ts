@@ -10,6 +10,7 @@
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import { useEffect, useMemo, useState } from "react";
 import * as Y from "yjs";
+import { toast } from "sonner";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import { COLLAB_WS_URL } from "@/infrastructure/config/env";
 import { createYDoc } from "./yjs";
@@ -62,6 +63,12 @@ export function useCollaborativeDocument({
       document: ydoc,
       onAuthenticationFailed: (data) => {
         console.warn("[Collaboration] Hocuspocus authentication failed:", data.reason);
+        toast.error("You no longer have permission to edit this content.");
+      },
+      onClose: ({ event }) => {
+        if (event?.code === 4403) {
+          toast.error("Your collaborator access has been revoked.");
+        }
       },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -93,7 +100,31 @@ export function useCollaborativeDocument({
       provider.awareness.setLocalStateField("user", { id: user.id, name: user.fullName });
     }
 
+    const handleAuthFailed = () => {
+      setStatus("disconnected");
+      setCollaborators([]);
+      try {
+        provider.disconnect();
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    const handleClose = ({ event }: { event?: any }) => {
+      if (event?.code === 4403) {
+        setStatus("disconnected");
+        setCollaborators([]);
+        try {
+          provider.disconnect();
+        } catch (e) {
+          // ignore
+        }
+      }
+    };
+
     provider.on("status", updateStatus);
+    provider.on("authenticationFailed", handleAuthFailed);
+    provider.on("close", handleClose);
     if (provider.awareness) {
       provider.awareness.on("change", updateAwareness);
       updateAwareness();
@@ -101,6 +132,8 @@ export function useCollaborativeDocument({
 
     return () => {
       provider.off("status", updateStatus);
+      provider.off("authenticationFailed", handleAuthFailed);
+      provider.off("close", handleClose);
       if (provider.awareness) {
         provider.awareness.off("change", updateAwareness);
       }
