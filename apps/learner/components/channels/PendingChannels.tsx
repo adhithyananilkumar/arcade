@@ -36,7 +36,8 @@ import {
   List,
   Calendar,
   FileText,
-  UserCircle2
+  UserCircle2,
+  RotateCcw
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePermissions } from "@/domains/identity";
@@ -280,103 +281,51 @@ export function PendingChannels() {
 
   return (
     <div className="space-y-4">
-      {/* Sleek Enterprise Toolbar */}
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      {/* Unified Enterprise Toolbar Dock */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-full border border-slate-200/80 bg-surface/80 p-1.5 shadow-xs backdrop-blur-md">
         {/* Status Filter Segmented Control */}
-        <div className="inline-flex items-center rounded-xl border border-slate-200/90 bg-slate-100/80 p-1 text-xs font-semibold text-slate-600 shadow-2xs">
-          <button
-            type="button"
-            onClick={() => setStatusFilter('PENDING')}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${
-              statusFilter === 'PENDING'
-                ? 'bg-surface text-slate-900 shadow-xs font-bold'
-                : 'hover:text-slate-900'
-            }`}
-          >
-            <span>Pending Requests</span>
-            <span
-              className={`inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
-                statusFilter === 'PENDING'
-                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200'
-                  : 'bg-slate-200/80 text-slate-600'
-              }`}
-            >
-              {counts.pending}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setStatusFilter('ALL')}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${
-              statusFilter === 'ALL'
-                ? 'bg-surface text-slate-900 shadow-xs font-bold'
-                : 'hover:text-slate-900'
-            }`}
-          >
-            <span>All Channels</span>
-            <span
-              className={`inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
-                statusFilter === 'ALL'
-                  ? 'bg-slate-900 text-on-ink'
-                  : 'bg-slate-200/80 text-slate-600'
-              }`}
-            >
-              {counts.total}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setStatusFilter('ACTIVE')}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${
-              statusFilter === 'ACTIVE'
-                ? 'bg-surface text-slate-900 shadow-xs font-bold'
-                : 'hover:text-slate-900'
-            }`}
-          >
-            <span>Active</span>
-            <span
-              className={`inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
-                statusFilter === 'ACTIVE'
-                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200'
-                  : 'bg-slate-200/80 text-slate-600'
-              }`}
-            >
-              {counts.active}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setStatusFilter('SUSPENDED')}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${
-              statusFilter === 'SUSPENDED'
-                ? 'bg-surface text-slate-900 shadow-xs font-bold'
-                : 'hover:text-slate-900'
-            }`}
-          >
-            <span>Suspended</span>
-            <span
-              className={`inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
-                statusFilter === 'SUSPENDED'
-                  ? 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-200'
-                  : 'bg-slate-200/80 text-slate-600'
-              }`}
-            >
-              {counts.suspended}
-            </span>
-          </button>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {[
+            { id: 'PENDING', label: 'Pending Requests', count: counts.pending },
+            { id: 'ALL', label: 'All Channels', count: counts.total },
+            { id: 'ACTIVE', label: 'Active', count: counts.active },
+            { id: 'SUSPENDED', label: 'Suspended', count: counts.suspended },
+          ].map((item) => {
+            const isActive = statusFilter === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setStatusFilter(item.id as any)}
+                className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold tracking-tight transition-colors ${
+                  isActive
+                    ? 'bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                <span>{item.label}</span>
+                <span
+                  className={`inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
+                    isActive
+                      ? 'bg-white/20 text-white dark:bg-slate-950/20 dark:text-slate-950'
+                      : 'bg-slate-200/80 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                  }`}
+                >
+                  {item.count}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Search, Type Filter & Refresh */}
+        {/* Search, Type Filter & View Mode Switcher */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Custom Type Filter Dropdown */}
           <div className="relative" ref={typeDropdownRef}>
             <button
               type="button"
               onClick={() => setTypeDropdownOpen((prev) => !prev)}
-              className={`inline-flex items-center gap-2 rounded-xl border bg-surface px-3 py-1.5 text-xs font-semibold shadow-2xs transition-all ${
+              className={`inline-flex items-center gap-2 rounded-full border bg-surface px-3 py-1.5 text-xs font-semibold shadow-2xs transition-all ${
                 typeDropdownOpen
                   ? 'border-slate-400 ring-2 ring-slate-100 text-slate-900'
                   : 'border-slate-200/90 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
@@ -435,14 +384,14 @@ export function PendingChannels() {
           </div>
 
           {/* Search Box */}
-          <div className="relative min-w-[240px] flex-1 sm:flex-initial">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+          <div className="relative min-w-[220px] flex-1 sm:flex-initial">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
             <input
               type="text"
               placeholder="Search channel or owner..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-slate-200/90 bg-surface py-1.5 pl-8 pr-7 text-xs font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100 transition-all"
+              className="w-full rounded-full border border-slate-200/90 bg-surface py-1.5 pl-8 pr-7 text-xs font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100 transition-all"
             />
             {searchQuery && (
               <button
@@ -456,11 +405,11 @@ export function PendingChannels() {
           </div>
 
           {/* View Mode Switcher */}
-          <div className="inline-flex items-center rounded-xl border border-slate-200/90 bg-slate-100/80 p-0.5 shadow-2xs">
+          <div className="inline-flex items-center rounded-full border border-slate-200/90 bg-slate-100/80 p-0.5 shadow-2xs">
             <button
               type="button"
               onClick={() => setViewMode('GRID')}
-              className={`flex size-7 items-center justify-center rounded-lg transition-all ${
+              className={`flex size-7 items-center justify-center rounded-full transition-all ${
                 viewMode === 'GRID'
                   ? 'bg-surface text-slate-900 shadow-xs'
                   : 'text-slate-400 hover:text-slate-700'
@@ -472,7 +421,7 @@ export function PendingChannels() {
             <button
               type="button"
               onClick={() => setViewMode('TABLE')}
-              className={`flex size-7 items-center justify-center rounded-lg transition-all ${
+              className={`flex size-7 items-center justify-center rounded-full transition-all ${
                 viewMode === 'TABLE'
                   ? 'bg-surface text-slate-900 shadow-xs'
                   : 'text-slate-400 hover:text-slate-700'
@@ -494,13 +443,13 @@ export function PendingChannels() {
           </div>
         </div>
       ) : paginatedChannels.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200/80 bg-surface py-16 text-center shadow-[0_2px_12px_rgba(20,20,43,0.03)]">
-          <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
-            <div className="flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
-              <Tv size={22} />
+        <div className="py-20 px-6 text-center">
+          <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
+            <div className="mb-2 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-b from-sky-50 via-indigo-50/80 to-sky-100/60 p-3 shadow-xs border border-sky-100/80 dark:from-sky-500/10 dark:to-indigo-500/15 dark:border-sky-500/20">
+              <Tv size={26} className="text-indigo-600 dark:text-indigo-400 stroke-[1.8]" />
             </div>
-            <p className="text-sm font-bold text-slate-800">No channels found</p>
-            <p className="text-xs text-slate-500">
+            <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">No channels found</h3>
+            <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
               {searchQuery || typeFilter !== 'ALL'
                 ? 'No channels match the current search or type filter.'
                 : statusFilter === 'PENDING'
@@ -515,9 +464,10 @@ export function PendingChannels() {
                   setTypeFilter('ALL');
                   setStatusFilter('ALL');
                 }}
-                className="mt-2 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors"
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
               >
-                Reset filters
+                <RotateCcw size={13} />
+                <span>Reset filters</span>
               </button>
             )}
           </div>

@@ -35,7 +35,6 @@ import { platformReviewApi } from '@/domains/publishing';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { ChannelReviewQueue } from '@/apps/core/components/reviews/ChannelReviewQueue';
 import { SideNav, SideNavTabs, type SideNavItem, type SideNavSection } from '@/shared/design-system/ui/side-nav';
-import { PageHeader } from '@/shared/design-system/ui/page-header';
 
 import { ChannelOverview } from './components/ChannelOverview';
 import { ChannelContentSection } from './components/ChannelContentSection';
@@ -247,30 +246,7 @@ export default function ManageChannelPage() {
             </Notice>
           )}
 
-          {active !== 'overview' && (
-            <PageHeader
-              title={
-                <div className="flex items-center gap-2">
-                  <span>{SECTION_COPY[active].title}</span>
-                  <div className="group relative inline-flex items-center justify-center">
-                    <button
-                      type="button"
-                      aria-label={`${SECTION_COPY[active].title} information`}
-                      className="inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100/80 transition-colors cursor-pointer"
-                    >
-                      <Info size={16} className="stroke-[2.2]" />
-                    </button>
-                    <div className="pointer-events-none absolute left-full top-1/2 ml-2.5 -translate-y-1/2 z-50 w-72 sm:w-80 opacity-0 -translate-x-1 group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-all duration-200 ease-out">
-                      <div className="rounded-2xl border border-slate-200/80 bg-surface/80 backdrop-blur-md p-3.5 shadow-[0_8px_30px_rgba(20,20,43,0.08)] text-[12.5px] font-medium leading-relaxed text-slate-900">
-                        {SECTION_COPY[active].description}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              }
-              actions={headerActions}
-            />
-          )}
+
 
           {active === 'overview' && (
             <ChannelOverview

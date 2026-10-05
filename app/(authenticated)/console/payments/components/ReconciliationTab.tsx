@@ -53,12 +53,16 @@ export function ReconciliationTab({ onOpenOrder, refreshKey }: { onOpenOrder: (o
   }
   if (rows.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200/80 bg-surface py-16 text-center">
-        <CheckCircle2 className="h-8 w-8 text-emerald-500" />
-        <p className="text-sm font-bold text-slate-800">Nothing to reconcile</p>
-        <p className="max-w-sm text-xs text-slate-500">
-          Every paid order has its access, no enrollment has been charged twice, and every capture matched its order.
-        </p>
+      <div className="py-20 px-6 text-center">
+        <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
+          <div className="mb-2 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-b from-emerald-50 via-teal-50/80 to-emerald-100/60 p-3 shadow-xs border border-emerald-100/80 dark:from-emerald-500/10 dark:to-teal-500/15 dark:border-emerald-500/20">
+            <CheckCircle2 size={26} className="text-emerald-600 dark:text-emerald-400 stroke-[1.8]" />
+          </div>
+          <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">Nothing to reconcile</h3>
+          <p className="max-w-sm text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+            Every paid order has its access, no enrollment has been charged twice, and every capture matched its order.
+          </p>
+        </div>
       </div>
     );
   }

@@ -13,7 +13,11 @@ import { SURFACE_LABEL } from '@/domains/iam/policy-editor/PermissionSelector';
 import type { ConsoleSurface } from '@/domains/identity';
 import { ConfirmDialog, canDelegatePolicy } from '@/domains/iam';
 
-export function PolicyManager() {
+interface PolicyManagerProps {
+  headerSlot?: React.ReactNode;
+}
+
+export function PolicyManager({ headerSlot }: PolicyManagerProps = {}) {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -115,19 +119,15 @@ export function PolicyManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
-        <div>
-          <p className="text-sm font-semibold text-gray-900">Policies</p>
-          <p className="text-xs text-gray-500">Reusable access definitions for Platform Console users.</p>
-        </div>
-        <div className="flex gap-2">
-          <div className="relative flex-1 sm:w-64">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <Search className="h-4 w-4 text-gray-400" />
-            </div>
+      {/* Unified Toolbar Dock */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-full border border-slate-200/80 bg-surface/80 p-1.5 shadow-xs backdrop-blur-md">
+        {headerSlot}
+        <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-end">
+          <div className="relative min-w-[220px] sm:min-w-[320px] flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
             <input
               type="text"
-              className="block w-full rounded-xl border border-gray-200 bg-surface py-2.5 pl-10 pr-4 text-sm focus:border-ink/30 focus:outline-none focus:ring-1 focus:ring-slate-300 shadow-sm"
+              className="w-full rounded-full border border-slate-200/80 bg-surface py-1.5 pl-8 pr-3 text-xs font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100 transition-all"
               placeholder="Search policies…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -135,13 +135,14 @@ export function PolicyManager() {
           </div>
           {canManagePolicies && (
             <button
+              type="button"
               onClick={() => {
                 setEditingRole(null);
                 setIsModalOpen(true);
               }}
-              className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-on-ink bg-ink hover:bg-ink-hover rounded-lg transition-colors shrink-0"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-slate-950 hover:bg-slate-800 rounded-full transition-colors shrink-0 shadow-xs dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
             >
-              <Plus size={16} /> Create Policy
+              <Plus size={13} /> Create Policy
             </button>
           )}
         </div>

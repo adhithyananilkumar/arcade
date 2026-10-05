@@ -17,44 +17,42 @@ export default function IamPage() {
 
   const [activeTab, setActiveTab] = useState<'USERS' | 'POLICIES'>('USERS');
 
+  const tabButtons = (
+    <div className="flex items-center gap-1.5">
+      <button
+        type="button"
+        onClick={() => setActiveTab('USERS')}
+        className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold tracking-tight transition-colors ${
+          activeTab === 'USERS'
+            ? 'bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 dark:text-slate-400 dark:hover:text-slate-200'
+        }`}
+      >
+        <Users size={14} />
+        Users
+      </button>
+      <button
+        type="button"
+        onClick={() => setActiveTab('POLICIES')}
+        className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold tracking-tight transition-colors ${
+          activeTab === 'POLICIES'
+            ? 'bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 dark:text-slate-400 dark:hover:text-slate-200'
+        }`}
+      >
+        <Shield size={14} />
+        Policies
+      </button>
+    </div>
+  );
+
   return (
     <div className="flex w-full flex-col h-full space-y-5 pb-6">
-      <div className="flex-none space-y-0.5">
-        <h1 className="text-lg font-bold text-ink">IAM</h1>
-        <p className="text-sm text-gray-500">Manage who can access Arcade Platform operations.</p>
-      </div>
-      <div className="flex-none sticky top-0 z-20 flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-surface/80 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
-        <button
-          type="button"
-          onClick={() => setActiveTab('USERS')}
-          className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all ${
-            activeTab === 'USERS'
-              ? 'bg-ink text-on-ink shadow-sm'
-              : 'text-slate-500 hover:bg-slate-50 hover:text-ink'
-          }`}
-        >
-          <Users size={14} />
-          Users
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('POLICIES')}
-          className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all ${
-            activeTab === 'POLICIES'
-              ? 'bg-ink text-on-ink shadow-sm'
-              : 'text-slate-500 hover:bg-slate-50 hover:text-ink'
-          }`}
-        >
-          <Shield size={14} />
-          Policies
-        </button>
-      </div>
-
       <div className={activeTab === 'USERS' ? 'flex-1 min-h-0 overflow-y-auto pr-2' : 'hidden'}>
-        <UsersList />
+        <UsersList headerSlot={tabButtons} />
       </div>
       <div className={activeTab === 'POLICIES' ? 'flex-1 min-h-0 overflow-y-auto pr-2' : 'hidden'}>
-        <PolicyManager />
+        <PolicyManager headerSlot={tabButtons} />
       </div>
     </div>
   );
