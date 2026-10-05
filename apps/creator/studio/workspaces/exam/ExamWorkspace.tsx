@@ -153,7 +153,20 @@ export function ExamWorkspace({ examId }: { examId: string }) {
     () => ({
       save: async ({ sectionId, questions }) => {
         if (!sectionId) return;
-        await saveSectionQuestions(sectionId, toRequest(questions));
+        try {
+          await saveSectionQuestions(sectionId, toRequest(questions));
+        } catch (err: any) {
+          if (err?.status === 403 || err?.response?.status === 403) {
+            toast.error("Your collaborator access has been revoked. Exiting workspace...", {
+              id: "collaborator-revoked-exit",
+              duration: 4000,
+            });
+            if (typeof window !== "undefined") {
+              window.location.replace("/studio");
+            }
+          }
+          throw err;
+        }
       },
     }),
     []
@@ -239,8 +252,20 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         if (cancelled) return;
         setSections(sectionList);
         if (sectionList.length > 0) selectSectionRef.current(sectionList[0].id);
-      } catch {
-        if (!cancelled) setLoadError("Couldn't load this exam. You may not have access to it.");
+      } catch (err: any) {
+        if (!cancelled) {
+          if (err?.status === 403 || err?.response?.status === 403) {
+            toast.error("Your collaborator access has been revoked. Exiting workspace...", {
+              id: "collaborator-revoked-exit",
+              duration: 4000,
+            });
+            if (typeof window !== "undefined") {
+              window.location.replace("/studio");
+            }
+            return;
+          }
+          setLoadError("Couldn't load this exam. You may not have access to it.");
+        }
       } finally {
         if (!cancelled) setInitializing(false);
       }

@@ -579,7 +579,16 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
         if (firstLeaf && firstLeaf.type === "document") {
           await openLesson(firstLeaf);
         }
-      } catch (e) {
+      } catch (e: any) {
+        if (e?.status === 403 || e?.message?.includes("403") || e?.message?.includes("Forbidden")) {
+          toast.error("Your collaborator access has been revoked. Exiting workspace...", {
+            id: "collaborator-revoked-exit",
+          });
+          if (typeof window !== "undefined") {
+            window.location.replace("/studio");
+          }
+          return;
+        }
         console.error("Failed to load content", e);
       }
       setIsInitializing(false);
