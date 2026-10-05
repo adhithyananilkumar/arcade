@@ -115,6 +115,13 @@ function statusValue(value: string | null, reporter: boolean): string {
   return resolution ? `${base} · ${RESOLUTION_LABEL[resolution] ?? resolution}` : base;
 }
 
+/** "set severity to S1" / "changed severity S2 → S1" / "cleared severity (was S2)". */
+function changeSentence(field: string, entry: BugActivity): string {
+  if (!entry.fromValue) return entry.toValue ? `set ${field} to ${entry.toValue}` : `cleared ${field}`;
+  if (!entry.toValue) return `cleared ${field} (was ${entry.fromValue})`;
+  return `changed ${field} ${entry.fromValue} → ${entry.toValue}`;
+}
+
 /**
  * One timeline entry as a sentence. `names` resolves user ids (assignee changes) and category ids;
  * unknown ids fall back to "someone".
@@ -138,9 +145,9 @@ export function describeActivity(
     case 'ASSIGNED':
       return entry.toValue ? `assigned it to ${n(entry.toValue)}` : 'unassigned it';
     case 'SEVERITY_CHANGED':
-      return `set severity ${entry.fromValue ?? '—'} → ${entry.toValue ?? '—'}`;
+      return changeSentence('severity', entry);
     case 'PRIORITY_CHANGED':
-      return `set priority ${entry.fromValue ?? '—'} → ${entry.toValue ?? '—'}`;
+      return changeSentence('priority', entry);
     case 'CATEGORY_CHANGED':
       return `changed the category to ${n(entry.toValue)}`;
     case 'ATTACHMENT_ADDED':
@@ -167,4 +174,20 @@ export function absoluteTime(value: string | null | undefined): string {
   return value
     ? new Date(value).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' })
     : '—';
+}
+
+/** Day heading for a timeline: "Today", "Yesterday", or "5 Oct 2026". */
+export function dayLabel(value: string): string {
+  const d = new Date(value);
+  const today = new Date();
+  const startOf = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const days = Math.round((startOf(today) - startOf(d)) / 86_400_000);
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+/** Clock time only, for entries already grouped under a day heading. */
+export function clockTime(value: string): string {
+  return new Date(value).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
