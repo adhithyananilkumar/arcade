@@ -37,6 +37,11 @@ export type {
 } from './api/channel.service';
 export { InviteUserModal } from './components/InviteUserModal';
 export { ChannelPicker } from './components/ChannelPicker';
+export {
+  PendingChannelInvitations,
+  useMyChannelInvitations,
+  myChannelInvitationsKey,
+} from './components/PendingChannelInvitations';
 export { useStudioAccess } from './hooks/useStudioAccess';
 export { useEligibleChannels } from './hooks/useEligibleChannels';
 export {

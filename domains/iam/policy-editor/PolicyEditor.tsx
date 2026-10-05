@@ -26,6 +26,14 @@ export interface PolicyEditorProps {
     effectivePermissionIds: string[];
   }) => Promise<void>;
   onCancel: () => void;
+  /**
+   * The editing user's permission codes in THIS scope, used to lock permissions they can't grant.
+   * Defaults to their platform permissions for PLATFORM scope. A CHANNEL editor must pass the
+   * user's channel permissions (owners hold "ALL"): platform codes say nothing about a channel,
+   * and checking them locked every permission for a channel owner. Omitted in CHANNEL scope means
+   * nothing is locked and the backend's grant check alone decides.
+   */
+  myPermissionCodes?: string[];
 }
 
 const SCOPE_LABEL: Record<Scope, string> = {
@@ -42,8 +50,11 @@ export function PolicyEditor({
   policy,
   onSave,
   onCancel,
+  myPermissionCodes: scopePermissionCodes,
 }: PolicyEditorProps) {
-  const myPermissionCodes = useAuthStore((state) => state.user?.permissions);
+  const platformPermissionCodes = useAuthStore((state) => state.user?.permissions);
+  const myPermissionCodes =
+    scopePermissionCodes ?? (scope === 'PLATFORM' ? platformPermissionCodes : undefined);
   const [name, setName] = useState(policy?.name ?? '');
   const [description, setDescription] = useState(policy?.description ?? '');
   const [allPermissions, setAllPermissions] = useState<Permission[]>([]);

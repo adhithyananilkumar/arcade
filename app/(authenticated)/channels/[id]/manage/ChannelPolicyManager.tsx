@@ -304,6 +304,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
             <PolicyEditor
               scope="CHANNEL"
               resourceId={channelId}
+              myPermissionCodes={userPermissions}
               mode={editingRole ? 'edit' : 'create'}
               policy={editingRole ? {
                 id: editingRole.id,

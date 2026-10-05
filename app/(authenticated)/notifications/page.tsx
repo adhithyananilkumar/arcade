@@ -16,6 +16,7 @@ import {
   type NotificationDto,
   type VisualType,
 } from "@/domains/notifications";
+import { PendingChannelInvitations } from "@/domains/channels";
 import {
   Bell,
   User,
@@ -771,6 +772,12 @@ export default function NotificationsHubPage() {
               </button>
             )}
           </div>
+        </div>
+
+        {/* Pending channel staff invitations. The STAFF_INVITED notification (and its email) link
+            here, so this is where an invitee accepts or declines — independent of filters. */}
+        <div className="mb-6 empty:hidden">
+          <PendingChannelInvitations variant="card" />
         </div>
 
         {/* ── Body ─────────────────────────────────────────────────────────── */}
