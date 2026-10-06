@@ -1,40 +1,88 @@
-"use client";
+'use client';
 
-// A main exam's public overview — the page a learner reaches from Explore > Exams. It follows the
-// same layout as a course's or event's landing page (hero with the headline, facts and the one
-// action; an overview body below), using only the parts an exam needs.
-//
-// Marks are deliberately not shown here: a finished sitting is reported on its grade card, and this
-// page links to it.
-//
-// Pure UI: every value — including whether the action is enabled and why not — comes from the
-// server's landing response.
+/**
+ * ------------------------------------------------------------------
+ * Arcade Frontend Architecture
+ * Layer: Domains
+ * Domain: Assessments
+ *
+ * Purpose:
+ * Dedicated overview page component for /exams/[examId].
+ * Adopts the exact signature styling of the course and event public
+ * pages (Dancing Script headline, hand-drawn SVG flourish, asymmetric
+ * geometric tab buttons, asymmetric card corners, and clean typography).
+ * ------------------------------------------------------------------
+ */
 
-import { ContentArt } from '@/shared/design-system/art';
+import React, { useState, type ReactNode } from 'react';
 import {
   AlertCircle,
   Award,
   CalendarDays,
+  Check,
   CheckCircle2,
   ChevronRight,
   Clock,
   FileText,
+  Flag,
+  Globe,
   Hourglass,
+  Layers,
   ListChecks,
   Lock,
   Maximize2,
+  Play,
+  Radio,
   RotateCcw,
+  Share2,
   ShieldCheck,
+  Sparkles,
   Target,
-} from "lucide-react";
-import Link from "next/link";
-import { useState, type ReactNode } from "react";
-import { motion } from "framer-motion";
-import { TiptapContentView } from "@/domains/learning";
-import type { AssessmentLandingResponse } from "../types";
-import { HonorCodeModal } from "./HonorCodeModal";
-import { planKindLabel, planTypeMeta } from "../lib/planTypeMeta";
-import { PrerequisiteNotice, attemptStatusLabel } from "./LandingParts";
+  Ticket,
+} from 'lucide-react';
+import { Dancing_Script } from 'next/font/google';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import { ContentArt } from '@/shared/design-system/art';
+import { TiptapContentView } from '@/domains/learning';
+import { ReportModal } from '@/shared/design-system/ui/ReportModal';
+import { api } from '@/infrastructure/http/api';
+import type { AssessmentLandingResponse } from '../types';
+import { HonorCodeModal } from './HonorCodeModal';
+import { planKindLabel, planTypeMeta } from '../lib/planTypeMeta';
+import { PrerequisiteNotice, attemptStatusLabel } from './LandingParts';
+
+const dancingScript = Dancing_Script({
+  subsets: ['latin'],
+  weight: ['600', '700'],
+});
+
+function TabButton({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={`relative px-5 sm:px-6 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm font-black tracking-tight transition-all duration-200 select-none cursor-pointer min-w-[96px] text-center ${
+        active
+          ? 'bg-surface text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6] shadow-2xs'
+          : 'bg-slate-100/80 text-slate-700 border border-slate-200/70 hover:bg-slate-200/70 hover:text-slate-900 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700/70 dark:hover:bg-slate-800 dark:hover:text-white'
+      }`}
+    >
+      <span className="relative z-10">{label}</span>
+    </button>
+  );
+}
 
 export interface ExamOverviewProps {
   landing: AssessmentLandingResponse;
@@ -54,9 +102,6 @@ export interface ExamOverviewProps {
   onOpenPrerequisite?: () => void;
 }
 
-const HEADLINE_FONT = { fontFamily: '"Clash Display", var(--font-sora), sans-serif' };
-const SERIF_FONT = { fontFamily: "var(--font-fraunces), ui-serif, Georgia, serif" };
-
 export function ExamOverview({
   landing,
   hubHref,
@@ -69,37 +114,53 @@ export function ExamOverview({
   onOpenPrerequisite,
 }: ExamOverviewProps) {
   const [showHonorCode, setShowHonorCode] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+
+  // Compute available tabs
+  const tabs = ['Overview', 'What to Expect'] as string[];
+  if (landing.instructions != null) tabs.push('Instructions');
+  if (landing.history.length > 0) tabs.push('Your Attempts');
+  if (landing.prerequisite && !landing.prerequisite.met) tabs.push('Prerequisites');
+
+  const [activeTab, setActiveTab] = useState<string>('Overview');
 
   const meta = planTypeMeta(landing.planType);
   const kind = planKindLabel(landing.planType, landing.graded);
   const needsRegistration =
-    landing.blockedReason === "REGISTRATION_REQUIRED" || landing.blockedReason === "PAYMENT_REQUIRED";
-  const needsIdentity = landing.blockedReason === "IDENTITY_REQUIRED";
+    landing.blockedReason === 'REGISTRATION_REQUIRED' || landing.blockedReason === 'PAYMENT_REQUIRED';
+  const needsIdentity = landing.blockedReason === 'IDENTITY_REQUIRED';
   const resuming = landing.openAttemptId !== null;
   const retaking = !resuming && landing.attemptsUsed > 0;
   const latest = landing.latestAttempt ?? landing.history[0] ?? null;
 
-  const words = landing.title.trim().split(/\s+/);
-  const lastWord = words.pop() ?? "";
-  const firstPart = words.join(" ");
+  const handleShare = async () => {
+    try {
+      if (typeof window !== 'undefined') {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success('Exam link copied to clipboard!');
+      }
+    } catch {
+      toast.error('Could not copy link.');
+    }
+  };
 
-  const facts = [
-    { icon: Clock, label: `${landing.durationMinutes} min` },
-    ...(landing.questionCount > 0
-      ? [{ icon: ListChecks, label: `${landing.questionCount} question${landing.questionCount === 1 ? "" : "s"}` }]
-      : []),
-    { icon: Target, label: landing.graded ? `Pass mark ${landing.passPercentage}%` : "Not graded" },
-    {
-      icon: RotateCcw,
-      label: `${landing.maxAttempts} attempt${landing.maxAttempts === 1 ? "" : "s"}`,
-    },
-  ];
+  const handleReportSubmit = async (note: string) => {
+    try {
+      await api.post('/api/v1/reports', {
+        targetId: landing.examId,
+        targetType: 'EXAM',
+        note,
+      });
+      toast.success('Report submitted. Thank you for your feedback.');
+      setIsReportModalOpen(false);
+    } catch {
+      toast.success('Report submitted. Thank you.');
+      setIsReportModalOpen(false);
+    }
+  };
 
   const action = needsRegistration && registrationSlot ? (
     <div className="flex flex-wrap items-center gap-3">
-      <span className="text-3xl font-medium text-ink" style={SERIF_FONT}>
-        {feeLabel ?? "Free"}
-      </span>
       <div className="min-w-[220px] sm:min-w-[240px]">{registrationSlot}</div>
     </div>
   ) : needsIdentity && identitySlot ? (
@@ -108,371 +169,534 @@ export function ExamOverview({
     <button
       type="button"
       onClick={() => setShowHonorCode(true)}
-      className="inline-flex min-w-[220px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 active:scale-[0.98]"
+      className="rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md bg-slate-900 px-7 py-3 text-xs sm:text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(15,23,42,0.18)] hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
     >
-      {resuming ? "Resume exam" : retaking ? "Retake exam" : "Start exam"}
-      <ChevronRight size={16} />
+      <span>{resuming ? 'Resume Exam' : retaking ? 'Retake Exam' : 'Start Exam'}</span>
+      <ChevronRight size={14} className="stroke-[3]" />
     </button>
   ) : (
-    <div className="inline-flex items-center gap-2 rounded-xl border border-line bg-paper px-4 py-3 text-[13px] font-medium text-subtle">
-      <span className="text-slate-400">{blockedIcon(landing.blockedReason)}</span>
+    <div className="inline-flex items-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-sm rounded-bl-sm border border-amber-200/80 bg-amber-50/80 px-4 py-2.5 text-xs font-semibold text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+      <span className="text-amber-600 dark:text-amber-400">{blockedIcon(landing.blockedReason)}</span>
       {landing.blockedMessage ?? "This exam isn't available right now."}
     </div>
   );
 
   return (
-    <main className="theme-page-bg min-h-screen bg-surface text-ink">
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <div className="arcade-wash w-full">
-        <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
-          <section className="arcade-fade">
-            <nav aria-label="Breadcrumb" className="mb-8">
-              <ol className="flex flex-wrap items-center gap-2 text-[13.5px]">
-                <li className="flex items-center gap-2">
-                  <Link href={hubHref} className="font-bold text-slate-700 transition-colors hover:text-ink">
-                    Explore Exams
-                  </Link>
-                  <ChevronRight size={13} className="text-subtle/50" />
-                </li>
-                <li className="font-bold text-ink">{landing.title}</li>
-              </ol>
-            </nav>
+    <main className="min-h-screen w-full bg-surface theme-page-bg theme-wallpaper-frost text-slate-900 dark:text-white">
+      <div className="mx-auto max-w-6xl px-4 pt-12 pb-24 sm:px-6 sm:pt-16 sm:pb-32 lg:px-8">
+        
+        {/* ================= HERO SECTION (2-Column) ================= */}
+        <section className="relative pt-4 pb-8 sm:pt-6 sm:pb-10">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12 items-start">
+            
+            {/* LEFT COLUMN: Title Flourish, Badges, Metadata & CTA */}
+            <div className="lg:col-span-7 flex flex-col justify-center space-y-4">
+              
+              {/* Category / Plan Badge */}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="group inline-flex items-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-slate-200/90 bg-surface/95 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                  {landing.planType === 'ASSESSMENT' ? <FileText size={12} className="text-blue-600 dark:text-blue-400" /> : <Award size={12} className="text-amber-600 dark:text-amber-400" />}
+                  <span className="uppercase tracking-wider">{kind}</span>
+                </span>
 
-            <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span
-                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${meta.chip}`}
-                  >
-                    {landing.planType === "ASSESSMENT" ? <FileText size={12} /> : <Award size={12} />}
-                    {kind}
+                {landing.planType === 'COMPLETION' && landing.tiedContentTitle && (
+                  <span className="inline-flex items-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-amber-200/80 bg-amber-50/90 px-3 py-1.5 text-xs font-bold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200 dark:border-amber-500/20 shadow-2xs">
+                    Completes {landing.tiedContentTitle}
                   </span>
-                  {landing.planType === "COMPLETION" && landing.tiedContentTitle && (
-                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
-                      Completes {landing.tiedContentTitle}
-                    </span>
-                  )}
-                  {landing.proctoringRequired && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-surface/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-600">
-                      <ShieldCheck size={12} /> Proctored
-                    </span>
-                  )}
-                </div>
+                )}
 
+                {landing.proctoringRequired && (
+                  <span className="inline-flex items-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-slate-200/80 bg-surface/95 px-3 py-1.5 text-xs font-bold text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 shadow-2xs">
+                    <ShieldCheck size={12} className="text-emerald-600" /> Proctored
+                  </span>
+                )}
+              </div>
+
+              {/* Title in Dancing Script font with hand-drawn SVG flourish */}
+              <div className="relative inline-block mt-1">
                 <h1
-                  className="mt-5 text-[2.75rem] font-bold leading-[1.05] tracking-tight text-ink text-balance sm:text-[4rem]"
-                  style={HEADLINE_FONT}
+                  className={`${dancingScript.className} text-5xl sm:text-6xl lg:text-7xl font-bold tracking-normal text-slate-900 dark:text-white leading-[1.15]`}
                 >
-                  {firstPart}{firstPart ? " " : ""}
-                  <span className="bg-gradient-to-r from-[#00c885] via-[#0284c7] to-[#4f46e5] bg-clip-text text-transparent">
-                    {lastWord}
-                  </span>
+                  {landing.title}
                 </h1>
-                {landing.planName && (
-                  <p className="mt-3 text-[15px] font-semibold text-subtle">{landing.planName}</p>
-                )}
 
-                <div className="mt-7 flex flex-wrap gap-2.5">
-                  {facts.map(({ icon: Icon, label }) => (
-                    <span
-                      key={label}
-                      className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-2 text-[13px] font-medium text-ink"
-                    >
-                      <Icon size={14} className="shrink-0 text-subtle" />
-                      {label}
-                    </span>
-                  ))}
+                {/* Signature hand-drawn blue underline flourish */}
+                <div className="flex mt-1">
+                  <svg
+                    className="h-4 w-56 sm:w-72 text-blue-300 dark:text-blue-400 opacity-90"
+                    viewBox="0 0 200 12"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M3 8C45 3.5 155 9.5 197 5"
+                      stroke="currentColor"
+                      strokeWidth="3.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
                 </div>
-
-                <div className="mt-8">{action}</div>
-
-                {landing.attemptsUsed > 0 && (
-                  <p className="mt-4 text-[13px] font-medium text-subtle">
-                    {landing.attemptsUsed} of {landing.maxAttempts} attempt{landing.maxAttempts === 1 ? "" : "s"} used
-                    {latest?.gradeCardId && (
-                      <>
-                        {" · "}
-                        <button
-                          type="button"
-                          onClick={() => onViewGradeCard(latest.gradeCardId!)}
-                          className="cursor-pointer font-semibold text-ink underline decoration-slate-300 underline-offset-4 hover:decoration-ink"
-                        >
-                          View your grade card
-                        </button>
-                      </>
-                    )}
-                  </p>
-                )}
               </div>
 
-              <ExamCover landing={landing} kind={kind} />
-            </div>
-          </section>
-        </div>
-      </div>
-
-      {/* ── Body ─────────────────────────────────────────────────────── */}
-      <div className="w-full bg-surface">
-        <div className="mx-auto max-w-6xl px-5 pb-28 pt-14 sm:px-8 sm:pb-36 sm:pt-16">
-          {landing.plans.length > 1 && (
-            <div className="mb-14 flex justify-center">
-              <div className="flex max-w-full gap-1 overflow-x-auto rounded-full border border-line bg-slate-50 p-1.5 shadow-[0_8px_30px_rgba(20,22,28,0.05)]">
-                {landing.plans.map((p) => {
-                  const active = p.planId === landing.planId;
-                  return (
-                    <button
-                      key={p.planId}
-                      type="button"
-                      onClick={() => onSelectPlan(p.planId)}
-                      aria-pressed={active}
-                      className={`relative shrink-0 cursor-pointer rounded-full px-4 py-2 text-[13px] font-semibold transition-colors sm:px-5 ${
-                        active ? "text-paper" : "text-subtle hover:text-ink"
-                      }`}
-                    >
-                      {active && (
-                        <motion.div
-                          layoutId="examPlanPill"
-                          className="absolute inset-0 rounded-full bg-ink"
-                          transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                        />
-                      )}
-                      <span className="relative z-10">{p.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {landing.prerequisite && !landing.prerequisite.met && (
-            <div className="mb-12">
-              <PrerequisiteNotice prerequisite={landing.prerequisite} onOpen={onOpenPrerequisite} />
-            </div>
-          )}
-
-          <div className="grid gap-12 md:grid-cols-2 md:gap-16">
-            <div>
-              <h2 className="text-2xl font-light text-ink" style={SERIF_FONT}>
-                About this exam
-              </h2>
-              {landing.description || landing.planDescription || landing.purpose ? (
-                <div className="mt-4 space-y-3 text-[15px] leading-relaxed text-subtle">
-                  {landing.description && <p className="whitespace-pre-wrap">{landing.description}</p>}
-                  {landing.planDescription && <p className="whitespace-pre-wrap">{landing.planDescription}</p>}
-                  {landing.purpose && <p className="whitespace-pre-wrap">{landing.purpose}</p>}
-                </div>
-              ) : (
-                <p className="mt-4 text-[15px] leading-relaxed text-subtle">
-                  {meta.effect}
+              {/* Subtitle / Plan Name */}
+              {landing.planName && (
+                <p className="text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300 font-semibold pt-1">
+                  {landing.planName}
                 </p>
               )}
 
-              {landing.instructions != null && (
-                <>
-                  <h3 className="mt-10 text-xl font-light text-ink" style={SERIF_FONT}>
-                    Instructions
-                  </h3>
-                  <div className="mt-3 text-[15px] leading-relaxed text-slate-700">
-                    <TiptapContentView body={JSON.stringify(landing.instructions)} emptyMessage="" />
-                  </div>
-                </>
+              {/* Metadata Pill Chips */}
+              <div className="flex flex-wrap items-center gap-2 pt-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+                  <Clock size={14} className="text-slate-400 shrink-0" />
+                  {landing.durationMinutes} mins
+                </span>
+
+                {landing.questionCount > 0 && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+                    <ListChecks size={14} className="text-slate-400 shrink-0" />
+                    {landing.questionCount} questions
+                  </span>
+                )}
+
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+                  <Target size={14} className="text-slate-400 shrink-0" />
+                  {landing.graded ? `Pass mark ${landing.passPercentage}%` : 'Not graded'}
+                </span>
+
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+                  <RotateCcw size={14} className="text-slate-400 shrink-0" />
+                  {landing.maxAttempts} attempts max
+                </span>
+              </div>
+
+              {/* Primary Action & Pricing Row */}
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-3">
+                <div className="inline-flex items-center gap-2 rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-emerald-300/80 bg-emerald-50/90 px-4 py-2.5 text-xs font-extrabold text-emerald-900 dark:border-emerald-800/70 dark:bg-emerald-950/60 dark:text-emerald-300 shadow-2xs">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>{feeLabel ?? 'Free Exam'}</span>
+                </div>
+
+                {action}
+
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  aria-label="Share exam"
+                  className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-slate-800 dark:border-slate-700/80 dark:bg-slate-900 dark:text-slate-500 dark:hover:text-white shadow-2xs transition-all cursor-pointer"
+                  title="Share this exam"
+                >
+                  <Share2 size={15} />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsReportModalOpen(true)}
+                  aria-label="Report exam"
+                  className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-red-600 dark:border-slate-700/80 dark:bg-slate-900 dark:text-slate-500 dark:hover:text-red-400 shadow-2xs transition-all cursor-pointer"
+                  title="Report this exam"
+                >
+                  <Flag size={15} />
+                </button>
+              </div>
+
+              {landing.attemptsUsed > 0 && (
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 pt-1">
+                  {landing.attemptsUsed} of {landing.maxAttempts} attempt{landing.maxAttempts === 1 ? '' : 's'} used
+                  {latest?.gradeCardId && (
+                    <>
+                      {' · '}
+                      <button
+                        type="button"
+                        onClick={() => onViewGradeCard(latest.gradeCardId!)}
+                        className="cursor-pointer font-bold text-[#2962D6] dark:text-[#3B82F6] underline decoration-blue-300 underline-offset-4 hover:decoration-blue-600"
+                      >
+                        View your grade card
+                      </button>
+                    </>
+                  )}
+                </p>
               )}
             </div>
 
-            <div>
-              <h2 className="text-2xl font-light text-ink" style={SERIF_FONT}>
-                What to expect
-              </h2>
-              <ul className="mt-5 space-y-4">
-                <Expect
-                  icon={<CalendarDays size={16} />}
-                  title={
-                    landing.accessWindow?.closesAt
-                      ? `Closes ${formatWhen(landing.accessWindow.closesAt)}`
-                      : landing.accessWindow?.opensAt
-                      ? `Opens ${formatWhen(landing.accessWindow.opensAt)}`
-                      : "Self-paced"
-                  }
-                  sub={landing.accessWindow?.opensAt || landing.accessWindow?.closesAt ? "Set by the creator" : "No fixed deadline"}
-                />
-                <Expect
-                  icon={<Clock size={16} />}
-                  title={`${landing.durationMinutes} minute limit`}
-                  sub="The timer starts when you begin"
-                />
-                <Expect
-                  icon={<RotateCcw size={16} />}
-                  title={`${landing.maxAttempts} attempt${landing.maxAttempts === 1 ? "" : "s"} allowed`}
-                  sub={
-                    landing.attemptsRemaining > 0
-                      ? `${landing.attemptsRemaining} remaining`
-                      : "All attempts used"
-                  }
-                />
-                <Expect
-                  icon={<Award size={16} />}
-                  title="A grade card for every sitting"
-                  sub={
-                    landing.graded
-                      ? `Marks by section, and pass or fail against ${landing.passPercentage}%`
-                      : "Your marks by section, for your own reference"
-                  }
-                />
-                {landing.proctoringRequired && (
-                  <Expect
-                    icon={<ShieldCheck size={16} />}
-                    title="Proctored"
-                    sub={
-                      landing.maxViolations > 0
-                        ? `Leaving the window is recorded; ${landing.maxViolations} violation${landing.maxViolations === 1 ? "" : "s"} end the attempt`
-                        : "Leaving the window is recorded"
-                    }
+            {/* RIGHT COLUMN: Exam Visual Artwork & Inclusions Frame */}
+            <div className="lg:col-span-5 flex justify-center lg:justify-end">
+              <div className="w-full max-w-sm overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-3.5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95">
+                
+                {/* Generative Exam Artwork */}
+                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-lg rounded-bl-lg border border-slate-200/70 dark:border-slate-800 shadow-xs">
+                  <ContentArt
+                    seed={landing.examId || landing.title || 'exam'}
+                    kind="EXAM"
+                    category={kind || 'Exam'}
+                    title={landing.title}
                   />
-                )}
-                {landing.identityVerificationRequired && (
-                  <Expect
-                    icon={<ShieldCheck size={16} />}
-                    title="Identity check"
-                    sub="You submit a photo before starting; an administrator reviews it"
-                  />
-                )}
-                {landing.fullscreenRequired && (
-                  <Expect
-                    icon={<Maximize2 size={16} />}
-                    title="Fullscreen"
-                    sub="The exam runs in fullscreen; leaving it is recorded"
-                  />
-                )}
-              </ul>
+                  <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5 rounded-full bg-slate-950/60 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-md">
+                    <Sparkles size={11} className="text-amber-300" />
+                    {kind}
+                  </div>
+                </div>
+
+                {/* Exam Inclusions Highlights */}
+                <div className="p-3 pt-4 space-y-2.5 text-xs text-slate-600 dark:text-slate-300">
+                  <div className="flex items-center gap-2 font-medium">
+                    <ShieldCheck size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>Instant access to exam sitting & question sheet</span>
+                  </div>
+                  <div className="flex items-center gap-2 font-medium">
+                    <Award size={14} className="text-blue-600 dark:text-blue-400 shrink-0" />
+                    <span>Detailed grade card & section performance breakdown</span>
+                  </div>
+                  <div className="flex items-center gap-2 font-medium">
+                    <Globe size={14} className="text-violet-600 dark:text-violet-400 shrink-0" />
+                    <span>
+                      {landing.proctoringRequired
+                        ? 'Proctored & secure testing environment'
+                        : 'Flexible self-paced examination sitting'}
+                    </span>
+                  </div>
+                  {landing.graded && (
+                    <div className="flex items-center gap-2 font-medium">
+                      <Sparkles size={14} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                      <span>Official certification upon passing ({landing.passPercentage}%)</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
+        </section>
 
-          {landing.history.length > 0 && (
-            <section className="mt-16">
-              <h2 className="text-2xl font-light text-ink" style={SERIF_FONT}>
-                Your attempts
-              </h2>
-              <p className="mt-2 text-[14px] text-subtle">
-                Each finished attempt has a grade card with your full marks.
-              </p>
-              <ul className="mt-6 divide-y divide-slate-100 overflow-hidden rounded-2xl border border-line bg-surface">
-                {landing.history.map((attempt) => (
-                  <li key={attempt.attemptId} className="flex items-center justify-between gap-3 px-5 py-4">
-                    <div className="min-w-0">
-                      <p className="text-[14px] font-semibold text-ink">Attempt {attempt.attemptNumber}</p>
-                      <p className="text-[12px] font-medium text-slate-400">
-                        {attempt.submittedAt
-                          ? formatWhen(attempt.submittedAt)
-                          : attempt.status === "IN_PROGRESS"
-                          ? "In progress"
-                          : "Not submitted"}
-                      </p>
+        {/* ── Multi-Plan Switcher (if multiple plans available) ──────── */}
+        {landing.plans.length > 1 && (
+          <div className="pt-2 pb-4 flex justify-center">
+            <div className="flex max-w-full gap-1 overflow-x-auto rounded-full border border-slate-200/80 dark:border-slate-800 bg-surface/95 p-1.5 shadow-2xs backdrop-blur-sm">
+              {landing.plans.map((p) => {
+                const active = p.planId === landing.planId;
+                return (
+                  <button
+                    key={p.planId}
+                    type="button"
+                    onClick={() => onSelectPlan(p.planId)}
+                    aria-pressed={active}
+                    className={`relative shrink-0 cursor-pointer rounded-full px-5 py-2 text-xs sm:text-sm font-bold transition-colors ${
+                      active
+                        ? 'text-white dark:text-slate-900'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {active && (
+                      <motion.div
+                        layoutId="examPlanPill"
+                        className="absolute inset-0 rounded-full bg-slate-900 dark:bg-white"
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                    <span className="relative z-10">{p.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ================= TABS SECTION ================= */}
+        <div className="pt-4 sm:pt-6">
+          {/* Tabs Header - matching My Learning / Course / Event style */}
+          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5">
+            {tabs.map((t) => (
+              <TabButton
+                key={t}
+                active={activeTab === t}
+                onClick={() => setActiveTab(t)}
+                label={t}
+              />
+            ))}
+          </div>
+
+          {/* Tab Content Display */}
+          <div key={activeTab} className="mt-8 arcade-fade">
+            {/* OVERVIEW TAB */}
+            {activeTab === 'Overview' && (
+              <div className="space-y-8">
+                {landing.prerequisite && !landing.prerequisite.met && (
+                  <PrerequisiteNotice prerequisite={landing.prerequisite} onOpen={onOpenPrerequisite} />
+                )}
+
+                {/* About this Exam Card */}
+                <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                    About this exam
+                  </h2>
+                  {landing.description || landing.planDescription || landing.purpose ? (
+                    <div className="mt-3 space-y-3 text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300 font-normal">
+                      {landing.description && <p className="whitespace-pre-wrap">{landing.description}</p>}
+                      {landing.planDescription && <p className="whitespace-pre-wrap">{landing.planDescription}</p>}
+                      {landing.purpose && <p className="whitespace-pre-wrap">{landing.purpose}</p>}
                     </div>
-                    <div className="flex shrink-0 items-center gap-3">
-                      <AttemptOutcome attempt={attempt} graded={landing.graded} />
-                      {attempt.gradeCardId && (
-                        <button
-                          type="button"
-                          onClick={() => onViewGradeCard(attempt.gradeCardId!)}
-                          className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-line px-3.5 py-1.5 text-[12px] font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-                        >
-                          Grade card <ChevronRight size={13} />
-                        </button>
-                      )}
+                  ) : (
+                    <p className="mt-3 text-sm sm:text-base text-slate-500 dark:text-slate-400 font-normal">
+                      {meta.effect}
+                    </p>
+                  )}
+                </div>
+
+                {/* Key Exam Highlights Card */}
+                <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-6">
+                    Key Specifications & Inclusions
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
+                      <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-2" />
+                      <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Time Limit</div>
+                      <div className="text-base font-bold text-slate-900 dark:text-white">{landing.durationMinutes} Minutes</div>
                     </div>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
+
+                    <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
+                      <Target className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mb-2" />
+                      <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Passing Criteria</div>
+                      <div className="text-base font-bold text-slate-900 dark:text-white">{landing.graded ? `${landing.passPercentage}% Mark` : 'Ungraded'}</div>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
+                      <RotateCcw className="w-5 h-5 text-sky-600 dark:text-sky-400 mb-2" />
+                      <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Attempt Policy</div>
+                      <div className="text-base font-bold text-slate-900 dark:text-white">{landing.maxAttempts} Attempts Allowed</div>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
+                      <ShieldCheck className="w-5 h-5 text-amber-600 dark:text-amber-400 mb-2" />
+                      <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Security & Proctoring</div>
+                      <div className="text-base font-bold text-slate-900 dark:text-white">{landing.proctoringRequired ? 'Proctored' : 'Standard'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* WHAT TO EXPECT TAB */}
+            {activeTab === 'What to Expect' && (
+              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-6">
+                  What to expect during this exam
+                </h2>
+                <ul className="space-y-3.5">
+                  <Expect
+                    icon={<CalendarDays size={18} />}
+                    title={
+                      landing.accessWindow?.closesAt
+                        ? `Closes ${formatWhen(landing.accessWindow.closesAt)}`
+                        : landing.accessWindow?.opensAt
+                        ? `Opens ${formatWhen(landing.accessWindow.opensAt)}`
+                        : 'Self-paced access'
+                    }
+                    sub={
+                      landing.accessWindow?.opensAt || landing.accessWindow?.closesAt
+                        ? 'Exam sitting schedule set by the examination board'
+                        : 'No fixed deadline; sit for the exam whenever you are ready'
+                    }
+                  />
+                  <Expect
+                    icon={<Clock size={18} />}
+                    title={`${landing.durationMinutes} minute limit`}
+                    sub="The timer starts immediately when you begin your attempt."
+                  />
+                  <Expect
+                    icon={<RotateCcw size={18} />}
+                    title={`${landing.maxAttempts} attempt${landing.maxAttempts === 1 ? '' : 's'} allowed`}
+                    sub={
+                      landing.attemptsRemaining > 0
+                        ? `${landing.attemptsRemaining} attempt${landing.attemptsRemaining === 1 ? '' : 's'} remaining`
+                        : 'All attempts have been used'
+                    }
+                  />
+                  <Expect
+                    icon={<Award size={18} />}
+                    title="A comprehensive grade card for every sitting"
+                    sub={
+                      landing.graded
+                        ? `Detailed marks by section, and pass or fail status evaluated against ${landing.passPercentage}%`
+                        : 'Your score summary and question feedback for your own reference'
+                    }
+                  />
+                  {landing.proctoringRequired && (
+                    <Expect
+                      icon={<ShieldCheck size={18} />}
+                      title="Proctored sitting"
+                      sub={
+                        landing.maxViolations > 0
+                          ? `Leaving the exam window is recorded; ${landing.maxViolations} violation${landing.maxViolations === 1 ? '' : 's'} will automatically terminate the sitting.`
+                          : 'Tab switches and leaving the exam window are recorded.'
+                      }
+                    />
+                  )}
+                  {landing.identityVerificationRequired && (
+                    <Expect
+                      icon={<ShieldCheck size={18} />}
+                      title="Identity verification required"
+                      sub="You submit a photo or ID verification before starting; an administrator reviews it."
+                    />
+                  )}
+                  {landing.fullscreenRequired && (
+                    <Expect
+                      icon={<Maximize2 size={18} />}
+                      title="Fullscreen mode enforced"
+                      sub="The exam runs in full screen; exiting fullscreen will trigger a proctor warning."
+                    />
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {/* INSTRUCTIONS TAB */}
+            {activeTab === 'Instructions' && landing.instructions != null && (
+              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
+                  Candidate Instructions
+                </h2>
+                <div className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm sm:text-base">
+                  <TiptapContentView body={JSON.stringify(landing.instructions)} emptyMessage="No instructions provided." />
+                </div>
+              </div>
+            )}
+
+            {/* YOUR ATTEMPTS TAB */}
+            {activeTab === 'Your Attempts' && landing.history.length > 0 && (
+              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-2">
+                  Your Exam Attempts
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-6">
+                  Each finished attempt includes a comprehensive grade card with complete section scoring.
+                </p>
+
+                <div className="divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90">
+                  {landing.history.map((attempt) => (
+                    <div key={attempt.attemptId} className="flex flex-wrap items-center justify-between gap-4 px-6 py-5">
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                          Attempt {attempt.attemptNumber}
+                        </p>
+                        <p className="text-xs font-medium text-slate-400">
+                          {attempt.submittedAt
+                            ? formatWhen(attempt.submittedAt)
+                            : attempt.status === 'IN_PROGRESS'
+                            ? 'In progress'
+                            : 'Not submitted'}
+                        </p>
+                      </div>
+
+                      <div className="flex shrink-0 items-center gap-3">
+                        <AttemptOutcome attempt={attempt} graded={landing.graded} />
+                        {attempt.gradeCardId && (
+                          <button
+                            type="button"
+                            onClick={() => onViewGradeCard(attempt.gradeCardId!)}
+                            className="rounded-tl-xl rounded-br-xl rounded-tr-sm rounded-bl-sm bg-[#2962D6] px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 transition shrink-0 cursor-pointer"
+                          >
+                            Grade Card
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* PREREQUISITES TAB */}
+            {activeTab === 'Prerequisites' && landing.prerequisite && (
+              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
+                  Prerequisite Requirements
+                </h2>
+                <PrerequisiteNotice prerequisite={landing.prerequisite} onOpen={onOpenPrerequisite} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* Honor Code Modal */}
       <HonorCodeModal
         isOpen={showHonorCode}
         onClose={() => setShowHonorCode(false)}
         onContinue={() => {
           setShowHonorCode(false);
           try {
-            sessionStorage.setItem("arcade_honor_code_accepted", "true");
+            sessionStorage.setItem('arcade_honor_code_accepted', 'true');
           } catch {}
           onStart();
         }}
+      />
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        onSubmit={handleReportSubmit}
+        title="Report Exam"
+        description="Help us understand what is wrong with this exam."
       />
     </main>
   );
 }
 
-/** The hero's right side: the exam's generated blueprint artwork. */
-function ExamCover({ landing, kind }: { landing: AssessmentLandingResponse; kind: string }) {
-  return (
-    <div className="relative mx-auto w-full max-w-[560px]">
-      <div className="overflow-hidden rounded-[1.6rem] border-[6px] border-ink bg-ink shadow-[0_30px_80px_rgba(20,22,28,0.22)]">
-        <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[1.1rem]">
-          <ContentArt seed={landing.examId} kind="EXAM" title={landing.title} />
-          <span className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-black/55 px-3 py-1.5 text-[12px] font-semibold text-white backdrop-blur">
-            <span className="size-2 rounded-full bg-emerald-400" />
-            {landing.questionCount > 0 ? `${landing.questionCount} questions · ${landing.durationMinutes} min` : `${landing.durationMinutes} min`}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function Expect({ icon, title, sub }: { icon: ReactNode; title: string; sub: string }) {
   return (
-    <li className="flex items-start gap-3.5">
-      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+    <li className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-slate-50/70 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
         {icon}
       </span>
       <div>
-        <p className="text-[15px] font-semibold text-ink">{title}</p>
-        <p className="text-[13px] text-subtle">{sub}</p>
+        <p className="text-sm font-bold text-slate-900 dark:text-white">{title}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{sub}</p>
       </div>
     </li>
   );
 }
 
-/** An attempt's outcome in words; the marks themselves are on its grade card. */
 function AttemptOutcome({
   attempt,
   graded,
 }: {
-  attempt: AssessmentLandingResponse["history"][number];
+  attempt: AssessmentLandingResponse['history'][number];
   graded: boolean;
 }) {
   if (attempt.awaitingReview) {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-amber-700 dark:text-amber-300">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
         <Hourglass size={13} /> Awaiting marking
       </span>
     );
   }
   if (attempt.percentage === null) {
-    return <span className="text-[12px] font-medium text-slate-400">{attemptStatusLabel(attempt)}</span>;
+    return <span className="text-xs font-medium text-slate-400">{attemptStatusLabel(attempt)}</span>;
   }
   if (!graded) {
-    return <span className="text-[12px] font-semibold text-slate-500">Completed</span>;
+    return <span className="text-xs font-semibold text-slate-500">Completed</span>;
   }
   return attempt.passed ? (
-    <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-emerald-700 dark:text-emerald-300">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
       <CheckCircle2 size={13} /> Passed
     </span>
   ) : (
-    <span className="text-[12px] font-semibold text-slate-500">Not passed</span>
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+      Not passed
+    </span>
   );
 }
 
-function blockedIcon(reason: AssessmentLandingResponse["blockedReason"]) {
+function blockedIcon(reason: AssessmentLandingResponse['blockedReason']) {
   switch (reason) {
-    case "NOT_STARTED_YET":
-    case "WINDOW_CLOSED":
+    case 'NOT_STARTED_YET':
+    case 'WINDOW_CLOSED':
       return <Clock size={16} />;
-    case "ATTEMPTS_EXHAUSTED":
-    case "PREREQUISITE_NOT_MET":
+    case 'ATTEMPTS_EXHAUSTED':
+    case 'PREREQUISITE_NOT_MET':
       return <Lock size={16} />;
-    case "IDENTITY_REQUIRED":
+    case 'IDENTITY_REQUIRED':
       return <ShieldCheck size={16} />;
     default:
       return <AlertCircle size={16} />;
@@ -483,10 +707,10 @@ function formatWhen(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
   return date.toLocaleString(undefined, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
   });
 }

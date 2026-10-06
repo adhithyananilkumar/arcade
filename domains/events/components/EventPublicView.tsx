@@ -328,7 +328,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
   const priceDisplay = isPaid ? formatMoney(event.priceAmount ?? 0, event.currency ?? 'INR') : 'Free';
 
   return (
-    <main className="min-h-screen w-full bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-white">
+    <main className="min-h-screen w-full bg-surface theme-page-bg theme-wallpaper-frost text-slate-900 dark:text-white">
       <div className="mx-auto max-w-6xl px-4 pt-12 pb-24 sm:px-6 sm:pt-16 sm:pb-32 lg:px-8">
         {/* ================= HERO SECTION (2-Column) ================= */}
         <section className="relative pt-4 pb-8 sm:pt-6 sm:pb-10">

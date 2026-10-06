@@ -1195,7 +1195,7 @@ export function CoursePublicView({ courseId: propCourseId }: CoursePublicViewPro
   const hasExam = Boolean(course?.hasExam);
 
   return (
-    <main className="min-h-screen w-full bg-surface theme-page-bg text-slate-900">
+    <main className="min-h-screen w-full bg-surface theme-page-bg theme-wallpaper-frost text-slate-900 dark:text-white">
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 pt-20 sm:pt-24 pb-28 sm:pb-32 space-y-8">
         {/* Two-Column Hero Section with /learn Aesthetics */}
         <CourseHero
