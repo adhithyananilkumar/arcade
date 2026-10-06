@@ -19,6 +19,8 @@ import {
 } from '@/domains/profiles';
 import { useIsContentStaff } from '../../components/useIsContentStaff';
 import { PhoneInput } from '@/shared/design-system/ui/phone-input';
+import { getAvatarUrl } from '@/shared/utils/avatar';
+import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
 import { motion } from 'framer-motion';
 import {
   Mail,
@@ -39,6 +41,9 @@ import {
   Globe,
   Eye,
   Smile,
+  Camera,
+  Trash2,
+  Upload,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -54,6 +59,9 @@ export default function PersonalInfoPage() {
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [selectedCropFile, setSelectedCropFile] = useState<File | null>(null);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
 
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
@@ -322,6 +330,43 @@ export default function PersonalInfoPage() {
     setEditingField(null);
   };
 
+  const handleFileSelectedForCrop = (file: File) => {
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File size must be under 10MB');
+      return;
+    }
+    setSelectedCropFile(file);
+    setCropModalOpen(true);
+  };
+
+  const handleCroppedAvatar = async (croppedFile: File) => {
+    setCropModalOpen(false);
+    setSelectedCropFile(null);
+    setUploadingAvatar(true);
+    try {
+      const updated = await UserService.uploadAvatar(croppedFile);
+      updateUser(updated);
+      toast.success('Profile photo updated');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update profile photo');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    setUploadingAvatar(true);
+    try {
+      const updated = await UserService.removeAvatar();
+      updateUser(updated);
+      toast.success('Profile photo removed');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to remove profile photo');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   const renderSaveCancelButtons = (field: string, onSave?: () => void) => (
     <div className="flex items-center gap-1 shrink-0">
       <button
@@ -339,11 +384,89 @@ export default function PersonalInfoPage() {
 
   return (
     <motion.div
-      className="space-y-1 pb-4"
+      className="space-y-4 pb-4"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
     >
+      <ImageCropModal
+        open={cropModalOpen}
+        file={selectedCropFile}
+        aspectRatio={1}
+        circularCrop
+        title="Crop profile photo"
+        onCancel={() => {
+          setCropModalOpen(false);
+          setSelectedCropFile(null);
+        }}
+        onCropped={handleCroppedAvatar}
+      />
+
+      {/* 0. Profile Photo */}
+      <div className="theme-glass-panel">
+        <div className="py-2 px-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border-2 border-slate-200 bg-slate-100 shadow-xs">
+              {user?.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={getAvatarUrl(user.avatarUrl)}
+                  alt="Avatar"
+                  className="h-full w-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-teal-50 text-base font-black text-teal-700">
+                  {user?.firstName ? user.firstName.charAt(0).toUpperCase() : (user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'U')}
+                </div>
+              )}
+              {uploadingAvatar && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white">
+                  <Loader2 size={18} className="animate-spin" />
+                </div>
+              )}
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-xs font-semibold text-slate-900">Profile photo</h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                PNG, JPG, GIF or WebP. Crop and zoom before uploading.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-900 text-on-ink hover:bg-slate-800 transition-colors cursor-pointer shadow-2xs"
+            >
+              <Upload size={13} />
+              <span>{user?.avatarUrl ? 'Change photo' : 'Upload photo'}</span>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                className="sr-only"
+                disabled={uploadingAvatar}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileSelectedForCrop(file);
+                  e.target.value = '';
+                }}
+              />
+            </label>
+            {user?.avatarUrl && (
+              <button
+                type="button"
+                onClick={handleRemoveAvatar}
+                disabled={uploadingAvatar}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors shadow-2xs"
+              >
+                <Trash2 size={13} />
+                <span>Remove</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* 1. Personal Information */}
       <div className="theme-glass-panel">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">

@@ -25,6 +25,7 @@ interface Props {
   aspectRatio?: number;
   /** Lets the person pick the shape (e.g. Square / Wide / Free). */
   aspectOptions?: AspectOption[];
+  circularCrop?: boolean;
   title?: string;
   /** A line under the title: what the image is for and what makes a good one. */
   hint?: string;
@@ -72,6 +73,7 @@ export function ImageCropModal({
   file,
   aspectRatio,
   aspectOptions,
+  circularCrop,
   title,
   hint,
   transparency = false,
@@ -148,7 +150,7 @@ export function ImageCropModal({
     return true;
   };
 
-  // A small rendering of the current crop, for the `preview` slot only.
+  // Generate live preview URL when preview prop is provided
   useEffect(() => {
     if (!preview || !completedCrop?.width) return;
     const canvas = document.createElement('canvas');
@@ -311,6 +313,7 @@ export function ImageCropModal({
                   onChange={(_, percentCrop) => setCrop(percentCrop)}
                   onComplete={(c) => setCompletedCrop(c)}
                   aspect={aspect}
+                  circularCrop={circularCrop}
                   keepSelection
                   className="max-h-full [&_.ReactCrop__child-wrapper]:overflow-hidden"
                 >

@@ -30,6 +30,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Check, Link2, Pencil, Settings } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   AboutPanel,
   AchievementsPanel,
@@ -205,7 +206,11 @@ function ShareButton() {
 // Person (learner, and instructor — whose personal channel this page is)
 // ---------------------------------------------------------------------------
 
-function PersonProfileView({ data }: { data: PersonData }) {
+function PersonProfileView({
+  data,
+}: {
+  data: PersonData;
+}) {
   const { profile, activity, achievements } = data;
   const viewer = useAuthStore((s) => s.user);
   const isSelf =
