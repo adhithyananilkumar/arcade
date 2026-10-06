@@ -77,6 +77,7 @@ export {
 export { EventTicketCard } from './components/EventTicketCard';
 export { TicketCheckInPanel } from './components/TicketCheckInPanel';
 export { EventInvitationManager } from './components/EventInvitationManager';
+export { EventPublicView } from './components/EventPublicView';
 
 export type * from './types/event.types';
 export { toEventCardView } from './lib/toEventCardView';

@@ -59,6 +59,7 @@ import { ReportModal } from '@/shared/design-system/ui/ReportModal';
 import { getContentCertification, type ContentCertificationView } from '@/domains/assessments';
 import { ChannelAvatar } from '@/shared/design-system/ui/cards';
 import { ContentArt } from '@/shared/design-system/art';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 import BadgeGraphic, { getBadgeForCourse } from '@/components/ui/BadgeGraphic';
 import FoldText from '@/components/ui/FoldText';
 import { motion } from 'framer-motion';
@@ -95,6 +96,7 @@ function Avatar({
   accent?: string;
   size?: number;
 }) {
+  const resolvedUrl = getAvatarUrl(imageUrl);
   const initials = name
     .split(' ')
     .map((w) => w[0])
@@ -102,11 +104,11 @@ function Avatar({
     .slice(0, 2)
     .toUpperCase();
 
-  if (imageUrl) {
+  if (resolvedUrl) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={imageUrl}
+        src={resolvedUrl}
         alt={name}
         className="shrink-0 rounded-2xl object-cover border border-slate-100 dark:border-slate-800"
         style={{ width: size, height: size }}
@@ -237,22 +239,29 @@ function CourseHero({
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12 items-start">
         {/* LEFT COLUMN: Course Details, Cursive Title Flourish & CTA */}
         <div className="lg:col-span-7 flex flex-col justify-center space-y-4">
-          {/* Organization Channel Tag (Only if not a personal channel) */}
-          {channel && !channel.isPersonal && (
+          {/* Publishing Channel Tag */}
+          {channel?.name && (
             <div className="pt-1">
               <Link
                 href={`/channels/${channel.id}`}
-                className="group inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-surface/95 px-3 py-1 text-xs font-semibold text-slate-700 shadow-2xs hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 transition-all"
+                className="group inline-flex items-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-slate-200/90 bg-surface/95 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs hover:border-blue-400 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-blue-500 transition-all select-none"
               >
-                <ChannelAvatar
-                  name={channel.name}
-                  iconUrl={channel.iconUrl}
-                  size={18}
-                  className="bg-transparent border-0 shadow-none ring-0"
-                />
+                {getAvatarUrl(channel.iconUrl) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={getAvatarUrl(channel.iconUrl)}
+                    alt={channel.name}
+                    className="size-4.5 rounded-md object-cover"
+                  />
+                ) : (
+                  <span className="flex size-4.5 items-center justify-center rounded-md bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
+                    <Radio size={11} className="stroke-[2.5]" />
+                  </span>
+                )}
                 <span className="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                   {channel.name}
                 </span>
+                <ChevronRight size={12} className="text-slate-400 group-hover:translate-x-0.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all" />
               </Link>
             </div>
           )}
