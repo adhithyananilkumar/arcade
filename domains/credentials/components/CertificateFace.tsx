@@ -32,7 +32,7 @@ const MUTED = "#5B6475";
 
 // The PDF's typefaces (backend Xhtml.DISPLAY and Xhtml.BOOK): Cormorant Garamond for the display
 // lines, EB Garamond for running text. Loaded here so only pages showing a certificate fetch them.
-const display = Cormorant_Garamond({ subsets: ["latin"], weight: ["500", "600"], style: ["normal", "italic"] });
+const display = Cormorant_Garamond({ subsets: ["latin"], weight: ["500", "600"] });
 const book = EB_Garamond({ subsets: ["latin"], weight: ["400", "600"] });
 
 const mm = (v: number) => `${(v * 100) / 297}cqw`;
