@@ -21,6 +21,10 @@ export interface CredentialBadgeProps {
   title?: string;
   /** The issuing organisation's logo, shown in the badge's lower medallion. */
   issuerLogoUrl?: string | null;
+  /** Top tiers (Intermediate, Advanced) shimmer and glint. Default on; never when locked or revoked. */
+  animate?: boolean;
+  /** "metal" (default) blends the org logo into the badge metal; "original" keeps its colours. */
+  logoStyle?: "metal" | "original";
   /** Year earned, printed on the badge. */
   year?: number | null;
   /** Not yet earned: drawn in grey. */
@@ -32,11 +36,11 @@ export interface CredentialBadgeProps {
   className?: string;
 }
 
-export function CredentialBadge({ family, level, title, issuerLogoUrl, year, locked, revoked, label, className }: CredentialBadgeProps) {
+export function CredentialBadge({ family, level, title, issuerLogoUrl, year, animate = true, logoStyle, locked, revoked, label, className }: CredentialBadgeProps) {
   const uid = useId();
   const svg = useMemo(
-    () => renderBadgeSvg({ family, level, title, issuerLogoUrl, year, uid: `cb${uid}` }),
-    [family, level, title, issuerLogoUrl, year, uid]
+    () => renderBadgeSvg({ family, level, title, issuerLogoUrl, year, logoStyle, animate: animate && !locked && !revoked, uid: `cb${uid}` }),
+    [family, level, title, issuerLogoUrl, year, logoStyle, animate, locked, revoked, uid]
   );
   return (
     <div
