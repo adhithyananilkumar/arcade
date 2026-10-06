@@ -304,17 +304,12 @@ export const channelService = {
     name: string,
     description: string,
     isPersonal: boolean,
-    options: CreateChannelRequestOptions,
-    iconFile?: File
+    options: CreateChannelRequestOptions
   ): Promise<Channel> => {
     const formData = new FormData();
     formData.append('name', name);
     formData.append('description', description);
     formData.append('isPersonal', String(isPersonal));
-
-    if (iconFile) {
-      formData.append('icon', iconFile);
-    }
 
     formData.append('invitationToken', options.invitationToken);
     if (options.purpose !== undefined) {

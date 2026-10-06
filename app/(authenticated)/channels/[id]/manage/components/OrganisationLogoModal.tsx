@@ -48,6 +48,8 @@ export function OrganisationLogoModal({ isOpen, onClose, channel, onUpdate }: Or
   const current = channel.iconUrl ? getAvatarUrl(channel.iconUrl) : null;
   const next = remove ? null : fileUrl ?? current;
   const changed = remove || file !== null;
+  // Nothing has been issued under a logo yet, so there is nothing to warn about or confirm.
+  const first = !current;
 
   const choose = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const picked = e.target.files?.[0];
@@ -84,7 +86,7 @@ export function OrganisationLogoModal({ isOpen, onClose, channel, onUpdate }: Or
   };
 
   const save = async () => {
-    if (!changed || !confirmed) return;
+    if (!changed || (!first && !confirmed)) return;
     try {
       setSaving(true);
       const saved = await channelService.updateChannelProfile(channel.id, {
@@ -152,6 +154,7 @@ export function OrganisationLogoModal({ isOpen, onClose, channel, onUpdate }: Or
             </div>
 
             <div className="space-y-5 p-6">
+              {!first && (
               <div className="flex gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-500/40 dark:bg-amber-500/10">
                 <AlertTriangle size={18} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
                 <div className="space-y-1 text-xs font-medium leading-relaxed text-amber-900 dark:text-amber-100">
@@ -166,6 +169,7 @@ export function OrganisationLogoModal({ isOpen, onClose, channel, onUpdate }: Or
                   </p>
                 </div>
               </div>
+              )}
 
               <div className="flex flex-wrap items-center gap-3">
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-surface px-4 py-2 text-xs font-extrabold text-slate-800 shadow-xs transition-colors hover:bg-slate-50">
@@ -205,7 +209,7 @@ export function OrganisationLogoModal({ isOpen, onClose, channel, onUpdate }: Or
                 )}
               </div>
 
-              {changed && (
+              {changed && !first && (
                 <label className="flex cursor-pointer items-start gap-2.5 rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 text-xs font-semibold text-slate-700">
                   <input
                     type="checkbox"
@@ -231,7 +235,7 @@ export function OrganisationLogoModal({ isOpen, onClose, channel, onUpdate }: Or
                 <button
                   type="button"
                   onClick={save}
-                  disabled={!changed || !confirmed || saving}
+                  disabled={!changed || (!first && !confirmed) || saving}
                   className="inline-flex items-center gap-2 rounded-2xl bg-ink px-6 py-2.5 text-xs font-extrabold text-on-ink shadow-md transition-all hover:bg-indigo-950 active:scale-[0.98] disabled:opacity-50"
                 >
                   {saving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}

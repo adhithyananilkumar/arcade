@@ -45,6 +45,7 @@ import { ChannelActivityLog } from './components/ChannelActivityLog';
 import { EditOrganizationModal } from './components/EditOrganizationModal';
 import { OrganisationLogoModal } from './components/OrganisationLogoModal';
 import { SignatoryModal } from './components/SignatoryModal';
+import { ChannelOnboardingModal } from './components/ChannelOnboardingModal';
 import { ChannelIdentityManager } from './ChannelIdentityManager';
 import { ChannelStaffManager } from './ChannelStaffManager';
 import { ChannelDangerZone } from './ChannelDangerZone';
@@ -97,6 +98,24 @@ export default function ManageChannelPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isLogoOpen, setIsLogoOpen] = useState(false);
   const [isSignatoryOpen, setIsSignatoryOpen] = useState(false);
+  // First-time setup (logo + signatory) for an organisation channel, until it is done or skipped.
+  const [onboardingDismissed, setOnboardingDismissed] = useState(true);
+  const onboardingKey = `channel-onboarding:${channelId}`;
+  useEffect(() => {
+    try {
+      setOnboardingDismissed(window.localStorage.getItem(onboardingKey) === 'done');
+    } catch {
+      setOnboardingDismissed(false);
+    }
+  }, [onboardingKey]);
+  const dismissOnboarding = () => {
+    setOnboardingDismissed(true);
+    try {
+      window.localStorage.setItem(onboardingKey, 'done');
+    } catch {
+      /* private mode: it simply shows again next visit */
+    }
+  };
 
   useEffect(() => {
     if (!channelId) return;
@@ -329,6 +348,15 @@ export default function ManageChannelPage() {
           setIsSignatoryOpen(true);
         }}
       />
+
+      {isOrg && canEdit && !channel.iconUrl && !onboardingDismissed && !isLogoOpen && !isSignatoryOpen && (
+        <ChannelOnboardingModal
+          channel={channel}
+          onDismiss={dismissOnboarding}
+          onAddLogo={() => setIsLogoOpen(true)}
+          onAddSignatory={() => setIsSignatoryOpen(true)}
+        />
+      )}
 
       {!channel.isPersonal && (
         <SignatoryModal

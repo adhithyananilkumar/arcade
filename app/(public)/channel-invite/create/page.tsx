@@ -13,13 +13,11 @@ import { motion, useReducedMotion, Variants } from 'framer-motion';
 import { ArrowUpRight, Upload, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { channelService, ChannelApplicantInput, ChannelOrganizationInput } from '@/domains/channels';
-import { IssuerLogoPreview } from '@/domains/credentials';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { PebbleLoader } from '@/domains/identity/components/PebbleLoader';
 import { PhoneInput } from '@/shared/design-system/ui/phone-input';
 import { validateDateOfBirth, getTodayDateString, UNDER_AGE_ERROR_MESSAGE } from '@/shared/utils/dob';
 import { cn } from '@/shared/utils/utils';
-import { hasTransparentBackground, rasteriseSvg } from '@/shared/utils/image';
 import '@/apps/public/landing.css';
 
 // Subtle stagger reveal variants (shared editorial motion language — see /reach-us)
@@ -162,8 +160,6 @@ function ChannelInviteCreateContent() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [purpose, setPurpose] = useState('');
-  const [iconFile, setIconFile] = useState<File | null>(null);
-  const [iconPreview, setIconPreview] = useState<string | null>(null);
 
   const [applicant, setApplicant] = useState(emptyApplicant);
   const [isPhoneValid, setIsPhoneValid] = useState(false);
@@ -201,33 +197,6 @@ function ChannelInviteCreateContent() {
 
   const updateOrganization = (field: keyof typeof emptyOrganization, value: string) => {
     setOrganization((prev) => ({ ...prev, [field]: value }));
-  };
-
-  // The icon is the organisation's logo on its badges and certificates: a PNG or SVG (rasterised to
-  // PNG here, since certificates embed raster images only) with a transparent background.
-  const handleIconChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const picked = e.target.files?.[0];
-    e.target.value = '';
-    if (!picked) return;
-    if (picked.type !== 'image/png' && picked.type !== 'image/svg+xml') {
-      toast.error('Use a PNG or SVG with a transparent background.');
-      return;
-    }
-    let file: File;
-    try {
-      file = picked.type === 'image/svg+xml' ? await rasteriseSvg(picked) : picked;
-    } catch {
-      toast.error('That SVG could not be read. Try exporting it again, or use a PNG.');
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    if (!isPersonal && !(await hasTransparentBackground(url).catch(() => false))) {
-      URL.revokeObjectURL(url);
-      toast.error('This logo has a background. Upload a PNG or SVG with a transparent background.');
-      return;
-    }
-    setIconFile(file);
-    setIconPreview(url);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -331,8 +300,7 @@ function ChannelInviteCreateContent() {
           purpose: purpose.trim(),
           applicant: applicantInput,
           organization: organizationInput,
-        },
-        iconFile || undefined
+        }
       );
       setSubmitted(true);
     } catch (error) {
@@ -598,36 +566,6 @@ function ChannelInviteCreateContent() {
                   title="Tell us about the channel."
                   hint="A name, a short description, and why you want it."
                 />
-
-                <div className="flex justify-center py-2">
-                  <div className="relative group cursor-pointer">
-                    <div className="h-24 w-24 overflow-hidden rounded-full border border-dashed border-slate-300 bg-surface/50 flex flex-col items-center justify-center transition-colors group-hover:border-[#205ca8] group-hover:bg-[#205ca8]/[0.04]">
-                      {iconPreview ? (
-                        <img src={iconPreview} alt="Icon preview" className="h-full w-full object-cover" />
-                      ) : (
-                        <>
-                          <Upload size={22} className="text-slate-400 group-hover:text-[#205ca8] mb-1 transition-colors dark:group-hover:text-[#7cbaff]" />
-                          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold group-hover:text-[#205ca8] transition-colors dark:group-hover:text-[#7cbaff]">
-                            Icon
-                          </span>
-                        </>
-                      )}
-                    </div>
-                    <input type="file" accept="image/png, image/svg+xml" onChange={handleIconChange} className="absolute inset-0 opacity-0 cursor-pointer" />
-                  </div>
-                </div>
-
-                {/* An organisation's icon is printed on its certificates: show how. */}
-                {!isPersonal && (
-                  <div className="mx-auto max-w-lg space-y-2">
-                    <IssuerLogoPreview logoSrc={iconPreview} organisationName={name} />
-                    <p className="text-[11px] font-medium leading-relaxed text-slate-500">
-                      This icon is your organisation's logo: it is printed on every badge and certificate your channel
-                      issues. Use a square PNG or SVG with a transparent background. You can change it later
-                      from the channel's settings.
-                    </p>
-                  </div>
-                )}
 
                 <FormField label="Channel Name" required>
                   <input
