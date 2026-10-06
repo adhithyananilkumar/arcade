@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Pencil, Tv, Settings, BookOpen, ShieldAlert, Bell, GraduationCap, Compass, Trophy, ArrowLeft } from 'lucide-react';
+import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, GraduationCap, Compass, Trophy, ArrowLeft } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AuthService } from '@/infrastructure/auth/auth.service';
@@ -465,12 +465,6 @@ export default function LearnerNavbar() {
               onClick={() => router.push('/profile')} 
             >
               Profile
-            </MenuItem>
-            <MenuItem 
-              icon={<Pencil className="text-sky-600 dark:text-sky-400" strokeWidth={2} />} 
-              onClick={() => router.push('/settings/info')} 
-            >
-              Edit Profile
             </MenuItem>
             {channelCount > 0 && (
               <MenuItem 
