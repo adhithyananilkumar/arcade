@@ -237,25 +237,6 @@ function CourseHero({
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12 items-start">
         {/* LEFT COLUMN: Course Details, Cursive Title Flourish & CTA */}
         <div className="lg:col-span-7 flex flex-col justify-center space-y-4">
-          {/* Breadcrumb Navigation */}
-          <nav aria-label="Breadcrumbs" className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-            <Link href="/explore" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-              Courses
-            </Link>
-            {channel && !channel.isPersonal && (
-              <>
-                <ChevronRight size={13} className="text-slate-400 shrink-0" />
-                <Link href={`/channels/${channel.id}`} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate max-w-[140px]">
-                  {channel.name}
-                </Link>
-              </>
-            )}
-            <ChevronRight size={13} className="text-slate-400 shrink-0" />
-            <span className="truncate text-slate-800 dark:text-slate-200 font-semibold max-w-[220px]">
-              {title}
-            </span>
-          </nav>
-
           {/* Organization Channel Tag (Only if not a personal channel) */}
           {channel && !channel.isPersonal && (
             <div className="pt-1">
@@ -279,7 +260,7 @@ function CourseHero({
           {/* Title in Dancing Script font with hand-drawn SVG flourish */}
           <div className="relative inline-block mt-1">
             <h1
-              className={`${dancingScript.className} text-4xl sm:text-5xl lg:text-6xl font-bold tracking-normal text-slate-900 dark:text-white leading-[1.18]`}
+              className={`${dancingScript.className} text-5xl sm:text-6xl lg:text-7xl font-bold tracking-normal text-slate-900 dark:text-white leading-[1.15]`}
             >
               {title}
             </h1>
@@ -287,7 +268,7 @@ function CourseHero({
             {/* Signature hand-drawn blue underline flourish from /learn */}
             <div className="flex mt-1">
               <svg
-                className="h-3.5 w-48 sm:w-64 text-blue-300 dark:text-blue-400 opacity-90"
+                className="h-4 w-56 sm:w-72 text-blue-300 dark:text-blue-400 opacity-90"
                 viewBox="0 0 200 12"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -368,7 +349,7 @@ function CourseHero({
           </div>
 
           {/* Primary Action & Pricing Row */}
-          <div className="flex flex-wrap items-center gap-4 pt-3">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-3">
             {isPaid ? (
               <div className="flex flex-col pr-1">
                 <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white leading-none">
@@ -377,22 +358,22 @@ function CourseHero({
                 <span className="text-[11px] font-medium text-slate-400 mt-1">One-time payment</span>
               </div>
             ) : (
-              <div className="flex items-center pr-1">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/80 dark:border-emerald-800/60 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="inline-flex items-center">
+                <span className="h-11 px-4 inline-flex items-center justify-center gap-2 rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 dark:border-emerald-800 text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-300 shadow-2xs shrink-0 select-none">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                   Free Course
                 </span>
               </div>
             )}
 
             {courseId && (
-              <div className="min-w-[200px] sm:min-w-[240px]">
+              <div className="inline-flex items-center [&>div]:w-auto [&>div]:inline-flex [&_button]:h-11 [&_button]:!rounded-tl-2xl [&_button]:!rounded-br-2xl [&_button]:!rounded-tr-md [&_button]:!rounded-bl-md [&_button]:!py-0 [&_button]:!px-5 sm:[&_button]:!px-6 [&_button]:!flex-initial [&_button]:w-auto [&_button]:border [&_button]:border-slate-300/80 dark:[&_button]:border-slate-700/80 [&_button]:text-xs sm:[&_button]:text-sm">
                 <EnrollmentButton
                   resourceType="COURSE"
                   resourceId={courseId}
                   initialState={initialState}
                   pendingReason={pendingReason}
-                  className="rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md shadow-[0_8px_24px_-8px_rgba(20,20,43,0.45)] hover:shadow-[0_12px_28px_-8px_rgba(20,20,43,0.5)] transition-all font-semibold"
+                  className="!rounded-tl-2xl !rounded-br-2xl !rounded-tr-md !rounded-bl-md !py-0 !h-11 !px-5 sm:!px-6 !flex-initial font-bold shadow-2xs hover:shadow-xs transition-all"
                   onStateChange={(state) => {
                     if (state === 'ENROLLED' && onEnroll) {
                       onEnroll();
@@ -406,7 +387,7 @@ function CourseHero({
               type="button"
               onClick={onReportClick}
               aria-label="Report course"
-              className="grid size-11 place-items-center rounded-full border border-slate-200/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-red-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-500 dark:hover:text-red-400 shadow-[0_2px_8px_rgba(20,20,43,0.03)] transition-all cursor-pointer"
+              className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-red-600 dark:border-slate-700/80 dark:bg-slate-900 dark:text-slate-500 dark:hover:text-red-400 shadow-2xs transition-all cursor-pointer"
               title="Report this course"
             >
               <Flag size={15} />
@@ -458,6 +439,32 @@ function CourseHero({
 /* ------------------------------------------------------------------ */
 /*  Tabs Section (Overview, Curriculum, Instructor, Reviews, etc.)    */
 /* ------------------------------------------------------------------ */
+
+function TabButton({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={`relative px-5 sm:px-6 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm font-black tracking-tight transition-all duration-200 select-none cursor-pointer min-w-[96px] text-center ${
+        active
+          ? 'bg-surface text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6] shadow-2xs'
+          : 'bg-slate-100/80 text-slate-700 border border-slate-200/70 hover:bg-slate-200/70 hover:text-slate-900 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700/70 dark:hover:bg-slate-800 dark:hover:text-white'
+      }`}
+    >
+      <span className="relative z-10">{label}</span>
+    </button>
+  );
+}
 
 interface CourseTabsProps {
   courseTitle?: string;
@@ -536,35 +543,16 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
 
   return (
     <div className="pt-4 sm:pt-6">
-      {/* Pill Tab Switcher */}
-      <div className="flex justify-center">
-        <div className="inline-flex flex-wrap gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 p-1.5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95">
-          {tabs.map((t) => {
-            const isActive = tab === t;
-            return (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setTab(t)}
-                aria-pressed={isActive}
-                className={`relative rounded-full px-5 py-2 text-xs font-bold transition-all duration-200 cursor-pointer ${
-                  isActive
-                    ? 'text-white dark:text-slate-900'
-                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-                }`}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="activePublicCourseTab"
-                    className="absolute inset-0 rounded-full bg-slate-900 dark:bg-white shadow-xs"
-                    transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-                  />
-                )}
-                <span className="relative z-10">{t}</span>
-              </button>
-            );
-          })}
-        </div>
+      {/* Tabs Header - matching My Learning page style */}
+      <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5">
+        {tabs.map((t) => (
+          <TabButton
+            key={t}
+            active={tab === t}
+            onClick={() => setTab(t)}
+            label={t}
+          />
+        ))}
       </div>
 
       <div key={tab} className="mt-8 arcade-fade">
@@ -608,48 +596,6 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
                   The course author will publish an in-depth course description soon.
                 </p>
               )}
-            </div>
-
-            {/* Curriculum Summary Highlight */}
-            <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-                    Curriculum Summary
-                  </h2>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-0.5">
-                    {modules.length} {modules.length === 1 ? 'MODULE' : 'MODULES'} • {lessonTotal} {lessonTotal === 1 ? 'LESSON' : 'LESSONS'}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setTab('Curriculum')}
-                  className="text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1 cursor-pointer"
-                >
-                  View full curriculum <ChevronRight size={14} />
-                </button>
-              </div>
-
-              <div className="mt-5 space-y-2.5">
-                {modules.slice(0, 3).map((m, idx) => (
-                  <div
-                    key={m.id}
-                    className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/60 p-4 text-sm font-medium"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 font-bold text-xs">
-                        {idx + 1}
-                      </span>
-                      <span className="truncate font-semibold text-slate-800 dark:text-slate-200">
-                        {m.title}
-                      </span>
-                    </div>
-                    <span className="text-xs text-slate-400 shrink-0 ml-3">
-                      {(m.lessons ?? []).length} lessons
-                    </span>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         )}
@@ -841,7 +787,7 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
 
         {/* ================= CREDENTIALS TAB ================= */}
         {tab === 'Credentials' && (
-          <div className="space-y-8 max-w-3xl">
+          <div className="space-y-8 max-w-3xl mx-auto">
             {hasBadge && (
               <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900 p-6 sm:p-8">
                 <div className="flex flex-col sm:flex-row items-center gap-6">
