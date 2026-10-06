@@ -10,6 +10,7 @@
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import { useEffect, useMemo, useState } from "react";
 import * as Y from "yjs";
+import { toast } from "sonner";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import { COLLAB_WS_URL } from "@/infrastructure/config/env";
 import { createYDoc } from "./yjs";
@@ -53,6 +54,26 @@ export function useCollaborativeDocument({
 
   const documentName = ownerId ? `${ownerType}:${ownerId}` : undefined;
 
+  const handleRevocation = (message?: string) => {
+    setStatus("disconnected");
+    setCollaborators([]);
+    try {
+      provider?.disconnect();
+      provider?.destroy();
+    } catch (e) {
+      // ignore
+    }
+    toast.error(message || "Your collaborator access has been revoked. Exiting workspace...", {
+      id: "collaborator-revoked-exit",
+      duration: 4000,
+    });
+    setTimeout(() => {
+      if (typeof window !== "undefined") {
+        window.location.replace("/studio");
+      }
+    }, 300);
+  };
+
   const provider = useMemo(() => {
     if (!documentName || typeof window === "undefined") return null;
     return new HocuspocusProvider({
@@ -62,6 +83,12 @@ export function useCollaborativeDocument({
       document: ydoc,
       onAuthenticationFailed: (data) => {
         console.warn("[Collaboration] Hocuspocus authentication failed:", data.reason);
+        handleRevocation("You no longer have permission to edit this content. Exiting...");
+      },
+      onClose: ({ event }) => {
+        if (event?.code === 4403 || event?.code === 4401) {
+          handleRevocation();
+        }
       },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -93,7 +120,37 @@ export function useCollaborativeDocument({
       provider.awareness.setLocalStateField("user", { id: user.id, name: user.fullName });
     }
 
+    const handleAuthFailed = () => {
+      handleRevocation();
+    };
+
+    const handleClose = ({ event }: { event?: any }) => {
+      if (event?.code === 4403 || event?.code === 4401) {
+        handleRevocation();
+      }
+    };
+
+    const handleStateless = ({ payload }: { payload: string }) => {
+      try {
+        const msg = JSON.parse(payload);
+        const currentUserId = user?.id ? String(user.id).toLowerCase() : null;
+        const targetUserId = msg.userId ? String(msg.userId).toLowerCase() : null;
+
+        if (
+          (msg.type === "ACCESS_REVOKED" && (!targetUserId || targetUserId === currentUserId)) ||
+          (msg.type === "COLLABORATOR_REMOVED" && (!targetUserId || targetUserId === currentUserId))
+        ) {
+          handleRevocation();
+        }
+      } catch (e) {
+        // ignore non-json
+      }
+    };
+
     provider.on("status", updateStatus);
+    provider.on("authenticationFailed", handleAuthFailed);
+    provider.on("close", handleClose);
+    provider.on("stateless", handleStateless);
     if (provider.awareness) {
       provider.awareness.on("change", updateAwareness);
       updateAwareness();
@@ -101,6 +158,9 @@ export function useCollaborativeDocument({
 
     return () => {
       provider.off("status", updateStatus);
+      provider.off("authenticationFailed", handleAuthFailed);
+      provider.off("close", handleClose);
+      provider.off("stateless", handleStateless);
       if (provider.awareness) {
         provider.awareness.off("change", updateAwareness);
       }

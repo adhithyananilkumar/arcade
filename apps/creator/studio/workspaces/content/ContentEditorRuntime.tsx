@@ -579,7 +579,16 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
         if (firstLeaf && firstLeaf.type === "document") {
           await openLesson(firstLeaf);
         }
-      } catch (e) {
+      } catch (e: any) {
+        if (e?.status === 403 || e?.message?.includes("403") || e?.message?.includes("Forbidden")) {
+          toast.error("Your collaborator access has been revoked. Exiting workspace...", {
+            id: "collaborator-revoked-exit",
+          });
+          if (typeof window !== "undefined") {
+            window.location.replace("/studio");
+          }
+          return;
+        }
         console.error("Failed to load content", e);
       }
       setIsInitializing(false);
@@ -1097,11 +1106,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
         breadcrumb={
           activeLessonId ? (
             <div className="flex items-center gap-1.5 text-gray-500">
-              <span className="rounded-md bg-ink/5 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ink/50">
-                {adapter.terminology.root}
-              </span>
-              <span className="text-gray-300">·</span>
-              {modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title && (
+              {activeLessonId && modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title && (
                 <>
                   <span className="block max-w-[15vw] truncate font-medium">
                     {modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title}
@@ -1112,13 +1117,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
               <span className="block max-w-[20vw] truncate text-ink">{activeLessonTitle}</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5">
-              <span className="rounded-md bg-ink/5 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ink/50">
-                {adapter.terminology.root}
-              </span>
-              <span className="text-gray-300">·</span>
-              <span className="block max-w-[40vw] truncate text-ink">{title || adapter.terminology.root}</span>
-            </div>
+            <span className="block max-w-[40vw] truncate text-ink">{title || adapter.terminology.root}</span>
           )
         }
         collaborators={effectiveCollabState.collaborators}

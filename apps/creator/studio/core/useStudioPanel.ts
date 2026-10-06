@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
+import { useWebSocket } from "@/infrastructure/websocket/useWebSocket";
+import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import type { ContentStatusHistoryResponse } from "@/domains/publishing";
 
 /**
@@ -44,6 +46,8 @@ export interface StudioWorkflowPanelPaths {
 export type InviteRole = "EDITOR" | "MANAGER" | "VIEWER";
 
 export function useStudioPanel({ collaboratorsPath, statusHistoryPath }: StudioWorkflowPanelPaths) {
+  const { subscribe, connected } = useWebSocket();
+  const { user } = useAuthStore();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<string>("status");
 
@@ -61,13 +65,45 @@ export function useStudioPanel({ collaboratorsPath, statusHistoryPath }: StudioW
   >([]);
   const [inviting, setInviting] = useState(false);
 
+  useEffect(() => {
+    if (!connected || !user?.id) return;
+    const unsub = subscribe("/user/queue/notifications", (body: any) => {
+      try {
+        const payload = typeof body === "string" ? JSON.parse(body) : body;
+        if (
+          payload?.notification?.type === "CONTENT_COLLABORATION_REMOVED" ||
+          payload?.type === "CONTENT_COLLABORATION_REMOVED"
+        ) {
+          toast.error("Your collaborator access has been revoked. Exiting workspace...", {
+            id: "collaborator-revoked-exit",
+            duration: 4000,
+          });
+          if (typeof window !== "undefined") {
+            window.location.replace("/studio");
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    });
+    return unsub;
+  }, [connected, user?.id, subscribe]);
+
   const loadCollaborators = useCallback(async () => {
     if (!collaboratorsPath) return;
     setLoadingCollaborators(true);
     try {
       const data = await api.get<StudioCollaborator[]>(collaboratorsPath);
       setCollaborators(data || []);
-    } catch (e) {
+    } catch (e: any) {
+      if (e?.status === 403 || e?.message?.includes("403") || e?.message?.includes("Forbidden")) {
+        toast.error("Your collaborator access has been revoked. Exiting workspace...", {
+          id: "collaborator-revoked-exit",
+        });
+        if (typeof window !== "undefined") {
+          window.location.replace("/studio");
+        }
+      }
       console.error("Failed to load collaborators", e);
     } finally {
       setLoadingCollaborators(false);
@@ -81,7 +117,15 @@ export function useStudioPanel({ collaboratorsPath, statusHistoryPath }: StudioW
     try {
       const data = await api.get<ContentStatusHistoryResponse[]>(statusHistoryPath);
       setStatusHistory(data ?? []);
-    } catch (e) {
+    } catch (e: any) {
+      if (e?.status === 403 || e?.message?.includes("403") || e?.message?.includes("Forbidden")) {
+        toast.error("Your collaborator access has been revoked. Exiting workspace...", {
+          id: "collaborator-revoked-exit",
+        });
+        if (typeof window !== "undefined") {
+          window.location.replace("/studio");
+        }
+      }
       setStatusHistoryError(e instanceof Error ? e.message : "Failed to load status history");
     } finally {
       setStatusHistoryLoading(false);
