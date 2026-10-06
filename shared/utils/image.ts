@@ -163,3 +163,28 @@ export async function contentBounds(
   if (maxX < 0) return null;
   return { x: minX / w, y: minY / h, width: (maxX - minX + 1) / w, height: (maxY - minY + 1) / h };
 }
+
+/**
+ * Turns an image by any angle (degrees, clockwise), growing the canvas so no corner is cut off. The
+ * new corners are transparent (white for a JPEG, which has no alpha). Keeps PNG/JPEG; others become PNG.
+ */
+export async function rotateBy(file: File, degrees: number): Promise<File> {
+  const rad = (degrees * Math.PI) / 180;
+  const cos = Math.abs(Math.cos(rad));
+  const sin = Math.abs(Math.sin(rad));
+  const jpeg = file.type === "image/jpeg";
+  const canvas = await drawFile(
+    file,
+    (w, h) => [Math.ceil(w * cos + h * sin), Math.ceil(w * sin + h * cos)],
+    (ctx, img) => {
+      if (jpeg) {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      }
+      ctx.translate(ctx.canvas.width / 2, ctx.canvas.height / 2);
+      ctx.rotate(rad);
+      ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+    },
+  );
+  return canvasToFile(canvas, file.name, jpeg ? "image/jpeg" : "image/png");
+}

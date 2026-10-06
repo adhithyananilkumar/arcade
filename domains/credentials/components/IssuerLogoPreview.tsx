@@ -25,6 +25,8 @@ export interface IssuerLogoPreviewProps {
   logoSrc?: string | null;
   /** The organisation's name; for a personal channel, the instructor's. */
   organisationName: string;
+  /** The organisation's seal, printed above its name in the issuer column. */
+  sealSrc?: string | null;
   /** The certificate signatory, shown in the certificate's signature column. */
   signatory?: { name: string; title: string; signatureUrl: string } | null;
   /** Show the badge preview too (signatures do not appear on badges). Default true; never for personal. */
@@ -39,6 +41,7 @@ const SAMPLE_DATE = "2026-01-15T06:30:00Z";
 export function IssuerLogoPreview({
   logoSrc,
   organisationName,
+  sealSrc,
   signatory,
   showBadge = true,
   personal = false,
@@ -62,6 +65,7 @@ export function IssuerLogoPreview({
               recipientName: "Learner Name",
               issuerName: personal ? HOST_INSTITUTION_NAME : name,
               issuerLogoUrl: personal ? null : logoSrc ?? null,
+              issuerSealUrl: personal ? null : sealSrc ?? null,
               issuedByHost: personal,
               signatoryName: signatory?.name ?? null,
               signatoryTitle: signatory?.title ?? null,

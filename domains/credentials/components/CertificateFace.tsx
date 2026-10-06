@@ -48,6 +48,7 @@ export interface CertificateFaceProps {
     | "recipientName"
     | "issuerName"
     | "issuerLogoUrl"
+    | "issuerSealUrl"
     | "issuedByHost"
     | "signatoryName"
     | "signatoryTitle"
@@ -120,7 +121,9 @@ export function CertificateFace({ certificate: c, verificationUrl, className }: 
           </At>
         )}
 
-        <At style={{ left: mm(28), top: mm(24), display: "flex", alignItems: "center", gap: mm(5) }}>
+        {/* One row the height of the host lockup (17 mm): the Arcade mark stays put, and an
+            organisation's logo matches the lockup's height. */}
+        <At style={{ left: mm(28), top: mm(19.5), height: mm(17), display: "flex", alignItems: "center", gap: mm(5) }}>
           <svg
             viewBox={`0 0 ${ARCADE_WORDMARK_VIEWBOX.width} ${ARCADE_WORDMARK_VIEWBOX.height}`}
             style={{ width: mm(34), height: mm(7.5) }}
@@ -133,10 +136,10 @@ export function CertificateFace({ certificate: c, verificationUrl, className }: 
           {/* The host's lockup is always at the right; another issuer is named here. */}
           {!c.issuedByHost && (
             <>
-              <span style={{ width: mm(0.3), height: mm(10), background: GOLD }} />
+              <span style={{ width: mm(0.25), height: mm(9), background: GOLD, opacity: 0.45 }} />
               {c.issuerLogoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={c.issuerLogoUrl} alt="" style={{ maxHeight: mm(11), maxWidth: mm(44) }} className="object-contain" />
+                <img src={c.issuerLogoUrl} alt="" style={{ maxHeight: mm(17), maxWidth: mm(60) }} className="object-contain" />
               ) : (
                 <span>
                   <span className="block font-bold" style={{ fontFamily: serif, fontSize: pt(13), lineHeight: 1.1 }}>
@@ -164,7 +167,7 @@ export function CertificateFace({ certificate: c, verificationUrl, className }: 
         {/* The award reads as one block: each line follows the last, with margins tuned (as in the
             PDF, but measured in the browser, whose font metrics differ slightly) so the gaps between the
             inked text are equal: 6 mm. */}
-        <At style={{ left: mm(28), top: mm(84), width: mm(241), textAlign: "center" }}>
+        <At style={{ left: mm(28), top: mm(80), width: mm(241), textAlign: "center" }}>
           <div style={{ fontFamily: display.style.fontFamily, fontStyle: "italic", fontWeight: 500, fontSize: pt(15), lineHeight: 1, color: MUTED }}>
             This is to certify that
           </div>
@@ -188,29 +191,33 @@ export function CertificateFace({ certificate: c, verificationUrl, className }: 
           </div>
         </At>
 
-        {/* Three centred columns — date, signature, issuer. The signature column starts higher by
-            the height of its image and rule, so all three share the same text lines. */}
-        <At style={{ ...column(43, 62), top: mm(163) }}>{field(longDate(c.achievedAt), "Date of award")}</At>
+        {/* Three centred columns — issuer, signature, date — each under its mark: the issuer's seal,
+            the signature, and the QR code. The signature's text line (159 mm) sits a little above the
+            two sides' (165 mm), as in the PDF. */}
+        {c.issuerSealUrl && (
+          <At style={{ left: mm(54), top: mm(143), width: mm(40), height: mm(21), display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={c.issuerSealUrl} alt="" style={{ maxHeight: mm(21), maxWidth: mm(40) }} className="object-contain" />
+          </At>
+        )}
+        <At style={{ ...column(32, 84), top: mm(165) }}>{field(c.issuerName, "Issuing organisation")}</At>
         {c.signatoryName && c.signatureUrl && (
-          <At style={{ ...column(117.5, 62), top: mm(147) }}>
+          <At style={{ ...column(117.5, 62), top: mm(144) }}>
             <div style={{ height: mm(15), display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={c.signatureUrl} alt="" style={{ maxHeight: mm(15), maxWidth: mm(56) }} className="object-contain" />
             </div>
-            <div style={{ width: mm(56), height: mm(0.25), margin: `${mm(0.3)} auto ${mm(0.7)}`, background: NAVY }} />
             {field(c.signatoryName, c.signatoryTitle)}
           </At>
         )}
-        <At style={{ ...column(183, 80), top: mm(163) }}>{field(c.issuerName, "Issuing organisation")}</At>
-
         {verificationUrl && (
-          <At style={{ left: mm(22), top: mm(160), width: mm(20), textAlign: "center" }}>
+          <At style={{ left: mm(214), top: mm(146), width: mm(18) }}>
             <QrMark value={verificationUrl} />
-            <div className="font-bold" style={{ fontSize: pt(5.5), letterSpacing: pt(0.6), marginTop: mm(1.2) }}>
-              SCAN TO VERIFY
-            </div>
           </At>
         )}
+        <At style={{ ...column(192, 62), top: mm(165) }}>
+          {field(longDate(c.achievedAt), verificationUrl ? "Date of award · scan to verify" : "Date of award")}
+        </At>
 
         <At style={{ left: mm(58.5), top: mm(178), width: mm(180), textAlign: "center", fontFamily: book.style.fontFamily, fontSize: pt(11.5) }}>
           {c.expiresAt ? `This certificate is valid until ${longDate(c.expiresAt)}` : "This certificate does not expire."}

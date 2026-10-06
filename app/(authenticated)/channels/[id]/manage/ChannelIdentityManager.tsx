@@ -13,7 +13,7 @@
  * than shown disabled, because "you cannot have this" is not a setting. Its certificates are issued
  * by the host institution and signed by the owner, so the signature card is what it gets.
  *
- * `focus` (from `?focus=`) scrolls to a card: `logo` or `signatory`.
+ * `focus` (from `?focus=`) scrolls to a card: `logo`, `signatory` or `seal`.
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -29,6 +29,7 @@ import {
 } from '@/domains/profiles';
 import { channelService, type Channel } from '@/domains/channels';
 import { ChannelLogoCard } from './components/ChannelLogoCard';
+import { ChannelSealCard } from './components/ChannelSealCard';
 import { ChannelSignatoryCard } from './components/ChannelSignatoryCard';
 
 export function ChannelIdentityManager({
@@ -43,7 +44,7 @@ export function ChannelIdentityManager({
   focus?: string | null;
 }) {
   useEffect(() => {
-    if (focus !== 'logo' && focus !== 'signatory') return;
+    if (focus !== 'logo' && focus !== 'signatory' && focus !== 'seal') return;
     // After the cards mount (the signatory card loads its data first).
     const t = window.setTimeout(
       () => document.getElementById(focus)?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
@@ -221,6 +222,7 @@ function OrganizationIdentity({
 
       <ChannelLogoCard channel={channel} canEdit={canEdit} onUpdate={onUpdate} />
       <ChannelSignatoryCard channel={channel} canEdit={canEdit} />
+      <ChannelSealCard channel={channel} canEdit={canEdit} />
 
       {canEdit && (
         <section className="rounded-[20px] border border-slate-100 bg-surface p-6">

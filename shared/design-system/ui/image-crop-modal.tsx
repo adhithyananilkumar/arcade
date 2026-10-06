@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
 import ReactCrop, { type Crop, type PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { contentBounds, knockOutLightBackground, rotateQuarter } from '@/shared/utils/image';
+import { contentBounds, knockOutLightBackground, rotateBy, rotateQuarter } from '@/shared/utils/image';
 
 export interface AspectOption {
   label: string;
@@ -45,6 +45,7 @@ interface Props {
 
 const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 3;
+const ANGLE_MAX = 180;
 
 type Ground = 'checker' | 'light' | 'dark';
 const GROUND_STYLE: Record<Ground, React.CSSProperties> = {
@@ -61,7 +62,8 @@ const GROUND_STYLE: Record<Ground, React.CSSProperties> = {
 
 /**
  * Crops an image before upload. The person drags and resizes the frame, zooms (in to fill it, out to
- * leave room around a logo), turns the image a quarter at a time and, for transparent artwork,
+ * leave room around a logo), rotates it — by any angle, to straighten a tilted scan, or a quarter
+ * turn at a time — and, for transparent artwork,
  * clears a white paper background and trims empty edges. What they see on the canvas and in the
  * `preview` slot is exactly what is exported.
  */
@@ -87,6 +89,10 @@ export function ImageCropModal({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   /** 1 = fit; above 1 zooms into the image, below 1 shrinks it to leave padding around a logo. */
   const [zoom, setZoom] = useState(1);
+  /** Clockwise, in degrees, about the image's centre — applied with the zoom. */
+  const [angle, setAngle] = useState(0);
+  // Set when a trim must wait for the rotation to be baked into a new image (see `trim`).
+  const trimPending = useRef(false);
   const [ground, setGround] = useState<Ground>(transparency ? 'checker' : 'dark');
   const [busy, setBusy] = useState(false);
 
@@ -94,6 +100,7 @@ export function ImageCropModal({
     setWorking(file);
     setAspect(aspectRatio);
     setZoom(1);
+    setAngle(0);
   }, [file, aspectRatio]);
 
   useEffect(() => {
@@ -132,8 +139,10 @@ export function ImageCropModal({
     ctx.translate(-completedCrop.x * scaleX, -completedCrop.y * scaleY);
     const cx = img.naturalWidth / 2;
     const cy = img.naturalHeight / 2;
+    // The same transform as the on-screen image's CSS `scale() rotate()`, about its centre.
     ctx.translate(cx, cy);
     ctx.scale(zoom, zoom);
+    ctx.rotate((angle * Math.PI) / 180);
     ctx.translate(-cx, -cy);
     ctx.drawImage(img, 0, 0);
     return true;
@@ -147,7 +156,7 @@ export function ImageCropModal({
     const width = Math.min(400, Math.round(completedCrop.width * (img ? img.naturalWidth / img.width : 1)));
     if (paint(canvas, width, false)) setPreviewUrl(canvas.toDataURL('image/png'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [completedCrop, aspect, preview, zoom]);
+  }, [completedCrop, aspect, preview, zoom, angle]);
 
   const frame = (a: number | undefined, width: number, height: number): Crop =>
     a
@@ -167,6 +176,11 @@ export function ImageCropModal({
       width: px(initial.width, width),
       height: px(initial.height, height),
     });
+    if (trimPending.current) {
+      trimPending.current = false;
+      // The rotated image has just loaded; trim it now.
+      window.setTimeout(() => void trim(), 0);
+    }
   };
 
   const changeAspect = (a: number | undefined) => {
@@ -191,6 +205,7 @@ export function ImageCropModal({
     try {
       setWorking(await fn(working));
       setZoom(1);
+      setAngle(0);
     } catch {
       toast.error(failure);
     } finally {
@@ -202,6 +217,13 @@ export function ImageCropModal({
   const trim = async () => {
     const img = imgRef.current;
     if (!imageUrl || !img) return;
+    if (angle !== 0 && working) {
+      // Bounds are measured on the image itself, so bake the rotation in first; the trim runs once
+      // the rotated image has loaded.
+      trimPending.current = true;
+      await transform((f) => rotateBy(f, angle), 'Could not rotate the image.');
+      return;
+    }
     const box = await contentBounds(imageUrl).catch(() => null);
     if (!box) {
       toast.error('There is nothing visible to trim to.');
@@ -299,7 +321,7 @@ export function ImageCropModal({
                     src={imageUrl}
                     onLoad={onImageLoad}
                     className="max-h-[50vh] max-w-full object-contain"
-                    style={{ transform: `scale(${zoom})` }}
+                    style={{ transform: `scale(${zoom}) rotate(${angle}deg)` }}
                   />
                 </ReactCrop>
               )}
@@ -344,6 +366,33 @@ export function ImageCropModal({
                 title="Reset zoom"
               >
                 {Math.round(zoom * 100)}%
+              </button>
+            </div>
+
+            <div className="flex w-full items-center gap-3">
+              <span className="flex w-8 shrink-0 justify-center text-slate-400" aria-hidden>
+                <RotateCw size={15} />
+              </span>
+              <input
+                type="range"
+                min={-ANGLE_MAX}
+                max={ANGLE_MAX}
+                step={0.5}
+                value={angle}
+                onChange={(e) => setAngle(Number(e.target.value))}
+                onDoubleClick={() => setAngle(0)}
+                aria-label="Rotate"
+                className="h-1.5 w-full cursor-pointer accent-indigo-600"
+              />
+              <span className="w-8 shrink-0" aria-hidden />
+              <button
+                type="button"
+                onClick={() => setAngle(0)}
+                className="w-[52px] shrink-0 rounded-lg px-2 py-1 text-xs font-semibold tabular-nums text-slate-600 hover:bg-slate-100"
+                title="Reset rotation"
+              >
+                {angle > 0 ? '+' : ''}
+                {angle}°
               </button>
             </div>
 
@@ -401,6 +450,7 @@ export function ImageCropModal({
             </div>
             <p className="text-xs text-slate-500">
               Drag the frame to move it and its edges to resize it. Zoom in to fill the frame, or out to leave space around a logo.
+              Use the rotation slider to straighten a tilted scan (double-click it to reset).
             </p>
           </div>
 

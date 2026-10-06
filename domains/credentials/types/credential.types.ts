@@ -130,6 +130,8 @@ export interface IssuedCertificate {
   issuerName: string;
   issuerHandle: string | null;
   issuerLogoUrl: string | null;
+  /** The issuer's seal, printed above its name; null when it has none. Optional for older backends. */
+  issuerSealUrl?: string | null;
   /** The issuer is the host institution, whose lockup the design always carries (decided by the backend). */
   issuedByHost: boolean;
   /** Who signed it for the issuer, as at issue; all three null when it was issued unsigned. */

@@ -269,6 +269,8 @@ export interface ChannelSignatory {
   signatureUrl: string | null;
   /** A personal channel's signatory name — its owner's, not editable here; null for an organisation. */
   fixedName?: string | null;
+  /** An organisation's seal, printed above its name on certificates; null when it has none. */
+  sealUrl?: string | null;
 }
 
 export interface ChannelSignatoryUpdate {
@@ -439,6 +441,14 @@ export const channelService = {
       if (update.signatureFile) formData.append('signature', update.signatureFile);
     }
     return api.post<ChannelSignatory>(`/api/v1/channels/${channelId}/signatory`, formData);
+  },
+
+  /** Sets (a transparent PNG) or clears an organisation's certificate seal. */
+  updateSeal: async (channelId: string, update: { sealFile?: File; remove?: boolean }): Promise<ChannelSignatory> => {
+    const formData = new FormData();
+    if (update.remove) formData.append('remove', 'true');
+    else if (update.sealFile) formData.append('seal', update.sealFile);
+    return api.post<ChannelSignatory>(`/api/v1/channels/${channelId}/seal`, formData);
   },
 
   updateChannelSettings: async (

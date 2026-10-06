@@ -165,6 +165,7 @@ export function ChannelSignatoryCard({ channel, canEdit }: ChannelSignatoryCardP
             logoSrc={channel.iconUrl ? getAvatarUrl(channel.iconUrl) ?? null : null}
             organisationName={personal ? effectiveName : channel.name}
             personal={personal}
+            sealSrc={saved?.sealUrl ? getAvatarUrl(saved.sealUrl) ?? null : null}
             signatory={url ? { name: effectiveName || 'Signatory', title: title.trim() || 'Title', signatureUrl: url } : null}
             showBadge={false}
           />
@@ -284,6 +285,7 @@ export function ChannelSignatoryCard({ channel, canEdit }: ChannelSignatoryCardP
                 logoSrc={channel.iconUrl ? getAvatarUrl(channel.iconUrl) ?? null : null}
                 organisationName={personal ? effectiveName : channel.name}
                 personal={personal}
+                sealSrc={saved?.sealUrl ? getAvatarUrl(saved.sealUrl) ?? null : null}
                 signatory={signatory}
                 showBadge={false}
               />
