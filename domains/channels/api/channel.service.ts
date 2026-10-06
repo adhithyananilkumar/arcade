@@ -258,6 +258,25 @@ export interface OwnershipTransferResponse {
   respondedAt?: string | null;
 }
 
+/**
+ * An organisation's certificate signatory (e.g. its Director): name, title and signature image.
+ * All null when it has none. Readable only by those who manage the channel's settings.
+ */
+export interface ChannelSignatory {
+  name: string | null;
+  title: string | null;
+  signatureUrl: string | null;
+}
+
+export interface ChannelSignatoryUpdate {
+  name?: string;
+  title?: string;
+  /** A transparent PNG; omit to keep the current signature image. */
+  signatureFile?: File;
+  /** Clears the signatory; the other fields are ignored. */
+  remove?: boolean;
+}
+
 export interface ChannelSettingsUpdate {
   /** Profile presentation. Omit a field to leave it as it is; pass '' to clear it. */
   tagline?: string;
@@ -406,6 +425,21 @@ export const channelService = {
 
     const response = await api.post<Channel>(`/api/v1/channels/${channelId}/settings`, formData);
     return response;
+  },
+
+  getSignatory: (channelId: string): Promise<ChannelSignatory> =>
+    api.get<ChannelSignatory>(`/api/v1/channels/${channelId}/signatory`),
+
+  updateSignatory: async (channelId: string, update: ChannelSignatoryUpdate): Promise<ChannelSignatory> => {
+    const formData = new FormData();
+    if (update.remove) {
+      formData.append('remove', 'true');
+    } else {
+      formData.append('name', update.name ?? '');
+      formData.append('title', update.title ?? '');
+      if (update.signatureFile) formData.append('signature', update.signatureFile);
+    }
+    return api.post<ChannelSignatory>(`/api/v1/channels/${channelId}/signatory`, formData);
   },
 
   updateChannelSettings: async (

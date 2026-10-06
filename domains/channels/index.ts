@@ -33,6 +33,8 @@ export type {
   ChannelSummary,
   ChannelSummaryQuery,
   ChannelSettingsUpdate,
+  ChannelSignatory,
+  ChannelSignatoryUpdate,
   OwnershipTransferResponse,
 } from './api/channel.service';
 export { InviteUserModal } from './components/InviteUserModal';

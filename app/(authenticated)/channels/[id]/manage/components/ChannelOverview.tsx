@@ -18,6 +18,8 @@ interface Props {
   tabHref: (tab: string, params?: Record<string, string>) => string;
   onChannelUpdate: (channel: Channel) => void;
   onEditProfile?: () => void;
+  /** Opens the organisation logo modal — the one place the logo changes. */
+  onEditLogo?: () => void;
 }
 
 export function ChannelOverview({
@@ -29,6 +31,7 @@ export function ChannelOverview({
   tabHref,
   onChannelUpdate,
   onEditProfile,
+  onEditLogo,
 }: Props) {
   const openReviewCount = Object.keys(openReviews).length;
 
@@ -43,6 +46,7 @@ export function ChannelOverview({
         canEdit={canEdit}
         onUpdate={onChannelUpdate}
         onEditProfile={onEditProfile}
+        onEditLogo={onEditLogo}
       />
 
       {canReview && !channel.isPersonal && openReviewCount > 0 && (

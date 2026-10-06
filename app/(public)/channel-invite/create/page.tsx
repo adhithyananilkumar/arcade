@@ -13,11 +13,13 @@ import { motion, useReducedMotion, Variants } from 'framer-motion';
 import { ArrowUpRight, Upload, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { channelService, ChannelApplicantInput, ChannelOrganizationInput } from '@/domains/channels';
+import { IssuerLogoPreview } from '@/domains/credentials';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { PebbleLoader } from '@/domains/identity/components/PebbleLoader';
 import { PhoneInput } from '@/shared/design-system/ui/phone-input';
 import { validateDateOfBirth, getTodayDateString, UNDER_AGE_ERROR_MESSAGE } from '@/shared/utils/dob';
 import { cn } from '@/shared/utils/utils';
+import { hasTransparentBackground, rasteriseSvg } from '@/shared/utils/image';
 import '@/apps/public/landing.css';
 
 // Subtle stagger reveal variants (shared editorial motion language — see /reach-us)
@@ -201,12 +203,31 @@ function ChannelInviteCreateContent() {
     setOrganization((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleIconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setIconFile(file);
-      setIconPreview(URL.createObjectURL(file));
+  // The icon is the organisation's logo on its badges and certificates: a PNG or SVG (rasterised to
+  // PNG here, since certificates embed raster images only) with a transparent background.
+  const handleIconChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = e.target.files?.[0];
+    e.target.value = '';
+    if (!picked) return;
+    if (picked.type !== 'image/png' && picked.type !== 'image/svg+xml') {
+      toast.error('Use a PNG or SVG with a transparent background.');
+      return;
     }
+    let file: File;
+    try {
+      file = picked.type === 'image/svg+xml' ? await rasteriseSvg(picked) : picked;
+    } catch {
+      toast.error('That SVG could not be read. Try exporting it again, or use a PNG.');
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    if (!isPersonal && !(await hasTransparentBackground(url).catch(() => false))) {
+      URL.revokeObjectURL(url);
+      toast.error('This logo has a background. Upload a PNG or SVG with a transparent background.');
+      return;
+    }
+    setIconFile(file);
+    setIconPreview(url);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -592,9 +613,21 @@ function ChannelInviteCreateContent() {
                         </>
                       )}
                     </div>
-                    <input type="file" accept="image/*" onChange={handleIconChange} className="absolute inset-0 opacity-0 cursor-pointer" />
+                    <input type="file" accept="image/png, image/svg+xml" onChange={handleIconChange} className="absolute inset-0 opacity-0 cursor-pointer" />
                   </div>
                 </div>
+
+                {/* An organisation's icon is printed on its certificates: show how. */}
+                {!isPersonal && (
+                  <div className="mx-auto max-w-lg space-y-2">
+                    <IssuerLogoPreview logoSrc={iconPreview} organisationName={name} />
+                    <p className="text-[11px] font-medium leading-relaxed text-slate-500">
+                      This icon is your organisation's logo: it is printed on every badge and certificate your channel
+                      issues. Use a square PNG or SVG with a transparent background. You can change it later
+                      from the channel's settings.
+                    </p>
+                  </div>
+                )}
 
                 <FormField label="Channel Name" required>
                   <input

@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
 import ReactCrop, { type Crop, type PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
@@ -15,13 +15,19 @@ interface Props {
   onCancel: () => void;
   /** Resolves with a cropped image file (same mime type, "-cropped" suffix on the name). */
   onCropped: (croppedFile: File) => void;
+  /**
+   * Optional: render something from the current crop as the user adjusts it (e.g. how the image
+   * will look where it is used). Receives the crop as a small image URL, or null before there is one.
+   */
+  preview?: (croppedUrl: string | null) => ReactNode;
 }
 
-export function ImageCropModal({ open, file, aspectRatio, title, onCancel, onCropped }: Props) {
+export function ImageCropModal({ open, file, aspectRatio, title, onCancel, onCropped, preview }: Props) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const imgRef = useRef<HTMLImageElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!file) return;
@@ -29,8 +35,35 @@ export function ImageCropModal({ open, file, aspectRatio, title, onCancel, onCro
     setImageUrl(url);
     setCrop(undefined);
     setCompletedCrop(undefined);
+    setPreviewUrl(null);
     return () => URL.revokeObjectURL(url);
   }, [file]);
+
+  // A small rendering of the current crop, for the `preview` slot only.
+  useEffect(() => {
+    const img = imgRef.current;
+    if (!preview || !img || !completedCrop?.width || !completedCrop?.height) return;
+    const scaleX = img.naturalWidth / img.width;
+    const scaleY = img.naturalHeight / img.height;
+    const width = Math.min(400, Math.round(completedCrop.width * scaleX));
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = Math.round(width / aspectRatio);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.drawImage(
+      img,
+      completedCrop.x * scaleX,
+      completedCrop.y * scaleY,
+      completedCrop.width * scaleX,
+      completedCrop.height * scaleY,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+    setPreviewUrl(canvas.toDataURL('image/png'));
+  }, [completedCrop, aspectRatio, preview]);
 
   const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;
@@ -133,6 +166,8 @@ export function ImageCropModal({ open, file, aspectRatio, title, onCancel, onCro
           )}
 
           <p className="mt-4 text-xs text-gray-500">Drag the edges of the box to resize the crop area.</p>
+
+          {preview && <div className="mt-4 w-full">{preview(previewUrl)}</div>}
 
           <div className="flex w-full justify-end gap-3 pt-4">
             <button

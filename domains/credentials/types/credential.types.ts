@@ -130,6 +130,12 @@ export interface IssuedCertificate {
   issuerName: string;
   issuerHandle: string | null;
   issuerLogoUrl: string | null;
+  /** The issuer is the host institution, whose lockup the design always carries (decided by the backend). */
+  issuedByHost: boolean;
+  /** Who signed it for the issuer, as at issue; all three null when it was issued unsigned. */
+  signatoryName: string | null;
+  signatoryTitle: string | null;
+  signatureUrl: string | null;
   scorePercent: number | null;
   passPercent: number | null;
   achievedAt: string;

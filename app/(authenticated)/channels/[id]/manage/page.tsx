@@ -43,6 +43,8 @@ import { ChannelAnalyticsSection } from './components/ChannelAnalyticsSection';
 import { ChannelPaymentsSection } from './components/ChannelPaymentsSection';
 import { ChannelActivityLog } from './components/ChannelActivityLog';
 import { EditOrganizationModal } from './components/EditOrganizationModal';
+import { OrganisationLogoModal } from './components/OrganisationLogoModal';
+import { SignatoryModal } from './components/SignatoryModal';
 import { ChannelIdentityManager } from './ChannelIdentityManager';
 import { ChannelStaffManager } from './ChannelStaffManager';
 import { ChannelDangerZone } from './ChannelDangerZone';
@@ -93,6 +95,8 @@ export default function ManageChannelPage() {
   const [loading, setLoading] = useState(true);
   const [openReviews, setOpenReviews] = useState<Record<string, string>>({});
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isLogoOpen, setIsLogoOpen] = useState(false);
+  const [isSignatoryOpen, setIsSignatoryOpen] = useState(false);
 
   useEffect(() => {
     if (!channelId) return;
@@ -282,6 +286,7 @@ export default function ManageChannelPage() {
               tabHref={tabHref}
               onChannelUpdate={setChannel}
               onEditProfile={() => setIsEditOpen(true)}
+              onEditLogo={() => setIsLogoOpen(true)}
             />
           )}
           {active === 'content' && (
@@ -313,6 +318,31 @@ export default function ManageChannelPage() {
       <EditOrganizationModal
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
+        channel={channel}
+        onUpdate={setChannel}
+        onEditLogo={() => {
+          setIsEditOpen(false);
+          setIsLogoOpen(true);
+        }}
+        onEditSignatory={() => {
+          setIsEditOpen(false);
+          setIsSignatoryOpen(true);
+        }}
+      />
+
+      {!channel.isPersonal && (
+        <SignatoryModal
+          key={isSignatoryOpen ? 'signatory-open' : 'signatory-closed'}
+          isOpen={isSignatoryOpen}
+          onClose={() => setIsSignatoryOpen(false)}
+          channel={channel}
+        />
+      )}
+
+      <OrganisationLogoModal
+        key={isLogoOpen ? 'logo-open' : 'logo-closed'}
+        isOpen={isLogoOpen}
+        onClose={() => setIsLogoOpen(false)}
         channel={channel}
         onUpdate={setChannel}
       />
