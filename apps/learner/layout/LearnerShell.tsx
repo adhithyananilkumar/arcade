@@ -39,6 +39,8 @@ const HIDE_DOCK_ROUTES = [
   /^\/console(\/|$)/,
   /^\/manage-channels(\/|$)/,
   /^\/channels\/[^/]+\/manage\/?$/,
+  // The mailed channel invitation: a one-purpose form. When opened signed in, the app dock is noise.
+  /^\/channel-invite(\/|$)/,
 ];
 
 export default function LearnerShell({
