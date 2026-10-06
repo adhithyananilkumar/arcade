@@ -66,6 +66,10 @@ import {
   ArrowUpDown,
   ExternalLink,
   ArrowRight,
+  Sparkles,
+  RotateCcw,
+  SlidersHorizontal,
+  Info,
 } from "lucide-react";
 
 // ── Unified content summary (backing GET /api/content) ─────────────────────────
@@ -107,24 +111,27 @@ const CONTENT_TYPES = [
     id: "course",
     icon: BookOpen,
     label: "Course",
-    desc: "Structured learning path with modules & lessons",
     href: "/studio/course/new",
   },
   {
     id: "event",
     icon: Calendar,
     label: "Event",
-    desc: "Live sessions, webinars & workshops",
     href: "/studio/events/new",
   },
   {
     id: "exam",
     icon: ClipboardCheck,
     label: "Exam",
-    desc: "Comprehensive timed evaluation & grading",
     href: "/studio/exam/new",
   },
-] as const;
+  {
+    id: "roadmap",
+    icon: Map,
+    label: "Roadmap",
+    href: undefined,
+  },
+];
 
 function StatusBadge({ status }: { status: string }) {
   const key = status?.toUpperCase() || "DRAFT";
@@ -165,28 +172,32 @@ function TypeBadge({ type }: { type: string }) {
   const t = type?.toUpperCase();
   if (t === "ROADMAP") {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12 dark:text-amber-200">
-        <Map size={11} strokeWidth={2.4} className="text-amber-800 dark:text-amber-200" /> Roadmap
+      <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full border border-amber-200/90 bg-amber-50/90 text-amber-900 dark:bg-amber-500/15 dark:border-amber-500/30 dark:text-amber-300 shrink-0 shadow-3xs">
+        <Map size={13} strokeWidth={2.2} className="text-amber-600 dark:text-amber-400" />
+        <span>Roadmap</span>
       </span>
     );
   }
   if (t === "WORKSHOP" || t === "EVENT") {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12 dark:text-amber-200">
-        <Calendar size={11} strokeWidth={2.4} className="text-amber-800 dark:text-amber-200" /> Event
+      <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full border border-emerald-200/90 bg-emerald-50/90 text-emerald-900 dark:bg-emerald-500/15 dark:border-emerald-500/30 dark:text-emerald-300 shrink-0 shadow-3xs">
+        <Calendar size={13} strokeWidth={2.2} className="text-emerald-600 dark:text-emerald-400" />
+        <span>Event</span>
       </span>
     );
   }
   if (t === "QUIZ" || t === "EXAM") {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12 dark:text-amber-200">
-        <FileQuestion size={11} strokeWidth={2.4} className="text-amber-800 dark:text-amber-200" /> Exam
+      <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full border border-purple-200/90 bg-purple-50/90 text-purple-900 dark:bg-purple-500/15 dark:border-purple-500/30 dark:text-purple-300 shrink-0 shadow-3xs">
+        <ClipboardCheck size={13} strokeWidth={2.2} className="text-purple-600 dark:text-purple-400" />
+        <span>Exam</span>
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12 dark:text-amber-200">
-      <BookOpen size={11} strokeWidth={2.4} className="text-amber-800 dark:text-amber-200" /> Course
+    <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full border border-indigo-200/90 bg-indigo-50/90 text-indigo-900 dark:bg-indigo-500/15 dark:border-indigo-500/30 dark:text-indigo-300 shrink-0 shadow-3xs">
+      <BookOpen size={13} strokeWidth={2.2} className="text-indigo-600 dark:text-indigo-400" />
+      <span>Course</span>
     </span>
   );
 }
@@ -889,18 +900,19 @@ function ContentCard({
       }`}
     >
       <div className="relative z-10 flex flex-1 flex-col justify-between gap-4">
-        {/* ── Content Body: Channel, Title, & Description ── */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5">
+        {/* ── Content Body: Channel, Type Badge, Title, & Description ── */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
             <span
-              className="text-[11px] font-extrabold uppercase tracking-wider text-amber-900/70 truncate max-w-[260px] dark:text-amber-200"
+              className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate max-w-[180px] dark:text-slate-400"
               title={item.channelName}
             >
               {item.channelName || "Personal Channel"}
             </span>
+            <TypeBadge type={item.type} />
           </div>
 
-          <h3 className="line-clamp-1 text-base sm:text-[17px] font-bold tracking-tight text-ink group-hover:text-amber-950 transition-colors leading-snug dark:group-hover:text-amber-200">
+          <h3 className="line-clamp-1 text-base sm:text-[17px] font-bold tracking-tight text-ink group-hover:text-slate-950 transition-colors leading-snug dark:group-hover:text-slate-200">
             {item.title}
           </h3>
 
@@ -914,12 +926,12 @@ function ContentCard({
 
         {/* ── Standard Clean Footer: Date on Left, Compact Button on Right ── */}
         <div
-          className="pt-3 border-t border-amber-900/10 flex items-center justify-between gap-2"
+          className="pt-1 flex items-center justify-between gap-2"
           data-card-interactive
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
-            <Clock size={12} className="text-amber-800/60 dark:text-amber-200" />
+            <Clock size={12} className="text-slate-400 dark:text-slate-400" />
             <span>
               {new Date(item.updatedAt).toLocaleDateString("en-IN", {
                 day: "numeric",
@@ -983,7 +995,7 @@ function ContentCard({
                 href={openHref}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-1.5 text-xs font-bold text-on-ink transition-all shadow-3xs hover:bg-ink-hover hover:shadow-2xs cursor-pointer"
               >
-                <TypeIcon size={12} className="text-amber-400/90 dark:text-amber-600" />
+                <TypeIcon size={12} className="text-on-ink/80" />
                 <span>
                   {!isExam && !isRoadmap && item.status === "SUBMITTED"
                     ? "Review"
@@ -993,7 +1005,7 @@ function ContentCard({
                     ? "Open Exam"
                     : "Open"}
                 </span>
-                <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5 text-amber-200/80 dark:text-amber-700/80" />
+                <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5 text-on-ink/80" />
               </Link>
             )}
           </div>
@@ -1134,7 +1146,7 @@ function ContentTable({
                         className="inline-flex items-center gap-1 rounded-lg bg-ink px-3.5 py-1.5 text-xs font-bold text-on-ink hover:bg-ink-hover transition-all shadow-3xs cursor-pointer"
                       >
                         <span>Open</span>
-                        <ArrowRight size={11} className="text-amber-300" />
+                        <ArrowRight size={11} className="text-on-ink/80" />
                       </Link>
                     </div>
                   </td>
@@ -1383,7 +1395,7 @@ export default function DashboardPage() {
     <div
       className="relative flex min-h-screen flex-1 flex-col"
       style={{
-        background: "var(--theme-wash, linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%))",
+        background: "var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%))",
       }}
     >
       <ChannelRequiredModal
@@ -1414,21 +1426,42 @@ export default function DashboardPage() {
         />
       )}
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-28 pt-28 sm:px-8 sm:pt-32">
-        {/* ── Header: Standard Studio Header (Brand Title & Actions) ── */}
-        <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-28 pt-20 sm:px-8 sm:pt-24">
+        {/* ── Header: Centered Studio Hero Header ── */}
+        <div className="mb-10 text-center flex flex-col items-center">
+          <div className="inline-flex items-center gap-2.5 justify-center select-none">
             <h1
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-bold text-ink leading-[1.15] tracking-normal select-none"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-bold text-ink leading-[1.15] tracking-normal"
               style={{ fontFamily: "'Dancing Script', 'Caveat', cursive" }}
             >
               <ShinyText text="Arcade Studio" speed={4.5} />
             </h1>
+            <div
+              className="relative group inline-flex items-center font-sans translate-y-2.5 sm:translate-y-3.5"
+              style={{ fontFamily: "var(--font-sans), system-ui, -apple-system, sans-serif" }}
+            >
+              <span
+                className="inline-flex items-center justify-center text-slate-950 hover:text-slate-700 dark:text-white transition-transform hover:scale-110 cursor-pointer"
+              >
+                <Info size={22} className="stroke-[2.2]" />
+              </span>
+
+              {/* Hover Tooltip Pill */}
+              <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2.5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 scale-95 group-hover:scale-100 z-50">
+                <div
+                  className="flex items-center gap-2 rounded-full border border-slate-200/90 bg-surface/95 px-4 py-2 text-xs font-semibold text-slate-800 shadow-lg backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-200"
+                  style={{ fontFamily: "var(--font-sans), system-ui, -apple-system, sans-serif" }}
+                >
+                  <span>Author, manage, and publish educational content across your channels.</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Right: Channel Switcher, Utility Links, and Create Action */}
-          <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
-            {channels.length > 0 && (
+
+          {/* Centered Controls & Action Buttons (Only when Organization Channels exist) */}
+          {channels.length > 1 && (
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
               <div className="relative">
                 <button
                   type="button"
@@ -1438,7 +1471,7 @@ export default function DashboardPage() {
                     setSortDropdownOpen(false);
                     setDropdownOpen(false);
                   }}
-                  className="inline-flex items-center gap-2 rounded-full border border-amber-900/10 bg-surface/95 px-3.5 py-2 text-[12px] font-bold text-slate-700 transition-colors hover:border-amber-900/25 hover:text-ink outline-none cursor-pointer shadow-3xs"
+                  className="inline-flex items-center gap-2 rounded-full border border-amber-900/10 bg-surface/95 px-4 py-2 text-[12px] font-bold text-slate-700 transition-colors hover:border-amber-900/25 hover:text-ink outline-none cursor-pointer shadow-3xs"
                 >
                   <span>{CHANNEL_CHIPS.find((c) => c.id === channelFilter)?.label ?? "All channels"}</span>
                   <ChevronDown
@@ -1449,7 +1482,7 @@ export default function DashboardPage() {
                 {channelDropdownOpen && (
                   <>
                     <div className="fixed inset-0 z-30" onClick={() => setChannelDropdownOpen(false)} />
-                    <div className="absolute right-0 z-40 mt-1.5 min-w-[170px] rounded-2xl border border-amber-900/10 bg-surface p-1.5 shadow-xl">
+                    <div className="absolute left-1/2 -translate-x-1/2 z-40 mt-1.5 min-w-[170px] rounded-2xl border border-amber-900/10 bg-surface p-1.5 shadow-xl">
                       {CHANNEL_CHIPS.map((chip) => {
                         const isSelected = channelFilter === chip.id;
                         return (
@@ -1473,159 +1506,92 @@ export default function DashboardPage() {
                   </>
                 )}
               </div>
-            )}
 
-            <Link
-              href="/studio/review"
-              className="inline-flex items-center gap-1.5 rounded-full border border-amber-900/10 bg-surface/90 px-3.5 py-2 text-[12px] font-bold text-slate-700 transition-colors hover:border-amber-900/25 hover:text-ink shadow-3xs"
-            >
-              <ClipboardCheck size={14} />
-              <span>Review</span>
-              {statusCounts.SUBMITTED > 0 ? (
-                <span className="rounded-full bg-amber-100 text-amber-800 px-1.5 py-0.5 text-[10px] font-extrabold dark:bg-amber-500/15 dark:text-amber-200">
-                  {statusCounts.SUBMITTED}
-                </span>
-              ) : (
-                <span className="text-slate-400 font-medium text-[11px]">(0)</span>
-              )}
-            </Link>
+              <div className="relative shrink-0">
+                <button
+                  id="create-content-btn"
+                  onClick={handleCreateContentClick}
+                  className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2 text-[13px] font-bold text-on-ink shadow-sm transition-all hover:bg-ink-hover active:scale-[0.98] disabled:opacity-75 cursor-pointer"
+                >
+                  {channelsLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Plus size={16} strokeWidth={2.5} />
+                  )}
+                  Create Content
+                  <ChevronDown
+                    size={14}
+                    className={`transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
 
-            <Link
-              href="/trash"
-              className="inline-flex items-center gap-1.5 rounded-full border border-amber-900/10 bg-surface/90 px-3.5 py-2 text-[12px] font-bold text-slate-700 transition-colors hover:border-amber-900/25 hover:text-ink shadow-3xs"
-            >
-              <Trash2 size={14} />
-              <span>Trash</span>
-            </Link>
-
-            <div className="hidden h-5 w-px bg-amber-900/15 sm:block mx-0.5" />
-
-            <div className="relative shrink-0">
-              <button
-                id="create-content-btn"
-                onClick={handleCreateContentClick}
-                className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-[13px] font-bold text-on-ink shadow-sm transition-all hover:bg-ink-hover active:scale-[0.98] disabled:opacity-75 cursor-pointer"
-              >
-                {channelsLoading ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <Plus size={16} strokeWidth={2.5} />
+                {dropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                    <div
+                      className="absolute left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 z-50 mt-2 min-w-[170px] w-52 overflow-hidden rounded-2xl border border-slate-200/80 bg-surface/98 p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/98 animate-in fade-in zoom-in-95 duration-150"
+                      role="menu"
+                    >
+                      <div className="space-y-0.5">
+                        {CONTENT_TYPES.map((type) => (
+                          <button
+                            key={type.id}
+                            type="button"
+                            role="menuitem"
+                            onClick={() => handleSelectContentType(type.id, type.href)}
+                            className="group flex w-full items-center justify-between gap-2.5 rounded-xl px-3.5 py-2.5 text-left text-xs font-bold text-slate-800 transition-colors hover:bg-slate-100/80 hover:text-ink cursor-pointer dark:text-slate-200 dark:hover:bg-slate-800/80"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <type.icon size={15} className="text-slate-500 group-hover:text-ink dark:text-slate-400 dark:group-hover:text-white transition-colors" />
+                              <span>{type.label}</span>
+                            </div>
+                            <ArrowRight size={13} className="text-slate-400 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
                 )}
-                Create Content
-                <ChevronDown
-                  size={14}
-                  className={`transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              {dropdownOpen && (
-                <>
-                  <div className="fixed inset-0 z-30" onClick={() => setDropdownOpen(false)} />
-                  <div
-                    className="absolute right-0 z-40 mt-2 w-72 sm:w-80 overflow-hidden rounded-2xl border border-amber-900/12 bg-surface/98 backdrop-blur-xl p-1.5 shadow-[0_16px_40px_rgba(20,20,43,0.14),0_2px_8px_rgba(78,41,17,0.04)] animate-in fade-in zoom-in-95 duration-150"
-                    role="menu"
-                  >
-                    <div className="px-3 py-2 mb-1 border-b border-amber-900/10 flex items-center justify-between">
-                      <p className="text-[11px] font-extrabold uppercase tracking-wider text-amber-900/70 dark:text-amber-200">
-                        Create New
-                      </p>
-                      <span className="text-[10px] font-semibold text-slate-400">Select format</span>
-                    </div>
-                    <div className="space-y-0.5">
-                      {CONTENT_TYPES.map((type) => (
-                        <button
-                          key={type.id}
-                          type="button"
-                          role="menuitem"
-                          onClick={() => handleSelectContentType(type.id, type.href)}
-                          className="group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left transition-all hover:bg-amber-900/8 active:bg-amber-900/12 cursor-pointer"
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amber-900/10 bg-surface/90 text-amber-900 shadow-3xs group-hover:border-amber-900/20 group-hover:bg-ink group-hover:text-amber-300 transition-colors dark:text-amber-200">
-                              <type.icon size={15} strokeWidth={2.2} />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-bold text-ink group-hover:text-amber-950 transition-colors dark:group-hover:text-amber-200">
-                                {type.label}
-                              </p>
-                              <p className="text-[11px] font-medium text-slate-500 truncate leading-tight">
-                                {type.desc}
-                              </p>
-                            </div>
-                          </div>
-                          <ArrowRight
-                            size={13}
-                            className="shrink-0 text-slate-300 transition-all duration-150 group-hover:translate-x-0.5 group-hover:text-amber-900 opacity-40 group-hover:opacity-100 dark:group-hover:text-amber-200"
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* ── Studio Standard Tabs (SaaS Underline Navigation) ── */}
-        <div className="mb-6 flex items-center gap-6 sm:gap-8 overflow-x-auto no-scrollbar">
-          {STATUS_TABS.map((tab) => {
-            const count = statusCounts[tab.id];
-            const active = statusFilter === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setStatusFilter(tab.id)}
-                className={`relative pb-3 text-[13px] sm:text-sm font-bold transition-colors cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 ${
-                  active
-                    ? "text-ink"
-                    : "text-slate-500 hover:text-slate-800"
-                }`}
-              >
-                <span>{tab.label}</span>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums ${
+        {/* ── Studio Standard Docked Filter Bar (Clean Single Row, Visible Dropdowns, No Scrollbars) ── */}
+        <div className="relative z-20 mb-8 flex flex-wrap md:flex-nowrap items-center justify-between gap-2.5 rounded-2xl sm:rounded-full border border-slate-200/80 bg-surface/80 p-1.5 shadow-xs backdrop-blur-md">
+          {/* Left: Status Pill Tabs */}
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 flex-wrap sm:flex-nowrap">
+            {STATUS_TABS.map((tab) => {
+              const count = statusCounts[tab.id];
+              const active = statusFilter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setStatusFilter(tab.id)}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold tracking-tight transition-colors cursor-pointer whitespace-nowrap ${
                     active
-                      ? "bg-ink text-on-ink shadow-3xs"
-                      : "bg-surface/80 border border-slate-200/80 text-slate-500"
+                      ? "bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950"
+                      : "text-slate-500 hover:text-slate-900"
                   }`}
                 >
-                  {count}
-                </span>
-                {active && (
-                  <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-ink rounded-full" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* ── Studio Standard Toolbar (Single Streamlined Row) ── */}
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          {/* Left: Search Input */}
-          <div className="relative flex-1 max-w-sm">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search creations..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-amber-900/10 bg-surface/95 pl-9 pr-8 py-2 text-xs font-semibold text-slate-800 placeholder-slate-400 outline-none transition-all focus:border-ink focus:ring-2 focus:ring-amber-200 shadow-3xs dark:focus:ring-amber-500/25"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full cursor-pointer"
-              >
-                <X size={12} />
-              </button>
-            )}
+                  <span>{tab.label}</span>
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-[10px] font-extrabold tabular-nums ${
+                      active
+                        ? "bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-950"
+                        : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Right: Format Dropdown, Sort Dropdown & View Mode Switcher */}
-          <div className="flex items-center gap-2.5 self-end sm:self-auto shrink-0 flex-wrap sm:flex-nowrap">
+          {/* Right: Format Dropdown, Search Input, View Toggle & Create Content */}
+          <div className="flex items-center gap-2 shrink-0">
             {/* Format Filter Custom Dropdown */}
             <div className="relative">
               <button
@@ -1635,18 +1601,19 @@ export default function DashboardPage() {
                   setSortDropdownOpen(false);
                   setChannelDropdownOpen(false);
                 }}
-                className="inline-flex items-center gap-2 rounded-xl border border-amber-900/10 bg-surface/95 px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-amber-900/25 hover:text-ink transition-all cursor-pointer shadow-3xs"
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3 py-1.5 text-xs font-bold text-slate-700 transition-colors hover:border-slate-900 outline-none cursor-pointer whitespace-nowrap"
               >
-                <span>{TYPE_CHIPS.find((c) => c.id === typeFilter)?.label ?? "All types"}</span>
+                <SlidersHorizontal size={13} className="text-slate-400" />
+                <span>{TYPE_CHIPS.find((c) => c.id === typeFilter)?.label ?? "All Types"}</span>
                 <ChevronDown
-                  size={13}
+                  size={12}
                   className={`text-slate-400 transition-transform duration-150 ${typeDropdownOpen ? "rotate-180" : ""}`}
                 />
               </button>
               {typeDropdownOpen && (
                 <>
-                  <div className="fixed inset-0 z-30" onClick={() => setTypeDropdownOpen(false)} />
-                  <div className="absolute left-0 sm:left-auto sm:right-0 z-40 mt-1.5 w-44 rounded-2xl border border-amber-900/10 bg-surface p-1.5 shadow-xl">
+                  <div className="fixed inset-0 z-40" onClick={() => setTypeDropdownOpen(false)} />
+                  <div className="absolute right-0 z-50 mt-1.5 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-surface p-1.5 shadow-2xl animate-in fade-in zoom-in-95 duration-100">
                     {TYPE_CHIPS.map((chip) => {
                       const isSelected = typeFilter === chip.id;
                       return (
@@ -1658,11 +1625,11 @@ export default function DashboardPage() {
                             setTypeDropdownOpen(false);
                           }}
                           className={`flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors cursor-pointer ${
-                            isSelected ? "bg-amber-50 text-amber-950 font-bold dark:bg-amber-500/10 dark:text-amber-200" : "text-slate-700 hover:bg-slate-50"
+                            isSelected ? "bg-slate-100 text-slate-900 font-bold dark:bg-slate-800 dark:text-white" : "text-slate-700 hover:bg-slate-50"
                           }`}
                         >
                           <span>{chip.label}</span>
-                          {isSelected && <Check size={13} className="text-amber-700 dark:text-amber-300" />}
+                          {isSelected && <Check size={13} className="text-slate-900 dark:text-white" />}
                         </button>
                       );
                     })}
@@ -1671,79 +1638,104 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* Sort Custom Dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => {
-                  setSortDropdownOpen(!sortDropdownOpen);
-                  setTypeDropdownOpen(false);
-                  setChannelDropdownOpen(false);
-                }}
-                className="inline-flex items-center gap-2 rounded-xl border border-amber-900/10 bg-surface/95 px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-amber-900/25 hover:text-ink transition-all cursor-pointer shadow-3xs"
-              >
-                <ArrowUpDown size={12} className="text-slate-400" />
-                <span>{SORT_OPTIONS.find((s) => s.id === sortBy)?.label ?? "Recently updated"}</span>
-                <ChevronDown
-                  size={13}
-                  className={`text-slate-400 transition-transform duration-150 ${sortDropdownOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-              {sortDropdownOpen && (
-                <>
-                  <div className="fixed inset-0 z-30" onClick={() => setSortDropdownOpen(false)} />
-                  <div className="absolute right-0 z-40 mt-1.5 w-48 rounded-2xl border border-amber-900/10 bg-surface p-1.5 shadow-xl">
-                    {SORT_OPTIONS.map((opt) => {
-                      const isSelected = sortBy === opt.id;
-                      return (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => {
-                            setSortBy(opt.id as any);
-                            setSortDropdownOpen(false);
-                          }}
-                          className={`flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors cursor-pointer ${
-                            isSelected ? "bg-amber-50 text-amber-950 font-bold dark:bg-amber-500/10 dark:text-amber-200" : "text-slate-700 hover:bg-slate-50"
-                          }`}
-                        >
-                          <span>{opt.label}</span>
-                          {isSelected && <Check size={13} className="text-amber-700 dark:text-amber-300" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
+            {/* Search Input */}
+            <div className="relative w-36 sm:w-48">
+              <Search size={13} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-full border border-slate-200 bg-surface py-1.5 pl-8 pr-7 text-xs font-semibold text-slate-900 outline-none transition-colors focus:border-slate-900 dark:text-white"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 rounded-full cursor-pointer"
+                >
+                  <X size={11} />
+                </button>
               )}
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center rounded-xl border border-amber-900/10 bg-surface/95 p-0.5 shadow-3xs">
+            <div className="inline-flex items-center gap-0.5 rounded-full border border-slate-200 bg-surface p-0.5">
               <button
                 type="button"
                 onClick={() => setViewMode("grid")}
-                className={`rounded-lg p-1.5 text-xs transition-colors cursor-pointer ${
+                className={`rounded-full p-1.5 transition-colors cursor-pointer ${
                   viewMode === "grid"
-                    ? "bg-ink text-on-ink shadow-xs"
+                    ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
                     : "text-slate-400 hover:text-slate-700"
                 }`}
                 title="Grid View"
               >
-                <LayoutGrid size={14} />
+                <LayoutGrid size={13} />
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode("table")}
-                className={`rounded-lg p-1.5 text-xs transition-colors cursor-pointer ${
+                className={`rounded-full p-1.5 transition-colors cursor-pointer ${
                   viewMode === "table"
-                    ? "bg-ink text-on-ink shadow-xs"
+                    ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
                     : "text-slate-400 hover:text-slate-700"
                 }`}
                 title="Table View"
               >
-                <List size={14} />
+                <List size={13} />
               </button>
             </div>
+
+            {/* Create Content button placed right next to View Mode Toggle */}
+            {channels.length <= 1 && (
+              <div className="relative shrink-0">
+                <button
+                  id="create-content-btn"
+                  onClick={handleCreateContentClick}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-ink px-3.5 py-1.5 text-xs font-bold text-on-ink shadow-sm transition-all hover:bg-ink-hover active:scale-[0.98] disabled:opacity-75 cursor-pointer"
+                >
+                  {channelsLoading ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : (
+                    <Plus size={13} strokeWidth={2.5} />
+                  )}
+                  <span>Create Content</span>
+                  <ChevronDown
+                    size={12}
+                    className={`transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+
+                {dropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                    <div
+                      className="absolute right-0 z-50 mt-2 min-w-[170px] w-52 overflow-hidden rounded-2xl border border-slate-200/80 bg-surface/98 p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/98 animate-in fade-in zoom-in-95 duration-150"
+                      role="menu"
+                    >
+                      <div className="space-y-0.5">
+                        {CONTENT_TYPES.map((type) => (
+                          <button
+                            key={type.id}
+                            type="button"
+                            role="menuitem"
+                            onClick={() => handleSelectContentType(type.id, type.href)}
+                            className="group flex w-full items-center justify-between gap-2.5 rounded-xl px-3.5 py-2.5 text-left text-xs font-bold text-slate-800 transition-colors hover:bg-slate-100/80 hover:text-ink cursor-pointer dark:text-slate-200 dark:hover:bg-slate-800/80"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <type.icon size={15} className="text-slate-500 group-hover:text-ink dark:text-slate-400 dark:group-hover:text-white transition-colors" />
+                              <span>{type.label}</span>
+                            </div>
+                            <ArrowRight size={13} className="text-slate-400 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -1763,34 +1755,53 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-200 bg-surface/70 py-20 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
-              <BookOpen size={24} />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-ink">No creations yet</p>
-              <p className="mt-1 text-xs text-slate-400">
+          <div className="py-20 px-6 text-center">
+            <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
+              <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <BookOpen size={26} className="stroke-[1.8]" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+                No creations yet
+              </h3>
+              <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
                 Click &quot;Create Content&quot; to build your first course, event or exam.
               </p>
+              <button
+                type="button"
+                onClick={handleCreateContentClick}
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 cursor-pointer"
+              >
+                <Plus size={14} />
+                <span>Create Content</span>
+              </button>
             </div>
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-slate-200/80 bg-surface/80 py-16 text-center">
-            <GraduationCap size={28} className="text-slate-300" />
-            <p className="text-sm font-bold text-ink">No creations found</p>
-            <p className="text-xs text-slate-400">Try changing your search query or filters.</p>
-            <button
-              type="button"
-              onClick={() => {
-                setStatusFilter("ALL");
-                setTypeFilter("ALL");
-                setChannelFilter("ALL");
-                setSearchQuery("");
-              }}
-              className="mt-1 text-[12px] font-bold text-indigo-600 hover:underline cursor-pointer dark:text-indigo-400"
-            >
-              Reset filters
-            </button>
+          <div className="py-20 px-6 text-center">
+            <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
+              <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <GraduationCap size={26} className="stroke-[1.8]" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+                No creations found
+              </h3>
+              <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                Try changing your search query or filters.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setStatusFilter("ALL");
+                  setTypeFilter("ALL");
+                  setChannelFilter("ALL");
+                  setSearchQuery("");
+                }}
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 cursor-pointer"
+              >
+                <RotateCcw size={13} />
+                <span>Reset filters</span>
+              </button>
+            </div>
           </div>
         ) : viewMode === "grid" ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

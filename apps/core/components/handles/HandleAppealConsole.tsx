@@ -30,7 +30,6 @@ import { toast } from 'sonner';
 import {
   HandleAppealStatusPill,
   HandleService,
-  ProfileEmptyState,
   type HandleAppeal,
   type HandleAppealStatus,
 } from '@/domains/profiles';
@@ -105,28 +104,16 @@ export function HandleAppealConsole() {
 
   return (
     <div className="space-y-7">
-      <header>
-        <h1 className="text-[24px] font-extrabold tracking-tight text-slate-900">
-          Handle appeals
-        </h1>
-        <p className="mt-1.5 max-w-2xl text-[13px] font-medium leading-relaxed text-slate-500">
-          Claims on handles somebody else holds. Approving one transfers the
-          handle immediately and leaves the previous holder with no profile
-          address until they choose a new one — so decide on the evidence, not on
-          who asked first.
-        </p>
-      </header>
-
-      <div className="flex items-center gap-1 border-b border-slate-100">
+      <div className="inline-flex flex-wrap items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/80 p-1.5 shadow-xs backdrop-blur-md">
         {FILTERS.map((option) => (
           <button
             key={option.id}
             type="button"
             onClick={() => setFilter(option.id)}
-            className={`-mb-px border-b-2 px-4 py-3 text-[13px] font-bold tracking-tight transition-colors ${
+            className={`rounded-full px-4 py-2 text-[13px] font-bold tracking-tight transition-colors ${
               filter === option.id
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-400 hover:text-slate-600'
+                ? 'bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950'
+                : 'text-slate-500 hover:text-slate-900'
             }`}
           >
             {option.label}
@@ -139,15 +126,21 @@ export function HandleAppealConsole() {
           <Loader2 size={15} className="animate-spin" /> Loading…
         </div>
       ) : appeals.length === 0 ? (
-        <ProfileEmptyState
-          icon={Gavel}
-          title={filter === 'OPEN' ? 'Nothing to review' : 'Nothing here'}
-          description={
-            filter === 'OPEN'
-              ? 'Handle appeals appear here when someone claims a name that is already taken or reserved.'
-              : undefined
-          }
-        />
+        <div className="py-20 px-6 text-center">
+          <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
+            <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <Gavel size={26} className="stroke-[1.8]" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+              {filter === 'OPEN' ? 'Nothing to review' : 'Nothing here'}
+            </h3>
+            <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+              {filter === 'OPEN'
+                ? 'Handle appeals appear here when someone claims a name that is already taken or reserved.'
+                : `There are currently no ${filter.toLowerCase()} handle appeals.`}
+            </p>
+          </div>
+        </div>
       ) : (
         <ul className="space-y-4">
           {appeals.map((appeal) => {

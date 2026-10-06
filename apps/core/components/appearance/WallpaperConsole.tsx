@@ -40,7 +40,6 @@ import {
 import { toast } from 'sonner';
 import { AppearanceService, type AdminWallpaper, type WallpaperToneValue } from '@/domains/identity';
 import { useAppearanceStore } from '@/infrastructure/state/theme.store';
-import { PageHeader } from '@/shared/design-system/ui/page-header';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
 import { cn } from '@/shared/utils/utils';
 
@@ -381,20 +380,16 @@ export function WallpaperConsole() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto pb-16 pr-1">
-      <PageHeader
-        title="Appearance"
-        description="Curate the wallpapers people choose for Dynamic Glass. Every upload is measured on the server for its colour and light or dark tone."
-        actions={
-          <button
-            type="button"
-            onClick={() => fileInput.current?.click()}
-            className="flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-on-ink shadow-xs transition-colors hover:bg-ink-hover"
-          >
-            <ImagePlus size={15} />
-            Add wallpaper
-          </button>
-        }
-      />
+      <div className="flex items-center justify-end gap-2">
+        <button
+          type="button"
+          onClick={() => fileInput.current?.click()}
+          className="flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-on-ink shadow-xs transition-colors hover:bg-ink-hover"
+        >
+          <ImagePlus size={15} />
+          Add wallpaper
+        </button>
+      </div>
 
       <input
         ref={fileInput}
@@ -535,10 +530,26 @@ export function WallpaperConsole() {
             {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-72 animate-pulse rounded-3xl bg-slate-100" />)}
           </div>
         ) : wallpapers.length === 0 ? (
-          <div className="rounded-3xl border border-slate-200/80 bg-surface px-6 py-12 text-center">
-            <Sparkles size={22} className="mx-auto text-slate-400" />
-            <p className="mt-3 text-sm font-semibold text-slate-800">No photo wallpapers yet</p>
-            <p className="mt-1 text-[12.5px] text-slate-500">People can still use the six built-in Arcade wallpapers. Add a photo to give them more choice.</p>
+          <div className="py-20 px-6 text-center">
+            <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
+              <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <Sparkles size={26} className="stroke-[1.8]" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+                No photo wallpapers yet
+              </h3>
+              <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                People can still use the six built-in Arcade wallpapers. Add a photo to give them more choice.
+              </p>
+              <button
+                type="button"
+                onClick={() => fileInput.current?.click()}
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+              >
+                <UploadCloud size={14} />
+                <span>Upload wallpaper</span>
+              </button>
+            </div>
           </div>
         ) : (
           <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">

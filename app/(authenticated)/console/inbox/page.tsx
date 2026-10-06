@@ -306,10 +306,16 @@ function ConsoleInboxContent() {
               </div>
             </div>
           ) : filteredMessages.length === 0 ? (
-            <div className="flex h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-surface/60 p-8 text-center">
-              <Inbox size={32} className="mb-2 text-slate-300" />
-              <p className="text-sm font-semibold text-slate-600">No messages found</p>
-              <p className="text-xs text-slate-400">Submissions and reports will appear here.</p>
+            <div className="py-16 px-4 text-center">
+              <div className="flex flex-col items-center justify-center gap-2 max-w-xs mx-auto">
+                <div className="mb-2 flex size-14 items-center justify-center rounded-3xl bg-gradient-to-b from-sky-50 via-indigo-50/80 to-sky-100/60 p-3 shadow-xs border border-sky-100/80 dark:from-sky-500/10 dark:to-indigo-500/15 dark:border-sky-500/20">
+                  <Inbox size={24} className="text-indigo-600 dark:text-indigo-400 stroke-[1.8]" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 tracking-tight dark:text-white">No messages found</h3>
+                <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                  Submissions and reports will appear here.
+                </p>
+              </div>
             </div>
           ) : (
             <div className="max-h-[620px] overflow-y-auto space-y-2 pr-1">
@@ -631,10 +637,16 @@ function ConsoleInboxContent() {
               </div>
             </div>
           ) : (
-            <div className="flex h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-surface/60 p-8 text-center">
-              <Mail size={36} className="mb-2 text-slate-300" />
-              <p className="text-sm font-semibold text-slate-600">No item selected</p>
-              <p className="text-xs text-slate-400">Select an item from the list to view its details.</p>
+            <div className="py-20 px-6 text-center">
+              <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
+                <div className="mb-2 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-b from-sky-50 via-indigo-50/80 to-sky-100/60 p-3 shadow-xs border border-sky-100/80 dark:from-sky-500/10 dark:to-indigo-500/15 dark:border-sky-500/20">
+                  <Mail size={26} className="text-indigo-600 dark:text-indigo-400 stroke-[1.8]" />
+                </div>
+                <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">No item selected</h3>
+                <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                  Select an item from the list to view its details.
+                </p>
+              </div>
             </div>
           )}
         </div>

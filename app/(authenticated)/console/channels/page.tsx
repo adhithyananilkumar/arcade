@@ -64,8 +64,8 @@ export default function AdminChannelsPage() {
         </div>
       )}
 
-      <div className="flex-none flex flex-wrap items-center justify-between gap-3 sm:sticky sm:top-0 sm:z-20">
-        <div className="flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-surface/80 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
+      <div className="flex-none flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 pb-0">
+        <div className="flex items-center gap-6">
           {tabs.map((tab) => {
             const active = activeTab === tab.id;
             return (
@@ -73,22 +73,24 @@ export default function AdminChannelsPage() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all ${
+                className={`-mb-px flex items-center gap-2 border-b-2 pb-3 pt-1 text-xs sm:text-sm font-bold tracking-tight transition-colors ${
                   active
                     ? tab.danger
-                      ? 'bg-rose-600 text-white shadow-sm'
-                      : 'bg-ink text-on-ink shadow-sm'
+                      ? 'border-rose-600 text-rose-600 dark:border-rose-500 dark:text-rose-400'
+                      : 'border-slate-900 text-slate-900 dark:border-white dark:text-white'
                     : tab.danger
-                      ? 'text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400'
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-ink'
+                      ? 'border-transparent text-slate-500 hover:text-rose-600 dark:hover:text-rose-400'
+                      : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
                 }`}
               >
-                <tab.icon size={14} />
-                {tab.label}
+                <tab.icon size={15} />
+                <span>{tab.label}</span>
                 {!!tab.badge && (
                   <span
-                    className={`ml-0.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
-                      active ? 'bg-white/20 text-white' : 'bg-rose-600 text-white'
+                    className={`ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
+                      active
+                        ? 'bg-rose-600 text-white'
+                        : 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300'
                     }`}
                   >
                     {tab.badge}
@@ -102,7 +104,7 @@ export default function AdminChannelsPage() {
         <button
           type="button"
           onClick={() => setIsInviteOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink/90"
+          className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-slate-950 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
         >
           <UserPlus size={14} />
           Invite User

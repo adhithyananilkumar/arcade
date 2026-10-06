@@ -19,6 +19,8 @@ import {
 } from '@/domains/profiles';
 import { useIsContentStaff } from '../../components/useIsContentStaff';
 import { PhoneInput } from '@/shared/design-system/ui/phone-input';
+import { getAvatarUrl } from '@/shared/utils/avatar';
+import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
 import { motion } from 'framer-motion';
 import {
   Mail,
@@ -42,10 +44,9 @@ import {
   Camera,
   Trash2,
   Sliders,
+  Upload,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
-import { getAvatarUrl } from '@/shared/utils/avatar';
 
 /**
  * Personal info settings. Every field here has a real backend source
@@ -381,6 +382,43 @@ export default function PersonalInfoPage() {
     setEditingField(null);
   };
 
+  const handleFileSelectedForCrop = (file: File) => {
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File size must be under 10MB');
+      return;
+    }
+    setSelectedCropFile(file);
+    setCropModalOpen(true);
+  };
+
+  const handleCroppedAvatar = async (croppedFile: File) => {
+    setCropModalOpen(false);
+    setSelectedCropFile(null);
+    setUploadingAvatar(true);
+    try {
+      const updated = await UserService.uploadAvatar(croppedFile);
+      updateUser(updated);
+      toast.success('Profile photo updated');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update profile photo');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    setUploadingAvatar(true);
+    try {
+      const updated = await UserService.removeAvatar();
+      updateUser(updated);
+      toast.success('Profile photo removed');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to remove profile photo');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   const renderSaveCancelButtons = (field: string, onSave?: () => void) => (
     <div className="flex items-center gap-1 shrink-0">
       <button
@@ -398,7 +436,7 @@ export default function PersonalInfoPage() {
 
   return (
     <motion.div
-      className="space-y-1 pb-4"
+      className="space-y-4 pb-4"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}

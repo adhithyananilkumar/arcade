@@ -130,6 +130,19 @@ export interface IssuedCertificate {
   issuerName: string;
   issuerHandle: string | null;
   issuerLogoUrl: string | null;
+  /** The issuer's seal, printed above its name; null when it has none. Optional for older backends. */
+  issuerSealUrl?: string | null;
+  /** The issuer is the host institution, whose lockup the design always carries (decided by the backend). */
+  issuedByHost: boolean;
+  /** Who signed it for the issuer, as at issue; all three null when it was issued unsigned. */
+  signatoryName: string | null;
+  signatoryTitle: string | null;
+  signatureUrl: string | null;
+  /**
+   * The name on the "conducted by" line: the instructor of a personal channel's exam (which the host
+   * institution issues), otherwise the issuer. Optional for certificates from older backends.
+   */
+  conductedBy?: string | null;
   scorePercent: number | null;
   passPercent: number | null;
   achievedAt: string;

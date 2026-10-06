@@ -173,6 +173,7 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
               level={level}
               title={badge.name}
               issuerLogoUrl={badge.issuerLogoUrl}
+              year={new Date(badge.issuedAt).getFullYear()}
               revoked={badge.revoked}
               label={`${badge.badgeClass.name} — ${badge.name}`}
             />

@@ -1,717 +1,502 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Eraser, Loader2, RotateCcw, RotateCw, Scan } from 'lucide-react';
+import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
 import ReactCrop, { type Crop, type PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import {
-  ZoomIn,
-  ZoomOut,
-  RotateCw,
-  FlipHorizontal,
-  Crop as CropIcon,
-  Sliders,
-  Check,
-  X,
-  RefreshCw,
-  Circle,
-  Square,
-  Sun,
-  Contrast,
-  Palette,
-  Eye,
-} from 'lucide-react';
+import { contentBounds, knockOutLightBackground, rotateBy, rotateQuarter } from '@/shared/utils/image';
 
-function Portal({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  if (!mounted || typeof document === 'undefined') return null;
-  return createPortal(children, document.body);
+export interface AspectOption {
+  label: string;
+  /** width / height; undefined = free-form. */
+  value?: number;
 }
 
 interface Props {
   open: boolean;
   file?: File | null;
   imageSrc?: string | null;
-  /** width / height, e.g. 1 for a square logo, 4 for a 4:1 banner. */
+  /**
+   * width / height, e.g. 1 for a square logo, 4 for a 4:1 banner. Omit for a free-form crop. The
+   * starting shape when `aspectOptions` is given.
+   */
   aspectRatio?: number;
+  /** Lets the person pick the shape (e.g. Square / Wide / Free). */
+  aspectOptions?: AspectOption[];
+  circularCrop?: boolean;
   title?: string;
+  /** A line under the title: what the image is for and what makes a good one. */
+  hint?: string;
+  /**
+   * For images that must keep a transparent background (logos, signatures): shows the canvas on a
+   * checkerboard, and offers "Remove white background" and "Trim empty edges".
+   */
+  transparency?: boolean;
   onCancel: () => void;
-  /** Resolves with a cropped image file (same mime type, "-cropped" suffix on the name). */
+  /** Resolves with a cropped image file ("-cropped" suffix; PNG once the background is removed). */
   onCropped: (croppedFile: File) => void;
+  /**
+   * Optional: render something from the current crop as the user adjusts it (e.g. how the image
+   * will look where it is used). Receives the crop as a small image URL, or null before there is one.
+   */
+  preview?: (croppedUrl: string | null) => ReactNode;
 }
 
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 3;
+const ANGLE_MAX = 180;
+
+type Ground = 'checker' | 'light' | 'dark';
+const GROUND_STYLE: Record<Ground, React.CSSProperties> = {
+  checker: {
+    backgroundColor: '#ffffff',
+    backgroundImage:
+      'linear-gradient(45deg,#e2e8f0 25%,transparent 25%),linear-gradient(-45deg,#e2e8f0 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e2e8f0 75%),linear-gradient(-45deg,transparent 75%,#e2e8f0 75%)',
+    backgroundSize: '16px 16px',
+    backgroundPosition: '0 0,0 8px,8px -8px,-8px 0',
+  },
+  light: { backgroundColor: '#f8fafc' },
+  dark: { backgroundColor: '#0f172a' },
+};
+
+/**
+ * Crops an image before upload. The person drags and resizes the frame, zooms (in to fill it, out to
+ * leave room around a logo), rotates it — by any angle, to straighten a tilted scan, or a quarter
+ * turn at a time — and, for transparent artwork,
+ * clears a white paper background and trims empty edges. What they see on the canvas and in the
+ * `preview` slot is exactly what is exported.
+ */
 export function ImageCropModal({
   open,
   file,
   imageSrc,
-  aspectRatio = 1,
+  aspectRatio,
+  aspectOptions,
+  circularCrop,
   title,
+  hint,
+  transparency = false,
   onCancel,
   onCropped,
+  preview,
 }: Props) {
+  // The image being cropped: the picked file, after any turns or background removal.
+  const [working, setWorking] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [aspect, setAspect] = useState<number | undefined>(aspectRatio);
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
-  const [activeTab, setActiveTab] = useState<'crop' | 'adjust'>('crop');
-
-  // Crop & Transform State
-  const [activeAspect, setActiveAspect] = useState<number | undefined>(aspectRatio);
-  const [zoom, setZoom] = useState<number>(1);
-  const [rotation, setRotation] = useState<number>(0);
-  const [flipH, setFlipH] = useState<boolean>(false);
-  const [isCircularGuide, setIsCircularGuide] = useState<boolean>(aspectRatio === 1);
-
-  // Image Adjustment Filter State
-  const [brightness, setBrightness] = useState<number>(100);
-  const [contrast, setContrast] = useState<number>(100);
-  const [saturate, setSaturate] = useState<number>(100);
-
-  const [isApplying, setIsApplying] = useState<boolean>(false);
-
   const imgRef = useRef<HTMLImageElement>(null);
-  const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  /** 1 = fit; above 1 zooms into the image, below 1 shrinks it to leave padding around a logo. */
+  const [zoom, setZoom] = useState(1);
+  /** Clockwise, in degrees, about the image's centre — applied with the zoom. */
+  const [angle, setAngle] = useState(0);
+  // Set when a trim must wait for the rotation to be baked into a new image (see `trim`).
+  const trimPending = useRef(false);
+  const [ground, setGround] = useState<Ground>(transparency ? 'checker' : 'dark');
+  const [busy, setBusy] = useState(false);
 
-  // Load Image Source
   useEffect(() => {
     if (file) {
-      const url = URL.createObjectURL(file);
-      setImageUrl(url);
-      setCrop(undefined);
-      setCompletedCrop(undefined);
+      setWorking(file);
+      setAspect(aspectRatio);
       setZoom(1);
-      setRotation(0);
-      setFlipH(false);
-      setBrightness(100);
-      setContrast(100);
-      setSaturate(100);
-      setActiveAspect(aspectRatio);
-      setIsCircularGuide(aspectRatio === 1);
-      setActiveTab('crop');
-      return () => URL.revokeObjectURL(url);
-    }
-    if (imageSrc) {
-      setImageUrl(imageSrc);
-      setCrop(undefined);
-      setCompletedCrop(undefined);
+      setAngle(0);
+    } else if (imageSrc) {
+      fetch(imageSrc)
+        .then((r) => r.blob())
+        .then((blob) => {
+          const ext = blob.type === 'image/jpeg' ? '.jpg' : blob.type === 'image/webp' ? '.webp' : '.png';
+          setWorking(new File([blob], `image${ext}`, { type: blob.type }));
+        })
+        .catch(() => {
+          setWorking(null);
+        });
+      setAspect(aspectRatio);
       setZoom(1);
-      setRotation(0);
-      setFlipH(false);
-      setBrightness(100);
-      setContrast(100);
-      setSaturate(100);
-      setActiveAspect(aspectRatio);
-      setIsCircularGuide(aspectRatio === 1);
-      setActiveTab('crop');
+      setAngle(0);
+    } else {
+      setWorking(null);
     }
   }, [file, imageSrc, aspectRatio]);
 
-  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const { width, height } = e.currentTarget;
-
-    const targetAspect = activeAspect ?? 1;
-    const initialCrop = centerCrop(
-      makeAspectCrop(
-        {
-          unit: '%',
-          width: 90,
-        },
-        targetAspect,
-        width,
-        height
-      ),
-      width,
-      height
-    );
-    setCrop(initialCrop);
-  };
-
-  // Generate live small preview on crop changes
   useEffect(() => {
-    if (!completedCrop || !imgRef.current || !previewCanvasRef.current) return;
-    const img = imgRef.current;
-    const canvas = previewCanvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!working) return;
+    const url = URL.createObjectURL(working);
+    setImageUrl(url);
+    setCrop(undefined);
+    setCompletedCrop(undefined);
+    setPreviewUrl(null);
+    return () => URL.revokeObjectURL(url);
+  }, [working]);
 
+  /** The exported shape: the fixed aspect, or the frame's own when free-form. */
+  const outRatio = () => aspect ?? (completedCrop?.height ? completedCrop.width / completedCrop.height : 1);
+
+  /**
+   * Paints the crop frame onto `canvas` at `outWidth`: the image as zoomed about its centre, seen
+   * through the crop box. Shared by the live preview and the final export so they always agree.
+   */
+  const paint = (canvas: HTMLCanvasElement, outWidth: number, opaque: boolean): boolean => {
+    const img = imgRef.current;
+    if (!img || !completedCrop?.width || !completedCrop?.height) return false;
     const scaleX = img.naturalWidth / img.width;
     const scaleY = img.naturalHeight / img.height;
-
-    canvas.width = 160;
-    canvas.height = 160;
-
-    ctx.clearRect(0, 0, 160, 160);
-    ctx.imageSmoothingEnabled = true;
+    canvas.width = outWidth;
+    canvas.height = Math.max(1, Math.round(outWidth / outRatio()));
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return false;
+    if (opaque) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
     ctx.imageSmoothingQuality = 'high';
+    const k = outWidth / (completedCrop.width * scaleX);
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    ctx.translate(-completedCrop.x * scaleX, -completedCrop.y * scaleY);
+    const cx = img.naturalWidth / 2;
+    const cy = img.naturalHeight / 2;
+    // The same transform as the on-screen image's CSS `scale() rotate()`, about its centre.
+    ctx.translate(cx, cy);
+    ctx.scale(zoom, zoom);
+    ctx.rotate((angle * Math.PI) / 180);
+    ctx.translate(-cx, -cy);
+    ctx.drawImage(img, 0, 0);
+    return true;
+  };
 
-    ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturate}%)`;
+  // Generate live preview URL when preview prop is provided
+  useEffect(() => {
+    if (!preview || !completedCrop?.width) return;
+    const canvas = document.createElement('canvas');
+    const img = imgRef.current;
+    const width = Math.min(400, Math.round(completedCrop.width * (img ? img.naturalWidth / img.width : 1)));
+    if (paint(canvas, width, false)) setPreviewUrl(canvas.toDataURL('image/png'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [completedCrop, aspect, preview, zoom, angle]);
 
-    ctx.save();
-    if (rotation !== 0 || zoom !== 1 || flipH) {
-      ctx.translate(80, 80);
-      ctx.rotate((rotation * Math.PI) / 180);
-      ctx.scale(zoom * (flipH ? -1 : 1), zoom);
-      ctx.translate(-80, -80);
-    }
+  const frame = (a: number | undefined, width: number, height: number): Crop =>
+    a
+      ? centerCrop(makeAspectCrop({ unit: '%', width: 90 }, a, width, height), width, height)
+      : { unit: '%', x: 5, y: 5, width: 90, height: 90 };
 
-    ctx.drawImage(
-      img,
-      completedCrop.x * scaleX,
-      completedCrop.y * scaleY,
-      completedCrop.width * scaleX,
-      completedCrop.height * scaleY,
-      0,
-      0,
-      160,
-      160
-    );
-    ctx.restore();
-  }, [completedCrop, brightness, contrast, saturate, rotation, zoom, flipH]);
-
-  const handleReset = () => {
-    setZoom(1);
-    setRotation(0);
-    setFlipH(false);
-    setBrightness(100);
-    setContrast(100);
-    setSaturate(100);
-    if (imgRef.current) {
-      const { width, height } = imgRef.current;
-      const targetAspect = activeAspect ?? 1;
-      const initialCrop = centerCrop(
-        makeAspectCrop(
-          {
-            unit: '%',
-            width: 90,
-          },
-          targetAspect,
-          width,
-          height
-        ),
-        width,
-        height
-      );
-      setCrop(initialCrop);
+  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { width, height } = e.currentTarget;
+    const initial = frame(aspect, width, height);
+    setCrop(initial);
+    // Report the starting frame at once, so the preview and Apply work without touching it.
+    const px = (v: number, of: number) => (v / 100) * of;
+    setCompletedCrop({
+      unit: 'px',
+      x: px(initial.x, width),
+      y: px(initial.y, height),
+      width: px(initial.width, width),
+      height: px(initial.height, height),
+    });
+    if (trimPending.current) {
+      trimPending.current = false;
+      // The rotated image has just loaded; trim it now.
+      window.setTimeout(() => void trim(), 0);
     }
   };
 
-  const handleRotate = () => {
-    setRotation((prev) => (prev + 90) % 360);
-  };
-
-  const handleFlip = () => {
-    setFlipH((prev) => !prev);
-  };
-
-  const handleAspectChange = (newAspect: number | undefined) => {
-    setActiveAspect(newAspect);
-    setIsCircularGuide(newAspect === 1);
-    if (imgRef.current && newAspect) {
-      const { width, height } = imgRef.current;
-      const nextCrop = centerCrop(
-        makeAspectCrop(
-          {
-            unit: '%',
-            width: 90,
-          },
-          newAspect,
-          width,
-          height
-        ),
-        width,
-        height
-      );
-      setCrop(nextCrop);
+  const changeAspect = (a: number | undefined) => {
+    setAspect(a);
+    const img = imgRef.current;
+    if (img) {
+      const next = frame(a, img.width, img.height);
+      setCrop(next);
+      setCompletedCrop({
+        unit: 'px',
+        x: (next.x / 100) * img.width,
+        y: (next.y / 100) * img.height,
+        width: (next.width / 100) * img.width,
+        height: (next.height / 100) * img.height,
+      });
     }
   };
 
-  const handleConfirm = async () => {
-    if (!completedCrop || !imgRef.current) return;
-    setIsApplying(true);
-
+  const transform = async (fn: (f: File) => Promise<File>, failure: string) => {
+    if (!working) return;
+    setBusy(true);
     try {
-      const img = imgRef.current;
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      const scaleX = img.naturalWidth / img.width;
-      const scaleY = img.naturalHeight / img.height;
-
-      const outputWidth = Math.min(1600, Math.round(completedCrop.width * scaleX));
-      const outputHeight = Math.min(1600, Math.round(completedCrop.height * scaleY));
-
-      canvas.width = outputWidth;
-      canvas.height = outputHeight;
-
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-
-      // Apply Filter Adjustments
-      ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturate}%)`;
-
-      const cropX = completedCrop.x * scaleX;
-      const cropY = completedCrop.y * scaleY;
-
-      ctx.save();
-      
-      if (rotation !== 0 || zoom !== 1 || flipH) {
-        ctx.translate(outputWidth / 2, outputHeight / 2);
-        ctx.rotate((rotation * Math.PI) / 180);
-        ctx.scale(zoom * (flipH ? -1 : 1), zoom);
-        ctx.translate(-outputWidth / 2, -outputHeight / 2);
-      }
-
-      ctx.drawImage(
-        img,
-        cropX,
-        cropY,
-        completedCrop.width * scaleX,
-        completedCrop.height * scaleY,
-        0,
-        0,
-        outputWidth,
-        outputHeight
-      );
-
-      ctx.restore();
-
-      const mimeType = file?.type || 'image/png';
-      const ext = mimeType === 'image/jpeg' ? '.jpg' : mimeType === 'image/webp' ? '.webp' : '.png';
-      const baseName = file?.name ? file.name.replace(/\.[^/.]+$/, '') : 'avatar';
-
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) return;
-          const croppedFile = new File([blob], `${baseName}-cropped${ext}`, { type: mimeType });
-          onCropped(croppedFile);
-        },
-        mimeType,
-        0.95
-      );
-    } catch (err) {
-      console.error('Failed to crop image', err);
+      setWorking(await fn(working));
+      setZoom(1);
+      setAngle(0);
+    } catch {
+      toast.error(failure);
     } finally {
-      setIsApplying(false);
+      setBusy(false);
     }
   };
 
-  if (!open) return null;
+  /** Fits the frame snugly around the visible artwork, with a little breathing room. */
+  const trim = async () => {
+    const img = imgRef.current;
+    if (!imageUrl || !img) return;
+    if (angle !== 0 && working) {
+      // Bounds are measured on the image itself, so bake the rotation in first; the trim runs once
+      // the rotated image has loaded.
+      trimPending.current = true;
+      await transform((f) => rotateBy(f, angle), 'Could not rotate the image.');
+      return;
+    }
+    const box = await contentBounds(imageUrl).catch(() => null);
+    if (!box) {
+      toast.error('There is nothing visible to trim to.');
+      return;
+    }
+    setZoom(1);
+    const pad = 0.04;
+    let x = box.x - pad * box.width;
+    let y = box.y - pad * box.height;
+    let w = box.width * (1 + 2 * pad);
+    let h = box.height * (1 + 2 * pad);
+    if (aspect) {
+      // Grow the short side, about the centre, to the fixed shape (in displayed pixels).
+      const wPx = w * img.width;
+      const hPx = h * img.height;
+      if (wPx / hPx < aspect) {
+        const grow = (hPx * aspect) / img.width;
+        x -= (grow - w) / 2;
+        w = grow;
+      } else {
+        const grow = wPx / aspect / img.height;
+        y -= (grow - h) / 2;
+        h = grow;
+      }
+    }
+    // Keep it on the image; a frame that cannot fit is scaled down about its centre.
+    const fit = Math.min(1, 1 / w, 1 / h);
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    w *= fit;
+    h *= fit;
+    x = Math.min(Math.max(0, cx - w / 2), 1 - w);
+    y = Math.min(Math.max(0, cy - h / 2), 1 - h);
+    setCrop({ unit: '%', x: x * 100, y: y * 100, width: w * 100, height: h * 100 });
+    setCompletedCrop({ unit: 'px', x: x * img.width, y: y * img.height, width: w * img.width, height: h * img.height });
+  };
+
+  const handleConfirm = () => {
+    if (!working || !completedCrop || !imgRef.current) return;
+    const img = imgRef.current;
+    const sourceWidth = completedCrop.width * (img.naturalWidth / img.width);
+    if (sourceWidth === 0) return;
+
+    // Use a reasonable max resolution for the output; JPEG has no alpha, so it gets a white ground.
+    const canvas = document.createElement('canvas');
+    if (!paint(canvas, Math.min(1600, Math.round(sourceWidth)), working.type === 'image/jpeg')) return;
+
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) return;
+        const dotIndex = working.name.lastIndexOf('.');
+        const ext = dotIndex >= 0 ? working.name.slice(dotIndex) : '';
+        const base = dotIndex >= 0 ? working.name.slice(0, dotIndex) : working.name;
+        onCropped(new File([blob], `${base}-cropped${ext}`, { type: working.type }));
+      },
+      working.type,
+      0.92
+    );
+  };
+
+  const toolButton =
+    'inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-surface px-2.5 py-1.5 text-[11.5px] font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50';
+  const chip = (active: boolean) =>
+    `rounded-full px-3 py-1 text-[11.5px] font-bold transition-colors ${
+      active ? 'bg-ink text-on-ink' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+    }`;
 
   return (
-    <Portal>
-      <AnimatePresence>
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-3 sm:p-6 md:p-8 overflow-y-auto">
-          {/* Deep frosted backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onCancel}
-            className="fixed inset-0 bg-slate-950/75 backdrop-blur-md"
-          />
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
+      <DialogContent className="z-[100] max-h-[92vh] w-[calc(100vw-2rem)] max-w-4xl overflow-y-auto p-0 sm:max-w-4xl">
+        <DialogHeader className="border-b border-slate-100 px-6 pb-4 pt-5">
+          <DialogTitle>{title || 'Crop image'}</DialogTitle>
+          {hint && <p className="text-xs font-medium text-slate-500">{hint}</p>}
+        </DialogHeader>
 
-          {/* Expansive Studio Modal (max-w-5xl / ~1080px wide) */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 16 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 flex flex-col w-full max-w-5xl h-[88vh] max-h-[820px] min-h-[580px] rounded-[32px] border border-slate-200/90 bg-white shadow-2xl overflow-hidden dark:border-slate-800 dark:bg-slate-900"
-          >
-            {/* Studio Top Header (Without Icon) */}
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900">
-              <div>
-                <h2 className="text-lg font-black tracking-tight text-slate-900 dark:text-white sm:text-xl">
-                  {title || 'Crop & Adjust Profile Picture'}
-                </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Precision zoom, crop boundary, rotation, and fine-tune tone adjustments
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={onCancel}
-                  className="rounded-full p-2.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
-                  title="Close"
+        <div className={`grid gap-6 px-6 py-5 ${preview ? 'md:grid-cols-[minmax(0,1fr)_300px]' : ''}`}>
+          <div className="min-w-0 space-y-3">
+            <div
+              className="relative flex max-h-[56vh] min-h-[220px] w-full items-center justify-center overflow-hidden rounded-xl border border-slate-200 p-3"
+              style={GROUND_STYLE[ground]}
+            >
+              {imageUrl && (
+                <ReactCrop
+                  crop={crop}
+                  onChange={(_, percentCrop) => setCrop(percentCrop)}
+                  onComplete={(c) => setCompletedCrop(c)}
+                  aspect={aspect}
+                  circularCrop={circularCrop}
+                  keepSelection
+                  className="max-h-full [&_.ReactCrop__child-wrapper]:overflow-hidden"
                 >
-                  <X size={20} />
-                </button>
-              </div>
-            </div>
-
-          {/* Main Studio Body: 2-Column Responsive Layout */}
-          <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden bg-slate-50/50 dark:bg-slate-950/40">
-            {/* Left: Large High-Resolution Cropping Canvas (Takes majority width) */}
-            <div className="flex-1 relative flex flex-col items-center justify-center p-6 sm:p-8 bg-[#070B14] min-h-[320px] overflow-hidden">
-              <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-2xl">
-                {imageUrl && (
-                  <ReactCrop
-                    crop={crop}
-                    onChange={(_, percentCrop) => setCrop(percentCrop)}
-                    onComplete={(c) => setCompletedCrop(c)}
-                    aspect={activeAspect}
-                    circularCrop={isCircularGuide}
-                    className="max-h-full max-w-full select-none"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      ref={imgRef}
-                      alt="Target Photo"
-                      src={imageUrl}
-                      crossOrigin="anonymous"
-                      onLoad={onImageLoad}
-                      style={{
-                        transform: `scale(${zoom}) rotate(${rotation}deg) scaleX(${flipH ? -1 : 1})`,
-                        filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturate}%)`,
-                        transformOrigin: 'center center',
-                        transition: 'transform 0.15s ease-out',
-                      }}
-                      className="max-h-[58vh] max-w-full object-contain block select-none rounded-lg"
-                    />
-                  </ReactCrop>
-                )}
-              </div>
-
-              {/* Bottom Canvas Quick Floating Helpers */}
-              <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between pointer-events-none">
-                <span className="rounded-full bg-slate-950/70 backdrop-blur-md px-3 py-1 text-[11px] font-semibold text-slate-300 border border-slate-800 pointer-events-auto">
-                  Drag corners or frame to crop
-                </span>
-                <span className="rounded-full bg-slate-950/70 backdrop-blur-md px-3 py-1 text-[11px] font-mono font-bold text-sky-400 border border-slate-800 pointer-events-auto">
-                  Zoom: {zoom}x · Rot: {rotation}°
-                </span>
-              </div>
-            </div>
-
-            {/* Right: Studio Controls & Real-time Live Previews (Takes ~380px) */}
-            <div className="w-full md:w-[380px] lg:w-[400px] border-t md:border-t-0 md:border-l border-slate-200/80 bg-white p-6 dark:border-slate-800 dark:bg-slate-900 overflow-y-auto flex flex-col justify-between shrink-0">
-              <div className="space-y-5">
-                {/* Mode Tabs */}
-                <div className="flex rounded-2xl bg-slate-100 p-1.5 dark:bg-slate-800/80">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('crop')}
-                    className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold transition-all cursor-pointer ${
-                      activeTab === 'crop'
-                        ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
-                        : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-                    }`}
-                  >
-                    <CropIcon size={14} />
-                    <span>Crop & Framing</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('adjust')}
-                    className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold transition-all cursor-pointer ${
-                      activeTab === 'adjust'
-                        ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
-                        : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-                    }`}
-                  >
-                    <Sliders size={14} />
-                    <span>Filters & Tone</span>
-                    {(brightness !== 100 || contrast !== 100 || saturate !== 100) && (
-                      <span className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
-                    )}
-                  </button>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    ref={imgRef}
+                    alt="Image to crop"
+                    src={imageUrl}
+                    onLoad={onImageLoad}
+                    className="max-h-[50vh] max-w-full object-contain"
+                    style={{ transform: `scale(${zoom}) rotate(${angle}deg)` }}
+                  />
+                </ReactCrop>
+              )}
+              {busy && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/60 dark:bg-slate-900/60">
+                  <Loader2 className="animate-spin text-slate-500" size={22} />
                 </div>
+              )}
+            </div>
 
-                {/* TAB 1: CROP & FRAMING */}
-                {activeTab === 'crop' && (
-                  <div className="space-y-4">
-                    {/* Zoom Slider */}
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4 dark:border-slate-800/70 dark:bg-slate-950/40 space-y-3">
-                      <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
-                          <ZoomIn size={15} className="text-sky-500" />
-                          <span>Zoom</span>
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => setZoom(1.0)}
-                            className="rounded-md px-1.5 py-0.5 text-[11px] font-bold text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                          >
-                            1x
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setZoom(1.5)}
-                            className="rounded-md px-1.5 py-0.5 text-[11px] font-bold text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                          >
-                            1.5x
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setZoom(2.0)}
-                            className="rounded-md px-1.5 py-0.5 text-[11px] font-bold text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                          >
-                            2x
-                          </button>
-                        </div>
-                      </div>
+            <div className="flex w-full items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setZoom((z) => Math.max(ZOOM_MIN, +(z - 0.1).toFixed(2)))}
+                aria-label="Zoom out"
+                className="h-8 w-8 shrink-0 rounded-full border border-slate-200 text-lg font-semibold leading-none text-slate-600 hover:bg-slate-100"
+              >
+                −
+              </button>
+              <input
+                type="range"
+                min={ZOOM_MIN}
+                max={ZOOM_MAX}
+                step={0.01}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                aria-label="Zoom"
+                className="h-1.5 w-full cursor-pointer accent-indigo-600"
+              />
+              <button
+                type="button"
+                onClick={() => setZoom((z) => Math.min(ZOOM_MAX, +(z + 0.1).toFixed(2)))}
+                aria-label="Zoom in"
+                className="h-8 w-8 shrink-0 rounded-full border border-slate-200 text-lg font-semibold leading-none text-slate-600 hover:bg-slate-100"
+              >
+                +
+              </button>
+              <button
+                type="button"
+                onClick={() => setZoom(1)}
+                className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold tabular-nums text-slate-600 hover:bg-slate-100"
+                title="Reset zoom"
+              >
+                {Math.round(zoom * 100)}%
+              </button>
+            </div>
 
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setZoom((z) => Math.max(0.5, Number((z - 0.1).toFixed(1))))}
-                          className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                        >
-                          <ZoomOut size={16} />
-                        </button>
-                        <input
-                          type="range"
-                          min="0.5"
-                          max="3"
-                          step="0.05"
-                          value={zoom}
-                          onChange={(e) => setZoom(parseFloat(e.target.value))}
-                          className="h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-slate-200 dark:bg-slate-700 accent-sky-600"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setZoom((z) => Math.min(3, Number((z + 0.1).toFixed(1))))}
-                          className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                        >
-                          <ZoomIn size={16} />
-                        </button>
-                      </div>
-                    </div>
+            <div className="flex w-full items-center gap-3">
+              <span className="flex w-8 shrink-0 justify-center text-slate-400" aria-hidden>
+                <RotateCw size={15} />
+              </span>
+              <input
+                type="range"
+                min={-ANGLE_MAX}
+                max={ANGLE_MAX}
+                step={0.5}
+                value={angle}
+                onChange={(e) => setAngle(Number(e.target.value))}
+                onDoubleClick={() => setAngle(0)}
+                aria-label="Rotate"
+                className="h-1.5 w-full cursor-pointer accent-indigo-600"
+              />
+              <span className="w-8 shrink-0" aria-hidden />
+              <button
+                type="button"
+                onClick={() => setAngle(0)}
+                className="w-[52px] shrink-0 rounded-lg px-2 py-1 text-xs font-semibold tabular-nums text-slate-600 hover:bg-slate-100"
+                title="Reset rotation"
+              >
+                {angle > 0 ? '+' : ''}
+                {angle}°
+              </button>
+            </div>
 
-                    {/* Frame Aspect Presets */}
-                    <div className="space-y-2">
-                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                        Aspect Ratio
-                      </span>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleAspectChange(1)}
-                          className={`flex items-center justify-center gap-2 rounded-xl py-2 px-3 text-xs font-bold transition-all cursor-pointer ${
-                            activeAspect === 1
-                              ? 'bg-sky-600 text-white shadow-sm'
-                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
-                          }`}
-                        >
-                          <Square size={13} />
-                          <span>1:1 Square</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAspectChange(4 / 3)}
-                          className={`flex items-center justify-center gap-2 rounded-xl py-2 px-3 text-xs font-bold transition-all cursor-pointer ${
-                            activeAspect === 4 / 3
-                              ? 'bg-sky-600 text-white shadow-sm'
-                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
-                          }`}
-                        >
-                          <span>4:3 Standard</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAspectChange(16 / 9)}
-                          className={`flex items-center justify-center gap-2 rounded-xl py-2 px-3 text-xs font-bold transition-all cursor-pointer ${
-                            activeAspect === 16 / 9
-                              ? 'bg-sky-600 text-white shadow-sm'
-                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
-                          }`}
-                        >
-                          <span>16:9 Banner</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAspectChange(undefined)}
-                          className={`flex items-center justify-center gap-2 rounded-xl py-2 px-3 text-xs font-bold transition-all cursor-pointer ${
-                            activeAspect === undefined
-                              ? 'bg-sky-600 text-white shadow-sm'
-                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
-                          }`}
-                        >
-                          <CropIcon size={13} />
-                          <span>Free Crop</span>
-                        </button>
-                      </div>
-                    </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button type="button" className={toolButton} disabled={busy} onClick={() => transform((f) => rotateQuarter(f, -90), 'Could not turn the image.')}>
+                <RotateCcw size={13} /> Turn left
+              </button>
+              <button type="button" className={toolButton} disabled={busy} onClick={() => transform((f) => rotateQuarter(f, 90), 'Could not turn the image.')}>
+                <RotateCw size={13} /> Turn right
+              </button>
+              {transparency && (
+                <>
+                  <button
+                    type="button"
+                    className={toolButton}
+                    disabled={busy}
+                    onClick={() => transform((f) => knockOutLightBackground(f), 'Could not remove the background.')}
+                    title="Makes a white or light paper background transparent"
+                  >
+                    <Eraser size={13} /> Remove white background
+                  </button>
+                  <button type="button" className={toolButton} disabled={busy} onClick={trim} title="Fits the frame around the artwork">
+                    <Scan size={13} /> Trim empty edges
+                  </button>
+                </>
+              )}
+            </div>
 
-                    {/* Transform Buttons */}
-                    <div className="space-y-2">
-                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                        Transform & Tools
-                      </span>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setIsCircularGuide((c) => !c)}
-                          className={`flex items-center justify-center gap-2 rounded-xl py-2 px-3 text-xs font-bold transition-all cursor-pointer ${
-                            isCircularGuide
-                              ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                              : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
-                          }`}
-                        >
-                          <Circle size={13} />
-                          <span>Circle Mask</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleRotate}
-                          className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 transition-all cursor-pointer"
-                        >
-                          <RotateCw size={13} />
-                          <span>Rotate 90°</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleFlip}
-                          className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 transition-all cursor-pointer"
-                        >
-                          <FlipHorizontal size={13} />
-                          <span>Flip H</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleReset}
-                          className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 transition-all cursor-pointer"
-                        >
-                          <RefreshCw size={13} />
-                          <span>Reset</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 2: FILTERS & TONE */}
-                {activeTab === 'adjust' && (
-                  <div className="space-y-4">
-                    {/* Brightness */}
-                    <div className="space-y-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 dark:border-slate-800/70 dark:bg-slate-950/40">
-                      <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
-                          <Sun size={15} className="text-amber-500" />
-                          <span>Brightness</span>
-                        </span>
-                        <span className="font-mono text-slate-500">{brightness}%</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="50"
-                        max="150"
-                        step="1"
-                        value={brightness}
-                        onChange={(e) => setBrightness(parseInt(e.target.value))}
-                        className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 dark:bg-slate-700 accent-amber-500"
-                      />
-                    </div>
-
-                    {/* Contrast */}
-                    <div className="space-y-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 dark:border-slate-800/70 dark:bg-slate-950/40">
-                      <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
-                          <Contrast size={15} className="text-indigo-500" />
-                          <span>Contrast</span>
-                        </span>
-                        <span className="font-mono text-slate-500">{contrast}%</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="50"
-                        max="150"
-                        step="1"
-                        value={contrast}
-                        onChange={(e) => setContrast(parseInt(e.target.value))}
-                        className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 dark:bg-slate-700 accent-indigo-500"
-                      />
-                    </div>
-
-                    {/* Saturation */}
-                    <div className="space-y-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 dark:border-slate-800/70 dark:bg-slate-950/40">
-                      <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
-                          <Palette size={15} className="text-emerald-500" />
-                          <span>Saturation</span>
-                        </span>
-                        <span className="font-mono text-slate-500">{saturate}%</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="0"
-                        max="200"
-                        step="1"
-                        value={saturate}
-                        onChange={(e) => setSaturate(parseInt(e.target.value))}
-                        className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 dark:bg-slate-700 accent-emerald-500"
-                      />
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setBrightness(100);
-                        setContrast(100);
-                        setSaturate(100);
-                      }}
-                      className="w-full rounded-xl border border-slate-200 bg-white py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 transition-colors cursor-pointer"
-                    >
-                      Reset All Filters
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              {aspectOptions && aspectOptions.length > 1 ? (
+                <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Shape">
+                  {aspectOptions.map((o) => (
+                    <button key={o.label} type="button" className={chip(o.value === aspect)} onClick={() => changeAspect(o.value)}>
+                      {o.label}
                     </button>
-                  </div>
-                )}
-
-                {/* Real-time Live Result Badge */}
-                <div className="rounded-2xl border border-slate-200/90 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/40">
-                  <div className="mb-3 flex items-center justify-between text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    <span className="flex items-center gap-1.5">
-                      <Eye size={12} className="text-sky-500" />
-                      <span>Live Result Preview</span>
-                    </span>
-                    <span className="text-[10px] text-slate-400">160x160</span>
-                  </div>
-
-                  <div className="flex items-center justify-center gap-6">
-                    {/* Circle Avatar Preview */}
-                    <div className="flex flex-col items-center gap-1.5">
-                      <div className="relative h-20 w-20 rounded-full border-2 border-white shadow-xl overflow-hidden bg-slate-950 dark:border-slate-700">
-                        <canvas ref={previewCanvasRef} className="h-full w-full object-cover" />
-                      </div>
-                      <span className="text-[10px] font-semibold text-slate-500">Circle</span>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              </div>
-
-              {/* Bottom Confirm / Cancel Actions */}
-              <div className="pt-5 mt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={onCancel}
-                  disabled={isApplying}
-                  className="flex-1 cursor-pointer rounded-2xl border border-slate-200 bg-white py-3 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirm}
-                  disabled={isApplying || !completedCrop?.width || !completedCrop?.height}
-                  className="flex-1 inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-sky-600 py-3 text-xs font-bold text-white shadow-lg shadow-sky-600/30 transition-all hover:bg-sky-700 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Check size={15} />
-                  <span>{isApplying ? 'Applying...' : 'Save Photo'}</span>
-                </button>
+              ) : (
+                <span />
+              )}
+              <div className="flex items-center gap-1.5" role="group" aria-label="Background">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Background</span>
+                {(['checker', 'light', 'dark'] as Ground[]).map((g) => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setGround(g)}
+                    aria-label={g === 'checker' ? 'Transparent' : g === 'light' ? 'Light' : 'Dark'}
+                    aria-pressed={ground === g}
+                    className={`h-6 w-6 rounded-md border ${ground === g ? 'ring-2 ring-indigo-500 ring-offset-1' : 'border-slate-300'}`}
+                    style={GROUND_STYLE[g]}
+                  />
+                ))}
               </div>
             </div>
+            <p className="text-xs text-slate-500">
+              Drag the frame to move it and its edges to resize it. Zoom in to fill the frame, or out to leave space around a logo.
+              Use the rotation slider to straighten a tilted scan (double-click it to reset).
+            </p>
           </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
-    </Portal>
+
+          {preview && <div className="min-w-0">{preview(previewUrl)}</div>}
+        </div>
+
+        <div className="flex w-full justify-end gap-3 border-t border-slate-100 px-6 py-4">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            disabled={busy || !completedCrop?.width || !completedCrop?.height}
+            className="rounded-xl bg-ink px-5 py-2 text-sm font-bold text-on-ink transition-colors hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Apply crop
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -13,7 +13,11 @@ import { GrantAccessDialog } from './GrantAccessDialog';
 
 const PAGE_SIZE = 20;
 
-export function UsersList() {
+interface UsersListProps {
+  headerSlot?: React.ReactNode;
+}
+
+export function UsersList({ headerSlot }: UsersListProps = {}) {
   const [users, setUsers] = useState<User[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [page, setPage] = useState(0);
@@ -74,28 +78,30 @@ export function UsersList() {
 
   return (
     <div className="space-y-4">
-      {/* Header: search + grant access */}
-      <div className="flex flex-col sm:flex-row gap-2">
-        <div className="relative flex-1">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <Search className="h-4 w-4 text-gray-400" />
+      {/* Unified Toolbar Dock */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-full border border-slate-200/80 bg-surface/80 p-1.5 shadow-xs backdrop-blur-md">
+        {headerSlot}
+        <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-end">
+          <div className="relative min-w-[220px] sm:min-w-[320px] flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
+            <input
+              type="text"
+              className="w-full rounded-full border border-slate-200/80 bg-surface py-1.5 pl-8 pr-3 text-xs font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100 transition-all"
+              placeholder="Search users with platform access…"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
           </div>
-          <input
-            type="text"
-            className="block w-full rounded-xl border border-gray-200 bg-surface py-2.5 pl-10 pr-4 text-sm focus:border-ink/30 focus:outline-none focus:ring-1 focus:ring-slate-300 shadow-sm"
-            placeholder="Search users with platform access…"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
+          {canManageAdminRole && (
+            <button
+              type="button"
+              onClick={() => setGrantDialogOpen(true)}
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-slate-950 hover:bg-slate-800 rounded-full transition-colors shrink-0 shadow-xs dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+            >
+              <UserPlus size={13} /> Grant Access
+            </button>
+          )}
         </div>
-        {canManageAdminRole && (
-          <button
-            onClick={() => setGrantDialogOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-on-ink bg-ink hover:bg-ink-hover rounded-xl transition-colors shrink-0"
-          >
-            <UserPlus size={15} /> Grant Access
-          </button>
-        )}
       </div>
 
       <p className="text-xs text-gray-400 px-1">

@@ -113,16 +113,7 @@ export function ExamStandardsConsole() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-16">
-      <header className="mb-5">
-        <h1 className="text-[1.5rem] font-bold tracking-tight text-ink">Exam standards</h1>
-        <p className="mt-1 max-w-2xl text-[13px] font-medium text-slate-500">
-          The rules every exam of a type follows. <b>Locked</b> settings are forced on exams tied to a
-          course or event; <b>Default</b> settings are pre-filled and creators may change them within
-          the limits you set. Saving brings existing plans into line.
-        </p>
-      </header>
-
-      <div className="mb-5 flex flex-wrap gap-2">
+      <div className="mb-5 inline-flex flex-wrap items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/80 p-1.5 shadow-xs backdrop-blur-md">
         {standards.map((s) => {
           const Icon = TYPE_ICON[s.planType];
           return (
@@ -130,10 +121,10 @@ export function ExamStandardsConsole() {
               key={s.planType}
               type="button"
               onClick={() => setActive(s.planType)}
-              className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-[13px] font-semibold transition-colors ${
+              className={`inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-[13px] font-semibold transition-all duration-200 ${
                 active === s.planType
-                  ? 'border-ink bg-ink text-on-ink'
-                  : 'border-slate-200 bg-surface text-slate-600 hover:border-slate-300'
+                  ? 'bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
               }`}
             >
               <Icon size={14} />
