@@ -14,7 +14,7 @@ interface EditOrganizationModalProps {
   onClose: () => void;
   channel: Channel;
   onUpdate: (updatedChannel: Channel) => void;
-  /** Opens the organisation logo modal — the one place the logo changes (it is on badges and certificates). */
+  /** Goes to Identity & branding — the one place the logo changes (it is on badges and certificates). */
   onEditLogo: () => void;
   /** Opens the certificate signatory modal (organisations only). */
   onEditSignatory: () => void;
@@ -211,7 +211,7 @@ export function EditOrganizationModal({
               {/* 2. Logo Avatar & Channel Name Section */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:items-center">
                 {/* Logo — organizations only (a personal channel shows its owner's profile picture). It is
-                    changed only in OrganisationLogoModal, since it is printed on badges and certificates. */}
+                    changed only in Identity & branding (ChannelLogoCard), since it is printed on badges and certificates. */}
                 {!channel.isPersonal && (
                 <div className="space-y-2">
                   <label className="text-xs font-extrabold uppercase tracking-wider text-slate-700">

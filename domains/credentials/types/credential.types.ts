@@ -136,6 +136,11 @@ export interface IssuedCertificate {
   signatoryName: string | null;
   signatoryTitle: string | null;
   signatureUrl: string | null;
+  /**
+   * The name on the "conducted by" line: the instructor of a personal channel's exam (which the host
+   * institution issues), otherwise the issuer. Optional for certificates from older backends.
+   */
+  conductedBy?: string | null;
   scorePercent: number | null;
   passPercent: number | null;
   achievedAt: string;

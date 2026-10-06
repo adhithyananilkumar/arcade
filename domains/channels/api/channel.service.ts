@@ -259,16 +259,20 @@ export interface OwnershipTransferResponse {
 }
 
 /**
- * An organisation's certificate signatory (e.g. its Director): name, title and signature image.
- * All null when it has none. Readable only by those who manage the channel's settings.
+ * A channel's certificate signatory: name, title and signature image, all null when it has none.
+ * An organisation names its signatory (e.g. its Director); a personal channel's is always its owner,
+ * the instructor. Readable only by those who manage the channel's settings.
  */
 export interface ChannelSignatory {
   name: string | null;
   title: string | null;
   signatureUrl: string | null;
+  /** A personal channel's signatory name — its owner's, not editable here; null for an organisation. */
+  fixedName?: string | null;
 }
 
 export interface ChannelSignatoryUpdate {
+  /** Ignored for a personal channel, which always signs under its owner's name. */
   name?: string;
   title?: string;
   /** A transparent PNG; omit to keep the current signature image. */

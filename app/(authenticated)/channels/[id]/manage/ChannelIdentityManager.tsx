@@ -1,16 +1,19 @@
 'use client';
 
 /**
- * Channel -> Manage -> Identity.
+ * Channel -> Manage -> Identity & branding.
  *
- * An organization channel's public face: the handle it is served from, the
- * presentation fields on its standalone profile, and any appeal it has filed
- * for a handle somebody else holds.
+ * How a channel presents itself, on Arcade and on the credentials it issues. For every channel: who
+ * signs its certificates. For an organization, also: the handle it is served from, its logo, the
+ * presentation fields on its standalone profile, and any appeal it has filed for a handle somebody
+ * else holds.
  *
- * A personal channel never reaches this tab. It has no page of its own — its
- * owner's profile is its page, and its catalog renders there — so it has no
- * handle to claim and nothing to appeal for. The tab is omitted rather than
- * shown disabled, because "you cannot have this" is not a setting.
+ * A personal channel has no page of its own — its owner's profile is its page, and its catalog
+ * renders there — so it has no handle, logo or public profile here; those cards are omitted rather
+ * than shown disabled, because "you cannot have this" is not a setting. Its certificates are issued
+ * by the host institution and signed by the owner, so the signature card is what it gets.
+ *
+ * `focus` (from `?focus=`) scrolls to a card: `logo` or `signatory`.
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -25,8 +28,41 @@ import {
   type HandleAppeal,
 } from '@/domains/profiles';
 import { channelService, type Channel } from '@/domains/channels';
+import { ChannelLogoCard } from './components/ChannelLogoCard';
+import { ChannelSignatoryCard } from './components/ChannelSignatoryCard';
 
 export function ChannelIdentityManager({
+  channel,
+  canEdit,
+  onUpdate,
+  focus,
+}: {
+  channel: Channel;
+  canEdit: boolean;
+  onUpdate: (channel: Channel) => void;
+  focus?: string | null;
+}) {
+  useEffect(() => {
+    if (focus !== 'logo' && focus !== 'signatory') return;
+    // After the cards mount (the signatory card loads its data first).
+    const t = window.setTimeout(
+      () => document.getElementById(focus)?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+      150,
+    );
+    return () => window.clearTimeout(t);
+  }, [focus]);
+
+  if (channel.isPersonal) {
+    return (
+      <div className="space-y-6">
+        <ChannelSignatoryCard channel={channel} canEdit={canEdit} />
+      </div>
+    );
+  }
+  return <OrganizationIdentity channel={channel} canEdit={canEdit} onUpdate={onUpdate} />;
+}
+
+function OrganizationIdentity({
   channel,
   canEdit,
   onUpdate,
@@ -182,6 +218,9 @@ export function ChannelIdentityManager({
           onCancel={() => setAppealFor(null)}
         />
       )}
+
+      <ChannelLogoCard channel={channel} canEdit={canEdit} onUpdate={onUpdate} />
+      <ChannelSignatoryCard channel={channel} canEdit={canEdit} />
 
       {canEdit && (
         <section className="rounded-[20px] border border-slate-100 bg-surface p-6">

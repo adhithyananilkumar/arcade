@@ -15,8 +15,8 @@ interface ChannelOnboardingModalProps {
 /**
  * Shown once, when an organisation's channel is first opened after approval. The logo and the
  * certificate signatory are not asked for at application time — nothing can be printed until the
- * channel exists — so this is where they are collected. Each card opens the same modal the channel
- * settings use, which carries the crop/zoom and the badge and certificate previews.
+ * channel exists — so this is where they are asked for. Each card leads to Identity & branding,
+ * where they are set with the cropper and the badge and certificate previews.
  */
 export function ChannelOnboardingModal({ channel, onDismiss, onAddLogo, onAddSignatory }: ChannelOnboardingModalProps) {
   return (
@@ -87,7 +87,7 @@ export function ChannelOnboardingModal({ channel, onDismiss, onAddLogo, onAddSig
 
           <div className="flex items-center justify-between pt-3">
             <p className="text-[11px] font-medium text-slate-500">
-              You can do this any time from Edit profile.
+              You can do this any time from Identity & branding.
             </p>
             <button
               type="button"

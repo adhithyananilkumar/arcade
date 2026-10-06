@@ -18,7 +18,7 @@ interface Props {
   tabHref: (tab: string, params?: Record<string, string>) => string;
   onChannelUpdate: (channel: Channel) => void;
   onEditProfile?: () => void;
-  /** Opens the organisation logo modal — the one place the logo changes. */
+  /** Goes to Identity & branding — the one place the logo changes. */
   onEditLogo?: () => void;
 }
 

@@ -52,6 +52,7 @@ export interface CertificateFaceProps {
     | "signatoryName"
     | "signatoryTitle"
     | "signatureUrl"
+    | "conductedBy"
     | "scorePercent"
     | "achievedAt"
     | "issuedAt"
@@ -177,7 +178,7 @@ export function CertificateFace({ certificate: c, verificationUrl, className }: 
             {c.title}
           </div>
           <div style={{ marginTop: mm(3.3), fontFamily: book.style.fontFamily, fontSize: pt(13), lineHeight: 1.4 }}>
-            conducted by {c.issuerName}
+            conducted by {c.conductedBy || c.issuerName}
             {c.scorePercent != null && (
               <>
                 , securing a score of <b style={{ fontWeight: 600 }}>{pct(c.scorePercent)}</b>

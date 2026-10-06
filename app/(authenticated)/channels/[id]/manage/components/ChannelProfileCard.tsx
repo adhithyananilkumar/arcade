@@ -87,7 +87,7 @@ interface Props {
   canEdit: boolean;
   onUpdate: (channel: Channel) => void;
   onEditProfile?: () => void;
-  /** Opens the organisation logo modal — the one place the logo changes. */
+  /** Goes to Identity & branding — the one place the logo changes. */
   onEditLogo?: () => void;
 }
 
@@ -96,7 +96,7 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile, 
   const [socialOpen, setSocialOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Banner direct upload state. The logo changes only in OrganisationLogoModal (it is printed on
+  // Banner direct upload state. The logo changes only in ChannelLogoCard (it is printed on
   // badges and certificates, so it is previewed and confirmed there).
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const [cropTarget, setCropTarget] = useState<'banner' | null>(null);
