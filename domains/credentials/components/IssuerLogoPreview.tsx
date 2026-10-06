@@ -56,7 +56,7 @@ export function IssuerLogoPreview({
         </figcaption>
         <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
           <CertificateFace
-            verificationUrl="https://arcade.example/credentials/CERT-SAMPLE"
+            verificationUrl="https://arcade.ajce.in/credentials/CERT-SAMPLE"
             certificate={{
               credentialCode: "CERT-SAMPLE-0000",
               documentTitle: "Certificate of Achievement",

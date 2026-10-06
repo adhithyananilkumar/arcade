@@ -29,6 +29,12 @@ const NAVY = "#1A2238";
 const GOLD = "#B08D3C";
 const MUTED = "#5B6475";
 
+/**
+ * The host institution's seal, stamped on a certificate issued in the host's name that carries no
+ * seal of its own — every personal channel's certificate (backend `CertificateDocument.HOST_SEAL`).
+ */
+const HOST_SEAL = "/credentials/host-seal.png";
+
 
 // The PDF's typefaces (backend Xhtml.DISPLAY and Xhtml.BOOK): Cormorant Garamond for the display
 // lines, EB Garamond for running text. Loaded here so only pages showing a certificate fetch them.
@@ -79,6 +85,7 @@ function At({ style, children }: { style: CSSProperties; children?: ReactNode })
 }
 
 export function CertificateFace({ certificate: c, verificationUrl, className }: CertificateFaceProps) {
+  const sealUrl = c.issuerSealUrl || (c.issuedByHost ? HOST_SEAL : null);
   const serif = "var(--font-serif, 'Noto Serif', Georgia, serif)";
   const field = (value: ReactNode, label: ReactNode) => (
     <>
@@ -194,10 +201,10 @@ export function CertificateFace({ certificate: c, verificationUrl, className }: 
         {/* Three centred columns — issuer, signature, date — each under its mark: the issuer's seal,
             the signature, and the QR code. The signature's text line (159 mm) sits a little above the
             two sides' (165 mm), as in the PDF. */}
-        {c.issuerSealUrl && (
+        {sealUrl && (
           <At style={{ left: mm(54), top: mm(143), width: mm(40), height: mm(21), display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={c.issuerSealUrl} alt="" style={{ maxHeight: mm(21), maxWidth: mm(40) }} className="object-contain" />
+            <img src={sealUrl} alt="" style={{ maxHeight: mm(21), maxWidth: mm(40) }} className="object-contain" />
           </At>
         )}
         <At style={{ ...column(32, 84), top: mm(165) }}>{field(c.issuerName, "Issuing organisation")}</At>
@@ -216,14 +223,14 @@ export function CertificateFace({ certificate: c, verificationUrl, className }: 
           </At>
         )}
         <At style={{ ...column(192, 62), top: mm(165) }}>
-          {field(longDate(c.achievedAt), verificationUrl ? "Date of award · scan to verify" : "Date of award")}
+          {field(longDate(c.achievedAt), verificationUrl ? "Date of award · Scan to verify" : "Date of award")}
         </At>
 
         <At style={{ left: mm(58.5), top: mm(178), width: mm(180), textAlign: "center", fontFamily: book.style.fontFamily, fontSize: pt(11.5) }}>
           {c.expiresAt ? `This certificate is valid until ${longDate(c.expiresAt)}` : "This certificate does not expire."}
         </At>
         <At style={{ left: mm(58.5), top: mm(184.5), width: mm(180), textAlign: "center", fontSize: pt(6.8), lineHeight: 1.45, color: MUTED }}>
-          Credential ID <b>{c.credentialCode}</b> · Issued {longDate(c.issuedAt)}
+          Credential ID <b>{c.credentialCode}</b>
           <br />
           {verificationUrl && <>Verify at {verificationUrl} · </>}Any alteration of this document invalidates it.
         </At>
