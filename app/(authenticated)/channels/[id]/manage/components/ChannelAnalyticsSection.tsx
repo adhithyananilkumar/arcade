@@ -43,7 +43,7 @@ export function ChannelAnalyticsSection({ channelId }: { channelId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-1.5">
+      <div className="inline-flex flex-wrap items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/80 p-1.5 shadow-xs backdrop-blur-md">
         {TIMEFRAMES.map((t) => (
           <button
             key={t.id}
@@ -54,10 +54,10 @@ export function ChannelAnalyticsSection({ channelId }: { channelId: string }) {
               setTimeframe(t.id);
             }}
             className={cn(
-              'cursor-pointer rounded-full px-4 py-1.5 text-[12px] font-semibold transition-colors',
+              'cursor-pointer rounded-full px-4 py-2 text-[12px] font-semibold transition-all duration-200',
               timeframe === t.id
-                ? 'bg-ink text-on-ink'
-                : 'border border-slate-200 bg-surface text-slate-600 hover:bg-slate-50',
+                ? 'bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
             )}
           >
             {t.label}

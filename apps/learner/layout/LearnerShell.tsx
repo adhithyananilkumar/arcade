@@ -39,6 +39,11 @@ const HIDE_DOCK_ROUTES = [
   /^\/console(\/|$)/,
   /^\/manage-channels(\/|$)/,
   /^\/channels\/[^/]+\/manage\/?$/,
+  // The mailed channel invitation: a one-purpose form. When opened signed in, the app dock is noise.
+  /^\/channel-invite(\/|$)/,
+  // Credentials and verifying surfaces: certificates, badges, verification, standards, and grade cards.
+  /^\/credentials(\/|$)/,
+  /^\/exams\/grade-cards(\/|$)/,
 ];
 
 export default function LearnerShell({

@@ -12,6 +12,7 @@ import {
   LayoutGrid,
   List,
   Map,
+  Plus,
   Search,
   User,
 } from 'lucide-react';
@@ -21,7 +22,6 @@ import { cn } from '@/shared/utils/utils';
 import { CONTENT_STATUSES, ContentStatusPill, contentHref, statusOf, typeLabel } from './contentStatus';
 import { UnifiedContentCard } from '@/shared/design-system/ui/cards';
 import { ContentArt } from '@/shared/design-system/art';
-
 
 interface CardProps {
   item: ChannelContentItem;
@@ -150,25 +150,29 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap gap-1.5">
+      {/* Unified Navbar Filter Dock Container */}
+      <div className="flex flex-col gap-3.5 rounded-[2rem] border border-slate-200/80 bg-surface/80 p-2 shadow-xs backdrop-blur-md lg:flex-row lg:items-center lg:justify-between">
+        {/* Left side: Status Filter Pills */}
+        <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto p-0.5">
           {filters.map((f) => (
             <button
               key={f.id}
               type="button"
               onClick={() => setStatus(f.id)}
               className={cn(
-                'inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-1.5 text-[12px] font-semibold transition-colors',
+                'inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-[12px] font-semibold transition-all duration-200',
                 status === f.id
-                  ? 'bg-ink text-on-ink'
-                  : 'border border-slate-200 bg-surface text-slate-600 hover:bg-slate-50',
+                  ? 'bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
               )}
             >
               {f.label}
               <span
                 className={cn(
                   'rounded-full px-1.5 text-[10px] font-bold tabular-nums',
-                  status === f.id ? 'bg-white/20' : 'bg-slate-100 text-slate-600',
+                  status === f.id
+                    ? 'bg-white/20 text-white dark:bg-slate-950/20 dark:text-slate-950'
+                    : 'bg-slate-200/70 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
                 )}
               >
                 {f.count}
@@ -177,13 +181,14 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Right side: Search, Types, View Toggle & Create in Studio */}
+        <div className="flex flex-wrap items-center gap-2 p-0.5">
           {types.length > 1 && (
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
               aria-label="Content type"
-              className="h-9 cursor-pointer rounded-full border border-slate-200 bg-surface px-3 text-[12px] font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+              className="h-9 cursor-pointer rounded-full border border-slate-200/80 bg-surface px-3 text-[12px] font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
             >
               <option value="ALL">All types</option>
               {types.map((t) => (
@@ -194,24 +199,24 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
             </select>
           )}
 
-          <div className="relative w-full sm:w-56">
-            <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <div className="relative min-w-[180px] flex-1 sm:w-56">
+            <Search size={14} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search title or author"
-              className="h-9 w-full rounded-full border border-slate-200 bg-surface pl-9 pr-3 text-[12.5px] font-medium text-slate-800 placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+              placeholder="Search title or author..."
+              className="h-9 w-full rounded-full border border-slate-200/80 bg-surface/90 pl-9 pr-3 text-[12.5px] font-medium text-slate-800 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400/20"
             />
           </div>
 
-          <div className="hidden sm:flex items-center rounded-full border border-slate-200 bg-surface p-0.5">
+          <div className="hidden sm:flex items-center rounded-full border border-slate-200/80 bg-surface p-0.5">
             <button
               type="button"
               onClick={() => setViewMode('grid')}
               className={cn(
-                'flex h-7.5 w-7.5 items-center justify-center rounded-full transition-colors',
-                viewMode === 'grid' ? 'bg-ink text-on-ink' : 'text-slate-500 hover:text-slate-800',
+                'flex h-7.5 w-7.5 items-center justify-center rounded-full transition-colors cursor-pointer',
+                viewMode === 'grid' ? 'bg-slate-950 text-white dark:bg-white dark:text-slate-950' : 'text-slate-500 hover:text-slate-800',
               )}
               title="Grid view"
             >
@@ -221,14 +226,21 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
               type="button"
               onClick={() => setViewMode('list')}
               className={cn(
-                'flex h-7.5 w-7.5 items-center justify-center rounded-full transition-colors',
-                viewMode === 'list' ? 'bg-ink text-on-ink' : 'text-slate-500 hover:text-slate-800',
+                'flex h-7.5 w-7.5 items-center justify-center rounded-full transition-colors cursor-pointer',
+                viewMode === 'list' ? 'bg-slate-950 text-white dark:bg-white dark:text-slate-950' : 'text-slate-500 hover:text-slate-800',
               )}
               title="List view"
             >
               <List size={14} />
             </button>
           </div>
+
+          <Link
+            href="/studio"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-slate-950 px-4 py-2 text-[12px] font-semibold text-white transition-all hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 shadow-xs"
+          >
+            <Plus size={13} /> Create in Studio
+          </Link>
         </div>
       </div>
 

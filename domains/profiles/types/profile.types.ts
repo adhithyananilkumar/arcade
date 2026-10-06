@@ -137,6 +137,7 @@ export interface UserProfile {
   lastName: string;
   fullName: string;
   avatarUrl?: string | null;
+  bannerUrl?: string | null;
   headline?: string | null;
   bio?: string | null;
   location?: string | null;

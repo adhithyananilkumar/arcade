@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, GraduationCap, Compass, Trophy, ArrowLeft } from 'lucide-react';
+import { LogOut, Search, Plus, ChevronDown, ChevronRight, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Trophy, ArrowLeft, Info } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AuthService } from '@/infrastructure/auth/auth.service';
@@ -23,7 +23,6 @@ import { api } from '@/infrastructure/http/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MenuContainer, MenuItem } from '@/shared/design-system/ui/fluid-menu';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { getAvatarUrl } from '@/shared/utils/avatar';
 
 /** Shared so the accept/decline handlers can invalidate exactly this query. */
@@ -139,21 +138,6 @@ export default function LearnerNavbar() {
     tasks.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     return tasks;
   }, [pendingChannelRequests, pendingDeletions, openReviews]);
-  
-  // Intelligent header scroll behavior
-  const { scrollY } = useScroll();
-  const [hidden, setHidden] = useState(false);
-  const [lastY, setLastY] = useState(0);
-
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    // Only hide after 150px of downward scroll to avoid triggering at the very top
-    if (latest > 150 && latest > lastY) {
-      setHidden(true);
-    } else {
-      setHidden(false);
-    }
-    setLastY(latest);
-  });
 
   const handleLogout = async () => {
     if (isLoggingOut) return;
@@ -234,7 +218,14 @@ export default function LearnerNavbar() {
     if (!isConsole) return null;
     if (pathname.startsWith('/console/channels')) return 'Channels';
     if (pathname.startsWith('/console/reviews')) return 'Reviews';
+    if (pathname.startsWith('/console/content-manage')) return 'Content manage';
     if (pathname.startsWith('/console/exam-standards')) return 'Exam standards';
+    if (pathname.startsWith('/console/payments')) return 'Payments';
+    if (pathname.startsWith('/console/inbox')) return 'Inbox';
+    if (pathname.startsWith('/console/bugs')) return 'Bugs';
+    if (pathname.startsWith('/console/recognition')) return 'Recognition';
+    if (pathname.startsWith('/console/handles')) return 'Handles';
+    if (pathname.startsWith('/console/appearance')) return 'Appearance';
     if (pathname.startsWith('/console/iam')) return 'IAM';
     return null;
   })();
@@ -245,15 +236,7 @@ export default function LearnerNavbar() {
   }
 
   return (
-    <motion.div 
-      variants={{
-        visible: { y: 0, opacity: 1 },
-        hidden: { y: -20, opacity: 0 },
-      }}
-      animate={hidden ? "hidden" : "visible"}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="fixed top-6 left-0 right-0 z-40 flex w-full items-center justify-between gap-3 px-4 md:px-8 pointer-events-none"
-    >
+    <header className="fixed top-6 left-0 right-0 z-40 flex w-full items-center justify-between gap-3 px-4 md:px-8 pointer-events-none">
       {/* Left Island: Branding */}
       <div className="pointer-events-auto flex shrink-0 items-center gap-2">
         <div className="flex h-12 shrink-0 items-center rounded-full px-5 apple-glass-dock shadow-none [box-shadow:none]">
@@ -314,17 +297,47 @@ export default function LearnerNavbar() {
 
       {/* Center: Channel Manage breadcrumbs */}
       {isChannelManage && (
-        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex h-12 items-center justify-center gap-3 rounded-full px-5 apple-glass-dock text-xs shadow-none [box-shadow:none]">
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center gap-2 text-[13.5px]">
           <Link
             href="/manage-channels"
-            className="font-bold text-slate-600 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            className="flex items-center gap-1.5 font-bold text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors"
           >
-            Channels
+            <Tv size={15} className="text-slate-500 shrink-0" />
+            <span>Channels</span>
           </Link>
-          <span className="h-3.5 w-px bg-slate-200 shrink-0" />
-          <span className="font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
-            {channelTabLabel}
-          </span>
+          <ChevronRight size={14} className="text-slate-400 shrink-0 stroke-[2.2]" />
+          <div className="flex items-center gap-1.5">
+            <span className="font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+              {channelTabLabel}
+            </span>
+            <div className="group relative inline-flex items-center justify-center">
+              <button
+                type="button"
+                aria-label={`${channelTabLabel} info`}
+                className="inline-flex h-5 w-5 items-center justify-center rounded-full text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors cursor-pointer"
+              >
+                <Info size={14} className="stroke-[2.2]" />
+              </button>
+              <div className="pointer-events-none absolute left-full top-1/2 ml-2.5 -translate-y-1/2 z-50 whitespace-nowrap opacity-0 -translate-x-1 group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-all duration-200 ease-out">
+                <div className="rounded-2xl border border-slate-200/80 bg-surface/90 backdrop-blur-md px-4 py-2.5 shadow-[0_8px_30px_rgba(20,20,43,0.08)] text-[12px] font-medium leading-relaxed text-slate-800">
+                  {(() => {
+                    const tab = (searchParams.get('tab') || 'OVERVIEW').toUpperCase();
+                    switch (tab) {
+                      case 'CONTENT': return 'Everything created for this channel, in every state.';
+                      case 'REVIEWS': return "Content submitted by creators reviewed here first.";
+                      case 'ANALYTICS': return "Enrollments and learner feedback across courses.";
+                      case 'PAYMENTS': return 'Learner payments, refunds, and payable balances.';
+                      case 'IDENTITY': return 'Address and public organization profile.';
+                      case 'STAFF': return "Staff members and authorized permissions.";
+                      case 'ACTIVITY': return 'Timeline of channel modifications.';
+                      case 'DANGER': return 'Ownership transfer and channel deletion.';
+                      default: return 'Your channel at a glance.';
+                    }
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -349,22 +362,54 @@ export default function LearnerNavbar() {
         </div>
       )}
 
-      {/* Center: small Console breadcrumbs */}
+      {/* Center: Console breadcrumbs */}
       {isConsole && (
-        <div className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full px-3.5 py-2 apple-glass-dock sm:flex">
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-2 text-[13.5px] sm:flex">
           <Link 
             href="/console" 
-            className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-1.5"
+            className="flex items-center gap-1.5 font-bold text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors"
           >
-            Console
+            <LayoutDashboard size={15} className="text-slate-500 shrink-0" />
+            <span>Console</span>
             {pendingAdminTasks.length > 0 && (
               <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" title={`${pendingAdminTasks.length} pending admin task${pendingAdminTasks.length === 1 ? '' : 's'}`} />
             )}
           </Link>
           {consoleCrumb && (
             <>
-              <span className="text-[11px] text-slate-300">/</span>
-              <span className="text-[11px] font-bold text-ink">{consoleCrumb}</span>
+              <ChevronRight size={14} className="text-slate-400 shrink-0 stroke-[2.2]" />
+              <div className="flex items-center gap-1.5">
+                <span className="font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+                  {consoleCrumb}
+                </span>
+                <div className="group relative inline-flex items-center justify-center">
+                  <button
+                    type="button"
+                    aria-label={`${consoleCrumb} info`}
+                    className="inline-flex h-5 w-5 items-center justify-center rounded-full text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors cursor-pointer"
+                  >
+                    <Info size={14} className="stroke-[2.2]" />
+                  </button>
+                  <div className="pointer-events-none absolute left-full top-1/2 ml-2.5 -translate-y-1/2 z-50 whitespace-nowrap opacity-0 -translate-x-1 group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-all duration-200 ease-out">
+                    <div className="rounded-2xl border border-slate-200/80 bg-surface/90 backdrop-blur-md px-4 py-2.5 shadow-[0_8px_30px_rgba(20,20,43,0.08)] text-[12px] font-medium leading-relaxed text-slate-800">
+                      {(() => {
+                        if (pathname.startsWith('/console/channels')) return 'Platform channel management and creation requests.';
+                        if (pathname.startsWith('/console/reviews')) return 'Platform course and content review queue.';
+                        if (pathname.startsWith('/console/content-manage')) return 'Global content catalog, categories, and suspended courses.';
+                        if (pathname.startsWith('/console/exam-standards')) return 'Platform exam criteria, guidelines, and compliance rules.';
+                        if (pathname.startsWith('/console/payments')) return 'Platform-wide payments, channel balances, and commission rates.';
+                        if (pathname.startsWith('/console/inbox')) return 'Platform admin messages and system notifications.';
+                        if (pathname.startsWith('/console/bugs')) return 'User-submitted bug reports and platform issue triage.';
+                        if (pathname.startsWith('/console/recognition')) return 'Verification, credentials, and achievement standards.';
+                        if (pathname.startsWith('/console/handles')) return 'Organization handles and vanity URL management.';
+                        if (pathname.startsWith('/console/appearance')) return 'Platform branding, themes, and design settings.';
+                        if (pathname.startsWith('/console/iam')) return 'Identity & access management and role policies.';
+                        return 'Console administrative controls.';
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </>
           )}
         </div>
@@ -529,6 +574,6 @@ export default function LearnerNavbar() {
           </MenuContainer>
         </div>
       </div>
-    </motion.div>
+    </header>
   );
 }

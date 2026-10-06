@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Channel, channelService } from '@/domains/channels';
 import { toast } from 'sonner';
-import { X, Upload, Loader2, Building2, Image as ImageIcon, Check, Trash2 } from 'lucide-react';
+import { X, Upload, Loader2, Building2, Image as ImageIcon, Check, Trash2, ShieldAlert, PenLine } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
 import { getAvatarUrl } from '@/shared/utils/avatar';
@@ -14,6 +14,10 @@ interface EditOrganizationModalProps {
   onClose: () => void;
   channel: Channel;
   onUpdate: (updatedChannel: Channel) => void;
+  /** Goes to Identity & branding — the one place the logo changes (it is on badges and certificates). */
+  onEditLogo: () => void;
+  /** Opens the certificate signatory modal (organisations only). */
+  onEditSignatory: () => void;
 }
 
 export function EditOrganizationModal({
@@ -21,41 +25,28 @@ export function EditOrganizationModal({
   onClose,
   channel,
   onUpdate,
+  onEditLogo,
+  onEditSignatory,
 }: EditOrganizationModalProps) {
   const [name, setName] = useState(channel.name || '');
   const [description, setDescription] = useState(channel.description || '');
-  const [iconFile, setIconFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
 
-  const [iconPreview, setIconPreview] = useState<string>(channel.iconUrl || '');
   const [bannerPreview, setBannerPreview] = useState<string>(channel.bannerUrl || '');
   const [loading, setLoading] = useState(false);
 
-  const [cropTarget, setCropTarget] = useState<'icon' | 'banner' | null>(null);
+  const [cropTarget, setCropTarget] = useState<'banner' | null>(null);
   const [cropSourceFile, setCropSourceFile] = useState<File | null>(null);
 
-  const [removeIcon, setRemoveIcon] = useState(false);
   const [removeBanner, setRemoveBanner] = useState(false);
 
   useEffect(() => {
     setName(channel.name || '');
     setDescription(channel.description || '');
-    setIconPreview(channel.iconUrl || '');
     setBannerPreview(channel.bannerUrl || '');
-    setIconFile(null);
     setBannerFile(null);
-    setRemoveIcon(false);
     setRemoveBanner(false);
   }, [channel, isOpen]);
-
-  const handleIconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (file) {
-      setCropSourceFile(file);
-      setCropTarget('icon');
-    }
-  };
 
   const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -75,11 +66,7 @@ export function EditOrganizationModal({
     const reader = new FileReader();
     reader.onloadend = () => {
       const dataUrl = reader.result as string;
-      if (cropTarget === 'icon') {
-        setIconFile(croppedFile);
-        setIconPreview(dataUrl);
-        setRemoveIcon(false);
-      } else if (cropTarget === 'banner') {
+      if (cropTarget === 'banner') {
         setBannerFile(croppedFile);
         setBannerPreview(dataUrl);
         setRemoveBanner(false);
@@ -94,12 +81,6 @@ export function EditOrganizationModal({
     setBannerPreview('');
     setBannerFile(null);
     setRemoveBanner(!!channel.bannerUrl);
-  };
-
-  const handleRemoveLogo = () => {
-    setIconPreview('');
-    setIconFile(null);
-    setRemoveIcon(!!channel.iconUrl);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -124,9 +105,7 @@ export function EditOrganizationModal({
       const saved = await channelService.updateChannelProfile(channel.id, {
         name: trimmedName !== channel.name ? trimmedName : undefined,
         description: description.trim(),
-        iconFile: iconFile || undefined,
         bannerFile: bannerFile || undefined,
-        removeIcon,
         removeBanner,
       });
 
@@ -147,8 +126,8 @@ export function EditOrganizationModal({
       <ImageCropModal
         open={cropTarget !== null}
         file={cropSourceFile}
-        aspectRatio={cropTarget === 'banner' ? 4 : 1}
-        title={cropTarget === 'banner' ? 'Crop Organization Banner' : 'Crop Organization Logo'}
+        aspectRatio={4}
+        title="Crop Organization Banner"
         onCancel={handleCropCancel}
         onCropped={handleCropped}
       />
@@ -231,88 +210,39 @@ export function EditOrganizationModal({
 
               {/* 2. Logo Avatar & Channel Name Section */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:items-center">
-                {/* Logo Crop Preview — organizations only. A personal channel's picture is always
-                    its owner's profile picture, so it has no logo to upload. */}
+                {/* Logo — organizations only (a personal channel shows its owner's profile picture). It is
+                    changed only in Identity & branding (ChannelLogoCard), since it is printed on badges and certificates. */}
                 {!channel.isPersonal && (
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
-                      Logo Avatar
-                    </label>
-                    {iconPreview && (
-                      <button
-                        type="button"
-                        onClick={handleRemoveLogo}
-                        className="text-[11px] font-bold text-rose-600 hover:underline dark:text-rose-400"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="relative group h-24 w-24 overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center">
-                    {iconPreview ? (
-                      <img src={getAvatarUrl(iconPreview)} alt="Logo" className="h-full w-full object-cover" />
+                  <label className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                    Logo
+                  </label>
+                  <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                    {channel.iconUrl ? (
+                      <img src={getAvatarUrl(channel.iconUrl)} alt="Logo" className="h-full w-full object-cover" />
                     ) : (
-                      <svg
-                        width="36"
-                        height="36"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="text-white"
-                      >
-                        {/* Megaphone Cone Body */}
-                        <path
-                          d="M3.5 10.5V13.5C3.5 14.1 4 14.5 4.5 14.5H6.5L14 18V6L6.5 9.5H4.5C4 9.5 3.5 9.9 3.5 10.5Z"
-                          stroke="currentColor"
-                          strokeWidth="1.6"
-                          strokeLinejoin="round"
-                        />
-                        {/* Megaphone Back rim */}
-                        <path
-                          d="M14 6C15 6 16 8.7 16 12C16 15.3 15 18 14 18"
-                          stroke="currentColor"
-                          strokeWidth="1.6"
-                          strokeLinecap="round"
-                        />
-                        {/* Handle */}
-                        <path
-                          d="M7 14.5L7.8 19C7.9 19.6 8.4 20 9 20C9.6 20 10.1 19.5 10 18.9L9.5 14.5"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                        {/* Accent dot on cone */}
-                        <circle cx="5" cy="12" r="0.75" fill="#FBBF24" />
-                        {/* Soundwaves / Broadcast arcs */}
-                        <path
-                          d="M18 9C19.2 10 19.8 11 19.8 12C19.8 13 19.2 14 18 15"
-                          stroke="#38BDF8"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                        <path
-                          d="M20.5 7C22.2 8.5 23 10.2 23 12C23 13.8 22.2 15.5 20.5 17"
-                          stroke="#38BDF8"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                      </svg>
+                      <Building2 size={30} className="text-slate-400" />
                     )}
-
-                    <div className="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <label className="cursor-pointer p-2 rounded-full bg-surface text-slate-800 shadow-md">
-                        <Upload size={16} className="text-indigo-600 dark:text-indigo-400" />
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleIconChange}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={onEditLogo}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+                  >
+                    <ShieldAlert size={13} />
+                    Change logo…
+                  </button>
+                  <p className="text-[11px] font-medium leading-snug text-slate-500">
+                    Also printed on your badges and certificates.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={onEditSignatory}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+                  >
+                    <PenLine size={13} />
+                    Certificate signatory…
+                  </button>
                 </div>
                 )}
 

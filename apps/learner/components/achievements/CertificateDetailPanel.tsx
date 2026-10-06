@@ -156,7 +156,7 @@ function PanelBody({
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="rounded-xl border border-slate-200 shadow-[0_18px_30px_rgba(20,20,43,0.12)]"
         >
-          <CertificateFace certificate={c} />
+          <CertificateFace certificate={c} verificationUrl={publicUrl} />
         </motion.div>
         <div className="mt-5 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">{c.documentTitle}</p>

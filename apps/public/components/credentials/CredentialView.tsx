@@ -161,7 +161,7 @@ export function CredentialView({
                 transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
                 className="w-full max-w-3xl drop-shadow-[0_15px_25px_rgba(0,0,0,0.08)]"
               >
-                <CertificateFace certificate={cert!} className="w-full" />
+                <CertificateFace certificate={cert!} verificationUrl={url} className="w-full" />
               </motion.div>
             )}
           </div>

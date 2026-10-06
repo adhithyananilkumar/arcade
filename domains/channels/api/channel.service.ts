@@ -258,6 +258,36 @@ export interface OwnershipTransferResponse {
   respondedAt?: string | null;
 }
 
+/**
+ * A channel's certificate signatory: name, title and signature image, all null when it has none.
+ * An organisation names its signatory (e.g. its Director); a personal channel's is always its owner,
+ * the instructor. Readable only by those who manage the channel's settings.
+ */
+export interface ChannelSignatory {
+  name: string | null;
+  title: string | null;
+  signatureUrl: string | null;
+  /** A personal channel's signatory name — its owner's, not editable here; null for an organisation. */
+  fixedName?: string | null;
+  /** An organisation's seal, printed above its name on certificates; null when it has none. */
+  sealUrl?: string | null;
+  /**
+   * An organisation issues its certificates in the host institution's name: the host is the issuer,
+   * with its seal; the organisation's logo stays and it is named as conducting. False for personal.
+   */
+  issueAsHost?: boolean;
+}
+
+export interface ChannelSignatoryUpdate {
+  /** Ignored for a personal channel, which always signs under its owner's name. */
+  name?: string;
+  title?: string;
+  /** A transparent PNG; omit to keep the current signature image. */
+  signatureFile?: File;
+  /** Clears the signatory; the other fields are ignored. */
+  remove?: boolean;
+}
+
 export interface ChannelSettingsUpdate {
   /** Profile presentation. Omit a field to leave it as it is; pass '' to clear it. */
   tagline?: string;
@@ -285,17 +315,12 @@ export const channelService = {
     name: string,
     description: string,
     isPersonal: boolean,
-    options: CreateChannelRequestOptions,
-    iconFile?: File
+    options: CreateChannelRequestOptions
   ): Promise<Channel> => {
     const formData = new FormData();
     formData.append('name', name);
     formData.append('description', description);
     formData.append('isPersonal', String(isPersonal));
-
-    if (iconFile) {
-      formData.append('icon', iconFile);
-    }
 
     formData.append('invitationToken', options.invitationToken);
     if (options.purpose !== undefined) {
@@ -406,6 +431,33 @@ export const channelService = {
 
     const response = await api.post<Channel>(`/api/v1/channels/${channelId}/settings`, formData);
     return response;
+  },
+
+  getSignatory: (channelId: string): Promise<ChannelSignatory> =>
+    api.get<ChannelSignatory>(`/api/v1/channels/${channelId}/signatory`),
+
+  updateSignatory: async (channelId: string, update: ChannelSignatoryUpdate): Promise<ChannelSignatory> => {
+    const formData = new FormData();
+    if (update.remove) {
+      formData.append('remove', 'true');
+    } else {
+      formData.append('name', update.name ?? '');
+      formData.append('title', update.title ?? '');
+      if (update.signatureFile) formData.append('signature', update.signatureFile);
+    }
+    return api.post<ChannelSignatory>(`/api/v1/channels/${channelId}/signatory`, formData);
+  },
+
+  /** Whether an organisation issues its certificates in the host institution's name. */
+  updateCertificateIssuer: (channelId: string, issueAsHost: boolean): Promise<ChannelSignatory> =>
+    api.put<ChannelSignatory>(`/api/v1/channels/${channelId}/certificate-issuer`, { issueAsHost }),
+
+  /** Sets (a transparent PNG) or clears an organisation's certificate seal. */
+  updateSeal: async (channelId: string, update: { sealFile?: File; remove?: boolean }): Promise<ChannelSignatory> => {
+    const formData = new FormData();
+    if (update.remove) formData.append('remove', 'true');
+    else if (update.sealFile) formData.append('seal', update.sealFile);
+    return api.post<ChannelSignatory>(`/api/v1/channels/${channelId}/seal`, formData);
   },
 
   updateChannelSettings: async (

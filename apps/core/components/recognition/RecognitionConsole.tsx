@@ -19,7 +19,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Loader2, Lock, Plus, Search, Undo2 } from 'lucide-react';
+import { Award, Loader2, Lock, Plus, RotateCcw, Search, Undo2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   RecognitionService,
@@ -28,7 +28,6 @@ import {
   type BadgeGrant,
   type ProfileBadge,
 } from '@/domains/recognition';
-import { ProfileEmptyState } from '@/domains/profiles';
 import { getAvatarUrl } from '@/shared/utils/avatar';
 import { BadgeGrantDialog } from './BadgeGrantDialog';
 import { BadgeDefinitionDialog } from './BadgeDefinitionDialog';
@@ -117,16 +116,22 @@ export function RecognitionConsole() {
 
   return (
     <div className="space-y-7">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-[24px] font-extrabold tracking-tight text-slate-900">
-            Recognition
-          </h1>
-          <p className="mt-1.5 max-w-2xl text-[13px] font-medium leading-relaxed text-slate-500">
-            Verification ticks, Arcade team badges, and one-off awards. A badge
-            is what the platform publicly asserts about an account — it grants no
-            permission, and revoking it takes nothing away but the badge.
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="inline-flex flex-wrap items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/80 p-1.5 shadow-xs backdrop-blur-md">
+          {(['grants', 'catalog'] as const).map((id) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTab(id)}
+              className={`rounded-full px-4 py-2 text-[13px] font-bold tracking-tight transition-colors ${
+                tab === id
+                  ? 'bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              {id === 'grants' ? 'Who holds what' : 'Badge catalog'}
+            </button>
+          ))}
         </div>
 
         <div className="flex items-center gap-2">
@@ -148,23 +153,6 @@ export function RecognitionConsole() {
             <Plus size={14} /> Grant badge
           </button>
         </div>
-      </header>
-
-      <div className="flex items-center gap-1 border-b border-slate-100">
-        {(['grants', 'catalog'] as const).map((id) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setTab(id)}
-            className={`-mb-px border-b-2 px-4 py-3 text-[13px] font-bold tracking-tight transition-colors ${
-              tab === id
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            {id === 'grants' ? 'Who holds what' : 'Badge catalog'}
-          </button>
-        ))}
       </div>
 
       {loading ? (
@@ -202,10 +190,44 @@ export function RecognitionConsole() {
           </div>
 
           {visibleGrants.length === 0 ? (
-            <ProfileEmptyState
-              title="No badges granted yet"
-              description="Grant one to verify an instructor or an organization, or to recognise someone on the Arcade team."
-            />
+            <div className="py-20 px-6 text-center">
+              <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
+                <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  <Award size={26} className="stroke-[1.8]" />
+                </div>
+                <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+                  No badges granted yet
+                </h3>
+                <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                  {filter || definitionFilter
+                    ? 'No granted badges match your filter criteria.'
+                    : 'Grant one to verify an instructor or an organization, or to recognise someone on the Arcade team.'}
+                </p>
+                {filter || definitionFilter ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFilter('');
+                      setDefinitionFilter('');
+                    }}
+                    className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                  >
+                    <RotateCcw size={13} />
+                    <span>Reset filters</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setGranting(true)}
+                    disabled={!definitions.length}
+                    className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 disabled:opacity-40 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                  >
+                    <Plus size={14} />
+                    <span>Grant badge</span>
+                  </button>
+                )}
+              </div>
+            </div>
           ) : (
             <ul className="divide-y divide-slate-100 overflow-hidden rounded-[20px] border border-slate-100">
               {visibleGrants.map((grant) => (
@@ -279,6 +301,28 @@ export function RecognitionConsole() {
             </ul>
           )}
         </>
+      ) : definitions.length === 0 ? (
+        <div className="py-20 px-6 text-center">
+          <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
+            <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <Award size={26} className="stroke-[1.8]" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+              No badge definitions created
+            </h3>
+            <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+              Create a badge definition first before granting badges to users or channels.
+            </p>
+            <button
+              type="button"
+              onClick={() => setCreatingDefinition(true)}
+              className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+            >
+              <Plus size={14} />
+              <span>New badge</span>
+            </button>
+          </div>
+        </div>
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2">
           {definitions.map((definition) => (

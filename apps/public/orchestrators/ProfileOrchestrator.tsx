@@ -7,41 +7,27 @@
  * App: Public
  *
  * Purpose:
- * Orchestrates `domain/<handle>` — the ONE page for a person and the ONE page
- * for an organization channel. There is no separate "my profile" or "channel"
- * view: the owner sees this same page, with edit actions added.
- *
- *   person        every account is a learner; an account with an instructor
- *                 standing also shows its published work. A personal channel
- *                 has no page of its own — this page is its page.
- *   organization  a channel with its own handle, independent of any person.
- *                 Same layout, without the learner panels.
- *
- * Rules:
- * - All side effects (fetching, routing, share) live here. The Profiles domain
- *   supplies pure components and services.
- * - The backend decides what is public. Learner panels render only when the
- *   payload says the owner shows their learning; hidden data is never fetched.
- * - See docs/architecture/ADR-001-frontend-architecture.md
+ * Orchestrates `domain/<handle>` — resolving whether a handle belongs
+ * to a learner, an instructor, or an organization channel, and delegating
+ * to the appropriate specialized profile view.
  * ------------------------------------------------------------------
  */
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Check, Link2, Pencil, Settings } from 'lucide-react';
+import { Check, Link2, Settings } from 'lucide-react';
 import {
   AboutPanel,
-  AchievementsPanel,
-  ActivityPanel,
   ContentLibrary,
   LinksPanel,
-  OrganizationsPanel,
   PeoplePanel,
   ProfileEmptyState,
   ProfileHero,
   ProfileService,
   ProfileSkeleton,
+  LearnerProfileView,
+  InstructorProfileView,
   type ChannelProfile,
   type PublicActivity,
   type UserProfile,
@@ -63,23 +49,16 @@ type Loaded =
   | { kind: 'user'; data: PersonData }
   | { kind: 'channel'; profile: ChannelProfile };
 
-/**
- * A result, tagged with the handle it was fetched for.
- *
- * Tagging is what lets "loading" be derived rather than written: when the route's handle no longer
- * matches the one in state, the current result is stale by definition and the skeleton shows. The
- * alternative — an effect that sets a loading state on every handle change — renders the previous
- * person's profile for one frame before clearing it.
- */
 type LoadState = { forHandle: string; result: Loaded };
 
 async function loadPerson(handle: string): Promise<PersonData> {
   const profile = await ProfileService.getUserProfile(handle);
+
   if (!profile.learnerActivityVisible) {
     return { profile, activity: null, achievements: [] };
   }
+
   // The learner panels are secondary: a failure in either leaves the rest of the profile standing
-  // rather than turning the whole page into an error.
   const [activity, achievements] = await Promise.all([
     ProfileService.getPublicActivity(handle).catch(() => null),
     credentialsApi.profileBadges(handle).catch((): IssuedBadge[] => []),
@@ -96,9 +75,6 @@ export function ProfileOrchestrator({ handle }: { handle: string }) {
 
     (async () => {
       try {
-        // Resolve first: a handle may belong to a person or an organization, and the two render
-        // from different endpoints. Guessing and falling back on a 404 would cost an extra failed
-        // request on every organization profile.
         const resolution = await ProfileService.resolveHandle(handle);
         if (cancelled) return;
 
@@ -140,25 +116,38 @@ export function ProfileOrchestrator({ handle }: { handle: string }) {
     );
   }
 
+  if (loaded.kind === 'channel') {
+    return (
+      <ProfileFrame>
+        <ChannelProfileView profile={loaded.profile} />
+      </ProfileFrame>
+    );
+  }
+
+  const isInstructor =
+    loaded.data.profile.instructor ||
+    loaded.data.profile.courses.length > 0 ||
+    loaded.data.profile.workshops.length > 0;
+
   return (
     <ProfileFrame>
-      {loaded.kind === 'user' ? (
-        <PersonProfileView data={loaded.data} />
+      {isInstructor ? (
+        <InstructorProfileView data={loaded.data} />
       ) : (
-        <ChannelProfileView profile={loaded.profile} />
+        <LearnerProfileView data={loaded.data} />
       )}
     </ProfileFrame>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Frame and shared actions
+// Frame and shared components
 // ---------------------------------------------------------------------------
 
 export function ProfileFrame({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <div className="pointer-events-none fixed inset-0 z-0 bg-slate-50" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-slate-50 dark:bg-slate-950" />
       <motion.div
         className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-16 pt-20 sm:px-6 sm:pt-24 lg:px-8"
         initial={{ opacity: 0, y: 15 }}
@@ -172,7 +161,7 @@ export function ProfileFrame({ children }: { children: React.ReactNode }) {
 }
 
 const PRIMARY_ACTION =
-  'inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-on-ink shadow-2xs transition-colors hover:bg-slate-800';
+  'inline-flex items-center gap-1.5 rounded-full bg-sky-700 px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white shadow-xs transition-colors hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-700 cursor-pointer';
 
 function ShareButton() {
   const [copied, setCopied] = useState(false);
@@ -183,9 +172,7 @@ function ShareButton() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard access is denied in some browsers and over plain http. The URL is in the
-      // address bar either way, so failing silently beats an error toast for something the
-      // person can already do themselves.
+      // Silently ignore clipboard permissions failure
     }
   }, []);
 
@@ -193,7 +180,7 @@ function ShareButton() {
     <button
       type="button"
       onClick={copy}
-      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-surface px-4 py-2 text-xs font-bold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50"
+      className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-2xs transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
     >
       {copied ? <Check size={14} /> : <Link2 size={14} />}
       {copied ? 'Copied' : 'Share'}
@@ -202,111 +189,11 @@ function ShareButton() {
 }
 
 // ---------------------------------------------------------------------------
-// Person (learner, and instructor — whose personal channel this page is)
-// ---------------------------------------------------------------------------
-
-function PersonProfileView({ data }: { data: PersonData }) {
-  const { profile, activity, achievements } = data;
-  const viewer = useAuthStore((s) => s.user);
-  const isSelf =
-    !!viewer?.username &&
-    !!profile.handle &&
-    viewer.username.toLowerCase() === profile.handle.toLowerCase();
-
-  const learner = profile.learnerActivityVisible;
-  const instructor =
-    profile.instructor || profile.courses.length > 0 || profile.workshops.length > 0;
-
-  const sidebar = (
-    <>
-      <LinksPanel links={[profile.linkedinUrl, profile.githubUrl, ...(profile.socialLinks ?? [])]} />
-      {learner && (
-        <AchievementsPanel
-          badges={achievements}
-          certificates={profile.certificates}
-          viewAllHref={isSelf ? '/achievements' : undefined}
-        />
-      )}
-      <OrganizationsPanel
-        channels={profile.channels}
-        viewAllHref={isSelf ? '/manage-channels' : undefined}
-      />
-    </>
-  );
-
-  return (
-    <>
-      <ProfileHero
-        kind={instructor ? 'instructor' : 'learner'}
-        name={profile.fullName}
-        handle={profile.handle}
-        avatarUrl={profile.avatarUrl}
-        badges={profile.badges}
-        headline={profile.headline}
-        bio={profile.bio}
-        location={profile.location}
-        joinedAt={profile.createdAt}
-        actions={
-          <>
-            {isSelf && (
-              <Link href="/settings/info" className={PRIMARY_ACTION}>
-                <Pencil size={14} />
-                Edit Profile
-              </Link>
-            )}
-            <ShareButton />
-          </>
-        }
-      />
-
-      {activity ? (
-        <div className="mt-8 grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
-          <div className="space-y-6 lg:col-span-4">{sidebar}</div>
-          <div className="lg:col-span-8">
-            <ActivityPanel
-              activity={activity}
-              stats={[
-                { label: 'Current streak', value: activity.currentStreak },
-                { label: 'Longest streak', value: activity.longestStreak },
-                { label: 'Credentials', value: achievements.length + profile.certificates.length },
-              ]}
-            />
-          </div>
-        </div>
-      ) : (
-        // No heatmap (hidden by its owner, or unavailable): the side panels take the row instead
-        // of leaving two-thirds of it empty.
-        <div className="mt-8 grid grid-cols-1 items-start gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {sidebar}
-        </div>
-      )}
-
-      {(instructor || isSelf) && (
-        <div className="mt-8">
-          <ContentLibrary
-            courses={profile.courses}
-            events={profile.workshops}
-            emptyAction={
-              isSelf ? (
-                <Link href="/studio" className={PRIMARY_ACTION}>
-                  Open Studio
-                </Link>
-              ) : undefined
-            }
-          />
-        </div>
-      )}
-    </>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Organization channel
+// Organization channel view
 // ---------------------------------------------------------------------------
 
 export function ChannelProfileView({ profile }: { profile: ChannelProfile }) {
   const viewer = useAuthStore((s) => s.user);
-  // A presentation hint only: the manage screen enforces its own permissions server-side.
   const isOwner = !!viewer?.id && viewer.id === profile.owner?.userId;
 
   const courses = profile.content.filter((item) => item.type?.toUpperCase() === 'COURSE');
@@ -325,6 +212,7 @@ export function ChannelProfileView({ profile }: { profile: ChannelProfile }) {
         location={profile.location}
         websiteUrl={profile.websiteUrl}
         joinedAt={profile.createdAt}
+        isSelf={isOwner}
         actions={
           <>
             {isOwner && (

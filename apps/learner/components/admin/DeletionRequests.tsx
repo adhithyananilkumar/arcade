@@ -10,7 +10,7 @@ import {
   useInvalidateChannelAdmin,
   usePendingDeletionRequestsQuery,
 } from "@/domains/channels";
-import { Check, X, AlertTriangle, ShieldCheck, Trash2, Clock, User, Building2, Calendar, Search } from 'lucide-react';
+import { Check, X, AlertTriangle, ShieldCheck, Trash2, Clock, User, Building2, Calendar, Search, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePermissions } from "@/domains/identity";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
@@ -134,89 +134,96 @@ export function DeletionRequests() {
     <div className="space-y-8">
       {/* Section 1: Pending Deletion Requests */}
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center rounded-xl border border-slate-200 bg-slate-100/70 p-1">
-              <button
-                type="button"
-                onClick={() => setFilter('ALL')}
-                className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                  filter === 'ALL' ? 'bg-surface text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                All
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilter('PERSONAL')}
-                className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                  filter === 'PERSONAL' ? 'bg-surface text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Personal
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilter('ORGANIZATION')}
-                className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                  filter === 'ORGANIZATION' ? 'bg-surface text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Organization
-              </button>
-            </div>
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-full border border-slate-200/80 bg-surface/80 p-1.5 shadow-xs backdrop-blur-md">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {[
+              { id: 'ALL', label: 'All' },
+              { id: 'PERSONAL', label: 'Personal' },
+              { id: 'ORGANIZATION', label: 'Organization' },
+            ].map((item) => {
+              const isActive = filter === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setFilter(item.id as any)}
+                  className={`rounded-full px-3.5 py-1.5 text-xs font-bold tracking-tight transition-colors ${
+                    isActive
+                      ? 'bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 dark:text-slate-400 dark:hover:text-slate-200'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
 
-            <div className="relative min-w-[220px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-              <input
-                type="text"
-                placeholder="Search requests..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-surface py-1.5 pl-8 pr-3 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100"
-              />
-            </div>
+          <div className="relative min-w-[320px] sm:min-w-[380px] flex-1 sm:flex-initial">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
+            <input
+              type="text"
+              placeholder="Search requests..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-full border border-slate-200/80 bg-surface py-1.5 pl-8 pr-3 text-xs font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100 transition-all"
+            />
           </div>
         </div>
 
-        {/* Requests Table */}
-        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-surface shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200/80 bg-slate-50/75 backdrop-blur-xs text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  <th className="py-3.5 px-6 font-semibold">Channel</th>
-                  <th className="py-3.5 px-4 font-semibold">Type</th>
-                  <th className="py-3.5 px-4 font-semibold">Requested By</th>
-                  <th className="py-3.5 px-4 font-semibold">Reason</th>
-                  <th className="py-3.5 px-4 font-semibold">Requested Date</th>
-                  <th className="py-3.5 px-6 font-semibold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
-                {loading ? (
-                  <tr>
-                    <td colSpan={6} className="py-14 text-center text-slate-400">
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <div className="size-5 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
-                        <span className="text-xs font-medium text-slate-500">Loading deletion requests...</span>
-                      </div>
-                    </td>
+        {/* Requests Table / Empty State */}
+        {loading ? (
+          <div className="rounded-2xl border border-slate-200/90 bg-surface py-14 text-center">
+            <div className="flex flex-col items-center justify-center gap-2">
+              <div className="size-5 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
+              <span className="text-xs font-medium text-slate-500">Loading deletion requests...</span>
+            </div>
+          </div>
+        ) : filteredRequests.length === 0 ? (
+          <div className="py-16 text-center">
+            <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
+              <div className="mb-2 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-b from-rose-50 via-rose-50/80 to-rose-100/60 p-3 shadow-xs border border-rose-100/80 dark:from-rose-500/10 dark:to-rose-500/15 dark:border-rose-500/20">
+                <AlertTriangle size={26} className="text-rose-600 dark:text-rose-400 stroke-[1.8]" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+                No deletion requests awaiting review
+              </h3>
+              <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                {searchQuery || filter !== 'ALL'
+                  ? 'No deletion requests match the current search or filter.'
+                  : 'Any self-service deletion requests will appear here.'}
+              </p>
+              {(searchQuery || filter !== 'ALL') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setFilter('ALL');
+                  }}
+                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                >
+                  <RotateCcw size={13} />
+                  <span>Reset filters</span>
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-surface shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[900px] text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200/80 bg-slate-50/75 backdrop-blur-xs text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    <th className="py-3.5 px-6 font-semibold">Channel</th>
+                    <th className="py-3.5 px-4 font-semibold">Type</th>
+                    <th className="py-3.5 px-4 font-semibold">Requested By</th>
+                    <th className="py-3.5 px-4 font-semibold">Reason</th>
+                    <th className="py-3.5 px-4 font-semibold">Requested Date</th>
+                    <th className="py-3.5 px-6 font-semibold text-right">Actions</th>
                   </tr>
-                ) : filteredRequests.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-14 text-center">
-                      <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
-                        <div className="flex size-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 border border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/25">
-                          <AlertTriangle size={20} />
-                        </div>
-                        <p className="text-sm font-bold text-slate-800">No deletion requests awaiting review</p>
-                        <p className="text-xs text-slate-500">Any self-service deletion requests will appear here.</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  filteredRequests.map((req) => (
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {filteredRequests.map((req) => (
                     <tr
                       key={req.id}
                       onClick={() => openReview(req)}
@@ -289,12 +296,12 @@ export function DeletionRequests() {
                         </div>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Section 2: Channels in Deletion Pipeline */}
@@ -314,29 +321,37 @@ export function DeletionRequests() {
           </p>
         </div>
 
-        {/* Pipeline Table */}
-        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-surface shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200/80 bg-slate-50/75 backdrop-blur-xs text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  <th className="py-3.5 px-6 font-semibold">Channel</th>
-                  <th className="py-3.5 px-4 font-semibold">Type</th>
-                  <th className="py-3.5 px-4 font-semibold">Owner</th>
-                  <th className="py-3.5 px-4 font-semibold">Reason / Notes</th>
-                  <th className="py-3.5 px-4 font-semibold">Unlist Schedule</th>
-                  <th className="py-3.5 px-6 font-semibold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
-                {pipelineChannels.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-12 text-center text-slate-400">
-                      No channels currently in the deletion pipeline.
-                    </td>
+        {/* Pipeline Table / Empty State */}
+        {pipelineChannels.length === 0 ? (
+          <div className="py-12 text-center">
+            <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
+              <div className="mb-1 flex size-14 items-center justify-center rounded-2xl bg-gradient-to-b from-amber-50 to-amber-100/60 p-2.5 shadow-2xs border border-amber-100/80 dark:from-amber-500/10 dark:to-amber-500/15 dark:border-amber-500/20">
+                <Clock size={22} className="text-amber-600 dark:text-amber-400" />
+              </div>
+              <h4 className="text-sm font-bold text-slate-900 tracking-tight dark:text-white">
+                No channels in deletion pipeline
+              </h4>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                No channels are currently waiting out their 6-month grace period.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-surface shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[900px] text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200/80 bg-slate-50/75 backdrop-blur-xs text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    <th className="py-3.5 px-6 font-semibold">Channel</th>
+                    <th className="py-3.5 px-4 font-semibold">Type</th>
+                    <th className="py-3.5 px-4 font-semibold">Owner</th>
+                    <th className="py-3.5 px-4 font-semibold">Reason / Notes</th>
+                    <th className="py-3.5 px-4 font-semibold">Unlist Schedule</th>
+                    <th className="py-3.5 px-6 font-semibold text-right">Actions</th>
                   </tr>
-                ) : (
-                  pipelineChannels.map((channel) => (
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {pipelineChannels.map((channel) => (
                     <tr key={channel.id} className="hover:bg-slate-50/80 transition-all duration-150">
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
@@ -402,13 +417,13 @@ export function DeletionRequests() {
                         </div>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
+                  ))}
+                </tbody>
             </table>
           </div>
         </div>
-      </div>
+      )}
+    </div>
 
       {/* Review Dialog */}
       <Dialog open={!!selectedRequest} onOpenChange={(open) => !open && setSelectedRequest(null)}>

@@ -22,9 +22,19 @@
  * ------------------------------------------------------------------
  */
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
+
+function Portal({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted || typeof document === 'undefined') return null;
+  return createPortal(children, document.body);
+}
 import {
   Award,
   BookOpen,
@@ -59,7 +69,7 @@ import type {
 } from '../types/profile.types';
 
 const SURFACE =
-  'rounded-2xl border border-slate-200/70 bg-surface shadow-xs';
+  'rounded-2xl border border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900';
 
 // ---------------------------------------------------------------------------
 // Panel shell
@@ -160,82 +170,243 @@ export function LinksPanel({ links }: { links: (string | null | undefined)[] }) 
 export interface AchievementsPanelProps {
   badges: IssuedBadge[];
   certificates: ProfileCertificate[];
-  /** The owner's own achievements page; omitted for visitors. */
+  /** Optional href override, or if omitted/modal clicked, opens the Achievements Modal. */
   viewAllHref?: string;
 }
 
-export function AchievementsPanel({ badges, certificates, viewAllHref }: AchievementsPanelProps) {
-  return (
-    <Panel
-      icon={Trophy}
-      iconClass="text-amber-500"
-      title="Achievements"
-      count={badges.length + certificates.length}
-      action={viewAllHref ? <ViewAll href={viewAllHref} /> : undefined}
-    >
-      {badges.length === 0 && certificates.length === 0 ? (
-        <Muted>No achievements unlocked yet.</Muted>
-      ) : (
-        <div className="space-y-4">
-          {badges.length > 0 && (
-            <div className="flex flex-wrap items-center gap-4 pt-1">
-              {badges.slice(0, 6).map((badge) => (
-                <Link
-                  key={badge.credentialCode}
-                  href={`/credentials/${encodeURIComponent(badge.credentialCode)}`}
-                  className="transition-transform hover:scale-105"
-                  title={`${badge.name} (${badge.badgeClass.tier.label})`}
-                >
-                  <CredentialBadge
-                    family={badge.badgeClass.family.key}
-                    level={badge.badgeClass.tier.level}
-                    title={badge.name}
-                    className="h-16 w-16"
-                  />
-                </Link>
-              ))}
-            </div>
-          )}
+export function AchievementsPanel({ badges, certificates }: AchievementsPanelProps) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const totalCount = badges.length + certificates.length;
 
-          {certificates.length > 0 && (
-            <div className="space-y-2">
-              {certificates.slice(0, 3).map((certificate, index) => {
-                const body = (
-                  <>
-                    <Award size={15} className="shrink-0 text-amber-500" />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-xs font-bold text-slate-800">
-                        {certificate.name}
-                      </span>
-                      {certificate.issuer && (
-                        <span className="block truncate text-[10px] font-medium text-slate-400">
-                          {certificate.issuer}
-                        </span>
-                      )}
-                    </span>
-                  </>
-                );
-                const className =
-                  'flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2.5';
-                return certificate.idCode ? (
+  if (totalCount === 0) {
+    return null;
+  }
+
+  return (
+    <>
+      <Panel
+        icon={Trophy}
+        iconClass="text-amber-500"
+        title="Achievements"
+        count={totalCount}
+        action={
+          totalCount > 0 ? (
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="text-xs font-semibold text-slate-500 hover:text-indigo-600 hover:underline cursor-pointer transition-colors"
+            >
+              View all
+            </button>
+          ) : undefined
+        }
+      >
+        {badges.length === 0 && certificates.length === 0 ? (
+          <Muted>No achievements unlocked yet.</Muted>
+        ) : (
+          <div className="space-y-4">
+            {badges.length > 0 && (
+              <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-1 scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">
+                {badges.map((badge) => (
                   <Link
-                    key={certificate.idCode}
-                    href={`/credentials/${encodeURIComponent(certificate.idCode)}`}
-                    className={`${className} transition-colors hover:bg-slate-100`}
+                    key={badge.credentialCode}
+                    href={`/credentials/${encodeURIComponent(badge.credentialCode)}`}
+                    className="shrink-0 transition-transform hover:scale-105"
+                    title={`${badge.name} (${badge.badgeClass.tier.label})`}
                   >
-                    {body}
+                    <CredentialBadge
+                      family={badge.badgeClass.family.key}
+                      level={badge.badgeClass.tier.level}
+                      title={badge.name}
+                      className="h-16 w-16"
+                    />
                   </Link>
-                ) : (
-                  <div key={index} className={className}>
-                    {body}
+                ))}
+              </div>
+            )}
+
+            {certificates.length > 0 && (
+              <div className="space-y-2">
+                {certificates.slice(0, 3).map((certificate, index) => {
+                  const body = (
+                    <>
+                      <Award size={15} className="shrink-0 text-amber-500" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-xs font-bold text-slate-800">
+                          {certificate.name}
+                        </span>
+                        {certificate.issuer && (
+                          <span className="block truncate text-[10px] font-medium text-slate-400">
+                            {certificate.issuer}
+                          </span>
+                        )}
+                      </span>
+                    </>
+                  );
+                  const className =
+                    'flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2.5';
+                  return certificate.idCode ? (
+                    <Link
+                      key={certificate.idCode}
+                      href={`/credentials/${encodeURIComponent(certificate.idCode)}`}
+                      className={`${className} transition-colors hover:bg-slate-100`}
+                    >
+                      {body}
+                    </Link>
+                  ) : (
+                    <div key={index} className={className}>
+                      {body}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </Panel>
+
+      {/* Public Achievements Modal */}
+      <Portal>
+        <AnimatePresence>
+          {modalOpen && (
+            <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setModalOpen(false)}
+                className="fixed inset-0 bg-slate-950/75 backdrop-blur-md"
+              />
+
+              {/* Modal Dialog Box */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col rounded-3xl border border-slate-200/90 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-500 dark:bg-amber-950/50 dark:text-amber-400">
+                      <Trophy size={20} />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                        All Public Achievements
+                      </h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {badges.length} Credential Badges · {certificates.length} Verified Certificates
+                      </p>
+                    </div>
                   </div>
-                );
-              })}
+                  <button
+                    type="button"
+                    onClick={() => setModalOpen(false)}
+                    className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto py-5 space-y-6">
+                  {/* Badges Section */}
+                  {badges.length > 0 && (
+                    <div>
+                      <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Credential Badges ({badges.length})
+                      </h3>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {badges.map((badge) => (
+                          <Link
+                            key={badge.credentialCode}
+                            href={`/credentials/${encodeURIComponent(badge.credentialCode)}`}
+                            className="flex flex-col items-center rounded-xl border border-slate-100 bg-slate-50/70 p-4 text-center transition-all hover:scale-[1.02] hover:border-amber-200 hover:bg-amber-50/40 dark:border-slate-800 dark:bg-slate-800/50 dark:hover:border-amber-500/40"
+                          >
+                            <CredentialBadge
+                              family={badge.badgeClass.family.key}
+                              level={badge.badgeClass.tier.level}
+                              title={badge.name}
+                              className="h-20 w-20"
+                            />
+                            <span className="mt-3 block text-xs font-bold text-slate-800 dark:text-slate-200">
+                              {badge.name}
+                            </span>
+                            <span className="mt-1 block text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                              {badge.badgeClass.tier.label}
+                            </span>
+                            {badge.issuerName && (
+                              <span className="mt-0.5 block text-[10px] text-slate-400">
+                                by {badge.issuerName}
+                              </span>
+                            )}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Certificates Section */}
+                  {certificates.length > 0 && (
+                    <div>
+                      <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Verified Certificates ({certificates.length})
+                      </h3>
+                      <div className="space-y-2.5">
+                        {certificates.map((certificate, index) => {
+                          const body = (
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
+                                  <Award size={20} />
+                                </div>
+                                <div>
+                                  <span className="block text-sm font-bold text-slate-800 dark:text-slate-200">
+                                    {certificate.name}
+                                  </span>
+                                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                                    {certificate.issuer && <span>Issued by {certificate.issuer}</span>}
+                                    {certificate.date && <span>• {certificate.date}</span>}
+                                  </div>
+                                </div>
+                              </div>
+                              {certificate.idCode && (
+                                <div className="flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                                  <span>Verify</span>
+                                  <ExternalLink size={13} />
+                                </div>
+                              )}
+                            </div>
+                          );
+                          const className =
+                            'block rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 transition-all hover:border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/40 dark:hover:bg-slate-800';
+                          return certificate.idCode ? (
+                            <Link
+                              key={certificate.idCode}
+                              href={`/credentials/${encodeURIComponent(certificate.idCode)}`}
+                              className={className}
+                            >
+                              {body}
+                            </Link>
+                          ) : (
+                            <div key={index} className={className}>
+                              {body}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
             </div>
           )}
-        </div>
-      )}
-    </Panel>
+        </AnimatePresence>
+      </Portal>
+    </>
   );
 }
 
@@ -249,59 +420,160 @@ export function AchievementsPanel({ badges, certificates, viewAllHref }: Achieve
  */
 export function OrganizationsPanel({
   channels,
-  viewAllHref,
+  fullWidth = false,
 }: {
   channels: ProfileChannel[];
   viewAllHref?: string;
+  fullWidth?: boolean;
 }) {
+  const [modalOpen, setModalOpen] = useState(false);
   const organizations = channels.filter((channel) => !channel.personal);
 
   return (
-    <Panel
-      icon={Building2}
-      iconClass="text-slate-600"
-      title="Organizations"
-      count={organizations.length}
-      action={viewAllHref ? <ViewAll href={viewAllHref} /> : undefined}
-    >
-      {organizations.length === 0 ? (
-        <Muted>No organizations joined yet.</Muted>
-      ) : (
-        <div className="space-y-2">
-          {organizations.map((channel) => (
-            <Link
-              key={channel.id}
-              // An organization that has not claimed a handle is still reachable by id; that
-              // route resolves to the same profile view.
-              href={channel.handle ? `/${channel.handle}` : `/channels/${channel.id}`}
-              className="group flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 shadow-2xs transition-all hover:bg-slate-100"
+    <>
+      <Panel
+        icon={Building2}
+        iconClass="text-slate-600"
+        title="Organizations"
+        count={organizations.length}
+        action={
+          organizations.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="text-xs font-semibold text-slate-500 hover:text-indigo-600 hover:underline cursor-pointer transition-colors"
             >
-              <div className="flex min-w-0 items-center gap-2.5">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200/60 bg-surface text-slate-600">
-                  {channel.iconUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={getAvatarUrl(channel.iconUrl)} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <Building2 size={15} />
-                  )}
+              View all
+            </button>
+          ) : undefined
+        }
+      >
+        {organizations.length === 0 ? (
+          <Muted>No organizations joined yet.</Muted>
+        ) : (
+          <div className={fullWidth ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3' : 'space-y-2'}>
+            {organizations.slice(0, fullWidth ? 6 : 3).map((channel) => (
+              <Link
+                key={channel.id}
+                // An organization that has not claimed a handle is still reachable by id; that
+                // route resolves to the same profile view.
+                href={channel.handle ? `/${channel.handle}` : `/channels/${channel.id}`}
+                className="group flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 shadow-2xs transition-all hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/40 dark:hover:bg-slate-800"
+              >
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200/60 bg-white text-slate-600 dark:bg-slate-800 dark:border-slate-700">
+                    {channel.iconUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={getAvatarUrl(channel.iconUrl)} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <Building2 size={15} />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-1 truncate text-xs font-bold text-slate-800 transition-colors group-hover:text-indigo-600 dark:text-slate-200 dark:group-hover:text-indigo-400">
+                      <span className="truncate">{channel.name}</span>
+                      <BadgeRow badges={channel.badges} size={13} max={1} />
+                    </p>
+                    <p className="text-[10px] font-medium text-slate-400">{channel.role}</p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="flex items-center gap-1 truncate text-xs font-bold text-slate-800 transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                    <span className="truncate">{channel.name}</span>
-                    <BadgeRow badges={channel.badges} size={13} max={1} />
-                  </p>
-                  <p className="text-[10px] font-medium text-slate-400">{channel.role}</p>
-                </div>
-              </div>
-              <ExternalLink
-                size={12}
-                className="shrink-0 text-slate-400 opacity-0 transition-opacity group-hover:text-indigo-600 group-hover:opacity-100 dark:group-hover:text-indigo-400"
+                <ExternalLink
+                  size={12}
+                  className="shrink-0 text-slate-400 opacity-0 transition-opacity group-hover:text-indigo-600 group-hover:opacity-100 dark:group-hover:text-indigo-400"
+                />
+              </Link>
+            ))}
+          </div>
+        )}
+      </Panel>
+
+      {/* Public Organizations Modal */}
+      <Portal>
+        <AnimatePresence>
+          {modalOpen && (
+            <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setModalOpen(false)}
+                className="fixed inset-0 bg-slate-950/75 backdrop-blur-md"
               />
-            </Link>
-          ))}
-        </div>
-      )}
-    </Panel>
+
+              {/* Modal Dialog Box */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="relative z-10 flex max-h-[85vh] w-full max-w-xl flex-col rounded-3xl border border-slate-200/90 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
+                      <Building2 size={20} />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                        Organizations
+                      </h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Member of {organizations.length} {organizations.length === 1 ? 'organization' : 'organizations'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setModalOpen(false)}
+                    className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto py-4 space-y-2.5">
+                  {organizations.map((channel) => (
+                    <Link
+                      key={channel.id}
+                      href={channel.handle ? `/${channel.handle}` : `/channels/${channel.id}`}
+                      className="group flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 transition-all hover:border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/40 dark:hover:bg-slate-800"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/60 bg-white text-slate-600 shadow-2xs dark:bg-slate-800 dark:border-slate-700">
+                          {channel.iconUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={getAvatarUrl(channel.iconUrl)} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <Building2 size={18} />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="flex items-center gap-1.5 truncate text-sm font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
+                            <span className="truncate">{channel.name}</span>
+                            <BadgeRow badges={channel.badges} size={14} max={2} />
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-slate-400">
+                            <span>{channel.role}</span>
+                            {channel.handle && <span>• @{channel.handle}</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                        <span>Visit</span>
+                        <ExternalLink size={13} />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </Portal>
+    </>
   );
 }
 
@@ -319,7 +591,7 @@ export function PeoplePanel({ members }: { members: ChannelMember[] }) {
           {members.map((member) => {
             const body = (
               <>
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200/60 bg-surface">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200/60 bg-white dark:bg-slate-800">
                   {member.avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -381,11 +653,14 @@ export interface PanelStat {
 
 function StatFooter({ stats }: { stats: PanelStat[] }) {
   return (
-    <div className="mt-6 flex flex-wrap items-center gap-6 border-t border-slate-100 pt-4 text-xs">
+    <div className="flex flex-wrap items-center gap-3 pt-2">
       {stats.map((stat) => (
-        <div key={stat.label}>
-          <span className="font-medium text-slate-400">{stat.label}:</span>{' '}
-          <strong className="font-bold text-slate-900">{stat.value}</strong>
+        <div
+          key={stat.label}
+          className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/70 px-3.5 py-2 text-xs shadow-2xs dark:border-slate-800 dark:bg-slate-800/50"
+        >
+          <span className="font-medium text-slate-400 dark:text-slate-400">{stat.label}:</span>
+          <strong className="font-bold text-slate-900 dark:text-white">{stat.value}</strong>
         </div>
       ))}
     </div>
@@ -397,10 +672,11 @@ function StatFooter({ stats }: { stats: PanelStat[] }) {
 // ---------------------------------------------------------------------------
 
 const LEVEL_CLASS = [
-  'bg-slate-100',
-  'bg-teal-200 dark:bg-teal-900/60',
-  'bg-teal-400 dark:bg-teal-600',
-  'bg-teal-600 dark:bg-teal-500',
+  'bg-slate-100 hover:bg-slate-200/90 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/50',
+  'bg-emerald-200/90 dark:bg-emerald-950/90 border border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-300',
+  'bg-emerald-400 dark:bg-emerald-600 border border-emerald-500 text-white shadow-2xs',
+  'bg-emerald-500 dark:bg-emerald-500 border border-emerald-600 text-white shadow-xs',
+  'bg-emerald-600 dark:bg-emerald-400 border border-emerald-700 dark:border-emerald-300 text-white ring-1 ring-emerald-400/40 shadow-sm',
 ];
 
 /** Local-calendar yyyy-mm-dd, matching the backend's dates (already in the learner's zone). */
@@ -421,7 +697,7 @@ export function ActivityPanel({
     null,
   );
 
-  const { weeks, months } = useMemo(() => {
+  const { weeks, months, totalActivities, totalActiveDays } = useMemo(() => {
     const byDate = new Map(activity.days.map((day) => [day.date, day]));
     const jan1 = new Date(activity.year, 0, 1);
     const start = new Date(jan1);
@@ -430,6 +706,16 @@ export function ActivityPanel({
     const end = new Date(dec31);
     end.setDate(dec31.getDate() + (6 - dec31.getDay()));
     const total = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
+
+    let activitiesSum = 0;
+    let activeDaysCount = 0;
+
+    for (const d of activity.days) {
+      if ((d.activityCount ?? 0) > 0) {
+        activitiesSum += d.activityCount;
+        activeDaysCount++;
+      }
+    }
 
     const grid: { key: string; label: string; count: number; level: number; inYear: boolean }[][] = [];
     const headers: { name: string; col: number }[] = [];
@@ -457,49 +743,74 @@ export function ActivityPanel({
       }
       grid.push(week);
     }
-    return { weeks: grid, months: headers };
+    return {
+      weeks: grid,
+      months: headers,
+      totalActivities: activitiesSum,
+      totalActiveDays: activeDaysCount,
+    };
   }, [activity]);
 
   return (
-    <section className={`${SURFACE} flex h-full flex-col justify-between p-6`}>
+    <section className={`${SURFACE} flex h-full flex-col justify-between p-6 sm:p-7`}>
       <div>
-        <div className="mb-5 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Flame size={18} className="text-amber-500" />
-            <h3 className="text-sm font-bold text-slate-900">
-              {activity.year} Learning Activity
-            </h3>
+        {/* Header */}
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 text-amber-500 ring-1 ring-amber-500/20 dark:from-amber-500/20 dark:to-orange-500/20 dark:text-amber-400">
+              <Flame size={19} className="fill-amber-500/20" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  {activity.year} Learning Activity
+                </h3>
+                <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  {totalActiveDays} {totalActiveDays === 1 ? 'day' : 'days'} active
+                </span>
+              </div>
+              <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                Daily engaged learning sessions, labs, and assessment milestones
+              </p>
+            </div>
           </div>
           {activity.currentStreak > 0 && (
-            <span className="rounded-full border border-amber-200/60 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-500/25">
+            <span className="flex items-center gap-1.5 rounded-full border border-amber-200/80 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 px-3.5 py-1 text-xs font-bold text-amber-700 shadow-2xs dark:border-amber-500/30 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-amber-950/40 dark:text-amber-300">
+              <Flame size={13} className="fill-amber-500 text-amber-500 animate-pulse" />
               {activity.currentStreak} day streak
             </span>
           )}
         </div>
 
-        <div className="flex items-start gap-3">
-          <div className="hidden shrink-0 select-none grid-rows-7 gap-[3px] pt-[22px] text-[9px] font-bold text-slate-400 sm:grid">
-            {['Sun', '', 'Wed', '', 'Fri', '', ''].map((label, i) => (
-              <div key={i} className="flex h-[11px] items-center">
-                {label}
-              </div>
-            ))}
-          </div>
+        {/* Heatmap Card Framing */}
+        <div className="my-4 rounded-2xl border border-slate-100/90 bg-slate-50/50 p-4 sm:p-5 dark:border-slate-800/80 dark:bg-slate-900/40">
+          <div className="flex items-start justify-center gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
+            {/* Day labels aligned to rows */}
+            <div className="hidden shrink-0 select-none grid-rows-7 gap-[4px] pt-[24px] text-[10px] font-semibold text-slate-400 dark:text-slate-500 sm:grid">
+              {['', 'Mon', '', 'Wed', '', 'Fri', ''].map((label, i) => (
+                <div key={i} className="flex h-[13px] items-center justify-end pr-1">
+                  {label}
+                </div>
+              ))}
+            </div>
 
-          <div className="flex-grow overflow-x-auto pb-1 scrollbar-none">
-            <div className="w-fit">
-              <div className="relative mb-2 h-3.5 select-none text-[9px] font-bold text-slate-400">
+            {/* Weeks & Months */}
+            <div className="shrink-0" style={{ width: `${weeks.length * 17 - 4}px` }}>
+              {/* Month headers positioned by column */}
+              <div className="relative mb-2 h-4 select-none text-[10px] font-bold text-slate-400 dark:text-slate-500">
                 {months.map((month) => (
                   <span
                     key={`${month.name}-${month.col}`}
                     className="absolute"
-                    style={{ left: `calc(${month.col} * (100% / ${weeks.length}))` }}
+                    style={{ left: `${month.col * 17}px` }}
                   >
                     {month.name}
                   </span>
                 ))}
               </div>
-              <div className="grid grid-flow-col grid-rows-7 gap-[3px]">
+
+              {/* 7x53 Cells Grid */}
+              <div className="grid grid-flow-col grid-rows-7 gap-[4px]">
                 {weeks.map((week) =>
                   week.map((cell) => (
                     <div
@@ -515,8 +826,10 @@ export function ActivityPanel({
                         });
                       }}
                       onMouseLeave={() => setHovered(null)}
-                      className={`h-[11px] w-[11px] rounded-xs ${
-                        cell.inYear ? LEVEL_CLASS[Math.min(cell.level, 3)] : 'bg-transparent'
+                      className={`h-[13px] w-[13px] rounded-[3px] transition-all duration-150 hover:scale-130 hover:z-10 cursor-pointer ${
+                        cell.inYear
+                          ? LEVEL_CLASS[Math.min(cell.level, LEVEL_CLASS.length - 1)]
+                          : 'bg-transparent cursor-default'
                       }`}
                     />
                   )),
@@ -524,14 +837,23 @@ export function ActivityPanel({
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="mt-4 flex items-center justify-end gap-2 text-xs font-medium text-slate-400">
-          <span>Less</span>
-          {LEVEL_CLASS.map((cls) => (
-            <div key={cls} className={`h-2.5 w-2.5 rounded-xs ${cls}`} />
-          ))}
-          <span>More</span>
+          {/* Sub-footer inside framing: Activity Counter + Legend */}
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100/80 pt-3 text-xs text-slate-400 dark:border-slate-800/80 dark:text-slate-500">
+            <div className="text-[11px] font-medium">
+              <span className="font-bold text-slate-700 dark:text-slate-200">
+                {totalActivities}
+              </span>{' '}
+              {totalActivities === 1 ? 'activity' : 'activities'} logged in {activity.year}
+            </div>
+            <div className="flex items-center gap-1.5 font-semibold">
+              <span className="text-[11px]">Less</span>
+              {LEVEL_CLASS.map((cls, idx) => (
+                <div key={idx} className={`h-3 w-3 rounded-[3px] ${cls}`} />
+              ))}
+              <span className="text-[11px]">More</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -544,7 +866,7 @@ export function ActivityPanel({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.1 }}
-            className="pointer-events-none fixed z-50 flex -translate-x-1/2 -translate-y-full items-center gap-1.5 whitespace-nowrap rounded-xl bg-slate-900 px-4 py-2.5 text-[12px] font-bold text-on-ink shadow-xl"
+            className="pointer-events-none fixed z-50 flex -translate-x-1/2 -translate-y-full items-center gap-1.5 whitespace-nowrap rounded-xl bg-slate-900 px-4 py-2.5 text-[12px] font-bold text-white shadow-xl dark:bg-slate-800 dark:text-white dark:border dark:border-slate-700"
             style={{ left: hovered.x, top: hovered.y }}
           >
             <span>
@@ -639,8 +961,8 @@ export function ContentLibrary({ courses, events, emptyAction }: ContentLibraryP
         onClick={() => switchTo(id)}
         className={`flex h-full flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3.5 text-xs font-bold transition-all sm:flex-initial ${
           active
-            ? 'bg-surface text-slate-900 shadow-xs'
-            : 'text-slate-500 hover:text-slate-900'
+            ? 'bg-white text-slate-900 shadow-xs dark:bg-slate-800 dark:text-white'
+            : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
         }`}
       >
         <Icon size={13} className={active ? '' : 'text-slate-400'} />
@@ -648,8 +970,8 @@ export function ContentLibrary({ courses, events, emptyAction }: ContentLibraryP
         <span
           className={`rounded-full px-1.5 text-[10px] font-bold ${
             active
-              ? 'bg-slate-100 text-slate-900'
-              : 'bg-slate-200/60 text-slate-600'
+              ? 'bg-slate-100 text-slate-900 dark:bg-slate-700 dark:text-white'
+              : 'bg-slate-200/60 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
           }`}
         >
           {count}
@@ -662,7 +984,7 @@ export function ContentLibrary({ courses, events, emptyAction }: ContentLibraryP
   const noun = tab === 'courses' ? 'courses' : 'events';
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-slate-200/70 bg-surface shadow-xs">
+    <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
       <div className="flex flex-col justify-between gap-4 p-5 pb-2 sm:p-6 lg:flex-row lg:items-center">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-700">

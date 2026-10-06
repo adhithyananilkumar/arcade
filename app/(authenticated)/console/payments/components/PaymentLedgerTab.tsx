@@ -471,68 +471,61 @@ export function PaymentLedgerTab({
         </div>
       </div>
 
-      {/* Enterprise Data Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-surface shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[960px] text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200/80 bg-slate-50/75 backdrop-blur-xs text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                <th className="py-3.5 px-6 font-semibold w-[18%]">Order ID</th>
-                <th className="py-3.5 px-4 font-semibold w-[22%]">Learner</th>
-                <th className="py-3.5 px-4 font-semibold w-[20%]">Resource</th>
-                <th className="py-3.5 px-4 font-semibold w-[12%]">Amount</th>
-                <th className="py-3.5 px-4 font-semibold w-[12%]">Gateway</th>
-                <th className="py-3.5 px-4 font-semibold w-[10%]">Status</th>
-                <th className="py-3.5 px-6 font-semibold text-right w-[6%]">Created</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-xs">
-              {loading && (
-                <tr>
-                  <td colSpan={7} className="py-16 text-center text-slate-400">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <Loader2 className="size-6 animate-spin text-ink" />
-                      <span className="text-xs font-semibold text-slate-500">Loading payment ledger…</span>
-                    </div>
-                  </td>
+      {/* Enterprise Data Table / Empty State */}
+      {loading ? (
+        <div className="rounded-2xl border border-slate-200/90 bg-surface py-20 text-center">
+          <div className="flex flex-col items-center justify-center gap-2">
+            <Loader2 className="size-6 animate-spin text-ink" />
+            <span className="text-xs font-semibold text-slate-500">Loading payment ledger…</span>
+          </div>
+        </div>
+      ) : loadError ? (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 py-12 text-center text-rose-600 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
+          <p className="text-xs font-semibold">{loadError}</p>
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="py-20 px-6 text-center">
+          <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
+            <div className="mb-2 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-b from-sky-50 via-indigo-50/80 to-sky-100/60 p-3 shadow-xs border border-sky-100/80 dark:from-sky-500/10 dark:to-indigo-500/15 dark:border-sky-500/20">
+              <Receipt size={26} className="text-indigo-600 dark:text-indigo-400 stroke-[1.8]" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+              No payments found
+            </h3>
+            <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+              {hasActiveFilters
+                ? "No transactions match your currently applied search or filter criteria."
+                : "Platform payment transactions and enrollments will appear here once processed."}
+            </p>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+              >
+                <RotateCcw size={13} />
+                <span>Reset all filters</span>
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-surface shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[960px] text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200/80 bg-slate-50/75 backdrop-blur-xs text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <th className="py-3.5 px-6 font-semibold w-[18%]">Order ID</th>
+                  <th className="py-3.5 px-4 font-semibold w-[22%]">Learner</th>
+                  <th className="py-3.5 px-4 font-semibold w-[20%]">Resource</th>
+                  <th className="py-3.5 px-4 font-semibold w-[12%]">Amount</th>
+                  <th className="py-3.5 px-4 font-semibold w-[12%]">Gateway</th>
+                  <th className="py-3.5 px-4 font-semibold w-[10%]">Status</th>
+                  <th className="py-3.5 px-6 font-semibold text-right w-[6%]">Actions</th>
                 </tr>
-              )}
-              {!loading && loadError && (
-                <tr>
-                  <td colSpan={7} className="py-16 text-center text-rose-500">
-                    <p className="text-xs font-semibold">{loadError}</p>
-                  </td>
-                </tr>
-              )}
-              {!loading && !loadError && rows.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="py-16 text-center text-slate-400">
-                    <div className="flex flex-col items-center justify-center gap-2.5">
-                      <div className="flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
-                        <Receipt size={22} />
-                      </div>
-                      <p className="text-sm font-bold text-slate-800">No payments found</p>
-                      <p className="text-xs text-slate-400 max-w-sm">
-                        {hasActiveFilters
-                          ? "No transactions match your currently applied search or filter criteria."
-                          : "Platform payment transactions and enrollments will appear here once processed."}
-                      </p>
-                      {hasActiveFilters && (
-                        <button
-                          type="button"
-                          onClick={handleResetFilters}
-                          className="mt-1 rounded-xl bg-slate-100 px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors"
-                        >
-                          Reset all filters
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              )}
-              {!loading &&
-                !loadError &&
-                rows.map((row) => (
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {rows.map((row) => (
                   <tr
                     key={row.paymentOrderId}
                     onClick={() => onOpenOrder(row.paymentOrderId)}
@@ -632,6 +625,7 @@ export function PaymentLedgerTab({
           </table>
         </div>
       </div>
+      )}
 
       {/* Pagination Footer */}
       {totalPages > 1 && (

@@ -33,6 +33,8 @@ export type {
   ChannelSummary,
   ChannelSummaryQuery,
   ChannelSettingsUpdate,
+  ChannelSignatory,
+  ChannelSignatoryUpdate,
   OwnershipTransferResponse,
 } from './api/channel.service';
 export { InviteUserModal } from './components/InviteUserModal';
@@ -42,6 +44,7 @@ export {
   useMyChannelInvitations,
   myChannelInvitationsKey,
 } from './components/PendingChannelInvitations';
+export { ChannelDoodleBanner } from './components/ChannelDoodleBanner';
 export { useStudioAccess } from './hooks/useStudioAccess';
 export { useEligibleChannels } from './hooks/useEligibleChannels';
 export {

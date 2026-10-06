@@ -99,19 +99,13 @@ export function UnifiedContentCard({
   return (
     <div
       className={cn(
-        'group relative flex h-full flex-col justify-between overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-4 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] backdrop-blur-sm',
+        'group relative flex h-full flex-col justify-between overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-white p-4 shadow-[0_8px_30px_rgba(20,20,43,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_36px_rgba(20,20,43,0.08)] dark:border-slate-800 dark:bg-slate-900',
         className
       )}
     >
-      {/* Decorative ambient background glow */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-12 -bottom-12 h-44 w-44 rounded-full bg-gradient-to-br from-[#4C6FFF]/10 via-[#1DB876]/8 to-transparent blur-2xl"
-      />
-
       <div className="relative z-10 flex flex-1 flex-col justify-between gap-3">
         {/* Generated, category-themed artwork */}
-        <div className="relative h-36 sm:h-38 w-full shrink-0 overflow-hidden rounded-tl-[1.5rem] rounded-br-[1.5rem] rounded-tr-md rounded-bl-md border border-slate-200/70 shadow-xs transition-transform duration-500 group-hover:scale-[1.02]">
+        <div className="relative h-36 sm:h-38 w-full shrink-0 overflow-hidden rounded-tl-[1.5rem] rounded-br-[1.5rem] rounded-tr-md rounded-bl-md border border-slate-200/70 shadow-xs transition-transform duration-500 group-hover:scale-[1.02] dark:border-slate-800">
           <ContentArt seed={id || title || 'default'} kind={type} category={category} categoryId={categoryId} title={title} />
           {statusNode && (
             <div className="absolute top-2.5 right-2.5 z-10">
