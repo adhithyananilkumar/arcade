@@ -24,6 +24,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { MenuContainer, MenuItem } from '@/shared/design-system/ui/fluid-menu';
 import { getAvatarUrl } from '@/shared/utils/avatar';
+import { getEventBySlugOrId } from '@/domains/events';
 
 /** Shared so the accept/decline handlers can invalidate exactly this query. */
 
@@ -195,7 +196,7 @@ export default function LearnerNavbar() {
 
   const { data: eventPublicData } = useQuery({
     queryKey: ['event-public-title', eventPublicSlug],
-    queryFn: () => api.get<{ title: string }>(`/api/v1/events/public/${eventPublicSlug}`),
+    queryFn: () => getEventBySlugOrId(eventPublicSlug!),
     enabled: Boolean(eventPublicSlug),
     staleTime: 5 * 60 * 1000,
   });
