@@ -271,6 +271,11 @@ export interface ChannelSignatory {
   fixedName?: string | null;
   /** An organisation's seal, printed above its name on certificates; null when it has none. */
   sealUrl?: string | null;
+  /**
+   * An organisation issues its certificates in the host institution's name: the host is the issuer,
+   * with its seal; the organisation's logo stays and it is named as conducting. False for personal.
+   */
+  issueAsHost?: boolean;
 }
 
 export interface ChannelSignatoryUpdate {
@@ -442,6 +447,10 @@ export const channelService = {
     }
     return api.post<ChannelSignatory>(`/api/v1/channels/${channelId}/signatory`, formData);
   },
+
+  /** Whether an organisation issues its certificates in the host institution's name. */
+  updateCertificateIssuer: (channelId: string, issueAsHost: boolean): Promise<ChannelSignatory> =>
+    api.put<ChannelSignatory>(`/api/v1/channels/${channelId}/certificate-issuer`, { issueAsHost }),
 
   /** Sets (a transparent PNG) or clears an organisation's certificate seal. */
   updateSeal: async (channelId: string, update: { sealFile?: File; remove?: boolean }): Promise<ChannelSignatory> => {

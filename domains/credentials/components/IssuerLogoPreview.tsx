@@ -11,7 +11,9 @@
  * An organisation issues its own certificates: its logo sits beside the Arcade mark and it is named
  * as issuer and conductor. A personal channel is a person, not an issuing institution, so the host
  * institution issues its certificates (backend `ExamAttemptOutcomeService`) and the instructor is
- * named as conducting and signing them; personal channels put nothing on badges. Pure and
+ * named as conducting and signing them; personal channels put nothing on badges. An organisation
+ * can also choose to issue in the host's name (`asHost`): the host is the issuer, with its seal, while
+ * the organisation's logo stays beside the Arcade mark and it is named as conducting. Pure and
  * presentational.
  * ------------------------------------------------------------------
  */
@@ -31,6 +33,8 @@ export interface IssuerLogoPreviewProps {
   signatory?: { name: string; title: string; signatureUrl: string } | null;
   /** Show the badge preview too (signatures do not appear on badges). Default true; never for personal. */
   showBadge?: boolean;
+  /** An organisation issuing in the host institution's name: host issuer and seal, its own logo. */
+  asHost?: boolean;
   /** A personal channel: issued by the host institution, conducted by `organisationName`. */
   personal?: boolean;
   className?: string;
@@ -45,6 +49,7 @@ export function IssuerLogoPreview({
   signatory,
   showBadge = true,
   personal = false,
+  asHost = false,
   className,
 }: IssuerLogoPreviewProps) {
   const name = organisationName || (personal ? "Your name" : "Your organisation");
@@ -63,10 +68,10 @@ export function IssuerLogoPreview({
               sourceLabel: "Certification exam",
               title: "Your course or exam",
               recipientName: "Learner Name",
-              issuerName: personal ? HOST_INSTITUTION_NAME : name,
+              issuerName: personal || asHost ? HOST_INSTITUTION_NAME : name,
               issuerLogoUrl: personal ? null : logoSrc ?? null,
-              issuerSealUrl: personal ? null : sealSrc ?? null,
-              issuedByHost: personal,
+              issuerSealUrl: personal || asHost ? null : sealSrc ?? null,
+              issuedByHost: personal || asHost,
               signatoryName: signatory?.name ?? null,
               signatoryTitle: signatory?.title ?? null,
               signatureUrl: signatory?.signatureUrl ?? null,

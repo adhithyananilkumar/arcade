@@ -71,6 +71,15 @@ export interface CertificateFaceProps {
   className?: string;
 }
 
+/**
+ * The issuer's name in points: 13.5 (as the date) while it fits its 104 mm column on one line —
+ * about 50 characters — and smaller beyond, so it never wraps and its label stays level with the
+ * date's. Mirrors the backend's CertificateDocument.issuerNameSize.
+ */
+function issuerNameSize(name: string) {
+  return name.length <= 50 ? 13.5 : Math.max(9, (13.5 * 50) / name.length);
+}
+
 function pct(v: number) {
   return `${Number(v.toFixed(2))}%`;
 }
@@ -86,10 +95,14 @@ function At({ style, children }: { style: CSSProperties; children?: ReactNode })
 
 export function CertificateFace({ certificate: c, verificationUrl, className }: CertificateFaceProps) {
   const sealUrl = c.issuerSealUrl || (c.issuedByHost ? HOST_SEAL : null);
+  // An organisation that issued in the host's name (and so conducted it) keeps its logo beside the
+  // Arcade mark; a personal channel records none.
+  const showIssuerMark = !c.issuedByHost || (!!c.conductedBy && !!c.issuerLogoUrl);
   const serif = "var(--font-serif, 'Noto Serif', Georgia, serif)";
-  const field = (value: ReactNode, label: ReactNode) => (
+  // `size` shrinks a long value; its line keeps the 13.5 pt height so the label stays level.
+  const field = (value: ReactNode, label: ReactNode, size = 13.5) => (
     <>
-      <div style={{ fontWeight: 600, fontSize: pt(13.5), lineHeight: 1.25 }}>{value}</div>
+      <div style={{ fontWeight: 600, fontSize: pt(size), lineHeight: pt(13.5 * 1.25), whiteSpace: "nowrap" }}>{value}</div>
       <div style={{ marginTop: mm(0.8), fontSize: pt(10), color: MUTED }}>{label}</div>
     </>
   );
@@ -141,7 +154,7 @@ export function CertificateFace({ certificate: c, verificationUrl, className }: 
             ))}
           </svg>
           {/* The host's lockup is always at the right; another issuer is named here. */}
-          {!c.issuedByHost && (
+          {showIssuerMark && (
             <>
               <span style={{ width: mm(0.25), height: mm(9), background: GOLD, opacity: 0.45 }} />
               {c.issuerLogoUrl ? (
@@ -207,7 +220,7 @@ export function CertificateFace({ certificate: c, verificationUrl, className }: 
             <img src={sealUrl} alt="" style={{ maxHeight: mm(21), maxWidth: mm(40) }} className="object-contain" />
           </At>
         )}
-        <At style={{ ...column(32, 84), top: mm(165) }}>{field(c.issuerName, "Issuing organisation")}</At>
+        <At style={{ ...column(22, 104), top: mm(165) }}>{field(c.issuerName, "Issuing organisation", issuerNameSize(c.issuerName))}</At>
         {c.signatoryName && c.signatureUrl && (
           <At style={{ ...column(117.5, 62), top: mm(144) }}>
             <div style={{ height: mm(15), display: "flex", alignItems: "flex-end", justifyContent: "center" }}>

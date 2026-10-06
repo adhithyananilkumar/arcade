@@ -28,6 +28,7 @@ import {
   type HandleAppeal,
 } from '@/domains/profiles';
 import { channelService, type Channel } from '@/domains/channels';
+import { ChannelCertificateIssuerCard } from './components/ChannelCertificateIssuerCard';
 import { ChannelLogoCard } from './components/ChannelLogoCard';
 import { ChannelSealCard } from './components/ChannelSealCard';
 import { ChannelSignatoryCard } from './components/ChannelSignatoryCard';
@@ -44,7 +45,7 @@ export function ChannelIdentityManager({
   focus?: string | null;
 }) {
   useEffect(() => {
-    if (focus !== 'logo' && focus !== 'signatory' && focus !== 'seal') return;
+    if (focus !== 'logo' && focus !== 'signatory' && focus !== 'seal' && focus !== 'certificate-issuer') return;
     // After the cards mount (the signatory card loads its data first).
     const t = window.setTimeout(
       () => document.getElementById(focus)?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
@@ -75,6 +76,7 @@ function OrganizationIdentity({
   const [appeals, setAppeals] = useState<HandleAppeal[]>([]);
   const [appealsLoading, setAppealsLoading] = useState(true);
   const [appealFor, setAppealFor] = useState<string | null>(null);
+  const [issueAsHost, setIssueAsHost] = useState(false);
 
   const [tagline, setTagline] = useState(channel.tagline ?? '');
   const [location, setLocation] = useState(channel.location ?? '');
@@ -222,7 +224,8 @@ function OrganizationIdentity({
 
       <ChannelLogoCard channel={channel} canEdit={canEdit} onUpdate={onUpdate} />
       <ChannelSignatoryCard channel={channel} canEdit={canEdit} />
-      <ChannelSealCard channel={channel} canEdit={canEdit} />
+      <ChannelCertificateIssuerCard channel={channel} canEdit={canEdit} onChange={setIssueAsHost} />
+      <ChannelSealCard channel={channel} canEdit={canEdit} issueAsHost={issueAsHost} />
 
       {canEdit && (
         <section className="rounded-[20px] border border-slate-100 bg-surface p-6">

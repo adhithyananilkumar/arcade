@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { AlertTriangle, Check, Loader2, Stamp, Trash2, Undo2 } from 'lucide-react';
 import { Channel, ChannelSignatory, channelService } from '@/domains/channels';
-import { IssuerLogoPreview } from '@/domains/credentials';
+import { HOST_INSTITUTION_NAME, IssuerLogoPreview } from '@/domains/credentials';
 import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
 import { getAvatarUrl } from '@/shared/utils/avatar';
 import { hasTransparentBackground, rasteriseSvg } from '@/shared/utils/image';
@@ -13,6 +13,8 @@ import { ImageDropzone } from './ImageDropzone';
 interface ChannelSealCardProps {
   channel: Channel;
   canEdit: boolean;
+  /** The organisation issues in the host's name, so its certificates carry the host's seal, not this one. */
+  issueAsHost?: boolean;
 }
 
 const SEAL_MAX_BYTES = 1_000_000;
@@ -24,7 +26,7 @@ const SEAL_MAX_BYTES = 1_000_000;
  *
  * Organisations only: a personal channel's certificates are issued by the host institution.
  */
-export function ChannelSealCard({ channel, canEdit }: ChannelSealCardProps) {
+export function ChannelSealCard({ channel, canEdit, issueAsHost = false }: ChannelSealCardProps) {
   const [saved, setSaved] = useState<ChannelSignatory | null>(null);
   const [loading, setLoading] = useState(canEdit);
   const [file, setFile] = useState<File | null>(null);
@@ -149,6 +151,12 @@ export function ChannelSealCard({ channel, canEdit }: ChannelSealCardProps) {
           <p className="mt-1 text-[12.5px] font-medium leading-relaxed text-slate-500">
             Optional. Your organisation&apos;s seal, stamped above its name on your certificates.
           </p>
+          {issueAsHost && (
+            <p className="mt-2 rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold leading-relaxed text-slate-600">
+              Not in use: your certificates are issued in {HOST_INSTITUTION_NAME}&apos;s name and carry its seal. This
+              seal is used again if you switch back to issuing in your own name.
+            </p>
+          )}
         </div>
       </div>
 

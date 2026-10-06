@@ -23,7 +23,6 @@ import { api } from '@/infrastructure/http/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MenuContainer, MenuItem } from '@/shared/design-system/ui/fluid-menu';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { getAvatarUrl } from '@/shared/utils/avatar';
 
 /** Shared so the accept/decline handlers can invalidate exactly this query. */
@@ -139,21 +138,6 @@ export default function LearnerNavbar() {
     tasks.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     return tasks;
   }, [pendingChannelRequests, pendingDeletions, openReviews]);
-  
-  // Intelligent header scroll behavior
-  const { scrollY } = useScroll();
-  const [hidden, setHidden] = useState(false);
-  const [lastY, setLastY] = useState(0);
-
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    // Only hide after 150px of downward scroll to avoid triggering at the very top
-    if (latest > 150 && latest > lastY) {
-      setHidden(true);
-    } else {
-      setHidden(false);
-    }
-    setLastY(latest);
-  });
 
   const handleLogout = async () => {
     if (isLoggingOut) return;
@@ -245,15 +229,7 @@ export default function LearnerNavbar() {
   }
 
   return (
-    <motion.div 
-      variants={{
-        visible: { y: 0, opacity: 1 },
-        hidden: { y: -20, opacity: 0 },
-      }}
-      animate={hidden ? "hidden" : "visible"}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="fixed top-6 left-0 right-0 z-40 flex w-full items-center justify-between gap-3 px-4 md:px-8 pointer-events-none"
-    >
+    <header className="fixed top-6 left-0 right-0 z-40 flex w-full items-center justify-between gap-3 px-4 md:px-8 pointer-events-none">
       {/* Left Island: Branding */}
       <div className="pointer-events-auto flex shrink-0 items-center gap-2">
         <div className="flex h-12 shrink-0 items-center rounded-full px-5 apple-glass-dock shadow-none [box-shadow:none]">
@@ -529,6 +505,6 @@ export default function LearnerNavbar() {
           </MenuContainer>
         </div>
       </div>
-    </motion.div>
+    </header>
   );
 }
