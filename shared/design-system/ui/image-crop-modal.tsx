@@ -1,16 +1,17 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import Cropper, { type Area, type Point } from 'react-easy-crop';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
-import ReactCrop, { type Crop, type PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
+import { Loader2, RotateCcw, RotateCw, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface Props {
   open: boolean;
   file: File | null;
   /** width / height, e.g. 1 for a square logo, 4 for a 4:1 banner. */
   aspectRatio: number;
+  circularCrop?: boolean;
   title?: string;
   onCancel: () => void;
   /** Resolves with a cropped image file (same mime type, "-cropped" suffix on the name). */
@@ -22,198 +23,312 @@ interface Props {
   preview?: (croppedUrl: string | null) => ReactNode;
 }
 
-const ZOOM_MIN = 0.5;
-const ZOOM_MAX = 3;
+const createImage = (url: string): Promise<HTMLImageElement> =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener('load', () => resolve(image));
+    image.addEventListener('error', (error) => reject(error));
+    image.setAttribute('crossOrigin', 'anonymous');
+    image.src = url;
+  });
 
-export function ImageCropModal({ open, file, aspectRatio, title, onCancel, onCropped, preview }: Props) {
+function getRadianAngle(degreeValue: number) {
+  return (degreeValue * Math.PI) / 180;
+}
+
+function rotateSize(width: number, height: number, rotation: number) {
+  const rotRad = getRadianAngle(rotation);
+  return {
+    width:
+      Math.abs(Math.cos(rotRad) * width) + Math.abs(Math.sin(rotRad) * height),
+    height:
+      Math.abs(Math.sin(rotRad) * width) + Math.abs(Math.cos(rotRad) * height),
+  };
+}
+
+async function getCroppedImg(
+  imageSrc: string,
+  pixelCrop: Area,
+  rotation = 0,
+  mimeType = 'image/jpeg'
+): Promise<Blob | null> {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  if (!ctx) return null;
+
+  const rotRad = getRadianAngle(rotation);
+  const { width: bBoxWidth, height: bBoxHeight } = rotateSize(
+    image.width,
+    image.height,
+    rotation
+  );
+
+  canvas.width = bBoxWidth;
+  canvas.height = bBoxHeight;
+
+  ctx.translate(bBoxWidth / 2, bBoxHeight / 2);
+  ctx.rotate(rotRad);
+  ctx.translate(-image.width / 2, -image.height / 2);
+
+  ctx.drawImage(image, 0, 0);
+
+  const croppedCanvas = document.createElement('canvas');
+  const croppedCtx = croppedCanvas.getContext('2d');
+
+  if (!croppedCtx) return null;
+
+  croppedCanvas.width = pixelCrop.width;
+  croppedCanvas.height = pixelCrop.height;
+
+  croppedCtx.drawImage(
+    canvas,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  );
+
+  return new Promise((resolve) => {
+    croppedCanvas.toBlob((blob) => resolve(blob), mimeType, 0.95);
+  });
+}
+
+export function ImageCropModal({
+  open,
+  file,
+  aspectRatio,
+  circularCrop,
+  title,
+  onCancel,
+  onCropped,
+  preview,
+}: Props) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [crop, setCrop] = useState<Crop>();
-  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
-  const imgRef = useRef<HTMLImageElement>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  /** 1 = fit; above 1 zooms into the image, below 1 shrinks it to leave padding around a logo. */
+  const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     if (!file) return;
     const url = URL.createObjectURL(file);
     setImageUrl(url);
-    setCrop(undefined);
-    setCompletedCrop(undefined);
-    setPreviewUrl(null);
+    setCrop({ x: 0, y: 0 });
     setZoom(1);
+    setRotation(0);
+    setCroppedAreaPixels(null);
+    setPreviewUrl(null);
+    setIsProcessing(false);
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
-  /**
-   * Paints the crop frame onto `canvas` at `outWidth`: the image as zoomed about its centre, seen
-   * through the crop box. Shared by the live preview and the final export so they always agree.
-   */
-  const paint = (canvas: HTMLCanvasElement, outWidth: number, opaque: boolean): boolean => {
-    const img = imgRef.current;
-    if (!img || !completedCrop?.width || !completedCrop?.height) return false;
-    const scaleX = img.naturalWidth / img.width;
-    const scaleY = img.naturalHeight / img.height;
-    canvas.width = outWidth;
-    canvas.height = Math.round(outWidth / aspectRatio);
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return false;
-    if (opaque) {
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-    ctx.imageSmoothingQuality = 'high';
-    const k = outWidth / (completedCrop.width * scaleX);
-    ctx.setTransform(k, 0, 0, k, 0, 0);
-    ctx.translate(-completedCrop.x * scaleX, -completedCrop.y * scaleY);
-    const cx = img.naturalWidth / 2;
-    const cy = img.naturalHeight / 2;
-    ctx.translate(cx, cy);
-    ctx.scale(zoom, zoom);
-    ctx.translate(-cx, -cy);
-    ctx.drawImage(img, 0, 0);
-    return true;
-  };
+  const onCropComplete = useCallback((_croppedArea: Area, currentCroppedAreaPixels: Area) => {
+    setCroppedAreaPixels(currentCroppedAreaPixels);
+  }, []);
 
-  // A small rendering of the current crop, for the `preview` slot only.
+  // Generate live preview URL when preview prop is provided
   useEffect(() => {
-    if (!preview || !completedCrop?.width) return;
-    const canvas = document.createElement('canvas');
-    const img = imgRef.current;
-    const width = Math.min(400, Math.round(completedCrop.width * (img ? img.naturalWidth / img.width : 1)));
-    if (paint(canvas, width, false)) setPreviewUrl(canvas.toDataURL('image/png'));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [completedCrop, aspectRatio, preview, zoom]);
+    if (!preview || !imageUrl || !croppedAreaPixels) {
+      setPreviewUrl(null);
+      return;
+    }
 
-  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const { width, height } = e.currentTarget;
-    
-    // Create a default crop that fits the image and aspect ratio
-    const initialCrop = centerCrop(
-      makeAspectCrop(
-        {
-          unit: '%',
-          width: 90,
-        },
-        aspectRatio,
-        width,
-        height
-      ),
-      width,
-      height
-    );
-    setCrop(initialCrop);
+    let isSubscribed = true;
+    (async () => {
+      try {
+        const blob = await getCroppedImg(
+          imageUrl,
+          croppedAreaPixels,
+          rotation,
+          file?.type || 'image/png'
+        );
+        if (blob && isSubscribed) {
+          const url = URL.createObjectURL(blob);
+          setPreviewUrl(url);
+        }
+      } catch {
+        // silent preview failure
+      }
+    })();
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [imageUrl, croppedAreaPixels, rotation, file?.type, preview]);
+
+  const handleConfirm = async () => {
+    if (!file || !imageUrl || !croppedAreaPixels) return;
+
+    setIsProcessing(true);
+    try {
+      const croppedBlob = await getCroppedImg(
+        imageUrl,
+        croppedAreaPixels,
+        rotation,
+        file.type || 'image/jpeg'
+      );
+
+      if (!croppedBlob) {
+        setIsProcessing(false);
+        return;
+      }
+
+      const dotIndex = file.name.lastIndexOf('.');
+      const ext = dotIndex >= 0 ? file.name.slice(dotIndex) : '';
+      const base = dotIndex >= 0 ? file.name.slice(0, dotIndex) : file.name;
+      const croppedFile = new File([croppedBlob], `${base}-cropped${ext}`, {
+        type: file.type || 'image/jpeg',
+      });
+
+      onCropped(croppedFile);
+    } catch (err) {
+      console.error('Error cropping image:', err);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const handleConfirm = () => {
-    if (!file || !completedCrop || !imgRef.current) return;
-    const img = imgRef.current;
-    const sourceWidth = completedCrop.width * (img.naturalWidth / img.width);
-    if (sourceWidth === 0) return;
-
-    // Use a reasonable max resolution for the output; JPEG has no alpha, so it gets a white ground.
-    const canvas = document.createElement('canvas');
-    if (!paint(canvas, Math.min(1600, Math.round(sourceWidth)), file.type === 'image/jpeg')) return;
-
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) return;
-        const dotIndex = file.name.lastIndexOf('.');
-        const ext = dotIndex >= 0 ? file.name.slice(dotIndex) : '';
-        const base = dotIndex >= 0 ? file.name.slice(0, dotIndex) : file.name;
-        onCropped(new File([blob], `${base}-cropped${ext}`, { type: file.type }));
-      },
-      file.type,
-      0.92
-    );
+  const resetAdjustments = () => {
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setRotation(0);
   };
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
-      <DialogContent className="max-w-xl p-6 z-[100]">
+      <DialogContent className="max-w-xl p-6 z-[100] sm:rounded-2xl">
         <DialogHeader>
-          <DialogTitle>{title || 'Crop image'}</DialogTitle>
+          <DialogTitle className="text-lg font-bold text-slate-900">
+            {title || 'Crop & adjust photo'}
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="mt-4 flex flex-col items-center">
-          {imageUrl && (
-            <div className="max-h-[60vh] overflow-hidden flex items-center justify-center bg-slate-900 rounded-lg p-2 w-full">
-              <ReactCrop
+        <div className="mt-4 flex flex-col items-center gap-4">
+          {/* Cropper Viewport */}
+          <div className="relative h-72 sm:h-80 w-full overflow-hidden rounded-2xl bg-slate-950 shadow-inner">
+            {imageUrl && (
+              <Cropper
+                image={imageUrl}
                 crop={crop}
-                onChange={(_, percentCrop) => setCrop(percentCrop)}
-                onComplete={(c) => setCompletedCrop(c)}
+                zoom={zoom}
+                rotation={rotation}
                 aspect={aspectRatio}
-                className="max-h-full [&_.ReactCrop__child-wrapper]:overflow-hidden"
-              >
-                <img
-                  ref={imgRef}
-                  alt="Crop me"
-                  src={imageUrl}
-                  onLoad={onImageLoad}
-                  className="max-w-full max-h-[55vh] object-contain"
-                  style={{ transform: `scale(${zoom})` }}
-                />
-              </ReactCrop>
-            </div>
-          )}
-
-          <div className="mt-4 flex w-full items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setZoom((z) => Math.max(ZOOM_MIN, +(z - 0.1).toFixed(2)))}
-              aria-label="Zoom out"
-              className="h-8 w-8 shrink-0 rounded-full border border-gray-200 text-lg font-semibold leading-none text-gray-600 hover:bg-gray-100"
-            >
-              −
-            </button>
-            <input
-              type="range"
-              min={ZOOM_MIN}
-              max={ZOOM_MAX}
-              step={0.01}
-              value={zoom}
-              onChange={(e) => setZoom(Number(e.target.value))}
-              aria-label="Zoom"
-              className="h-1.5 w-full cursor-pointer accent-indigo-600"
-            />
-            <button
-              type="button"
-              onClick={() => setZoom((z) => Math.min(ZOOM_MAX, +(z + 0.1).toFixed(2)))}
-              aria-label="Zoom in"
-              className="h-8 w-8 shrink-0 rounded-full border border-gray-200 text-lg font-semibold leading-none text-gray-600 hover:bg-gray-100"
-            >
-              +
-            </button>
-            <button
-              type="button"
-              onClick={() => setZoom(1)}
-              className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold tabular-nums text-gray-600 hover:bg-gray-100"
-              title="Reset zoom"
-            >
-              {Math.round(zoom * 100)}%
-            </button>
+                cropShape={circularCrop ? 'round' : 'rect'}
+                showGrid={!circularCrop}
+                zoomWithScroll={true}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onRotationChange={setRotation}
+                onCropComplete={onCropComplete}
+              />
+            )}
           </div>
-          <p className="mt-2 text-xs text-gray-500">
-            Drag the box to move it and its edges to resize it. Zoom in to fill the frame, or out to leave space around a logo.
+
+          {/* Controls Bar */}
+          <div className="w-full space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5">
+            {/* Zoom Slider */}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setZoom((z) => Math.max(1, Number((z - 0.2).toFixed(2))))}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-2xs transition hover:bg-slate-100 hover:text-slate-900"
+                title="Zoom Out"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </button>
+
+              <div className="flex flex-1 items-center gap-2">
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.02}
+                  value={zoom}
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                  className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-teal-600 focus:outline-none"
+                />
+                <span className="w-10 text-right text-xs font-semibold tabular-nums text-slate-500">
+                  {zoom.toFixed(1)}x
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setZoom((z) => Math.min(3, Number((z + 0.2).toFixed(2))))}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-2xs transition hover:bg-slate-100 hover:text-slate-900"
+                title="Zoom In"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Rotate & Reset Controls */}
+            <div className="flex items-center justify-between border-t border-slate-200/60 pt-2.5">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRotation((r) => (r - 90 + 360) % 360)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-2xs transition hover:bg-slate-100"
+                  title="Rotate 90° Left"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span>Rotate Left</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRotation((r) => (r + 90) % 360)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-2xs transition hover:bg-slate-100"
+                  title="Rotate 90° Right"
+                >
+                  <RotateCw className="h-3.5 w-3.5" />
+                  <span>Rotate Right</span>
+                </button>
+              </div>
+
+              {(zoom !== 1 || rotation !== 0 || crop.x !== 0 || crop.y !== 0) && (
+                <button
+                  type="button"
+                  onClick={resetAdjustments}
+                  className="text-xs font-semibold text-teal-600 hover:text-teal-700 hover:underline"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          </div>
+
+          <p className="text-center text-xs text-slate-500">
+            Drag photo to reposition • Scroll or use the slider to zoom
           </p>
 
-          {preview && <div className="mt-4 w-full">{preview(previewUrl)}</div>}
+          {preview && <div className="mt-2 w-full">{preview(previewUrl)}</div>}
 
-          <div className="flex w-full justify-end gap-3 pt-4">
+          {/* Action Buttons */}
+          <div className="flex w-full items-center justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onCancel}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+              disabled={isProcessing}
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleConfirm}
-              disabled={!completedCrop?.width || !completedCrop?.height}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!croppedAreaPixels || isProcessing}
+              className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-2 text-sm font-semibold text-white shadow-2xs transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Apply Crop
+              {isProcessing && <Loader2 className="h-4 w-4 animate-spin" />}
+              Apply & Save
             </button>
           </div>
         </div>
