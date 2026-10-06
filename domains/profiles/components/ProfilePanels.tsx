@@ -22,9 +22,19 @@
  * ------------------------------------------------------------------
  */
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
+
+function Portal({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted || typeof document === 'undefined') return null;
+  return createPortal(children, document.body);
+}
 import {
   Award,
   BookOpen,
@@ -256,144 +266,146 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
       </Panel>
 
       {/* Public Achievements Modal */}
-      <AnimatePresence>
-        {modalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setModalOpen(false)}
-              className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs"
-            />
+      <Portal>
+        <AnimatePresence>
+          {modalOpen && (
+            <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setModalOpen(false)}
+                className="fixed inset-0 bg-slate-950/75 backdrop-blur-md"
+              />
 
-            {/* Modal Dialog Box */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-500 dark:bg-amber-950/50 dark:text-amber-400">
-                    <Trophy size={20} />
-                  </div>
-                  <div>
-                    <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                      All Public Achievements
-                    </h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {badges.length} Credential Badges · {certificates.length} Verified Certificates
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto py-5 space-y-6">
-                {/* Badges Section */}
-                {badges.length > 0 && (
-                  <div>
-                    <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
-                      Credential Badges ({badges.length})
-                    </h3>
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                      {badges.map((badge) => (
-                        <Link
-                          key={badge.credentialCode}
-                          href={`/credentials/${encodeURIComponent(badge.credentialCode)}`}
-                          className="flex flex-col items-center rounded-xl border border-slate-100 bg-slate-50/70 p-4 text-center transition-all hover:scale-[1.02] hover:border-amber-200 hover:bg-amber-50/40 dark:border-slate-800 dark:bg-slate-800/50 dark:hover:border-amber-500/40"
-                        >
-                          <CredentialBadge
-                            family={badge.badgeClass.family.key}
-                            level={badge.badgeClass.tier.level}
-                            title={badge.name}
-                            className="h-20 w-20"
-                          />
-                          <span className="mt-3 block text-xs font-bold text-slate-800 dark:text-slate-200">
-                            {badge.name}
-                          </span>
-                          <span className="mt-1 block text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-                            {badge.badgeClass.tier.label}
-                          </span>
-                          {badge.issuerName && (
-                            <span className="mt-0.5 block text-[10px] text-slate-400">
-                              by {badge.issuerName}
-                            </span>
-                          )}
-                        </Link>
-                      ))}
+              {/* Modal Dialog Box */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col rounded-3xl border border-slate-200/90 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-500 dark:bg-amber-950/50 dark:text-amber-400">
+                      <Trophy size={20} />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                        All Public Achievements
+                      </h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {badges.length} Credential Badges · {certificates.length} Verified Certificates
+                      </p>
                     </div>
                   </div>
-                )}
+                  <button
+                    type="button"
+                    onClick={() => setModalOpen(false)}
+                    className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
 
-                {/* Certificates Section */}
-                {certificates.length > 0 && (
-                  <div>
-                    <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
-                      Verified Certificates ({certificates.length})
-                    </h3>
-                    <div className="space-y-2.5">
-                      {certificates.map((certificate, index) => {
-                        const body = (
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
-                                <Award size={20} />
-                              </div>
-                              <div>
-                                <span className="block text-sm font-bold text-slate-800 dark:text-slate-200">
-                                  {certificate.name}
-                                </span>
-                                <div className="flex items-center gap-2 text-xs text-slate-400">
-                                  {certificate.issuer && <span>Issued by {certificate.issuer}</span>}
-                                  {certificate.date && <span>• {certificate.date}</span>}
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto py-5 space-y-6">
+                  {/* Badges Section */}
+                  {badges.length > 0 && (
+                    <div>
+                      <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Credential Badges ({badges.length})
+                      </h3>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {badges.map((badge) => (
+                          <Link
+                            key={badge.credentialCode}
+                            href={`/credentials/${encodeURIComponent(badge.credentialCode)}`}
+                            className="flex flex-col items-center rounded-xl border border-slate-100 bg-slate-50/70 p-4 text-center transition-all hover:scale-[1.02] hover:border-amber-200 hover:bg-amber-50/40 dark:border-slate-800 dark:bg-slate-800/50 dark:hover:border-amber-500/40"
+                          >
+                            <CredentialBadge
+                              family={badge.badgeClass.family.key}
+                              level={badge.badgeClass.tier.level}
+                              title={badge.name}
+                              className="h-20 w-20"
+                            />
+                            <span className="mt-3 block text-xs font-bold text-slate-800 dark:text-slate-200">
+                              {badge.name}
+                            </span>
+                            <span className="mt-1 block text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                              {badge.badgeClass.tier.label}
+                            </span>
+                            {badge.issuerName && (
+                              <span className="mt-0.5 block text-[10px] text-slate-400">
+                                by {badge.issuerName}
+                              </span>
+                            )}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Certificates Section */}
+                  {certificates.length > 0 && (
+                    <div>
+                      <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Verified Certificates ({certificates.length})
+                      </h3>
+                      <div className="space-y-2.5">
+                        {certificates.map((certificate, index) => {
+                          const body = (
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
+                                  <Award size={20} />
+                                </div>
+                                <div>
+                                  <span className="block text-sm font-bold text-slate-800 dark:text-slate-200">
+                                    {certificate.name}
+                                  </span>
+                                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                                    {certificate.issuer && <span>Issued by {certificate.issuer}</span>}
+                                    {certificate.date && <span>• {certificate.date}</span>}
+                                  </div>
                                 </div>
                               </div>
+                              {certificate.idCode && (
+                                <div className="flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                                  <span>Verify</span>
+                                  <ExternalLink size={13} />
+                                </div>
+                              )}
                             </div>
-                            {certificate.idCode && (
-                              <div className="flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                                <span>Verify</span>
-                                <ExternalLink size={13} />
-                              </div>
-                            )}
-                          </div>
-                        );
-                        const className =
-                          'block rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 transition-all hover:border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/40 dark:hover:bg-slate-800';
-                        return certificate.idCode ? (
-                          <Link
-                            key={certificate.idCode}
-                            href={`/credentials/${encodeURIComponent(certificate.idCode)}`}
-                            className={className}
-                          >
-                            {body}
-                          </Link>
-                        ) : (
-                          <div key={index} className={className}>
-                            {body}
-                          </div>
-                        );
-                      })}
+                          );
+                          const className =
+                            'block rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 transition-all hover:border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/40 dark:hover:bg-slate-800';
+                          return certificate.idCode ? (
+                            <Link
+                              key={certificate.idCode}
+                              href={`/credentials/${encodeURIComponent(certificate.idCode)}`}
+                              className={className}
+                            >
+                              {body}
+                            </Link>
+                          ) : (
+                            <div key={index} className={className}>
+                              {body}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </Portal>
     </>
   );
 }
@@ -476,89 +488,91 @@ export function OrganizationsPanel({
       </Panel>
 
       {/* Public Organizations Modal */}
-      <AnimatePresence>
-        {modalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setModalOpen(false)}
-              className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs"
-            />
+      <Portal>
+        <AnimatePresence>
+          {modalOpen && (
+            <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setModalOpen(false)}
+                className="fixed inset-0 bg-slate-950/75 backdrop-blur-md"
+              />
 
-            {/* Modal Dialog Box */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 flex max-h-[85vh] w-full max-w-xl flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
-                    <Building2 size={20} />
+              {/* Modal Dialog Box */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="relative z-10 flex max-h-[85vh] w-full max-w-xl flex-col rounded-3xl border border-slate-200/90 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
+                      <Building2 size={20} />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                        Organizations
+                      </h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Member of {organizations.length} {organizations.length === 1 ? 'organization' : 'organizations'}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                      Organizations
-                    </h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Member of {organizations.length} {organizations.length === 1 ? 'organization' : 'organizations'}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto py-4 space-y-2.5">
-                {organizations.map((channel) => (
-                  <Link
-                    key={channel.id}
-                    href={channel.handle ? `/${channel.handle}` : `/channels/${channel.id}`}
-                    className="group flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 transition-all hover:border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/40 dark:hover:bg-slate-800"
+                  <button
+                    type="button"
+                    onClick={() => setModalOpen(false)}
+                    className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
                   >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/60 bg-white text-slate-600 shadow-2xs dark:bg-slate-800 dark:border-slate-700">
-                        {channel.iconUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={getAvatarUrl(channel.iconUrl)} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          <Building2 size={18} />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="flex items-center gap-1.5 truncate text-sm font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
-                          <span className="truncate">{channel.name}</span>
-                          <BadgeRow badges={channel.badges} size={14} max={2} />
-                        </p>
-                        <div className="flex items-center gap-2 text-xs text-slate-400">
-                          <span>{channel.role}</span>
-                          {channel.handle && <span>• @{channel.handle}</span>}
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto py-4 space-y-2.5">
+                  {organizations.map((channel) => (
+                    <Link
+                      key={channel.id}
+                      href={channel.handle ? `/${channel.handle}` : `/channels/${channel.id}`}
+                      className="group flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 transition-all hover:border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/40 dark:hover:bg-slate-800"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/60 bg-white text-slate-600 shadow-2xs dark:bg-slate-800 dark:border-slate-700">
+                          {channel.iconUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={getAvatarUrl(channel.iconUrl)} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <Building2 size={18} />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="flex items-center gap-1.5 truncate text-sm font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
+                            <span className="truncate">{channel.name}</span>
+                            <BadgeRow badges={channel.badges} size={14} max={2} />
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-slate-400">
+                            <span>{channel.role}</span>
+                            {channel.handle && <span>• @{channel.handle}</span>}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                      <span>Visit</span>
-                      <ExternalLink size={13} />
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                      <div className="flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                        <span>Visit</span>
+                        <ExternalLink size={13} />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </Portal>
     </>
   );
 }

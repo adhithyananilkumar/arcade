@@ -16,6 +16,16 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+
+function Portal({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted || typeof document === 'undefined') return null;
+  return createPortal(children, document.body);
+}
 import {
   Building2,
   Calendar,
@@ -851,24 +861,25 @@ export function ProfileHero({
       </div>
 
       {/* Banner Customization & Crop / Reposition Modal */}
-      <AnimatePresence>
-        {modalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setModalOpen(false)}
-              className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs"
-            />
+      <Portal>
+        <AnimatePresence>
+          {modalOpen && (
+            <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setModalOpen(false)}
+                className="fixed inset-0 bg-slate-950/75 backdrop-blur-md"
+              />
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              transition={{ duration: 0.2 }}
-              className="relative z-10 flex max-h-[92vh] w-full max-w-2xl flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
-            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                transition={{ duration: 0.2 }}
+                className="relative z-10 flex max-h-[92vh] w-full max-w-2xl flex-col rounded-3xl border border-slate-200/90 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+              >
               {/* Header */}
               <div className="flex items-center justify-between border-b border-slate-100 pb-3.5 dark:border-slate-800">
                 <div className="flex items-center gap-3">
@@ -1272,6 +1283,7 @@ export function ProfileHero({
           </div>
         )}
       </AnimatePresence>
+      </Portal>
 
       {/* Hidden Avatar File Input */}
       <input

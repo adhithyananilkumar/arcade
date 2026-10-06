@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactCrop, { type Crop, type PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
@@ -21,8 +22,16 @@ import {
   Contrast,
   Palette,
   Eye,
-  Sparkles,
 } from 'lucide-react';
+
+function Portal({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted || typeof document === 'undefined') return null;
+  return createPortal(children, document.body);
+}
 
 interface Props {
   open: boolean;
@@ -294,52 +303,48 @@ export function ImageCropModal({
   if (!open) return null;
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-[130] flex items-center justify-center p-3 sm:p-6 md:p-8 overflow-y-auto">
-        {/* Deep frosted backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onCancel}
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-md"
-        />
+    <Portal>
+      <AnimatePresence>
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-3 sm:p-6 md:p-8 overflow-y-auto">
+          {/* Deep frosted backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onCancel}
+            className="fixed inset-0 bg-slate-950/75 backdrop-blur-md"
+          />
 
-        {/* Expansive Studio Modal (max-w-5xl / ~1080px wide) */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 16 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 16 }}
-          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="relative z-10 flex flex-col w-full max-w-5xl h-[88vh] max-h-[820px] min-h-[580px] rounded-[32px] border border-slate-200/90 bg-white shadow-2xl overflow-hidden dark:border-slate-800 dark:bg-slate-900"
-        >
-          {/* Studio Top Header */}
-          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900">
-            <div className="flex items-center gap-3.5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-sky-500 via-indigo-600 to-purple-600 text-white shadow-md shadow-sky-500/20">
-                <Sparkles size={20} />
-              </div>
+          {/* Expansive Studio Modal (max-w-5xl / ~1080px wide) */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 16 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="relative z-10 flex flex-col w-full max-w-5xl h-[88vh] max-h-[820px] min-h-[580px] rounded-[32px] border border-slate-200/90 bg-white shadow-2xl overflow-hidden dark:border-slate-800 dark:bg-slate-900"
+          >
+            {/* Studio Top Header (Without Icon) */}
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900">
               <div>
                 <h2 className="text-lg font-black tracking-tight text-slate-900 dark:text-white sm:text-xl">
-                  {title || 'Profile Picture Studio'}
+                  {title || 'Crop & Adjust Profile Picture'}
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Crop, reframe, rotate, and fine-tune tone before publishing to your profile
+                  Precision zoom, crop boundary, rotation, and fine-tune tone adjustments
                 </p>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={onCancel}
-                className="rounded-full p-2.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
-                title="Close"
-              >
-                <X size={20} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="rounded-full p-2.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                  title="Close"
+                >
+                  <X size={20} />
+                </button>
+              </div>
             </div>
-          </div>
 
           {/* Main Studio Body: 2-Column Responsive Layout */}
           <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden bg-slate-50/50 dark:bg-slate-950/40">
@@ -707,5 +712,6 @@ export function ImageCropModal({
         </motion.div>
       </div>
     </AnimatePresence>
+    </Portal>
   );
 }
