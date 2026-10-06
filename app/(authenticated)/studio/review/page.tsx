@@ -55,7 +55,7 @@ export default function ReviewCoursesPage() {
     <div
       className="relative flex min-h-screen flex-1 flex-col"
       style={{
-        background: "var(--theme-wash, linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%))",
+        background: "var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%))",
       }}
     >
       <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-28 pt-28 sm:px-8 sm:pt-32">
