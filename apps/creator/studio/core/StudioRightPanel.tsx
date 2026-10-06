@@ -158,10 +158,10 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
   if (mode === "closed") return null;
 
   return (
-    <div className="pointer-events-auto fixed right-4 top-20 bottom-4 z-[65] flex w-[340px] flex-col rounded-3xl border border-white/40 bg-surface/70 shadow-xl backdrop-blur-xl">
+    <div className="pointer-events-auto fixed right-4 top-20 bottom-4 z-[65] flex w-[min(340px,calc(100vw-2rem))] flex-col rounded-3xl border border-surface/40 bg-surface/70 shadow-xl backdrop-blur-xl">
       {mode === "workflow" && (
         <div className="flex items-center gap-1.5 p-3">
-          <div className="flex flex-1 items-center gap-1 rounded-full border border-white/40 bg-surface/60 p-1">
+          <div className="flex flex-1 items-center gap-1 rounded-full border border-surface/40 bg-surface/60 p-1">
             {TABS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
@@ -192,7 +192,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
           editorContextNode
         ) : props.unavailableNotes?.[tab as RightSidebarTab] ? (
           <div className="flex flex-col items-center justify-center gap-2.5 py-16 text-center">
-            <span className="grid size-12 place-items-center rounded-2xl border border-white/40 bg-surface/60">
+            <span className="grid size-12 place-items-center rounded-2xl border border-surface/40 bg-surface/60">
               <Shield className="h-6 w-6 text-slate-300" />
             </span>
             <p className="max-w-[240px] text-xs leading-relaxed text-slate-500">
@@ -207,7 +207,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
           )
         ) : tab === "collab" && props.collaborationCapability && props.collaborationCapability.status !== "available" ? (
           <div className="flex flex-col items-center justify-center gap-2.5 py-16 text-center">
-            <span className="grid size-12 place-items-center rounded-2xl border border-white/40 bg-surface/60">
+            <span className="grid size-12 place-items-center rounded-2xl border border-surface/40 bg-surface/60">
               <Users className="h-6 w-6 text-slate-300" />
             </span>
             <h4 className="text-sm font-semibold text-slate-800">
@@ -238,7 +238,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
             </div>
           ) : props.statusHistory.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2.5 py-16 text-center">
-              <span className="grid size-12 place-items-center rounded-2xl bg-surface/60 border border-white/40">
+              <span className="grid size-12 place-items-center rounded-2xl bg-surface/60 border border-surface/40">
                 <AlertCircle className="h-6 w-6 text-slate-300" />
               </span>
               <p className="text-sm font-semibold text-ink">No status history yet</p>
@@ -257,7 +257,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
                     {event.label.split(":")[0]}
                   </span>
                   {event.label.includes(":") && (
-                    <p className="mt-1 rounded-xl border border-white/50 bg-surface/50 p-2 text-xs italic text-slate-600">
+                    <p className="mt-1 rounded-xl border border-surface/50 bg-surface/50 p-2 text-xs italic text-slate-600">
                       &quot;{event.label.substring(event.label.indexOf(":") + 1).trim()}&quot;
                     </p>
                   )}
@@ -314,7 +314,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
               </div>
             )}
 
-            <div className="space-y-2 border-t border-white/50 pt-3">
+            <div className="space-y-2 border-t border-surface/50 pt-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Collaborators ({props.collaborators.length})
@@ -330,7 +330,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
               </div>
 
               {props.showAddForm && (
-                <div className="space-y-2 rounded-xl border border-white/50 bg-surface/60 p-2.5 text-xs">
+                <div className="space-y-2 rounded-xl border border-surface/50 bg-surface/60 p-2.5 text-xs">
                   <div className="relative">
                     <input
                       type="text"
@@ -394,7 +394,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
                   {props.collaborators.map((member) => (
                     <div
                       key={member.userId}
-                      className="flex items-center justify-between rounded-xl border border-white/50 bg-surface/50 p-2 text-xs"
+                      className="flex items-center justify-between rounded-xl border border-surface/50 bg-surface/50 p-2 text-xs"
                     >
                       <div className="flex min-w-0 items-center gap-2">
                         <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-200 text-[11px] font-bold text-slate-600">
@@ -487,7 +487,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
 
       {/* Footer: Resource identity */}
       <div className="mt-auto px-4 pb-4">
-        <div className="flex items-center justify-between border-t border-white/50 pt-3 text-[11px] text-slate-400">
+        <div className="flex items-center justify-between border-t border-surface/50 pt-3 text-[11px] text-slate-400">
           <span>{props.footerOverride?.label ?? (props.activeLessonId ? "Lesson ID" : "Resource ID")}</span>
           <span className="max-w-[140px] truncate rounded bg-surface/60 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
             {props.footerOverride?.value ?? props.activeLessonId ?? "—"}

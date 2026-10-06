@@ -564,3 +564,12 @@
 .arcade-spin {
   animation: arcade-spin-slow 18s linear infinite;
 }
+/*
+ * The editor's floating toolbar is portalled to <body> at z-70, above anything inside the Studio
+ * frame (a fixed element, hence its own stacking context). Any Studio overlay — the structure
+ * drawer, the question import dialog — marks itself `data-studio-overlay`, and the toolbar steps
+ * aside while one is open instead of floating over it.
+ */
+body:has([data-studio-overlay]) .arcade-floating-toolbar {
+  display: none;
+}

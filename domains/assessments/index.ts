@@ -206,3 +206,7 @@ export type {
   ExamResultResponse,
   ExamAttemptSummaryResponse,
 } from "./types";
+export { QuestionBankImportDialog } from "./components/QuestionBankImportDialog";
+export type { QuestionBankImportDialogProps } from "./components/QuestionBankImportDialog";
+export { parseQuestionImport, QUESTION_IMPORT_EXAMPLE, QUESTION_IMPORT_LIMIT } from "./lib/questionImport";
+export type { ImportedQuestion, ImportedSection, QuestionImportResult } from "./lib/questionImport";

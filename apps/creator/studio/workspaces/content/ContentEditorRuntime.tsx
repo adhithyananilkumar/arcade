@@ -1204,6 +1204,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
       <StudioEditorBody
         sidebarTitle={`${adapter.terminology.root} structure`}
         toolbarClearance={Boolean(activeLessonId || activeAssessment)}
+        rightPanelOpen={panel.open}
         sidebarTree={
           <>
             {modules.length === 0 && !badgeAssignment?.tier && (
@@ -1305,7 +1306,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                                           setActiveModuleId(mod.id);
                                           openLesson(lesson);
                                         }}
-                                        className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive ? "font-semibold text-white" : "text-slate-500"}`}
+                                        className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive ? "font-semibold text-on-ink" : "text-slate-500"}`}
                                       >
                                         <FileText size={11} className="flex-shrink-0" />
                                         {isEditing("lesson", lesson.id) ? (
@@ -1359,7 +1360,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                               }}
                               className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${
                                 activeAssessment?.id === assessment.id
-                                  ? "font-semibold text-white"
+                                  ? "font-semibold text-on-ink"
                                   : "text-slate-500"
                               }`}
                             >
@@ -1465,7 +1466,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                   type="button"
                   onClick={() => setBadgeDialogOpen(true)}
                   title="Change the badge level"
-                  className="group flex w-full items-center gap-2.5 rounded-2xl border border-white/40 bg-surface/60 px-3 py-2 text-left shadow-sm backdrop-blur-md transition-all hover:bg-surface/80"
+                  className="group flex w-full items-center gap-2.5 rounded-2xl border border-surface/40 bg-surface/60 px-3 py-2 text-left shadow-sm backdrop-blur-md transition-all hover:bg-surface/80"
                 >
                   <CredentialBadge
                     family={badgeContentType}
