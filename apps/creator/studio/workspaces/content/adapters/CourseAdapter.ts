@@ -15,6 +15,7 @@ import {
   deleteExamPlan,
   getCourseExam,
   createCourseExam,
+  getExamQuestionBank,
   listAssessmentPlacementsForCourse,
   listExamPlans,
   placeAssessment,
@@ -174,7 +175,13 @@ export class CourseAdapter implements ContentDataAdapter {
 
   async listExams(contentId: string): Promise<ExamSummary[]> {
     const exam = await getCourseExam(contentId);
-    return exam ? [{ id: exam.id, title: exam.title, published: exam.published }] : [];
+    if (!exam) return [];
+    try {
+      const bank = await getExamQuestionBank(exam.id);
+      return [{ id: exam.id, title: exam.title, published: exam.published, questionCount: bank.questionCount }];
+    } catch {
+      return [{ id: exam.id, title: exam.title, published: exam.published, questionCount: 0 }];
+    }
   }
 
   async createAndAttachExam(contentId: string, title: string): Promise<ExamSummary> {
@@ -182,9 +189,9 @@ export class CourseAdapter implements ContentDataAdapter {
     // A freshly created exam gets a meaningful name; an existing one keeps the author's.
     if (exam.planCount === 0 && title && exam.title !== title) {
       const renamed = await updateExam(exam.id, { title });
-      return { id: renamed.id, title: renamed.title, published: renamed.published };
+      return { id: renamed.id, title: renamed.title, published: renamed.published, questionCount: 0 };
     }
-    return { id: exam.id, title: exam.title, published: exam.published };
+    return { id: exam.id, title: exam.title, published: exam.published, questionCount: 0 };
   }
 
   async detachExam(_contentId: string, examId: string): Promise<void> {

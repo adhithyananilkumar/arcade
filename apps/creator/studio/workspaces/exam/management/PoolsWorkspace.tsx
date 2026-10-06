@@ -210,7 +210,7 @@ export function PoolsWorkspace({
   return (
     <div className="flex flex-col gap-4">
       {/* ── Identity ────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
+      <div className="border-t border-slate-200/70 pt-6 first:border-t-0 first:pt-0">
         <label htmlFor="pool-title" className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">
           Pool name
         </label>
@@ -235,7 +235,7 @@ export function PoolsWorkspace({
       </div>
 
       {/* ── Mode ────────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
+      <div className="border-t border-slate-200/70 pt-6 first:border-t-0 first:pt-0">
         <span className="mb-3 block text-[11px] font-bold uppercase tracking-wider text-slate-400">
           How this pool picks questions
         </span>
@@ -271,7 +271,7 @@ export function PoolsWorkspace({
 
       {/* ── Filters ─────────────────────────────────────────────────────── */}
       {draft.mode === "DYNAMIC" && (
-        <div className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
+        <div className="border-t border-slate-200/70 pt-6 first:border-t-0 first:pt-0">
           <span className="mb-4 block text-[11px] font-bold uppercase tracking-wider text-slate-400">
             Filters
           </span>

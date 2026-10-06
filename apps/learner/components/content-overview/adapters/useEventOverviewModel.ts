@@ -84,13 +84,13 @@ export function useEventOverviewModel(slugOrId: string): ContentOverviewModel {
         // attendance is not tracked, and claiming someone completed a session they may have
         // skipped would be a lie the ring then repeats as a percentage.
         completed: hasPassed(session),
-        // Sessions have no player of their own yet, so the only openable thing is the join link,
-        // and only for learners the backend chose to reveal it to.
-        href: session.meetingUrl ?? null,
-        locked: !session.meetingUrl,
+        // A row opens the Day itself — its lessons and, once released, its join link — never the
+        // meeting directly. The Day page explains a locked Day rather than hiding the row.
+        href: eventRoutes.session(slugOrId, session.id),
+        locked: false,
         order: index,
       })),
-    [sessions],
+    [sessions, slugOrId],
   );
 
   const nextSession = useMemo(() => sessions.find((s) => !hasPassed(s)), [sessions]);
@@ -120,8 +120,8 @@ export function useEventOverviewModel(slugOrId: string): ContentOverviewModel {
       state: items.length > 0 && items.every((i) => i.completed) ? 'COMPLETED' : 'IN_PROGRESS',
     },
 
-    resume: nextSession?.meetingUrl
-      ? { label: 'Join the next session', itemTitle: nextSession.title, href: nextSession.meetingUrl }
+    resume: nextSession
+      ? { label: 'Open the next session', itemTitle: nextSession.title, href: eventRoutes.session(slugOrId, nextSession.id) }
       : null,
 
     sections: items.length > 0 ? [{ id: 'sessions', title: 'Sessions', items }] : [],

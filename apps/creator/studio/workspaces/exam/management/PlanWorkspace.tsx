@@ -177,7 +177,7 @@ export function PlanWorkspace({
                       toast.error(err instanceof Error ? err.message : "Couldn't duplicate this plan");
                     }
                   }}
-                  className="rounded-xl border border-slate-200 bg-surface p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-ink"
+                  className="cursor-pointer rounded-full border border-slate-200 bg-surface p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-ink"
                 >
                   <Copy size={14} />
                 </button>
@@ -195,7 +195,7 @@ export function PlanWorkspace({
                     toast.error(err instanceof Error ? err.message : "Couldn't delete this plan");
                   }
                 }}
-                className="rounded-xl border border-slate-200 bg-surface p-2 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                className="cursor-pointer rounded-full border border-slate-200 bg-surface p-2 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
               >
                 <Trash2 size={14} />
               </button>
@@ -205,17 +205,17 @@ export function PlanWorkspace({
       </div>
 
       {/* ── Panel switcher ──────────────────────────────────────────────── */}
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-1.5 border-b border-slate-200/70 pb-4">
         {PANELS.map((p) => (
           <button
             key={p.id}
             type="button"
             onClick={() => setPanel(p.id)}
             aria-current={panel === p.id ? "page" : undefined}
-            className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-colors ${
+            className={`cursor-pointer rounded-full px-4 py-1.5 text-xs font-bold transition-colors ${
               panel === p.id
-                ? "bg-ink text-on-ink shadow-sm"
-                : "border border-white/50 bg-surface/60 text-slate-500 backdrop-blur-md hover:bg-surface hover:text-ink"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "border border-slate-200/80 bg-surface text-slate-600 hover:bg-slate-50 hover:text-slate-900"
             }`}
           >
             {p.label}
@@ -489,7 +489,7 @@ function SelectionPanel({
       {plan.sections.map((section) => (
         <div
           key={section.id}
-          className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md"
+          className="border-t border-slate-200/70 pt-6 first:border-t-0 first:pt-0"
         >
           <div className="mb-4 flex items-center gap-2">
             <input
@@ -729,11 +729,13 @@ function SettingsCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
-      <h3 className="text-sm font-black tracking-tight text-ink">{title}</h3>
-      {description && <p className="mt-1 text-xs leading-relaxed text-slate-500">{description}</p>}
-      <div className="mt-3 divide-y divide-slate-100">{children}</div>
-    </div>
+    <section className="grid grid-cols-1 items-start gap-6 md:grid-cols-12">
+      <div className="md:col-span-4">
+        <h3 className="text-base font-extrabold tracking-tight text-slate-900">{title}</h3>
+        {description && <p className="mt-1 text-xs font-medium leading-relaxed text-slate-500">{description}</p>}
+      </div>
+      <div className="divide-y divide-slate-100 md:col-span-8">{children}</div>
+    </section>
   );
 }
 
@@ -799,7 +801,7 @@ function NumberField({
             if (Number.isFinite(next) && next >= floor && next !== value) onCommit(next);
             else setDraft(String(value));
           }}
-          className="w-20 rounded-lg border border-slate-200 px-2 py-1.5 text-center text-xs font-bold text-ink outline-none focus:border-indigo-300 focus:ring-1 focus:ring-indigo-200 disabled:bg-slate-50 disabled:text-slate-500 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/25"
+          className="w-20 rounded-full border border-slate-200/90 bg-surface px-2 py-1.5 text-center text-xs font-bold text-ink shadow-2xs outline-none focus:border-[#205ca8] focus:ring-4 focus:ring-blue-500/10 disabled:bg-slate-50 disabled:text-slate-500"
         />
         {suffix && <span className="text-[11px] font-semibold text-slate-400">{suffix}</span>}
       </div>
@@ -837,7 +839,7 @@ function ToggleField({
         disabled={disabled}
         onClick={() => onChange(!value)}
         className={`relative mt-0.5 h-5 w-9 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
-          value ? "bg-indigo-600" : "bg-slate-200"
+          value ? "bg-[#205ca8] dark:bg-blue-500" : "bg-slate-200"
         }`}
       >
         <span

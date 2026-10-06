@@ -1,11 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { History, Link2, Loader2 } from "lucide-react";
+import { Link2 } from "lucide-react";
 import { listExamVersions } from "@/domains/assessments";
+import {
+  WorkspaceLoading,
+  WorkspaceRow,
+  WorkspaceRows,
+  workspaceSecondaryButton,
+} from "@/apps/creator/studio/core/StudioWorkspaceKit";
 import type { OverviewData } from "../../lib/fetchOverviewData";
-import type { OverviewTab } from "../ContentOverviewNav";
 import { PublishingWorkflow } from "../sections/PublishingWorkflow";
 import { editorHref } from "../../lib/contentTypeRouting";
 
@@ -32,13 +37,11 @@ function formatDate(value?: string | null) {
  * served a published version — later edits reach them after the next approval.
  */
 export function ExamOverviewTab({
-  tab,
   contentId,
   data,
   onSubmit,
   submitting,
 }: {
-  tab: OverviewTab;
   contentId: string;
   data: OverviewData;
   onSubmit: () => void;
@@ -46,39 +49,37 @@ export function ExamOverviewTab({
 }) {
   const [versions, setVersions] = useState<ExamVersion[] | null>(null);
 
-  const load = useCallback(() => {
-    listExamVersions(contentId)
-      .then(setVersions)
-      .catch(() => setVersions([]));
-  }, [contentId]);
-
   useEffect(() => {
-    if (tab === "publishing") load();
-  }, [tab, load]);
-
-  if (tab !== "publishing") return null;
+    let cancelled = false;
+    listExamVersions(contentId)
+      .then((list) => !cancelled && setVersions(list))
+      .catch(() => !cancelled && setVersions([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [contentId]);
 
   const parentCourse = data.content?.courseId ?? null;
   const parentEvent = data.content?.eventId ?? null;
   const tied = !!(parentCourse || parentEvent);
+  const parentNoun = parentCourse ? "course" : "event";
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-10">
       {tied ? (
-        <div className="flex flex-col gap-3 rounded-[24px] border-[1.5px] border-blue-400/80 bg-gradient-to-b from-blue-50/30 via-surface to-surface p-6 shadow-[4px_-4px_0px_0px_#BFDBFE] dark:from-blue-500/10">
-          <h3 className="text-base font-black tracking-tight text-slate-900">Publishing</h3>
-          <p className="text-xs leading-relaxed text-slate-500">
-            This exam is tied to a {parentCourse ? "course" : "event"}. It is submitted, reviewed and
-            published together with it, and the platform&apos;s locked exam standards apply to every
-            plan. Submit the {parentCourse ? "course" : "event"} to publish changes.
-          </p>
-          <Link
-            href={parentCourse ? `/studio/content/course/${parentCourse}` : `/studio/content/event/${parentEvent}`}
-            className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-surface px-4 py-2 text-xs font-extrabold text-ink transition-colors hover:bg-slate-50"
+        <WorkspaceRows>
+          <WorkspaceRow
+            step={1}
+            title="Published with its parent"
+            description={`This exam is tied to a ${parentNoun}. It is submitted, reviewed and published together with it, and the platform's locked exam standards apply to every plan. Submit the ${parentNoun} to publish changes.`}
           >
-            <Link2 size={14} /> Open the {parentCourse ? "course" : "event"}
-          </Link>
-        </div>
+            <div>
+              <Link href={parentCourse ? `/studio/content/course/${parentCourse}?tab=publishing` : `/studio/content/event/${parentEvent}?tab=publishing`} className={workspaceSecondaryButton}>
+                <Link2 size={14} /> Open the {parentNoun}&apos;s publishing
+              </Link>
+            </div>
+          </WorkspaceRow>
+        </WorkspaceRows>
       ) : (
         <PublishingWorkflow
           status={data.content?.status ?? "DRAFT"}
@@ -87,48 +88,40 @@ export function ExamOverviewTab({
           onSubmit={onSubmit}
           submitting={submitting}
           reviewPath={data.reviewPath.status === "ok" ? data.reviewPath.data : null}
-          reviewPathError={
-            data.reviewPath.status === "error" ? "Could not determine the review path for this exam." : null
-          }
+          reviewPathError={data.reviewPath.status === "error" ? "Could not determine the review path for this exam." : null}
         />
       )}
 
-      <div className="rounded-[24px] border border-slate-200 bg-surface p-6">
-        <h4 className="mb-2 flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-500">
-          <History size={13} /> Published versions
-        </h4>
-        <p className="mb-3 text-xs leading-relaxed text-slate-500">
-          Each approval freezes the plans, their settings and the exact question versions every rule
-          can draw. Attempts are generated only from the live version, so editing a question never
-          changes a paper learners are given until the next approval.
-        </p>
-        {versions === null ? (
-          <div className="flex justify-center py-6">
-            <Loader2 size={16} className="animate-spin text-slate-400" />
-          </div>
-        ) : versions.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-slate-200 bg-surface px-4 py-6 text-center text-xs font-semibold text-slate-500">
-            Not published yet.
-          </p>
-        ) : (
-          <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-surface">
-            {versions.map((version, i) => (
-              <li key={version.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
-                <span className="text-xs font-bold text-ink">
-                  v{version.versionNumber}
-                  {version.label ? ` · ${version.label}` : ""}
-                  {i === 0 && (
-                    <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-                      Live
-                    </span>
-                  )}
-                </span>
-                <span className="text-[11px] font-semibold text-slate-400">{formatDate(version.publishedAt)}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <WorkspaceRows>
+        <WorkspaceRow
+          step={tied ? 2 : 4 /* after the workflow's three rows */}
+          title="Published versions"
+          description="Each approval freezes the plans, their settings and the exact question versions every rule can draw. Attempts come only from the live version, so editing a question never changes a paper learners are given until the next approval."
+        >
+          {versions === null ? (
+            <WorkspaceLoading />
+          ) : versions.length === 0 ? (
+            <p className="text-sm font-bold text-slate-500">Not published yet.</p>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {versions.map((version, i) => (
+                <li key={version.id} className="flex items-center justify-between gap-3 py-3 first:pt-0">
+                  <span className="text-sm font-bold text-ink">
+                    v{version.versionNumber}
+                    {version.label ? ` · ${version.label}` : ""}
+                    {i === 0 && (
+                      <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                        Live
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-xs font-semibold tabular-nums text-slate-400">{formatDate(version.publishedAt)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </WorkspaceRow>
+      </WorkspaceRows>
     </div>
   );
 }

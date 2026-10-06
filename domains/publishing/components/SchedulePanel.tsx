@@ -77,10 +77,13 @@ export interface SchedulePanelProps {
   readOnly?: boolean;
   /** Words for the enrolment step — "Enrollment" for courses, "Registration" for events and exams. */
   enrollmentNoun?: string;
+  /** Drop the built-in heading — the host (a numbered Content Overview row) supplies it. */
+  bare?: boolean;
 }
 
-export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun }: SchedulePanelProps) {
+export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun, bare = false }: SchedulePanelProps) {
   const noun = enrollmentNoun ?? (contentType === "COURSE" ? "Enrollment" : "Registration");
+  const thing = contentType === "COURSE" ? "course" : contentType === "EVENT" ? "event" : "exam";
   const [schedule, setSchedule] = useState<ContentScheduleResponse | null>(null);
   const [draft, setDraft] = useState<Draft>(draftOf(null));
   const [loading, setLoading] = useState(true);
@@ -167,28 +170,29 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
 
   return (
     <section className="flex flex-col gap-5 py-2">
-      {/* 01 Numbered Step Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3.5">
-          <div className="flex size-9 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 font-extrabold text-sm shrink-0 mt-0.5">
-            01
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <h3 className="text-xl font-black text-slate-900 tracking-tight">
-              Schedule
-            </h3>
-            <p className="text-xs font-medium text-slate-500">
-              Define when learners can enroll and access your course.
-            </p>
-          </div>
-        </div>
-        {schedule && (
+      {bare ? (
+        schedule && (
           <div className="flex flex-wrap gap-1.5">
             <StateChip label={noun} state={schedule.enrollmentState} />
             <StateChip label="Access" state={schedule.accessState} />
           </div>
-        )}
-      </div>
+        )
+      ) : (
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-0.5">
+            <h3 className="text-base font-extrabold tracking-tight text-slate-900">Schedule</h3>
+            <p className="text-xs font-medium text-slate-500">
+              Define when learners can {noun === "Enrollment" ? "enroll in" : "register for"} and access this {thing}.
+            </p>
+          </div>
+          {schedule && (
+            <div className="flex flex-wrap gap-1.5">
+              <StateChip label={noun} state={schedule.enrollmentState} />
+              <StateChip label="Access" state={schedule.accessState} />
+            </div>
+          )}
+        </div>
+      )}
 
       {loading ? (
         <div className="flex justify-center py-8">
@@ -199,7 +203,7 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
           <div className="grid gap-6 md:grid-cols-2 pt-1">
             <WindowFields
               title={`${noun} window`}
-              hint={`When learners can ${noun === "Enrollment" ? "enroll" : "register"} in this course.`}
+              hint={`When learners can ${noun === "Enrollment" ? "enroll in" : "register for"} this ${thing}.`}
               opens={draft.enrollmentOpensAt}
               closes={draft.enrollmentClosesAt}
               opensProblem={problems.enrollmentOpensAt}
@@ -212,7 +216,7 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
             />
             <WindowFields
               title="Access window"
-              hint={contentType === "EXAM" ? "When the exam can be sat." : "When enrolled learners can access the course."}
+              hint={contentType === "EXAM" ? "When the exam can be sat." : `When ${noun === "Enrollment" ? "enrolled" : "registered"} learners can access the ${thing}.`}
               opens={draft.accessStartsAt}
               closes={draft.accessEndsAt}
               opensProblem={problems.accessStartsAt}
@@ -241,7 +245,7 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
                 type="button"
                 onClick={clear}
                 disabled={saving}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200/90 bg-surface px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200/90 bg-surface px-5 py-2.5 text-xs font-bold text-slate-700 shadow-2xs transition-all hover:bg-slate-50 disabled:opacity-50"
               >
                 <Clock size={14} className="text-slate-500" /> Always open
               </button>
@@ -249,7 +253,7 @@ export function SchedulePanel({ contentType, contentId, readOnly, enrollmentNoun
                 type="button"
                 onClick={save}
                 disabled={!dirty || saving || hasProblems || !!orderProblem}
-                className="inline-flex items-center gap-2 rounded-xl bg-ink hover:bg-blue-600 px-6 py-2.5 text-xs font-extrabold text-on-ink transition-all shadow-md cursor-pointer disabled:opacity-50"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-ink px-7 py-2.5 text-xs font-extrabold text-on-ink shadow-md transition-all hover:bg-[#205ca8] disabled:opacity-50"
               >
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                 {hasProblems ? "Fix the dates above" : dirty ? "Save schedule" : "Saved"}
