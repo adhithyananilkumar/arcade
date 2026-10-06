@@ -149,4 +149,5 @@ export interface ExamSummary {
   id: string;
   title: string;
   published: boolean;
+  questionCount?: number;
 }

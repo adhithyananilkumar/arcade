@@ -17,6 +17,8 @@ interface ChannelPolicyManagerProps {
   permissions: string[];
   isSuspended?: boolean;
   hideHeader?: boolean;
+  /** Called with the fresh list after every load, create, edit or delete, so pickers elsewhere on the page stay current. */
+  onRolesChange?: (roles: Role[]) => void;
 }
 
 const formatPermissionKey = (key: string) => {
@@ -31,7 +33,7 @@ const formatPermissionKey = (key: string) => {
   return key;
 };
 
-export function ChannelPolicyManager({ channelId, permissions: userPermissions, isSuspended, hideHeader = false }: ChannelPolicyManagerProps) {
+export function ChannelPolicyManager({ channelId, permissions: userPermissions, isSuspended, hideHeader = false, onRolesChange }: ChannelPolicyManagerProps) {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -71,8 +73,9 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
     }
     try {
       setLoading(true);
-      const rolesData = await roleService.getChannelRoles(channelId);
-      setRoles(rolesData || []);
+      const rolesData = (await roleService.getChannelRoles(channelId)) || [];
+      setRoles(rolesData);
+      onRolesChange?.(rolesData);
     } catch (error) {
       if (error instanceof ApiError && error.status === 403) {
         setRoles([]);
@@ -304,6 +307,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
             <PolicyEditor
               scope="CHANNEL"
               resourceId={channelId}
+              myPermissionCodes={userPermissions}
               mode={editingRole ? 'edit' : 'create'}
               policy={editingRole ? {
                 id: editingRole.id,

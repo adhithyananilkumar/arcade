@@ -64,3 +64,6 @@ export { LinkedInGlyph } from "./components/LinkedInGlyph";
 export { BadgeLevelSummary } from "./components/BadgeLevelSummary";
 export { CertificateFace } from "./components/CertificateFace";
 export type { CertificateFaceProps } from "./components/CertificateFace";
+export { IssuerLogoPreview } from "./components/IssuerLogoPreview";
+export { HOST_INSTITUTION_NAME } from "./lib/hostInstitution";
+export type { IssuerLogoPreviewProps } from "./components/IssuerLogoPreview";

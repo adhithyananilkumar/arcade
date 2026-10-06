@@ -579,7 +579,16 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
         if (firstLeaf && firstLeaf.type === "document") {
           await openLesson(firstLeaf);
         }
-      } catch (e) {
+      } catch (e: any) {
+        if (e?.status === 403 || e?.message?.includes("403") || e?.message?.includes("Forbidden")) {
+          toast.error("Your collaborator access has been revoked. Exiting workspace...", {
+            id: "collaborator-revoked-exit",
+          });
+          if (typeof window !== "undefined") {
+            window.location.replace("/studio");
+          }
+          return;
+        }
         console.error("Failed to load content", e);
       }
       setIsInitializing(false);
@@ -682,24 +691,28 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
     router.push(`/studio/exam/${examId}/edit`);
   }, [router]);
 
-  const addExam = useCallback(async () => {
+  const openExamManagement = useCallback((examId: string) => {
+    router.push(`/studio/content/exam/${examId}`);
+  }, [router]);
+
+
+  const setupExam = useCallback(async () => {
     if (!contentId) return;
-    // One exam per course or event: if it exists, open it rather than create a second.
     if (exams.length > 0) {
-      openExamConfig(exams[0].id);
+      openExamManagement(exams[0].id);
       return;
     }
     setAddingExam(true);
     try {
       const exam = await adapter.createAndAttachExam(contentId, `${title || adapter.terminology.root} exam`);
       setExams([exam]);
-      openExamConfig(exam.id);
+      openExamManagement(exam.id);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to set up the exam");
     } finally {
       setAddingExam(false);
     }
-  }, [contentId, exams, adapter, openExamConfig, title]);
+  }, [contentId, exams, adapter, openExamManagement, title]);
 
   const removeExam = useCallback(
     async (examId: string) => {
@@ -708,10 +721,10 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
       setExams((prev) => prev.filter((e) => e.id !== examId));
       try {
         await adapter.detachExam(contentId, examId);
-        toast.success("Exam removed");
+        toast.success("Question bank removed");
       } catch {
         setExams(previous);
-        toast.error("Failed to remove exam");
+        toast.error("Failed to remove question bank");
       }
     },
     [contentId, exams, adapter]
@@ -942,8 +955,8 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
 
   const askRemoveExam = (exam: ExamSummary) =>
     confirm({
-      title: "Untie this exam?",
-      message: `"${exam.title}" becomes a standalone exam. Its assessments are removed from this ${adapter.terminology.root.toLowerCase()} and its completion assessment stops completing it. Questions, attempts and results are kept.`,
+      title: "Untie this question bank?",
+      message: `"${exam.title}" becomes a standalone question bank. Its assessments are removed from this ${adapter.terminology.root.toLowerCase()} and its completion assessment stops completing it. Questions, attempts and results are kept.`,
       confirmLabel: "Untie",
       danger: true,
       onConfirm: () => removeExam(exam.id),
@@ -1400,11 +1413,12 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
               );
             })}
 
-            {/* ── The exam: a sibling of Modules. At most one per course or event — it is the
-                 content's assessment system (question bank, completion, grading, certification). ── */}
-            {exams.length > 0 && (
+            {/* ── The exam: a sibling of Modules. Only shown when questions exist in the bank. ── */}
+            {exams.filter((e) => (e.questionCount ?? 0) > 0).length > 0 && (
               <div className="mb-2 flex flex-col gap-1">
-                {exams.map((exam) => (
+                {exams
+                  .filter((e) => (e.questionCount ?? 0) > 0)
+                  .map((exam) => (
                   <div
                     key={exam.id}
                     className="group flex items-center gap-2 rounded-2xl border border-dashed border-ink/15 bg-ink/[0.03] px-3 py-2 shadow-sm transition-all hover:border-ink/25 hover:bg-ink/[0.06]"
@@ -1412,26 +1426,33 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                     <button
                       type="button"
                       onClick={() => openExamConfig(exam.id)}
-                      title="Open this exam in Studio — questions, pools, plans and settings"
+                      title="Open this question bank in Studio — questions, pools, plans and settings"
                       className="flex min-w-0 flex-1 items-center gap-2 text-left"
                     >
                       <GraduationCap size={14} className="flex-shrink-0 text-ink/50" />
                       <span className="flex-1 truncate text-xs font-bold text-ink/70" title={exam.title}>
                         {exam.title}
                       </span>
-                      <span className="flex-shrink-0 rounded-full bg-ink/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink/50">
-                        {exam.published ? "Published" : "Draft"}
-                      </span>
+                      {typeof exam.questionCount === "number" && exam.questionCount > 0 && (
+                        <span className="flex-shrink-0 rounded-full bg-ink/10 px-2 py-0.5 text-[10px] font-semibold text-ink/60">
+                          {exam.questionCount} {exam.questionCount === 1 ? "question" : "questions"}
+                        </span>
+                      )}
                     </button>
                     {status !== "SUBMITTED" && (
-                      <IconBtn title="Untie exam" danger onClick={() => askRemoveExam(exam)}>
+                      <IconBtn title="Exam plans & settings" onClick={() => openExamManagement(exam.id)}>
+                        <FileText size={12} />
+                      </IconBtn>
+                    )}
+                    {status !== "SUBMITTED" && (
+                      <IconBtn title="Untie question bank" danger onClick={() => askRemoveExam(exam)}>
                         <Trash2 size={12} />
                       </IconBtn>
                     )}
                   </div>
                 ))}
                 <p className="pl-3 text-[10px] leading-relaxed text-slate-400">
-                  This {adapter.terminology.root.toLowerCase()}&apos;s exam. Open it to edit questions, plans and
+                  This {adapter.terminology.root.toLowerCase()}&apos;s question bank. Open it to edit questions, plans and
                   its certification. Its settings follow the platform&apos;s exam standards.
                 </p>
               </div>
@@ -1496,13 +1517,13 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
 
                 <button
                   type="button"
-                  onClick={addExam}
+                  onClick={setupExam}
                   className="flex w-full items-center justify-center gap-2 rounded-2xl border border-surface/60 bg-surface/80 px-4 py-2.5 text-xs font-bold text-ink shadow-xs backdrop-blur-md transition-all hover:bg-surface/95 hover:shadow cursor-pointer"
                 >
                   {addingExam ? (
-                    <Loader2 size={15} className="animate-spin text-indigo-500" />
+                    <Loader2 size={15} className="animate-spin text-violet-500" />
                   ) : (
-                    <GraduationCap size={15} className="text-indigo-500 stroke-[2.2]" />
+                    <GraduationCap size={15} className="text-violet-500 stroke-[2.2]" />
                   )}
                   Set up exam
                 </button>

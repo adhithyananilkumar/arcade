@@ -63,6 +63,13 @@ export function getNotificationTargetUrl(n: LinkableNotification): string | null
     return messageId ? `/console/inbox?tab=reports&reportId=${messageId}` : '/console/inbox?tab=reports';
   }
 
+  // A route the sender picked wins over the text heuristics below, which exist only for older
+  // notifications sent without a link (or with the bare inbox link). Without this, any message
+  // containing "report" — e.g. "X reported a major bug" — was sent to the inbox's Reports tab.
+  if (n.linkUrl && !n.linkUrl.startsWith('/console/inbox')) {
+    return n.linkUrl;
+  }
+
   const lowerTitle = (n.title || '').toLowerCase();
   const lowerMessage = (n.message || '').toLowerCase();
 

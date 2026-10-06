@@ -10,8 +10,9 @@
  *   level  → metal                  (1 Foundation bronze · 2 Intermediate silver · 3 Advanced gold)
  *   title  → the content's name; the Arcade wordmark above it, the issuing organisation's logo below
  *
- * Minimal — a white face, a muted metal rim, clean type — so a badge reads like a professional
- * credential rather than a game trophy.
+ * Reads like a professional certification mark (Oracle / AWS style), not a game trophy: a bevelled
+ * metal rim, a double keyline, then a fixed type hierarchy — wordmark, LEVEL, content name, family ·
+ * year — and the issuing organisation's logo in its own colours on a metal-ringed medallion.
  *
  * A pure string builder rather than a React component so the same bytes serve the in-app
  * <CredentialBadge>, the downloadable image, and the Open Badges `image` URL
@@ -28,11 +29,12 @@ export type BadgeLevel = 1 | 2 | 3;
  * Each level's metal — bronze, silver, gold — in muted, printed-medal tones rather than bright
  * primaries: a three-stop rim (highlight → body → shadow) and a faint tint for the face.
  */
-const METAL: Record<BadgeLevel, { rim: [string, string, string]; tint: string; line: string }> = {
-  1: { rim: ["#DCC3AE", "#BF9D83", "#9C7A62"], tint: "#FBF8F5", line: "#D2B9A4" }, // Foundation: bronze
-  2: { rim: ["#DDE1E6", "#A7AFBA", "#6C7582"], tint: "#F5F7F9", line: "#B8C0CA" }, // Intermediate: silver
-  3: { rim: ["#E8CF8C", "#C29C4C", "#86651F"], tint: "#FBF7EC", line: "#D6B96E" }, // Advanced: gold
+const METAL: Record<BadgeLevel, { rim: [string, string, string]; tint: string; line: string; text: string }> = {
+  1: { rim: ["#E6CFBB", "#BF9D83", "#8E6B53"], tint: "#F8F2EC", line: "#CDAF98", text: "#86604A" }, // Foundation: bronze
+  2: { rim: ["#EEF0F3", "#A7AFBA", "#5F6875"], tint: "#F1F4F7", line: "#B1BAC5", text: "#566070" }, // Intermediate: silver
+  3: { rim: ["#F2DDA0", "#C29C4C", "#7A5A18"], tint: "#FAF3E0", line: "#D1B166", text: "#76561A" }, // Advanced: gold
 };
+const LEVEL_LABEL: Record<BadgeLevel, string> = { 1: "FOUNDATION", 2: "INTERMEDIATE", 3: "ADVANCED" };
 const INK = "#1A2238";
 const MUTED = "#6B7385";
 
@@ -128,7 +130,7 @@ function wrap(text: string, maxChars: number): string[] {
 
 /** Largest size at which the name fits in three lines; below that, the third line is truncated. */
 function layoutTitle(text: string, width: number): { size: number; lines: string[] } {
-  for (const size of [19, 17, 15, 13.5, 12]) {
+  for (const size of [18, 16.5, 15, 13.5, 12]) {
     const lines = wrap(text, Math.floor(width / (size * 0.56)));
     if (lines.length <= 3) return { size, lines };
   }
@@ -143,7 +145,7 @@ function title(text: string, family: BadgeFamilyKey): string {
   const width = family === "EVENT" ? 138 : 150;
   const { size, lines } = layoutTitle(text, width);
   const lineHeight = size * 1.18;
-  const blockCenter = 112;
+  const blockCenter = 122;
   const first = blockCenter - ((lines.length - 1) * lineHeight) / 2 + size * 0.35;
   return lines
     .map(
@@ -166,6 +168,12 @@ export interface BadgeArtOptions {
    * because an SVG drawn as an image loads nothing external.
    */
   issuerLogoUrl?: string | null;
+  /** Year earned, printed beside the family label. Omitted for unearned and generic artwork. */
+  year?: number | null;
+  /** "metal" (default) blends the logo into bronze/silver/gold; "original" keeps its own colours. */
+  logoStyle?: "metal" | "original";
+  /** Top tiers shimmer (Intermediate) and glint (Advanced). Off for files and images. */
+  animate?: boolean;
   /** Prefix for gradient ids — must be unique per badge on a page. */
   uid?: string;
   /** Adds the xmlns and a <title>, for a standalone .svg file. */
@@ -185,71 +193,156 @@ function wordmark(): string {
   ).join("")}</g>`;
 }
 
+const MEDALLION_Y = 193;
+
+/**
+ * The foot of the badge: a hairline rule either side of a medallion carrying the issuing
+ * organisation's logo in its own colours (on white, as on Oracle/AWS partner marks). With no logo
+ * the rule closes on a small diamond instead, so the badge never looks unfinished.
+ */
 function channels(hex: string): [number, number, number] {
   const n = parseInt(hex.slice(1), 16);
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
 }
 
-/**
- * The organisation's logo, recoloured into the badge's metal: a duotone that maps the logo's dark
- * tones to the metal's shadow and its light tones to the face, so any brand colour reads as bronze,
- * silver or gold. Nothing is drawn when there is no logo.
- */
-function medallion(id: string, logo: string | null | undefined, metal: (typeof METAL)[BadgeLevel]): string {
-  if (!logo) return "";
-  const cy = 186;
-  const dark = channels(metal.rim[2]);
-  const light = channels(metal.tint);
-  const table = (i: number) => `${dark[i].toFixed(3)} ${light[i].toFixed(3)}`;
+function medallion(id: string, logo: string | null | undefined, metal: (typeof METAL)[BadgeLevel], logoStyle: "metal" | "original"): string {
+  const cy = MEDALLION_Y;
+  const rules = [-1, 1]
+    .map((s) => {
+      const from = CX + s * (logo ? 27 : 9);
+      const to = CX + s * 47;
+      return `<line x1="${from}" y1="${cy}" x2="${to}" y2="${cy}" stroke="${metal.rim[1]}" stroke-width="0.9" stroke-opacity="0.8"/>`;
+    })
+    .join("");
+  if (!logo) {
+    return `${rules}<path d="M${CX} ${cy - 4} L${CX + 4} ${cy} L${CX} ${cy + 4} L${CX - 4} ${cy} Z" fill="${metal.rim[1]}"/>`;
+  }
+  // "metal" blends the logo into the badge: its dark tones take the metal's shadow, its light tones
+  // the metal's highlight, so any brand colour reads as bronze, silver or gold. "original" keeps it.
+  const dark = channels(metal.text);
+  const mid = channels(metal.rim[1]);
+  const light = channels(metal.rim[0]);
+  const table = (i: number) => `${dark[i].toFixed(3)} ${mid[i].toFixed(3)} ${light[i].toFixed(3)}`;
+  const blend = logoStyle === "metal";
   return `
-    <filter id="${id}-duo" color-interpolation-filters="sRGB">
+    ${rules}
+    ${
+      blend
+        ? `<filter id="${id}-duo" color-interpolation-filters="sRGB">
       <feColorMatrix type="saturate" values="0"/>
       <feComponentTransfer>
         <feFuncR type="table" tableValues="${table(0)}"/>
         <feFuncG type="table" tableValues="${table(1)}"/>
         <feFuncB type="table" tableValues="${table(2)}"/>
       </feComponentTransfer>
-    </filter>
-    <clipPath id="${id}-logo"><circle cx="${CX}" cy="${cy}" r="14"/></clipPath>
-    <circle cx="${CX}" cy="${cy}" r="16.5" fill="${metal.tint}" stroke="url(#${id}-rim)" stroke-width="2"/>
-    <image href="${escapeXml(logo)}" x="${CX - 14}" y="${cy - 14}" width="28" height="28" preserveAspectRatio="xMidYMid slice" clip-path="url(#${id}-logo)" filter="url(#${id}-duo)"/>`;
+    </filter>`
+        : ""
+    }
+    <clipPath id="${id}-logo"><circle cx="${CX}" cy="${cy}" r="16"/></clipPath>
+    <circle cx="${CX}" cy="${cy + 1}" r="22" fill="#0F172A" fill-opacity="0.10"/>
+    <circle cx="${CX}" cy="${cy}" r="22" fill="url(#${id}-rim)"/>
+    <circle cx="${CX}" cy="${cy}" r="19.5" fill="url(#${id}-rimr)"/>
+    <circle cx="${CX}" cy="${cy}" r="18" fill="url(#${id}-face)"/>
+    <image href="${escapeXml(logo)}" x="${CX - 14}" y="${cy - 14}" width="28" height="28" preserveAspectRatio="xMidYMid meet" clip-path="url(#${id}-logo)"${blend ? ` filter="url(#${id}-duo)"` : ""}/>
+    <path d="M${CX - 15} ${cy - 5} A16 16 0 0 1 ${CX + 15} ${cy - 5}" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="1.2" stroke-linecap="round"/>`;
+}
+
+function star(cx: number, cy: number, r: number): string {
+  return `M${cx} ${cy - r}Q${cx} ${cy} ${cx + r} ${cy}Q${cx} ${cy} ${cx} ${cy + r}Q${cx} ${cy} ${cx - r} ${cy}Q${cx} ${cy} ${cx} ${cy - r}Z`;
+}
+
+const SPARKLE_RADIUS: Record<BadgeFamilyKey, number> = { COURSE: 108, EVENT: 102, EXAM: 100 };
+
+/**
+ * Motion for the top tiers only — Foundation stays still. Intermediate gets a slow light sweep
+ * across the metal; Advanced adds a faster sweep, glints on the rim and a breathing glow. Plain
+ * CSS keyframes (scoped by `id`), switched off under prefers-reduced-motion. At rest everything is
+ * invisible or off-canvas, so a rasterised PNG is the clean static badge.
+ */
+function motion(id: string, family: BadgeFamilyKey, level: BadgeLevel, clipPathD: string): { before: string; after: string } {
+  if (level === 1) return { before: "", after: "" };
+  const top = level === 3;
+  const spark = (deg: number, r: number, delay: number) => {
+    const a = (deg * Math.PI) / 180;
+    const x = CX + SPARKLE_RADIUS[family] * Math.cos(a);
+    const y = CY + SPARKLE_RADIUS[family] * Math.sin(a);
+    return `<path class="${id}-st" style="animation-delay:${delay}s" opacity="0" fill="#FFFFFF" d="${star(+x.toFixed(1), +y.toFixed(1), r)}"/>`;
+  };
+  const css = `
+    @keyframes ${id}-sweep{0%,${top ? 45 : 60}%{transform:translateX(-300px)}100%{transform:translateX(300px)}}
+    @keyframes ${id}-twinkle{0%,100%{opacity:0;transform:scale(.2) rotate(0deg)}50%{opacity:1;transform:scale(1) rotate(45deg)}}
+    @keyframes ${id}-glow{0%,100%{opacity:.15}50%{opacity:.75}}
+    .${id}-sw{animation:${id}-sweep ${top ? 4.5 : 6.5}s cubic-bezier(.45,.05,.35,1) infinite}
+    .${id}-st{transform-box:fill-box;transform-origin:center;animation:${id}-twinkle 3.6s ease-in-out infinite}
+    .${id}-gl{animation:${id}-glow 3.6s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){.${id}-sw,.${id}-st,.${id}-gl{animation:none}}`;
+  const before = top
+    ? `<filter id="${id}-blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5"/></filter>
+       <path class="${id}-gl" d="${silhouette(family, 0)}" fill="none" stroke="#F2D27A" stroke-width="7" opacity="0" filter="url(#${id}-blur)"/>`
+    : "";
+  const after = `
+    <style>${css}</style>
+    <clipPath id="${id}-mclip"><path d="${clipPathD}"/></clipPath>
+    <linearGradient id="${id}-shine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/><stop offset="0.5" stop-color="#FFFFFF" stop-opacity="${top ? 0.7 : 0.5}"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <g clip-path="url(#${id}-mclip)"><polygon class="${id}-sw" points="-56,-8 12,-8 -12,264 -80,264" fill="url(#${id}-shine)"/></g>
+    ${top ? `${spark(210, 7, 0)}${spark(30, 6, 1.4)}${spark(262, 4.5, 2.4)}` : spark(30, 5, 0.8)}`;
+  return { before, after };
 }
 
 /** The complete badge as an SVG document string. */
-export function renderBadgeSvg({ family, level, title: name, issuerLogoUrl, uid = "b", standalone }: BadgeArtOptions): string {
+export function renderBadgeSvg({ family, level, title: name, issuerLogoUrl, year, logoStyle = "metal", animate = false, uid = "b", standalone }: BadgeArtOptions): string {
   const metal = METAL[level];
   const id = uid.replace(/[^a-zA-Z0-9_-]/g, "");
   const outer = silhouette(family, 0);
-  const face = silhouette(family, 7);
-  const inner = silhouette(family, 12);
+  const bevel = silhouette(family, 4.5);
+  const face = silhouette(family, 8);
+  const keyline = silhouette(family, 12);
+  const keyline2 = silhouette(family, 15);
 
   const centre = name && name.trim()
     ? title(name, family)
-    : `<text x="${CX}" y="118" text-anchor="middle" font-family="${FONT}" font-weight="700" font-size="18" fill="${INK}">${
+    : `<text x="${CX}" y="126" text-anchor="middle" font-family="${FONT}" font-weight="700" font-size="18" fill="${INK}">${
         family === "COURSE" ? "Course" : family === "EVENT" ? "Event" : "Exam"
       }</text>`;
+
+  const fx = animate ? motion(id, family, level, outer) : { before: "", after: "" };
+  const beads = silhouette(family, 10.5);
+  const caption = year ? `${FAMILY_LABEL[family]}  ·  ${year}` : FAMILY_LABEL[family];
 
   const svg = `
     <defs>
       <linearGradient id="${id}-rim" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="${metal.rim[0]}"/><stop offset="0.5" stop-color="${metal.rim[1]}"/><stop offset="1" stop-color="${metal.rim[2]}"/>
+        <stop offset="0" stop-color="${metal.rim[0]}"/><stop offset="0.45" stop-color="${metal.rim[1]}"/><stop offset="1" stop-color="${metal.rim[2]}"/>
       </linearGradient>
-      <linearGradient id="${id}-face" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="${metal.tint}"/>
+      <linearGradient id="${id}-rimr" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="${metal.rim[2]}"/><stop offset="0.55" stop-color="${metal.rim[1]}"/><stop offset="1" stop-color="${metal.rim[0]}"/>
       </linearGradient>
-      <clipPath id="${id}-clip"><path d="${face}"/></clipPath>
+      <radialGradient id="${id}-face" cx="0.38" cy="0.28" r="0.95">
+        <stop offset="0" stop-color="#FFFFFF"/><stop offset="0.6" stop-color="#FFFFFF"/><stop offset="1" stop-color="${metal.tint}"/>
+      </radialGradient>
+      <linearGradient id="${id}-gloss" x1="0" y1="0" x2="0.35" y2="1">
+        <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.30"/><stop offset="0.38" stop-color="#FFFFFF" stop-opacity="0.07"/><stop offset="0.39" stop-color="#FFFFFF" stop-opacity="0"/>
+      </linearGradient>
     </defs>
-    <ellipse cx="${CX}" cy="246" rx="70" ry="6" fill="#0F172A" fill-opacity="0.07"/>
+    <ellipse cx="${CX}" cy="247" rx="68" ry="5.5" fill="#0F172A" fill-opacity="0.10"/>
+    ${fx.before}
     <path d="${outer}" fill="url(#${id}-rim)"/>
+    <path d="${outer}" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="0.8"/>
+    <path d="${bevel}" fill="url(#${id}-rimr)"/>
     <path d="${face}" fill="url(#${id}-face)"/>
-    <g clip-path="url(#${id}-clip)">
-      <path d="M0 196 C60 176 150 222 240 190 V256 H0 Z" fill="url(#${id}-rim)" fill-opacity="0.10"/>
-    </g>
-    <path d="${inner}" fill="none" stroke="${metal.line}" stroke-width="1" stroke-opacity="0.7"/>
+    <path d="${face}" fill="none" stroke="${metal.rim[2]}" stroke-opacity="0.55" stroke-width="0.8"/>
+    <path d="${beads}" fill="none" stroke="${metal.rim[1]}" stroke-width="1.3" stroke-dasharray="0.1 2.6" stroke-linecap="round" stroke-opacity="0.9"/>
+    <path d="${keyline}" fill="none" stroke="${metal.line}" stroke-width="1" stroke-opacity="0.9"/>
+    <path d="${keyline2}" fill="none" stroke="${metal.line}" stroke-width="0.5" stroke-opacity="0.7"/>
     ${wordmark()}
+    <text x="${CX}" y="86" text-anchor="middle" font-family="${FONT}" font-weight="700" font-size="8" letter-spacing="2.4" fill="${metal.text}">${LEVEL_LABEL[level]}</text>
     ${centre}
-    <text x="${CX}" y="156" text-anchor="middle" font-family="${FONT}" font-weight="600" font-size="7.2" letter-spacing="1.6" fill="${MUTED}">${FAMILY_LABEL[family]}</text>
-    ${medallion(id, issuerLogoUrl, metal)}`;
+    <text x="${CX}" y="160" text-anchor="middle" font-family="${FONT}" font-weight="600" font-size="6.6" letter-spacing="1.5" fill="${MUTED}" xml:space="preserve">${escapeXml(caption)}</text>
+    ${medallion(id, issuerLogoUrl, metal, logoStyle)}
+    <path d="${outer}" fill="url(#${id}-gloss)" pointer-events="none"/>
+    ${fx.after}`;
 
   const attrs = `viewBox="0 0 ${BADGE_ART_VIEWBOX.width} ${BADGE_ART_VIEWBOX.height}"${
     standalone ? ` xmlns="http://www.w3.org/2000/svg" width="${BADGE_ART_VIEWBOX.width * 2}" height="${BADGE_ART_VIEWBOX.height * 2}"` : ""

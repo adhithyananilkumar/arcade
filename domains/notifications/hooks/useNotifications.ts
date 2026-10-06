@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { useWebSocket } from '@/infrastructure/websocket/useWebSocket';
+import { myChannelInvitationsKey } from '@/domains/channels';
 import type {
   NotificationCategory,
   NotificationDto,
@@ -30,6 +31,9 @@ interface NotificationEventDto {
   notificationId: string | null;
   unreadCount: number;
 }
+
+/** How often the inbox re-reads itself while the live stream is down. */
+const DISCONNECTED_POLL_MS = 30_000;
 
 const EMPTY_COUNTS: Record<NotificationCategory, number> = {
   REVIEW: 0,
@@ -97,6 +101,11 @@ export function useNotifications(filters: NotificationFilters = {}) {
       switch (payload.event) {
         case 'CREATED':
           queryClient.invalidateQueries({ queryKey: notificationKeys.listRoot() });
+          // The Accept/Decline list is a separate query; without this the bell shows the
+          // invitation notice but no buttons until that query happens to go stale.
+          if (payload.notification?.type === 'STAFF_INVITED') {
+            queryClient.invalidateQueries({ queryKey: myChannelInvitationsKey });
+          }
           break;
         case 'UPDATED':
           if (payload.notification) {
@@ -120,6 +129,24 @@ export function useNotifications(filters: NotificationFilters = {}) {
 
     return unsub;
   }, [enabled, connected, subscribe, queryClient]);
+
+  // Events pushed while the socket was down are gone for good — the broker does not replay them.
+  // So every (re)connect re-reads the inbox to catch up, and while disconnected it polls, rather
+  // than leaving a notification invisible until the user happens to navigate.
+  useEffect(() => {
+    if (!enabled) return;
+    const catchUp = () => {
+      queryClient.invalidateQueries({ queryKey: notificationKeys.listRoot() });
+      queryClient.invalidateQueries({ queryKey: notificationKeys.unreadCount() });
+      queryClient.invalidateQueries({ queryKey: myChannelInvitationsKey });
+    };
+    if (connected) {
+      catchUp();
+      return;
+    }
+    const timer = setInterval(catchUp, DISCONNECTED_POLL_MS);
+    return () => clearInterval(timer);
+  }, [enabled, connected, queryClient]);
 
   const markAllRead = useCallback(async () => {
     try {

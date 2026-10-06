@@ -4,10 +4,8 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { LogOut, Search, Plus, ChevronDown, ChevronRight, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Trophy, ArrowLeft, Info } from 'lucide-react';
 import { useState, useMemo } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 import { AuthService } from '@/infrastructure/auth/auth.service';
-import { ChannelStaffService, ChannelInvitation } from "@/domains/channels";
 import { useNotifications, NotificationList } from "@/domains/notifications";
 import { usePermissions, navPillName } from "@/domains/identity";
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
@@ -15,20 +13,19 @@ import {
   useStudioAccess,
   useUserChannels,
   useHasAnyChannel,
-  myChannelsKeys,
   usePendingChannelRequestsQuery,
   usePendingDeletionRequestsQuery,
+  PendingChannelInvitations,
+  useMyChannelInvitations,
 } from "@/domains/channels";
 import { platformReviewApi } from "@/domains/publishing";
 import { api } from '@/infrastructure/http/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MenuContainer, MenuItem } from '@/shared/design-system/ui/fluid-menu';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { getAvatarUrl } from '@/shared/utils/avatar';
 
 /** Shared so the accept/decline handlers can invalidate exactly this query. */
-const NAVBAR_INVITATIONS_KEY = ['my-channel-invitations'] as const;
 
 /**
  * How many pending items the console's task menu lists. It is a "needs attention" dropdown, not a
@@ -52,7 +49,6 @@ export default function LearnerNavbar() {
   const { notifications, unreadCount, markAllRead, markRead, refresh } = useNotifications({
     status: 'unread',
   });
-  const queryClient = useQueryClient();
 
   // Everything the navbar reads is a cached query rather than a `useEffect`. This component
   // persists across every authenticated page, and each of these was previously an uncached fetch
@@ -62,11 +58,7 @@ export default function LearnerNavbar() {
   const channelCount = userChannels.length;
   const singleChannel = channelCount === 1 ? userChannels[0] : null;
 
-  const { data: invitations = [] } = useQuery<ChannelInvitation[]>({
-    queryKey: NAVBAR_INVITATIONS_KEY,
-    queryFn: () => ChannelStaffService.getMyInvitations(),
-    staleTime: 60 * 1000,
-  });
+  const { data: invitations = [], refetch: refetchInvitations } = useMyChannelInvitations();
 
   const { data: collaborations = [] } = useQuery<any[]>({
     queryKey: ['my-event-collaborations'],
@@ -146,51 +138,6 @@ export default function LearnerNavbar() {
     tasks.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     return tasks;
   }, [pendingChannelRequests, pendingDeletions, openReviews]);
-  
-  // Intelligent header scroll behavior
-  const { scrollY } = useScroll();
-  const [hidden, setHidden] = useState(false);
-  const [lastY, setLastY] = useState(0);
-
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    // Only hide after 150px of downward scroll to avoid triggering at the very top
-    if (latest > 150 && latest > lastY) {
-      setHidden(true);
-    } else {
-      setHidden(false);
-    }
-    setLastY(latest);
-  });
-
-  /** Re-reads the invitation list after the user accepts or declines one. */
-  const refreshInvitations = () =>
-    queryClient.invalidateQueries({ queryKey: NAVBAR_INVITATIONS_KEY });
-
-  const handleAcceptInvite = async (id: string) => {
-    try {
-      await ChannelStaffService.acceptInvitation(id);
-      toast.success('Invitation accepted! You are now staff.');
-      // Accepting makes the user staff somewhere, so the shared channel queries are now stale.
-      queryClient.invalidateQueries({ queryKey: myChannelsKeys.workspaces });
-    } catch (error) {
-      // e.g. expired, channel suspended, already staff — the backend says which.
-      toast.error(error instanceof Error ? error.message : 'Failed to accept invitation');
-    } finally {
-      refreshInvitations();
-    }
-  };
-
-  const handleRejectInvite = async (id: string) => {
-    try {
-      await ChannelStaffService.rejectInvitation(id);
-      toast.success('Invitation declined.');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to decline invitation');
-    } finally {
-      refreshInvitations();
-    }
-  };
-
 
   const handleLogout = async () => {
     if (isLoggingOut) return;
@@ -289,15 +236,7 @@ export default function LearnerNavbar() {
   }
 
   return (
-    <motion.div 
-      variants={{
-        visible: { y: 0, opacity: 1 },
-        hidden: { y: -20, opacity: 0 },
-      }}
-      animate={hidden ? "hidden" : "visible"}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="fixed top-6 left-0 right-0 z-40 flex w-full items-center justify-between gap-3 px-4 md:px-8 pointer-events-none"
-    >
+    <header className="fixed top-6 left-0 right-0 z-40 flex w-full items-center justify-between gap-3 px-4 md:px-8 pointer-events-none">
       {/* Left Island: Branding */}
       <div className="pointer-events-auto flex shrink-0 items-center gap-2">
         <div className="flex h-12 shrink-0 items-center rounded-full px-5 apple-glass-dock shadow-none [box-shadow:none]">
@@ -482,7 +421,12 @@ export default function LearnerNavbar() {
         <div className="pointer-events-auto flex items-center justify-center h-12 w-12 rounded-full apple-glass-dock relative z-50">
           <div className="relative flex items-center justify-center">
             <button 
-              onClick={() => setIsNotificationsOpen((open) => !open)}
+              onClick={() => {
+                // The invitation list is a cached query; re-read it on open so an invitation that
+                // arrived since page load shows its Accept/Decline here, not just a bare notice.
+                if (!isNotificationsOpen) refetchInvitations();
+                setIsNotificationsOpen((open) => !open);
+              }}
               className="relative p-2 text-slate-600 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-950/5 rounded-full transition-colors"
               title="Notifications"
             >
@@ -513,43 +457,7 @@ export default function LearnerNavbar() {
                     )}
                   </div>
                   <div className="max-h-[420px] overflow-y-auto">
-                    {invitations.length > 0 && (
-                      <div className="border-b border-slate-950/5">
-                        <p className="px-4 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">Action Required</p>
-                        <div className="divide-y divide-slate-950/5">
-                          {invitations.map(inv => (
-                            <div key={inv.id} className="p-4 hover:bg-slate-950/5 transition-colors">
-                              <p className="text-sm text-slate-800 font-medium mb-1">
-                                Invitation to join <span className="font-bold">{inv.channelName}</span>
-                              </p>
-                              <p className="text-xs text-slate-500 mb-1">
-                                <span className="font-bold text-slate-700">{inv.invitedByName}</span> invited you as <span className="font-bold text-slate-700">{inv.roleNames.join(', ')}</span>.
-                              </p>
-                              <p className="text-[11px] text-slate-400 mb-3">
-                                {new Date(inv.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(inv.createdAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
-                                {inv.expiresAt && (
-                                  <> · expires {new Date(inv.expiresAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</>
-                                )}
-                              </p>
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => { handleAcceptInvite(inv.id); setIsNotificationsOpen(false); }}
-                                  className="flex-1 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors flex items-center justify-center gap-1"
-                                >
-                                  <Check size={14} /> Accept
-                                </button>
-                                <button
-                                  onClick={() => { handleRejectInvite(inv.id); setIsNotificationsOpen(false); }}
-                                  className="flex-1 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center justify-center gap-1"
-                                >
-                                  <X size={14} /> Decline
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <PendingChannelInvitations onAction={() => setIsNotificationsOpen(false)} />
                     <NotificationList
                       notifications={notifications}
                       onItemClick={(notif) => {
@@ -666,6 +574,6 @@ export default function LearnerNavbar() {
           </MenuContainer>
         </div>
       </div>
-    </motion.div>
+    </header>
   );
 }

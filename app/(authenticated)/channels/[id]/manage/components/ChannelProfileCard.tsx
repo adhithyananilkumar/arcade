@@ -87,17 +87,19 @@ interface Props {
   canEdit: boolean;
   onUpdate: (channel: Channel) => void;
   onEditProfile?: () => void;
+  /** Goes to Identity & branding — the one place the logo changes. */
+  onEditLogo?: () => void;
 }
 
 /** The channel as the world sees it — banner, mark, name, owner, links — in one compact card. */
-export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }: Props) {
+export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile, onEditLogo }: Props) {
   const [socialOpen, setSocialOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Banner & Icon direct upload state
+  // Banner direct upload state. The logo changes only in ChannelLogoCard (it is printed on
+  // badges and certificates, so it is previewed and confirmed there).
   const bannerInputRef = useRef<HTMLInputElement>(null);
-  const iconInputRef = useRef<HTMLInputElement>(null);
-  const [cropTarget, setCropTarget] = useState<'icon' | 'banner' | null>(null);
+  const [cropTarget, setCropTarget] = useState<'banner' | null>(null);
   const [cropSourceFile, setCropSourceFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -127,18 +129,6 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
     setCropTarget('banner');
   };
 
-  const handleIconSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
-      return;
-    }
-    setCropSourceFile(file);
-    setCropTarget('icon');
-  };
-
   const handleCropped = async (croppedFile: File) => {
     const target = cropTarget;
     setCropTarget(null);
@@ -149,10 +139,9 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
     try {
       const updated = await channelService.updateChannelProfile(channel.id, {
         bannerFile: target === 'banner' ? croppedFile : undefined,
-        iconFile: target === 'icon' ? croppedFile : undefined,
       });
       onUpdate(updated);
-      toast.success(target === 'banner' ? 'Cover banner updated!' : 'Logo avatar updated!');
+      toast.success('Cover banner updated!');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to upload image');
     } finally {
@@ -175,28 +164,13 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
     }
   };
 
-  const handleRemoveIcon = async () => {
-    setIsUploading(true);
-    try {
-      const updated = await channelService.updateChannelProfile(channel.id, {
-        removeIcon: true,
-      });
-      onUpdate(updated);
-      toast.success('Logo avatar removed');
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to remove logo');
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   return (
     <>
       <ImageCropModal
         open={cropTarget !== null}
         file={cropSourceFile}
-        aspectRatio={cropTarget === 'banner' ? 4 : 1}
-        title={cropTarget === 'banner' ? 'Crop Organization Banner' : 'Crop Organization Logo'}
+        aspectRatio={4}
+        title="Crop Organization Banner"
         onCancel={() => {
           setCropTarget(null);
           setCropSourceFile(null);
@@ -210,13 +184,6 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
         className="hidden"
         accept="image/jpeg, image/png, image/webp"
         onChange={handleBannerSelect}
-      />
-      <input
-        type="file"
-        ref={iconInputRef}
-        className="hidden"
-        accept="image/jpeg, image/png, image/webp"
-        onChange={handleIconSelect}
       />
 
       <div className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-surface shadow-sm">
@@ -319,22 +286,16 @@ export function ChannelProfileCard({ channel, canEdit, onUpdate, onEditProfile }
 
                 {/* Logo / Profile Avatar hover camera button. A personal channel has no logo of its
                     own — it always shows the owner's profile picture — so there is nothing to change. */}
-                {canEdit && !channel.isPersonal && (
+                {canEdit && !channel.isPersonal && onEditLogo && (
                   <button
                     type="button"
-                    onClick={() => iconInputRef.current?.click()}
+                    onClick={onEditLogo}
                     disabled={isUploading}
                     className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 cursor-pointer disabled:opacity-50"
-                    title="Upload or change logo avatar"
+                    title="Change logo (shown on your badges and certificates)"
                   >
-                    {isUploading && cropTarget === 'icon' ? (
-                      <Loader2 className="animate-spin" size={20} />
-                    ) : (
-                      <>
-                        <Camera size={18} className="mb-0.5" />
-                        <span className="text-[10px] font-bold">Change</span>
-                      </>
-                    )}
+                    <Camera size={18} className="mb-0.5" />
+                    <span className="text-[10px] font-bold">Change</span>
                   </button>
                 )}
               </div>

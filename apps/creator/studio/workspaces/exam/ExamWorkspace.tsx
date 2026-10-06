@@ -28,6 +28,7 @@ import {
   Plus,
   ToggleLeft,
   Trash2,
+  Settings,
   UploadCloud,
 } from "lucide-react";
 import {
@@ -152,7 +153,20 @@ export function ExamWorkspace({ examId }: { examId: string }) {
     () => ({
       save: async ({ sectionId, questions }) => {
         if (!sectionId) return;
-        await saveSectionQuestions(sectionId, toRequest(questions));
+        try {
+          await saveSectionQuestions(sectionId, toRequest(questions));
+        } catch (err: any) {
+          if (err?.status === 403 || err?.response?.status === 403) {
+            toast.error("Your collaborator access has been revoked. Exiting workspace...", {
+              id: "collaborator-revoked-exit",
+              duration: 4000,
+            });
+            if (typeof window !== "undefined") {
+              window.location.replace("/studio");
+            }
+          }
+          throw err;
+        }
       },
     }),
     []
@@ -171,6 +185,27 @@ export function ExamWorkspace({ examId }: { examId: string }) {
     },
     [activeSectionId, saveManager]
   );
+
+  const handleFinish = useCallback(async () => {
+    await saveManager.flush();
+    if (exam?.tieType === "COURSE" && exam.tiedContentId) {
+      router.push(`/studio/course/${exam.tiedContentId}/edit`);
+    } else if (exam?.tieType === "EVENT" && exam.tiedContentId) {
+      router.push(`/studio/events/${exam.tiedContentId}/edit`);
+    } else {
+      router.push(`/studio/content/exam/${examId}`);
+    }
+  }, [exam?.tieType, exam?.tiedContentId, examId, router, saveManager]);
+
+  /** The exam's own dashboard, opened on Exam plans — saving first, like every exit here. */
+  const tieType = exam?.tieType ?? null;
+  const tiedContentId = exam?.tiedContentId ?? null;
+  const handleOpenExamSettings = useCallback(async () => {
+    await saveManager.flush();
+    const params = new URLSearchParams({ tab: "plans" });
+    if (tiedContentId) params.set(tieType === "COURSE" ? "fromCourse" : "fromEvent", tiedContentId);
+    router.push(`/studio/content/exam/${examId}?${params.toString()}`);
+  }, [tieType, tiedContentId, examId, router, saveManager]);
 
   /**
    * Opening a section closes whatever question was open — the canvas always shows something
@@ -217,8 +252,20 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         if (cancelled) return;
         setSections(sectionList);
         if (sectionList.length > 0) selectSectionRef.current(sectionList[0].id);
-      } catch {
-        if (!cancelled) setLoadError("Couldn't load this exam. You may not have access to it.");
+      } catch (err: any) {
+        if (!cancelled) {
+          if (err?.status === 403 || err?.response?.status === 403) {
+            toast.error("Your collaborator access has been revoked. Exiting workspace...", {
+              id: "collaborator-revoked-exit",
+              duration: 4000,
+            });
+            if (typeof window !== "undefined") {
+              window.location.replace("/studio");
+            }
+            return;
+          }
+          setLoadError("Couldn't load this exam. You may not have access to it.");
+        }
       } finally {
         if (!cancelled) setInitializing(false);
       }
@@ -586,14 +633,20 @@ export function ExamWorkspace({ examId }: { examId: string }) {
     </>
   );
 
+  // A linked exam is its course's or event's exam; say so where the type is named.
+  const examKindLabel = exam.tieType === "COURSE" ? "Course Exam" : exam.tieType === "EVENT" ? "Event Exam" : "Exam";
+
   return (
     <StudioEditorFrame>
       <StudioEditorTopBar
-        onBack={async () => {
-          await saveManager.flush();
-          router.push(`/studio/content/exam/${examId}`);
-        }}
-        backTitle="Back to the exam overview"
+        onBack={handleFinish}
+        backTitle={
+          exam.tieType === "COURSE"
+            ? "Back to course editor"
+            : exam.tieType === "EVENT"
+            ? "Back to event editor"
+            : "Back to exam overview"
+        }
         breadcrumb={
           activeQuestion && activeSection ? (
             <div className="flex items-center gap-1.5 text-gray-500">
@@ -625,16 +678,16 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         }}
         panelOpen={panel.open}
         onTogglePanel={() => panel.setOpen(!panel.open)}
-        workspaceActionsBefore={
-          exam.tieType ? (
-            <span
-              title={`This exam is tied to ${exam.tiedContentTitle ?? "its " + exam.tieType.toLowerCase()} and is reviewed and published with it.`}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface/70 px-3 py-1.5 text-[11px] font-semibold text-slate-600 backdrop-blur-md"
-            >
-              {exam.tieType === "COURSE" ? "Course exam" : "Event exam"}
-              {exam.tiedContentTitle ? ` · ${exam.tiedContentTitle}` : ""}
-            </span>
-          ) : undefined
+        // A linked exam's back arrow returns to its course/event editor, so its own dashboard
+        // (plans, pools, settings) gets a door of its own, right beside Back.
+        secondaryNav={
+          exam.tieType
+            ? {
+                icon: <Settings size={16} />,
+                title: "Exam settings — plans, pools and settings for this exam",
+                onClick: handleOpenExamSettings,
+              }
+            : null
         }
         primaryAction={
           !readOnly && !exam.tieType
@@ -748,6 +801,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
                   ? () => addQuestionTo(activeSectionId || sections[0].id)
                   : undefined
               }
+              onFinish={handleFinish}
             />
           )}
         </div>

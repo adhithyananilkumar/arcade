@@ -1,11 +1,23 @@
+import { BookOpen, FileText, Send, Settings, Tag, Users } from "lucide-react";
+import type { WorkspaceTab } from "@/apps/creator/studio/core/StudioWorkspaceKit";
 import type { OverviewData } from "../../lib/fetchOverviewData";
-import type { OverviewTab } from "../ContentOverviewNav";
 import type { Metric } from "../sections/MetricsGrid";
-import { CollaboratorsSection } from "../sections/CollaboratorsSection";
 import { PublishingWorkflow } from "../sections/PublishingWorkflow";
+import { LearnersAnalyticsSection } from "../sections/LearnersAnalyticsSection";
+import { ContentAssessmentsSection } from "../sections/ContentAssessmentsSection";
+import { CourseCategoryEditor, CourseOverviewEditor, CourseSettingsTab } from "../sections/course/CourseEditors";
 import { editorHref } from "../../lib/contentTypeRouting";
-import { SchedulePanel } from "@/domains/publishing";
-import { BadgeTierPanel } from "@/apps/creator/studio/credentials/BadgeTierPanel";
+
+export type CourseTab = "overview" | "insights" | "exams" | "category" | "settings" | "publishing";
+
+export const COURSE_TABS: WorkspaceTab<CourseTab>[] = [
+  { id: "overview", label: "Overview & Outcomes", icon: BookOpen },
+  { id: "insights", label: "Course Insights", icon: Users },
+  { id: "exams", label: "Assessment & Exams", icon: FileText },
+  { id: "category", label: "Category", icon: Tag },
+  { id: "settings", label: "Settings", icon: Settings },
+  { id: "publishing", label: "Publishing", icon: Send },
+];
 
 export function getCourseMetrics(_data: OverviewData): Metric[] {
   return [
@@ -16,8 +28,6 @@ export function getCourseMetrics(_data: OverviewData): Metric[] {
   ];
 }
 
-import { CoursePricingEditor, SettingsHeaderBanner } from "../sections/LearnersAnalyticsSection";
-
 export function CourseOverviewTab({
   tab,
   data,
@@ -27,7 +37,7 @@ export function CourseOverviewTab({
   onSubmit,
   submitting,
 }: {
-  tab: OverviewTab;
+  tab: CourseTab;
   data: OverviewData;
   contentId: string;
   currentUserId?: string | null;
@@ -40,65 +50,47 @@ export function CourseOverviewTab({
     data.content?.authorId === currentUserId ||
     !!collaborators?.some((c) => c.userId === currentUserId && (c.role === "OWNER" || c.role === "MANAGER"));
 
-  if (tab === "people") {
-    return (
-      <CollaboratorsSection
-        segment="course"
-        contentId={contentId}
-        collaborators={collaborators}
-        unavailable={data.collaborators.status === "error"}
-        canManage={canManage}
-        onChanged={onChanged}
-      />
-    );
-  }
-  if (tab === "settings") {
-    return (
-      <div className="flex flex-col gap-6">
-        <SchedulePanel
-          contentType="COURSE"
+  switch (tab) {
+    case "overview":
+      return <CourseOverviewEditor contentId={contentId} />;
+    case "insights":
+      return <LearnersAnalyticsSection contentId={contentId} segment="course" />;
+    case "exams":
+      return <ContentAssessmentsSection segment="course" contentId={contentId} />;
+    case "category":
+      return <CourseCategoryEditor contentId={contentId} />;
+    case "settings":
+      return (
+        <CourseSettingsTab
           contentId={contentId}
           readOnly={data.content?.status === "SUBMITTED"}
-        />
-        <BadgeTierPanel contentType="COURSE" contentId={contentId} />
-        <CoursePricingEditor contentId={contentId} />
-        <CollaboratorsSection
-          segment="course"
-          contentId={contentId}
           collaborators={collaborators}
-          unavailable={data.collaborators.status === "error"}
-          canManage={canManage}
+          collaboratorsUnavailable={data.collaborators.status === "error"}
+          canManageCollaborators={canManage}
           onChanged={onChanged}
         />
-      </div>
-    );
+      );
+    case "publishing":
+      return (
+        <PublishingWorkflow
+          status={data.content?.status ?? "DRAFT"}
+          review={data.review.status === "ok" ? data.review.data : null}
+          editHref={editorHref("course", contentId)}
+          onSubmit={onSubmit}
+          submitting={submitting}
+          reviewPath={data.reviewPath.status === "ok" ? data.reviewPath.data : null}
+          reviewPathError={data.reviewPath.status === "error" ? "Could not determine the review path for this content." : null}
+          historyEntries={
+            data.statusHistory.status === "ok"
+              ? data.statusHistory.data.map((entry, i) => ({
+                  id: `${entry.createdAt}-${i}`,
+                  title: entry.label,
+                  actorName: entry.actorName,
+                  createdAt: entry.createdAt,
+                }))
+              : undefined
+          }
+        />
+      );
   }
-  if (tab === "publishing") {
-    return (
-      <PublishingWorkflow
-        status={data.content?.status ?? "DRAFT"}
-        review={data.review.status === "ok" ? data.review.data : null}
-        editHref={editorHref("course", contentId)}
-        onSubmit={onSubmit}
-        submitting={submitting}
-        reviewPath={data.reviewPath.status === "ok" ? data.reviewPath.data : null}
-        reviewPathError={
-          data.reviewPath.status === "error"
-            ? "Could not determine the review path for this content."
-            : null
-        }
-        historyEntries={
-          data.statusHistory.status === "ok"
-            ? data.statusHistory.data.map((entry, i) => ({
-                id: `${entry.createdAt}-${i}`,
-                title: entry.label,
-                actorName: entry.actorName,
-                createdAt: entry.createdAt,
-              }))
-            : undefined
-        }
-      />
-    );
-  }
-  return null;
 }

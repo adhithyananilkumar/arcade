@@ -160,8 +160,6 @@ function ChannelInviteCreateContent() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [purpose, setPurpose] = useState('');
-  const [iconFile, setIconFile] = useState<File | null>(null);
-  const [iconPreview, setIconPreview] = useState<string | null>(null);
 
   const [applicant, setApplicant] = useState(emptyApplicant);
   const [isPhoneValid, setIsPhoneValid] = useState(false);
@@ -199,14 +197,6 @@ function ChannelInviteCreateContent() {
 
   const updateOrganization = (field: keyof typeof emptyOrganization, value: string) => {
     setOrganization((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleIconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setIconFile(file);
-      setIconPreview(URL.createObjectURL(file));
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -310,8 +300,7 @@ function ChannelInviteCreateContent() {
           purpose: purpose.trim(),
           applicant: applicantInput,
           organization: organizationInput,
-        },
-        iconFile || undefined
+        }
       );
       setSubmitted(true);
     } catch (error) {
@@ -577,24 +566,6 @@ function ChannelInviteCreateContent() {
                   title="Tell us about the channel."
                   hint="A name, a short description, and why you want it."
                 />
-
-                <div className="flex justify-center py-2">
-                  <div className="relative group cursor-pointer">
-                    <div className="h-24 w-24 overflow-hidden rounded-full border border-dashed border-slate-300 bg-surface/50 flex flex-col items-center justify-center transition-colors group-hover:border-[#205ca8] group-hover:bg-[#205ca8]/[0.04]">
-                      {iconPreview ? (
-                        <img src={iconPreview} alt="Icon preview" className="h-full w-full object-cover" />
-                      ) : (
-                        <>
-                          <Upload size={22} className="text-slate-400 group-hover:text-[#205ca8] mb-1 transition-colors dark:group-hover:text-[#7cbaff]" />
-                          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold group-hover:text-[#205ca8] transition-colors dark:group-hover:text-[#7cbaff]">
-                            Icon
-                          </span>
-                        </>
-                      )}
-                    </div>
-                    <input type="file" accept="image/*" onChange={handleIconChange} className="absolute inset-0 opacity-0 cursor-pointer" />
-                  </div>
-                </div>
 
                 <FormField label="Channel Name" required>
                   <input

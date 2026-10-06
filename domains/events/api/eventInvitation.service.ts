@@ -1,5 +1,6 @@
 import { api } from '@/infrastructure/http/api';
 import type {
+  BulkInviteResponse,
   EventInvitation,
   EventInvitationValidation,
 } from '../types/events.types';
@@ -12,10 +13,19 @@ export class EventInvitationService {
     return api.get<EventInvitation[]>(`${EventInvitationService.BASE}/${eventId}/invitations`);
   }
 
-  static async invite(eventId: string, email: string): Promise<EventInvitation> {
+  /** `validityDays` (1–30) is how long the link stays usable; omit for the platform default. */
+  static async invite(eventId: string, email: string, validityDays?: number): Promise<EventInvitation> {
     return api.post<EventInvitation>(
       `${EventInvitationService.BASE}/${eventId}/invitations`,
-      { email }
+      { email, validityDays }
+    );
+  }
+
+  /** Up to 100 addresses; each is invited on its own and reported in `results`. */
+  static async inviteMany(eventId: string, emails: string[], validityDays?: number): Promise<BulkInviteResponse> {
+    return api.post<BulkInviteResponse>(
+      `${EventInvitationService.BASE}/${eventId}/invitations/bulk`,
+      { emails, validityDays }
     );
   }
 

@@ -1,73 +1,168 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, Lock, X } from 'lucide-react';
-import type { BugActivity, BugAttachment } from '../types/bug-report.types';
-import { absoluteTime, describeActivity, relativeTime } from '../utils/labels';
+import { Fragment, useEffect, useState } from 'react';
+import {
+  ArrowRightLeft,
+  ChevronLeft,
+  ChevronRight,
+  CircleCheck,
+  Flag,
+  Gauge,
+  ImagePlus,
+  ListOrdered,
+  Lock,
+  MessageSquare,
+  RotateCcw,
+  Tag,
+  UserCheck,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
+import type { BugActivity, BugActivityKind, BugAttachment } from '../types/bug-report.types';
+import { absoluteTime, clockTime, dayLabel, describeActivity } from '../utils/labels';
 import { PersonAvatar } from './BugBadges';
 
+const EVENT_ICON: Partial<Record<BugActivityKind, LucideIcon>> = {
+  CREATED: Flag,
+  STATUS_CHANGED: ArrowRightLeft,
+  ASSIGNED: UserCheck,
+  SEVERITY_CHANGED: Gauge,
+  PRIORITY_CHANGED: ListOrdered,
+  CATEGORY_CHANGED: Tag,
+  ATTACHMENT_ADDED: ImagePlus,
+  REOPENED: RotateCcw,
+  CONFIRMED_FIXED: CircleCheck,
+};
+
+/** Comments from the same person this close together read as one message group. */
+const GROUP_WINDOW_MS = 5 * 60 * 1000;
+
+export type BugTimelineFilter = 'all' | 'comments' | 'events';
+
 /**
- * A report's history: comments as bubbles, everything else as one-line events. Staff see INTERNAL
- * entries tinted and marked; reporters never receive them in the first place.
+ * A report's history as a chat: comments as bubbles (the viewer's own on the right), everything
+ * else as compact one-line events, grouped under day headings. Staff see INTERNAL entries tinted
+ * and marked; reporters never receive them in the first place.
  */
 export function BugTimeline({
   activity,
   audience,
   names,
+  viewerId,
+  filter = 'all',
 }: {
   activity: BugActivity[];
   audience: 'staff' | 'reporter';
   /** id → display name, for assignee/category changes. */
   names?: Record<string, string>;
+  /** Staff view: whose comments sit on the right. The reporter's own are always on the right. */
+  viewerId?: string | null;
+  filter?: BugTimelineFilter;
 }) {
-  if (activity.length === 0) return <p className="text-xs text-slate-400">No activity yet.</p>;
+  const shown = activity.filter((e) => (filter === 'all' ? true : filter === 'comments' ? e.kind === 'COMMENT' : e.kind !== 'COMMENT'));
+  if (shown.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-1.5 py-6 text-center text-[12px] text-slate-400">
+        <MessageSquare size={18} className="opacity-60" />
+        {filter === 'comments' ? 'No messages yet.' : 'No activity yet.'}
+      </div>
+    );
+  }
+
+  const isMine = (e: BugActivity) => (audience === 'reporter' ? !e.staff : !!viewerId && e.actor?.id === viewerId);
+
   return (
-    <ol className="space-y-3">
-      {activity.map((entry) => {
+    <ol className="space-y-1">
+      {shown.map((entry, i) => {
+        const prev = shown[i - 1];
+        const newDay = !prev || dayLabel(prev.createdAt) !== dayLabel(entry.createdAt);
         const who = entry.actor?.name ?? 'Arcade';
         const internal = entry.visibility === 'INTERNAL';
+        const dayHeading = newDay && (
+          <li aria-hidden className="flex items-center gap-3 py-2 text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="h-px flex-1 bg-slate-200/80" />
+            {dayLabel(entry.createdAt)}
+            <span className="h-px flex-1 bg-slate-200/80" />
+          </li>
+        );
+
         if (entry.kind === 'COMMENT') {
-          const mine = audience === 'reporter' ? !entry.staff : entry.staff;
+          const mine = isMine(entry);
+          const continued =
+            !newDay &&
+            prev?.kind === 'COMMENT' &&
+            prev.actor?.id === entry.actor?.id &&
+            prev.visibility === entry.visibility &&
+            new Date(entry.createdAt).getTime() - new Date(prev.createdAt).getTime() < GROUP_WINDOW_MS;
+          const label = audience === 'reporter' && entry.staff ? `${who} · Arcade team` : mine ? 'You' : who;
           return (
-            <li key={entry.id} className={`flex gap-2.5 ${mine && audience === 'reporter' ? 'flex-row-reverse' : ''}`}>
-              <PersonAvatar name={who} avatarUrl={entry.actor?.avatarUrl} size={26} />
-              <div className={`min-w-0 max-w-[85%] ${mine && audience === 'reporter' ? 'items-end text-right' : ''}`}>
-                <p className="mb-0.5 text-[11px] text-slate-400">
-                  <span className="font-semibold text-slate-600">{audience === 'reporter' && entry.staff ? `${who} · Arcade team` : who}</span>{' '}
-                  · <time title={absoluteTime(entry.createdAt)}>{relativeTime(entry.createdAt)}</time>
-                  {internal && (
-                    <span className="ml-1.5 inline-flex items-center gap-0.5 rounded bg-amber-100 px-1 py-px text-[10px] font-bold uppercase tracking-wide text-amber-800 dark:bg-amber-500/15 dark:text-amber-200">
-                      <Lock size={9} /> Internal
-                    </span>
+            <Fragment key={entry.id}>
+              {dayHeading}
+              <li className={`flex gap-2.5 ${mine ? 'flex-row-reverse' : ''} ${continued ? 'pt-0.5' : 'pt-2'}`}>
+                {mine ? null : continued ? (
+                  <span className="w-7 shrink-0" />
+                ) : (
+                  <PersonAvatar name={who} avatarUrl={entry.actor?.avatarUrl} size={28} />
+                )}
+                <div className={`flex min-w-0 max-w-[82%] flex-col ${mine ? 'items-end' : 'items-start'}`}>
+                  {!continued && (
+                    <p className={`mb-1 flex items-center gap-1.5 px-1 text-[11px] text-slate-400 ${mine ? 'flex-row-reverse' : ''}`}>
+                      <span className="font-semibold text-slate-600">{label}</span>
+                      <time title={absoluteTime(entry.createdAt)}>{clockTime(entry.createdAt)}</time>
+                      {internal && (
+                        <span className="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1 py-px text-[9.5px] font-bold uppercase tracking-wide text-amber-800 dark:bg-amber-500/15 dark:text-amber-200">
+                          <Lock size={9} /> Internal
+                        </span>
+                      )}
+                    </p>
                   )}
-                </p>
-                <div
-                  className={`inline-block whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-left text-[12.5px] leading-relaxed ${
-                    internal
-                      ? 'border border-dashed border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200'
-                      : entry.staff
-                        ? 'bg-indigo-50 text-slate-800 dark:bg-indigo-500/10'
-                        : 'bg-slate-100 text-slate-800'
-                  }`}
-                >
-                  {entry.body}
+                  <div
+                    title={continued ? absoluteTime(entry.createdAt) : undefined}
+                    className={`whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-left text-[13px] leading-relaxed shadow-xs ${
+                      continued ? '' : mine ? 'rounded-tr-md' : 'rounded-tl-md'
+                    } ${
+                      internal
+                        ? 'border border-dashed border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200'
+                        : mine
+                          ? 'bg-ink text-on-ink'
+                          : entry.staff
+                            ? 'bg-indigo-50 text-slate-800 ring-1 ring-indigo-100 dark:bg-indigo-500/10 dark:ring-indigo-500/20'
+                            : 'bg-surface text-slate-800 ring-1 ring-slate-200/80'
+                    }`}
+                  >
+                    {entry.body}
+                  </div>
                 </div>
-              </div>
-            </li>
+              </li>
+            </Fragment>
           );
         }
+
+        const Icon = EVENT_ICON[entry.kind] ?? ArrowRightLeft;
+        const note = entry.body && entry.kind !== 'ATTACHMENT_ADDED' ? entry.body : null;
         return (
-          <li key={entry.id} className="flex items-center gap-2 pl-1 text-[11.5px] text-slate-500">
-            <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${internal ? 'bg-amber-400' : 'bg-slate-300'}`} />
-            <span className="min-w-0">
-              <span className="font-semibold text-slate-700">{entry.actor ? who : 'Arcade'}</span>{' '}
-              {describeActivity(entry, { reporter: audience === 'reporter', names })}
-              {entry.body && entry.kind !== 'ATTACHMENT_ADDED' ? <span className="text-slate-400"> — {entry.body}</span> : null}
-              <time className="ml-1.5 text-slate-400" title={absoluteTime(entry.createdAt)}>
-                {relativeTime(entry.createdAt)}
-              </time>
-            </span>
-          </li>
+          <Fragment key={entry.id}>
+            {dayHeading}
+            <li className="flex gap-2.5 py-1 pl-1 text-[11.5px] text-slate-500">
+              <span
+                className={`mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                  internal ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' : 'bg-slate-100 text-slate-500'
+                }`}
+              >
+                <Icon size={11} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="leading-5">
+                  <span className="font-semibold text-slate-700">{entry.actor ? who : 'Arcade'}</span>{' '}
+                  {describeActivity(entry, { reporter: audience === 'reporter', names })}
+                  <time className="ml-1.5 text-slate-400" title={absoluteTime(entry.createdAt)}>
+                    {clockTime(entry.createdAt)}
+                  </time>
+                </p>
+                {note && <p className="mt-1 whitespace-pre-wrap break-words border-l-2 border-slate-200 pl-2.5 text-[12px] text-slate-600">{note}</p>}
+              </div>
+            </li>
+          </Fragment>
         );
       })}
     </ol>

@@ -82,8 +82,8 @@ export function NewPlanMenu({
         disabled={creating}
         className={
           variant === "primary"
-            ? "inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink transition-colors hover:bg-ink-hover disabled:opacity-50"
-            : "mt-1 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-300 px-3 py-2 text-xs font-bold text-slate-500 transition-colors hover:border-slate-400 hover:bg-surface hover:text-ink disabled:opacity-50"
+            ? "inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-ink px-5 py-2.5 text-xs font-extrabold text-on-ink shadow-md transition-colors hover:bg-[#205ca8] disabled:opacity-50"
+            : "mt-1 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full border border-dashed border-slate-300 px-3 py-2 text-xs font-bold text-slate-500 transition-colors hover:border-slate-400 hover:bg-surface hover:text-ink disabled:opacity-50"
         }
       >
         {creating ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}

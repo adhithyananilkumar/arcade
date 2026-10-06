@@ -75,13 +75,15 @@ export default function LearnerDock() {
     return list;
   }, [canAccessConsole]);
 
-  // Hide the dock on content studio, settings, and active proctored exams.
+  // Hide the dock on content studio, settings, active proctored exams, and credentials.
   // /studio itself and the Content Workspace are handled by LearnerShell's
   // HIDE_DOCK_ROUTES exception instead — this guard is for legacy `/content`
   // paths only.
   if (
     pathname.startsWith('/content') ||
     pathname.startsWith('/settings') ||
+    pathname.startsWith('/credentials') ||
+    pathname.startsWith('/exams/grade-cards') ||
     /\/exam\/(start|terminated)/.test(pathname)
   ) {
     return null;

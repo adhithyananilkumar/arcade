@@ -23,6 +23,9 @@ export type { BugDraft } from './components/BugReportComposer';
 export { BugReportThread } from './components/BugReportThread';
 export { MyBugReportsList } from './components/MyBugReportsList';
 export { BugTimeline, BugAttachmentGallery } from './components/BugTimeline';
+export type { BugTimelineFilter } from './components/BugTimeline';
+export { BugChatComposer } from './components/BugChatComposer';
+export { buildBugReportExport, downloadJson, BUG_EXPORT_VERSION } from './utils/export';
 export { ScreenshotAnnotator } from './components/ScreenshotAnnotator';
 export {
   BugStatusBadge,

@@ -13,7 +13,7 @@
  * ------------------------------------------------------------------
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
@@ -47,6 +47,37 @@ import { captureEnvironment, installConsoleCapture, recentConsoleEntries } from 
 /** Never float over these: an exam sitting must not gain an extra control. */
 const HIDDEN_ROUTES = [/^\/exams\/[^/]+\/(attempt|terminated)\/?$/];
 
+/** Where the island rests: snapped to a side, some distance up from the bottom. Per device. */
+type Dock = { side: 'left' | 'right'; bottom: number };
+
+const DOCK_KEY = 'arcade.bug-island.dock';
+const BUTTON = 48;
+/** Movement before a press counts as a drag rather than a click. */
+const DRAG_THRESHOLD = 5;
+/** Keep clear of the floating navbar. */
+const TOP_CLEARANCE = 96;
+/** Room the open panel wants above its anchor before it slides down to fit. */
+const PANEL_ROOM = 560;
+
+function defaultDock(): Dock {
+  // Phones keep the button above the bottom dock.
+  return { side: 'right', bottom: typeof window !== 'undefined' && window.innerWidth < 640 ? 96 : 24 };
+}
+
+function readDock(): Dock {
+  try {
+    const raw = JSON.parse(localStorage.getItem(DOCK_KEY) ?? 'null') as Partial<Dock> | null;
+    if (raw && (raw.side === 'left' || raw.side === 'right') && typeof raw.bottom === 'number') return { side: raw.side, bottom: raw.bottom };
+  } catch {
+    // Storage blocked — fall back to the default corner.
+  }
+  return defaultDock();
+}
+
+function clampBottom(bottom: number) {
+  return Math.max(16, Math.min(bottom, window.innerHeight - BUTTON - TOP_CLEARANCE));
+}
+
 type View = { name: 'report' } | { name: 'mine' } | { name: 'detail'; id: string } | { name: 'sent'; report: BugReportDetail };
 
 function errorMessage(err: unknown, fallback: string) {
@@ -63,6 +94,60 @@ export function BugIsland() {
   const [composerKey, setComposerKey] = useState(0);
   const [detail, setDetail] = useState<BugReportDetail | null>(null);
   const [copiedKey, setCopiedKey] = useState(false);
+  const [dock, setDock] = useState<Dock>(readDock);
+  /** Live top-left of the button while it is being dragged. */
+  const [dragAt, setDragAt] = useState<{ left: number; top: number } | null>(null);
+  const press = useRef<{ x: number; y: number; left: number; top: number; moved: boolean } | null>(null);
+  const suppressClick = useRef(false);
+  const [, setViewport] = useState(0);
+
+  useEffect(() => {
+    const onResize = () => setViewport((n) => n + 1);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const onPointerDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    if (e.button !== 0) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    press.current = { x: e.clientX, y: e.clientY, left: rect.left, top: rect.top, moved: false };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    const p = press.current;
+    if (!p) return;
+    const dx = e.clientX - p.x;
+    const dy = e.clientY - p.y;
+    if (!p.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+    p.moved = true;
+    setDragAt({
+      left: Math.max(8, Math.min(p.left + dx, window.innerWidth - BUTTON - 8)),
+      top: Math.max(TOP_CLEARANCE - 32, Math.min(p.top + dy, window.innerHeight - BUTTON - 8)),
+    });
+  };
+
+  const onPointerUp = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    const p = press.current;
+    press.current = null;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+    if (!p?.moved || !dragAt) {
+      setDragAt(null);
+      return;
+    }
+    suppressClick.current = true;
+    const next: Dock = {
+      side: dragAt.left + BUTTON / 2 < window.innerWidth / 2 ? 'left' : 'right',
+      bottom: clampBottom(window.innerHeight - dragAt.top - BUTTON),
+    };
+    setDock(next);
+    setDragAt(null);
+    try {
+      localStorage.setItem(DOCK_KEY, JSON.stringify(next));
+    } catch {
+      // Not persisted — it still moves for this visit.
+    }
+  };
 
   const intakeQuery = useQuery({
     queryKey: ['bug-intake', user?.id],
@@ -160,6 +245,14 @@ export function BugIsland() {
 
   const activeTab = view.name === 'mine' ? 'mine' : 'report';
 
+  const gutter = window.innerWidth < 640 ? 16 : 24;
+  const restBottom = clampBottom(dock.bottom);
+  // An open panel needs room above its anchor; slide it down when the button sits high up.
+  const anchorBottom = open ? Math.max(16, Math.min(restBottom, window.innerHeight - PANEL_ROOM)) : restBottom;
+  const anchorStyle = dragAt
+    ? { left: dragAt.left, top: dragAt.top }
+    : { [dock.side]: gutter, bottom: anchorBottom };
+
   return (
     <>
       {/* Subtle Backdrop when Modal is Open */}
@@ -178,7 +271,13 @@ export function BugIsland() {
         )}
       </AnimatePresence>
 
-      <div data-capture-ignore className="fixed bottom-24 right-4 z-[70] sm:bottom-6 sm:right-6">
+      <motion.div
+        data-capture-ignore
+        layout={dragAt ? false : 'position'}
+        transition={spring}
+        style={anchorStyle}
+        className={`fixed z-[70] flex flex-col ${dock.side === 'left' ? 'items-start' : 'items-end'}`}
+      >
         <AnimatePresence initial={false} mode="wait">
           {!open ? (
             <motion.button
@@ -190,13 +289,23 @@ export function BugIsland() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               transition={spring}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
               onClick={() => {
+                if (suppressClick.current) {
+                  suppressClick.current = false;
+                  return;
+                }
                 setView({ name: 'report' });
                 setOpen(true);
               }}
               aria-label="Report a bug"
-              title="Report a bug"
-              className="apple-glass-dock relative grid size-12 cursor-pointer place-items-center rounded-full text-slate-700 transition-colors hover:text-indigo-600"
+              title="Report a bug · drag to move"
+              className={`apple-glass-dock relative grid size-12 touch-none select-none place-items-center rounded-full text-slate-700 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 ${
+                dragAt ? 'cursor-grabbing shadow-2xl' : 'cursor-pointer'
+              }`}
             >
               <Bug size={19} />
               {waitingOnMe > 0 && (
@@ -215,7 +324,8 @@ export function BugIsland() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94, y: 12 }}
               transition={spring}
-              className="flex max-h-[min(720px,calc(100vh-6rem))] w-[min(430px,calc(100vw-2rem))] flex-col overflow-hidden rounded-[26px] border border-slate-200/80 bg-surface/98 shadow-[0_25px_70px_-15px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/5 backdrop-blur-2xl"
+              style={{ maxHeight: `min(720px, ${window.innerHeight - anchorBottom - 24}px)`, transformOrigin: `bottom ${dock.side}` }}
+              className="flex w-[min(430px,calc(100vw-2rem))] flex-col overflow-hidden rounded-[26px] border border-slate-200/80 bg-surface/98 shadow-[0_25px_70px_-15px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/5 backdrop-blur-2xl"
             >
               {/* Header */}
               <header className="shrink-0 border-b border-slate-200/70 bg-slate-50/80 px-4 pb-3 pt-3.5 backdrop-blur-md">
@@ -469,8 +579,10 @@ export function BugIsland() {
                             try {
                               setDetail(await BugReportService.comment(detail.summary.id, body));
                               refreshMine();
+                              return true;
                             } catch (err) {
                               toast.error(errorMessage(err, "Couldn't send that."));
+                              return false;
                             }
                           }}
                           onVerdict={async (stillHappening, note) => {
@@ -507,7 +619,7 @@ export function BugIsland() {
             </motion.section>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
     </>
   );
 }

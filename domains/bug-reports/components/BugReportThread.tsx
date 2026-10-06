@@ -1,10 +1,11 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { ImagePlus, Loader2, RotateCcw, Send, ThumbsUp } from 'lucide-react';
+import { useState } from 'react';
+import { Loader2, RotateCcw, ThumbsUp } from 'lucide-react';
 import type { BugReportDetail } from '../types/bug-report.types';
 import { absoluteTime, RESOLUTION_LABEL } from '../utils/labels';
 import { BugImpactBadge, BugStatusBadge, CategoryIcon } from './BugBadges';
+import { BugChatComposer } from './BugChatComposer';
 import { BugAttachmentGallery, BugTimeline } from './BugTimeline';
 
 /** What the reporter is being asked, in plain words, for the states that ask them anything. */
@@ -41,15 +42,14 @@ export function BugReportThread({
   compact = false,
 }: {
   detail: BugReportDetail;
-  onComment: (body: string) => Promise<void>;
+  /** Resolve true once the message is saved; false keeps the draft in the box. */
+  onComment: (body: string) => Promise<boolean>;
   onVerdict: (stillHappening: boolean, note?: string) => Promise<void>;
   onAttach: (file: File) => Promise<void>;
   compact?: boolean;
 }) {
   const { summary } = detail;
-  const [reply, setReply] = useState('');
-  const [busy, setBusy] = useState<null | 'reply' | 'fixed' | 'again' | 'attach'>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState<null | 'fixed' | 'again'>(null);
   const can = (a: string) => detail.allowedActions.includes(a as never);
 
   const run = async (kind: NonNullable<typeof busy>, action: () => Promise<void>) => {
@@ -90,7 +90,7 @@ export function BugReportThread({
       {detail.attachments.length > 0 && <BugAttachmentGallery attachments={detail.attachments} size={compact ? 'sm' : 'md'} />}
 
       <div>
-        <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-slate-400">Updates</p>
+        <p className="mb-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">Updates</p>
         <BugTimeline activity={detail.activity} audience="reporter" />
       </div>
 
@@ -99,7 +99,7 @@ export function BugReportThread({
           <button
             type="button"
             disabled={busy !== null}
-            onClick={() => run('fixed', () => onVerdict(false, reply.trim() || undefined).then(() => setReply('')))}
+            onClick={() => run('fixed', () => onVerdict(false))}
             className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full bg-emerald-600 px-3 py-2 text-[12px] font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
           >
             {busy === 'fixed' ? <Loader2 size={13} className="animate-spin" /> : <ThumbsUp size={13} />} It&apos;s fixed
@@ -107,7 +107,7 @@ export function BugReportThread({
           <button
             type="button"
             disabled={busy !== null}
-            onClick={() => run('again', () => onVerdict(true, reply.trim() || undefined).then(() => setReply('')))}
+            onClick={() => run('again', () => onVerdict(true))}
             className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-slate-300 bg-surface px-3 py-2 text-[12px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
           >
             {busy === 'again' ? <Loader2 size={13} className="animate-spin" /> : <RotateCcw size={13} />} Still happening
@@ -116,55 +116,11 @@ export function BugReportThread({
       )}
 
       {can('COMMENT') && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!reply.trim()) return;
-            run('reply', () => onComment(reply.trim()).then(() => setReply('')));
-          }}
-          className="flex items-end gap-2"
-        >
-          <textarea
-            value={reply}
-            onChange={(e) => setReply(e.target.value)}
-            rows={2}
-            maxLength={4000}
-            placeholder={summary.status === 'NEEDS_INFO' ? 'Answer the team…' : 'Add a note for the team…'}
-            className="min-w-0 flex-1 resize-none rounded-2xl border border-slate-200 bg-surface px-3 py-2 text-[12.5px] text-slate-800 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/25"
-          />
-          {can('ATTACH') && (
-            <>
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                disabled={busy !== null}
-                aria-label="Add a screenshot"
-                className="cursor-pointer rounded-full border border-slate-200 bg-surface p-2.5 text-slate-600 hover:bg-slate-50 disabled:opacity-50"
-              >
-                {busy === 'attach' ? <Loader2 size={15} className="animate-spin" /> : <ImagePlus size={15} />}
-              </button>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                hidden
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  e.target.value = '';
-                  if (file) run('attach', () => onAttach(file));
-                }}
-              />
-            </>
-          )}
-          <button
-            type="submit"
-            disabled={!reply.trim() || busy !== null}
-            aria-label="Send"
-            className="cursor-pointer rounded-full bg-ink p-2.5 text-on-ink hover:bg-ink-hover disabled:opacity-40"
-          >
-            {busy === 'reply' ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-          </button>
-        </form>
+        <BugChatComposer
+          onSend={(body) => onComment(body)}
+          onAttach={can('ATTACH') ? onAttach : undefined}
+          placeholder={{ reply: summary.status === 'NEEDS_INFO' ? 'Answer the team…' : 'Add a note for the team…' }}
+        />
       )}
       {summary.status === 'CLOSED' && (
         <p className="text-center text-[11.5px] text-slate-400">This report is closed. If the problem comes back, send a new report.</p>

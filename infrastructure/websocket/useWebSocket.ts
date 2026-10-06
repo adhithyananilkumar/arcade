@@ -30,6 +30,11 @@ export function toBrokerUrl(httpBase: string): string {
 export function useWebSocket() {
   const clientRef = useRef<Client | null>(null);
   const { accessToken, status } = useAuthStore();
+  // Only token *presence* drives the connection, not its value. Access tokens rotate every ~15
+  // minutes; keying the effect on the token itself tore the socket down on every rotation, and any
+  // event pushed during the reconnect gap was lost. `beforeConnect` already fetches a fresh token
+  // for every (re)connect, so an established session has no reason to restart on rotation.
+  const hasToken = Boolean(accessToken);
   const [connected, setConnected] = useState(false);
 
   const subscribe = useCallback((destination: string, callback: (body: unknown) => void) => {
@@ -53,7 +58,7 @@ export function useWebSocket() {
   }, []);
 
   useEffect(() => {
-    if (status !== 'authenticated' || !accessToken) {
+    if (status !== 'authenticated' || !hasToken) {
       disconnect();
       return;
     }
@@ -62,9 +67,6 @@ export function useWebSocket() {
 
     const client = new Client({
       brokerURL,
-      connectHeaders: {
-        Authorization: `Bearer ${accessToken}`,
-      },
       reconnectDelay: 5000,
       onConnect: () => setConnected(true),
       onDisconnect: () => setConnected(false),
@@ -108,7 +110,7 @@ export function useWebSocket() {
       clientRef.current = null;
       setConnected(false);
     };
-  }, [status, accessToken, disconnect]);
+  }, [status, hasToken, disconnect]);
 
   return { subscribe, disconnect, connected, clientRef };
 }

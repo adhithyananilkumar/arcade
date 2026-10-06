@@ -122,8 +122,10 @@ export function MyBugReportsPage() {
                 onComment={async (body) => {
                   try {
                     apply(await BugReportService.comment(detail.summary.id, body));
+                    return true;
                   } catch (err) {
                     toast.error(errorMessage(err, "Couldn't send that."));
+                    return false;
                   }
                 }}
                 onVerdict={async (stillHappening, note) => {

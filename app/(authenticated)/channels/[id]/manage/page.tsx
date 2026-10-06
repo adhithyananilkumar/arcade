@@ -42,6 +42,7 @@ import { ChannelAnalyticsSection } from './components/ChannelAnalyticsSection';
 import { ChannelPaymentsSection } from './components/ChannelPaymentsSection';
 import { ChannelActivityLog } from './components/ChannelActivityLog';
 import { EditOrganizationModal } from './components/EditOrganizationModal';
+import { ChannelOnboardingModal } from './components/ChannelOnboardingModal';
 import { ChannelIdentityManager } from './ChannelIdentityManager';
 import { ChannelStaffManager } from './ChannelStaffManager';
 import { ChannelDangerZone } from './ChannelDangerZone';
@@ -62,7 +63,11 @@ const SECTION_COPY: Record<Section, { title: string; description: string }> = {
     description:
       'What learners have paid, refunds, and what is payable. Payouts are made manually by Arcade. Members without payment access see only their own sales.',
   },
-  identity: { title: 'Identity & handle', description: 'The address and public profile this organization is shown under.' },
+  identity: {
+    title: 'Identity & branding',
+    description:
+      'How this channel presents itself: its handle, logo and public profile, and who signs the certificates it issues.',
+  },
   staff: { title: 'Staff & roles', description: "Who can work on this channel, and what they're allowed to do." },
   activity: { title: 'Activity log', description: 'Every change made to this channel, newest first.' },
   danger: { title: 'Danger zone', description: 'Ownership transfer and channel deletion.' },
@@ -92,6 +97,24 @@ export default function ManageChannelPage() {
   const [loading, setLoading] = useState(true);
   const [openReviews, setOpenReviews] = useState<Record<string, string>>({});
   const [isEditOpen, setIsEditOpen] = useState(false);
+  // First-time setup (logo + signatory) for an organisation channel, until it is done or skipped.
+  const [onboardingDismissed, setOnboardingDismissed] = useState(true);
+  const onboardingKey = `channel-onboarding:${channelId}`;
+  useEffect(() => {
+    try {
+      setOnboardingDismissed(window.localStorage.getItem(onboardingKey) === 'done');
+    } catch {
+      setOnboardingDismissed(false);
+    }
+  }, [onboardingKey]);
+  const dismissOnboarding = () => {
+    setOnboardingDismissed(true);
+    try {
+      window.localStorage.setItem(onboardingKey, 'done');
+    } catch {
+      /* private mode: it simply shows again next visit */
+    }
+  };
 
   useEffect(() => {
     if (!channelId) return;
@@ -144,6 +167,12 @@ export default function ManageChannelPage() {
     [channelId],
   );
 
+  // The logo and the signature are edited in Identity & branding; every shortcut leads there.
+  const openBranding = useCallback(
+    (focus: 'logo' | 'signatory') => router.push(tabHref('identity', { focus })),
+    [router, tabHref],
+  );
+
   const isOwner = !!channel && user?.id === channel.ownerId;
   const isOrg = !!channel && !channel.isPersonal;
   const canEdit = isOwner || permissions.includes('ALL') || permissions.includes('channel.settings.manage');
@@ -175,13 +204,16 @@ export default function ManageChannelPage() {
         ],
       },
       {
-        title: 'Organization',
-        items: isOrg
-          ? [
-              item('identity', 'Identity & handle', AtSign, 'bg-[#c7d2fe] text-[#312e81] dark:text-[#a5adff] dark:bg-[#c7d2fe]/15'),
-              item('staff', 'Staff & roles', Users, 'bg-[#e9d5ff] text-[#4c1d95] dark:text-[#bda1ff] dark:bg-[#e9d5ff]/15'),
-            ]
-          : [],
+        title: 'Channel',
+        items: [
+          // Every channel: an organization's handle, logo and profile; anyone's certificate signature.
+          ...(isOrg || canEdit
+            ? [item('identity', 'Identity & branding', AtSign, 'bg-[#c7d2fe] text-[#312e81] dark:text-[#a5adff] dark:bg-[#c7d2fe]/15')]
+            : []),
+          ...(isOrg
+            ? [item('staff', 'Staff & roles', Users, 'bg-[#e9d5ff] text-[#4c1d95] dark:text-[#bda1ff] dark:bg-[#e9d5ff]/15')]
+            : []),
+        ],
       },
       {
         title: 'Records',
@@ -258,6 +290,7 @@ export default function ManageChannelPage() {
               tabHref={tabHref}
               onChannelUpdate={setChannel}
               onEditProfile={() => setIsEditOpen(true)}
+              onEditLogo={() => openBranding('logo')}
             />
           )}
           {active === 'content' && (
@@ -272,7 +305,14 @@ export default function ManageChannelPage() {
           {active === 'reviews' && <ChannelReviewQueue channelId={channelId} />}
           {active === 'analytics' && <ChannelAnalyticsSection channelId={channelId} />}
           {active === 'payments' && <ChannelPaymentsSection channelId={channelId} isPersonal={channel.isPersonal} />}
-          {active === 'identity' && <ChannelIdentityManager channel={channel} canEdit={canEdit} onUpdate={setChannel} />}
+          {active === 'identity' && (
+            <ChannelIdentityManager
+              channel={channel}
+              canEdit={canEdit}
+              onUpdate={setChannel}
+              focus={searchParams.get('focus')}
+            />
+          )}
           {active === 'staff' && (
             <ChannelStaffManager
               channelId={channelId}
@@ -291,7 +331,30 @@ export default function ManageChannelPage() {
         onClose={() => setIsEditOpen(false)}
         channel={channel}
         onUpdate={setChannel}
+        onEditLogo={() => {
+          setIsEditOpen(false);
+          openBranding('logo');
+        }}
+        onEditSignatory={() => {
+          setIsEditOpen(false);
+          openBranding('signatory');
+        }}
       />
+
+      {isOrg && canEdit && !channel.iconUrl && !onboardingDismissed && active !== 'identity' && (
+        <ChannelOnboardingModal
+          channel={channel}
+          onDismiss={dismissOnboarding}
+          onAddLogo={() => {
+            dismissOnboarding();
+            openBranding('logo');
+          }}
+          onAddSignatory={() => {
+            dismissOnboarding();
+            openBranding('signatory');
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -58,6 +58,13 @@ function EventInviteContent() {
         const result = await EventInvitationClaimService.validate(token);
         const eventPath = result.eventId ? `/events/${result.eventId}` : '/events';
 
+        // Accepted first: an accepted invitation is no longer "valid" (claimable), and once its date
+        // passes it also reads as expired — but its owner opening the link again should simply land
+        // on the event, not be told the invitation is dead.
+        if (result.alreadyAccepted) {
+          router.replace(eventPath);
+          return;
+        }
         if (!result.valid || result.expired) {
           setState('error');
           setErrorMessage(
@@ -65,10 +72,6 @@ function EventInviteContent() {
               ? 'This invitation has expired. Ask the organiser to send you a new one.'
               : 'This invitation link is invalid or has been withdrawn.'
           );
-          return;
-        }
-        if (result.alreadyAccepted) {
-          router.replace(eventPath);
           return;
         }
 
