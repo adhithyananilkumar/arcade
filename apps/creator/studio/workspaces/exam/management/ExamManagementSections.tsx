@@ -121,7 +121,10 @@ export function ExamManagementSections({ exam, tab }: { exam: ExamResponse; tab:
         const [sectionList, planList] = await Promise.all([listSections(bank.id), loadPlans()]);
         if (cancelled) return;
         setSections(sectionList);
-        if (planList.length > 0) setActivePlanId((prev) => prev ?? planList[0].id);
+        // ?plan=<id> opens that plan — the course's Assessment & Exams tab links straight to one.
+        const wanted = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("plan") : null;
+        const initial = planList.find((p) => p.id === wanted)?.id ?? planList[0]?.id ?? null;
+        if (initial) setActivePlanId((prev) => prev ?? initial);
         await loadPools(bank.id);
       } catch {
         // Each panel renders its own empty/error state; a failure here just leaves them empty.
@@ -187,7 +190,7 @@ export function ExamManagementSections({ exam, tab }: { exam: ExamResponse; tab:
               id: plan.id,
               title: plan.name,
               subtitle: `${planKindLabel(plan.planType, plan.graded)} · ${plan.totalQuestions} q · ${plan.durationMinutes} min`,
-              badge: plan.active ? undefined : "Hidden",
+              badge: !plan.active ? "Hidden" : plan.live === false ? "Draft" : undefined,
             }))}
             activeId={activePlanId}
             onSelect={setActivePlanId}

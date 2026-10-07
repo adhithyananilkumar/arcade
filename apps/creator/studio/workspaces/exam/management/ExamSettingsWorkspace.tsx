@@ -1,5 +1,6 @@
 "use client";
 
+import { withReturnTo } from "@/infrastructure/state/navigationHistory";
 import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -25,7 +26,8 @@ import {
 } from "../../../core/StudioWorkspaceKit";
 
 /** The exam editor (question bank). */
-const questionBankHref = (examId: string) => `/studio/exam/${examId}/edit`;
+const questionBankHref = (examId: string) =>
+  withReturnTo(`/studio/exam/${examId}/edit`, `/studio/content/exam/${examId}?tab=settings`);
 
 const fillButton =
   "inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-ink px-6 py-3 text-xs font-extrabold text-on-ink shadow-md transition-all hover:bg-[#205ca8] disabled:cursor-not-allowed disabled:opacity-40";

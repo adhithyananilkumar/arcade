@@ -12,6 +12,7 @@
  * ------------------------------------------------------------------
  */
 
+import { withReturnTo } from "@/infrastructure/state/navigationHistory";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CSSProperties, ReactNode } from "react";
@@ -688,11 +689,11 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
    * the thing they just clicked.
    */
   const openExamConfig = useCallback((examId: string) => {
-    router.push(`/studio/exam/${examId}/edit`);
+    router.push(withReturnTo(`/studio/exam/${examId}/edit`));
   }, [router]);
 
   const openExamManagement = useCallback((examId: string) => {
-    router.push(`/studio/content/exam/${examId}`);
+    router.push(withReturnTo(`/studio/content/exam/${examId}`));
   }, [router]);
 
 
@@ -1577,7 +1578,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                 key={activeAssessment.id}
                 assessment={activeAssessment}
                 readOnly={status === "SUBMITTED"}
-                onEditExam={(examId) => router.push(`/studio/exam/${examId}/edit`)}
+                onEditExam={(examId) => router.push(withReturnTo(`/studio/exam/${examId}/edit`))}
                 onChange={(patch) => {
                   setActiveAssessment((prev) => (prev ? { ...prev, ...patch } : prev));
                   setModules((prev) =>

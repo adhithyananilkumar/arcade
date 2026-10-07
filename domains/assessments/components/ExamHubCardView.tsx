@@ -62,20 +62,26 @@ export function ExamHubCardView({ card, onOpen, onViewGrades, hideTypeAndFeeBadg
         </div>
       )}
 
-      {card.tiedContentTitle && card.prerequisiteMet !== null && (
+      {/* A linked certification always says what it requires — signed out (no progress known) as
+          well as signed in, where it also says whether the learner is there yet. */}
+      {card.tiedContentTitle && card.certification && (
         <div
           className={`flex items-start gap-2 rounded-xl border px-3 py-2 text-[11.5px] font-medium ${
-            card.prerequisiteMet
+            card.prerequisiteMet === true
               ? "border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300"
-              : "border-amber-200 dark:border-amber-800/80 bg-amber-50/70 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300"
+              : card.prerequisiteMet === false
+                ? "border-amber-200 dark:border-amber-800/80 bg-amber-50/70 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300"
+                : "border-slate-200 bg-slate-50/70 text-slate-700"
           }`}
         >
           <span className="mt-0.5 shrink-0">
-            {card.prerequisiteMet ? <CheckCircle2 size={13} /> : <Lock size={13} />}
+            {card.prerequisiteMet === true ? <CheckCircle2 size={13} /> : <Lock size={13} />}
           </span>
           <span>
-            {card.prerequisiteMet ? "Completed " : "Requires completing "}
+            {card.prerequisiteMet === true ? "Prerequisite done: completed " : "Prerequisite: complete the "}
+            {card.prerequisiteMet === true ? null : card.tieType === "EVENT" ? "event " : "course "}
             <b>{card.tiedContentTitle}</b>
+            {card.prerequisiteMet === false && " first"}
           </span>
         </div>
       )}

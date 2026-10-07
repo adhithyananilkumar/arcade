@@ -1,7 +1,8 @@
 "use client";
 
+import { withReturnTo } from "@/infrastructure/state/navigationHistory";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   platformReviewApi,
@@ -61,6 +62,7 @@ function reviewPreviewHref(contentType: string, contentId: string): string {
 }
 
 export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews" }: ReviewDetailProps) {
+  const pathname = usePathname();
   const router = useRouter();
 
   const [review, setReview] = useState<ReviewResponse | null>(null);
@@ -443,7 +445,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
 
                   <div className="shrink-0 flex items-center gap-2">
                     <Link
-                      href={`/studio/exam/${ex.examId}/edit`}
+                      href={withReturnTo(`/studio/exam/${ex.examId}/edit`, pathname)}
                       target="_blank"
                       className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3 py-1.5 text-[12px] font-semibold text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50 transition-colors"
                     >
@@ -683,7 +685,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
               </div>
               <div className="flex items-center gap-2">
                 <Link
-                  href={`/studio/exam/${inspectingExam.examId}/edit`}
+                  href={withReturnTo(`/studio/exam/${inspectingExam.examId}/edit`, pathname)}
                   target="_blank"
                   className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3 py-1.5 text-[12px] font-semibold text-ink hover:bg-slate-50 transition-colors shadow-sm"
                 >

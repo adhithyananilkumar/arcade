@@ -21,6 +21,7 @@ import { EnrollmentButton } from '@/domains/enrollment';
 import { courseRoutes, eventRoutes, examRoutes } from '@/shared/routes/content.routes';
 import { formatMoney } from '@/shared/utils/money';
 import { IdentityCapture } from '@/apps/learner/components/exams/IdentityCapture';
+import { goBackTo, safeReturnTo } from '@/infrastructure/state/navigationHistory';
 
 export default function ExamPage() {
   const router = useRouter();
@@ -28,6 +29,7 @@ export default function ExamPage() {
   const search = useSearchParams();
   const examId = params.examId as string;
   const planId = search.get('planId');
+  const returnTo = safeReturnTo(search.get('returnTo'));
 
   const [landing, setLanding] = useState<AssessmentLandingResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +69,11 @@ export default function ExamPage() {
   const start = () => {
     const q = new URLSearchParams();
     if (landing.planId) q.set('planId', landing.planId);
-    q.set('returnTo', `${examRoutes.landing(examId)}${landing.planId ? `?planId=${landing.planId}` : ''}`);
+    // Back here after the attempt, still knowing where this page itself goes back to.
+    const back = new URLSearchParams();
+    if (landing.planId) back.set('planId', landing.planId);
+    if (returnTo) back.set('returnTo', returnTo);
+    q.set('returnTo', `${examRoutes.landing(examId)}${back.toString() ? `?${back.toString()}` : ''}`);
     router.push(`${examRoutes.attempt(examId)}?${q.toString()}`);
   };
 
@@ -100,12 +106,31 @@ export default function ExamPage() {
       />
     ) : undefined;
 
+  // Back to where the learner came from: a course passes returnTo; a linked assessment belongs to its
+  // course or event; a certification or standalone exam to the Exams catalogue.
+  const tiedHome =
+    landing.tieType && landing.tiedContentId
+      ? landing.tieType === 'EVENT'
+        ? eventRoutes.overview(landing.tiedContentId)
+        : courseRoutes.overview(landing.tiedContentId)
+      : null;
+  const backHref = returnTo ?? (tiedHome && !landing.hubListed ? tiedHome : examRoutes.catalogue);
+  const backLabel =
+    backHref === examRoutes.catalogue
+      ? 'Back to Exams'
+      : landing.tiedContentTitle
+        ? `Back to ${landing.tiedContentTitle}`
+        : 'Back';
+
   return (
     <ExamOverview
       landing={landing}
       hubHref={examRoutes.catalogue}
+      back={{ label: backLabel, onClick: () => goBackTo(router, backHref) }}
       onStart={start}
-      onSelectPlan={(id) => router.replace(`${examRoutes.landing(examId)}?planId=${id}`)}
+      onSelectPlan={(id) =>
+        router.replace(`${examRoutes.landing(examId)}?planId=${id}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`)
+      }
       onViewGradeCard={(id) => router.push(examRoutes.gradeCard(id))}
       registrationSlot={registration}
       identitySlot={identity}

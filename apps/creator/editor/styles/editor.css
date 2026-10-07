@@ -792,3 +792,12 @@
 .ProseMirror-yjs-selection {
   background-color: rgba(124, 58, 237, 0.15) !important;
 }
+/* Small embedded editors (an assessment's instructions): no page-width gutter. The library's
+   default left/right padding (room for block drag handles on a full page) left the text indented
+   ~6rem inside a narrow box. */
+.arcade-compact-editor .ProseMirror,
+.arcade-compact-editor .tiptap {
+  padding-left: 0.25rem !important;
+  padding-right: 0.25rem !important;
+  margin-left: 0 !important;
+}

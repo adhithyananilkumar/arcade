@@ -1,5 +1,6 @@
 "use client";
 
+import { withReturnTo } from "@/infrastructure/state/navigationHistory";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Link2 } from "lucide-react";
@@ -84,7 +85,7 @@ export function ExamOverviewTab({
         <PublishingWorkflow
           status={data.content?.status ?? "DRAFT"}
           review={data.review.status === "ok" ? data.review.data : null}
-          editHref={editorHref("exam", contentId)}
+          editHref={withReturnTo(editorHref("exam", contentId), `/studio/content/exam/${contentId}?tab=publishing`)}
           onSubmit={onSubmit}
           submitting={submitting}
           reviewPath={data.reviewPath.status === "ok" ? data.reviewPath.data : null}

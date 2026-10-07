@@ -481,6 +481,11 @@ export interface ExamPlanResponse {
   totalMarks: number;
   settings: ExamPlanSettingView[];
   sections: ExamPlanSectionResponse[];
+  /**
+   * In the version learners sit now. False means draft only: learners cannot see this plan until
+   * the next approved submission (for a linked exam, of its course or event).
+   */
+  live: boolean;
 }
 
 /** Every field optional: an absent field leaves that part of the plan unchanged. `planType` is create-only. */

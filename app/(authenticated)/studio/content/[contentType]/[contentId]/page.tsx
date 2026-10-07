@@ -1,5 +1,6 @@
 "use client";
 
+import { goBackTo, safeReturnTo } from "@/infrastructure/state/navigationHistory";
 import { useEffect, useState, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useParams, useRouter, useSearchParams } from "next/navigation";
@@ -246,12 +247,18 @@ function ContentOverviewPageContent() {
         ? { href: `/studio/content/event/${tiedEventId}?tab=exams`, label: `Open ${exam?.tiedContentTitle ?? "the event"}` }
         : null;
 
+  // Back goes where the creator came from (the course editor, the course's Assessment & Exams tab,
+  // a review...), named after it — not always to the course dashboard.
+  const returnTo = safeReturnTo(searchParams?.get("returnTo"));
+  const parentTitle = exam?.tiedContentTitle;
   let backNav: { href: string; label: string } | null = null;
   if (segment === "exam") {
-    if (parentCourseId) {
-      backNav = { href: `/studio/content/course/${parentCourseId}?tab=exams`, label: "Back to Course Dashboard" };
+    if (returnTo) {
+      backNav = { href: returnTo, label: studioBackLabel(returnTo, parentTitle) };
+    } else if (parentCourseId) {
+      backNav = { href: `/studio/content/course/${parentCourseId}?tab=exams`, label: parentTitle ? `Back to ${parentTitle}` : "Back to course" };
     } else if (parentEventId) {
-      backNav = { href: `/studio/content/event/${parentEventId}?tab=exams`, label: "Back to Event Dashboard" };
+      backNav = { href: `/studio/content/event/${parentEventId}?tab=exams`, label: parentTitle ? `Back to ${parentTitle}` : "Back to event" };
     }
   }
 
@@ -333,10 +340,14 @@ function ContentOverviewPageContent() {
             backNav && (
               <Link
                 href={backNav.href}
-                className="group inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200/80 bg-surface/90 px-4 py-2 text-xs font-extrabold text-slate-700 shadow-2xs backdrop-blur-md transition-all duration-200 hover:border-blue-200 hover:bg-surface hover:text-blue-600 hover:shadow-xs active:scale-[0.98] dark:hover:border-blue-500/25 dark:hover:text-blue-400"
+                onClick={(e) => {
+                  e.preventDefault();
+                  goBackTo(router, backNav.href);
+                }}
+                className="group inline-flex max-w-full cursor-pointer items-center gap-2 rounded-full border border-slate-200/80 bg-surface/90 px-4 py-2 text-xs font-extrabold text-slate-700 shadow-2xs backdrop-blur-md transition-all duration-200 hover:border-blue-200 hover:bg-surface hover:text-blue-600 hover:shadow-xs active:scale-[0.98] dark:hover:border-blue-500/25 dark:hover:text-blue-400"
               >
                 <ArrowLeft size={15} className="text-slate-500 transition-transform duration-200 group-hover:-translate-x-1 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
-                <span>{backNav.label}</span>
+                <span className="truncate">{backNav.label}</span>
               </Link>
             )
           }
@@ -357,4 +368,14 @@ export default function ContentOverviewPage() {
       <ContentOverviewPageContent />
     </Suspense>
   );
+}
+
+/** Names the Studio page a Back link leads to. */
+function studioBackLabel(href: string, parentTitle?: string | null): string {
+  const named = (fallback: string) => (parentTitle ? `Back to ${parentTitle}` : fallback);
+  if (href.startsWith("/studio/course/") || href.startsWith("/studio/events/")) return parentTitle ? `Back to ${parentTitle} editor` : "Back to the editor";
+  if (href.startsWith("/studio/content/course/")) return named("Back to course");
+  if (href.startsWith("/studio/content/event/")) return named("Back to event");
+  if (href.startsWith("/console/reviews") || href.includes("/manage/reviews")) return "Back to the review";
+  return "Back";
 }

@@ -88,6 +88,8 @@ export interface ExamOverviewProps {
   landing: AssessmentLandingResponse;
   /** Where the breadcrumb's "Exams" leads (Explore's Exams tab). */
   hubHref: string;
+  /** The page's Back link: where the learner came from, named. */
+  back?: { label: string; onClick: () => void };
   /** Begin or resume, after the honor code is accepted. */
   onStart: () => void;
   /** Switches to another plan of the same exam. */
@@ -105,6 +107,7 @@ export interface ExamOverviewProps {
 export function ExamOverview({
   landing,
   hubHref,
+  back,
   onStart,
   onSelectPlan,
   onViewGradeCard,
@@ -184,6 +187,16 @@ export function ExamOverview({
   return (
     <main className="min-h-screen w-full bg-surface theme-page-bg theme-wallpaper-frost text-slate-900">
       <div className="mx-auto max-w-6xl px-4 pt-12 pb-24 sm:px-6 sm:pt-16 sm:pb-32 lg:px-8">
+        {back && (
+          <button
+            type="button"
+            onClick={back.onClick}
+            className="group mb-2 inline-flex max-w-full cursor-pointer items-center gap-2 rounded-full border border-slate-200/80 bg-surface/90 px-4 py-2 text-xs font-extrabold text-slate-700 shadow-2xs backdrop-blur-md transition-all hover:border-blue-200 hover:text-blue-600 dark:hover:border-blue-500/25 dark:hover:text-blue-400"
+          >
+            <ChevronRight size={14} className="rotate-180 transition-transform group-hover:-translate-x-0.5" />
+            <span className="truncate">{back.label}</span>
+          </button>
+        )}
         
         {/* ================= HERO SECTION (2-Column) ================= */}
         <section className="relative pt-4 pb-8 sm:pt-6 sm:pb-10">

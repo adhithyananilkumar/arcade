@@ -37,9 +37,61 @@ import { CheckCircle2, XCircle, AlertTriangle, Info, Loader2 } from "lucide-reac
 // on screens that don't; toasts sit at the bottom everywhere regardless.
 const DOCK_CLEARANCE = 112
 
-// How long a toast stays before it auto-dismisses (a call site's own
-// `duration` still wins over this default).
-const AUTO_DISMISS_MS = 3000
+// How long a toast stays before it auto-dismisses, by kind (a call site's own
+// `duration` still wins). 3s for everything was too short to read an error,
+// let alone act on it. Hovering a toast pauses its timer (sonner expands the
+// stack and stops every timer while the pointer is over it) and it resumes
+// only once the pointer leaves.
+const AUTO_DISMISS_MS = 5000
+const DURATION_BY_TYPE = {
+  success: 4000,
+  info: 6000,
+  warning: 8000,
+  error: 10000,
+} as const
+// Long messages get reading time on top: ~60ms per character beyond 80, capped.
+const MAX_DURATION_MS = 20000
+
+function readingTime(base: number, text: unknown, extra?: unknown): number {
+  const length = (typeof text === "string" ? text.length : 0) + (typeof extra === "string" ? extra.length : 0)
+  return Math.min(MAX_DURATION_MS, base + Math.max(0, length - 80) * 60)
+}
+
+/**
+ * A long error passed as one string ("Could not save: <server's explanation>. Reference: abc")
+ * is split into a short headline and the detail below it, so the toast reads as "what failed"
+ * then "why", instead of one wrapped paragraph in the title's bold weight.
+ */
+function splitMessage(message: unknown, data: { description?: unknown } | undefined) {
+  if (typeof message !== "string" || data?.description || message.length <= 70) return { message, data }
+  const ref = message.match(/\s*(\(?Reference:?\s*[\w-]+\)?)\.?\s*$/i)
+  const body = ref ? message.slice(0, ref.index).trim() : message
+  const cut = body.search(/[.:;]\s/)
+  if (cut > 15 && cut < body.length - 10) {
+    const description = body.slice(cut + 1).trim() + (ref ? ` ${ref[1]}` : "")
+    return { message: body.slice(0, cut + 1).replace(/:$/, "."), data: { ...data, description } }
+  }
+  return ref ? { message: body, data: { ...data, description: ref[1] } } : { message, data }
+}
+
+// Applied once, here, so every `toast.error(...)` in the app gets these defaults without each call
+// site passing a duration — `toast` is the same object everyone imports from "sonner".
+type ToastFn = (message: unknown, data?: Record<string, unknown>) => string | number
+const patched = toast as unknown as Record<string, ToastFn> & { __arcadeDurations?: boolean }
+if (!patched.__arcadeDurations) {
+  patched.__arcadeDurations = true
+  for (const type of Object.keys(DURATION_BY_TYPE) as Array<keyof typeof DURATION_BY_TYPE>) {
+    const original = patched[type].bind(toast)
+    patched[type] = (message, data) => {
+      const split = type === "error" || type === "warning" ? splitMessage(message, data) : { message, data }
+      const d = (split.data ?? {}) as Record<string, unknown>
+      return original(split.message, {
+        ...d,
+        duration: d.duration ?? readingTime(DURATION_BY_TYPE[type], split.message, d.description),
+      })
+    }
+  }
+}
 
 // Pill body. `!` overrides sonner's own hardcoded (non-themeable) inline
 // declarations for background/border/shadow/gap so this actually wins the
@@ -138,7 +190,7 @@ function Toaster({ style, ...props }: ToasterProps) {
             content: "!gap-0.5",
             title: "!text-[13px] !font-bold !leading-snug !text-ink",
             description:
-              "!text-[12px] !font-medium !leading-snug !text-slate-500",
+              "!text-[12px] !font-medium !leading-snug !text-slate-600 !mt-0.5",
             actionButton: [
               "!h-8 !shrink-0 !rounded-full !border-0 !px-4 !text-[12px] !font-semibold",
               "!bg-ink !text-on-ink hover:!bg-ink-hover",
@@ -155,8 +207,10 @@ function Toaster({ style, ...props }: ToasterProps) {
         }}
         style={
           {
-            "--border-radius": "9999px",
-            "--width": "380px",
+            // Rounded, not a full pill: an error with a second line of detail reads
+            // badly squeezed into pill ends.
+            "--border-radius": "22px",
+            "--width": "420px",
             ...style,
           } as CSSProperties
         }

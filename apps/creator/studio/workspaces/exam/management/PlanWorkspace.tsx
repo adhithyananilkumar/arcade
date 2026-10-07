@@ -55,11 +55,27 @@ const DIFFICULTIES: Difficulty[] = ["EASY", "MEDIUM", "HARD"];
 
 type PanelId = "selection" | "attempt" | "security" | "availability";
 
-const PANELS: { id: PanelId; label: string }[] = [
-  { id: "selection", label: "Questions" },
-  { id: "attempt", label: "Attempt & scoring" },
-  { id: "security", label: "Security" },
-  { id: "availability", label: "Availability" },
+const PANELS: { id: PanelId; label: string; help: string }[] = [
+  {
+    id: "selection",
+    label: "1 · Questions",
+    help: "Choose which questions from the bank this plan uses: whole sections, a number picked at random, or hand-picked ones. Each candidate's paper is built from these rules.",
+  },
+  {
+    id: "attempt",
+    label: "2 · Attempt & scoring",
+    help: "Time limit, number of attempts, and the score needed to pass. Some limits are fixed by the platform for certifications — those show a lock.",
+  },
+  {
+    id: "security",
+    label: "3 · Security",
+    help: "Optional proctoring, identity check and full-screen mode, and how many violations end an attempt.",
+  },
+  {
+    id: "availability",
+    label: "4 · Availability",
+    help: "Where learners meet this plan and whether it is offered right now. Hiding a plan keeps its results.",
+  },
 ];
 
 export function PlanWorkspace({
@@ -158,6 +174,12 @@ export function PlanWorkspace({
             {plan.minQuestions > 0 && ` · platform minimum ${plan.minQuestions} questions`}
           </p>
           <p className="mt-1 px-2 text-[11px] font-medium text-slate-500">{meta.effect}</p>
+          {plan.live === false && plan.active && (
+            <p className="mx-2 mt-2 inline-flex items-start gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+              Draft — saved, but learners don’t see this plan yet. It goes live with the next approved submission
+              {plan.hubListed ? "." : " of the course or event it belongs to."}
+            </p>
+          )}
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
@@ -222,6 +244,9 @@ export function PlanWorkspace({
           </button>
         ))}
       </div>
+      <p className="-mt-1 text-xs font-medium leading-relaxed text-slate-500">
+        {PANELS.find((p) => p.id === panel)?.help}
+      </p>
 
       {/* ── Panel body ──────────────────────────────────────────────────── */}
       <div>
