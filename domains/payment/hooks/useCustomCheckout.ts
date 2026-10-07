@@ -75,22 +75,40 @@ export function useCustomCheckout({
 
   // ── Settling ──────────────────────────────────────────────────────────
 
-  const finish = useCallback(
-    (report: () => void) => {
+  // The modal animates out before anything is announced: a "you're enrolled" toast or a button
+  // flipping to "Go to course" must never appear on top of the closing checkout.
+  const [open, setOpen] = useState(true);
+  const [closedFully] = useState(() => {
+    let resolve!: () => void;
+    const promise = new Promise<void>((r) => (resolve = r));
+    return { promise, resolve };
+  });
+  /** Base UI calls this once the closing animation has finished. */
+  const onExited = closedFully.resolve;
+
+  /**
+   * Closes the modal now; reports the outcome once the modal is fully gone and the outcome is
+   * known (it may still be a server check in flight), then unmounts.
+   */
+  const leave = useCallback(
+    (outcome: (() => void) | Promise<() => void>) => {
       if (finished.current) return;
       finished.current = true;
-      report();
-      onClosed();
+      setOpen(false);
+      void Promise.all([closedFully.promise, Promise.resolve(outcome)]).then(([, report]) => {
+        report();
+        onClosed();
+      });
     },
-    [onClosed],
+    [closedFully, onClosed],
   );
 
   const grant = useCallback(async () => {
     if (finished.current) return;
     setPhase({ kind: 'granted' });
     await Promise.all([awaitGrant(enrollmentId), new Promise((r) => setTimeout(r, SUCCESS_HOLD_MS))]);
-    finish(() => callbacksRef.current.onGranted());
-  }, [enrollmentId, finish]);
+    leave(() => callbacksRef.current.onGranted());
+  }, [enrollmentId, leave]);
 
   const applyOutcome = useCallback(
     (outcome: Settled | null) => {
@@ -156,11 +174,10 @@ export function useCustomCheckout({
         opened
           ? {
               card: opened.methods.card,
-              upiId: opened.methods.upi,
               banks: opened.methods.netbanking,
               wallets: opened.methods.wallets,
             }
-          : { card: false, upiId: false, banks: {}, wallets: [] },
+          : { card: false, banks: {}, wallets: [] },
       );
     })();
     return () => {
@@ -257,7 +274,6 @@ export function useCustomCheckout({
     [summary, payerEmail, phone, applyOutcome, checkOnce],
   );
 
-  const payWithUpiId = useCallback((vpa: string) => start({ method: 'upi', vpa: vpa.trim() }), [start]);
   const payWithBank = useCallback((bank: string) => start({ method: 'netbanking', bank }), [start]);
   const payWithWallet = useCallback((wallet: string) => start({ method: 'wallet', wallet }), [start]);
   const payWithCard = useCallback(
@@ -278,59 +294,59 @@ export function useCustomCheckout({
     [start],
   );
 
-  const verifyVpa = useCallback(async (vpa: string) => session.current?.verifyVpa(vpa.trim()) ?? true, []);
   const cardNetwork = useCallback((number: string) => session.current?.cardNetwork(number) ?? '', []);
 
   // ── Leaving ───────────────────────────────────────────────────────────
 
   const backToMethods = useCallback(() => setPhase({ kind: 'ready' }), []);
 
-  const close = useCallback(async () => {
+  const close = useCallback(() => {
     const current = phaseRef.current;
     if (finished.current) return;
     if (current.kind === 'granted') return; // already handing over
-    if (current.kind === 'expired') return finish(() => callbacksRef.current.onExpired());
-    if (current.kind === 'slow') return finish(() => callbacksRef.current.onVerifyTimeout());
+    if (current.kind === 'expired') return leave(() => callbacksRef.current.onExpired());
+    if (current.kind === 'slow') return leave(() => callbacksRef.current.onVerifyTimeout());
+    const cb = callbacksRef.current;
     if (current.kind === 'verifying' && summary) {
-      // Money may have moved: finish confirming out of sight and report the result.
-      finished.current = true;
-      onClosed();
-      const outcome = await verifyUntilSettled(summary.orderId, () => false);
-      if (outcome === 'PAID') {
-        await awaitGrant(enrollmentId);
-        callbacksRef.current.onGranted();
-      } else if (outcome === 'EXPIRED') callbacksRef.current.onExpired();
-      else if (outcome === 'FAILED') callbacksRef.current.onFailed();
-      else callbacksRef.current.onVerifyTimeout();
-      return;
+      // Money may have moved: the modal closes now, confirming carries on out of sight, and the
+      // result is announced once it is known.
+      return leave(
+        verifyUntilSettled(summary.orderId, () => false).then(async (outcome) => {
+          if (outcome === 'PAID') {
+            await awaitGrant(enrollmentId);
+            return cb.onGranted;
+          }
+          if (outcome === 'EXPIRED') return cb.onExpired;
+          if (outcome === 'FAILED') return cb.onFailed;
+          return cb.onVerifyTimeout;
+        }),
+      );
     }
     // A UPI approval can land moments after the window closes. Check once, quietly.
-    if (summary) {
-      try {
-        const outcome = settledOutcome(await PaymentService.verifyOrder(summary.orderId));
-        if (outcome === 'PAID') {
-          finished.current = true;
-          onClosed();
-          await awaitGrant(enrollmentId);
-          callbacksRef.current.onGranted();
-          return;
+    leave(
+      (async () => {
+        if (!summary) return cb.onDismissed;
+        try {
+          const outcome = settledOutcome(await PaymentService.verifyOrder(summary.orderId));
+          if (outcome === 'PAID') {
+            await awaitGrant(enrollmentId);
+            return cb.onGranted;
+          }
+          if (outcome === 'EXPIRED') return cb.onExpired;
+        } catch {
+          // An ordinary dismissal; the sweeper still reconciles server-side.
         }
-        if (outcome === 'EXPIRED') return finish(() => callbacksRef.current.onExpired());
-      } catch {
-        // Fall through to an ordinary dismissal; the sweeper still reconciles server-side.
-      }
-    }
-    finish(() => callbacksRef.current.onDismissed());
-  }, [summary, enrollmentId, finish, onClosed]);
+        return cb.onDismissed;
+      })(),
+    );
+  }, [summary, enrollmentId, leave]);
 
-  const switchToHosted = useCallback(() => {
-    if (finished.current) return;
-    finished.current = true;
-    onClosed();
-    onUseHosted();
-  }, [onClosed, onUseHosted]);
+  /** Razorpay's own checkout opens only once ours has fully closed. */
+  const switchToHosted = useCallback(() => leave(() => onUseHosted()), [leave, onUseHosted]);
 
   return {
+    open,
+    onExited,
     phase,
     summary,
     methods,
@@ -339,11 +355,9 @@ export function useCustomCheckout({
     phoneValid,
     setPhone: (value: string) => setPhone(digitsOnly(value).slice(0, 10)),
     loadQr,
-    payWithUpiId,
     payWithCard,
     payWithBank,
     payWithWallet,
-    verifyVpa,
     cardNetwork,
     backToMethods,
     close,

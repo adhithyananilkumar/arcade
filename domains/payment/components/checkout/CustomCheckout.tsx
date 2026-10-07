@@ -21,6 +21,8 @@ export function CustomCheckout(props: CustomCheckoutProps) {
   const checkout = useCustomCheckout(props);
   return (
     <CheckoutModal
+      open={checkout.open}
+      onExited={checkout.onExited}
       phase={checkout.phase}
       summary={checkout.summary}
       methods={checkout.methods}
@@ -30,14 +32,12 @@ export function CustomCheckout(props: CustomCheckoutProps) {
       phoneValid={checkout.phoneValid}
       onPhoneChange={checkout.setPhone}
       onLoadQr={checkout.loadQr}
-      onVerifyVpa={checkout.verifyVpa}
-      onPayWithVpa={checkout.payWithUpiId}
       onPayWithCard={checkout.payWithCard}
       onPayWithBank={checkout.payWithBank}
       onPayWithWallet={checkout.payWithWallet}
       cardNetwork={checkout.cardNetwork}
       onRetry={checkout.backToMethods}
-      onClose={() => void checkout.close()}
+      onClose={checkout.close}
       onUseHosted={checkout.switchToHosted}
     />
   );

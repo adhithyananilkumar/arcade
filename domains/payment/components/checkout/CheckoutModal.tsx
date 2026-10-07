@@ -15,6 +15,9 @@ import { SHAPE, SHAPE_INNER, SHAPE_SMALL } from './shape';
 import type { AvailableMethods, CardInput, CheckoutMethod, CheckoutPhase, CheckoutSummary, QrState } from './checkout.types';
 
 export interface CheckoutModalProps {
+  /** False starts the closing animation; `onExited` follows once it has finished. */
+  open: boolean;
+  onExited: () => void;
   phase: CheckoutPhase;
   summary: CheckoutSummary | null;
   methods: AvailableMethods | null;
@@ -24,8 +27,6 @@ export interface CheckoutModalProps {
   phoneValid: boolean;
   onPhoneChange: (value: string) => void;
   onLoadQr: () => void;
-  onVerifyVpa: (vpa: string) => Promise<boolean>;
-  onPayWithVpa: (vpa: string) => void;
   onPayWithCard: (card: CardInput) => void;
   onPayWithBank: (code: string) => void;
   onPayWithWallet: (code: string) => void;
@@ -295,8 +296,11 @@ export function CheckoutModal(props: CheckoutModalProps) {
 
   return (
     <DialogPrimitive.Root
-      open
+      open={props.open}
       disablePointerDismissal
+      onOpenChangeComplete={(open) => {
+        if (!open) props.onExited();
+      }}
       onOpenChange={(open) => {
         if (!open) props.onClose();
       }}
@@ -305,7 +309,7 @@ export function CheckoutModal(props: CheckoutModalProps) {
         <DialogPrimitive.Backdrop className="arcade-checkout arcade-checkout-veil fixed inset-0 z-[120] duration-200 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
         <DialogPrimitive.Popup
           data-capture-ignore
-          className="arcade-checkout fixed inset-0 z-[121] flex items-center justify-center p-3 outline-none sm:p-6"
+          className="arcade-checkout fixed inset-0 z-[121] flex items-center justify-center p-3 outline-none duration-200 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 sm:p-6"
         >
           <motion.div
             initial={{ opacity: 0, y: 18, scale: 0.97 }}
@@ -381,10 +385,6 @@ export function CheckoutModal(props: CheckoutModalProps) {
                             <UpiPane
                               qr={qr}
                               onLoadQr={props.onLoadQr}
-                              upiIdEnabled={Boolean(methods?.upiId)}
-                              onVerifyVpa={props.onVerifyVpa}
-                              onPayWithVpa={props.onPayWithVpa}
-                              canPay={canPayDirect}
                               amountLabel={amountLabel}
                             />
                           )}

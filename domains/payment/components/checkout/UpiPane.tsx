@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import QRCode from 'qrcode';
-import { AtSign, Check, Loader2, RefreshCw, X } from 'lucide-react';
-import { vpaLooksValid } from '../../utils/card';
+import { RefreshCw } from 'lucide-react';
 import { MethodLogo, upiAppLogoUrl } from './MethodLogo';
 import type { QrState } from './checkout.types';
 import type { QrCodeResponse } from '../../types/payment.types';
@@ -160,127 +159,52 @@ function QrPlate({ state, onRefresh }: { state: QrState; onRefresh: () => void }
   );
 }
 
-type VpaCheck = 'idle' | 'checking' | 'valid' | 'invalid';
-
 export interface UpiPaneProps {
   qr: QrState;
   onLoadQr: () => void;
-  /** Whether UPI ID (collect) is available on this account. */
-  upiIdEnabled: boolean;
-  onVerifyVpa: (vpa: string) => Promise<boolean>;
-  onPayWithVpa: (vpa: string) => void;
-  canPay: boolean;
   amountLabel: string;
 }
 
-export function UpiPane({ qr, onLoadQr, upiIdEnabled, onVerifyVpa, onPayWithVpa, canPay, amountLabel }: UpiPaneProps) {
-  const [vpa, setVpa] = useState('');
-  // The gateway's answer for one specific ID; any other ID is still being checked.
-  const [verdict, setVerdict] = useState<{ vpa: string; ok: boolean } | null>(null);
-
+/**
+ * UPI on desktop is QR only: scanned with a phone, approved there, confirmed here — nothing opens
+ * outside the modal. Paying by typing a UPI ID was a "collect request", which NPCI has been
+ * retiring since 28 Feb 2026 (Razorpay: move to UPI QR or intent), and it opened a gateway window.
+ */
+export function UpiPane({ qr, onLoadQr, amountLabel }: UpiPaneProps) {
   useEffect(() => {
     if (qr.status === 'idle') onLoadQr();
   }, [qr.status, onLoadQr]);
 
-  // Debounced existence check once the ID looks complete.
-  useEffect(() => {
-    if (!vpaLooksValid(vpa)) return;
-    let live = true;
-    const timer = setTimeout(async () => {
-      const ok = await onVerifyVpa(vpa);
-      if (live) setVerdict({ vpa, ok });
-    }, 500);
-    return () => {
-      live = false;
-      clearTimeout(timer);
-    };
-  }, [vpa, onVerifyVpa]);
-
-  const check: VpaCheck = !vpaLooksValid(vpa)
-    ? 'idle'
-    : verdict?.vpa === vpa
-      ? verdict.ok
-        ? 'valid'
-        : 'invalid'
-      : 'checking';
-
   return (
-    <div className="flex flex-col">
-      <div className="flex flex-col items-center gap-6 @xl:flex-row @xl:items-start">
-        <QrPlate state={qr} onRefresh={onLoadQr} />
-        <div className="w-full flex-1 @xl:pt-2">
-          <h3 className="text-[16px] font-semibold tracking-tight text-slate-900">Scan to pay {amountLabel}</h3>
-          <p className="mt-1 text-[13px] leading-relaxed text-slate-500">
-            Scan with any UPI app and approve with your PIN. This page confirms on its own the moment the payment
-            lands.
-          </p>
-          <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="Works with any UPI app">
-            {UPI_APPS.map((app) => (
-              <span key={app.id} title={app.name}>
-                <MethodLogo src={upiAppLogoUrl(app.id)} name={app.name} code={app.id} size={36} />
-              </span>
-            ))}
-            <span className="text-[11.5px] font-medium text-slate-400">&amp; every UPI app</span>
-          </div>
-          <ol className="mt-5 space-y-2.5 text-[12.5px] text-slate-600">
-            {['Open your UPI app and tap Scan', 'Point your camera at the code', 'Check the amount and enter your UPI PIN'].map(
-              (step, i) => (
-                <li key={step} className="flex items-center gap-2.5">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ink text-[10px] font-bold text-on-ink">
-                    {i + 1}
-                  </span>
-                  {step}
-                </li>
-              ),
-            )}
-          </ol>
+    <div className="flex flex-col items-center gap-6 @xl:flex-row @xl:items-start">
+      <QrPlate state={qr} onRefresh={onLoadQr} />
+      <div className="w-full flex-1 @xl:pt-2">
+        <h3 className="text-[16px] font-semibold tracking-tight text-slate-900">Scan to pay {amountLabel}</h3>
+        <p className="mt-1 text-[13px] leading-relaxed text-slate-500">
+          Scan with any UPI app and approve with your PIN. This page confirms on its own the moment the payment
+          lands.
+        </p>
+        <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="Works with any UPI app">
+          {UPI_APPS.map((app) => (
+            <span key={app.id} title={app.name}>
+              <MethodLogo src={upiAppLogoUrl(app.id)} name={app.name} code={app.id} size={36} />
+            </span>
+          ))}
+          <span className="text-[11.5px] font-medium text-slate-400">&amp; every UPI app</span>
         </div>
-      </div>
-
-      {upiIdEnabled && (
-        <div className="pt-6">
-          <div className="mb-3 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-            <span className="h-px flex-1 bg-slate-200" />
-            or pay with your UPI ID
-            <span className="h-px flex-1 bg-slate-200" />
-          </div>
-          <form
-            className="flex flex-col gap-2 @md:flex-row"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (check === 'valid' && canPay) onPayWithVpa(vpa);
-            }}
-          >
-            <label className="arcade-checkout-sunken relative flex flex-1 items-center rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md px-3 focus-within:ring-2 focus-within:ring-ink/20">
-              <AtSign size={15} className="shrink-0 text-slate-400" />
-              <input
-                value={vpa}
-                onChange={(e) => setVpa(e.target.value.replace(/\s+/g, ''))}
-                placeholder="yourname@okbank"
-                autoComplete="off"
-                spellCheck={false}
-                aria-label="UPI ID"
-                className="h-11 w-full bg-transparent px-2 text-[14px] font-medium text-slate-900 outline-none placeholder:text-slate-400"
-              />
-              <span className="w-5 shrink-0" aria-live="polite">
-                {check === 'checking' && <Loader2 size={15} className="animate-spin text-slate-400" />}
-                {check === 'valid' && <Check size={16} className="text-emerald-500" aria-label="UPI ID found" />}
-                {check === 'invalid' && <X size={16} className="text-rose-500" aria-label="UPI ID not found" />}
-              </span>
-            </label>
-            <button
-              type="submit"
-              disabled={check !== 'valid' || !canPay}
-              className="h-11 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-ink px-5 text-[13px] font-semibold text-on-ink transition hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Send request
-            </button>
-          </form>
-          {check === 'invalid' && (
-            <p className="mt-1.5 text-[12px] text-rose-600 dark:text-rose-400">That UPI ID could not be found. Check it and try again.</p>
+        <ol className="mt-5 space-y-2.5 text-[12.5px] text-slate-600">
+          {['Open your UPI app and tap Scan', 'Point your camera at the code', 'Check the amount and enter your UPI PIN'].map(
+            (step, i) => (
+              <li key={step} className="flex items-center gap-2.5">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ink text-[10px] font-bold text-on-ink">
+                  {i + 1}
+                </span>
+                {step}
+              </li>
+            ),
           )}
-        </div>
-      )}
+        </ol>
+      </div>
     </div>
   );
 }

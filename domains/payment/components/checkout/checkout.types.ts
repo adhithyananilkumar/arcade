@@ -45,7 +45,6 @@ export interface CardInput {
 /** What the gateway account can take; null while unknown or when the SDK could not load. */
 export interface AvailableMethods {
   card: boolean;
-  upiId: boolean;
   /** Bank code → name. */
   banks: Record<string, string>;
   wallets: string[];
