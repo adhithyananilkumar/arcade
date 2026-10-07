@@ -11,12 +11,6 @@ import { api } from "@/infrastructure/http/api";
 import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
 
 const roadmapService = {
-  createRoadmap: (data: { title: string; description?: string; channelId: string }) =>
-    api.post<{ id: string }>(`/api/roadmaps`, {
-      ...data,
-      ownerType: "USER",
-      ownerId: "00000000-0000-0000-0000-000000000000",
-    }),
   updateRoadmap: (id: string, data: { title?: string; description?: string }) =>
     api.put(`/api/roadmaps/${id}`, data),
   deleteRoadmap: (id: string) => api.delete(`/api/roadmaps/${id}`),
@@ -124,12 +118,6 @@ const CONTENT_TYPES = [
     icon: ClipboardCheck,
     label: "Exam",
     href: "/studio/exam/new",
-  },
-  {
-    id: "roadmap",
-    icon: Map,
-    label: "Roadmap",
-    href: undefined,
   },
 ];
 
@@ -370,113 +358,6 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-
-// ── New Roadmap creation modal ──────────────────────────────────────────────────
-
-function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
-  const router = useRouter();
-  const [title, setTitle] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { channels, loading: channelsLoading } = useEligibleChannels();
-  const [channelId, setChannelId] = useState("");
-
-  useEffect(() => {
-    if (channels.length === 1 && !channelId) setChannelId(channels[0].id);
-  }, [channels, channelId]);
-
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    if (!title.trim() || !channelId) return;
-    setCreating(true);
-    setError(null);
-    try {
-      const roadmap = await roadmapService.createRoadmap({
-        title: title.trim(),
-        channelId,
-      });
-      toast.success(`"${title.trim()}" created`);
-      router.push(`/studio/roadmap/${roadmap.id}/edit`);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not create roadmap";
-      setError(message);
-      toast.error(message);
-      setCreating(false);
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer"
-        >
-          <X size={18} />
-        </button>
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-fuchsia-50 text-fuchsia-600 dark:bg-fuchsia-500/10 dark:text-fuchsia-400">
-            <Map size={20} strokeWidth={2.4} />
-          </div>
-          <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-ink">New Roadmap</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
-          </div>
-        </div>
-
-        {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleCreate} className="space-y-4">
-          <div>
-            <label htmlFor="roadmap-title" className="mb-1.5 block text-[13px] font-semibold text-ink">
-              Roadmap Title <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="roadmap-title"
-              type="text"
-              required
-              autoFocus
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Java Backend Path"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60"
-            />
-          </div>
-          {!channelsLoading && channels.length > 0 && (
-            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
-          )}
-          {!channelsLoading && channels.length === 0 && (
-            <p className="text-sm text-rose-600 dark:text-rose-400">
-              You need a channel with content-authoring rights before you can create a roadmap.
-            </p>
-          )}
-          <div className="flex justify-end gap-2 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={creating}
-              className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-all hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-            >
-              {creating ? "Creating..." : "Create Roadmap"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 // ── New Event creation modal ────────────────────────────────────────────────────
 
@@ -1222,7 +1103,7 @@ export default function DashboardPage() {
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [channelDropdownOpen, setChannelDropdownOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "event" | null>(null);
+  const [createOpen, setCreateOpen] = useState<"course" | "event" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
@@ -1251,7 +1132,7 @@ export default function DashboardPage() {
       setChannelRequiredModalOpen(true);
       return;
     }
-    if (typeId === "course" || typeId === "roadmap" || typeId === "event") {
+    if (typeId === "course" || typeId === "event") {
       setCreateOpen(typeId as any);
     } else if (href) {
       router.push(href);
@@ -1269,7 +1150,7 @@ export default function DashboardPage() {
         setCreateOpen("event");
       } else if (create === "exam" || create === "quiz") {
         router.replace("/studio/exam/new");
-      } else if (create === "course" || create === "roadmap") {
+      } else if (create === "course") {
         setCreateOpen(create as any);
       }
     }
@@ -1403,7 +1284,6 @@ export default function DashboardPage() {
         onClose={() => setChannelRequiredModalOpen(false)}
       />
       {createOpen === "course" && <CreateCourseModal onClose={() => setCreateOpen(null)} />}
-      {createOpen === "roadmap" && <CreateRoadmapModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "event" && <CreateEventModal onClose={() => setCreateOpen(null)} />}
       {renameTarget && (
         <RenameRoadmapModal
