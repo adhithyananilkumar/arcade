@@ -20,6 +20,7 @@
 
 import { FileText, type LucideIcon } from 'lucide-react';
 import { UnifiedContentCard } from '@/shared/design-system/ui/cards/UnifiedContentCard';
+import { useMyEnrollmentStates } from '@/domains/enrollment';
 import type {
   ChannelContentItem,
   ProfileCourse,
@@ -89,6 +90,7 @@ export interface ContentCardProps {
 export function ContentCard({ item, kind, href }: ContentCardProps) {
   const type = kind ?? (item as ChannelContentItem).type ?? 'COURSE';
   const isCourse = type.toUpperCase() === 'COURSE';
+  const cta = useMyEnrollmentStates().ctaFor(isCourse ? 'COURSE' : 'EVENT', item.id, isCourse ? 'View Course' : 'View Event');
 
   return (
     <UnifiedContentCard
@@ -99,8 +101,9 @@ export function ContentCard({ item, kind, href }: ContentCardProps) {
       channelName={item.channelName}
       channelIconUrl={item.channelIconUrl}
       dateText={formatMonth(item.createdAt)}
-      actionHref={href}
-      actionLabel={isCourse ? 'View Course' : 'View Event'}
+      actionHref={cta.href ?? href}
+      actionLabel={cta.label}
+      actionTone={cta.tone}
     />
   );
 }

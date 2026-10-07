@@ -24,8 +24,20 @@ const TIMELINE_LABEL: Record<string, string> = {
   GATEWAY_RECOVERED: "Recovered from gateway",
   GRANT_RETRIED: "Access re-requested",
   REFUND_REQUESTED: "Refund requested",
-  REFUND_COMPLETED: "Refund completed",
+  REFUND_COMPLETED: "Refund sent to bank",
   REFUND_FAILED: "Refund failed",
+};
+
+/**
+ * COMPLETED means the gateway processed it and sent it to the learner's bank — not that the bank
+ * has credited it yet, which takes days. Saying "Refunded" here is what made a refund that hadn't
+ * landed in the learner's account look like a bug.
+ */
+const REFUND_STATUS: Record<string, { label: string; cls: string }> = {
+  REQUESTED: { label: "Sending to gateway", cls: "text-amber-600 dark:text-amber-400" },
+  PROCESSING: { label: "Gateway processing", cls: "text-amber-600 dark:text-amber-400" },
+  COMPLETED: { label: "Sent to bank", cls: "text-emerald-600 dark:text-emerald-400" },
+  FAILED: { label: "Failed — nothing sent", cls: "text-rose-600 dark:text-rose-400" },
 };
 
 const TIMELINE_TONE: Record<string, string> = {
@@ -121,8 +133,8 @@ export function OrderDrawer({
       });
       toast.success(
         result.status === "COMPLETED"
-          ? `Refunded ${formatMoney(result.amount, result.currency)}.`
-          : `Refund of ${formatMoney(result.amount, result.currency)} sent — the gateway will confirm it shortly.`,
+          ? `${formatMoney(result.amount, result.currency)} sent to the learner's bank. They have been notified; banks usually credit it in 5–7 working days.`
+          : `Refund of ${formatMoney(result.amount, result.currency)} accepted by the gateway — the learner has been notified and it completes when the gateway confirms.`,
       );
       setRefundOpen(false);
       setConfirming(false);
@@ -371,13 +383,33 @@ export function OrderDrawer({
                     <div key={r.id} className="rounded-xl border border-slate-200/80 px-3 py-2.5 text-xs">
                       <div className="flex items-center justify-between">
                         <span className="font-bold tabular-nums text-slate-900">{formatMoney(r.amount, r.currency)}</span>
-                        <span className="text-[11px] font-bold text-slate-500">{r.status}</span>
+                        <span className={`text-[11px] font-bold ${REFUND_STATUS[r.status]?.cls ?? "text-slate-500"}`}>
+                          {REFUND_STATUS[r.status]?.label ?? r.status}
+                        </span>
                       </div>
                       <p className="mt-1 text-slate-600">{r.reason}</p>
                       <p className="mt-1 text-[11px] text-slate-400">
                         {r.requestedByName || "Operator"} · {when(r.requestedAt)}
+                        {r.completedAt ? ` · sent to bank ${when(r.completedAt)}` : ""}
                         {r.revokeAccess ? " · access withdrawn" : ""}
                       </p>
+                      {(r.gatewayRefundId || r.bankReference) && (
+                        <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[11px]">
+                          {r.gatewayRefundId && (
+                            <>
+                              <dt className="text-slate-400">Gateway refund</dt>
+                              <dd className="font-mono text-slate-600">
+                                {r.gatewayRefundId}
+                                {r.gatewayStatus ? ` · ${r.gatewayStatus}` : ""}
+                              </dd>
+                            </>
+                          )}
+                          <dt className="text-slate-400">Bank reference</dt>
+                          <dd className="font-mono text-slate-600">
+                            {r.bankReference || (r.status === "COMPLETED" ? "Not assigned yet — checked hourly" : "—")}
+                          </dd>
+                        </dl>
+                      )}
                       {r.lastError && <p className="mt-1 text-[11px] font-medium text-rose-600 dark:text-rose-400">{r.lastError}</p>}
                     </div>
                   ))}

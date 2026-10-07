@@ -1186,9 +1186,11 @@ export function CoursePublicView({ courseId: propCourseId }: CoursePublicViewPro
   const enrollmentStatus = myEnrollment?.enrollment?.enrollmentStatus;
   const enrollButtonState: 'ENROLLED' | 'NOT_ENROLLED' | 'PENDING' | 'WAITLISTED' = isEnrolled
     ? 'ENROLLED'
-    : enrollmentStatus === 'PENDING' || enrollmentStatus === 'REQUESTED'
-      ? 'PENDING'
-      : 'NOT_ENROLLED';
+    : myEnrollment?.enrollment?.waitlisted
+      ? 'WAITLISTED'
+      : enrollmentStatus === 'PENDING' || enrollmentStatus === 'REQUESTED'
+        ? 'PENDING'
+        : 'NOT_ENROLLED';
   const pendingReason = myEnrollment?.enrollment?.requiresPayment ? 'PAYMENT' : 'REQUIREMENTS';
 
   const hasBadge = (course?.badges && course.badges.length > 0) || false;

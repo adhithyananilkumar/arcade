@@ -1,6 +1,7 @@
 "use client";
 
 import { usePublishedEventCardsQuery } from '@/domains/events';
+import { useMyEnrollmentStates } from '@/domains/enrollment';
 import React from "react";
 import { useRouter } from "next/navigation";
 import ExploreEmptyState from "./ExploreEmptyState";
@@ -101,6 +102,8 @@ export default function EventsView({
   setCourseSearchQuery
 }: EventsViewProps) {
   const router = useRouter();
+  // Registered → "Go to event"; waitlisted → said on the button itself.
+  const { ctaFor } = useMyEnrollmentStates();
   const [currentPage, setCurrentPage] = React.useState(0);
   const [webinarsPage, setWebinarsPage] = React.useState(0);
   const [eventType, setEventType] = React.useState<"all" | "bootcamps" | "webinars">("all");
@@ -112,6 +115,15 @@ export default function EventsView({
   }, [activeCategoryName, eventType, courseSearchQuery]);
 
   const isAllCategory = activeCategoryName.toLowerCase() === "all";
+
+  const eventCta = (item: { id?: string; slug?: string }) => {
+    const cta = ctaFor('EVENT', item.id, 'View Details');
+    return {
+      actionHref: cta.href ?? `/events/${item.slug || item.id}`,
+      actionLabel: cta.label,
+      actionTone: cta.tone,
+    };
+  };
 
   // Everything below comes from the server.
   //
@@ -202,8 +214,7 @@ export default function EventsView({
                   bootcamp.duration ? bootcamp.duration.toUpperCase() : null,
                   bootcamp.level ? bootcamp.level : null,
                 ].filter(Boolean)}
-                actionHref={`/events/${bootcamp.slug || bootcamp.id}`}
-                actionLabel="View Details"
+                {...eventCta(bootcamp)}
               />
             );
           })}
@@ -312,8 +323,7 @@ export default function EventsView({
                 metaTags={[
                   w.duration ? w.duration.toUpperCase() : null,
                 ].filter(Boolean)}
-                actionHref={`/events/${w.slug || w.id}`}
-                actionLabel="View Details"
+                {...eventCta(w)}
               />
             );
           })}

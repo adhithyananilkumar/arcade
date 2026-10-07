@@ -23,6 +23,19 @@ export interface CheckoutResponse {
   gatewayClientFields: Record<string, unknown>;
 }
 
+/** A UPI QR for one checkout. Short-lived; asking again after it lapses returns a fresh one. */
+export interface QrCodeResponse {
+  qrCodeId: string;
+  /** The gateway-hosted QR image. */
+  imageUrl: string;
+  /** When this QR stops taking payments — the ring timer counts down to it. */
+  expiresAt: string;
+  /** When the whole checkout ends; no new QR is issued close to it. */
+  orderExpiresAt?: string | null;
+  /** Minor units the QR is fixed to. */
+  amount: number;
+}
+
 export interface PaymentOrderResponse {
   id: string;
   enrollmentId: string;
@@ -106,7 +119,12 @@ export interface BillingRefundLine {
   currency: string;
   status: 'REQUESTED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
   requestedAt: string;
+  /** When it was sent to the learner's bank — the bank credits it some working days later. */
   completedAt?: string | null;
+  /** The gateway's refund id ("rfnd_…"). */
+  gatewayRefundId?: string | null;
+  /** ARN / RRN / UTR the learner's bank traces the credit by, once assigned. */
+  bankReference?: string | null;
 }
 
 export interface BillingLine {
@@ -125,6 +143,8 @@ export interface BillingLine {
   /** Minor units, completed refunds only. */
   refundedAmount: number;
   refunds: BillingRefundLine[];
+  /** PENDING only: when the open checkout closes. No money has moved on such a line. */
+  expiresAt?: string | null;
 }
 
 export interface BillingSummary {
@@ -162,6 +182,11 @@ export interface PaymentRefundView {
   requestedAt: string;
   completedAt?: string | null;
   lastError?: string | null;
+  /** The gateway's own last word: "pending", "processed" or "failed". */
+  gatewayStatus?: string | null;
+  /** ARN / RRN / UTR the learner's bank traces the credit by, once assigned. */
+  bankReference?: string | null;
+  gatewayCheckedAt?: string | null;
 }
 
 export interface PaymentTimelineView {

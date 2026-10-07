@@ -1,5 +1,11 @@
 import { api } from '@/infrastructure/http/api';
-import { BillingLine, BillingSummary, CheckoutResponse, PaymentOrderResponse } from '../types/payment.types';
+import {
+  BillingLine,
+  BillingSummary,
+  CheckoutResponse,
+  PaymentOrderResponse,
+  QrCodeResponse,
+} from '../types/payment.types';
 
 interface Page<T> {
   content: T[];
@@ -31,6 +37,14 @@ export class PaymentService {
    */
   static async verifyOrder(orderId: string): Promise<PaymentOrderResponse> {
     return api.post<PaymentOrderResponse>(`/api/v1/payments/orders/${orderId}/verify`, {});
+  }
+
+  /**
+   * The order's current UPI QR, or a fresh one when the last has lapsed. Calling it again after
+   * the QR's `expiresAt` is how "Generate new QR" works.
+   */
+  static async qrCode(orderId: string): Promise<QrCodeResponse> {
+    return api.post<QrCodeResponse>(`/api/v1/payments/orders/${orderId}/qr-code`, {});
   }
 
   /** The enrollment's open checkout, or null when there is none (204). */

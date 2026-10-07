@@ -1,7 +1,7 @@
 import { PaymentService } from '../api/payment.service';
-import { EnrollmentService } from '@/domains/enrollment';
-import type { PaymentOrderResponse, PaymentOrderStatus } from '../types/payment.types';
+import { awaitGrant, PAID_STATUSES, verifyUntilSettled } from './checkoutFlow';
 
+/* eslint-disable @typescript-eslint/no-explicit-any -- Razorpay's SDK ships no types */
 declare global {
   interface Window {
     Razorpay?: any;
@@ -10,75 +10,37 @@ declare global {
 
 const RAZORPAY_SCRIPT_SRC = 'https://checkout.razorpay.com/v1/checkout.js';
 
-/** Backoff between verification checks, in ms. ~3 minutes in total before giving up politely. */
-const VERIFY_SCHEDULE_MS = [1000, 1500, 2000, 3000, 4000, 5000, 8000, 10000, 15000, 20000, 30000, 30000, 30000, 30000];
-
 /** How long the widget may stay open. Clamped so it never outlives the server's order. */
 const MIN_WIDGET_SECONDS = 60;
 
-const PAID_STATUSES: PaymentOrderStatus[] = ['PAID', 'PARTIALLY_REFUNDED', 'REFUNDED'];
+/**
+ * checkout.js's own constructor. Arcade's desktop checkout loads razorpay.js, which assigns the
+ * same `window.Razorpay` global with a different constructor, so the global can't be trusted to be
+ * this one — keep the reference captured when this script loaded.
+ */
+let CheckoutJs: any = null;
 
 function loadRazorpayScript(): Promise<boolean> {
   return new Promise((resolve) => {
     if (typeof window === 'undefined') return resolve(false);
-    if (window.Razorpay) return resolve(true);
+    if (CheckoutJs) return resolve(true);
+    const capture = () => {
+      CheckoutJs = window.Razorpay ?? null;
+      resolve(Boolean(CheckoutJs));
+    };
     const existing = document.querySelector(`script[src="${RAZORPAY_SCRIPT_SRC}"]`);
     if (existing) {
-      existing.addEventListener('load', () => resolve(true));
+      existing.addEventListener('load', capture);
       existing.addEventListener('error', () => resolve(false));
       return;
     }
     const script = document.createElement('script');
     script.src = RAZORPAY_SCRIPT_SRC;
     script.async = true;
-    script.onload = () => resolve(true);
+    script.onload = capture;
     script.onerror = () => resolve(false);
     document.body.appendChild(script);
   });
-}
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-/**
- * Once the order is paid, access is granted by the backend reacting to the payment. Nudge it a few
- * times; if it still hasn't caught up, the payment is safe regardless — the backend retries the
- * grant on its own — so the learner is told they're enrolled.
- */
-async function awaitGrant(enrollmentId: string): Promise<void> {
-  for (const wait of [0, 1500, 3000, 5000]) {
-    if (wait) await sleep(wait);
-    try {
-      const result = await EnrollmentService.resume(enrollmentId);
-      if (result.status === 'GRANTED') return;
-    } catch {
-      // Payment is confirmed either way; keep nudging briefly.
-    }
-  }
-}
-
-type Settled = 'PAID' | 'EXPIRED' | 'FAILED' | 'TIMEOUT';
-
-/**
- * Asks the backend — which asks the gateway, server to server — until the order settles. The
- * widget's own success callback is never trusted; only the server's answer is.
- */
-async function verifyUntilSettled(orderId: string, isCancelled: () => boolean): Promise<Settled> {
-  for (const wait of VERIFY_SCHEDULE_MS) {
-    if (isCancelled()) return 'TIMEOUT';
-    let order: PaymentOrderResponse | null = null;
-    try {
-      order = await PaymentService.verifyOrder(orderId);
-    } catch {
-      // Network blip or server hiccup: keep going on the schedule.
-    }
-    if (order) {
-      if (PAID_STATUSES.includes(order.status)) return 'PAID';
-      if (order.status === 'EXPIRED' || order.status === 'CANCELLED') return 'EXPIRED';
-      if (order.status === 'FAILED') return 'FAILED';
-    }
-    await sleep(wait);
-  }
-  return 'TIMEOUT';
 }
 
 export interface LaunchCheckoutCallbacks {
@@ -138,7 +100,7 @@ export async function launchRazorpayCheckout(
   }
 
   const loaded = await loadRazorpayScript();
-  if (!loaded || !window.Razorpay) {
+  if (!loaded || !CheckoutJs) {
     callbacks.onError('Could not load the payment gateway. Check your connection and try again.');
     return;
   }
@@ -168,7 +130,7 @@ export async function launchRazorpayCheckout(
     return;
   }
 
-  const rzp = new window.Razorpay({
+  const rzp = new CheckoutJs({
     key: checkout.gatewayClientFields.keyId,
     amount: checkout.amount,
     currency: checkout.currency,

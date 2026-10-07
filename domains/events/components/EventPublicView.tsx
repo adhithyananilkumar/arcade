@@ -217,12 +217,13 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
 
   const isEnrolled = myEnrollment?.enrollment?.accessState === 'ACCESSIBLE';
   const enrollmentStatus = myEnrollment?.enrollment?.enrollmentStatus;
+  // A waitlist place is a PENDING enrollment flagged `waitlisted`; it must be checked before PENDING.
   const enrollButtonState: 'ENROLLED' | 'NOT_ENROLLED' | 'PENDING' | 'WAITLISTED' = isEnrolled
     ? 'ENROLLED'
-    : (enrollmentStatus as string) === 'PENDING' || (enrollmentStatus as string) === 'REQUESTED'
-      ? 'PENDING'
-      : (enrollmentStatus as string) === 'WAITLISTED'
-        ? 'WAITLISTED'
+    : myEnrollment?.enrollment?.waitlisted
+      ? 'WAITLISTED'
+      : (enrollmentStatus as string) === 'PENDING' || (enrollmentStatus as string) === 'REQUESTED'
+        ? 'PENDING'
         : 'NOT_ENROLLED';
   const pendingReason = myEnrollment?.enrollment?.requiresPayment ? 'PAYMENT' : 'REQUIREMENTS';
 

@@ -686,3 +686,111 @@
 ::selection {
   background: color-mix(in oklab, #4c6fff 28%, transparent);
 }
+
+/*
+ * ── Arcade checkout ──────────────────────────────────────────────────
+ * The payment modal is deliberately heavily frosted in every appearance:
+ * money is being taken, so nothing behind it may compete with the form.
+ * It ignores the viewer's glass opacity (which can go down to 0.5) — the
+ * shell is ~90% opaque frost, panels inside it are fully opaque, and
+ * high contrast gets a solid surface with no blur at all.
+ */
+.arcade-checkout {
+  --checkout-glass: oklch(0.995 0.003 250 / 0.9);
+  --checkout-panel: #ffffff;
+  --checkout-sunken: oklch(0.975 0.006 255);
+  --checkout-hairline: oklch(0.25 0.03 262 / 0.1);
+  --checkout-highlight: oklch(1 0 0 / 0.7);
+  --checkout-veil: oklch(0.16 0.02 262 / 0.42);
+  /* panels and controls inside the modal stay opaque even under glass */
+  --surface: var(--checkout-panel);
+  --surface-raised: var(--checkout-panel);
+  --theme-surface: var(--checkout-panel);
+  --theme-surface-raised: var(--checkout-panel);
+}
+
+:root.dark .arcade-checkout {
+  --checkout-glass: oklch(0.19 0.014 262 / 0.9);
+  --checkout-panel: oklch(0.225 0.014 262);
+  --checkout-sunken: oklch(0.205 0.013 262);
+  --checkout-hairline: oklch(1 0 0 / 0.09);
+  --checkout-highlight: oklch(1 0 0 / 0.08);
+  --checkout-veil: oklch(0.06 0.01 262 / 0.62);
+}
+
+:root[data-material="glass"] .arcade-checkout {
+  --n-50: var(--checkout-sunken);
+  --n-100: oklch(0.955 0.008 250);
+}
+
+:root.dark[data-material="glass"] .arcade-checkout {
+  --n-50: var(--checkout-sunken);
+  --n-100: oklch(0.255 0.014 262);
+}
+
+:root[data-contrast="high"] .arcade-checkout {
+  --checkout-glass: var(--checkout-panel);
+  --checkout-hairline: var(--n-300);
+  --checkout-highlight: transparent;
+}
+
+:root.dark[data-contrast="high"] .arcade-checkout {
+  --checkout-panel: oklch(0.13 0 0);
+  --checkout-sunken: oklch(0.16 0 0);
+}
+
+.arcade-checkout-veil {
+  background: var(--checkout-veil);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  backdrop-filter: blur(12px) saturate(120%);
+}
+
+.arcade-checkout-shell {
+  position: relative;
+  background: var(--checkout-glass);
+  -webkit-backdrop-filter: blur(40px) saturate(160%);
+  backdrop-filter: blur(40px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 var(--checkout-highlight),
+    0 0 0 1px var(--checkout-hairline),
+    0 40px 120px -24px oklch(0.12 0.03 262 / 0.45),
+    0 12px 32px -12px oklch(0.12 0.03 262 / 0.3);
+}
+
+/* Fine grain so the frost reads as a material, not a flat tint. */
+.arcade-checkout-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.arcade-checkout-panel {
+  background: var(--checkout-panel);
+  box-shadow: 0 0 0 1px var(--checkout-hairline);
+}
+
+.arcade-checkout-sunken {
+  background: var(--checkout-sunken);
+  box-shadow: inset 0 0 0 1px var(--checkout-hairline);
+}
+
+:root[data-contrast="high"] .arcade-checkout-veil,
+:root[data-contrast="high"] .arcade-checkout-shell {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+:root[data-contrast="high"] .arcade-checkout-shell::before {
+  display: none;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .arcade-checkout-shell {
+    background: var(--checkout-panel);
+  }
+}

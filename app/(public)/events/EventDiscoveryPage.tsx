@@ -5,12 +5,23 @@ import Link from "next/link";
 import { getPublishedEvents } from "@/domains/events";
 import type { EventDto } from "@/domains/events";
 import { UnifiedContentCard } from "@/shared/design-system/ui/cards";
+import { useMyEnrollmentStates } from "@/domains/enrollment";
 
 
 export function EventDiscoveryPage() {
   const [events, setEvents] = useState<EventDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  // Registered → "Go to event"; waitlisted → said on the button itself.
+  const { ctaFor } = useMyEnrollmentStates();
+  const eventCta = (event: EventDto) => {
+    const cta = ctaFor('EVENT', event.id, 'View Details');
+    return {
+      actionHref: cta.href ?? `/events/${event.slug || event.id}`,
+      actionLabel: cta.label,
+      actionTone: cta.tone,
+    };
+  };
 
   useEffect(() => {
     getPublishedEvents({ search: search || undefined })
@@ -67,8 +78,7 @@ export function EventDiscoveryPage() {
                     )}
                   </div>
                 }
-                actionHref={`/events/${event.slug || event.id}`}
-                actionLabel="View Details"
+                {...eventCta(event)}
               />
             ))}
           </div>
