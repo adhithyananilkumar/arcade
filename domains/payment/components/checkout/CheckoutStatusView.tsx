@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { PaymentLottie, type PaymentLottieKind } from './PaymentLottie';
 import type { CheckoutPhase } from './checkout.types';
+import { SHAPE_SMALL } from './shape';
 
 interface Copy {
   lottie: PaymentLottieKind;
@@ -76,7 +77,7 @@ export function CheckoutStatusView({ phase, amountLabel, onRetry, onClose, onUse
           <button
             type="button"
             onClick={onRetry}
-            className="h-11 rounded-xl bg-ink px-6 text-[13px] font-semibold text-on-ink transition hover:bg-ink-hover"
+            className={`h-11 bg-ink px-6 text-[13px] font-semibold text-on-ink transition hover:bg-ink-hover ${SHAPE_SMALL}`}
           >
             Try again
           </button>
@@ -85,16 +86,16 @@ export function CheckoutStatusView({ phase, amountLabel, onRetry, onClose, onUse
           <button
             type="button"
             onClick={onUseHosted}
-            className="h-11 rounded-xl bg-ink px-6 text-[13px] font-semibold text-on-ink transition hover:bg-ink-hover"
+            className={`h-11 bg-ink px-6 text-[13px] font-semibold text-on-ink transition hover:bg-ink-hover ${SHAPE_SMALL}`}
           >
-            Use Razorpay checkout
+            Use standard checkout
           </button>
         )}
         {(phase.kind === 'expired' || phase.kind === 'error' || phase.kind === 'slow') && (
           <button
             type="button"
             onClick={onClose}
-            className="arcade-checkout-sunken h-11 rounded-xl px-6 text-[13px] font-semibold text-slate-700 transition hover:text-slate-900"
+            className={`arcade-checkout-sunken h-11 px-6 text-[13px] font-semibold text-slate-700 transition hover:text-slate-900 ${SHAPE_SMALL}`}
           >
             Close
           </button>

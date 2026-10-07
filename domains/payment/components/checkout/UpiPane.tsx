@@ -2,11 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AtSign, Check, Loader2, RefreshCw, ScanLine, X } from 'lucide-react';
+import QRCode from 'qrcode';
+import { AtSign, Check, Loader2, RefreshCw, X } from 'lucide-react';
 import { vpaLooksValid } from '../../utils/card';
+import { MethodLogo, upiAppLogoUrl } from './MethodLogo';
 import type { QrState } from './checkout.types';
+import type { QrCodeResponse } from '../../types/payment.types';
 
 const QR_TOTAL_SECONDS = 240;
+
+const UPI_APPS: { id: string; name: string }[] = [
+  { id: 'googlepay', name: 'Google Pay' },
+  { id: 'phonepe', name: 'PhonePe' },
+  { id: 'paytm', name: 'Paytm' },
+  { id: 'bhim', name: 'BHIM' },
+  { id: 'amazonpay', name: 'Amazon Pay' },
+  { id: 'cred', name: 'CRED' },
+];
 
 function clock(seconds: number): string {
   const s = Math.max(0, Math.ceil(seconds));
@@ -31,8 +43,47 @@ function timerTone(left: number): string {
 }
 
 /**
- * The QR sits on a white plate whose border drains as the QR's four minutes run out — the timer is
- * the frame itself, so nobody has to look away from the code to see how long it has left.
+ * The bare, scannable code. Drawn here from the UPI intent — Razorpay's own image is a branded
+ * poster with the code shrunk inside it — and falls back to that image only when no intent came.
+ */
+function QrImage({ qr, lapsed }: { qr: QrCodeResponse; lapsed: boolean }) {
+  const [drawn, setDrawn] = useState<{ id: string; src: string } | null>(null);
+
+  useEffect(() => {
+    if (!qr.upiPayload) return;
+    let live = true;
+    QRCode.toDataURL(qr.upiPayload, {
+      errorCorrectionLevel: 'M',
+      margin: 0,
+      width: 560,
+      color: { dark: '#0b0d1a', light: '#ffffff' },
+    })
+      .then((src) => live && setDrawn({ id: qr.qrCodeId, src }))
+      .catch(() => live && setDrawn(null));
+    return () => {
+      live = false;
+    };
+  }, [qr.qrCodeId, qr.upiPayload]);
+
+  const src = drawn?.id === qr.qrCodeId ? drawn.src : qr.upiPayload ? null : qr.imageUrl;
+  if (!src) return <div className="h-full w-full animate-pulse rounded-lg bg-slate-100" />;
+
+  return (
+    <motion.img
+      key={qr.qrCodeId}
+      src={src}
+      alt="UPI QR code for this payment"
+      className="h-full w-full object-contain [image-rendering:pixelated]"
+      initial={{ opacity: 0, scale: 0.94, filter: 'blur(6px)' }}
+      animate={{ opacity: lapsed ? 0.3 : 1, scale: 1, filter: lapsed ? 'blur(6px)' : 'blur(0px)' }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+    />
+  );
+}
+
+/**
+ * The QR sits on a white plate whose border drains as its four minutes run out — the timer is the
+ * frame itself, so nobody has to look away from the code to see how long it has left.
  */
 function QrPlate({ state, onRefresh }: { state: QrState; onRefresh: () => void }) {
   const qr = state.status === 'ready' || state.status === 'lapsed' ? state.qr : null;
@@ -43,17 +94,17 @@ function QrPlate({ state, onRefresh }: { state: QrState; onRefresh: () => void }
   const lapsed = state.status === 'lapsed';
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      <div className="relative h-[232px] w-[232px]">
-        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 232 232" aria-hidden>
-          <rect x="3" y="3" width="226" height="226" rx="26" fill="none" strokeWidth="4" className="stroke-slate-200" />
+    <div className="flex shrink-0 flex-col items-center gap-3">
+      <div className="relative h-[248px] w-[248px]">
+        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 248 248" aria-hidden>
+          <rect x="3" y="3" width="242" height="242" rx="28" fill="none" strokeWidth="4" className="stroke-slate-200" />
           {state.status === 'ready' && (
             <rect
               x="3"
               y="3"
-              width="226"
-              height="226"
-              rx="26"
+              width="242"
+              height="242"
+              rx="28"
               fill="none"
               strokeWidth="4"
               strokeLinecap="round"
@@ -64,30 +115,20 @@ function QrPlate({ state, onRefresh }: { state: QrState; onRefresh: () => void }
             />
           )}
         </svg>
-        <div className="theme-fixed absolute inset-[12px] overflow-hidden rounded-[18px] bg-white p-3 shadow-[0_6px_24px_-10px_rgba(20,22,43,0.35)]">
+        <div className="theme-fixed absolute inset-[12px] overflow-hidden rounded-[20px] bg-white p-4 shadow-[0_8px_28px_-12px_rgba(20,22,43,0.4)]">
           <AnimatePresence mode="wait">
-            {state.status === 'loading' || state.status === 'idle' ? (
+            {qr ? (
+              <QrImage key={qr.qrCodeId} qr={qr} lapsed={lapsed} />
+            ) : state.status === 'error' ? (
+              <div key="error" className="flex h-full items-center justify-center px-3 text-center text-[12px] font-medium text-slate-500">
+                {state.message}
+              </div>
+            ) : (
               <motion.div
                 key="loading"
-                className="h-full w-full animate-pulse rounded-xl bg-[repeating-linear-gradient(45deg,#eef1f6_0_8px,#f6f8fb_8px_16px)]"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                className="h-full w-full animate-pulse rounded-lg bg-[repeating-linear-gradient(45deg,#eef1f6_0_8px,#f6f8fb_8px_16px)]"
                 exit={{ opacity: 0 }}
               />
-            ) : qr ? (
-              <motion.img
-                key={qr.qrCodeId}
-                src={qr.imageUrl}
-                alt="UPI QR code for this payment"
-                className="h-full w-full object-contain"
-                initial={{ opacity: 0, scale: 0.94, filter: 'blur(6px)' }}
-                animate={{ opacity: lapsed ? 0.35 : 1, scale: 1, filter: lapsed ? 'blur(5px)' : 'blur(0px)' }}
-                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center px-4 text-center text-[12px] font-medium text-slate-500">
-                {state.status === 'error' ? state.message : null}
-              </div>
             )}
           </AnimatePresence>
           {(lapsed || state.status === 'error') && (
@@ -96,7 +137,7 @@ function QrPlate({ state, onRefresh }: { state: QrState; onRefresh: () => void }
               onClick={onRefresh}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="absolute inset-x-6 top-1/2 flex -translate-y-1/2 items-center justify-center gap-2 rounded-full bg-[#14142b] px-4 py-2.5 text-[13px] font-semibold text-white shadow-lg hover:bg-[#232735]"
+              className="absolute inset-x-6 top-1/2 flex -translate-y-1/2 items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#14142b] px-4 py-2.5 text-[13px] font-semibold text-white shadow-lg hover:bg-[#232735]"
             >
               <RefreshCw size={14} />
               {lapsed ? 'Generate new QR' : 'Try again'}
@@ -106,26 +147,18 @@ function QrPlate({ state, onRefresh }: { state: QrState; onRefresh: () => void }
       </div>
       <div className="flex h-6 items-center gap-2 text-[12px] font-medium text-slate-500" aria-live="polite">
         {state.status === 'ready' ? (
-          <>
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60" style={{ background: tone }} />
-              <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: tone }} />
-            </span>
-            <span>
-              Valid for <span className="font-semibold tabular-nums text-slate-800">{clock(left)}</span>
-            </span>
-          </>
+          <span>
+            Valid for <span className="font-semibold tabular-nums" style={{ color: left <= 60 ? tone : undefined }}>{clock(left)}</span>
+          </span>
         ) : lapsed ? (
-          <span>This QR has expired — a payment made just now will still be found.</span>
-        ) : state.status === 'loading' ? (
+          <span>QR expired — a payment made just now still counts.</span>
+        ) : state.status === 'loading' || state.status === 'idle' ? (
           <span>Preparing your QR…</span>
         ) : null}
       </div>
     </div>
   );
 }
-
-const UPI_APPS = ['Google Pay', 'PhonePe', 'Paytm', 'BHIM', 'Amazon Pay', 'CRED'];
 
 type VpaCheck = 'idle' | 'checking' | 'valid' | 'invalid';
 
@@ -172,56 +205,53 @@ export function UpiPane({ qr, onLoadQr, upiIdEnabled, onVerifyVpa, onPayWithVpa,
       : 'checking';
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-start gap-6">
+    <div className="flex flex-col">
+      <div className="flex flex-col items-center gap-6 @xl:flex-row @xl:items-start">
         <QrPlate state={qr} onRefresh={onLoadQr} />
-        <div className="flex-1 pt-2">
-          <div className="mb-1 flex items-center gap-2 text-[15px] font-semibold text-slate-900">
-            <ScanLine size={17} className="text-slate-500" />
-            Scan &amp; pay {amountLabel}
-          </div>
-          <p className="text-[13px] leading-relaxed text-slate-500">
-            Open any UPI app on your phone, scan the code and approve. This page updates on its own the moment the
-            payment lands.
+        <div className="w-full flex-1 @xl:pt-2">
+          <h3 className="text-[16px] font-semibold tracking-tight text-slate-900">Scan to pay {amountLabel}</h3>
+          <p className="mt-1 text-[13px] leading-relaxed text-slate-500">
+            Scan with any UPI app and approve with your PIN. This page confirms on its own the moment the payment
+            lands.
           </p>
-          <div className="mt-4 flex flex-wrap gap-1.5">
+          <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="Works with any UPI app">
             {UPI_APPS.map((app) => (
-              <span
-                key={app}
-                className="arcade-checkout-sunken rounded-full px-2.5 py-1 text-[11px] font-semibold text-slate-600"
-              >
-                {app}
+              <span key={app.id} title={app.name}>
+                <MethodLogo src={upiAppLogoUrl(app.id)} name={app.name} code={app.id} size={36} />
               </span>
             ))}
+            <span className="text-[11.5px] font-medium text-slate-400">&amp; every UPI app</span>
           </div>
-          <ol className="mt-5 space-y-2 text-[12px] text-slate-500">
-            {['Open your UPI app', 'Tap scan and point at the code', 'Approve with your UPI PIN'].map((step, i) => (
-              <li key={step} className="flex items-center gap-2.5">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[10px] font-bold text-on-ink">
-                  {i + 1}
-                </span>
-                {step}
-              </li>
-            ))}
+          <ol className="mt-5 space-y-2.5 text-[12.5px] text-slate-600">
+            {['Open your UPI app and tap Scan', 'Point your camera at the code', 'Check the amount and enter your UPI PIN'].map(
+              (step, i) => (
+                <li key={step} className="flex items-center gap-2.5">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ink text-[10px] font-bold text-on-ink">
+                    {i + 1}
+                  </span>
+                  {step}
+                </li>
+              ),
+            )}
           </ol>
         </div>
       </div>
 
       {upiIdEnabled && (
-        <div className="mt-auto pt-5">
+        <div className="pt-6">
           <div className="mb-3 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
             <span className="h-px flex-1 bg-slate-200" />
             or pay with your UPI ID
             <span className="h-px flex-1 bg-slate-200" />
           </div>
           <form
-            className="flex gap-2"
+            className="flex flex-col gap-2 @md:flex-row"
             onSubmit={(e) => {
               e.preventDefault();
               if (check === 'valid' && canPay) onPayWithVpa(vpa);
             }}
           >
-            <label className="arcade-checkout-sunken relative flex flex-1 items-center rounded-xl px-3 focus-within:ring-2 focus-within:ring-ink/20">
+            <label className="arcade-checkout-sunken relative flex flex-1 items-center rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md px-3 focus-within:ring-2 focus-within:ring-ink/20">
               <AtSign size={15} className="shrink-0 text-slate-400" />
               <input
                 value={vpa}
@@ -241,7 +271,7 @@ export function UpiPane({ qr, onLoadQr, upiIdEnabled, onVerifyVpa, onPayWithVpa,
             <button
               type="submit"
               disabled={check !== 'valid' || !canPay}
-              className="h-11 rounded-xl bg-ink px-5 text-[13px] font-semibold text-on-ink transition hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-40"
+              className="h-11 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-ink px-5 text-[13px] font-semibold text-on-ink transition hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-40"
             >
               Send request
             </button>

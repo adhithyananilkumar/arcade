@@ -51,6 +51,34 @@ function NetworkMark({ network }: { network: CardNetwork }) {
   ) : null;
 }
 
+/** Small network marks for the "accepted cards" row, drawn for a white tile. */
+function NetworkBadge({ network }: { network: CardNetwork }) {
+  switch (network) {
+    case 'visa':
+      return <span className="text-[11px] font-black italic tracking-tight text-[#1a1f71]">VISA</span>;
+    case 'mastercard':
+      return (
+        <svg width="26" height="16" viewBox="0 0 26 16" aria-label="Mastercard">
+          <circle cx="9" cy="8" r="7" fill="#eb001b" />
+          <circle cx="17" cy="8" r="7" fill="#f79e1b" fillOpacity="0.9" />
+        </svg>
+      );
+    case 'rupay':
+      return (
+        <span className="text-[10px] font-black italic tracking-tight">
+          <span className="text-[#097a44]">Ru</span>
+          <span className="text-[#f7931d]">Pay</span>
+        </span>
+      );
+    case 'amex':
+      return <span className="rounded-[3px] bg-[#016fd0] px-1 text-[8.5px] font-black tracking-tight text-white">AMEX</span>;
+    case 'diners':
+      return <span className="text-[9px] font-bold tracking-tight text-[#0079be]">Diners</span>;
+    default:
+      return null;
+  }
+}
+
 function CardFace({ input, network, flipped }: { input: CardInput; network: CardNetwork; flipped: boolean }) {
   const face = FACES[network] ?? FACES.default;
   const expiry = input.expiry.replace(/\s/g, '') || 'MM/YY';
@@ -77,7 +105,7 @@ function CardFace({ input, network, flipped }: { input: CardInput; network: Card
               <NetworkMark network={network} />
             </motion.div>
           </div>
-          <div className="relative mt-6 font-mono text-[19px] tracking-[0.14em] text-white/95 tabular-nums">
+          <div className="relative mt-6 whitespace-nowrap font-mono text-[17px] tracking-[0.08em] text-white/95 tabular-nums">
             {maskForDisplay(input.number, network)}
           </div>
           <div className="relative mt-4 flex items-end justify-between text-[10px] uppercase tracking-[0.14em] text-white/60">
@@ -132,7 +160,7 @@ function Field({
 }
 
 const inputClass =
-  'arcade-checkout-sunken h-11 w-full rounded-xl px-3 text-[14px] font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 focus:ring-ink/20';
+  'arcade-checkout-sunken h-11 w-full rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md px-3 text-[14px] font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 focus:ring-ink/20';
 
 export interface CardPaneProps {
   amountLabel: string;
@@ -163,7 +191,7 @@ export function CardPane({ amountLabel, canPay, gatewayNetwork, onPay }: CardPan
     // data-capture-ignore keeps card fields out of bug-report screenshots.
     <form
       data-capture-ignore
-      className="flex h-full gap-7"
+      className="flex flex-col gap-6 @xl:h-full @xl:flex-row @xl:gap-7"
       autoComplete="on"
       onSubmit={(e) => {
         e.preventDefault();
@@ -171,11 +199,23 @@ export function CardPane({ amountLabel, canPay, gatewayNetwork, onPay }: CardPan
         if (valid && canPay) onPay(input);
       }}
     >
-      <div className="flex w-[290px] shrink-0 flex-col justify-center gap-4">
+      <div className="flex w-full shrink-0 flex-col items-center justify-center gap-4 @xl:w-[290px]">
         <CardFace input={input} network={network} flipped={cvvFocused} />
+        <div className="flex items-center gap-1.5" aria-label="Accepted cards">
+          {(['visa', 'mastercard', 'rupay', 'amex', 'diners'] as CardNetwork[]).map((n) => (
+            <span
+              key={n}
+              className={`theme-fixed flex h-7 w-11 items-center justify-center rounded-md bg-white shadow-[0_0_0_1px_rgba(20,22,43,0.08)] transition ${
+                network && network !== n ? 'opacity-35 grayscale' : ''
+              }`}
+            >
+              <NetworkBadge network={n} />
+            </span>
+          ))}
+        </div>
         <p className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
           <Lock size={11} />
-          Card details go straight to the bank network, encrypted.
+          Encrypted end to end. Arcade never sees or stores your card.
         </p>
       </div>
       <div className="flex flex-1 flex-col">
@@ -236,7 +276,7 @@ export function CardPane({ amountLabel, canPay, gatewayNetwork, onPay }: CardPan
         <button
           type="submit"
           disabled={!canPay}
-          className="mt-auto h-12 rounded-2xl bg-ink text-[14px] font-semibold text-on-ink shadow-[0_10px_30px_-12px_rgba(20,22,43,0.55)] transition hover:bg-ink-hover active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
+          className="mt-2 h-12 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-ink @xl:mt-auto text-[14px] font-semibold text-on-ink shadow-[0_6px_16px_-10px_rgba(20,22,43,0.5)] transition hover:bg-ink-hover active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
         >
           Pay {amountLabel}
         </button>

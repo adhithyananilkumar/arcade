@@ -2,38 +2,12 @@
 
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Search } from 'lucide-react';
+import { Check, ExternalLink, Search } from 'lucide-react';
+import { MethodLogo } from './MethodLogo';
 
 export interface Choice {
   code: string;
   name: string;
-}
-
-/** A soft, stable colour per code so monograms differ without third-party logos. */
-function hue(code: string): number {
-  let h = 0;
-  for (const ch of code) h = (h * 31 + ch.charCodeAt(0)) % 360;
-  return h;
-}
-
-function Monogram({ choice }: { choice: Choice }) {
-  const letters = choice.name
-    .replace(/\b(bank|of|the|ltd|limited)\b/gi, '')
-    .trim()
-    .split(/\s+/)
-    .map((w) => w[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-  const h = hue(choice.code);
-  return (
-    <span
-      className="theme-fixed flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[13px] font-bold text-white shadow-sm"
-      style={{ background: `linear-gradient(135deg, oklch(0.55 0.15 ${h}), oklch(0.42 0.13 ${(h + 40) % 360}))` }}
-    >
-      {letters || choice.code.slice(0, 2)}
-    </span>
-  );
 }
 
 export interface ChoicePaneProps {
@@ -41,11 +15,12 @@ export interface ChoicePaneProps {
   featured: Choice[];
   /** Everything searchable (a superset of featured). */
   all: Choice[];
+  logoUrl: (code: string) => string;
   searchLabel?: string;
   emptyLabel: string;
   amountLabel: string;
   canPay: boolean;
-  /** "Continue to HDFC Bank" style hint under the button. */
+  /** Where the confirmation happens, shown under the button. */
   redirectHint: string;
   onPay: (code: string) => void;
 }
@@ -54,6 +29,7 @@ export interface ChoicePaneProps {
 export function ChoicePane({
   featured,
   all,
+  logoUrl,
   searchLabel,
   emptyLabel,
   amountLabel,
@@ -64,22 +40,23 @@ export function ChoicePane({
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
 
+  const searching = query.trim().length > 0;
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return featured.length ? featured : all.slice(0, 12);
-    return all.filter((c) => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)).slice(0, 24);
+    return all.filter((c) => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)).slice(0, 30);
   }, [query, featured, all]);
 
   const selectedChoice = all.find((c) => c.code === selected) ?? null;
 
   if (!all.length) {
-    return <div className="flex h-full items-center justify-center text-[13px] text-slate-500">{emptyLabel}</div>;
+    return <div className="flex h-full min-h-40 items-center justify-center text-[13px] text-slate-500">{emptyLabel}</div>;
   }
 
   return (
     <div className="flex h-full flex-col">
       {searchLabel && all.length > featured.length && (
-        <label className="arcade-checkout-sunken mb-4 flex items-center rounded-xl px-3 focus-within:ring-2 focus-within:ring-ink/20">
+        <label className="arcade-checkout-sunken mb-4 flex shrink-0 items-center rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md px-3 focus-within:ring-2 focus-within:ring-ink/20">
           <Search size={15} className="text-slate-400" />
           <input
             value={query}
@@ -90,7 +67,11 @@ export function ChoicePane({
           />
         </label>
       )}
-      <div className="-mx-1 grid flex-1 auto-rows-min grid-cols-2 gap-2 overflow-y-auto px-1 pb-2">
+      {!searching && featured.length > 0 && all.length > featured.length && (
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">Popular</p>
+      )}
+      {/* No scroller of its own: the pane area scrolls, never a box inside a box. */}
+      <div className="grid flex-1 auto-rows-min grid-cols-1 gap-2 pb-2 @md:grid-cols-2">
         {results.map((choice, i) => {
           const active = choice.code === selected;
           return (
@@ -102,16 +83,16 @@ export function ChoicePane({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: Math.min(i, 10) * 0.025 }}
               aria-pressed={active}
-              className={`arcade-checkout-panel relative flex items-center gap-3 rounded-2xl p-2.5 text-left transition ${
+              className={`arcade-checkout-panel relative flex items-center gap-3 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md p-2.5 text-left transition ${
                 active ? 'ring-2 ring-ink' : 'hover:-translate-y-px hover:shadow-md'
               }`}
             >
-              <Monogram choice={choice} />
+              <MethodLogo src={logoUrl(choice.code)} name={choice.name} code={choice.code} />
               <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-slate-800">{choice.name}</span>
               {active && (
                 <motion.span
                   layoutId="choice-check"
-                  className="flex h-5 w-5 items-center justify-center rounded-full bg-ink text-on-ink"
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ink text-on-ink"
                 >
                   <Check size={12} strokeWidth={3} />
                 </motion.span>
@@ -119,18 +100,21 @@ export function ChoicePane({
             </motion.button>
           );
         })}
-        {!results.length && <p className="col-span-2 py-6 text-center text-[13px] text-slate-500">No match.</p>}
+        {!results.length && <p className="col-span-full py-6 text-center text-[13px] text-slate-500">No match.</p>}
       </div>
-      <button
-        type="button"
-        disabled={!selected || !canPay}
-        onClick={() => selected && onPay(selected)}
-        className="mt-3 h-12 rounded-2xl bg-ink text-[14px] font-semibold text-on-ink shadow-[0_10px_30px_-12px_rgba(20,22,43,0.55)] transition hover:bg-ink-hover active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        Pay {amountLabel}
-        {selectedChoice ? ` with ${selectedChoice.name}` : ''}
-      </button>
-      <p className="mt-2 text-center text-[11px] text-slate-500">{redirectHint}</p>
+      <div className="shrink-0 pt-3">
+        <button
+          type="button"
+          disabled={!selected || !canPay}
+          onClick={() => selected && onPay(selected)}
+          className="h-12 w-full rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-ink text-[14px] font-semibold text-on-ink shadow-[0_6px_16px_-10px_rgba(20,22,43,0.5)] transition hover:bg-ink-hover active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {selectedChoice ? `Pay ${amountLabel} with ${selectedChoice.name}` : `Select to pay ${amountLabel}`}
+        </button>
+        <p className="mt-2 flex items-center justify-center gap-1 text-[11px] text-slate-500">
+          <ExternalLink size={11} /> {redirectHint}
+        </p>
+      </div>
     </div>
   );
 }

@@ -26,6 +26,7 @@ export { CheckoutHoldStatus } from './components/CheckoutHoldStatus';
 export { ChannelPaymentsReport } from './components/ChannelPaymentsReport';
 export { PaymentStatusBadge } from './components/PaymentStatusBadge';
 export { launchRazorpayCheckout } from './utils/launchRazorpayCheckout';
+export { humanizePaymentText, gatewayFailureHint } from './utils/paymentText';
 export { CustomCheckout, prefersCustomCheckout } from './components/checkout/CustomCheckout';
 export type { LaunchCheckoutCallbacks } from './utils/launchRazorpayCheckout';
 export {

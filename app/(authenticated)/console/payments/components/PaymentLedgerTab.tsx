@@ -3,6 +3,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import {
+  humanizePaymentText,
   PaymentAdminService,
   PaymentStatusBadge,
   type PaymentLedgerRow,
@@ -590,7 +591,7 @@ export function PaymentLedgerTab({
                         </p>
                       )}
                       {row.attemptCount > 0 && (
-                        <p className="text-[10.5px] font-medium text-rose-500" title={row.lastFailureReason ?? undefined}>
+                        <p className="text-[10.5px] font-medium text-rose-500" title={row.lastFailureReason ? humanizePaymentText(row.lastFailureReason) : undefined}>
                           {row.attemptCount} declined attempt{row.attemptCount === 1 ? "" : "s"}
                         </p>
                       )}

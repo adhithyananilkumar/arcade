@@ -34,6 +34,8 @@ export interface QrCodeResponse {
   orderExpiresAt?: string | null;
   /** Minor units the QR is fixed to. */
   amount: number;
+  /** The UPI intent the code encodes; the checkout draws its own clean code from it when present. */
+  upiPayload?: string | null;
 }
 
 export interface PaymentOrderResponse {

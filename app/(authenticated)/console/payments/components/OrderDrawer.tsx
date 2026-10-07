@@ -6,6 +6,8 @@ import { AlertTriangle, Copy, Loader2, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   describeCommission,
+  gatewayFailureHint,
+  humanizePaymentText,
   PaymentAdminService,
   PaymentStatusBadge,
   REFUND_TREATMENT_LABEL,
@@ -38,6 +40,12 @@ const REFUND_STATUS: Record<string, { label: string; cls: string }> = {
   PROCESSING: { label: "Gateway processing", cls: "text-amber-600 dark:text-amber-400" },
   COMPLETED: { label: "Sent to bank", cls: "text-emerald-600 dark:text-emerald-400" },
   FAILED: { label: "Failed — nothing sent", cls: "text-rose-600 dark:text-rose-400" },
+};
+
+const ATTEMPT_STATUS: Record<string, string> = {
+  SUCCESS: "Captured",
+  FAILED: "Declined",
+  PENDING: "Open",
 };
 
 const TIMELINE_TONE: Record<string, string> = {
@@ -258,7 +266,9 @@ export function OrderDrawer({
               {order.attemptCount > 0 && (
                 <Row label="Declined attempts">
                   {order.attemptCount}
-                  {order.lastFailureReason && <span className="block text-[11px] font-medium text-rose-500">{order.lastFailureReason}</span>}
+                  {order.lastFailureReason && (
+                    <span className="block text-[11px] font-medium text-rose-500">{humanizePaymentText(order.lastFailureReason)}</span>
+                  )}
                 </Row>
               )}
             </section>
@@ -410,7 +420,17 @@ export function OrderDrawer({
                           </dd>
                         </dl>
                       )}
-                      {r.lastError && <p className="mt-1 text-[11px] font-medium text-rose-600 dark:text-rose-400">{r.lastError}</p>}
+                      {r.lastError && (
+                        <div className="mt-2 space-y-1 rounded-lg bg-rose-50 px-2.5 py-2 text-[11px] dark:bg-rose-500/10">
+                          <p className="flex items-start gap-1.5 font-semibold text-rose-700 dark:text-rose-300">
+                            <AlertTriangle size={12} className="mt-px shrink-0" />
+                            {humanizePaymentText(r.lastError)}
+                          </p>
+                          {gatewayFailureHint(r.lastError) && (
+                            <p className="pl-[18px] text-rose-700/80 dark:text-rose-300/80">{gatewayFailureHint(r.lastError)}</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -423,9 +443,18 @@ export function OrderDrawer({
                 <div className="space-y-1.5">
                   {detail.transactions.map((t) => (
                     <div key={t.id} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-[11px]">
-                      <span className="font-mono text-slate-600">{t.gatewayPaymentId || t.gatewayOrderId || "—"}</span>
-                      <span className={`font-bold ${t.status === "SUCCESS" ? "text-emerald-600 dark:text-emerald-400" : t.status === "FAILED" ? "text-rose-600 dark:text-rose-400" : "text-slate-500"}`}>
-                        {t.status}
+                      <span className="min-w-0">
+                        <span className="block truncate font-mono text-slate-600">{t.gatewayPaymentId || t.gatewayOrderId || "—"}</span>
+                        <span className="block text-[10.5px] text-slate-400">
+                          {when(t.createdAt)}
+                          {t.gatewayPaymentId && t.gatewayOrderId ? ` · ${t.gatewayOrderId}` : ""}
+                        </span>
+                        {t.failureReason && (
+                          <span className="block text-[10.5px] text-rose-500">{humanizePaymentText(t.failureReason)}</span>
+                        )}
+                      </span>
+                      <span className={`shrink-0 font-bold ${t.status === "SUCCESS" ? "text-emerald-600 dark:text-emerald-400" : t.status === "FAILED" ? "text-rose-600 dark:text-rose-400" : "text-slate-500"}`}>
+                        {ATTEMPT_STATUS[t.status] ?? t.status}
                       </span>
                     </div>
                   ))}
@@ -443,7 +472,11 @@ export function OrderDrawer({
                     <li key={i} className="relative text-xs">
                       <span className={`absolute -left-[21px] top-1 size-2.5 rounded-full ring-2 ring-surface ${TIMELINE_TONE[e.type] ?? "bg-slate-300"}`} />
                       <p className="font-semibold text-slate-800">{TIMELINE_LABEL[e.type] ?? e.type}</p>
-                      {e.detail && <p className="text-slate-500">{e.detail}</p>}
+                      {e.detail && (
+                        <p className={e.type.endsWith("FAILED") || e.type === "AMOUNT_MISMATCH" ? "text-rose-600 dark:text-rose-400" : "text-slate-500"}>
+                          {humanizePaymentText(e.detail)}
+                        </p>
+                      )}
                       <p className="text-[11px] text-slate-400">
                         {when(e.at)}
                         {e.actorName ? ` · ${e.actorName}` : ""}
