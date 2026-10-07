@@ -13,6 +13,7 @@ import {
   Lightbulb,
   Link2,
   Lock,
+  MousePointerClick,
   Search,
   Smartphone,
   Type,
@@ -52,6 +53,7 @@ export const CATEGORY_ICONS: Record<string, LucideIcon> = {
   video: Video,
   upload: Upload,
   search: Search,
+  pointer: MousePointerClick,
 };
 
 export function CategoryIcon({ icon, size = 16, className }: { icon: string; size?: number; className?: string }) {

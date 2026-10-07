@@ -19,7 +19,7 @@
  * ------------------------------------------------------------------
  */
 
-import { useMemo, type CSSProperties, type ReactNode } from "react";
+import { useId, useMemo, type CSSProperties, type ReactNode } from "react";
 import { Cormorant_Garamond, EB_Garamond } from "next/font/google";
 import QRCode from "qrcode";
 import { ARCADE_WORDMARK_PATHS, ARCADE_WORDMARK_VIEWBOX } from "../lib/arcadeWordmark";
@@ -94,6 +94,7 @@ function At({ style, children }: { style: CSSProperties; children?: ReactNode })
 }
 
 export function CertificateFace({ certificate: c, verificationUrl, className }: CertificateFaceProps) {
+  const uid = useId().replace(/:/g, "");
   const sealUrl = c.issuerSealUrl || (c.issuedByHost ? HOST_SEAL : null);
   // An organisation that issued in the host's name (and so conducted it) keeps its logo beside the
   // Arcade mark; a personal channel records none.
@@ -183,6 +184,28 @@ export function CertificateFace({ certificate: c, verificationUrl, className }: 
         {/* Everything below the header is centred on the page's axis (x = 148.5 mm), as in the PDF. */}
         <At style={{ left: mm(28), top: mm(56), width: mm(241), textAlign: "center", fontFamily: display.style.fontFamily, fontWeight: 500, fontSize: pt(44), lineHeight: 1.05 }}>
           {c.documentTitle}
+        </At>
+        {/* The ornament under the heading, centred between it and the award (as FLOURISH in the PDF;
+            measured in the browser, whose font metrics put the award a little higher than the PDF):
+            gold hairlines fading in to a small diamond between two dots. */}
+        <At style={{ left: mm(118.5), top: mm(73.6), width: mm(60), height: mm(2.4) }}>
+          <svg viewBox="0 0 600 24" style={{ display: "block", width: "100%", height: "100%" }} aria-hidden>
+            <defs>
+              <linearGradient id={`${uid}-fl-l`} x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0" stopColor={GOLD} stopOpacity="0" />
+                <stop offset="1" stopColor={GOLD} />
+              </linearGradient>
+              <linearGradient id={`${uid}-fl-r`} x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0" stopColor={GOLD} />
+                <stop offset="1" stopColor={GOLD} stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <rect x="0" y="11" width="266" height="2.5" fill={`url(#${uid}-fl-l)`} />
+            <rect x="334" y="11" width="266" height="2.5" fill={`url(#${uid}-fl-r)`} />
+            <circle cx="279" cy="12.25" r="2.6" fill={GOLD} />
+            <circle cx="321" cy="12.25" r="2.6" fill={GOLD} />
+            <path d="M300 2 L310 12.25 L300 22.5 L290 12.25 Z" fill={GOLD} />
+          </svg>
         </At>
         {/* The award reads as one block: each line follows the last, with margins tuned (as in the
             PDF, but measured in the browser, whose font metrics differ slightly) so the gaps between the

@@ -88,7 +88,7 @@ export function QuestionEditorCard({
   return (
     <div className="flex flex-col gap-4">
       {/* ── Meta row ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/50 bg-surface/70 px-4 py-3 shadow-sm backdrop-blur-md">
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-surface/50 bg-surface/70 px-4 py-3 shadow-sm backdrop-blur-md">
         <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-xl bg-ink text-xs font-bold text-on-ink shadow-sm">
           {navigation.index + 1}
         </span>
@@ -158,7 +158,7 @@ export function QuestionEditorCard({
       {confirmDialog}
 
       {/* ── Prompt: the shared Arcade editor ──────────────────────────────── */}
-      <div className="rounded-3xl border border-white/40 bg-white/30 p-4 shadow-lg backdrop-blur-xl sm:p-6">
+      <div className="rounded-3xl border border-surface/40 bg-surface/30 p-4 shadow-lg backdrop-blur-xl sm:p-6">
         <ArcadeEditor
           // Keyed on the question so switching rebuilds the document rather than diffing one
           // question's content into another's.
@@ -177,7 +177,7 @@ export function QuestionEditorCard({
       </div>
 
       {/* ── Answers ───────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-white/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
+      <div className="rounded-2xl border border-surface/50 bg-surface/70 p-5 shadow-sm backdrop-blur-md">
         {q.type === "SENTENCE" ? (
           <>
             <label
@@ -270,7 +270,7 @@ export function QuestionEditorCard({
           type="button"
           disabled={!navigation.onPrevious}
           onClick={leaveVia(navigation.onPrevious)}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-white/50 bg-surface/70 px-4 py-2 text-xs font-bold text-ink shadow-sm backdrop-blur-md transition-colors hover:bg-surface disabled:opacity-40"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-surface/50 bg-surface/70 px-4 py-2 text-xs font-bold text-ink shadow-sm backdrop-blur-md transition-colors hover:bg-surface disabled:opacity-40"
         >
           <ArrowLeft size={14} /> Previous
         </button>
@@ -295,7 +295,7 @@ export function QuestionEditorCard({
           <button
             type="button"
             onClick={leaveVia(navigation.onNext)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-white/50 bg-surface/70 px-4 py-2 text-xs font-bold text-ink shadow-sm backdrop-blur-md transition-colors hover:bg-surface"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-surface/50 bg-surface/70 px-4 py-2 text-xs font-bold text-ink shadow-sm backdrop-blur-md transition-colors hover:bg-surface"
           >
             Next <ArrowRight size={14} />
           </button>

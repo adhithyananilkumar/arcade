@@ -124,7 +124,7 @@ export function QuestionListPreview({
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search questions…"
             aria-label="Search questions"
-            className="w-full rounded-xl border border-white/50 bg-surface/70 py-2 pl-9 pr-8 text-xs font-medium text-ink shadow-sm outline-none backdrop-blur-md placeholder:text-slate-400 focus:border-indigo-200 focus:ring-2 focus:ring-indigo-100 dark:focus:border-indigo-500/25 dark:focus:ring-indigo-500/25"
+            className="w-full rounded-xl border border-surface/50 bg-surface/70 py-2 pl-9 pr-8 text-xs font-medium text-ink shadow-sm outline-none backdrop-blur-md placeholder:text-slate-400 focus:border-indigo-200 focus:ring-2 focus:ring-indigo-100 dark:focus:border-indigo-500/25 dark:focus:ring-indigo-500/25"
           />
           {search && (
             <button
@@ -138,7 +138,7 @@ export function QuestionListPreview({
           )}
         </div>
 
-        <div className="flex items-center gap-1 rounded-xl border border-white/50 bg-surface/70 p-1 shadow-sm backdrop-blur-md">
+        <div className="flex items-center gap-1 rounded-xl border border-surface/50 bg-surface/70 p-1 shadow-sm backdrop-blur-md">
           {DIFFICULTIES.map((d) => {
             const on = difficulties.includes(d);
             return (
@@ -212,7 +212,7 @@ export function QuestionListPreview({
                 <button
                   type="button"
                   onClick={() => onOpenQuestion(q)}
-                  className="w-full rounded-2xl border border-white/50 bg-surface/70 p-5 text-left shadow-sm backdrop-blur-md transition-all hover:border-indigo-200 hover:bg-surface hover:shadow-md dark:hover:border-indigo-500/25"
+                  className="w-full rounded-2xl border border-surface/50 bg-surface/70 p-5 text-left shadow-sm backdrop-blur-md transition-all hover:border-indigo-200 hover:bg-surface hover:shadow-md dark:hover:border-indigo-500/25"
                 >
                   <div className="flex items-start gap-3">
                     <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-ink text-[11px] font-bold text-on-ink">
@@ -278,7 +278,7 @@ export function QuestionListPreview({
               type="button"
               onClick={() => setLimit((l) => l + PAGE_SIZE)}
               disabled={loading}
-              className="mx-auto rounded-xl border border-white/50 bg-surface/70 px-5 py-2 text-xs font-bold text-ink shadow-sm backdrop-blur-md transition-colors hover:bg-surface disabled:opacity-50"
+              className="mx-auto rounded-xl border border-surface/50 bg-surface/70 px-5 py-2 text-xs font-bold text-ink shadow-sm backdrop-blur-md transition-colors hover:bg-surface disabled:opacity-50"
             >
               {loading ? "Loading…" : `Show more (${total - rows.length} left)`}
             </button>

@@ -29,6 +29,7 @@ import {
   ToggleLeft,
   Trash2,
   Settings,
+  FileJson,
   UploadCloud,
 } from "lucide-react";
 import {
@@ -52,6 +53,7 @@ import {
   deleteSection,
   getExam,
   getExamQuestionBank,
+  getSectionQuestions,
   isPlanPublishable,
   listExamPlans,
   listSections,
@@ -64,7 +66,10 @@ import {
   toRequest,
   useSectionQuestions,
   validateExamPlan,
+  QuestionBankImportDialog,
+  type BankQuestionRequest,
   type BankQuestionResponse,
+  type ImportedSection,
   type ExamResponse,
   type LocalQuestion,
   type SectionResponse,
@@ -119,6 +124,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
   const [publishing, setPublishing] = useState(false);
   const [renamingSectionId, setRenamingSectionId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
 
   // An exam under platform review is locked for editing, exactly like a submitted course.
   const readOnly = exam?.status === "SUBMITTED";
@@ -428,6 +434,73 @@ export function ExamWorkspace({ examId }: { examId: string }) {
     }
   };
 
+  /**
+   * Imports parsed sections into the bank. A titled section goes into the existing section of the
+   * same name (case-insensitive) or a new one; untitled questions go into the open section, or a
+   * new "Imported questions" section when none is open. Imported questions are appended: each
+   * section is re-saved with its existing questions first, ids and tags intact, so nothing already
+   * there is recreated or re-ordered.
+   */
+  const importQuestions = async (imported: ImportedSection[]) => {
+    if (!bankId) return;
+    // Close the open question and flush, so no pending autosave can overwrite the import.
+    setActiveQuestionKey(null);
+    await saveManager.flush();
+
+    let known = sections;
+    const touched = new Map<string, number>();
+    let done = 0;
+    try {
+      for (const block of imported) {
+        let target =
+          block.title === null
+            ? known.find((s) => s.id === activeSectionId)
+            : known.find((s) => s.title.trim().toLowerCase() === block.title!.toLowerCase());
+        if (!target) {
+          target = await createSection(bankId, { title: block.title ?? "Imported questions" });
+          known = [...known, target];
+        }
+
+        const current = await getSectionQuestions(target.id);
+        const questions: BankQuestionRequest[] = [
+          ...current.map((q) => ({
+            id: q.id,
+            type: q.type,
+            difficulty: q.difficulty,
+            prompt: q.prompt,
+            points: q.points,
+            options: q.options.map((o) => ({ text: o.text, correct: o.correct })),
+            sampleAnswer: q.sampleAnswer ?? "",
+            tags: q.tags ?? [],
+          })),
+          ...block.questions.map((q) => ({
+            type: q.type,
+            difficulty: q.difficulty,
+            prompt: q.prompt,
+            points: q.points,
+            options: q.options,
+            sampleAnswer: q.sampleAnswer,
+            tags: q.tags,
+          })),
+        ];
+        await saveSectionQuestions(target.id, { questions });
+        touched.set(target.id, questions.length);
+        done += block.questions.length;
+      }
+    } finally {
+      // Reflect whatever landed, even if a later section failed.
+      setSections(known.map((s) => (touched.has(s.id) ? { ...s, questionCount: touched.get(s.id)! } : s)));
+      setPreviewReloadKey((k) => k + 1);
+      if (activeSectionId && touched.has(activeSectionId)) await controller.reload();
+      else if (!activeSectionId && touched.size > 0) selectSection(Array.from(touched.keys())[0]);
+    }
+
+    const total = imported.reduce((n, s) => n + s.questions.length, 0);
+    if (done < total) throw new Error(`Imported ${done} of ${total} questions before an error. Try the rest again.`);
+    toast.success(`Imported ${done} question${done === 1 ? "" : "s"}`);
+    setImportOpen(false);
+  };
+
   // ── States ─────────────────────────────────────────────────────────────────
 
   if (initializing) {
@@ -461,7 +534,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         className={`mb-2 flex w-full items-center gap-2 rounded-2xl border px-3 py-2 text-left text-xs font-bold shadow-sm backdrop-blur-md transition-all ${
           activeSectionId === ""
             ? "border-ink bg-ink text-on-ink"
-            : "border-white/40 bg-surface/60 text-ink hover:bg-surface/80"
+            : "border-surface/40 bg-surface/60 text-ink hover:bg-surface/80"
         }`}
       >
         <Layers size={13} className="flex-shrink-0" />
@@ -579,7 +652,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
                           type="button"
                           onClick={() => setActiveQuestionKey(q.key)}
                           className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${
-                            isOpen ? "font-semibold text-white" : "text-slate-500"
+                            isOpen ? "font-semibold text-on-ink" : "text-slate-500"
                           }`}
                         >
                           <TypeIcon size={12} className="flex-shrink-0" />
@@ -604,7 +677,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
                               })
                             }
                             className={`flex-shrink-0 rounded-md p-1 opacity-0 transition-opacity group-hover/leaf:opacity-100 ${
-                              isOpen ? "text-white/70 hover:text-white" : "text-ink/40 hover:text-rose-600 dark:hover:text-rose-400"
+                              isOpen ? "text-on-ink/70 hover:text-on-ink" : "text-ink/40 hover:text-rose-600 dark:hover:text-rose-400"
                             }`}
                           >
                             <Trash2 size={11} />
@@ -736,6 +809,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         // clearance for it. This is the one legitimate reason to vary the Studio viewport's top
         // offset — the offset itself is never re-derived here, only requested from the shell.
         toolbarClearance={Boolean(activeQuestion)}
+        rightPanelOpen={panel.open}
         sidebarActions={
           readOnly ? undefined : (
             <div className={TREE_SIDEBAR_ACTIONS_CLASS}>
@@ -747,6 +821,15 @@ export function ExamWorkspace({ examId }: { examId: string }) {
               >
                 {creatingSection ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                 Add section
+              </button>
+              <button
+                type="button"
+                onClick={() => setImportOpen(true)}
+                disabled={!bankId}
+                className={TREE_SIDEBAR_BUTTON_CLASS}
+              >
+                <FileJson size={14} />
+                Import questions
               </button>
             </div>
           )
@@ -806,6 +889,15 @@ export function ExamWorkspace({ examId }: { examId: string }) {
           )}
         </div>
       </StudioEditorBody>
+
+      {importOpen && (
+        <QuestionBankImportDialog
+          existingSectionTitles={sections.map((s) => s.title)}
+          untitledTargetLabel={activeSection ? activeSection.title : "Imported questions (new section)"}
+          onImport={importQuestions}
+          onClose={() => setImportOpen(false)}
+        />
+      )}
 
       {confirmDialog}
     </StudioEditorFrame>

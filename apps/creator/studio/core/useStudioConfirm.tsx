@@ -86,7 +86,7 @@ function StudioConfirmDialog({ options, onClose }: { options: StudioConfirmOptio
                 setBusy(false);
               }
             }}
-            className={`rounded-full px-5 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${danger ? "bg-rose-600 hover:bg-rose-700" : "bg-ink hover:bg-ink-hover"}`}
+            className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${danger ? "bg-rose-600 text-white hover:bg-rose-700" : "bg-ink text-on-ink hover:bg-ink-hover"}`}
           >
             {busy ? "Working…" : confirmLabel}
           </button>

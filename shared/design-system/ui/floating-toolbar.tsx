@@ -34,7 +34,7 @@ export function FloatingToolbar({
 }) {
   return createPortal(
     <div
-      className="pointer-events-none fixed top-[70px] z-[70] transition-[left] duration-300"
+      className="arcade-floating-toolbar pointer-events-none fixed top-[70px] z-[70] transition-[left] duration-300"
       style={{ left: centerX !== undefined ? `${centerX}px` : "50%", transform: "translateX(-50%)" }}
     >
       <div className="pointer-events-auto flex items-center max-w-[calc(100vw-2rem)] px-4 py-1.5 overflow-x-auto whitespace-nowrap rounded-full bg-surface/60 backdrop-blur-md shadow-sm">

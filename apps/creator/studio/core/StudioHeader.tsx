@@ -197,7 +197,7 @@ export function StudioShareControl({
           title={note ?? "Copy a link to this editor"}
         >
           <Copy size={15} className="text-ink" />
-          <span>Share</span>
+          <span className="hidden sm:inline">Share</span>
         </button>
         {note && (
           <>
@@ -233,7 +233,7 @@ export function StudioShareControl({
         title="Add Collaborators"
       >
         <Users size={15} className="text-ink" />
-        <span>Share</span>
+        <span className="hidden sm:inline">Share</span>
       </button>
       <div className="h-4 w-[1px] bg-surface/90" />
       <DropdownMenu>
@@ -285,7 +285,7 @@ export function StudioPanelToggle({ open, onToggle }: { open: boolean; onToggle:
       className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border shadow-sm transition-all duration-300 ease-in-out ${
         open
           ? "border-ink bg-ink text-on-ink"
-          : "border-white/40 bg-surface/60 text-ink backdrop-blur-md hover:border-ink hover:bg-ink hover:text-on-ink"
+          : "border-surface/40 bg-surface/60 text-ink backdrop-blur-md hover:border-ink hover:bg-ink hover:text-on-ink"
       }`}
     >
       <Menu size={16} />
@@ -321,7 +321,7 @@ export function StudioActionButton({
   const toneClass =
     tone === "primary"
       ? "border border-ink bg-ink text-on-ink hover:bg-ink-hover hover:shadow-md"
-      : "border border-white/40 bg-surface/60 text-ink backdrop-blur-md hover:border-ink hover:bg-ink hover:text-on-ink hover:shadow-md";
+      : "border border-surface/40 bg-surface/60 text-ink backdrop-blur-md hover:border-ink hover:bg-ink hover:text-on-ink hover:shadow-md";
 
   return (
     <button type="button" onClick={onClick} disabled={disabled} title={title} className={`${base} ${toneClass}`}>
@@ -351,7 +351,7 @@ export function StudioIconAction({
       className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border shadow-sm transition-colors ${
         active
           ? "border-ink bg-ink text-on-ink"
-          : "border-white/40 bg-surface/60 text-slate-600 hover:bg-surface hover:text-ink"
+          : "border-surface/40 bg-surface/60 text-slate-600 hover:bg-surface hover:text-ink"
       }`}
     >
       {children}

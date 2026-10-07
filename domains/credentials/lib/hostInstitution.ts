@@ -4,4 +4,4 @@
  * certificate, and it issues the certificates of personal channels. Used for previews only: real
  * certificates carry the issuer name the backend recorded.
  */
-export const HOST_INSTITUTION_NAME = "Amal Jyothi College of Engineering (Autonomous)";
+export const HOST_INSTITUTION_NAME = "Amal Jyothi College of Engineering";
