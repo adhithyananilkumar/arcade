@@ -44,7 +44,6 @@ import {
   ZoomOut,
   Move,
   RotateCcw,
-  Upload,
   Sliders,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -363,6 +362,7 @@ export interface ProfileHeroProps {
   joinedAt?: string | null;
   actions?: React.ReactNode;
   isSelf?: boolean;
+  onBannerUpdate?: (bannerUrl: string) => void;
 }
 
 function formatJoined(value?: string | null): string | null {
@@ -386,6 +386,7 @@ export function ProfileHero({
   joinedAt,
   actions,
   isSelf = false,
+  onBannerUpdate,
 }: ProfileHeroProps) {
   const storageKey = handle ? `arcade_profile_banner_v2_${handle}` : null;
   const legacyStorageKey = handle ? `arcade_profile_banner_${handle}` : null;
@@ -478,10 +479,12 @@ export function ProfileHero({
     initPosX: 0,
     initPosY: 0,
   });
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  // Load user's saved banner choice from localStorage if present and isSelf
+  // Load user's saved banner choice from initialBannerUrl (backend database) or localStorage fallback
   useEffect(() => {
+    if (initialBannerUrl) {
+      setBannerConfig(parseBannerConfig(initialBannerUrl, kind));
+      return;
+    }
     if (isSelf && storageKey) {
       const savedV2 = localStorage.getItem(storageKey);
       if (savedV2) {
@@ -530,10 +533,25 @@ export function ProfileHero({
       posX: 0,
       posY: 0,
     };
+    const bannerJson = JSON.stringify(nextConfig);
     setBannerConfig(nextConfig);
     if (storageKey) {
-      localStorage.setItem(storageKey, JSON.stringify(nextConfig));
+      localStorage.setItem(storageKey, bannerJson);
     }
+    onBannerUpdate?.(bannerJson);
+
+    // Save to database
+    if (isSelf && kind !== 'organization') {
+      const viewerUser = useAuthStore.getState().user;
+      if (viewerUser?.firstName) {
+        UserService.updateProfilePresentation(viewerUser.firstName, viewerUser.lastName ?? '', {
+          bannerUrl: bannerJson,
+        }).catch((err) => {
+          console.error('Failed to sync banner to database', err);
+        });
+      }
+    }
+
     setModalOpen(false);
   };
 
@@ -547,32 +565,26 @@ export function ProfileHero({
       posX: Math.round(stagingPosX),
       posY: Math.round(stagingPosY),
     };
+    const bannerJson = JSON.stringify(nextConfig);
     setBannerConfig(nextConfig);
     if (storageKey) {
-      localStorage.setItem(storageKey, JSON.stringify(nextConfig));
+      localStorage.setItem(storageKey, bannerJson);
     }
-    setModalOpen(false);
-  };
+    onBannerUpdate?.(bannerJson);
 
-  // File Upload handler
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      if (dataUrl) {
-        setStagingUrl(dataUrl);
-        setStagingZoom(1.0);
-        setStagingPosX(0);
-        setStagingPosY(0);
-        setUrlError(false);
-        setActiveTab('crop_editor');
+    // Save to database
+    if (isSelf && kind !== 'organization') {
+      const viewerUser = useAuthStore.getState().user;
+      if (viewerUser?.firstName) {
+        UserService.updateProfilePresentation(viewerUser.firstName, viewerUser.lastName ?? '', {
+          bannerUrl: bannerJson,
+        }).catch((err) => {
+          console.error('Failed to sync banner to database', err);
+        });
       }
-    };
-    reader.readAsDataURL(file);
-    // Reset file input value
-    e.target.value = '';
+    }
+
+    setModalOpen(false);
   };
 
   // Drag handlers for repositioning
@@ -1039,63 +1051,48 @@ export function ProfileHero({
               {/* Tab 2: Interactive Crop, Zoom, and Reposition Editor */}
               {activeTab === 'crop_editor' && (
                 <div className="flex-1 overflow-y-auto py-4 space-y-4">
-                  {/* Image Source Input: URL or File Upload */}
+                  {/* Image Source Input: URL */}
                   <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3.5">
-                    <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex-1">
-                        <label className="text-xs font-bold text-slate-900 block mb-1">
-                          Image Source URL
-                        </label>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="url"
-                            placeholder="Paste image link (Unsplash, Imgur, etc.)..."
-                            value={customUrlInput}
-                            onChange={(e) => {
-                              setCustomUrlInput(e.target.value);
-                              setUrlError(false);
-                            }}
-                            className="flex-1 rounded-xl border border-slate-200 bg-surface px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none"
-                          />
-                          <button
-                            type="button"
-                            disabled={!customUrlInput.trim()}
-                            onClick={() => {
-                              if (customUrlInput.trim()) {
-                                setStagingUrl(sanitizeBannerUrl(customUrlInput.trim()));
-                                setStagingZoom(1.0);
-                                setStagingPosX(0);
-                                setStagingPosY(0);
-                                setUrlError(false);
-                              }
-                            }}
-                            className="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-on-ink transition-colors hover:bg-slate-800 disabled:opacity-40 cursor-pointer"
-                          >
-                            Load
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="sm:border-l sm:border-slate-200 sm:pl-3">
-                        <label className="text-xs font-bold text-slate-900 block mb-1">
-                          Or Upload File
-                        </label>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/png,image/jpeg,image/webp,image/jpg"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-surface px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 cursor-pointer"
-                        >
-                          <Upload size={13} />
-                          <span>Browse Device</span>
-                        </button>
-                      </div>
+                    <label className="text-xs font-bold text-slate-900 block mb-1.5">
+                      Image Source URL
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="url"
+                        placeholder="Paste image link (Unsplash, Imgur, direct image URL)..."
+                        value={customUrlInput}
+                        onChange={(e) => {
+                          setCustomUrlInput(e.target.value);
+                          setUrlError(false);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && customUrlInput.trim()) {
+                            e.preventDefault();
+                            setStagingUrl(sanitizeBannerUrl(customUrlInput.trim()));
+                            setStagingZoom(1.0);
+                            setStagingPosX(0);
+                            setStagingPosY(0);
+                            setUrlError(false);
+                          }
+                        }}
+                        className="flex-1 rounded-xl border border-slate-200 bg-surface px-3.5 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        disabled={!customUrlInput.trim()}
+                        onClick={() => {
+                          if (customUrlInput.trim()) {
+                            setStagingUrl(sanitizeBannerUrl(customUrlInput.trim()));
+                            setStagingZoom(1.0);
+                            setStagingPosX(0);
+                            setStagingPosY(0);
+                            setUrlError(false);
+                          }
+                        }}
+                        className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-on-ink transition-colors hover:bg-slate-800 disabled:opacity-40 cursor-pointer"
+                      >
+                        Load Image
+                      </button>
                     </div>
                   </div>
 

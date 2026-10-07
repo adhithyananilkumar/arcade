@@ -159,6 +159,10 @@ export class UserService {
       headline?: string;
       location?: string;
       showLearnerActivity?: boolean;
+      bannerUrl?: string;
+      domainMastery?: string;
+      featuredProjects?: string;
+      skills?: string;
     }
   ): Promise<User> {
     return api.put<User>('/api/v1/users/me', {
