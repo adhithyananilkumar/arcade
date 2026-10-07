@@ -13,8 +13,6 @@ import {
   ActivityPanel,
   ContentLibrary,
   TechStackPanel,
-  ProjectsShowcasePanel,
-  ProfileAnalyticsCard,
 } from './ProfilePanels';
 import type { UserProfile, PublicActivity } from '../types/profile.types';
 import type { IssuedBadge } from '@/domains/credentials';
@@ -56,16 +54,14 @@ export interface InstructorProfileViewProps {
 }
 
 import { ProfileEditModal } from './ProfileEditModal';
-import type { TechSkill, ShowcaseProject, DomainMasteryItem } from './ProfilePanels';
-
-
+import type { TechSkill } from './ProfilePanels';
 
 export function InstructorProfileView({ data }: InstructorProfileViewProps) {
   const { profile: initialProfile, activity, achievements } = data;
   const [profile, setProfile] = useState<UserProfile>(initialProfile);
   const [editModalOpen, setEditModalOpen] = useState(false);
 
-  // Initialize skills & projects from database/localStorage if available, or fall back to defaults
+  // Initialize skills from database/localStorage if available, or fall back to defaults
   const [skills, setSkills] = useState<TechSkill[]>(() => {
     if (profile.skills) {
       try {
@@ -82,37 +78,6 @@ export function InstructorProfileView({ data }: InstructorProfileViewProps) {
     }
   });
 
-  const [projects, setProjects] = useState<ShowcaseProject[]>(() => {
-    if (profile.featuredProjects) {
-      try {
-        const parsed = JSON.parse(profile.featuredProjects);
-        if (Array.isArray(parsed)) return parsed;
-      } catch {}
-    }
-    if (typeof window === 'undefined' || !profile.handle) return [];
-    try {
-      const saved = localStorage.getItem(`arcade_projects_${profile.handle}`);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [domains, setDomains] = useState<DomainMasteryItem[]>(() => {
-    if (profile.domainMastery) {
-      try {
-        const parsed = JSON.parse(profile.domainMastery);
-        if (Array.isArray(parsed)) return parsed;
-      } catch {}
-    }
-    if (typeof window === 'undefined' || !profile.handle) return [];
-    try {
-      const saved = localStorage.getItem(`arcade_domain_mastery_${profile.handle}`);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
   const viewer = useAuthStore((s) => s.user);
   const isSelf =
     !!viewer?.username &&
@@ -124,22 +89,6 @@ export function InstructorProfileView({ data }: InstructorProfileViewProps) {
   const publishedCourses = profile.courses ?? [];
   const publishedWorkshops = profile.workshops ?? [];
 
-  const handleSaveDomains = (updatedDomains: DomainMasteryItem[]) => {
-    setDomains(updatedDomains);
-    const jsonString = JSON.stringify(updatedDomains);
-    if (profile.handle) {
-      localStorage.setItem(`arcade_domain_mastery_${profile.handle}`, jsonString);
-    }
-    if (isSelf) {
-      const viewerUser = useAuthStore.getState().user;
-      if (viewerUser?.firstName) {
-        UserService.updateProfilePresentation(viewerUser.firstName, viewerUser.lastName ?? '', {
-          domainMastery: jsonString,
-        }).catch((err) => console.error('Failed to sync domain mastery to database', err));
-      }
-    }
-  };
-
   // Sync if initial data changes
   useEffect(() => {
     setProfile(initialProfile);
@@ -149,34 +98,16 @@ export function InstructorProfileView({ data }: InstructorProfileViewProps) {
         if (Array.isArray(parsed)) setSkills(parsed);
       } catch {}
     }
-    if (initialProfile.domainMastery) {
-      try {
-        const parsed = JSON.parse(initialProfile.domainMastery);
-        if (Array.isArray(parsed)) setDomains(parsed);
-      } catch {}
-    }
-    if (initialProfile.featuredProjects) {
-      try {
-        const parsed = JSON.parse(initialProfile.featuredProjects);
-        if (Array.isArray(parsed)) setProjects(parsed);
-      } catch {}
-    }
   }, [initialProfile]);
 
-  // Auto-sync legacy localStorage skills/projects/domains to database if empty on server
+  // Auto-sync legacy localStorage skills to database if empty on server
   useEffect(() => {
     if (isSelf) {
       const viewerUser = useAuthStore.getState().user;
       if (viewerUser?.firstName) {
-        const payload: { skills?: string; featuredProjects?: string; domainMastery?: string } = {};
+        const payload: { skills?: string } = {};
         if (!initialProfile.skills && skills.length > 0) {
           payload.skills = JSON.stringify(skills.map(({ icon, ...rest }) => rest));
-        }
-        if (!initialProfile.featuredProjects && projects.length > 0) {
-          payload.featuredProjects = JSON.stringify(projects);
-        }
-        if (!initialProfile.domainMastery && domains.length > 0) {
-          payload.domainMastery = JSON.stringify(domains);
         }
         if (Object.keys(payload).length > 0) {
           UserService.updateProfilePresentation(viewerUser.firstName, viewerUser.lastName ?? '', payload)
@@ -184,15 +115,13 @@ export function InstructorProfileView({ data }: InstructorProfileViewProps) {
               setProfile((prev) => ({
                 ...prev,
                 ...(payload.skills ? { skills: payload.skills } : {}),
-                ...(payload.featuredProjects ? { featuredProjects: payload.featuredProjects } : {}),
-                ...(payload.domainMastery ? { domainMastery: payload.domainMastery } : {}),
               }));
             })
             .catch((err) => console.error('Auto-sync to database failed', err));
         }
       }
     }
-  }, [isSelf, initialProfile.skills, initialProfile.featuredProjects, initialProfile.domainMastery, skills, projects, domains]);
+  }, [isSelf, initialProfile.skills, skills]);
 
   const handleProfileUpdated = (updated: Partial<UserProfile>) => {
     setProfile((prev) => ({ ...prev, ...updated }));
@@ -267,23 +196,11 @@ export function InstructorProfileView({ data }: InstructorProfileViewProps) {
               ]}
             />
           )}
-
-          {/* Featured Projects & Repositories */}
-          <ProjectsShowcasePanel
-            projects={projects}
-            onAddClick={isSelf ? () => setEditModalOpen(true) : undefined}
-          />
         </div>
 
         {/* ================= RIGHT COLUMN (lg:col-span-4): Stats, Organizations, Badges ================= */}
         <div className="lg:col-span-4 space-y-6 min-w-0 lg:sticky lg:top-24">
           
-          {/* Domain Mastery Progress */}
-          <ProfileAnalyticsCard
-            domains={domains}
-            isSelf={isSelf}
-            onSaveDomains={handleSaveDomains}
-          />
 
           {/* Organizations & Channels */}
           {organizations.filter((c) => !c.personal).length > 0 && (
@@ -314,8 +231,6 @@ export function InstructorProfileView({ data }: InstructorProfileViewProps) {
           onProfileUpdated={handleProfileUpdated}
           currentSkills={skills}
           onSkillsUpdated={setSkills}
-          currentProjects={projects}
-          onProjectsUpdated={setProjects}
         />
       )}
     </>

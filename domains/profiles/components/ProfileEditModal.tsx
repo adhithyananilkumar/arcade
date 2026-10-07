@@ -21,14 +21,12 @@ import {
   X,
   User,
   Cpu,
-  FolderGit2,
   Globe,
   Plus,
   Trash2,
   Star,
   Check,
   Loader2,
-  ExternalLink,
   Sparkles,
   Search,
   Code2,
@@ -40,7 +38,7 @@ import { toast } from 'sonner';
 import { UserService } from '@/domains/identity';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import type { UserProfile } from '../types/profile.types';
-import type { TechSkill, ShowcaseProject } from './ProfilePanels';
+import type { TechSkill } from './ProfilePanels';
 
 function Portal({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
@@ -112,11 +110,9 @@ export interface ProfileEditModalProps {
   onProfileUpdated?: (updated: Partial<UserProfile>) => void;
   currentSkills?: TechSkill[];
   onSkillsUpdated?: (skills: TechSkill[]) => void;
-  currentProjects?: ShowcaseProject[];
-  onProjectsUpdated?: (projects: ShowcaseProject[]) => void;
 }
 
-type TabKey = 'general' | 'skills' | 'projects' | 'social';
+type TabKey = 'general' | 'skills' | 'social';
 
 export function ProfileEditModal({
   open,
@@ -125,8 +121,6 @@ export function ProfileEditModal({
   onProfileUpdated,
   currentSkills = [],
   onSkillsUpdated,
-  currentProjects = [],
-  onProjectsUpdated,
 }: ProfileEditModalProps) {
   const { user, updateUser } = useAuthStore();
   const [activeTab, setActiveTab] = useState<TabKey>('general');
@@ -151,11 +145,6 @@ export function ProfileEditModal({
   const [skillSearch, setSkillSearch] = useState('');
   const [newSkillCategory, setNewSkillCategory] = useState<TechSkill['category']>('languages');
 
-  // Projects tab state
-  const [projectsList, setProjectsList] = useState<ShowcaseProject[]>(currentProjects);
-  const [editingProject, setEditingProject] = useState<ShowcaseProject | null>(null);
-  const [isAddingProject, setIsAddingProject] = useState(false);
-
   // Sync initial state when modal opens
   useEffect(() => {
     if (open) {
@@ -170,9 +159,8 @@ export function ProfileEditModal({
         profile.socialLinks?.find((l) => !l.includes('linkedin') && !l.includes('github')) || ''
       );
       setSkillsList(currentSkills);
-      setProjectsList(currentProjects);
     }
-  }, [open, profile, user, currentSkills, currentProjects]);
+  }, [open, profile, user, currentSkills]);
 
   // Handle skill toggling / adding
   const toggleSkill = (preset: { name: string; category: TechSkill['category'] }) => {
@@ -223,21 +211,6 @@ export function ProfileEditModal({
     setSkillsList(skillsList.filter((s) => s.name !== name));
   };
 
-  // Handle projects
-  const handleSaveProject = (project: ShowcaseProject) => {
-    if (projectsList.some((p) => p.id === project.id)) {
-      setProjectsList(projectsList.map((p) => (p.id === project.id ? project : p)));
-    } else {
-      setProjectsList([...projectsList, project]);
-    }
-    setIsAddingProject(false);
-    setEditingProject(null);
-  };
-
-  const handleDeleteProject = (id: string) => {
-    setProjectsList(projectsList.filter((p) => p.id !== id));
-  };
-
   // Main Save Handler
   const handleSave = async () => {
     if (!firstName.trim() || !lastName.trim()) {
@@ -263,12 +236,11 @@ export function ProfileEditModal({
         user?.nickname || undefined
       );
 
-      // 2. Also save presentation fields, featured projects, and skills to database
+      // 2. Also save presentation fields and skills to database
       const skillsClean = skillsList.map(({ icon, ...rest }) => rest);
       await UserService.updateProfilePresentation(firstName.trim(), lastName.trim(), {
         headline: headline.trim(),
         location: location.trim(),
-        featuredProjects: JSON.stringify(projectsList),
         skills: JSON.stringify(skillsClean),
       });
 
@@ -293,14 +265,12 @@ export function ProfileEditModal({
         socialLinks: updatedLinks,
       });
 
-      // Update skills & projects callbacks
+      // Update skills callbacks
       onSkillsUpdated?.(skillsList);
-      onProjectsUpdated?.(projectsList);
 
-      // Save skills & projects to localStorage for persistence across reloads
+      // Save skills to localStorage for persistence across reloads
       if (profile.handle) {
         localStorage.setItem(`arcade_skills_${profile.handle}`, JSON.stringify(skillsList));
-        localStorage.setItem(`arcade_projects_${profile.handle}`, JSON.stringify(projectsList));
       }
 
       toast.success('Profile updated successfully!');
@@ -315,7 +285,6 @@ export function ProfileEditModal({
   const tabs: { key: TabKey; label: string; icon: React.ElementType; badge?: number }[] = [
     { key: 'general', label: 'General Info', icon: User },
     { key: 'skills', label: 'Skills & Tech', icon: Cpu, badge: skillsList.length },
-    { key: 'projects', label: 'Projects & Repos', icon: FolderGit2, badge: projectsList.length },
     { key: 'social', label: 'Social & Web', icon: Globe },
   ];
 
@@ -587,115 +556,7 @@ export function ProfileEditModal({
                   </div>
                 )}
 
-                {/* ── Tab 3: Featured Projects & Repos ── */}
-                {activeTab === 'projects' && (
-                  <div className="space-y-4">
-                    {/* Add / Edit Project Form */}
-                    {(isAddingProject || editingProject) ? (
-                      <ProjectForm
-                        initialData={editingProject || undefined}
-                        onSave={handleSaveProject}
-                        onCancel={() => {
-                          setIsAddingProject(false);
-                          setEditingProject(null);
-                        }}
-                      />
-                    ) : (
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                            Featured Projects ({projectsList.length})
-                          </h4>
-                          <p className="text-[11px] text-slate-400">
-                            Showcase your open source repos, capstones, and web apps
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setIsAddingProject(true)}
-                          className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-indigo-700 transition-colors cursor-pointer"
-                        >
-                          <Plus size={14} />
-                          Add Project
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Projects Cards List */}
-                    {!isAddingProject && !editingProject && (
-                      <div className="space-y-3">
-                        {projectsList.length === 0 ? (
-                          <div className="text-center py-8 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
-                            <FolderGit2 size={28} className="mx-auto text-slate-300 mb-2" />
-                            <p className="text-xs font-bold text-slate-600 dark:text-slate-400">
-                              No featured projects yet
-                            </p>
-                            <p className="text-[11px] text-slate-400 mt-1">
-                              Add your GitHub repositories or live apps to display them on your profile.
-                            </p>
-                          </div>
-                        ) : (
-                          projectsList.map((proj) => (
-                            <div
-                              key={proj.id}
-                              className="flex items-start justify-between gap-3 p-4 rounded-2xl border border-slate-200/80 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-800/40"
-                            >
-                              <div className="space-y-1.5 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                                    {proj.title}
-                                  </h4>
-                                  {proj.repoUrl && (
-                                    <a
-                                      href={proj.repoUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-slate-400 hover:text-indigo-600"
-                                    >
-                                      <ExternalLink size={13} />
-                                    </a>
-                                  )}
-                                </div>
-                                <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">
-                                  {proj.description}
-                                </p>
-                                <div className="flex flex-wrap gap-1 pt-1">
-                                  {proj.tags.map((t) => (
-                                    <span
-                                      key={t}
-                                      className="px-2 py-0.5 rounded text-[10px] font-semibold bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-600"
-                                    >
-                                      {t}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-1 shrink-0">
-                                <button
-                                  type="button"
-                                  onClick={() => setEditingProject(proj)}
-                                  className="px-2.5 py-1 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 rounded-lg cursor-pointer transition-colors"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteProject(proj.id)}
-                                  className="p-1 text-slate-400 hover:text-rose-500 rounded-lg cursor-pointer transition-colors"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* ── Tab 4: Social & Links ── */}
+                {/* ── Tab 3: Social & Links ── */}
                 {activeTab === 'social' && (
                   <div className="space-y-4">
                     <div className="space-y-1.5">
@@ -782,181 +643,3 @@ export function ProfileEditModal({
   );
 }
 
-/** Embedded Subform for Adding / Editing a Single Project */
-function ProjectForm({
-  initialData,
-  onSave,
-  onCancel,
-}: {
-  initialData?: ShowcaseProject;
-  onSave: (p: ShowcaseProject) => void;
-  onCancel: () => void;
-}) {
-  const [title, setTitle] = useState(initialData?.title || '');
-  const [description, setDescription] = useState(initialData?.description || '');
-  const [repoUrl, setRepoUrl] = useState(initialData?.repoUrl || '');
-  const [demoUrl, setDemoUrl] = useState(initialData?.demoUrl || '');
-  const [tagInput, setTagInput] = useState('');
-  const [tags, setTags] = useState<string[]>(initialData?.tags || ['TypeScript', 'React']);
-  const [stars, setStars] = useState<number | undefined>(initialData?.stars);
-
-  const addTag = () => {
-    const t = tagInput.trim();
-    if (t && !tags.includes(t)) {
-      setTags([...tags, t]);
-      setTagInput('');
-    }
-  };
-
-  const removeTag = (t: string) => {
-    setTags(tags.filter((tag) => tag !== t));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim() || !description.trim()) {
-      toast.error('Project title and description are required');
-      return;
-    }
-    onSave({
-      id: initialData?.id || `proj-${Date.now()}`,
-      title: title.trim(),
-      description: description.trim(),
-      repoUrl: repoUrl.trim() || undefined,
-      demoUrl: demoUrl.trim() || undefined,
-      tags: tags.length > 0 ? tags : ['Web'],
-      stars,
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="p-4 rounded-2xl border border-indigo-200/80 bg-indigo-50/30 dark:border-indigo-900/60 dark:bg-indigo-950/20 space-y-3">
-      <div className="flex items-center justify-between">
-        <h4 className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
-          {initialData ? 'Edit Featured Project' : 'Add New Featured Project'}
-        </h4>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="text-slate-400 hover:text-slate-600 p-1"
-        >
-          <X size={14} />
-        </button>
-      </div>
-
-      <div className="space-y-1">
-        <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-          Project Title <span className="text-rose-500">*</span>
-        </label>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Distributed Rate Limiter API"
-          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-        />
-      </div>
-
-      <div className="space-y-1">
-        <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-          Description <span className="text-rose-500">*</span>
-        </label>
-        <textarea
-          rows={2}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Short overview of what you built and tech highlights..."
-          className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <div className="space-y-1">
-          <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-            Repository URL (GitHub)
-          </label>
-          <input
-            type="url"
-            value={repoUrl}
-            onChange={(e) => setRepoUrl(e.target.value)}
-            placeholder="https://github.com/..."
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-          />
-        </div>
-        <div className="space-y-1">
-          <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-            Live Demo URL (Optional)
-          </label>
-          <input
-            type="url"
-            value={demoUrl}
-            onChange={(e) => setDemoUrl(e.target.value)}
-            placeholder="https://myproject.dev"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-1">
-        <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-          Tags / Technologies
-        </label>
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                addTag();
-              }
-            }}
-            placeholder="Type tag & press Enter (e.g. Next.js, Redis)..."
-            className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-          />
-          <button
-            type="button"
-            onClick={addTag}
-            className="px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition-colors"
-          >
-            Add
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-1 pt-1">
-          {tags.map((t) => (
-            <span
-              key={t}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700"
-            >
-              {t}
-              <button
-                type="button"
-                onClick={() => removeTag(t)}
-                className="text-slate-400 hover:text-rose-500"
-              >
-                <X size={10} />
-              </button>
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex justify-end gap-2 pt-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="px-4 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition-colors"
-        >
-          {initialData ? 'Save Project' : 'Add to Showcase'}
-        </button>
-      </div>
-    </form>
-  );
-}
