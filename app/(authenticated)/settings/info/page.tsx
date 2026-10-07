@@ -382,42 +382,7 @@ export default function PersonalInfoPage() {
     setEditingField(null);
   };
 
-  const handleFileSelectedForCrop = (file: File) => {
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('File size must be under 10MB');
-      return;
-    }
-    setSelectedCropFile(file);
-    setCropModalOpen(true);
-  };
 
-  const handleCroppedAvatar = async (croppedFile: File) => {
-    setCropModalOpen(false);
-    setSelectedCropFile(null);
-    setUploadingAvatar(true);
-    try {
-      const updated = await UserService.uploadAvatar(croppedFile);
-      updateUser(updated);
-      toast.success('Profile photo updated');
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to update profile photo');
-    } finally {
-      setUploadingAvatar(false);
-    }
-  };
-
-  const handleRemoveAvatar = async () => {
-    setUploadingAvatar(true);
-    try {
-      const updated = await UserService.removeAvatar();
-      updateUser(updated);
-      toast.success('Profile photo removed');
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to remove profile photo');
-    } finally {
-      setUploadingAvatar(false);
-    }
-  };
 
   const renderSaveCancelButtons = (field: string, onSave?: () => void) => (
     <div className="flex items-center gap-1 shrink-0">

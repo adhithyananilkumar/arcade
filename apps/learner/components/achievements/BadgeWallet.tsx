@@ -76,43 +76,7 @@ export function BadgeWallet({ data, tiers, search, onOpen }: BadgeWalletProps) {
 
   return (
     <section aria-label="Badges" className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-        <div className="flex flex-wrap items-center gap-2">
-          {(['All', 'Earned', 'In progress'] as StatusFilter[]).map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setStatus(s)}
-              className={cn(
-                'cursor-pointer select-none rounded-full border px-4 py-1.5 text-xs font-bold transition-all',
-                status === s
-                  ? 'border-transparent bg-[#2962D6] text-white shadow-xs dark:bg-[#3B82F6]'
-                  : 'border-slate-200/80 bg-surface/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900'
-              )}
-            >
-              {s}
-            </button>
-          ))}
-          <LevelInfo tiers={tiers} />
-        </div>
-        <div className="flex items-center gap-1 rounded-full border border-slate-200/80 bg-surface/70 p-1">
-          {FAMILY_FILTERS.map((f) => (
-            <button
-              key={f.key}
-              type="button"
-              onClick={() => setFamily(f.key)}
-              className={cn(
-                'rounded-full px-3 py-1 text-[11px] font-bold transition-colors cursor-pointer',
-                family === f.key
-                  ? 'bg-slate-900 text-on-ink'
-                  : 'text-slate-500 hover:text-slate-900'
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-      </div>
+
 
       {cards.length === 0 ? (
         <EmptyBadgeState filtered={Boolean(q) || family !== 'ALL' || status !== 'All'} />

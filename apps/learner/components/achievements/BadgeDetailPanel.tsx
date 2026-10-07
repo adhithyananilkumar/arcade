@@ -59,15 +59,17 @@ export function BadgeDetailPanel({ badge, tiers, onClose, onChanged }: BadgeDeta
             onClick={onClose}
             className="absolute inset-0 cursor-pointer bg-slate-950/40 backdrop-blur-sm"
           />
-          <div className="absolute inset-y-0 right-0 flex max-w-full pl-6 sm:pl-10">
+          <div className="absolute inset-y-0 right-0 flex max-w-full">
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-              className="flex w-screen max-w-md flex-col overflow-y-auto border-l border-slate-200/80 bg-surface p-6 shadow-2xl sm:max-w-[480px] sm:p-8"
+              className="flex w-screen max-w-md flex-col overflow-hidden bg-white shadow-2xl sm:max-w-[440px]"
             >
-              <PanelBody key={badge.credentialCode} badge={badge} tiers={tiers} onClose={onClose} onChanged={onChanged} />
+              <div className="flex flex-1 flex-col overflow-y-auto">
+                <PanelBody key={badge.credentialCode} badge={badge} tiers={tiers} onClose={onClose} onChanged={onChanged} />
+              </div>
             </motion.div>
           </div>
         </div>
@@ -123,33 +125,36 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
   };
 
   const secondary =
-    'inline-flex items-center justify-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md border border-slate-200 bg-surface px-4 py-2.5 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50';
+    'flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50 active:scale-[0.99]';
 
   return (
     <>
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+      {/* ─── Sticky header ─── */}
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-5 py-3 backdrop-blur-sm">
         <button
           type="button"
           onClick={onClose}
-          className="group/back rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+          className="group/back flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-500 transition-all hover:bg-slate-100 hover:text-slate-900"
           title="Go back to Achievements"
         >
-          <ArrowLeft className="h-5 w-5 transition-transform group-hover/back:-translate-x-0.5" />
+          <ArrowLeft className="h-4 w-4 transition-transform group-hover/back:-translate-x-0.5" />
         </button>
         <button
           type="button"
           onClick={onClose}
-          className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
           title="Close"
         >
-          <X className="h-5 w-5" />
+          <X className="h-4 w-4" />
         </button>
       </div>
 
-      {/* Hero */}
-      <div className="flex flex-col items-center py-6 text-center">
-        <div className="relative mb-5 flex w-full flex-col items-center justify-center pb-2 pt-4" style={{ perspective: 1000 }}>
+      {/* ─── Hero: badge artwork + identity ─── */}
+      <div
+        className="flex flex-col items-center px-6 pb-6 pt-8 text-center"
+        style={{ background: 'linear-gradient(180deg, #f8f9fb 0%, #ffffff 100%)' }}
+      >
+        <div className="relative mb-5 flex w-full flex-col items-center justify-center" style={{ perspective: 1000 }}>
           <motion.div
             key={`glow-${spinKey}`}
             initial={{ opacity: 0.2, scale: 0.6 }}
@@ -180,19 +185,23 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
           </motion.button>
         </div>
 
-        <span className={cn('rounded-full border px-3 py-1 text-xs font-semibold', style.chip)}>{badge.badgeClass.tier.label}</span>
-        <h2 className="mt-3 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">{badge.name}</h2>
+        <span className={cn('rounded-full border px-3 py-1 text-xs font-semibold', style.chip)}>
+          {badge.badgeClass.tier.label}
+        </span>
+        <h2 className="mt-3 text-[1.65rem] font-extrabold leading-tight tracking-tight text-slate-900">
+          {badge.name}
+        </h2>
         <p className="mt-1.5 text-sm text-slate-500">
           {badge.badgeClass.family.label} · issued by{' '}
           {badge.issuerHandle ? (
-            <Link href={`/${badge.issuerHandle}`} className="font-bold text-slate-800 hover:underline">
+            <Link href={`/${badge.issuerHandle}`} className="font-semibold text-slate-800 hover:underline">
               {badge.issuerName}
             </Link>
           ) : (
-            <span className="font-bold text-slate-800">{badge.issuerName}</span>
+            <span className="font-semibold text-slate-800">{badge.issuerName}</span>
           )}
         </p>
-        <div className="mt-2 flex items-center justify-center gap-1.5 text-xs font-bold">
+        <div className="mt-2.5 flex items-center justify-center gap-1.5 text-xs font-semibold">
           {badge.revoked ? (
             <span className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
               <ShieldAlert className="h-4 w-4" /> Revoked{badge.revokedReason ? ` — ${badge.revokedReason}` : ''}
@@ -205,29 +214,32 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
         </div>
       </div>
 
-      <div className="space-y-5">
-        {/* Criteria */}
-        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Earning criteria</p>
-          <p className="mt-1.5 text-sm leading-relaxed text-slate-700">{badge.criteria}</p>
+      <div className="space-y-3 px-6 pb-8">
+        {/* ─── Earning criteria ─── */}
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Earning Criteria</p>
+          <p className="mt-2 text-sm leading-relaxed text-slate-700">{badge.criteria}</p>
           {badge.contentPath && (
-            <Link href={badge.contentPath} className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-[#2962D6] hover:underline dark:text-[#7eb5ff]">
+            <Link
+              href={badge.contentPath}
+              className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
+            >
               View the {badge.contentType.toLowerCase()} <ExternalLink size={11} />
             </Link>
           )}
         </div>
 
-        {/* Credential ID */}
+        {/* ─── Credential ID ─── */}
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Credential ID</p>
-          <div className="mt-1.5 flex items-center gap-2">
-            <code className="rounded-lg border border-slate-200 bg-surface px-3 py-1.5 font-mono text-sm font-bold tracking-wider text-slate-800">
+          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Credential ID</p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-sm font-semibold tracking-wider text-slate-800">
               {badge.credentialCode}
             </code>
             <button
               type="button"
               onClick={() => copy(badge.credentialCode, 'id')}
-              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+              className="rounded-xl border border-slate-200 p-2.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
               aria-label="Copy credential ID"
             >
               {copied === 'id' ? <Check size={14} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={14} />}
@@ -235,67 +247,77 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
           </div>
         </div>
 
-        {/* Actions */}
+        {/* ─── Action buttons ─── */}
         {!badge.revoked && (
-          <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col gap-2.5">
+            {/* Open credential page */}
             <Link
               href={credentialPath(badge.credentialCode)}
               target="_blank"
-              className="col-span-2 inline-flex items-center justify-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-ink px-4 py-3 text-xs font-bold text-on-ink transition-colors hover:bg-ink-hover"
+              className="flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-slate-800 hover:shadow active:scale-[0.99]"
             >
-              <ExternalLink size={14} /> Open credential page
+              <ExternalLink size={15} /> Open credential page
             </Link>
+            {/* LinkedIn */}
             <a
               href={linkedInAddToProfileUrl({ credentialCode: badge.credentialCode, name: badge.name, issuedAt: badge.issuedAt, url: publicUrl })}
               target="_blank"
               rel="noopener noreferrer"
-              className="col-span-2 inline-flex items-center justify-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-[#0A66C2] px-4 py-3 text-xs font-bold text-white hover:bg-[#0958a8]"
+              className="flex items-center justify-center gap-2 rounded-2xl bg-[#0A66C2] px-4 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#0959ab] hover:shadow active:scale-[0.99]"
             >
-              <LinkedInGlyph size={14} /> Add to LinkedIn
+              <LinkedInGlyph size={15} /> Add to LinkedIn
             </a>
-            <button type="button" onClick={() => copy(publicUrl, 'link')} className={cn(secondary, 'col-span-2')}>
-              {copied === 'link' ? <Check size={14} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={14} />} Copy share link
+            {/* Copy share link */}
+            <button type="button" onClick={() => copy(publicUrl, 'link')} className={secondary}>
+              {copied === 'link' ? <Check size={15} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={15} />} Copy share link
             </button>
-            <button type="button" onClick={() => download('png')} disabled={downloading !== null} className={secondary}>
-              {downloading === 'png' ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />} PNG
-            </button>
-            <button type="button" onClick={() => download('svg')} disabled={downloading !== null} className={secondary}>
-              {downloading === 'svg' ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />} SVG
-            </button>
+            {/* PNG / SVG */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <button type="button" onClick={() => download('png')} disabled={downloading !== null} className={secondary}>
+                {downloading === 'png' ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />} PNG
+              </button>
+              <button type="button" onClick={() => download('svg')} disabled={downloading !== null} className={secondary}>
+                {downloading === 'svg' ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />} SVG
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Visibility */}
+        {/* ─── Visibility toggle ─── */}
         {!badge.revoked && (
           <button
             type="button"
             onClick={toggleVisibility}
             disabled={savingVisibility}
-            className="flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200/80 px-4 py-3 text-left transition hover:bg-slate-50 disabled:opacity-60"
+            className="flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-left shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50 active:scale-[0.99]"
           >
             <span className="flex items-center gap-3">
-              {badge.publicVisible ? <Eye size={16} className="text-emerald-600 dark:text-emerald-400" /> : <EyeOff size={16} className="text-slate-400" />}
+              {badge.publicVisible
+                ? <Eye size={17} className="shrink-0 text-emerald-500" />
+                : <EyeOff size={17} className="shrink-0 text-slate-400" />}
               <span>
-                <span className="block text-sm font-bold text-slate-800">{badge.publicVisible ? 'Public' : 'Private'}</span>
-                <span className="block text-xs text-slate-500">
+                <span className="block text-sm font-semibold text-slate-900">
+                  {badge.publicVisible ? 'Public' : 'Private'}
+                </span>
+                <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">
                   {badge.publicVisible
                     ? 'Shown on your profile; anyone with the link can view and verify it.'
                     : 'Hidden from your profile and its page. The ID still verifies for anyone you give it to.'}
                 </span>
               </span>
             </span>
-            <span aria-hidden className={cn('relative h-6 w-11 shrink-0 rounded-full transition-colors', badge.publicVisible ? 'bg-emerald-500' : 'bg-slate-300')}>
-              <span className={cn('absolute top-0.5 h-5 w-5 rounded-full bg-surface shadow transition-all', badge.publicVisible ? 'left-[22px]' : 'left-0.5')} />
+            <span
+              aria-hidden
+              className={cn('relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200', badge.publicVisible ? 'bg-emerald-500' : 'bg-slate-200')}
+            >
+              <span
+                className={cn(
+                  'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-all duration-200',
+                  badge.publicVisible ? 'left-[22px]' : 'left-0.5',
+                )}
+              />
             </span>
           </button>
-        )}
-
-        {/* Level standard */}
-        {tiers.length > 0 && (
-          <div className="pb-2">
-            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Where this sits</p>
-            <TierLadder tiers={tiers} family={family} current={level} compact />
-          </div>
         )}
       </div>
     </>
