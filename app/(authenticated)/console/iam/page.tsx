@@ -24,8 +24,8 @@ export default function IamPage() {
         onClick={() => setActiveTab('USERS')}
         className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold tracking-tight transition-colors ${
           activeTab === 'USERS'
-            ? 'bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 dark:text-slate-400 dark:hover:text-slate-200'
+            ? 'bg-slate-950 text-on-ink shadow-xs'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
         }`}
       >
         <Users size={14} />
@@ -36,8 +36,8 @@ export default function IamPage() {
         onClick={() => setActiveTab('POLICIES')}
         className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold tracking-tight transition-colors ${
           activeTab === 'POLICIES'
-            ? 'bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 dark:text-slate-400 dark:hover:text-slate-200'
+            ? 'bg-slate-950 text-on-ink shadow-xs'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
         }`}
       >
         <Shield size={14} />

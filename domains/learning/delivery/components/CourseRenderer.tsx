@@ -356,7 +356,7 @@ export function CourseRenderer({
                               className={`shrink-0 ${
                                 selectedItem?.kind === "assessment" &&
                                 (selectedItem.id === item.item.placementId || selectedItem.id === item.item.examId)
-                                  ? "text-amber-300"
+                                  ? "text-amber-300 dark:text-amber-600"
                                   : "text-amber-500"
                               }`}
                             />
@@ -366,7 +366,7 @@ export function CourseRenderer({
                                 className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
                                   selectedItem?.kind === "assessment" &&
                                   (selectedItem.id === item.item.placementId || selectedItem.id === item.item.examId)
-                                    ? "bg-white/20 text-white"
+                                    ? "bg-on-ink/20 text-on-ink"
                                     : "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/25"
                                 }`}
                               >
@@ -406,7 +406,7 @@ export function CourseRenderer({
                       className={`shrink-0 ${
                         selectedItem?.kind === "assessment" &&
                         (selectedItem.id === a.placementId || selectedItem.id === a.examId)
-                          ? "text-amber-300"
+                          ? "text-amber-300 dark:text-amber-600"
                           : "text-amber-500"
                       }`}
                     />
@@ -416,7 +416,7 @@ export function CourseRenderer({
                         className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
                           selectedItem?.kind === "assessment" &&
                           (selectedItem.id === a.placementId || selectedItem.id === a.examId)
-                            ? "bg-white/20 text-white"
+                            ? "bg-on-ink/20 text-on-ink"
                             : "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/25"
                         }`}
                       >

@@ -76,7 +76,7 @@ function TabButton({
       className={`relative px-5 sm:px-6 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm font-black tracking-tight transition-all duration-200 select-none cursor-pointer min-w-[96px] text-center ${
         active
           ? 'bg-surface text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6] shadow-2xs'
-          : 'bg-slate-100/80 text-slate-700 border border-slate-200/70 hover:bg-slate-200/70 hover:text-slate-900 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700/70 dark:hover:bg-slate-800 dark:hover:text-white'
+          : 'bg-slate-100/80 text-slate-700 border border-slate-200/70 hover:bg-slate-200/70 hover:text-slate-900'
       }`}
     >
       <span className="relative z-10">{label}</span>
@@ -169,7 +169,7 @@ export function ExamOverview({
     <button
       type="button"
       onClick={() => setShowHonorCode(true)}
-      className="rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md bg-slate-900 px-7 py-3 text-xs sm:text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(15,23,42,0.18)] hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
+      className="rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md bg-slate-900 px-7 py-3 text-xs sm:text-sm font-extrabold text-on-ink shadow-[0_8px_20px_rgba(15,23,42,0.18)] hover:bg-slate-800 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
     >
       <span>{resuming ? 'Resume Exam' : retaking ? 'Retake Exam' : 'Start Exam'}</span>
       <ChevronRight size={14} className="stroke-[3]" />
@@ -182,7 +182,7 @@ export function ExamOverview({
   );
 
   return (
-    <main className="min-h-screen w-full bg-surface theme-page-bg theme-wallpaper-frost text-slate-900 dark:text-white">
+    <main className="min-h-screen w-full bg-surface theme-page-bg theme-wallpaper-frost text-slate-900">
       <div className="mx-auto max-w-6xl px-4 pt-12 pb-24 sm:px-6 sm:pt-16 sm:pb-32 lg:px-8">
         
         {/* ================= HERO SECTION (2-Column) ================= */}
@@ -194,7 +194,7 @@ export function ExamOverview({
               
               {/* Category / Plan Badge */}
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="group inline-flex items-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-slate-200/90 bg-surface/95 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                <span className="group inline-flex items-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-slate-200/90 bg-surface/95 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs">
                   {landing.planType === 'ASSESSMENT' ? <FileText size={12} className="text-blue-600 dark:text-blue-400" /> : <Award size={12} className="text-amber-600 dark:text-amber-400" />}
                   <span className="uppercase tracking-wider">{kind}</span>
                 </span>
@@ -206,8 +206,8 @@ export function ExamOverview({
                 )}
 
                 {landing.proctoringRequired && (
-                  <span className="inline-flex items-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-slate-200/80 bg-surface/95 px-3 py-1.5 text-xs font-bold text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 shadow-2xs">
-                    <ShieldCheck size={12} className="text-emerald-600" /> Proctored
+                  <span className="inline-flex items-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-slate-200/80 bg-surface/95 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs">
+                    <ShieldCheck size={12} className="text-emerald-600 dark:text-emerald-400" /> Proctored
                   </span>
                 )}
               </div>
@@ -215,7 +215,7 @@ export function ExamOverview({
               {/* Title in Dancing Script font with hand-drawn SVG flourish */}
               <div className="relative inline-block mt-1">
                 <h1
-                  className={`${dancingScript.className} text-5xl sm:text-6xl lg:text-7xl font-bold tracking-normal text-slate-900 dark:text-white leading-[1.15]`}
+                  className={`${dancingScript.className} text-5xl sm:text-6xl lg:text-7xl font-bold tracking-normal text-slate-900 leading-[1.15]`}
                 >
                   {landing.title}
                 </h1>
@@ -240,31 +240,31 @@ export function ExamOverview({
 
               {/* Subtitle / Plan Name */}
               {landing.planName && (
-                <p className="text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300 font-semibold pt-1">
+                <p className="text-sm sm:text-base leading-relaxed text-slate-600 font-semibold pt-1">
                   {landing.planName}
                 </p>
               )}
 
               {/* Metadata Pill Chips */}
               <div className="flex flex-wrap items-center gap-2 pt-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
                   <Clock size={14} className="text-slate-400 shrink-0" />
                   {landing.durationMinutes} mins
                 </span>
 
                 {landing.questionCount > 0 && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
                     <ListChecks size={14} className="text-slate-400 shrink-0" />
                     {landing.questionCount} questions
                   </span>
                 )}
 
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
                   <Target size={14} className="text-slate-400 shrink-0" />
                   {landing.graded ? `Pass mark ${landing.passPercentage}%` : 'Not graded'}
                 </span>
 
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
                   <RotateCcw size={14} className="text-slate-400 shrink-0" />
                   {landing.maxAttempts} attempts max
                 </span>
@@ -283,7 +283,7 @@ export function ExamOverview({
                   type="button"
                   onClick={handleShare}
                   aria-label="Share exam"
-                  className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-slate-800 dark:border-slate-700/80 dark:bg-slate-900 dark:text-slate-500 dark:hover:text-white shadow-2xs transition-all cursor-pointer"
+                  className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-slate-800 shadow-2xs transition-all cursor-pointer"
                   title="Share this exam"
                 >
                   <Share2 size={15} />
@@ -293,7 +293,7 @@ export function ExamOverview({
                   type="button"
                   onClick={() => setIsReportModalOpen(true)}
                   aria-label="Report exam"
-                  className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-red-600 dark:border-slate-700/80 dark:bg-slate-900 dark:text-slate-500 dark:hover:text-red-400 shadow-2xs transition-all cursor-pointer"
+                  className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-red-600 dark:hover:text-red-400 shadow-2xs transition-all cursor-pointer"
                   title="Report this exam"
                 >
                   <Flag size={15} />
@@ -301,7 +301,7 @@ export function ExamOverview({
               </div>
 
               {landing.attemptsUsed > 0 && (
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 pt-1">
+                <p className="text-xs font-medium text-slate-500 pt-1">
                   {landing.attemptsUsed} of {landing.maxAttempts} attempt{landing.maxAttempts === 1 ? '' : 's'} used
                   {latest?.gradeCardId && (
                     <>
@@ -309,7 +309,7 @@ export function ExamOverview({
                       <button
                         type="button"
                         onClick={() => onViewGradeCard(latest.gradeCardId!)}
-                        className="cursor-pointer font-bold text-[#2962D6] dark:text-[#3B82F6] underline decoration-blue-300 underline-offset-4 hover:decoration-blue-600"
+                        className="cursor-pointer font-bold text-[#2962D6] dark:text-[#3B82F6] underline decoration-blue-300 underline-offset-4 hover:decoration-blue-600 dark:hover:decoration-blue-400"
                       >
                         View your grade card
                       </button>
@@ -321,10 +321,10 @@ export function ExamOverview({
 
             {/* RIGHT COLUMN: Exam Visual Artwork & Inclusions Frame */}
             <div className="lg:col-span-5 flex justify-center lg:justify-end">
-              <div className="w-full max-w-sm overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-3.5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95">
+              <div className="w-full max-w-sm overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-3.5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
                 
                 {/* Generative Exam Artwork */}
-                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-lg rounded-bl-lg border border-slate-200/70 dark:border-slate-800 shadow-xs">
+                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-lg rounded-bl-lg border border-slate-200/70 shadow-xs">
                   <ContentArt
                     seed={landing.examId || landing.title || 'exam'}
                     kind="EXAM"
@@ -338,7 +338,7 @@ export function ExamOverview({
                 </div>
 
                 {/* Exam Inclusions Highlights */}
-                <div className="p-3 pt-4 space-y-2.5 text-xs text-slate-600 dark:text-slate-300">
+                <div className="p-3 pt-4 space-y-2.5 text-xs text-slate-600">
                   <div className="flex items-center gap-2 font-medium">
                     <ShieldCheck size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span>Instant access to exam sitting & question sheet</span>
@@ -370,7 +370,7 @@ export function ExamOverview({
         {/* ── Multi-Plan Switcher (if multiple plans available) ──────── */}
         {landing.plans.length > 1 && (
           <div className="pt-2 pb-4 flex justify-center">
-            <div className="flex max-w-full gap-1 overflow-x-auto rounded-full border border-slate-200/80 dark:border-slate-800 bg-surface/95 p-1.5 shadow-2xs backdrop-blur-sm">
+            <div className="flex max-w-full gap-1 overflow-x-auto rounded-full border border-slate-200/80 bg-surface/95 p-1.5 shadow-2xs backdrop-blur-sm">
               {landing.plans.map((p) => {
                 const active = p.planId === landing.planId;
                 return (
@@ -381,14 +381,14 @@ export function ExamOverview({
                     aria-pressed={active}
                     className={`relative shrink-0 cursor-pointer rounded-full px-5 py-2 text-xs sm:text-sm font-bold transition-colors ${
                       active
-                        ? 'text-white dark:text-slate-900'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        ? 'text-white'
+                        : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
                     {active && (
                       <motion.div
                         layoutId="examPlanPill"
-                        className="absolute inset-0 rounded-full bg-slate-900 dark:bg-white"
+                        className="absolute inset-0 rounded-full bg-slate-900"
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                       />
                     )}
@@ -424,51 +424,51 @@ export function ExamOverview({
                 )}
 
                 {/* About this Exam Card */}
-                <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
-                  <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900">
                     About this exam
                   </h2>
                   {landing.description || landing.planDescription || landing.purpose ? (
-                    <div className="mt-3 space-y-3 text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300 font-normal">
+                    <div className="mt-3 space-y-3 text-sm sm:text-base leading-relaxed text-slate-600 font-normal">
                       {landing.description && <p className="whitespace-pre-wrap">{landing.description}</p>}
                       {landing.planDescription && <p className="whitespace-pre-wrap">{landing.planDescription}</p>}
                       {landing.purpose && <p className="whitespace-pre-wrap">{landing.purpose}</p>}
                     </div>
                   ) : (
-                    <p className="mt-3 text-sm sm:text-base text-slate-500 dark:text-slate-400 font-normal">
+                    <p className="mt-3 text-sm sm:text-base text-slate-500 font-normal">
                       {meta.effect}
                     </p>
                   )}
                 </div>
 
                 {/* Key Exam Highlights Card */}
-                <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
-                  <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-6">
+                <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-6">
                     Key Specifications & Inclusions
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
+                    <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70">
                       <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-2" />
-                      <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Time Limit</div>
-                      <div className="text-base font-bold text-slate-900 dark:text-white">{landing.durationMinutes} Minutes</div>
+                      <div className="text-xs text-slate-500 font-medium">Time Limit</div>
+                      <div className="text-base font-bold text-slate-900">{landing.durationMinutes} Minutes</div>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
+                    <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70">
                       <Target className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mb-2" />
-                      <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Passing Criteria</div>
-                      <div className="text-base font-bold text-slate-900 dark:text-white">{landing.graded ? `${landing.passPercentage}% Mark` : 'Ungraded'}</div>
+                      <div className="text-xs text-slate-500 font-medium">Passing Criteria</div>
+                      <div className="text-base font-bold text-slate-900">{landing.graded ? `${landing.passPercentage}% Mark` : 'Ungraded'}</div>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
+                    <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70">
                       <RotateCcw className="w-5 h-5 text-sky-600 dark:text-sky-400 mb-2" />
-                      <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Attempt Policy</div>
-                      <div className="text-base font-bold text-slate-900 dark:text-white">{landing.maxAttempts} Attempts Allowed</div>
+                      <div className="text-xs text-slate-500 font-medium">Attempt Policy</div>
+                      <div className="text-base font-bold text-slate-900">{landing.maxAttempts} Attempts Allowed</div>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
+                    <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70">
                       <ShieldCheck className="w-5 h-5 text-amber-600 dark:text-amber-400 mb-2" />
-                      <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Security & Proctoring</div>
-                      <div className="text-base font-bold text-slate-900 dark:text-white">{landing.proctoringRequired ? 'Proctored' : 'Standard'}</div>
+                      <div className="text-xs text-slate-500 font-medium">Security & Proctoring</div>
+                      <div className="text-base font-bold text-slate-900">{landing.proctoringRequired ? 'Proctored' : 'Standard'}</div>
                     </div>
                   </div>
                 </div>
@@ -477,8 +477,8 @@ export function ExamOverview({
 
             {/* WHAT TO EXPECT TAB */}
             {activeTab === 'What to Expect' && (
-              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-6">
+              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-6">
                   What to expect during this exam
                 </h2>
                 <ul className="space-y-3.5">
@@ -551,11 +551,11 @@ export function ExamOverview({
 
             {/* INSTRUCTIONS TAB */}
             {activeTab === 'Instructions' && landing.instructions != null && (
-              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
+              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-4">
                   Candidate Instructions
                 </h2>
-                <div className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm sm:text-base">
+                <div className="text-slate-700 leading-relaxed text-sm sm:text-base">
                   <TiptapContentView body={JSON.stringify(landing.instructions)} emptyMessage="No instructions provided." />
                 </div>
               </div>
@@ -563,19 +563,19 @@ export function ExamOverview({
 
             {/* YOUR ATTEMPTS TAB */}
             {activeTab === 'Your Attempts' && landing.history.length > 0 && (
-              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-2">
+              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-2">
                   Your Exam Attempts
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-6">
+                <p className="text-xs sm:text-sm text-slate-500 mb-6">
                   Each finished attempt includes a comprehensive grade card with complete section scoring.
                 </p>
 
-                <div className="divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90">
+                <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200/80 bg-surface/90">
                   {landing.history.map((attempt) => (
                     <div key={attempt.attemptId} className="flex flex-wrap items-center justify-between gap-4 px-6 py-5">
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                        <p className="text-sm font-bold text-slate-900">
                           Attempt {attempt.attemptNumber}
                         </p>
                         <p className="text-xs font-medium text-slate-400">
@@ -607,8 +607,8 @@ export function ExamOverview({
 
             {/* PREREQUISITES TAB */}
             {activeTab === 'Prerequisites' && landing.prerequisite && (
-              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
+              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-4">
                   Prerequisite Requirements
                 </h2>
                 <PrerequisiteNotice prerequisite={landing.prerequisite} onOpen={onOpenPrerequisite} />
@@ -645,13 +645,13 @@ export function ExamOverview({
 
 function Expect({ icon, title, sub }: { icon: ReactNode; title: string; sub: string }) {
   return (
-    <li className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-slate-50/70 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+    <li className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-slate-50/70 border border-slate-200/60">
       <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
         {icon}
       </span>
       <div>
-        <p className="text-sm font-bold text-slate-900 dark:text-white">{title}</p>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{sub}</p>
+        <p className="text-sm font-bold text-slate-900">{title}</p>
+        <p className="text-xs text-slate-500 mt-0.5">{sub}</p>
       </div>
     </li>
   );
@@ -682,7 +682,7 @@ function AttemptOutcome({
       <CheckCircle2 size={13} /> Passed
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600">
       Not passed
     </span>
   );

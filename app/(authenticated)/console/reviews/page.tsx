@@ -163,16 +163,16 @@ export default function PlatformReviewsPage() {
                 }}
                 className={`inline-flex items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold tracking-tight transition-colors ${
                   isActive
-                    ? "bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 dark:text-slate-400 dark:hover:text-slate-200"
+                    ? "bg-slate-950 text-on-ink shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
                 }`}
               >
                 <span>{tab.label}</span>
                 <span
                   className={`inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
                     isActive
-                      ? "bg-white/20 text-white dark:bg-slate-950/20 dark:text-slate-950"
-                      : "bg-slate-200/80 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                      ? "bg-on-ink/20 text-on-ink"
+                      : "bg-slate-200/80 text-slate-600"
                   }`}
                 >
                   {tab.count}
@@ -235,11 +235,11 @@ export default function PlatformReviewsPage() {
       ) : filtered.length === 0 ? (
         <div className="py-20 px-6 text-center">
           <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
-            <div className="mb-2 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-b from-sky-50 via-indigo-50/80 to-sky-100/60 p-3 shadow-xs border border-sky-100/80 dark:from-sky-500/10 dark:to-indigo-500/15 dark:border-sky-500/20">
+            <div className="mb-2 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-b from-sky-50 via-indigo-50/80 to-sky-100/60 p-3 shadow-xs border border-sky-100/80 dark:from-sky-500/10 dark:to-indigo-500/15 dark:border-sky-500/20 dark:via-indigo-500/10">
               <Inbox size={26} className="text-indigo-600 dark:text-indigo-400 stroke-[1.8]" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">No reviews found</h3>
-            <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+            <h3 className="text-base font-bold text-slate-900 tracking-tight">No reviews found</h3>
+            <p className="text-xs font-medium leading-relaxed text-slate-500">
               {searchQuery
                 ? "No reviews match your current search query."
                 : "No content submissions awaiting review in this view."}
@@ -248,7 +248,7 @@ export default function PlatformReviewsPage() {
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="mt-4 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-xs font-bold text-on-ink shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800"
               >
                 <RotateCcw size={13} />
                 <span>Clear search</span>

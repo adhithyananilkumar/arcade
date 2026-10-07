@@ -56,7 +56,7 @@ export function ChannelOnboardingModal({ channel, onDismiss, onAddLogo, onAddSig
           <button
             type="button"
             onClick={onAddLogo}
-            className="flex w-full cursor-pointer items-center gap-4 rounded-2xl border border-slate-200 bg-surface p-4 text-left transition-colors hover:border-indigo-300 hover:bg-indigo-50/40"
+            className="flex w-full cursor-pointer items-center gap-4 rounded-2xl border border-slate-200 bg-surface p-4 text-left transition-colors hover:border-indigo-300 hover:bg-indigo-50/40 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-500/10"
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
               <ImagePlus size={18} />
@@ -72,7 +72,7 @@ export function ChannelOnboardingModal({ channel, onDismiss, onAddLogo, onAddSig
           <button
             type="button"
             onClick={onAddSignatory}
-            className="flex w-full cursor-pointer items-center gap-4 rounded-2xl border border-slate-200 bg-surface p-4 text-left transition-colors hover:border-indigo-300 hover:bg-indigo-50/40"
+            className="flex w-full cursor-pointer items-center gap-4 rounded-2xl border border-slate-200 bg-surface p-4 text-left transition-colors hover:border-indigo-300 hover:bg-indigo-50/40 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-500/10"
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
               <PenLine size={18} />

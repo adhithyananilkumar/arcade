@@ -486,13 +486,13 @@ export function PaymentLedgerTab({
       ) : rows.length === 0 ? (
         <div className="py-20 px-6 text-center">
           <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
-            <div className="mb-2 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-b from-sky-50 via-indigo-50/80 to-sky-100/60 p-3 shadow-xs border border-sky-100/80 dark:from-sky-500/10 dark:to-indigo-500/15 dark:border-sky-500/20">
+            <div className="mb-2 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-b from-sky-50 via-indigo-50/80 to-sky-100/60 p-3 shadow-xs border border-sky-100/80 dark:from-sky-500/10 dark:to-indigo-500/15 dark:border-sky-500/20 dark:via-indigo-500/10">
               <Receipt size={26} className="text-indigo-600 dark:text-indigo-400 stroke-[1.8]" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+            <h3 className="text-base font-bold text-slate-900 tracking-tight">
               No payments found
             </h3>
-            <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-medium leading-relaxed text-slate-500">
               {hasActiveFilters
                 ? "No transactions match your currently applied search or filter criteria."
                 : "Platform payment transactions and enrollments will appear here once processed."}
@@ -501,7 +501,7 @@ export function PaymentLedgerTab({
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="mt-4 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-xs font-bold text-on-ink shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800"
               >
                 <RotateCcw size={13} />
                 <span>Reset all filters</span>

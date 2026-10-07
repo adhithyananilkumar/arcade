@@ -180,11 +180,11 @@ export const BANNER_PRESETS: Record<string, BannerPreset> = {
     name: 'Neural Network',
     description: 'High-definition deep sapphire blue with luminous neural mesh & glowing nodes',
     render: () => (
-      <div className="absolute inset-0 overflow-hidden bg-gradient-to-r from-[#020b1e] via-[#091f4d] to-[#030e28]">
+      <div className="absolute inset-0 overflow-hidden bg-gradient-to-r from-slate-950 via-[#091f4d] to-[#030e28] dark:to-slate-900">
         {/* Luminous High-Intensity Radial Light Flares */}
         <div className="absolute left-1/4 top-1/2 h-96 w-96 -translate-y-1/2 rounded-full bg-sky-400/30 blur-2xl" />
         <div className="absolute right-1/4 top-1/3 h-80 w-80 rounded-full bg-blue-500/35 blur-3xl" />
-        <div className="absolute left-1/2 -top-10 h-72 w-72 rounded-full bg-cyan-300/25 blur-3xl" />
+        <div className="absolute left-1/2 -top-10 h-72 w-72 rounded-full bg-cyan-300/25 blur-3xl dark:bg-cyan-500/30" />
 
         {/* High-Definition Sharp Vector Neural Mesh */}
         <svg
@@ -275,7 +275,7 @@ export const BANNER_PRESETS: Record<string, BannerPreset> = {
     name: 'Aurora Borealis',
     description: 'Vivid wave of emerald, cyan, and violet aurora streams',
     render: () => (
-      <div className="absolute inset-0 overflow-hidden bg-gradient-to-r from-[#030d1a] via-[#091b3e] to-[#040e24]">
+      <div className="absolute inset-0 overflow-hidden bg-gradient-to-r from-slate-950 via-[#091b3e] to-[#040e24] dark:to-slate-900">
         <div className="absolute -left-10 -top-10 h-96 w-96 rounded-full bg-emerald-400/35 blur-3xl" />
         <div className="absolute left-1/3 top-10 h-80 w-80 rounded-full bg-cyan-400/40 blur-2xl" />
         <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-purple-500/40 blur-3xl" />
@@ -288,7 +288,7 @@ export const BANNER_PRESETS: Record<string, BannerPreset> = {
     name: 'Sunset Horizon',
     description: 'Warm coral, amber, and deep crimson gradient dusk',
     render: () => (
-      <div className="absolute inset-0 overflow-hidden bg-gradient-to-r from-[#18080f] via-[#2d0e1b] to-[#1a0808]">
+      <div className="absolute inset-0 overflow-hidden bg-gradient-to-r from-[#18080f] via-slate-900 to-[#1a0808] dark:from-slate-950 dark:to-slate-950">
         <div className="absolute left-1/4 top-5 h-80 w-80 rounded-full bg-rose-500/45 blur-3xl" />
         <div className="absolute right-1/4 top-0 h-80 w-80 rounded-full bg-amber-400/45 blur-3xl" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:28px_28px]" />
@@ -300,7 +300,7 @@ export const BANNER_PRESETS: Record<string, BannerPreset> = {
     name: 'Quantum Cyber Grid',
     description: 'Futuristic neon perspective grid with crisp illumination',
     render: () => (
-      <div className="absolute inset-0 overflow-hidden bg-[#070b14]">
+      <div className="absolute inset-0 overflow-hidden bg-ink">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#38bdf825_1px,transparent_1px),linear-gradient(to_bottom,#38bdf825_1px,transparent_1px)] bg-[size:24px_24px]" />
         <div className="absolute left-1/2 top-0 h-80 w-[500px] -translate-x-1/2 rounded-full bg-sky-400/30 blur-3xl" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/40 to-slate-950" />
@@ -312,7 +312,7 @@ export const BANNER_PRESETS: Record<string, BannerPreset> = {
     name: 'Fuji Modern Clean',
     description: 'High-contrast dark sapphire gradient with luminous spotlight',
     render: () => (
-      <div className="absolute inset-0 overflow-hidden bg-gradient-to-tr from-[#0b1329] via-[#111e40] to-[#0b1329]">
+      <div className="absolute inset-0 overflow-hidden bg-gradient-to-tr from-slate-900 via-[#111e40] to-slate-900">
         <div className="absolute right-10 top-0 h-72 w-72 rounded-full bg-indigo-400/25 blur-3xl" />
         <div className="absolute left-10 bottom-0 h-72 w-72 rounded-full bg-sky-500/25 blur-3xl" />
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff12_1px,transparent_1px)] [background-size:16px_16px]" />
@@ -616,7 +616,7 @@ export function ProfileHero({
   const meta: React.ReactNode[] = [];
   if (handle) {
     meta.push(
-      <span key="handle" className="font-semibold text-slate-700 dark:text-slate-300">
+      <span key="handle" className="font-semibold text-slate-700">
         @{handle}
       </span>,
     );
@@ -644,7 +644,7 @@ export function ProfileHero({
         href={websiteUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex max-w-[220px] items-center gap-1 truncate text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400"
+        className="flex max-w-[220px] items-center gap-1 truncate text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
       >
         <Globe size={13} className="shrink-0 text-sky-500" />
         {websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
@@ -659,7 +659,7 @@ export function ProfileHero({
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-surface shadow-xs">
         {/* LinkedIn-Style Full Width Cover Banner */}
         <div className="group relative h-40 w-full overflow-hidden sm:h-52 md:h-60 bg-slate-950">
           {isCustomBanner ? (
@@ -687,7 +687,7 @@ export function ProfileHero({
             <button
               type="button"
               onClick={handleOpenModal}
-              className="absolute right-4 top-4 z-20 flex items-center gap-1.5 rounded-full border border-white/30 bg-slate-950/70 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md backdrop-blur-md transition-all hover:bg-slate-950 hover:scale-105 cursor-pointer opacity-90 group-hover:opacity-100"
+              className="absolute right-4 top-4 z-20 flex items-center gap-1.5 rounded-full border border-white/30 bg-slate-950/70 px-3.5 py-1.5 text-xs font-semibold text-on-ink shadow-md backdrop-blur-md transition-all hover:bg-slate-950 hover:scale-105 cursor-pointer opacity-90 group-hover:opacity-100"
               title="Customize & crop cover banner"
             >
               <Camera size={14} className="text-white" />
@@ -702,10 +702,10 @@ export function ProfileHero({
           <div className="relative -mt-16 mb-4 flex flex-col items-start justify-between gap-4 sm:-mt-20 sm:flex-row sm:items-end md:-mt-24">
             {/* Avatar with Thick White Border (Squircle badge for org, circular for personal) */}
             <div
-              className={`group/avatar relative z-10 flex shrink-0 items-center justify-center overflow-hidden border-4 border-white shadow-md dark:border-slate-900 ${
+              className={`group/avatar relative z-10 flex shrink-0 items-center justify-center overflow-hidden border-4 border-surface shadow-md ${
                 kind === 'organization'
-                  ? 'h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 rounded-3xl bg-slate-900 text-white'
-                  : 'h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 rounded-full bg-slate-100 dark:bg-slate-800'
+                  ? 'h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 rounded-3xl bg-slate-900 text-on-ink'
+                  : 'h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 rounded-full bg-slate-100'
               }`}
             >
               {currentAvatarUrl ? (
@@ -717,7 +717,7 @@ export function ProfileHero({
                   referrerPolicy="no-referrer"
                 />
               ) : kind === 'organization' ? (
-                <div className="flex h-full w-full items-center justify-center bg-slate-900 text-white">
+                <div className="flex h-full w-full items-center justify-center bg-slate-900 text-on-ink">
                   <svg
                     width="48"
                     height="48"
@@ -765,7 +765,7 @@ export function ProfileHero({
                   </svg>
                 </div>
               ) : (
-                <FallbackIcon size={56} className="text-slate-400 dark:text-slate-500" />
+                <FallbackIcon size={56} className="text-slate-400" />
               )}
 
               {/* In-place Avatar Change Overlay when isSelf */}
@@ -778,7 +778,7 @@ export function ProfileHero({
                       <button
                         type="button"
                         onClick={handleEditCurrentAvatar}
-                        className="inline-flex cursor-pointer items-center justify-center gap-1 rounded-full bg-white/25 hover:bg-white text-white hover:text-slate-900 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold shadow-xs transition-all active:scale-95 w-full max-w-[105px]"
+                        className="inline-flex cursor-pointer items-center justify-center gap-1 rounded-full bg-white/25 hover:bg-surface text-white hover:text-slate-900 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold shadow-xs transition-all active:scale-95 w-full max-w-[105px]"
                         title="Crop, zoom, and adjust current photo"
                       >
                         <Sliders size={11} />
@@ -787,7 +787,7 @@ export function ProfileHero({
                       <button
                         type="button"
                         onClick={() => avatarInputRef.current?.click()}
-                        className="inline-flex cursor-pointer items-center justify-center gap-1 rounded-full bg-white/20 hover:bg-white text-white hover:text-slate-900 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold shadow-xs transition-all active:scale-95 w-full max-w-[105px]"
+                        className="inline-flex cursor-pointer items-center justify-center gap-1 rounded-full bg-white/20 hover:bg-surface text-white hover:text-slate-900 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold shadow-xs transition-all active:scale-95 w-full max-w-[105px]"
                         title="Choose a new photo"
                       >
                         <Camera size={11} />
@@ -821,7 +821,7 @@ export function ProfileHero({
           <div className="space-y-1 text-left">
             {/* Name & Badges */}
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
                 {name}
               </h1>
               <BadgeRow badges={badges} size={22} />
@@ -836,14 +836,14 @@ export function ProfileHero({
 
             {/* Professional Headline */}
             {headline && (
-              <p className="text-sm font-medium text-slate-700 sm:text-base dark:text-slate-200 pt-0.5">
+              <p className="text-sm font-medium text-slate-700 sm:text-base pt-0.5">
                 {headline}
               </p>
             )}
 
             {/* Meta Bar: @username • Joined Date • Location • Website */}
             {meta.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-xs font-medium text-slate-500 sm:text-sm dark:text-slate-400">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-xs font-medium text-slate-500 sm:text-sm">
                 {meta.flatMap((node, index) =>
                   index === 0 ? [node] : [<span key={`dot-${index}`}>•</span>, node],
                 )}
@@ -852,7 +852,7 @@ export function ProfileHero({
 
             {/* Bio / Summary */}
             {bio && (
-              <p className="max-w-3xl whitespace-pre-line pt-2 text-xs leading-relaxed text-slate-600 sm:text-sm dark:text-slate-300">
+              <p className="max-w-3xl whitespace-pre-line pt-2 text-xs leading-relaxed text-slate-600 sm:text-sm">
                 {bio}
               </p>
             )}
@@ -878,19 +878,19 @@ export function ProfileHero({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 15 }}
                 transition={{ duration: 0.2 }}
-                className="relative z-10 flex max-h-[92vh] w-full max-w-2xl flex-col rounded-3xl border border-slate-200/90 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+                className="relative z-10 flex max-h-[92vh] w-full max-w-2xl flex-col rounded-3xl border border-slate-200/90 bg-surface p-6 shadow-2xl"
               >
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3.5 dark:border-slate-800">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400">
                     <Sparkles size={18} />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                    <h2 className="text-base font-bold text-slate-900">
                       Cover Banner Studio
                     </h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                    <p className="text-xs text-slate-500">
                       Customize themes, upload custom photos, crop, zoom, and reposition
                     </p>
                   </div>
@@ -898,21 +898,21 @@ export function ProfileHero({
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                  className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
                 >
                   <X size={18} />
                 </button>
               </div>
 
               {/* Navigation Tabs */}
-              <div className="mt-3 flex border-b border-slate-100 dark:border-slate-800">
+              <div className="mt-3 flex border-b border-slate-100">
                 <button
                   type="button"
                   onClick={() => setActiveTab('presets')}
                   className={`flex items-center gap-2 border-b-2 px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
                     activeTab === 'presets'
                       ? 'border-sky-600 text-sky-600 dark:border-sky-400 dark:text-sky-400'
-                      : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
                   <Sparkles size={14} />
@@ -929,7 +929,7 @@ export function ProfileHero({
                   className={`flex items-center gap-2 border-b-2 px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
                     activeTab === 'crop_editor'
                       ? 'border-sky-600 text-sky-600 dark:border-sky-400 dark:text-sky-400'
-                      : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
                   <Sliders size={14} />
@@ -961,7 +961,7 @@ export function ProfileHero({
                             className={`group relative flex flex-col overflow-hidden rounded-xl border text-left transition-all cursor-pointer ${
                               isSelected
                                 ? 'border-sky-500 ring-2 ring-sky-500/40'
-                                : 'border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700'
+                                : 'border-slate-200 hover:border-slate-300'
                             }`}
                           >
                             <div className="relative h-20 w-full overflow-hidden bg-slate-900">
@@ -979,11 +979,11 @@ export function ProfileHero({
                                 </div>
                               )}
                             </div>
-                            <div className="bg-slate-50 p-2.5 dark:bg-slate-800/60">
-                              <p className="text-xs font-bold text-slate-900 dark:text-white">
+                            <div className="bg-slate-50 p-2.5">
+                              <p className="text-xs font-bold text-slate-900">
                                 {photo.name}
                               </p>
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                              <p className="text-[11px] text-slate-500 truncate">
                                 {photo.description}
                               </p>
                             </div>
@@ -1009,7 +1009,7 @@ export function ProfileHero({
                             className={`group relative flex flex-col overflow-hidden rounded-xl border text-left transition-all cursor-pointer ${
                               isSelected
                                 ? 'border-sky-500 ring-2 ring-sky-500/40'
-                                : 'border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700'
+                                : 'border-slate-200 hover:border-slate-300'
                             }`}
                           >
                             <div className="relative h-20 w-full overflow-hidden">
@@ -1020,11 +1020,11 @@ export function ProfileHero({
                                 </div>
                               )}
                             </div>
-                            <div className="bg-slate-50 p-2.5 dark:bg-slate-800/60">
-                              <p className="text-xs font-bold text-slate-900 dark:text-white">
+                            <div className="bg-slate-50 p-2.5">
+                              <p className="text-xs font-bold text-slate-900">
                                 {presetItem.name}
                               </p>
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                              <p className="text-[11px] text-slate-500 truncate">
                                 {presetItem.description}
                               </p>
                             </div>
@@ -1040,10 +1040,10 @@ export function ProfileHero({
               {activeTab === 'crop_editor' && (
                 <div className="flex-1 overflow-y-auto py-4 space-y-4">
                   {/* Image Source Input: URL or File Upload */}
-                  <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 dark:border-slate-800 dark:bg-slate-800/40">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3.5">
                     <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex-1">
-                        <label className="text-xs font-bold text-slate-900 dark:text-white block mb-1">
+                        <label className="text-xs font-bold text-slate-900 block mb-1">
                           Image Source URL
                         </label>
                         <div className="flex items-center gap-2">
@@ -1055,7 +1055,7 @@ export function ProfileHero({
                               setCustomUrlInput(e.target.value);
                               setUrlError(false);
                             }}
-                            className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                            className="flex-1 rounded-xl border border-slate-200 bg-surface px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none"
                           />
                           <button
                             type="button"
@@ -1069,15 +1069,15 @@ export function ProfileHero({
                                 setUrlError(false);
                               }
                             }}
-                            className="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-slate-800 disabled:opacity-40 cursor-pointer dark:bg-slate-100 dark:text-slate-900"
+                            className="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-on-ink transition-colors hover:bg-slate-800 disabled:opacity-40 cursor-pointer"
                           >
                             Load
                           </button>
                         </div>
                       </div>
 
-                      <div className="sm:border-l sm:border-slate-200 sm:pl-3 sm:dark:border-slate-700">
-                        <label className="text-xs font-bold text-slate-900 dark:text-white block mb-1">
+                      <div className="sm:border-l sm:border-slate-200 sm:pl-3">
+                        <label className="text-xs font-bold text-slate-900 block mb-1">
                           Or Upload File
                         </label>
                         <input
@@ -1090,7 +1090,7 @@ export function ProfileHero({
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
-                          className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+                          className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-surface px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 cursor-pointer"
                         >
                           <Upload size={13} />
                           <span>Browse Device</span>
@@ -1128,7 +1128,7 @@ export function ProfileHero({
                           />
 
                           {/* Overlay Instructions Badge */}
-                          <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-slate-950/70 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-md">
+                          <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-slate-950/70 px-2.5 py-1 text-[11px] font-semibold text-on-ink backdrop-blur-md">
                             <Move size={12} />
                             <span>Click & Drag to reposition</span>
                           </div>
@@ -1136,14 +1136,14 @@ export function ProfileHero({
                           {/* Safe crop grid guidelines overlay */}
                           <div className="pointer-events-none absolute inset-0 border border-white/20">
                             <div className="grid h-full w-full grid-cols-3 grid-rows-3 opacity-25">
-                              <div className="border-r border-b border-white" />
-                              <div className="border-r border-b border-white" />
-                              <div className="border-b border-white" />
-                              <div className="border-r border-b border-white" />
-                              <div className="border-r border-b border-white" />
-                              <div className="border-b border-white" />
-                              <div className="border-r border-white" />
-                              <div className="border-r border-white" />
+                              <div className="border-r border-b border-surface" />
+                              <div className="border-r border-b border-surface" />
+                              <div className="border-b border-surface" />
+                              <div className="border-r border-b border-surface" />
+                              <div className="border-r border-b border-surface" />
+                              <div className="border-b border-surface" />
+                              <div className="border-r border-surface" />
+                              <div className="border-r border-surface" />
                               <div />
                             </div>
                           </div>
@@ -1157,17 +1157,17 @@ export function ProfileHero({
                       </div>
 
                       {/* Controls Toolbar: Zoom Slider & Alignments */}
-                      <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-800/40 space-y-3">
+                      <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-3">
                         {/* Zoom Slider */}
                         <div className="flex items-center gap-3">
-                          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0 flex items-center gap-1">
+                          <span className="text-xs font-bold text-slate-700 shrink-0 flex items-center gap-1">
                             <ZoomIn size={14} className="text-sky-500" />
                             Zoom: {Math.round(stagingZoom * 100)}%
                           </span>
                           <button
                             type="button"
                             onClick={() => setStagingZoom((z) => Math.max(1.0, +(z - 0.1).toFixed(2)))}
-                            className="rounded-lg p-1 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
+                            className="rounded-lg p-1 text-slate-500 hover:bg-slate-200 cursor-pointer"
                             title="Zoom out"
                           >
                             <ZoomOut size={15} />
@@ -1179,12 +1179,12 @@ export function ProfileHero({
                             step="0.05"
                             value={stagingZoom}
                             onChange={(e) => setStagingZoom(parseFloat(e.target.value))}
-                            className="flex-1 accent-sky-600 h-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 cursor-pointer"
+                            className="flex-1 accent-sky-600 h-1.5 rounded-lg bg-slate-200 cursor-pointer"
                           />
                           <button
                             type="button"
                             onClick={() => setStagingZoom((z) => Math.min(3.0, +(z + 0.1).toFixed(2)))}
-                            className="rounded-lg p-1 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
+                            className="rounded-lg p-1 text-slate-500 hover:bg-slate-200 cursor-pointer"
                             title="Zoom in"
                           >
                             <ZoomIn size={15} />
@@ -1192,7 +1192,7 @@ export function ProfileHero({
                         </div>
 
                         {/* Alignment & Reset Presets */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-200/60">
                           <div className="flex items-center gap-1.5">
                             <span className="text-[11px] font-bold text-slate-400 uppercase">
                               Quick Align:
@@ -1203,7 +1203,7 @@ export function ProfileHero({
                                 setStagingPosX(0);
                                 setStagingPosY(25);
                               }}
-                              className="rounded-lg bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 border border-slate-200 hover:bg-slate-100 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 cursor-pointer"
+                              className="rounded-lg bg-surface px-2 py-1 text-[11px] font-semibold text-slate-700 border border-slate-200 hover:bg-slate-100 cursor-pointer"
                             >
                               Top
                             </button>
@@ -1213,7 +1213,7 @@ export function ProfileHero({
                                 setStagingPosX(0);
                                 setStagingPosY(0);
                               }}
-                              className="rounded-lg bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 border border-slate-200 hover:bg-slate-100 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 cursor-pointer"
+                              className="rounded-lg bg-surface px-2 py-1 text-[11px] font-semibold text-slate-700 border border-slate-200 hover:bg-slate-100 cursor-pointer"
                             >
                               Center
                             </button>
@@ -1223,7 +1223,7 @@ export function ProfileHero({
                                 setStagingPosX(0);
                                 setStagingPosY(-25);
                               }}
-                              className="rounded-lg bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 border border-slate-200 hover:bg-slate-100 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 cursor-pointer"
+                              className="rounded-lg bg-surface px-2 py-1 text-[11px] font-semibold text-slate-700 border border-slate-200 hover:bg-slate-100 cursor-pointer"
                             >
                               Bottom
                             </button>
@@ -1236,7 +1236,7 @@ export function ProfileHero({
                               setStagingPosX(0);
                               setStagingPosY(0);
                             }}
-                            className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
+                            className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-slate-800 cursor-pointer"
                           >
                             <RotateCcw size={12} />
                             <span>Reset Crop</span>
@@ -1245,12 +1245,12 @@ export function ProfileHero({
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700">
+                    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 p-8 text-center">
                       <ImageIcon size={36} className="text-slate-400 mb-2" />
-                      <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      <p className="text-xs font-bold text-slate-700">
                         No custom image loaded
                       </p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-sm mt-1">
+                      <p className="text-[11px] text-slate-500 max-w-sm mt-1">
                         Paste an image URL above or choose a photo from the Themes tab to zoom, resize, and reposition.
                       </p>
                     </div>
@@ -1259,7 +1259,7 @@ export function ProfileHero({
               )}
 
               {/* Footer */}
-              <div className="flex items-center justify-end border-t border-slate-100 pt-3 dark:border-slate-800">
+              <div className="flex items-center justify-end border-t border-slate-100 pt-3">
                 {activeTab === 'crop_editor' ? (
                   <button
                     type="button"
@@ -1273,7 +1273,7 @@ export function ProfileHero({
                   <button
                     type="button"
                     onClick={() => setModalOpen(false)}
-                    className="rounded-full bg-slate-900 px-5 py-2 text-xs font-bold text-white transition-colors hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 cursor-pointer"
+                    className="rounded-full bg-slate-900 px-5 py-2 text-xs font-bold text-on-ink transition-colors hover:bg-slate-800 cursor-pointer"
                   >
                     Done
                   </button>

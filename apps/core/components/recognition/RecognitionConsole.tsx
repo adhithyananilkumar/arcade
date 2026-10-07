@@ -125,7 +125,7 @@ export function RecognitionConsole() {
               onClick={() => setTab(id)}
               className={`rounded-full px-4 py-2 text-[13px] font-bold tracking-tight transition-colors ${
                 tab === id
-                  ? 'bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950'
+                  ? 'bg-slate-950 text-on-ink shadow-xs'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
             >
@@ -192,13 +192,13 @@ export function RecognitionConsole() {
           {visibleGrants.length === 0 ? (
             <div className="py-20 px-6 text-center">
               <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
-                <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
                   <Award size={26} className="stroke-[1.8]" />
                 </div>
-                <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+                <h3 className="text-base font-bold text-slate-900 tracking-tight">
                   No badges granted yet
                 </h3>
-                <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                <p className="text-xs font-medium leading-relaxed text-slate-500">
                   {filter || definitionFilter
                     ? 'No granted badges match your filter criteria.'
                     : 'Grant one to verify an instructor or an organization, or to recognise someone on the Arcade team.'}
@@ -210,7 +210,7 @@ export function RecognitionConsole() {
                       setFilter('');
                       setDefinitionFilter('');
                     }}
-                    className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                    className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-on-ink shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800"
                   >
                     <RotateCcw size={13} />
                     <span>Reset filters</span>
@@ -220,7 +220,7 @@ export function RecognitionConsole() {
                     type="button"
                     onClick={() => setGranting(true)}
                     disabled={!definitions.length}
-                    className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 disabled:opacity-40 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                    className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-on-ink shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 disabled:opacity-40"
                   >
                     <Plus size={14} />
                     <span>Grant badge</span>
@@ -304,19 +304,19 @@ export function RecognitionConsole() {
       ) : definitions.length === 0 ? (
         <div className="py-20 px-6 text-center">
           <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
-            <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+            <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
               <Award size={26} className="stroke-[1.8]" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+            <h3 className="text-base font-bold text-slate-900 tracking-tight">
               No badge definitions created
             </h3>
-            <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-medium leading-relaxed text-slate-500">
               Create a badge definition first before granting badges to users or channels.
             </p>
             <button
               type="button"
               onClick={() => setCreatingDefinition(true)}
-              className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+              className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-on-ink shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800"
             >
               <Plus size={14} />
               <span>New badge</span>

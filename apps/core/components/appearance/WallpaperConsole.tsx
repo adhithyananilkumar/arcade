@@ -532,19 +532,19 @@ export function WallpaperConsole() {
         ) : wallpapers.length === 0 ? (
           <div className="py-20 px-6 text-center">
             <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
-              <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
                 <Sparkles size={26} className="stroke-[1.8]" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
                 No photo wallpapers yet
               </h3>
-              <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+              <p className="text-xs font-medium leading-relaxed text-slate-500">
                 People can still use the six built-in Arcade wallpapers. Add a photo to give them more choice.
               </p>
               <button
                 type="button"
                 onClick={() => fileInput.current?.click()}
-                className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-on-ink shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800"
               >
                 <UploadCloud size={14} />
                 <span>Upload wallpaper</span>

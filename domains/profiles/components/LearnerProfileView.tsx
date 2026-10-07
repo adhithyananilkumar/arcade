@@ -33,7 +33,7 @@ function ShareButton() {
     <button
       type="button"
       onClick={copy}
-      className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-2xs transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+      className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-surface px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 cursor-pointer"
     >
       {copied ? <Check size={14} /> : <Link2 size={14} />}
       {copied ? 'Copied' : 'Share'}

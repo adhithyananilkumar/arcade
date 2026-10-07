@@ -55,11 +55,11 @@ export function ReconciliationTab({ onOpenOrder, refreshKey }: { onOpenOrder: (o
     return (
       <div className="py-20 px-6 text-center">
         <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
-          <div className="mb-2 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-b from-emerald-50 via-teal-50/80 to-emerald-100/60 p-3 shadow-xs border border-emerald-100/80 dark:from-emerald-500/10 dark:to-teal-500/15 dark:border-emerald-500/20">
+          <div className="mb-2 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-b from-emerald-50 via-teal-50/80 to-emerald-100/60 p-3 shadow-xs border border-emerald-100/80 dark:from-emerald-500/10 dark:to-teal-500/15 dark:border-emerald-500/20 dark:via-teal-500/10">
             <CheckCircle2 size={26} className="text-emerald-600 dark:text-emerald-400 stroke-[1.8]" />
           </div>
-          <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">Nothing to reconcile</h3>
-          <p className="max-w-sm text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+          <h3 className="text-base font-bold text-slate-900 tracking-tight">Nothing to reconcile</h3>
+          <p className="max-w-sm text-xs font-medium leading-relaxed text-slate-500">
             Every paid order has its access, no enrollment has been charged twice, and every capture matched its order.
           </p>
         </div>

@@ -149,8 +149,8 @@ export function DeletionRequests() {
                   onClick={() => setFilter(item.id as any)}
                   className={`rounded-full px-3.5 py-1.5 text-xs font-bold tracking-tight transition-colors ${
                     isActive
-                      ? 'bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 dark:text-slate-400 dark:hover:text-slate-200'
+                      ? 'bg-slate-950 text-on-ink shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
                   }`}
                 >
                   {item.label}
@@ -182,13 +182,13 @@ export function DeletionRequests() {
         ) : filteredRequests.length === 0 ? (
           <div className="py-16 text-center">
             <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
-              <div className="mb-2 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-b from-rose-50 via-rose-50/80 to-rose-100/60 p-3 shadow-xs border border-rose-100/80 dark:from-rose-500/10 dark:to-rose-500/15 dark:border-rose-500/20">
+              <div className="mb-2 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-b from-rose-50 via-rose-50/80 to-rose-100/60 p-3 shadow-xs border border-rose-100/80 dark:from-rose-500/10 dark:to-rose-500/15 dark:border-rose-500/20 dark:via-rose-500/10">
                 <AlertTriangle size={26} className="text-rose-600 dark:text-rose-400 stroke-[1.8]" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
                 No deletion requests awaiting review
               </h3>
-              <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+              <p className="text-xs font-medium leading-relaxed text-slate-500">
                 {searchQuery || filter !== 'ALL'
                   ? 'No deletion requests match the current search or filter.'
                   : 'Any self-service deletion requests will appear here.'}
@@ -200,7 +200,7 @@ export function DeletionRequests() {
                     setSearchQuery('');
                     setFilter('ALL');
                   }}
-                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-xs font-bold text-on-ink shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800"
                 >
                   <RotateCcw size={13} />
                   <span>Reset filters</span>
@@ -328,10 +328,10 @@ export function DeletionRequests() {
               <div className="mb-1 flex size-14 items-center justify-center rounded-2xl bg-gradient-to-b from-amber-50 to-amber-100/60 p-2.5 shadow-2xs border border-amber-100/80 dark:from-amber-500/10 dark:to-amber-500/15 dark:border-amber-500/20">
                 <Clock size={22} className="text-amber-600 dark:text-amber-400" />
               </div>
-              <h4 className="text-sm font-bold text-slate-900 tracking-tight dark:text-white">
+              <h4 className="text-sm font-bold text-slate-900 tracking-tight">
                 No channels in deletion pipeline
               </h4>
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              <p className="text-xs font-medium text-slate-500">
                 No channels are currently waiting out their 6-month grace period.
               </p>
             </div>

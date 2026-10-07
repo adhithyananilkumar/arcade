@@ -301,7 +301,7 @@ export default function LearnerNavbar() {
         <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center gap-2 text-[13.5px]">
           <Link
             href="/manage-channels"
-            className="flex items-center gap-1.5 font-bold text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors"
+            className="flex items-center gap-1.5 font-bold text-slate-600 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
           >
             <Tv size={15} className="text-slate-500 shrink-0" />
             <span>Channels</span>
@@ -315,7 +315,7 @@ export default function LearnerNavbar() {
               <button
                 type="button"
                 aria-label={`${channelTabLabel} info`}
-                className="inline-flex h-5 w-5 items-center justify-center rounded-full text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors cursor-pointer"
+                className="inline-flex h-5 w-5 items-center justify-center rounded-full text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors cursor-pointer dark:hover:text-indigo-300"
               >
                 <Info size={14} className="stroke-[2.2]" />
               </button>
@@ -368,7 +368,7 @@ export default function LearnerNavbar() {
         <div className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-2 text-[13.5px] sm:flex">
           <Link 
             href="/console" 
-            className="flex items-center gap-1.5 font-bold text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors"
+            className="flex items-center gap-1.5 font-bold text-slate-600 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
           >
             <LayoutDashboard size={15} className="text-slate-500 shrink-0" />
             <span>Console</span>
@@ -387,7 +387,7 @@ export default function LearnerNavbar() {
                   <button
                     type="button"
                     aria-label={`${consoleCrumb} info`}
-                    className="inline-flex h-5 w-5 items-center justify-center rounded-full text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors cursor-pointer"
+                    className="inline-flex h-5 w-5 items-center justify-center rounded-full text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors cursor-pointer dark:hover:text-indigo-300"
                   >
                     <Info size={14} className="stroke-[2.2]" />
                   </button>

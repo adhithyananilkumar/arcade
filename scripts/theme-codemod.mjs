@@ -29,6 +29,9 @@ const ts = require('typescript');
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '..');
 const DIRS = ['app', 'apps', 'domains', 'shared', 'components'];
 const WRITE = process.argv.includes('--write');
+// Optional path filters (files or folders, relative to ui/): only those are scanned/rewritten.
+const ONLY = process.argv.slice(2).filter((a) => !a.startsWith('--')).map((a) => path.resolve(ROOT, a));
+const inScope = (file) => !ONLY.length || ONLY.some((o) => file === o || file.startsWith(o + path.sep));
 
 const NEUTRAL = ['slate', 'gray', 'zinc', 'neutral', 'stone'];
 const HUES = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'];
@@ -261,6 +264,7 @@ const changedFiles = [];
 const samples = [];
 for (const d of DIRS) {
   for (const file of walk(path.join(ROOT, d))) {
+    if (!inScope(file)) continue;
     const src = fs.readFileSync(file, 'utf8');
     const sf = ts.createSourceFile(file, src, ts.ScriptTarget.Latest, true, file.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
     const edits = [];
@@ -288,11 +292,12 @@ for (const d of DIRS) {
     edits.sort((a, b) => b.start - a.start);
     let next = src;
     for (const e of edits) next = next.slice(0, e.start) + e.next + next.slice(e.end);
-    changedFiles.push(path.relative(ROOT, file));
+    changedFiles.push(`${path.relative(ROOT, file)} (${edits.length})`);
     if (WRITE) fs.writeFileSync(file, next);
   }
 }
 
 console.log(`${WRITE ? 'Rewrote' : 'Would rewrite'} ${changedFiles.length} files`);
 console.log(Object.entries(stats).sort((a, b) => b[1] - a[1]).map(([k, v]) => `  ${String(v).padStart(5)}  ${k}`).join('\n'));
+console.log(changedFiles.map((f) => `  ${f}`).join('\n'));
 if (!WRITE) for (const [f, a, b] of samples) console.log(`\n${f}\n  - ${a}\n  + ${b}`);

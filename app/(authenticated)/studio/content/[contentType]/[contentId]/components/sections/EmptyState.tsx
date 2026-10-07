@@ -10,8 +10,8 @@ export function EmptyState({
   return (
     <div className="py-12 px-6 text-center">
       <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
-        <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">{title}</h3>
-        <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">{description}</p>
+        <h3 className="text-base font-bold text-slate-900 tracking-tight">{title}</h3>
+        <p className="text-xs font-medium leading-relaxed text-slate-500">{description}</p>
         {action && <div className="mt-3 flex justify-center">{action}</div>}
       </div>
     </div>

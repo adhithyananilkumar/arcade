@@ -77,10 +77,10 @@ export default function AdminChannelsPage() {
                   active
                     ? tab.danger
                       ? 'border-rose-600 text-rose-600 dark:border-rose-500 dark:text-rose-400'
-                      : 'border-slate-900 text-slate-900 dark:border-white dark:text-white'
+                      : 'border-slate-900 text-slate-900'
                     : tab.danger
                       ? 'border-transparent text-slate-500 hover:text-rose-600 dark:hover:text-rose-400'
-                      : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
                 <tab.icon size={15} />
@@ -104,7 +104,7 @@ export default function AdminChannelsPage() {
         <button
           type="button"
           onClick={() => setIsInviteOpen(true)}
-          className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-slate-950 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+          className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-slate-950 px-3.5 py-1.5 text-xs font-bold text-on-ink shadow-xs transition-colors hover:bg-slate-800"
         >
           <UserPlus size={14} />
           Invite User

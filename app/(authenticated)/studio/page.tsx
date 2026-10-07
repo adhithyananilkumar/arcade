@@ -904,7 +904,7 @@ function ContentCard({
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2">
             <span
-              className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate max-w-[180px] dark:text-slate-400"
+              className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 truncate max-w-[180px]"
               title={item.channelName}
             >
               {item.channelName || "Personal Channel"}
@@ -912,7 +912,7 @@ function ContentCard({
             <TypeBadge type={item.type} />
           </div>
 
-          <h3 className="line-clamp-1 text-base sm:text-[17px] font-bold tracking-tight text-ink group-hover:text-slate-950 transition-colors leading-snug dark:group-hover:text-slate-200">
+          <h3 className="line-clamp-1 text-base sm:text-[17px] font-bold tracking-tight text-ink group-hover:text-slate-950 transition-colors leading-snug">
             {item.title}
           </h3>
 
@@ -931,7 +931,7 @@ function ContentCard({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
-            <Clock size={12} className="text-slate-400 dark:text-slate-400" />
+            <Clock size={12} className="text-slate-400" />
             <span>
               {new Date(item.updatedAt).toLocaleDateString("en-IN", {
                 day: "numeric",
@@ -1441,7 +1441,7 @@ export default function DashboardPage() {
               style={{ fontFamily: "var(--font-sans), system-ui, -apple-system, sans-serif" }}
             >
               <span
-                className="inline-flex items-center justify-center text-slate-950 hover:text-slate-700 dark:text-white transition-transform hover:scale-110 cursor-pointer"
+                className="inline-flex items-center justify-center text-slate-950 hover:text-slate-700 transition-transform hover:scale-110 cursor-pointer"
               >
                 <Info size={22} className="stroke-[2.2]" />
               </span>
@@ -1449,7 +1449,7 @@ export default function DashboardPage() {
               {/* Hover Tooltip Pill */}
               <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2.5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 scale-95 group-hover:scale-100 z-50">
                 <div
-                  className="flex items-center gap-2 rounded-full border border-slate-200/90 bg-surface/95 px-4 py-2 text-xs font-semibold text-slate-800 shadow-lg backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-200"
+                  className="flex items-center gap-2 rounded-full border border-slate-200/90 bg-surface/95 px-4 py-2 text-xs font-semibold text-slate-800 shadow-lg backdrop-blur-md"
                   style={{ fontFamily: "var(--font-sans), system-ui, -apple-system, sans-serif" }}
                 >
                   <span>Author, manage, and publish educational content across your channels.</span>
@@ -1529,7 +1529,7 @@ export default function DashboardPage() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
                     <div
-                      className="absolute left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 z-50 mt-2 min-w-[170px] w-52 overflow-hidden rounded-2xl border border-slate-200/80 bg-surface/98 p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/98 animate-in fade-in zoom-in-95 duration-150"
+                      className="absolute left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 z-50 mt-2 min-w-[170px] w-52 overflow-hidden rounded-2xl border border-slate-200/80 bg-surface/98 p-1.5 shadow-xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150"
                       role="menu"
                     >
                       <div className="space-y-0.5">
@@ -1539,10 +1539,10 @@ export default function DashboardPage() {
                             type="button"
                             role="menuitem"
                             onClick={() => handleSelectContentType(type.id, type.href)}
-                            className="group flex w-full items-center justify-between gap-2.5 rounded-xl px-3.5 py-2.5 text-left text-xs font-bold text-slate-800 transition-colors hover:bg-slate-100/80 hover:text-ink cursor-pointer dark:text-slate-200 dark:hover:bg-slate-800/80"
+                            className="group flex w-full items-center justify-between gap-2.5 rounded-xl px-3.5 py-2.5 text-left text-xs font-bold text-slate-800 transition-colors hover:bg-slate-100/80 hover:text-ink cursor-pointer"
                           >
                             <div className="flex items-center gap-2.5">
-                              <type.icon size={15} className="text-slate-500 group-hover:text-ink dark:text-slate-400 dark:group-hover:text-white transition-colors" />
+                              <type.icon size={15} className="text-slate-500 group-hover:text-ink transition-colors" />
                               <span>{type.label}</span>
                             </div>
                             <ArrowRight size={13} className="text-slate-400 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
@@ -1571,7 +1571,7 @@ export default function DashboardPage() {
                   onClick={() => setStatusFilter(tab.id)}
                   className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold tracking-tight transition-colors cursor-pointer whitespace-nowrap ${
                     active
-                      ? "bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950"
+                      ? "bg-slate-950 text-on-ink shadow-xs"
                       : "text-slate-500 hover:text-slate-900"
                   }`}
                 >
@@ -1579,8 +1579,8 @@ export default function DashboardPage() {
                   <span
                     className={`rounded-full px-1.5 py-0.5 text-[10px] font-extrabold tabular-nums ${
                       active
-                        ? "bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-950"
-                        : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                        ? "bg-slate-800 text-on-ink"
+                        : "bg-slate-100 text-slate-600"
                     }`}
                   >
                     {count}
@@ -1625,11 +1625,11 @@ export default function DashboardPage() {
                             setTypeDropdownOpen(false);
                           }}
                           className={`flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors cursor-pointer ${
-                            isSelected ? "bg-slate-100 text-slate-900 font-bold dark:bg-slate-800 dark:text-white" : "text-slate-700 hover:bg-slate-50"
+                            isSelected ? "bg-slate-100 text-slate-900 font-bold" : "text-slate-700 hover:bg-slate-50"
                           }`}
                         >
                           <span>{chip.label}</span>
-                          {isSelected && <Check size={13} className="text-slate-900 dark:text-white" />}
+                          {isSelected && <Check size={13} className="text-slate-900" />}
                         </button>
                       );
                     })}
@@ -1646,7 +1646,7 @@ export default function DashboardPage() {
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-full border border-slate-200 bg-surface py-1.5 pl-8 pr-7 text-xs font-semibold text-slate-900 outline-none transition-colors focus:border-slate-900 dark:text-white"
+                className="w-full rounded-full border border-slate-200 bg-surface py-1.5 pl-8 pr-7 text-xs font-semibold text-slate-900 outline-none transition-colors focus:border-slate-900"
               />
               {searchQuery && (
                 <button
@@ -1666,7 +1666,7 @@ export default function DashboardPage() {
                 onClick={() => setViewMode("grid")}
                 className={`rounded-full p-1.5 transition-colors cursor-pointer ${
                   viewMode === "grid"
-                    ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                    ? "bg-slate-950 text-on-ink"
                     : "text-slate-400 hover:text-slate-700"
                 }`}
                 title="Grid View"
@@ -1678,7 +1678,7 @@ export default function DashboardPage() {
                 onClick={() => setViewMode("table")}
                 className={`rounded-full p-1.5 transition-colors cursor-pointer ${
                   viewMode === "table"
-                    ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                    ? "bg-slate-950 text-on-ink"
                     : "text-slate-400 hover:text-slate-700"
                 }`}
                 title="Table View"
@@ -1711,7 +1711,7 @@ export default function DashboardPage() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
                     <div
-                      className="absolute right-0 z-50 mt-2 min-w-[170px] w-52 overflow-hidden rounded-2xl border border-slate-200/80 bg-surface/98 p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/98 animate-in fade-in zoom-in-95 duration-150"
+                      className="absolute right-0 z-50 mt-2 min-w-[170px] w-52 overflow-hidden rounded-2xl border border-slate-200/80 bg-surface/98 p-1.5 shadow-xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150"
                       role="menu"
                     >
                       <div className="space-y-0.5">
@@ -1721,10 +1721,10 @@ export default function DashboardPage() {
                             type="button"
                             role="menuitem"
                             onClick={() => handleSelectContentType(type.id, type.href)}
-                            className="group flex w-full items-center justify-between gap-2.5 rounded-xl px-3.5 py-2.5 text-left text-xs font-bold text-slate-800 transition-colors hover:bg-slate-100/80 hover:text-ink cursor-pointer dark:text-slate-200 dark:hover:bg-slate-800/80"
+                            className="group flex w-full items-center justify-between gap-2.5 rounded-xl px-3.5 py-2.5 text-left text-xs font-bold text-slate-800 transition-colors hover:bg-slate-100/80 hover:text-ink cursor-pointer"
                           >
                             <div className="flex items-center gap-2.5">
-                              <type.icon size={15} className="text-slate-500 group-hover:text-ink dark:text-slate-400 dark:group-hover:text-white transition-colors" />
+                              <type.icon size={15} className="text-slate-500 group-hover:text-ink transition-colors" />
                               <span>{type.label}</span>
                             </div>
                             <ArrowRight size={13} className="text-slate-400 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
@@ -1757,19 +1757,19 @@ export default function DashboardPage() {
         ) : items.length === 0 ? (
           <div className="py-20 px-6 text-center">
             <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
-              <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
                 <BookOpen size={26} className="stroke-[1.8]" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
                 No creations yet
               </h3>
-              <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+              <p className="text-xs font-medium leading-relaxed text-slate-500">
                 Click &quot;Create Content&quot; to build your first course, event or exam.
               </p>
               <button
                 type="button"
                 onClick={handleCreateContentClick}
-                className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 cursor-pointer"
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2 text-xs font-bold text-on-ink shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 cursor-pointer"
               >
                 <Plus size={14} />
                 <span>Create Content</span>
@@ -1779,13 +1779,13 @@ export default function DashboardPage() {
         ) : filteredItems.length === 0 ? (
           <div className="py-20 px-6 text-center">
             <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
-              <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
                 <GraduationCap size={26} className="stroke-[1.8]" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
                 No creations found
               </h3>
-              <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+              <p className="text-xs font-medium leading-relaxed text-slate-500">
                 Try changing your search query or filters.
               </p>
               <button
@@ -1796,7 +1796,7 @@ export default function DashboardPage() {
                   setChannelFilter("ALL");
                   setSearchQuery("");
                 }}
-                className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 cursor-pointer"
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-on-ink shadow-xs transition-transform hover:scale-[1.02] active:scale-[0.98] hover:bg-slate-800 cursor-pointer"
               >
                 <RotateCcw size={13} />
                 <span>Reset filters</span>

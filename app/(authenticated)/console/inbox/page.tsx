@@ -222,7 +222,7 @@ function ConsoleInboxContent() {
             Reach Us
             {counts.reachUsUnread > 0 && (
               <span className={`ml-0.5 inline-flex items-center justify-center rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
-                primaryTab === 'REACH_US' ? 'bg-white/25 text-white' : 'bg-blue-600 text-white'
+                primaryTab === 'REACH_US' ? 'bg-on-ink/20 text-on-ink' : 'bg-blue-600 text-white'
               }`}>
                 {counts.reachUsUnread}
               </span>
@@ -241,7 +241,7 @@ function ConsoleInboxContent() {
             Reports
             {counts.reportsUnread > 0 && (
               <span className={`ml-0.5 inline-flex items-center justify-center rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
-                primaryTab === 'REPORTS' ? 'bg-white/25 text-white' : 'bg-amber-500 text-white'
+                primaryTab === 'REPORTS' ? 'bg-on-ink/20 text-on-ink' : 'bg-amber-500 text-white'
               }`}>
                 {counts.reportsUnread}
               </span>
@@ -308,11 +308,11 @@ function ConsoleInboxContent() {
           ) : filteredMessages.length === 0 ? (
             <div className="py-16 px-4 text-center">
               <div className="flex flex-col items-center justify-center gap-2 max-w-xs mx-auto">
-                <div className="mb-2 flex size-14 items-center justify-center rounded-3xl bg-gradient-to-b from-sky-50 via-indigo-50/80 to-sky-100/60 p-3 shadow-xs border border-sky-100/80 dark:from-sky-500/10 dark:to-indigo-500/15 dark:border-sky-500/20">
+                <div className="mb-2 flex size-14 items-center justify-center rounded-3xl bg-gradient-to-b from-sky-50 via-indigo-50/80 to-sky-100/60 p-3 shadow-xs border border-sky-100/80 dark:from-sky-500/10 dark:to-indigo-500/15 dark:border-sky-500/20 dark:via-indigo-500/10">
                   <Inbox size={24} className="text-indigo-600 dark:text-indigo-400 stroke-[1.8]" />
                 </div>
-                <h3 className="text-sm font-bold text-slate-900 tracking-tight dark:text-white">No messages found</h3>
-                <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                <h3 className="text-sm font-bold text-slate-900 tracking-tight">No messages found</h3>
+                <p className="text-xs font-medium leading-relaxed text-slate-500">
                   Submissions and reports will appear here.
                 </p>
               </div>
@@ -639,11 +639,11 @@ function ConsoleInboxContent() {
           ) : (
             <div className="py-20 px-6 text-center">
               <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
-                <div className="mb-2 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-b from-sky-50 via-indigo-50/80 to-sky-100/60 p-3 shadow-xs border border-sky-100/80 dark:from-sky-500/10 dark:to-indigo-500/15 dark:border-sky-500/20">
+                <div className="mb-2 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-b from-sky-50 via-indigo-50/80 to-sky-100/60 p-3 shadow-xs border border-sky-100/80 dark:from-sky-500/10 dark:to-indigo-500/15 dark:border-sky-500/20 dark:via-indigo-500/10">
                   <Mail size={26} className="text-indigo-600 dark:text-indigo-400 stroke-[1.8]" />
                 </div>
-                <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">No item selected</h3>
-                <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                <h3 className="text-base font-bold text-slate-900 tracking-tight">No item selected</h3>
+                <p className="text-xs font-medium leading-relaxed text-slate-500">
                   Select an item from the list to view its details.
                 </p>
               </div>

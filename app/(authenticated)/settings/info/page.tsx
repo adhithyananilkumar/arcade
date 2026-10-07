@@ -407,9 +407,9 @@ export default function PersonalInfoPage() {
       {/* 1. Personal Information */}
       <div className="theme-glass-panel">
         {/* Profile Picture Card */}
-        <div className="mb-4 p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center gap-4 justify-between">
+        <div className="mb-4 p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 flex flex-col sm:flex-row items-center gap-4 justify-between">
           <div className="flex items-center gap-4">
-            <div className="relative group/avatar h-16 w-16 shrink-0 rounded-full border-2 border-white shadow-md overflow-hidden bg-slate-200 dark:border-slate-800 dark:bg-slate-800">
+            <div className="relative group/avatar h-16 w-16 shrink-0 rounded-full border-2 border-surface shadow-md overflow-hidden bg-slate-200">
               {user?.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -429,8 +429,8 @@ export default function PersonalInfoPage() {
               )}
             </div>
             <div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white">Profile picture</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <h3 className="text-xs font-bold text-slate-900">Profile picture</h3>
+              <p className="text-xs text-slate-500 mt-0.5">
                 PNG, JPG or WEBP up to 5MB. Visible publicly on your profile and courses.
               </p>
             </div>
@@ -442,7 +442,7 @@ export default function PersonalInfoPage() {
                 type="button"
                 onClick={handleEditCurrentAvatar}
                 disabled={isUploadingAvatar}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 px-3.5 py-1.5 text-xs font-semibold shadow-2xs transition-all active:scale-95 disabled:opacity-50"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-300 bg-surface hover:bg-slate-100 text-slate-700 px-3.5 py-1.5 text-xs font-semibold shadow-2xs transition-all active:scale-95 disabled:opacity-50"
                 title="Crop, zoom, and adjust current photo"
               >
                 <Sliders size={13} />
@@ -454,7 +454,7 @@ export default function PersonalInfoPage() {
               type="button"
               onClick={() => avatarInputRef.current?.click()}
               disabled={isUploadingAvatar}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white px-3.5 py-1.5 text-xs font-semibold shadow-xs transition-all active:scale-95 disabled:opacity-50"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-slate-900 text-on-ink hover:bg-slate-800 px-3.5 py-1.5 text-xs font-semibold shadow-xs transition-all active:scale-95 disabled:opacity-50"
             >
               {isUploadingAvatar ? <Loader2 size={13} className="animate-spin" /> : <Camera size={13} />}
               <span>{user?.avatarUrl ? 'Change photo' : 'Upload photo'}</span>
@@ -465,7 +465,7 @@ export default function PersonalInfoPage() {
                 type="button"
                 onClick={handleRemoveAvatar}
                 disabled={isUploadingAvatar}
-                className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-slate-600 px-3 py-1.5 text-xs font-semibold shadow-2xs transition-all active:scale-95 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-surface hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-slate-600 px-3 py-1.5 text-xs font-semibold shadow-2xs transition-all active:scale-95 disabled:opacity-50 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 dark:hover:border-rose-500/25"
                 title="Remove photo"
               >
                 <Trash2 size={13} />

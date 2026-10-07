@@ -348,7 +348,7 @@ export function ImageCropModal({
                 </ReactCrop>
               )}
               {busy && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/60 dark:bg-slate-900/60">
+                <div className="absolute inset-0 flex items-center justify-center bg-surface/60">
                   <Loader2 className="animate-spin text-slate-500" size={22} />
                 </div>
               )}

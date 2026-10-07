@@ -212,7 +212,7 @@ export function ChannelSignatoryCard({ channel, canEdit }: ChannelSignatoryCardP
                 help="Drop, paste or browse. A photo of it on white paper is fine — you can remove the background."
               >
                 {image ? (
-                  <span className="flex h-20 w-full items-center justify-center rounded-xl bg-white px-3">
+                  <span className="flex h-20 w-full items-center justify-center rounded-xl bg-surface px-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={image} alt="Signature" className="max-h-16 max-w-full object-contain" />
                   </span>

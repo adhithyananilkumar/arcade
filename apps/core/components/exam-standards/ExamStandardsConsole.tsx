@@ -123,8 +123,8 @@ export function ExamStandardsConsole() {
               onClick={() => setActive(s.planType)}
               className={`inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-[13px] font-semibold transition-all duration-200 ${
                 active === s.planType
-                  ? 'bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
+                  ? 'bg-slate-950 text-on-ink shadow-xs'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               }`}
             >
               <Icon size={14} />

@@ -51,14 +51,14 @@ export function ProfileEmptyState({
   return (
     <div className="py-16 px-6 text-center">
       <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
-        <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+        <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
           <Icon size={26} className="stroke-[1.8]" />
         </div>
-        <h3 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
+        <h3 className="text-base font-bold tracking-tight text-slate-900">
           {title}
         </h3>
         {description && (
-          <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+          <p className="text-xs font-medium leading-relaxed text-slate-500">
             {description}
           </p>
         )}

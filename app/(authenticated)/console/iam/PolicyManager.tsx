@@ -140,7 +140,7 @@ export function PolicyManager({ headerSlot }: PolicyManagerProps = {}) {
                 setEditingRole(null);
                 setIsModalOpen(true);
               }}
-              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-slate-950 hover:bg-slate-800 rounded-full transition-colors shrink-0 shadow-xs dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-on-ink bg-slate-950 hover:bg-slate-800 rounded-full transition-colors shrink-0 shadow-xs"
             >
               <Plus size={13} /> Create Policy
             </button>

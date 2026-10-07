@@ -176,7 +176,7 @@ export function ChannelSealCard({ channel, canEdit, issueAsHost = false }: Chann
                 help="Drop, paste or browse. A scan on white paper is fine — you can remove the background."
               >
                 {seal ? (
-                  <span className="flex h-28 w-28 items-center justify-center rounded-2xl bg-white p-2">
+                  <span className="flex h-28 w-28 items-center justify-center rounded-2xl bg-surface p-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={seal} alt="Seal" className="max-h-full max-w-full object-contain" />
                   </span>

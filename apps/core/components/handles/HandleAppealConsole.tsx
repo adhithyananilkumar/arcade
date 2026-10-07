@@ -112,7 +112,7 @@ export function HandleAppealConsole() {
             onClick={() => setFilter(option.id)}
             className={`rounded-full px-4 py-2 text-[13px] font-bold tracking-tight transition-colors ${
               filter === option.id
-                ? 'bg-slate-950 text-white shadow-xs dark:bg-white dark:text-slate-950'
+                ? 'bg-slate-950 text-on-ink shadow-xs'
                 : 'text-slate-500 hover:text-slate-900'
             }`}
           >
@@ -128,13 +128,13 @@ export function HandleAppealConsole() {
       ) : appeals.length === 0 ? (
         <div className="py-20 px-6 text-center">
           <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto">
-            <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+            <div className="mb-2 flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
               <Gavel size={26} className="stroke-[1.8]" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
+            <h3 className="text-base font-bold text-slate-900 tracking-tight">
               {filter === 'OPEN' ? 'Nothing to review' : 'Nothing here'}
             </h3>
-            <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-medium leading-relaxed text-slate-500">
               {filter === 'OPEN'
                 ? 'Handle appeals appear here when someone claims a name that is already taken or reserved.'
                 : `There are currently no ${filter.toLowerCase()} handle appeals.`}

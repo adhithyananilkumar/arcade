@@ -144,7 +144,7 @@ function Avatar({
       <img
         src={resolvedUrl}
         alt={name}
-        className="shrink-0 rounded-2xl object-cover border border-slate-100 dark:border-slate-800"
+        className="shrink-0 rounded-2xl object-cover border border-slate-100"
         style={{ width: size, height: size }}
       />
     );
@@ -184,7 +184,7 @@ function TabButton({
       className={`relative px-5 sm:px-6 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm font-black tracking-tight transition-all duration-200 select-none cursor-pointer min-w-[96px] text-center ${
         active
           ? 'bg-surface text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6] shadow-2xs'
-          : 'bg-slate-100/80 text-slate-700 border border-slate-200/70 hover:bg-slate-200/70 hover:text-slate-900 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700/70 dark:hover:bg-slate-800 dark:hover:text-white'
+          : 'bg-slate-100/80 text-slate-700 border border-slate-200/70 hover:bg-slate-200/70 hover:text-slate-900'
       }`}
     >
       <span className="relative z-10">{label}</span>
@@ -275,9 +275,9 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-transparent text-slate-900 dark:text-white flex items-center justify-center">
+      <main className="min-h-screen bg-transparent text-slate-900 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="size-8 rounded-full border-2 border-slate-900 dark:border-white border-t-transparent animate-spin" />
+          <div className="size-8 rounded-full border-2 border-slate-900 border-t-transparent animate-spin" />
           <p className="text-xs font-semibold text-slate-400">Loading event details...</p>
         </div>
       </main>
@@ -287,13 +287,13 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
   if (!event) {
     return (
       <main className="min-h-screen bg-transparent flex flex-col items-center justify-center px-4 text-center">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Event not found</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Event not found</h1>
         <p className="mt-2 text-sm text-slate-500">
           This event may have been unpublished or removed.
         </p>
         <Link
           href="/events"
-          className="mt-6 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-6 py-2.5 text-sm font-semibold hover:opacity-90 transition"
+          className="mt-6 rounded-xl bg-slate-900 text-on-ink px-6 py-2.5 text-sm font-semibold hover:opacity-90 transition"
         >
           Browse All Events
         </Link>
@@ -328,7 +328,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
   const priceDisplay = isPaid ? formatMoney(event.priceAmount ?? 0, event.currency ?? 'INR') : 'Free';
 
   return (
-    <main className="min-h-screen w-full bg-surface theme-page-bg theme-wallpaper-frost text-slate-900 dark:text-white">
+    <main className="min-h-screen w-full bg-surface theme-page-bg theme-wallpaper-frost text-slate-900">
       <div className="mx-auto max-w-6xl px-4 pt-12 pb-24 sm:px-6 sm:pt-16 sm:pb-32 lg:px-8">
         {/* ================= HERO SECTION (2-Column) ================= */}
         <section className="relative pt-4 pb-8 sm:pt-6 sm:pb-10">
@@ -340,7 +340,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                 <div className="pt-1">
                   <Link
                     href={event.channelId ? `/channels/${event.channelId}` : '#'}
-                    className="group inline-flex items-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-slate-200/90 bg-surface/95 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs hover:border-blue-400 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-blue-500 transition-all select-none"
+                    className="group inline-flex items-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-slate-200/90 bg-surface/95 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs hover:border-blue-400 hover:bg-slate-50 dark:hover:border-blue-500 transition-all select-none"
                   >
                     {getAvatarUrl(event.channelIconUrl) ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -365,7 +365,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
               {/* Title in Dancing Script font with hand-drawn SVG flourish */}
               <div className="relative inline-block mt-1">
                 <h1
-                  className={`${dancingScript.className} text-5xl sm:text-6xl lg:text-7xl font-bold tracking-normal text-slate-900 dark:text-white leading-[1.15]`}
+                  className={`${dancingScript.className} text-5xl sm:text-6xl lg:text-7xl font-bold tracking-normal text-slate-900 leading-[1.15]`}
                 >
                   {event.title}
                 </h1>
@@ -390,7 +390,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
 
               {/* Subtitle / Description */}
               {event.subtitle && (
-                <p className="text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300 font-normal line-clamp-3 pt-1">
+                <p className="text-sm sm:text-base leading-relaxed text-slate-600 font-normal line-clamp-3 pt-1">
                   {event.subtitle}
                 </p>
               )}
@@ -407,7 +407,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                     <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">
                       Hosted by
                     </span>
-                    <span className="font-bold text-slate-900 dark:text-white">
+                    <span className="font-bold text-slate-900">
                       {collaborators[0].name}
                       {collaborators.length > 1 && (
                         <span className="text-slate-500 font-normal"> & {collaborators.length - 1} more</span>
@@ -419,23 +419,23 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
 
               {/* Metadata Pill Chips */}
               <div className="flex flex-wrap items-center gap-2 pt-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
                   <DeliveryIcon size={14} className="text-slate-400 shrink-0" />
                   {deliveryLabel}
                 </span>
 
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
                   <Calendar size={14} className="text-slate-400 shrink-0" />
                   {earliestDate}
                 </span>
 
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
                   <Layers size={14} className="text-slate-400 shrink-0" />
                   {sessions.length > 0 ? `${sessions.length} sessions` : 'Live session'}
                 </span>
 
                 {event.capacity && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
                     <Ticket size={14} className="text-slate-400 shrink-0" />
                     {event.capacity} seats limit
                   </span>
@@ -446,7 +446,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
               <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-3">
                 {isPaid ? (
                   <div className="flex flex-col pr-1">
-                    <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white leading-none">
+                    <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-none">
                       {priceDisplay}
                     </span>
                     <span className="text-[11px] font-medium text-slate-400 mt-1">Per ticket</span>
@@ -461,7 +461,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                 )}
 
                 {event.id && (
-                  <div className="inline-flex items-center [&>div]:w-auto [&>div]:inline-flex [&_button]:h-11 [&_button]:!rounded-tl-2xl [&_button]:!rounded-br-2xl [&_button]:!rounded-tr-md [&_button]:!rounded-bl-md [&_button]:!py-0 [&_button]:!px-5 sm:[&_button]:!px-6 [&_button]:!flex-initial [&_button]:w-auto [&_button]:border [&_button]:border-slate-300/80 dark:[&_button]:border-slate-700/80 [&_button]:text-xs sm:[&_button]:text-sm">
+                  <div className="inline-flex items-center [&>div]:w-auto [&>div]:inline-flex [&_button]:h-11 [&_button]:!rounded-tl-2xl [&_button]:!rounded-br-2xl [&_button]:!rounded-tr-md [&_button]:!rounded-bl-md [&_button]:!py-0 [&_button]:!px-5 sm:[&_button]:!px-6 [&_button]:!flex-initial [&_button]:w-auto [&_button]:border [&_button]:border-slate-300/80 [&_button]:text-xs sm:[&_button]:text-sm">
                     <EnrollmentButton
                       resourceType="EVENT"
                       resourceId={event.id}
@@ -479,7 +479,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Watch promo video"
-                    className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-700 hover:text-blue-600 dark:border-slate-700/80 dark:bg-slate-900 dark:text-slate-300 dark:hover:text-blue-400 shadow-2xs transition-all cursor-pointer"
+                    className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-700 hover:text-blue-600 dark:hover:text-blue-400 shadow-2xs transition-all cursor-pointer"
                     title="Watch promo video"
                   >
                     <Play size={15} />
@@ -490,7 +490,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                   type="button"
                   onClick={handleShare}
                   aria-label="Share event"
-                  className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-blue-600 dark:border-slate-700/80 dark:bg-slate-900 dark:text-slate-500 dark:hover:text-blue-400 shadow-2xs transition-all cursor-pointer"
+                  className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 shadow-2xs transition-all cursor-pointer"
                   title="Share event link"
                 >
                   <Share2 size={15} />
@@ -500,7 +500,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                   type="button"
                   onClick={() => setReportModalOpen(true)}
                   aria-label="Report event"
-                  className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-red-600 dark:border-slate-700/80 dark:bg-slate-900 dark:text-slate-500 dark:hover:text-red-400 shadow-2xs transition-all cursor-pointer"
+                  className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-red-600 dark:hover:text-red-400 shadow-2xs transition-all cursor-pointer"
                   title="Report this event"
                 >
                   <Flag size={15} />
@@ -510,9 +510,9 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
 
             {/* RIGHT COLUMN: Event Visual Artwork & Key Inclusions Frame */}
             <div className="lg:col-span-5 flex justify-center lg:justify-end">
-              <div className="w-full max-w-sm overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-3.5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95">
+              <div className="w-full max-w-sm overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-3.5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
                 {/* Generative Event Artwork */}
-                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-lg rounded-bl-lg border border-slate-200/70 dark:border-slate-800 shadow-xs">
+                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-lg rounded-bl-lg border border-slate-200/70 shadow-xs">
                   <ContentArt
                     seed={event.id || event.title || 'event'}
                     kind="EVENT"
@@ -526,7 +526,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                 </div>
 
                 {/* Event Highlights */}
-                <div className="p-3 pt-4 space-y-2.5 text-xs text-slate-600 dark:text-slate-300">
+                <div className="p-3 pt-4 space-y-2.5 text-xs text-slate-600">
                   <div className="flex items-center gap-2 font-medium">
                     <ShieldCheck size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span>Instant access to event materials & discussion</span>
@@ -565,27 +565,27 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
             {tab === 'Overview' && (
               <div className="space-y-8">
                 {/* About this Event Card */}
-                <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
-                  <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900">
                     About this {event.eventType?.toLowerCase() || 'event'}
                   </h2>
                   {event.description ? (
-                    <div className="mt-3 text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300 font-normal whitespace-pre-wrap">
+                    <div className="mt-3 text-sm sm:text-base leading-relaxed text-slate-600 font-normal whitespace-pre-wrap">
                       {event.description}
                     </div>
                   ) : (
-                    <p className="mt-3 text-sm text-slate-500 dark:text-slate-400 font-normal">
+                    <p className="mt-3 text-sm text-slate-500 font-normal">
                       The organizer will publish detailed event information soon.
                     </p>
                   )}
                 </div>
 
                 {/* Key Highlights Card */}
-                <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
-                  <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-4">
+                <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-4">
                     Key Highlights & Takeaways
                   </h2>
-                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-600 dark:text-slate-300">
+                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-600">
                     {[
                       'Live interactive presentation & group discussion',
                       'Dedicated Q&A session with the host',
@@ -597,7 +597,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                       'Networking opportunities with fellow participants',
                     ].map((hl, i) => (
                       <li key={i} className="flex items-start gap-2.5">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-900 dark:bg-white" />
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-900" />
                         <span>{hl}</span>
                       </li>
                     ))}
@@ -610,7 +610,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
             {tab === 'Schedule' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  <h2 className="text-xl font-bold tracking-tight text-slate-900">
                     Event Agenda & Schedule
                   </h2>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-1">
@@ -621,7 +621,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                 </div>
 
                 {sessions.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center text-sm text-slate-400">
+                  <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400">
                     The organizer hasn&apos;t published the session schedule yet.
                   </div>
                 ) : (
@@ -629,10 +629,10 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                     {sessions.map((session, idx) => (
                       <div
                         key={session.id || idx}
-                        className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900 p-5 sm:p-6"
+                        className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm p-5 sm:p-6"
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                          <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200/80 px-3 py-0.5 text-xs font-bold">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200/80 px-3 py-0.5 text-xs font-bold dark:border-blue-500/25">
                             Session {session.sessionNumber ?? idx + 1}
                           </span>
                           <div className="flex items-center gap-3 text-xs font-semibold text-slate-500">
@@ -653,17 +653,17 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                           </div>
                         </div>
 
-                        <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                        <h3 className="text-base sm:text-lg font-bold text-slate-900">
                           {session.title}
                         </h3>
 
                         {session.description && (
-                          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                          <p className="mt-2 text-sm text-slate-600 leading-relaxed">
                             {session.description}
                           </p>
                         )}
 
-                        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+                        <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
                           <span className="flex items-center gap-1.5 font-medium">
                             <Video size={13} className="text-blue-600 dark:text-blue-400" />
                             <span>
@@ -688,7 +688,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
             {tab === 'Speakers & Hosts' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  <h2 className="text-xl font-bold tracking-tight text-slate-900">
                     Presented By
                   </h2>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-1">
@@ -697,17 +697,17 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                 </div>
 
                 {/* Primary Organizer / Channel */}
-                <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900 p-6 sm:p-8">
+                <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm p-6 sm:p-8">
                   <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                     <ChannelAvatar name={hostName} iconUrl={event.channelIconUrl} size={64} />
                     <div className="flex-1 text-center sm:text-left">
                       <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
                         Organizer & Host
                       </span>
-                      <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mt-0.5">
+                      <h3 className="text-lg sm:text-xl font-bold text-slate-900 mt-0.5">
                         {hostName}
                       </h3>
-                      <p className="mt-3 text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300 font-normal">
+                      <p className="mt-3 text-sm sm:text-base leading-relaxed text-slate-600 font-normal">
                         Official host of this event. Check out their channel page to discover more
                         upcoming events, courses, and educational series.
                       </p>
@@ -718,14 +718,14 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                 {/* Collaborators / Speakers list */}
                 {collaborators.length > 0 && (
                   <div className="space-y-4">
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    <h3 className="text-base font-bold text-slate-900">
                       Featured Speakers & Instructors
                     </h3>
                     <div className="grid gap-4 sm:grid-cols-2">
                       {collaborators.map((c) => (
                         <div
                           key={c.id}
-                          className="rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-lg rounded-bl-lg border border-slate-200/80 bg-surface/95 p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex items-center gap-4"
+                          className="rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-lg rounded-bl-lg border border-slate-200/80 bg-surface/95 p-5 shadow-xs flex items-center gap-4"
                         >
                           <Avatar
                             name={c.name}
@@ -733,7 +733,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                             size={44}
                           />
                           <div>
-                            <h4 className="text-sm font-bold text-slate-900 dark:text-white">{c.name}</h4>
+                            <h4 className="text-sm font-bold text-slate-900">{c.name}</h4>
                             <p className="text-xs text-slate-400 capitalize">
                               {c.role?.replace(/_/g, ' ').toLowerCase() || 'Speaker'}
                             </p>
@@ -750,7 +750,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
             {tab === 'Venue & Access' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  <h2 className="text-xl font-bold tracking-tight text-slate-900">
                     How to Join & Venue Details
                   </h2>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-1">
@@ -758,14 +758,14 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                   </p>
                 </div>
 
-                <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900 space-y-6">
+                <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm space-y-6">
                   <div className="flex items-start gap-4">
                     <div className="size-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 grid place-items-center shrink-0">
                       <DeliveryIcon size={20} />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white">{deliveryLabel}</h3>
-                      <p className="mt-1 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                      <h3 className="text-base font-bold text-slate-900">{deliveryLabel}</h3>
+                      <p className="mt-1 text-sm text-slate-600 leading-relaxed">
                         {event.deliveryMode === 'ONLINE'
                           ? 'This event takes place entirely online. Meeting links, session recordings, and interactive discussion rooms unlock automatically in your Event Learning Hub upon registration.'
                           : event.deliveryMode === 'OFFLINE'
@@ -775,11 +775,11 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                     </div>
                   </div>
 
-                  <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3">
+                  <div className="border-t border-slate-100 pt-6">
+                    <h4 className="text-sm font-bold text-slate-900 mb-3">
                       Attendance Requirements
                     </h4>
-                    <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                    <ul className="space-y-2 text-sm text-slate-600">
                       <li className="flex items-center gap-2">
                         <Check size={15} className="text-emerald-600 shrink-0 dark:text-emerald-400" />
                         <span>Registered Arcade user account with verified email</span>

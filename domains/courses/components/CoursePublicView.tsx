@@ -110,7 +110,7 @@ function Avatar({
       <img
         src={resolvedUrl}
         alt={name}
-        className="shrink-0 rounded-2xl object-cover border border-slate-100 dark:border-slate-800"
+        className="shrink-0 rounded-2xl object-cover border border-slate-100"
         style={{ width: size, height: size }}
       />
     );
@@ -244,7 +244,7 @@ function CourseHero({
             <div className="pt-1">
               <Link
                 href={`/channels/${channel.id}`}
-                className="group inline-flex items-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-slate-200/90 bg-surface/95 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs hover:border-blue-400 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-blue-500 transition-all select-none"
+                className="group inline-flex items-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-slate-200/90 bg-surface/95 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs hover:border-blue-400 hover:bg-slate-50 dark:hover:border-blue-500 transition-all select-none"
               >
                 {getAvatarUrl(channel.iconUrl) ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -269,7 +269,7 @@ function CourseHero({
           {/* Title in Dancing Script font with hand-drawn SVG flourish */}
           <div className="relative inline-block mt-1">
             <h1
-              className={`${dancingScript.className} text-5xl sm:text-6xl lg:text-7xl font-bold tracking-normal text-slate-900 dark:text-white leading-[1.15]`}
+              className={`${dancingScript.className} text-5xl sm:text-6xl lg:text-7xl font-bold tracking-normal text-slate-900 leading-[1.15]`}
             >
               {title}
             </h1>
@@ -294,7 +294,7 @@ function CourseHero({
 
           {/* Short Course Description */}
           {description && (
-            <p className="text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300 font-normal line-clamp-3 pt-1">
+            <p className="text-sm sm:text-base leading-relaxed text-slate-600 font-normal line-clamp-3 pt-1">
               {description}
             </p>
           )}
@@ -311,7 +311,7 @@ function CourseHero({
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">
                   Taught by
                 </span>
-                <span className="font-bold text-slate-900 dark:text-white">
+                <span className="font-bold text-slate-900">
                   {instructors[0].username ? (
                     <Link
                       href={`/${instructors[0].username}`}
@@ -332,25 +332,25 @@ function CourseHero({
 
           {/* Course Metadata Pill Chips */}
           <div className="flex flex-wrap items-center gap-2 pt-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
               <Clock size={14} className="text-slate-400 shrink-0" />
               {duration || 'Self-paced'}
             </span>
 
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
               <BookOpen size={14} className="text-slate-400 shrink-0" />
               {lessonCount} {lessonCount === 1 ? 'lesson' : 'lessons'}
             </span>
 
             {moduleCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
                 <Layers size={14} className="text-slate-400 shrink-0" />
                 {moduleCount} {moduleCount === 1 ? 'module' : 'modules'}
               </span>
             )}
 
             {(enrollmentCount ?? 0) > 0 && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_2px_8px_rgba(20,20,43,0.03)] backdrop-blur-sm">
                 <Users size={14} className="text-slate-400 shrink-0" />
                 {(enrollmentCount!).toLocaleString()} learners
               </span>
@@ -361,7 +361,7 @@ function CourseHero({
           <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-3">
             {isPaid ? (
               <div className="flex flex-col pr-1">
-                <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white leading-none">
+                <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-none">
                   {priceDisplay}
                 </span>
                 <span className="text-[11px] font-medium text-slate-400 mt-1">One-time payment</span>
@@ -376,7 +376,7 @@ function CourseHero({
             )}
 
             {courseId && (
-              <div className="inline-flex items-center [&>div]:w-auto [&>div]:inline-flex [&_button]:h-11 [&_button]:!rounded-tl-2xl [&_button]:!rounded-br-2xl [&_button]:!rounded-tr-md [&_button]:!rounded-bl-md [&_button]:!py-0 [&_button]:!px-5 sm:[&_button]:!px-6 [&_button]:!flex-initial [&_button]:w-auto [&_button]:border [&_button]:border-slate-300/80 dark:[&_button]:border-slate-700/80 [&_button]:text-xs sm:[&_button]:text-sm">
+              <div className="inline-flex items-center [&>div]:w-auto [&>div]:inline-flex [&_button]:h-11 [&_button]:!rounded-tl-2xl [&_button]:!rounded-br-2xl [&_button]:!rounded-tr-md [&_button]:!rounded-bl-md [&_button]:!py-0 [&_button]:!px-5 sm:[&_button]:!px-6 [&_button]:!flex-initial [&_button]:w-auto [&_button]:border [&_button]:border-slate-300/80 [&_button]:text-xs sm:[&_button]:text-sm">
                 <EnrollmentButton
                   resourceType="COURSE"
                   resourceId={courseId}
@@ -396,7 +396,7 @@ function CourseHero({
               type="button"
               onClick={onReportClick}
               aria-label="Report course"
-              className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-red-600 dark:border-slate-700/80 dark:bg-slate-900 dark:text-slate-500 dark:hover:text-red-400 shadow-2xs transition-all cursor-pointer"
+              className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-red-600 dark:hover:text-red-400 shadow-2xs transition-all cursor-pointer"
               title="Report this course"
             >
               <Flag size={15} />
@@ -406,9 +406,9 @@ function CourseHero({
 
         {/* RIGHT COLUMN: Course Visual Artwork & Key Highlights (Non-redundant) */}
         <div className="lg:col-span-5 flex justify-center lg:justify-end">
-          <div className="w-full max-w-sm overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-3.5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95">
+          <div className="w-full max-w-sm overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-3.5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
             {/* Generative Course Artwork */}
-            <div className="relative aspect-[16/10] w-full overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-lg rounded-bl-lg border border-slate-200/70 dark:border-slate-800 shadow-xs">
+            <div className="relative aspect-[16/10] w-full overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-lg rounded-bl-lg border border-slate-200/70 shadow-xs">
               <ContentArt
                 seed={courseId || title || 'default'}
                 kind="COURSE"
@@ -422,7 +422,7 @@ function CourseHero({
             </div>
 
             {/* Non-redundant Course Inclusions */}
-            <div className="p-3 pt-4 space-y-2.5 text-xs text-slate-600 dark:text-slate-300">
+            <div className="p-3 pt-4 space-y-2.5 text-xs text-slate-600">
               <div className="flex items-center gap-2 font-medium">
                 <ShieldCheck size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>Full lifetime access to materials</span>
@@ -467,7 +467,7 @@ function TabButton({
       className={`relative px-5 sm:px-6 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm font-black tracking-tight transition-all duration-200 select-none cursor-pointer min-w-[96px] text-center ${
         active
           ? 'bg-surface text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6] shadow-2xs'
-          : 'bg-slate-100/80 text-slate-700 border border-slate-200/70 hover:bg-slate-200/70 hover:text-slate-900 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700/70 dark:hover:bg-slate-800 dark:hover:text-white'
+          : 'bg-slate-100/80 text-slate-700 border border-slate-200/70 hover:bg-slate-200/70 hover:text-slate-900'
       }`}
     >
       <span className="relative z-10">{label}</span>
@@ -569,39 +569,39 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
         {tab === 'Overview' && (
           <div className="space-y-8">
             {/* What You'll Learn Section */}
-            <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+            <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900">
                 What You&apos;ll Learn:
               </h2>
 
               {learningOutcomes.length > 0 ? (
-                <ul className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-600 dark:text-slate-300">
+                <ul className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-600">
                   {learningOutcomes.map((outcome, index) => (
                     <li key={index} className="flex items-start gap-2.5">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-900 dark:bg-white" />
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-900" />
                       <span>{outcome}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="mt-4 text-sm text-slate-500 dark:text-slate-400 font-normal">
+                <p className="mt-4 text-sm text-slate-500 font-normal">
                   Specific learning outcomes will be updated as new curriculum milestones are published.
                 </p>
               )}
             </div>
 
             {/* About This Course */}
-            <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+            <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900">
                 About this course
               </h2>
 
               {course?.description ? (
-                <div className="mt-3 text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300 font-normal whitespace-pre-wrap">
+                <div className="mt-3 text-sm sm:text-base leading-relaxed text-slate-600 font-normal whitespace-pre-wrap">
                   {course.description}
                 </div>
               ) : (
-                <p className="mt-3 text-sm text-slate-500 dark:text-slate-400 font-normal">
+                <p className="mt-3 text-sm text-slate-500 font-normal">
                   The course author will publish an in-depth course description soon.
                 </p>
               )}
@@ -614,7 +614,7 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
           <div className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                <h2 className="text-xl font-bold tracking-tight text-slate-900">
                   Course Curriculum
                 </h2>
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-1">
@@ -627,7 +627,7 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
                 <button
                   type="button"
                   onClick={() => setOpenMod(openMod === -1 ? 0 : -1)}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 cursor-pointer"
+                  className="rounded-lg border border-slate-200 bg-surface px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
                 >
                   {openMod === -1 ? 'Expand all' : 'Collapse all'}
                 </button>
@@ -641,7 +641,7 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
                 return (
                   <div
                     key={m.id}
-                    className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900 p-5 sm:p-6"
+                    className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm p-5 sm:p-6"
                   >
                     <div className="flex items-center justify-between gap-4 pb-2">
                       <div>
@@ -671,11 +671,11 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
                         {moduleLessons.map((lesson, li) => (
                           <li
                             key={lesson.id}
-                            className="group flex items-center justify-between rounded-xl px-4 py-3.5 text-sm font-medium bg-slate-50 text-slate-700 hover:bg-slate-100 dark:bg-slate-800/60 dark:text-slate-200 dark:hover:bg-slate-800 transition-colors"
+                            className="group flex items-center justify-between rounded-xl px-4 py-3.5 text-sm font-medium bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors"
                           >
                             <div className="flex items-center gap-3 min-w-0">
                               <PlayCircle size={17} className="shrink-0 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
-                              <span className="truncate text-slate-800 dark:text-slate-200 group-hover:text-slate-900">
+                              <span className="truncate text-slate-800 group-hover:text-slate-900">
                                 {lesson.title}
                               </span>
                             </div>
@@ -692,7 +692,7 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
               })}
 
               {modules.length === 0 && (
-                <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center text-sm text-slate-400">
+                <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400">
                   This course hasn&apos;t published curriculum lessons yet.
                 </div>
               )}
@@ -703,14 +703,14 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
         {/* ================= INSTRUCTOR TAB ================= */}
         {tab === 'Instructor' && (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <h2 className="text-xl font-bold tracking-tight text-slate-900">
               Instructor Profile
             </h2>
 
             {instructors.map((person) => (
               <div
                 key={person.id}
-                className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900 p-6 sm:p-8"
+                className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm p-6 sm:p-8"
               >
                 <div className="flex flex-col sm:flex-row items-start gap-6">
                   <Avatar
@@ -721,12 +721,12 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
 
                   <div className="flex-1 min-w-0">
                     {orgName && (
-                      <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-slate-50 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                      <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-slate-50 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
                         <BadgeCheck size={13} className="text-blue-600 dark:text-blue-400" /> {orgName}
                       </div>
                     )}
 
-                    <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+                    <h3 className="text-lg sm:text-xl font-bold text-slate-900">
                       {person.name || 'Unknown'}
                     </h3>
 
@@ -736,7 +736,7 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
                     </p>
 
                     {person.bio ? (
-                      <p className="mt-4 text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300 font-normal">
+                      <p className="mt-4 text-sm sm:text-base leading-relaxed text-slate-600 font-normal">
                         {person.bio}
                       </p>
                     ) : (
@@ -750,7 +750,7 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
                         {person.specialities.map((e) => (
                           <span
                             key={e}
-                            className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                            className="rounded-full border border-slate-200 bg-surface px-3 py-1 text-xs font-semibold text-slate-700"
                           >
                             {e}
                           </span>
@@ -760,9 +760,9 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
                   </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-800 pt-6 text-center">
+                <div className="mt-6 grid grid-cols-2 gap-4 border-t border-slate-100 pt-6 text-center">
                   <div>
-                    <p className="text-xl font-bold text-slate-900 dark:text-white">
+                    <p className="text-xl font-bold text-slate-900">
                       {person.courseCount ?? 1}
                     </p>
                     <p className="text-xs text-slate-400 mt-0.5">
@@ -770,7 +770,7 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xl font-bold text-slate-900 dark:text-white">
+                    <p className="text-xl font-bold text-slate-900">
                       {person.experienceYears != null ? `${person.experienceYears} yrs` : '—'}
                     </p>
                     <p className="text-xs text-slate-400 mt-0.5">Experience</p>
@@ -780,7 +780,7 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
             ))}
 
             {instructors.length === 0 && (
-              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-8 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900 shadow-[0_8px_30px_rgba(20,20,43,0.05)]">
+              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-8 text-center text-sm text-slate-400 shadow-[0_8px_30px_rgba(20,20,43,0.05)]">
                 Instructor bio will be updated soon.
               </div>
             )}
@@ -798,14 +798,14 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
         {tab === 'Credentials' && (
           <div className="space-y-8 max-w-3xl mx-auto">
             {hasBadge && (
-              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900 p-6 sm:p-8">
+              <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm p-6 sm:p-8">
                 <div className="flex flex-col sm:flex-row items-center gap-6">
                   <CourseBadge type={badgeInfo.type} />
                   <div>
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-amber-800 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300 mb-2">
                       <Sparkles size={13} className="text-amber-500" /> Verifiable Badge
                     </span>
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                    <h3 className="text-xl font-bold text-slate-900">
                       <FoldText
                         text={`Earn the ${course?.badges?.[0]?.title || badgeInfo.title}`}
                         splitBy="char"
@@ -818,9 +818,9 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
                         color="currentColor"
                       />
                     </h3>
-                    <p className="mt-2 text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300 font-normal">
+                    <p className="mt-2 text-sm sm:text-base leading-relaxed text-slate-600 font-normal">
                       Complete all curriculum lessons and checkpoints to earn the official digital{' '}
-                      <span className="font-semibold text-slate-900 dark:text-white">
+                      <span className="font-semibold text-slate-900">
                         {course?.badges?.[0]?.title || badgeInfo.badgeName}
                       </span>{' '}
                       badge for your public profile.
@@ -837,10 +837,10 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
                     <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300">
                       <Award size={14} /> Official Certification Exam
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
                       {certification?.title || 'Course Certification Exam'}
                     </h3>
-                    <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-300 font-normal">
+                    <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-600 font-normal">
                       Completing this course qualifies you to take the verified certification exam.
                     </p>
                     {certification?.feeMinor && certification.feeMinor > 0 && (
@@ -900,14 +900,14 @@ function ReviewsBlock({ courseId }: { courseId?: string }) {
 
   if (reviews.length === 0) {
     return (
-      <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 text-center shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 text-center shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
         <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-500 mb-3">
           <Star size={18} fill="currentColor" />
         </div>
-        <h3 className="text-base font-bold text-slate-900 dark:text-white">
+        <h3 className="text-base font-bold text-slate-900">
           No reviews yet
         </h3>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-1 text-sm text-slate-500">
           Be the first learner to review this course after finishing.
         </p>
       </div>
@@ -920,9 +920,9 @@ function ReviewsBlock({ courseId }: { courseId?: string }) {
   return (
     <div className="space-y-6">
       {/* Header with Average Rating */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
         <div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+          <h2 className="text-lg font-bold text-slate-900">
             Learner Feedback
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
@@ -931,7 +931,7 @@ function ReviewsBlock({ courseId }: { courseId?: string }) {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-3xl font-extrabold text-slate-900 dark:text-white">
+          <span className="text-3xl font-extrabold text-slate-900">
             {average.toFixed(1)}
           </span>
           <div>
@@ -940,7 +940,7 @@ function ReviewsBlock({ courseId }: { courseId?: string }) {
                 <Star
                   key={i}
                   size={15}
-                  className={i <= Math.round(average) ? 'text-amber-500' : 'text-slate-200 dark:text-slate-700'}
+                  className={i <= Math.round(average) ? 'text-amber-500' : 'text-slate-200'}
                   fill={i <= Math.round(average) ? '#f59e0b' : 'none'}
                   strokeWidth={i <= Math.round(average) ? 0 : 1.5}
                 />
@@ -958,10 +958,10 @@ function ReviewsBlock({ courseId }: { courseId?: string }) {
           return (
             <div
               key={r.id}
-              className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between"
+              className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm flex flex-col justify-between"
             >
               {r.reviewText ? (
-                <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300 font-normal">
+                <p className="text-sm leading-relaxed text-slate-700 font-normal">
                   &ldquo;{r.reviewText}&rdquo;
                 </p>
               ) : (
@@ -970,11 +970,11 @@ function ReviewsBlock({ courseId }: { courseId?: string }) {
                 </p>
               )}
 
-              <div className="mt-4 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3">
+              <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
                 <div className="flex items-center gap-2.5">
                   <Avatar name={r.userName} imageUrl={r.userAvatarUrl} accent={accent} size={28} />
                   <div>
-                    <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+                    <p className="text-xs font-bold text-slate-900 leading-tight">
                       {r.userName}
                     </p>
                     <div className="flex gap-0.5 mt-0.5">
@@ -982,7 +982,7 @@ function ReviewsBlock({ courseId }: { courseId?: string }) {
                         <Star
                           key={star}
                           size={10}
-                          className={star <= r.rating ? 'text-amber-500' : 'text-slate-200 dark:text-slate-700'}
+                          className={star <= r.rating ? 'text-amber-500' : 'text-slate-200'}
                           fill={star <= r.rating ? '#f59e0b' : 'none'}
                           strokeWidth={star <= r.rating ? 0 : 1.5}
                         />
@@ -1074,24 +1074,24 @@ function StickyEnrollBar({
   const priceDisplay = isPaid ? formatMoney(priceAmount ?? 0, currency ?? 'INR') : 'Free';
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-40 bg-surface/95 dark:bg-slate-900/95 border-t border-slate-200 dark:border-slate-800 shadow-lg backdrop-blur-md transition-all duration-300">
+    <div className="fixed bottom-0 inset-x-0 z-40 bg-surface/95 border-t border-slate-200 shadow-lg backdrop-blur-md transition-all duration-300">
       <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6 flex items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 hidden sm:block">
             Course
           </p>
-          <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+          <p className="text-sm font-bold text-slate-900 truncate">
             {title}
           </p>
         </div>
 
         <div className="flex items-center gap-4 shrink-0">
           {isPaid ? (
-            <span className="text-base font-extrabold text-slate-900 dark:text-white hidden sm:block">
+            <span className="text-base font-extrabold text-slate-900 hidden sm:block">
               {priceDisplay}
             </span>
           ) : (
-            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/80 px-2.5 py-0.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/80 px-2.5 py-0.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 dark:border-emerald-500/25">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Free Course
             </span>
@@ -1171,7 +1171,7 @@ export function CoursePublicView({ courseId: propCourseId }: CoursePublicViewPro
   if (loading) {
     return (
       <main className="min-h-screen bg-surface theme-page-bg flex items-center justify-center">
-        <div className="size-8 rounded-full border-2 border-slate-900 dark:border-white border-t-transparent animate-spin" />
+        <div className="size-8 rounded-full border-2 border-slate-900 border-t-transparent animate-spin" />
       </main>
     );
   }
@@ -1195,7 +1195,7 @@ export function CoursePublicView({ courseId: propCourseId }: CoursePublicViewPro
   const hasExam = Boolean(course?.hasExam);
 
   return (
-    <main className="min-h-screen w-full bg-surface theme-page-bg theme-wallpaper-frost text-slate-900 dark:text-white">
+    <main className="min-h-screen w-full bg-surface theme-page-bg theme-wallpaper-frost text-slate-900">
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 pt-20 sm:pt-24 pb-28 sm:pb-32 space-y-8">
         {/* Two-Column Hero Section with /learn Aesthetics */}
         <CourseHero
