@@ -717,9 +717,21 @@
   background: transparent;
   margin-block: 12px;
 }
+/* Hidden until the pointer is over the area: a permanently visible inner scrollbar beside the
+   page's own read as a broken layout (BUG-1034). Scrolling works the same either way. */
+.arcade-scrollbar-mini {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.arcade-scrollbar-mini:hover {
+  scrollbar-color: color-mix(in oklab, var(--theme-n-400, #94a3b8) 30%, transparent) transparent;
+}
 .arcade-scrollbar-mini::-webkit-scrollbar-thumb {
-  background: color-mix(in oklab, var(--theme-n-400, #94a3b8) 15%, transparent);
+  background: transparent;
   border-radius: 10px;
+}
+.arcade-scrollbar-mini:hover::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--theme-n-400, #94a3b8) 15%, transparent);
 }
 .arcade-scrollbar-mini::-webkit-scrollbar-thumb:hover {
   background: color-mix(in oklab, var(--theme-n-400, #94a3b8) 30%, transparent);

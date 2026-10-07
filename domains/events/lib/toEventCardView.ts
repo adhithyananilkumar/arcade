@@ -24,6 +24,8 @@ export function toEventCardView(event: PublishedEventCard): EventCardView {
     date: formatSchedule(event),
     status: deriveStatus(event),
     duration: formatDuration(event.durationMinutes),
+    startsAtMs: event.startDate ? toDate(event.startDate, event.startTime).getTime() : null,
+    durationMinutes: event.durationMinutes ?? null,
   };
 }
 

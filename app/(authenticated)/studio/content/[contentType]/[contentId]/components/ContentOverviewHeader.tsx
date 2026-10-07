@@ -217,7 +217,9 @@ export function ContentOverviewHeader({
   return (
     <div className="flex w-full flex-col gap-4 pb-1">
       {/* Back link, when this dashboard was opened from a parent course or event. */}
-      {leading && <div className="flex">{leading}</div>}
+      {/* Centred above the title: at the left it sat under the shell's floating logo and back
+          button, which are pinned to the same corner (BUG-1024/1047). */}
+      {leading && <div className="flex justify-center">{leading}</div>}
 
       <div className="mx-auto flex max-w-4xl flex-col items-center justify-center text-center">
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Satisfy&family=Alex+Brush&display=swap');`}</style>

@@ -6,6 +6,8 @@ import { GraduationCap, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { createExam } from "@/domains/assessments";
 import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
+import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
+import { DescriptionField, PriceField, isPriceValid, toMinor, type PriceValue } from "@/apps/creator/studio/core/ContentBasicsFields";
 
 export default function NewExamPage() {
   const router = useRouter();
@@ -13,6 +15,10 @@ export default function NewExamPage() {
   const [channelId, setChannelId] = useState("");
   const [title, setTitle] = useState("");
   const [purpose, setPurpose] = useState("");
+  const [description, setDescription] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [fee, setFee] = useState<PriceValue>({ paid: false, amount: "" });
+  const categories = usePublicCategories().filter((c) => c.type === "EXAMS" || c.type === "ALL");
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
@@ -30,11 +36,27 @@ export default function NewExamPage() {
       toast.error("Please select a channel");
       return;
     }
+    if (!description.trim()) {
+      toast.error("Add a short description");
+      return;
+    }
+    if (categories.length > 0 && !categoryId) {
+      toast.error("Choose a category");
+      return;
+    }
+    if (!isPriceValid(fee)) {
+      toast.error("Enter a price above zero, or choose Free");
+      return;
+    }
     setCreating(true);
     try {
       const exam = await createExam({
         title: title.trim(),
         purpose: purpose.trim() || undefined,
+        description: description.trim(),
+        categoryId: categoryId || undefined,
+        priceAmountMinor: toMinor(fee),
+        currency: "INR",
         channelId: channelId || undefined,
       });
       toast.success("Exam created");
@@ -83,6 +105,31 @@ export default function NewExamPage() {
               className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
             />
           </div>
+
+          <DescriptionField id="exam-description" value={description} onChange={setDescription} />
+
+          {categories.length > 0 && (
+            <div>
+              <label htmlFor="exam-category" className="mb-1.5 block text-sm font-semibold text-ink">
+                Category <span className="text-rose-500">*</span>
+              </label>
+              <select
+                id="exam-category"
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
+              >
+                <option value="">Select a category…</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <PriceField id="exam-fee" value={fee} onChange={setFee} />
 
           <div>
             <label htmlFor="exam-purpose" className="mb-1.5 block text-sm font-semibold text-ink">

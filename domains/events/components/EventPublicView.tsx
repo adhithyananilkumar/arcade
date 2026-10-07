@@ -88,6 +88,14 @@ export interface EventCollaborator {
 }
 
 const TABS = ['Overview', 'Schedule', 'Speakers & Hosts', 'Venue & Access'] as const;
+
+/** The organiser's refund promise, as a participant reads it next to the price. */
+const REFUND_POLICY_TEXT: Record<NonNullable<EventDto['refundPolicy']>, string> = {
+  NO_REFUND: 'Non-refundable',
+  FULL_REFUND: 'Full refund on request',
+  PARTIAL_REFUND: 'Partial refund on request',
+  CUSTOM: 'Refunds at organiser discretion',
+};
 type Tab = (typeof TABS)[number];
 
 function formatDate(dateStr?: string | null): string {
@@ -450,7 +458,10 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                     <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-none">
                       {priceDisplay}
                     </span>
-                    <span className="text-[11px] font-medium text-slate-400 mt-1">Per ticket</span>
+                    <span className="text-[11px] font-medium text-slate-400 mt-1">
+                      Per ticket
+                      {event.refundPolicy && ` · ${REFUND_POLICY_TEXT[event.refundPolicy]}`}
+                    </span>
                   </div>
                 ) : (
                   <div className="inline-flex items-center">

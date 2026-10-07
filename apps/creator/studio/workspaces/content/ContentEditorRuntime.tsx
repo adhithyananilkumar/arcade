@@ -60,7 +60,7 @@ import {
 import { TiptapContentView } from "@/domains/learning";
 import { CredentialBadge, credentialsApi, type BadgeAssignment, type BadgeContentType, type BadgeLevel } from "@/domains/credentials";
 import { BadgeTierDialog } from "../../credentials/BadgeTierDialog";
-import { ContentSubmitDialog } from "./dialogs/ContentSubmitDialog";
+import { ContentSubmitDialog, type SubmitBasicsPatch } from "./dialogs/ContentSubmitDialog";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -989,9 +989,13 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
         tasks.push(Promise.resolve(editorRef.current.flush()).catch((e) => console.warn("Lesson body flush failed", e)));
       }
     }
-    await Promise.all(tasks);
+    // Leaving must never depend on these saves: a hung request (or a locked, under-review course
+    // refusing every write) left the Back button doing nothing (BUG-1030). Give them a few
+    // seconds, then go regardless.
+    const settle = (p: Promise<unknown>) => Promise.race([p, new Promise((r) => setTimeout(r, 4000))]);
+    await settle(Promise.all(tasks));
 
-    if (activeLessonId && activeYDocRef.current && editorRef.current) {
+    if (activeLessonId && activeYDocRef.current && editorRef.current && status !== "SUBMITTED") {
       const json = editorRef.current.getJSON();
       if (json) {
         try {
@@ -999,11 +1003,13 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
             adapter.terminology.root === "Course"
               ? `/api/documents/LESSON/${activeLessonId}/versions`
               : `/api/v1/events/lessons/${activeLessonId}/document/versions`;
-          await api.post(versionsUrl, {
-            snapshot: encodeSnapshotBase64(activeYDocRef.current),
-            body: JSON.stringify(json),
-            kind: "AUTO",
-          });
+          await settle(
+            api.post(versionsUrl, {
+              snapshot: encodeSnapshotBase64(activeYDocRef.current),
+              body: JSON.stringify(json),
+              kind: "AUTO",
+            })
+          );
         } catch (e) {
           console.warn("Exit snapshot failed", e);
         }
@@ -1011,11 +1017,28 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
     }
 
     router.push(backHref);
-  }, [navigatingBack, contentId, title, description, pricingModel, metadataCollabStatus, activeLessonId, activeLessonTitle, router, adapter, backHref]);
+  }, [navigatingBack, contentId, title, description, pricingModel, metadataCollabStatus, activeLessonId, activeLessonTitle, router, adapter, backHref, status]);
 
   // ── Submit for review ─────────────────────────────────────────────────────
 
   const askSubmit = () => setSubmitDialogOpen(true);
+
+  /** Saves basics filled in from the submit dialog, keeping the live metadata state in step. */
+  const saveBasics = async (patch: SubmitBasicsPatch) => {
+    if (!contentId) return;
+    const nextDescription = patch.description ?? description;
+    if (patch.description !== undefined) setDescription(nextDescription);
+    const nextPricing = patch.paid === undefined ? pricingModel : patch.paid ? "PAID" : "FREE";
+    if (patch.paid !== undefined) setPricingModel(nextPricing);
+    await adapter.updateMeta(contentId, {
+      title,
+      description: nextDescription,
+      pricingModel: nextPricing,
+      ...(patch.category !== undefined ? { category: patch.category } : {}),
+      ...(patch.learningOutcomes !== undefined ? { learningOutcomes: patch.learningOutcomes } : {}),
+      ...(patch.priceAmount !== undefined ? { priceAmount: patch.priceAmount } : {}),
+    });
+  };
 
   const handleSubmit = async (data: { message?: string }) => {
     if (!contentId) return;
@@ -1027,6 +1050,10 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
       }
     }
     try {
+      // The backend validates the saved row, but title/description reach it through a debounced
+      // collaboration save, so a just-typed (or just-saved) value can still be in flight when
+      // Submit is pressed. Write the current values explicitly first so the gate sees them.
+      await adapter.updateMeta(contentId, { title, description, pricingModel });
       const updated = await onSubmit(data);
       setStatus(updated.status);
       if (updated.updatedAt !== undefined) {
@@ -1085,6 +1112,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
           open={submitDialogOpen}
           onClose={() => setSubmitDialogOpen(false)}
           onSubmit={handleSubmit}
+          onSaveBasics={saveBasics}
         />
       )}
       {confirmDialog}

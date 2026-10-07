@@ -32,6 +32,11 @@ export interface ContentMeta {
   status: string;
   pricingModel?: string;
   categoryId?: string | null;
+  /** Free-text category (Events). Courses use `categoryId` instead. */
+  category?: string;
+  learningOutcomes?: string;
+  /** Minor units (paise). */
+  priceAmount?: number;
   createdAt: string | null;
   updatedAt: string | null;
   raw?: any;

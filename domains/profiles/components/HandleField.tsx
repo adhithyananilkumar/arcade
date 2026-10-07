@@ -122,8 +122,8 @@ export function HandleField({
         )}
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <div className="relative flex flex-1 items-center overflow-hidden rounded-xl border border-slate-200 bg-surface transition-colors focus-within:border-slate-900">
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
+        <div className="relative flex min-w-0 flex-1 items-center overflow-hidden rounded-xl border border-slate-200 bg-surface transition-colors focus-within:border-slate-900">
           <span className="pl-3.5 pr-1 text-[14px] font-bold text-slate-300">
             @
           </span>
@@ -138,7 +138,7 @@ export function HandleField({
             autoComplete="off"
             maxLength={30}
             placeholder="your-handle"
-            className="w-full bg-transparent py-2.5 pr-3 text-[14px] font-semibold tracking-tight text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300"
+            className="w-full min-w-0 bg-transparent py-2.5 pr-3 text-[14px] font-semibold tracking-tight text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300"
           />
           {checking && (
             <Loader2

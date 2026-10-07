@@ -157,10 +157,19 @@ export default function EventsView({
 
   // Sorting stays client-side: it reorders what is already on screen and does not change which
   // events match.
-  if (sortBy === "duration") {
-    filteredBootcamps = [...filteredBootcamps].sort((a, b) => (a.duration || "").localeCompare(b.duration || ""));
-    filteredWebinars = [...filteredWebinars].sort((a, b) => (a.duration || "").localeCompare(b.duration || ""));
-  }
+  // "Upcoming" used to leave the server's order untouched and "Duration" compared the text, so
+  // "10 days" came before "2 days" — the live sessions read in no order (BUG-1048). Both sort on
+  // numbers now, and unscheduled / unknown items go last.
+  const last = (v: number | null) => (v == null ? Number.POSITIVE_INFINITY : v);
+  const byKey = (key: (e: (typeof allEvents)[number]) => number | null) => (a: (typeof allEvents)[number], b: (typeof allEvents)[number]) =>
+    last(key(a)) - last(key(b)) || a.title.localeCompare(b.title);
+  const comparator =
+    sortBy === "duration"
+      ? byKey((e) => e.durationMinutes)
+      : // Upcoming: what starts soonest first; anything already started or past after it.
+        byKey((e) => (e.startsAtMs == null ? null : e.startsAtMs >= Date.now() ? e.startsAtMs : 8.64e15 + e.startsAtMs / 1e6));
+  filteredBootcamps = [...filteredBootcamps].sort(comparator);
+  filteredWebinars = [...filteredWebinars].sort(comparator);
 
   const showBootcamps = eventType === "all" || eventType === "bootcamps";
   const showWebinars = eventType === "all" || eventType === "webinars";

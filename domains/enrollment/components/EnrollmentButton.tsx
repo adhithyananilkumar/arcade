@@ -10,6 +10,7 @@ import { EnrollmentService } from '../api/enrollment.service';
 import { myEnrollmentKeys } from '../api/myEnrollments.queries';
 import { ResourceType, UIEnrollmentState } from '../types/enrollment.types';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/shared/design-system/ui/dialog';
 import { ArrowRight, Loader2, LogOut } from 'lucide-react';
 import {
   launchRazorpayCheckout,
@@ -86,6 +87,8 @@ export function EnrollmentButton({
 
   // Track idempotency key across component lifecycle for the same logical action
   const idempotencyKeyRef = useRef<string | null>(null);
+  // initialState as it was when the learner unenrolled — ignored until the parent sends a new one.
+  const staleInitialRef = useRef<UIEnrollmentState | null>(null);
 
   const getOrCreateIdempotencyKey = useCallback(() => {
     if (!idempotencyKeyRef.current) {
@@ -259,16 +262,18 @@ export function EnrollmentButton({
     }
   };
 
+  // A styled confirmation instead of the browser's confirm() box (BUG-1004).
+  const [confirmingRevoke, setConfirmingRevoke] = useState(false);
+
   const handleRevoke = async () => {
     if (isProcessing) return;
-    
-    if (!confirm('Are you sure you want to unenroll from this resource?')) {
-      return;
-    }
-
+    setConfirmingRevoke(false);
     setIsProcessing(true);
     try {
       await EnrollmentService.revoke(resourceType, resourceId);
+      // The parent still passes the pre-revoke ENROLLED until its query refetches; remember it so
+      // the upgrade effect below does not put the Unenroll button straight back (BUG-1023).
+      staleInitialRef.current = initialState;
       notifyStateChange('NOT_ENROLLED');
       toast.success('Successfully unenrolled');
       resetIdempotencyKey();
@@ -310,6 +315,10 @@ export function EnrollmentButton({
    */
   useEffect(() => {
     if (isProcessing || isPaying) return;
+    if (staleInitialRef.current !== null) {
+      if (initialState === staleInitialRef.current) return;
+      staleInitialRef.current = null;
+    }
     const rank: Record<UIEnrollmentState, number> = {
       NOT_ENROLLED: 0,
       PENDING: 1,
@@ -318,6 +327,38 @@ export function EnrollmentButton({
     };
     setCurrentState((prev) => (rank[initialState] > rank[prev] ? initialState : prev));
   }, [initialState, isProcessing, isPaying]);
+
+  const revokeNoun = resourceType === 'COURSE' ? 'course' : resourceType === 'EXAM' ? 'exam' : 'event';
+  const leavingWaitlist = currentState === 'WAITLISTED';
+  const revokeDialog = (
+    <Dialog open={confirmingRevoke} onOpenChange={setConfirmingRevoke}>
+      <DialogContent className="max-w-sm">
+        <DialogTitle>{leavingWaitlist ? 'Leave the waitlist?' : `Unenroll from this ${revokeNoun}?`}</DialogTitle>
+        <DialogDescription>
+          {leavingWaitlist
+            ? 'You will lose your place in the queue.'
+            : `It leaves your library and you lose access straight away. You can enroll again later if enrollment is still open.`}
+        </DialogDescription>
+        <div className="mt-2 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setConfirmingRevoke(false)}
+            className="rounded-full px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+          >
+            Keep {leavingWaitlist ? 'my place' : 'access'}
+          </button>
+          <button
+            type="button"
+            onClick={handleRevoke}
+            disabled={isProcessing}
+            className="rounded-full bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-50"
+          >
+            {leavingWaitlist ? 'Leave waitlist' : 'Unenroll'}
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 
   // Render logic based on explicit UI state
   if (currentState === 'ENROLLED') {
@@ -331,13 +372,14 @@ export function EnrollmentButton({
           <ArrowRight className="w-4 h-4 shrink-0 text-white" />
         </button>
         <button
-          onClick={handleRevoke}
+          onClick={() => setConfirmingRevoke(true)}
           disabled={isProcessing}
           className="bg-slate-950/5 hover:bg-slate-950/10 active:scale-[0.98] text-slate-700 hover:text-red-600 backdrop-blur-md border border-slate-950/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 flex items-center gap-1.5 disabled:opacity-50 dark:hover:text-red-400"
           title="Unenroll">
           <LogOut className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Unenroll</span>
         </button>
+        {revokeDialog}
       </div>
     );
   }
@@ -351,12 +393,13 @@ export function EnrollmentButton({
           Waitlisted
         </button>
         <button
-          onClick={handleRevoke}
+          onClick={() => setConfirmingRevoke(true)}
           disabled={isProcessing}
           className="bg-slate-950/5 hover:bg-slate-950/10 active:scale-[0.98] text-slate-700 hover:text-red-600 backdrop-blur-md border border-slate-950/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 disabled:opacity-50 dark:hover:text-red-400"
           title="Leave waitlist">
           Leave
         </button>
+        {revokeDialog}
       </div>
     );
   }

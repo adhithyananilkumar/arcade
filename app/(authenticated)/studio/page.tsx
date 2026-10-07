@@ -29,6 +29,17 @@ import {
   SUPPORTS_TITLE_CONFIRM_DELETE,
 } from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/lib/contentActions";
 import { ConfirmActionModal } from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/components/ConfirmActionModal";
+import {
+  CapacityField,
+  CategoryField,
+  DescriptionField,
+  FirstDayField,
+  OutcomesField,
+  PriceField,
+  isPriceValid,
+  toMinor,
+  type PriceValue,
+} from "@/apps/creator/studio/core/ContentBasicsFields";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import ShinyText from "@/components/ui/ShinyText";
 import Magnet from "@/components/ui/Magnet";
@@ -256,6 +267,9 @@ const TYPE_CONFIG: Record<
 function CreateCourseModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [outcomes, setOutcomes] = useState("");
+  const [price, setPrice] = useState<PriceValue>({ paid: false, amount: "" });
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { channels, loading: channelsLoading } = useEligibleChannels();
@@ -267,12 +281,16 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !channelId) return;
+    if (!name.trim() || !description.trim() || !channelId || !isPriceValid(price)) return;
     setCreating(true);
     setError(null);
     try {
       const course = await api.post<{ id: string }>("/api/courses", {
         title: name.trim(),
+        description: description.trim(),
+        learningOutcomes: outcomes.trim() || undefined,
+        pricingModel: price.paid ? "PAID" : "FREE",
+        priceAmount: toMinor(price),
         channelId,
       });
       toast.success(`"${name.trim()}" created`);
@@ -288,7 +306,7 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
@@ -302,7 +320,7 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
           </div>
           <div>
             <h3 className="text-[15px] font-bold tracking-tight text-ink">New Course</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
+            <p className="text-[12px] font-medium text-slate-500">Add the basics reviewers will look for.</p>
           </div>
         </div>
 
@@ -328,6 +346,15 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
+          <DescriptionField
+            id="course-description"
+            value={description}
+            onChange={setDescription}
+            label="Course overview"
+            placeholder="What will learners get out of this course?"
+          />
+          <OutcomesField id="course-outcomes" value={outcomes} onChange={setOutcomes} />
+          <PriceField id="course-price" value={price} onChange={setPrice} />
           {!channelsLoading && channels.length > 0 && (
             <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           )}
@@ -346,7 +373,7 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
             </button>
             <button
               type="submit"
-              disabled={!name.trim() || !channelId || creating}
+              disabled={!name.trim() || !description.trim() || !channelId || !isPriceValid(price) || creating}
               className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-ink-hover disabled:opacity-60 cursor-pointer"
             >
               {creating ? "Creating…" : "Create Course"}
@@ -359,6 +386,12 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
 }
 
 
+/** "HH:mm" + one hour as "HH:mm:ss", capped at the end of the day so the Day never ends before it starts. */
+function addHour(hhmm: string): string {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h >= 23 ? "23:59:00" : `${String(h + 1).padStart(2, "0")}:${String(m).padStart(2, "0")}:00`;
+}
+
 // ── New Event creation modal ────────────────────────────────────────────────────
 
 function CreateEventModal({
@@ -368,6 +401,12 @@ function CreateEventModal({
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [price, setPrice] = useState<PriceValue>({ paid: false, amount: "" });
+  const [capacity, setCapacity] = useState("");
+  const [firstDate, setFirstDate] = useState("");
+  const [firstTime, setFirstTime] = useState("10:00");
   const [eventType, setEventType] = useState<"WORKSHOP" | "WEBINAR">("WORKSHOP");
   const [creating, setCreating] = useState(false);
   const { channels, loading: channelsLoading } = useEligibleChannels();
@@ -380,24 +419,46 @@ function CreateEventModal({
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !channelId) return;
+    if (
+      !title.trim() || !description.trim() || !category.trim() || !channelId ||
+      !firstDate || !firstTime || !isPriceValid(price) || (capacity !== "" && Number(capacity) < 1)
+    ) {
+      return;
+    }
     setCreating(true);
     setError(null);
 
     try {
       const event = await api.post<{ id: string }>("/api/v1/events", {
         title: title.trim(),
+        description: description.trim(),
         eventType,
-        category: "uncategorized",
+        category: category.trim(),
         tags: [],
         deliveryMode: "ONLINE",
         difficulty: "BEGINNER",
         language: "en",
-        priceAmount: 0,
+        priceAmount: toMinor(price),
         currency: "INR",
+        capacity: capacity === "" ? undefined : Number(capacity),
         visibility: "PRIVATE",
         channelId,
       });
+      // The event exists from here on, so a failure below must not strand the author on the form
+      // (re-submitting would create a duplicate) — the Day can still be added in the editor.
+      try {
+        await api.post(`/api/v1/events/${event.id}/sessions`, {
+          title: "Day 1",
+          startDate: firstDate,
+          endDate: firstDate,
+          startTime: `${firstTime}:00`,
+          endTime: addHour(firstTime),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+          deliveryMode: "ONLINE",
+        });
+      } catch {
+        toast.error("Event created, but its first day couldn't be added. Add it from the editor.");
+      }
       toast.success(`"${title.trim()}" created`);
       router.push(`/studio/content/event/${event.id}`);
     } catch (err) {
@@ -411,7 +472,7 @@ function CreateEventModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
@@ -426,7 +487,7 @@ function CreateEventModal({
           </div>
           <div>
             <h3 className="text-[15px] font-bold tracking-tight text-ink">New Event</h3>
-            <p className="text-[12px] font-medium text-slate-500">Choose event type and give it a title.</p>
+            <p className="text-[12px] font-medium text-slate-500">Choose the type, then fill in the basics.</p>
           </div>
         </div>
 
@@ -495,11 +556,20 @@ function CreateEventModal({
             />
           </div>
 
+          <DescriptionField id="event-description" value={description} onChange={setDescription} />
+          <CategoryField id="event-category" value={category} onChange={setCategory} type="EVENTS" />
+          <FirstDayField idPrefix="event-first" date={firstDate} time={firstTime} onDate={setFirstDate} onTime={setFirstTime} />
+          <PriceField id="event-price" value={price} onChange={setPrice} />
+          <CapacityField id="event-capacity" value={capacity} onChange={setCapacity} />
+
           <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
 
           <button
             type="submit"
-            disabled={!title.trim() || !channelId || creating}
+            disabled={
+              !title.trim() || !description.trim() || !category.trim() || !channelId || !firstDate ||
+              !firstTime || !isPriceValid(price) || (capacity !== "" && Number(capacity) < 1) || creating
+            }
             className="w-full rounded-xl bg-violet-600 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-700 disabled:opacity-50 cursor-pointer"
           >
             {creating ? "Creating..." : `Create ${eventType === "WORKSHOP" ? "Workshop" : "Webinar"}`}
@@ -546,7 +616,7 @@ function RenameRoadmapModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
@@ -1058,7 +1128,7 @@ function ChannelRequiredModal({
         className="absolute inset-0 bg-ink/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.2)] transition-all">
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.2)] transition-all">
         <div className="flex items-start justify-between">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
             <Lock size={24} />

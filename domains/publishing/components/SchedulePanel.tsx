@@ -5,7 +5,7 @@
 // same everywhere. The server validates and enforces; this panel edits and reports.
 
 import { useCallback, useEffect, useState } from "react";
-import { CalendarClock, Check, Loader2, RotateCcw, UserPlus, Lock, Calendar, Clock } from "lucide-react";
+import { CalendarClock, Check, Loader2, RotateCcw, UserPlus, Lock, Clock } from "lucide-react";
 import { toast } from "sonner";
 import {
   contentScheduleApi,
@@ -28,6 +28,16 @@ function toLocalInput(iso: string | null): string {
   if (Number.isNaN(d.getTime())) return "";
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** "07 Oct 2026 · 10:30 AM" — the picked value read back in words (BUG-1038). */
+function readable(local: string): string | null {
+  if (!local) return null;
+  const d = new Date(local);
+  if (Number.isNaN(d.getTime())) return null;
+  const date = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  return `${date} · ${time}`;
 }
 
 function fromLocalInput(value: string): string | null {
@@ -325,15 +335,18 @@ function WindowFields({
               aria-invalid={!!opensProblem}
               onChange={(e) => onOpens(e.target.value, problemOf(e.target))}
               onBlur={(e) => onOpens(e.target.value, problemOf(e.target))}
-              className={`w-full rounded-2xl border bg-surface p-3 pr-10 text-xs font-medium text-slate-900 outline-none focus:ring-4 ${
+              className={`w-full rounded-2xl border bg-surface p-3 text-xs [color-scheme:light] dark:[color-scheme:dark] font-medium text-slate-900 outline-none focus:ring-4 ${
                 opensProblem
                   ? "border-rose-300 focus:border-rose-400 dark:border-rose-500/40 focus:ring-rose-500/10"
                   : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"
               }`}
             />
-            <Calendar size={16} className="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none" />
           </div>
-          {opensProblem && <span className="mt-1 block text-[10px] font-medium text-rose-600 dark:text-rose-400">{opensProblem}</span>}
+          {opensProblem ? (
+            <span className="mt-1 block text-[10px] font-medium text-rose-600 dark:text-rose-400">{opensProblem}</span>
+          ) : (
+            readable(opens) && <span className="mt-1 block text-[10px] font-medium text-slate-500">{readable(opens)}</span>
+          )}
         </div>
 
         <div className="flex flex-col gap-1">
@@ -348,15 +361,18 @@ function WindowFields({
               aria-invalid={!!closesProblem}
               onChange={(e) => onCloses(e.target.value, problemOf(e.target))}
               onBlur={(e) => onCloses(e.target.value, problemOf(e.target))}
-              className={`w-full rounded-2xl border bg-surface p-3 pr-10 text-xs font-medium text-slate-900 outline-none focus:ring-4 ${
+              className={`w-full rounded-2xl border bg-surface p-3 text-xs [color-scheme:light] dark:[color-scheme:dark] font-medium text-slate-900 outline-none focus:ring-4 ${
                 closesProblem
                   ? "border-rose-300 focus:border-rose-400 dark:border-rose-500/40 focus:ring-rose-500/10"
                   : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"
               }`}
             />
-            <Calendar size={16} className="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none" />
           </div>
-          {closesProblem && <span className="mt-1 block text-[10px] font-medium text-rose-600 dark:text-rose-400">{closesProblem}</span>}
+          {closesProblem ? (
+            <span className="mt-1 block text-[10px] font-medium text-rose-600 dark:text-rose-400">{closesProblem}</span>
+          ) : (
+            readable(closes) && <span className="mt-1 block text-[10px] font-medium text-slate-500">{readable(closes)}</span>
+          )}
         </div>
       </div>
     </div>

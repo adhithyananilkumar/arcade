@@ -21,8 +21,8 @@
  * ------------------------------------------------------------------
  */
 
-import type { ReactNode } from "react";
-import { ArrowRight, Loader2, Save, type LucideIcon } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ArrowRight, ChevronDown, Loader2, Save, type LucideIcon } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Tabs                                                              */
@@ -34,6 +34,8 @@ export interface WorkspaceTab<T extends string> {
   icon: LucideIcon;
   /** A small count or marker after the label, e.g. pending items. */
   badge?: string | number | null;
+  /** Kept under "More" so the bar stays scannable; shown in place of "More" while it is open. */
+  secondary?: boolean;
 }
 
 export function WorkspaceTabs<T extends string>({
@@ -47,6 +49,38 @@ export function WorkspaceTabs<T extends string>({
   onChange: (id: T) => void;
   ariaLabel?: string;
 }) {
+  const primary = tabs.filter((t) => !t.secondary);
+  const secondary = tabs.filter((t) => t.secondary);
+  const activeSecondary = secondary.find((t) => t.id === active);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    const close = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
+    };
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setMoreOpen(false);
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", esc);
+    };
+  }, [moreOpen]);
+
+  const pill = (selected: boolean) =>
+    `inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full px-5 py-2 text-xs font-bold transition-all ${
+      selected ? "bg-blue-600 text-white shadow-sm" : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
+    }`;
+  const badge = (tab: WorkspaceTab<T>, selected: boolean) =>
+    tab.badge != null && tab.badge !== "" && tab.badge !== 0 ? (
+      <span className={`rounded-full px-1.5 py-px text-[10px] font-black ${selected ? "bg-white/25 text-white" : "bg-slate-100 text-slate-500"}`}>
+        {tab.badge}
+      </span>
+    ) : null;
+
+  const MoreIcon = activeSecondary?.icon;
   return (
     <div className="flex items-center justify-center">
       <div
@@ -54,35 +88,65 @@ export function WorkspaceTabs<T extends string>({
         aria-label={ariaLabel}
         className="inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-slate-200/80 bg-surface/95 p-1.5 shadow-[0_4px_20px_rgba(20,20,43,0.04)] backdrop-blur-md scrollbar-none"
       >
-        {tabs.map((tab) => {
+        {primary.map((tab) => {
           const selected = tab.id === active;
           const Icon = tab.icon;
           return (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={selected}
-              onClick={() => onChange(tab.id)}
-              className={`inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full px-5 py-2 text-xs font-bold transition-all ${
-                selected ? "bg-blue-600 text-white shadow-sm" : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
-              }`}
-            >
+            <button key={tab.id} type="button" role="tab" aria-selected={selected} onClick={() => onChange(tab.id)} className={pill(selected)}>
               <Icon size={14} className={selected ? "text-white" : "text-slate-400"} />
               {tab.label}
-              {tab.badge != null && tab.badge !== "" && tab.badge !== 0 && (
-                <span
-                  className={`rounded-full px-1.5 py-px text-[10px] font-black ${
-                    selected ? "bg-white/25 text-white" : "bg-slate-100 text-slate-500"
-                  }`}
-                >
-                  {tab.badge}
-                </span>
-              )}
+              {badge(tab, selected)}
             </button>
           );
         })}
+        {secondary.length > 0 && (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={!!activeSecondary}
+            aria-haspopup="menu"
+            aria-expanded={moreOpen}
+            onClick={() => setMoreOpen((o) => !o)}
+            className={pill(!!activeSecondary)}
+          >
+            {MoreIcon && <MoreIcon size={14} className="text-white" />}
+            {activeSecondary ? activeSecondary.label : "More"}
+            <ChevronDown size={14} className={`transition-transform ${moreOpen ? "rotate-180" : ""} ${activeSecondary ? "text-white" : "text-slate-400"}`} />
+          </button>
+        )}
       </div>
+      {secondary.length > 0 && (
+        // Zero-width anchor at the bar's right end: the menu hangs from there, outside the bar,
+        // whose horizontal scroll would otherwise clip it.
+        <div ref={moreRef} className="relative">
+          {moreOpen && (
+            <div role="menu" className="absolute right-0 top-8 z-30 w-56 rounded-2xl border border-slate-200 bg-surface p-1.5 shadow-xl">
+              {secondary.map((tab) => {
+                const selected = tab.id === active;
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setMoreOpen(false);
+                      onChange(tab.id);
+                    }}
+                    className={`flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-bold ${
+                      selected ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300" : "text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    <Icon size={14} className={selected ? "" : "text-slate-400"} />
+                    {tab.label}
+                    {badge(tab, false)}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

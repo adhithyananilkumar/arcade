@@ -85,7 +85,10 @@ export default function ArcConsoleLayout({
           <SideNav sections={[{ items: navItems }]} activeKey={activeKey} ariaLabel="Console" />
         </aside>
 
-        <main className="min-w-0 flex-1 flex flex-col min-h-0 relative px-1">{children}</main>
+        {/* The frame above is fixed-height and clipped, so the content area is the scroll container:
+            a console page taller than the viewport scrolls here instead of being cut off. Pages that
+            manage their own inner scroll (h-full + overflow-y-auto) are unaffected. */}
+        <main className="min-w-0 flex-1 flex flex-col min-h-0 relative overflow-y-auto overscroll-contain px-1 pb-6">{children}</main>
       </div>
     </div>
   );

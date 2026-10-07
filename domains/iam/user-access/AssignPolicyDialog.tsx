@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Loader2, Lock, Search, ShieldCheck, X } from 'lucide-react';
 import type { Role } from '@/domains/identity';
 import { SURFACE_LABEL, formatPermissionLabel } from '../policy-editor/PermissionSelector';
@@ -48,6 +49,8 @@ export function AssignPolicyDialog({
 }: AssignPolicyDialogProps) {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<Role | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const filtered = useMemo(() => {
     if (!query.trim()) return availablePolicies;
@@ -65,7 +68,11 @@ export function AssignPolicyDialog({
     await onAssign(selected.id);
   };
 
-  return (
+  // Portaled to <body>: the Sheet it opens from is a body-level portal, so a dialog left inside
+  // the page tree sits in a lower stacking context and renders behind/outside the drawer.
+  if (!mounted) return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-[60] flex items-start justify-center bg-black/50 p-4 pt-[10vh]" onClick={onClose}>
       <div
         className="w-full max-w-md rounded-2xl bg-surface shadow-2xl overflow-hidden flex flex-col max-h-[75vh]"
@@ -188,7 +195,8 @@ export function AssignPolicyDialog({
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

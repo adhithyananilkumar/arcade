@@ -2,15 +2,13 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, CheckCircle, Clock, TrendingUp, Users } from "lucide-react";
+import { AlertTriangle, CheckCircle, ShieldCheck, TrendingUp, Users } from "lucide-react";
 import { api } from "@/infrastructure/http/api";
 import type { FetchResult } from "../../lib/fetchOverviewData";
-import type { EventPricing, SaveEventPricingRequest } from "@/app/(authenticated)/studio/events/types";
-import { PricingModel, RegistrationType, SeatType, RefundPolicy } from "@/app/(authenticated)/studio/events/types";
+import { RefundPolicy } from "@/app/(authenticated)/studio/events/types";
 import type { Event as EventDto } from "@/domains/events";
 import {
   WorkspaceChoice,
-  WorkspaceLabel,
   WorkspaceMessage,
   WorkspaceRow,
   WorkspaceRows,
@@ -23,88 +21,62 @@ function formatCurrency(amount: number, currency = "INR"): string {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(amount);
 }
 
-function formatDate(iso?: string): string {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+const REFUND_LABEL: Record<RefundPolicy, string> = {
+  [RefundPolicy.NO_REFUND]: "No refund",
+  [RefundPolicy.FULL_REFUND]: "Full refund",
+  [RefundPolicy.PARTIAL_REFUND]: "Partial refund",
+  [RefundPolicy.CUSTOM]: "Custom",
+};
+
+/** Everything on this tab that the event actually stores. */
+interface PricingForm {
+  paid: boolean;
+  /** Major units, as typed. */
+  price: number;
+  currency: string;
+  limited: boolean;
+  seatLimit?: number;
+  refundPolicy?: RefundPolicy;
 }
 
-function requestOf(p: EventPricing): SaveEventPricingRequest {
+function formOf(event?: EventDto | null): PricingForm {
+  const minor = event?.priceAmount || 0;
   return {
-    pricingModel: p.pricingModel,
-    price: p.price,
-    currency: p.currency,
-    registrationType: p.registrationType,
-    seatType: p.seatType,
-    seatLimit: p.seatLimit,
-    waitlistEnabled: p.waitlistEnabled,
-    registrationStart: p.registrationStart,
-    registrationEnd: p.registrationEnd,
-    earlyBirdEnabled: p.earlyBirdEnabled,
-    earlyBirdPrice: p.earlyBirdPrice,
-    earlyBirdEndDate: p.earlyBirdEndDate,
-    couponEnabled: p.couponEnabled,
-    refundPolicy: p.refundPolicy,
-    allowCancellation: p.allowCancellation,
-  };
-}
-
-function Check({ checked, onChange, children }: { checked: boolean; onChange: (v: boolean) => void; children: React.ReactNode }) {
-  return (
-    <label className="inline-flex cursor-pointer select-none items-center gap-2.5 text-xs font-semibold text-slate-700">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="size-4 rounded border-slate-300 accent-[#205ca8]" />
-      {children}
-    </label>
-  );
-}
-
-/** The event's pricing derived from the event record, for events with no dedicated pricing row. */
-function pricingFromEvent(eventId: string, event?: EventDto | null): EventPricing {
-  const isPaid = (event?.priceAmount || 0) > 0;
-  return {
-    id: "",
-    eventId,
-    pricingModel: isPaid ? PricingModel.PAID : PricingModel.FREE,
-    price: (event?.priceAmount || 0) / 100,
+    paid: minor > 0,
+    price: minor / 100,
     currency: event?.currency || "INR",
-    registrationType: RegistrationType.OPEN,
-    seatType: event?.capacity ? SeatType.LIMITED : SeatType.UNLIMITED,
-    seatLimit: event?.capacity,
-    waitlistEnabled: false,
-    earlyBirdEnabled: false,
-    couponEnabled: false,
-    allowCancellation: true,
-    createdAt: "",
-    updatedAt: "",
+    limited: !!event?.capacity,
+    seatLimit: event?.capacity ?? undefined,
+    refundPolicy: (event?.refundPolicy as RefundPolicy | null | undefined) ?? undefined,
   };
 }
 
 /**
- * An event's Pricing tab: registration fee, who can register and when, seats, early-bird and
- * refunds — the numbered rows every Content Overview form uses, saved together. The figures
- * strip on top reads from what is saved, not the draft.
+ * An event's Pricing tab: fee, seats and refund policy, saved together on the event.
+ *
+ * <p>It used to also offer registration type, a registration window, waitlist, early-bird and
+ * coupons, and saved those to an endpoint that does not exist — swallowing the failure, so the
+ * page said "Pricing saved" and a refresh put everything back (BUG-1029). Only settings the
+ * backend stores are shown now; the registration window lives on the Schedule tab.
  */
 export function EventPricingSection({
   eventId,
-  pricingResult,
   eventDetails,
   participantCount,
   onChanged,
 }: {
   eventId: string;
-  pricingResult?: FetchResult<EventPricing>;
   eventDetails?: FetchResult<EventDto>;
   participantCount: number;
   onChanged: () => void;
 }) {
   // The page has loaded the event before this tab renders, and a save keeps `saved` current
   // itself, so the initial value is all this needs from props.
-  const [saved, setSaved] = useState<EventPricing>(() =>
-    pricingResult?.status === "ok" ? pricingResult.data : pricingFromEvent(eventId, eventDetails?.status === "ok" ? eventDetails.data : null)
-  );
-  const [form, setForm] = useState<SaveEventPricingRequest>(() => requestOf(saved));
+  const [saved, setSaved] = useState<PricingForm>(() => formOf(eventDetails?.status === "ok" ? eventDetails.data : null));
+  const [form, setForm] = useState<PricingForm>(saved);
   const [saving, setSaving] = useState(false);
 
-  if (pricingResult?.status === "error" && eventDetails?.status !== "ok") {
+  if (eventDetails?.status === "error") {
     return (
       <WorkspaceMessage icon={AlertTriangle} tone="warning" title="Pricing is temporarily unavailable">
         Try again shortly.
@@ -112,36 +84,28 @@ export function EventPricingSection({
     );
   }
 
-  const update = <K extends keyof SaveEventPricingRequest>(key: K, val: SaveEventPricingRequest[K]) => setForm((p) => ({ ...p, [key]: val }));
-  const dirty = JSON.stringify(form) !== JSON.stringify(requestOf(saved));
-  const isFree = form.pricingModel === PricingModel.FREE;
-  const savedFree = saved.pricingModel === PricingModel.FREE;
+  const update = <K extends keyof PricingForm>(key: K, val: PricingForm[K]) => setForm((p) => ({ ...p, [key]: val }));
+  const dirty = JSON.stringify(form) !== JSON.stringify(saved);
+  const priceInvalid = form.paid && !(form.price > 0);
+  const seatsInvalid = form.limited && !((form.seatLimit ?? 0) >= 1);
 
   const save = async () => {
+    if (priceInvalid || seatsInvalid) {
+      toast.error(priceInvalid ? "Enter a price above zero, or choose Free" : "Enter at least one seat, or choose Unlimited");
+      return;
+    }
     setSaving(true);
     try {
-      const priceAmount = isFree ? 0 : Math.round((form.price || 0) * 100);
-      const capacity = form.seatType === SeatType.LIMITED ? (form.seatLimit ?? null) : null;
-
-      // The event aggregate stores price_amount, currency and capacity.
-      await api.patch(`/api/v1/events/${eventId}`, { priceAmount, currency: form.currency || "INR", capacity });
-
-      // Best effort on the dedicated pricing table, where the endpoint exists.
-      let updated: EventPricing;
-      try {
-        updated = await api.put<EventPricing>(`/api/v1/events/${eventId}/pricing`, form);
-      } catch {
-        updated = {
-          ...saved,
-          ...form,
-          id: saved.id || eventId,
-          eventId,
-          createdAt: saved.createdAt || new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        } as EventPricing;
-      }
-      setSaved(updated);
-      setForm(requestOf(updated));
+      const updated = await api.patch<EventDto>(`/api/v1/events/${eventId}`, {
+        priceAmount: form.paid ? Math.round(form.price * 100) : 0,
+        currency: form.currency || "INR",
+        // 0 clears the cap; null would leave the old limit in place.
+        capacity: form.limited ? form.seatLimit : 0,
+        refundPolicy: form.refundPolicy ?? null,
+      });
+      const next = formOf(updated);
+      setSaved(next);
+      setForm(next);
       toast.success("Pricing saved");
       onChanged();
     } catch (err) {
@@ -151,8 +115,6 @@ export function EventPricingSection({
     }
   };
 
-  const toLocal = (iso?: string) => (iso ? iso.slice(0, 16) : "");
-  const fromLocal = (value: string) => (value ? new Date(value).toISOString() : undefined);
   let step = 0;
   const next = () => ++step;
 
@@ -162,42 +124,38 @@ export function EventPricingSection({
         <WorkspaceStat icon={Users} label="Registrations" value={participantCount} />
         <WorkspaceStat
           icon={TrendingUp}
-          label={savedFree ? "Price" : "Revenue"}
-          value={savedFree ? "Free" : formatCurrency(saved.price * participantCount, saved.currency)}
-          hint={savedFree ? undefined : `${formatCurrency(saved.price, saved.currency)} per participant`}
+          label={saved.paid ? "Revenue" : "Price"}
+          value={saved.paid ? formatCurrency(saved.price * participantCount, saved.currency) : "Free"}
+          hint={saved.paid ? `${formatCurrency(saved.price, saved.currency)} per participant` : undefined}
         />
+        <WorkspaceStat icon={CheckCircle} label="Seats" value={saved.limited && saved.seatLimit != null ? saved.seatLimit : "Unlimited"} />
         <WorkspaceStat
-          icon={CheckCircle}
-          label="Seats"
-          value={saved.seatType === SeatType.LIMITED && saved.seatLimit != null ? saved.seatLimit : "Unlimited"}
-          hint={saved.waitlistEnabled ? "Waitlist on" : undefined}
+          icon={ShieldCheck}
+          label="Refunds"
+          value={saved.paid ? (saved.refundPolicy ? REFUND_LABEL[saved.refundPolicy] : "Not set") : "—"}
         />
-        <WorkspaceStat icon={Clock} label="Registration closes" value={formatDate(saved.registrationEnd)} />
       </div>
 
       <WorkspaceRows>
-        <WorkspaceRow step={next()} title="Pricing model" description="How participants get a place.">
+        <WorkspaceRow step={next()} title="Pricing model" description="Whether participants pay to register.">
           <WorkspaceChoice
-            value={form.pricingModel}
-            onChange={(v) => update("pricingModel", v)}
+            value={form.paid ? "PAID" : "FREE"}
+            onChange={(v) => update("paid", v === "PAID")}
             options={[
-              { value: PricingModel.FREE, label: "Free" },
-              { value: PricingModel.PAID, label: "Paid" },
-              { value: PricingModel.MEMBERSHIP, label: "Membership" },
-              { value: PricingModel.INVITE_ONLY, label: "Invite only" },
-              { value: PricingModel.COMING_SOON, label: "Coming soon" },
+              { value: "FREE", label: "Free" },
+              { value: "PAID", label: "Paid" },
             ]}
           />
         </WorkspaceRow>
 
-        {!isFree && (
+        {form.paid && (
           <WorkspaceRow step={next()} title="Price" description="What each participant pays to register.">
             <div className="grid gap-3 sm:grid-cols-[1fr_9rem]">
               <input
                 type="number"
                 min={0}
                 aria-label="Price"
-                value={form.price ?? ""}
+                value={form.price || ""}
                 onChange={(e) => update("price", Number(e.target.value))}
                 className={workspaceField.input}
                 placeholder="0"
@@ -213,130 +171,47 @@ export function EventPricingSection({
           </WorkspaceRow>
         )}
 
-        <WorkspaceRow step={next()} title="Registration" description="Who can register, and the window in which they can.">
-          <div className="flex flex-col gap-3">
-            <select
-              aria-label="Registration type"
-              value={form.registrationType}
-              onChange={(e) => update("registrationType", e.target.value as RegistrationType)}
-              className={workspaceField.select}
-            >
-              <option value={RegistrationType.OPEN}>Open — anyone can register</option>
-              <option value={RegistrationType.APPROVAL_REQUIRED}>Approval required</option>
-              <option value={RegistrationType.INVITE_ONLY}>Invite only</option>
-              <option value={RegistrationType.PRIVATE}>Private</option>
-            </select>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <WorkspaceLabel htmlFor="reg-opens">Opens</WorkspaceLabel>
-                <input
-                  id="reg-opens"
-                  type="datetime-local"
-                  value={toLocal(form.registrationStart)}
-                  onChange={(e) => update("registrationStart", fromLocal(e.target.value))}
-                  className={workspaceField.input}
-                />
-              </div>
-              <div>
-                <WorkspaceLabel htmlFor="reg-closes">Closes</WorkspaceLabel>
-                <input
-                  id="reg-closes"
-                  type="datetime-local"
-                  value={toLocal(form.registrationEnd)}
-                  onChange={(e) => update("registrationEnd", fromLocal(e.target.value))}
-                  className={workspaceField.input}
-                />
-              </div>
-            </div>
-          </div>
-        </WorkspaceRow>
-
-        <WorkspaceRow step={next()} title="Seats" description="Cap the number of participants, with an optional waitlist.">
+        <WorkspaceRow step={next()} title="Seats" description="Cap the number of participants.">
           <div className="flex flex-col gap-3">
             <WorkspaceChoice
-              value={form.seatType}
-              onChange={(v) => update("seatType", v)}
+              value={form.limited ? "LIMITED" : "UNLIMITED"}
+              onChange={(v) => update("limited", v === "LIMITED")}
               options={[
-                { value: SeatType.UNLIMITED, label: "Unlimited" },
-                { value: SeatType.LIMITED, label: "Limited" },
+                { value: "UNLIMITED", label: "Unlimited" },
+                { value: "LIMITED", label: "Limited" },
               ]}
             />
-            {form.seatType === SeatType.LIMITED && (
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <input
-                  type="number"
-                  min={1}
-                  aria-label="Maximum seats"
-                  value={form.seatLimit ?? ""}
-                  onChange={(e) => update("seatLimit", Number(e.target.value))}
-                  className={`${workspaceField.input} sm:max-w-[12rem]`}
-                  placeholder="Maximum seats"
-                />
-                <Check checked={form.waitlistEnabled} onChange={(v) => update("waitlistEnabled", v)}>
-                  Enable waitlist when full
-                </Check>
-              </div>
+            {form.limited && (
+              <input
+                type="number"
+                min={1}
+                aria-label="Maximum seats"
+                value={form.seatLimit ?? ""}
+                onChange={(e) => update("seatLimit", e.target.value ? Number(e.target.value) : undefined)}
+                className={`${workspaceField.input} sm:max-w-[12rem]`}
+                placeholder="Maximum seats"
+              />
             )}
           </div>
         </WorkspaceRow>
 
-        {!isFree && (
-          <WorkspaceRow step={next()} title="Early-bird" description="A lower price for those who register before a date.">
-            <div className="flex flex-col gap-3">
-              <Check checked={form.earlyBirdEnabled} onChange={(v) => update("earlyBirdEnabled", v)}>
-                Offer early-bird pricing
-              </Check>
-              {form.earlyBirdEnabled && (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <WorkspaceLabel htmlFor="eb-price">Early-bird price</WorkspaceLabel>
-                    <input
-                      id="eb-price"
-                      type="number"
-                      min={0}
-                      value={form.earlyBirdPrice ?? ""}
-                      onChange={(e) => update("earlyBirdPrice", Number(e.target.value))}
-                      className={workspaceField.input}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <WorkspaceLabel htmlFor="eb-ends">Ends</WorkspaceLabel>
-                    <input
-                      id="eb-ends"
-                      type="date"
-                      value={form.earlyBirdEndDate ?? ""}
-                      onChange={(e) => update("earlyBirdEndDate", e.target.value || undefined)}
-                      className={workspaceField.input}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
+        {form.paid && (
+          <WorkspaceRow step={next()} title="Refund policy" description="What a participant can expect if they ask for their money back.">
+            <select
+              aria-label="Refund policy"
+              value={form.refundPolicy ?? ""}
+              onChange={(e) => update("refundPolicy", (e.target.value as RefundPolicy) || undefined)}
+              className={workspaceField.select}
+            >
+              <option value="">No refund policy set</option>
+              {Object.values(RefundPolicy).map((p) => (
+                <option key={p} value={p}>
+                  {REFUND_LABEL[p]}
+                </option>
+              ))}
+            </select>
           </WorkspaceRow>
         )}
-
-        <WorkspaceRow step={next()} title="Refunds & cancellation" description="What happens when a participant changes their mind.">
-          <div className="flex flex-col gap-3">
-            {!isFree && (
-              <select
-                aria-label="Refund policy"
-                value={form.refundPolicy ?? ""}
-                onChange={(e) => update("refundPolicy", (e.target.value as RefundPolicy) || undefined)}
-                className={workspaceField.select}
-              >
-                <option value="">No refund policy set</option>
-                <option value={RefundPolicy.NO_REFUND}>No refund</option>
-                <option value={RefundPolicy.FULL_REFUND}>Full refund</option>
-                <option value={RefundPolicy.PARTIAL_REFUND}>Partial refund</option>
-                <option value={RefundPolicy.CUSTOM}>Custom</option>
-              </select>
-            )}
-            <Check checked={form.allowCancellation} onChange={(v) => update("allowCancellation", v)}>
-              Participants can cancel their registration
-            </Check>
-          </div>
-        </WorkspaceRow>
 
         <WorkspaceSaveBar onSave={save} saving={saving} dirty={dirty} label="Save pricing" savedLabel="Pricing saved" />
       </WorkspaceRows>

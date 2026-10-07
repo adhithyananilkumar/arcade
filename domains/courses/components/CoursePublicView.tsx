@@ -503,7 +503,10 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
   }, [course?.id]);
 
   const hasBadge = (course?.badges && course.badges.length > 0) || false;
-  const hasCertification = Boolean(course?.hasExam || (certification && certification.published));
+  // Only a published certification earns this card. `course.hasExam` is also true for a course
+  // whose exam holds just in-course assessments — the card then linked to /exams/<courseId>,
+  // which is not an exam (BUG-1026).
+  const hasCertification = Boolean(certification && certification.published);
   const hasCredentials = hasBadge || hasCertification;
 
   const tabs = [
@@ -851,7 +854,7 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
                   </div>
 
                   <Link
-                    href={examRoutes.landing(certification?.examId || (params?.id as string))}
+                    href={examRoutes.landing(certification!.examId)}
                     className="shrink-0 rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md bg-ink px-6 py-3.5 text-center text-[15px] font-semibold text-on-ink shadow-[0_8px_24px_-8px_rgba(20,20,43,0.45)] transition-all hover:-translate-y-0.5 hover:bg-ink-hover hover:shadow-[0_12px_28px_-8px_rgba(20,20,43,0.5)] active:translate-y-0 active:scale-[0.98] flex items-center gap-2"
                   >
                     View Exam Details <ChevronRight size={15} />

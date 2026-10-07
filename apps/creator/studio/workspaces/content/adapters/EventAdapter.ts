@@ -36,6 +36,7 @@ export class EventAdapter implements ContentDataAdapter {
         id: workshop.id,
         title: workshop.title,
         description: workshop.description ?? "",
+        category: workshop.category,
         status: workshop.status,
         pricingModel: workshop.priceAmount > 0 ? "PAID" : "FREE",
         createdAt: workshop.createdAt,
@@ -62,6 +63,8 @@ export class EventAdapter implements ContentDataAdapter {
     await api.patch(`/api/v1/events/${id}`, {
       title: patch.title,
       description: patch.description,
+      category: patch.category,
+      priceAmount: patch.priceAmount,
     });
   }
 

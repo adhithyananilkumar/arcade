@@ -49,6 +49,17 @@ export interface ReviewDetailProps {
  * channel's own organization queue, so both stages review the same way. What the viewer may do is
  * the server's `actions`, never recomputed here.
  */
+/**
+ * Where a reviewer previews the submitted content. Only a course has a learner player route;
+ * sending an exam or event there showed "Course not found" (BUG-1025). An exam previews per plan
+ * from its overview's Preview tab, an event from its overview.
+ */
+function reviewPreviewHref(contentType: string, contentId: string): string {
+  if (contentType === "EXAM") return `/studio/content/exam/${contentId}?tab=preview`;
+  if (contentType === "EVENT") return `/studio/content/event/${contentId}`;
+  return `/studio/published/${contentId}`;
+}
+
 export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews" }: ReviewDetailProps) {
   const router = useRouter();
 
@@ -288,7 +299,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
 
         <div className="mt-4">
           <Link
-            href={`/studio/published/${review.contentId}`}
+            href={reviewPreviewHref(review.contentType, review.contentId)}
             target="_blank"
             className="inline-flex items-center gap-2 text-[13px] font-semibold text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
           >
