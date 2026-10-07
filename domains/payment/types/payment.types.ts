@@ -169,6 +169,16 @@ export interface PaymentTransactionView {
   status: string;
   failureReason?: string | null;
   createdAt: string;
+  /** The gateway settlement that paid this capture into Arcade's bank; null until it has. */
+  settlementId?: string | null;
+  settledAt?: string | null;
+  /** The bank's reference for the settlement transfer. */
+  settlementUtr?: string | null;
+  /** The gateway's fee and the GST on it, minor units, as reported at settlement. */
+  gatewayFeeMinor?: number | null;
+  gatewayTaxMinor?: number | null;
+  /** While unsettled: the expected deposit date (YYYY-MM-DD), T+2 working days. An estimate. */
+  settlementExpectedBy?: string | null;
 }
 
 export interface PaymentRefundView {
@@ -189,6 +199,9 @@ export interface PaymentRefundView {
   /** ARN / RRN / UTR the learner's bank traces the credit by, once assigned. */
   bankReference?: string | null;
   gatewayCheckedAt?: string | null;
+  /** The gateway settlement this refund was deducted from, once it has been. */
+  settlementId?: string | null;
+  settledAt?: string | null;
 }
 
 export interface PaymentTimelineView {

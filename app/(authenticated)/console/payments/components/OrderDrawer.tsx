@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Copy, Loader2, RotateCcw, X } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, Copy, Landmark, Loader2, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   describeCommission,
@@ -62,6 +62,93 @@ function when(value?: string | null) {
   return value
     ? new Date(value).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })
     : "—";
+}
+
+function day(value: string) {
+  // A plain date (YYYY-MM-DD) is a calendar day, not an instant: never shift it by time zone.
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+}
+
+/**
+ * When the money from this sale reaches Arcade's bank. A capture is not money in the bank: the
+ * gateway pays it out a couple of working days later, net of its fee and GST.
+ */
+function SettlementCard({ detail }: { detail: PaymentOrderDetail }) {
+  const order = detail.order;
+  const tx = detail.transactions.find((t) => t.status === "SUCCESS");
+  if (!tx) return null;
+  const settled = Boolean(tx.settledAt);
+  const fee = (tx.gatewayFeeMinor ?? 0) + (tx.gatewayTaxMinor ?? 0);
+
+  return (
+    <section
+      className={`rounded-2xl border px-4 py-3 ${
+        settled
+          ? "border-emerald-200/80 bg-emerald-50/50 dark:border-emerald-500/20 dark:bg-emerald-500/5"
+          : "border-amber-200/80 bg-amber-50/50 dark:border-amber-500/20 dark:bg-amber-500/5"
+      }`}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500">
+          <Landmark size={13} /> Settlement
+        </h4>
+        <span
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-bold ${
+            settled
+              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+              : "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300"
+          }`}
+        >
+          {settled ? <CheckCircle2 size={11} /> : <Clock size={11} />}
+          {settled ? "Settled" : "To be processed"}
+        </span>
+      </div>
+
+      {settled ? (
+        <div className="mt-2 space-y-1 text-xs">
+          <p className="font-semibold text-slate-800">Deposited {when(tx.settledAt)}</p>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[11px]">
+            {tx.settlementId && (
+              <>
+                <dt className="text-slate-400">Settlement</dt>
+                <dd className="font-mono text-slate-600">{tx.settlementId}</dd>
+              </>
+            )}
+            {tx.settlementUtr && (
+              <>
+                <dt className="text-slate-400">Bank UTR</dt>
+                <dd className="font-mono text-slate-600">{tx.settlementUtr}</dd>
+              </>
+            )}
+            {(tx.gatewayFeeMinor != null || tx.gatewayTaxMinor != null) && (
+              <>
+                <dt className="text-slate-400">Gateway fee</dt>
+                <dd className="tabular-nums text-slate-600">
+                  {formatMoney(tx.gatewayFeeMinor ?? 0, order.currency)}
+                  {tx.gatewayTaxMinor ? ` + ${formatMoney(tx.gatewayTaxMinor, order.currency)} GST` : ""}
+                </dd>
+                <dt className="text-slate-400">Net received</dt>
+                <dd className="font-semibold tabular-nums text-slate-800">{formatMoney(order.amount - fee, order.currency)}</dd>
+              </>
+            )}
+          </dl>
+        </div>
+      ) : (
+        <div className="mt-2 text-xs">
+          {tx.settlementExpectedBy ? (
+            <p className="font-semibold text-slate-800">To be deposited by {day(tx.settlementExpectedBy)}</p>
+          ) : (
+            <p className="font-semibold text-slate-800">Awaiting the gateway&apos;s settlement</p>
+          )}
+          <p className="mt-0.5 text-[11px] text-slate-500">
+            Estimated from the gateway&apos;s T+2 working-day cycle; bank holidays can push it later. Updated with the
+            real date, UTR and fee once the gateway settles it.
+          </p>
+        </div>
+      )}
+    </section>
+  );
 }
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -213,6 +300,8 @@ export function OrderDrawer({
                 ))}
               </div>
             )}
+
+            {order.paidAt && <SettlementCard detail={detail} />}
 
             {order.paidAt && (
               <section className="rounded-2xl border border-slate-200/80 px-4 py-3">
@@ -402,6 +491,7 @@ export function OrderDrawer({
                         {r.requestedByName || "Operator"} · {when(r.requestedAt)}
                         {r.completedAt ? ` · sent to bank ${when(r.completedAt)}` : ""}
                         {r.revokeAccess ? " · access withdrawn" : ""}
+                        {r.settledAt ? ` · deducted in settlement ${when(r.settledAt)}` : ""}
                       </p>
                       {(r.gatewayRefundId || r.bankReference) && (
                         <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[11px]">
