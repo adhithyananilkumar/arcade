@@ -85,7 +85,7 @@ import type {
 } from '../types/profile.types';
 
 const SURFACE =
-  'rounded-2xl border border-slate-200/80 bg-surface shadow-xs';
+  'rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/80 bg-surface/95 shadow-xs';
 
 // ---------------------------------------------------------------------------
 // Panel shell
@@ -155,8 +155,8 @@ export function LinksPanel({ links }: { links: (string | null | undefined)[] }) 
   if (unique.length === 0) return null;
 
   return (
-    <section className={`${SURFACE} space-y-3 p-5`}>
-      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Social & Web</h3>
+    <section className={`${SURFACE} space-y-3.5 p-5`}>
+      <h3 className="text-sm font-bold text-slate-900 dark:text-white">Social & Web</h3>
       <div className="space-y-2 text-xs font-semibold">
         {unique.map((url) => (
           <a
@@ -164,7 +164,7 @@ export function LinksPanel({ links }: { links: (string | null | undefined)[] }) 
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2.5 rounded-xl bg-slate-50 p-2 text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            className="flex items-center gap-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 p-2 text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
           >
             {linkIcon(url)}
             <span className="truncate">{url.replace(/^https?:\/\//, '')}</span>
@@ -785,15 +785,10 @@ export function ActivityPanel({
         {/* Header */}
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                {activity.year} Learning Activity
-              </h3>
-              <span className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
-                {totalActiveDays} {totalActiveDays === 1 ? 'day' : 'days'} active
-              </span>
-            </div>
-            <p className="text-[11px] font-medium text-slate-400">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              Learning Activity
+            </h3>
+            <p className="text-xs text-slate-400">
               Daily engaged learning sessions, labs, and assessment milestones
             </p>
           </div>
@@ -1006,10 +1001,10 @@ export function ContentLibrary({ courses, events, emptyAction }: ContentLibraryP
   const noun = tab === 'courses' ? 'courses' : 'events';
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-surface shadow-xs">
-      <div className="flex flex-col justify-between gap-4 p-5 pb-2 sm:p-6 lg:flex-row lg:items-center">
+    <section className="overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/80 bg-surface/95 shadow-xs">
+      <div className="flex flex-col justify-between gap-4 p-5 pb-0 sm:px-6 sm:pt-6 sm:pb-0 lg:flex-row lg:items-center">
         <div>
-          <h3 className="text-sm font-bold text-slate-900 sm:text-base">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">
             Content & Curriculum
           </h3>
           <p className="text-xs text-slate-400">
@@ -1070,7 +1065,7 @@ export function ContentLibrary({ courses, events, emptyAction }: ContentLibraryP
         </div>
       </div>
 
-      <div className="p-5 pt-2 sm:p-6">
+      <div className="p-5 pt-3 sm:px-6 sm:pt-3 sm:pb-6">
         {filtered.length === 0 ? (
           <ProfileEmptyState
             icon={tab === 'courses' ? BookOpen : CalendarDays}
@@ -2097,7 +2092,7 @@ export function SuggestedPeersPanel() {
   return (
     <section className={`${SURFACE} p-5 space-y-3.5`}>
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Similar Learners</h3>
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white">Similar Learners</h3>
         <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">Explore</span>
       </div>
 

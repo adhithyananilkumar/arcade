@@ -671,7 +671,7 @@ export function ProfileHero({
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-surface shadow-xs">
+      <div className="relative overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/80 bg-surface/95 shadow-xs">
         {/* LinkedIn-Style Full Width Cover Banner */}
         <div className="group relative h-40 w-full overflow-hidden sm:h-52 md:h-60 bg-slate-950">
           {isCustomBanner ? (
