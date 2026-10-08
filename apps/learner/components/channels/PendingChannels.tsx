@@ -3,6 +3,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
@@ -658,15 +659,14 @@ export function PendingChannels() {
                     {/* Active Actions */}
                     {isActive && (
                       <>
-                        <a
+                        <Link
                           href={`/channels/${channel.id}/manage`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-surface px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                          className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-surface px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800/50"
+                          title="Manage channel"
                         >
                           <ExternalLink size={12} />
                           <span>Manage</span>
-                        </a>
+                        </Link>
                         {canSuspend && (
                           <button
                             type="button"
@@ -684,6 +684,14 @@ export function PendingChannels() {
                     {/* Suspended Actions */}
                     {isSuspended && (
                       <>
+                        <Link
+                          href={`/channels/${channel.id}/manage`}
+                          className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-surface px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800/50"
+                          title="Manage channel"
+                        >
+                          <ExternalLink size={12} />
+                          <span>Manage</span>
+                        </Link>
                         {canSuspend && (
                           <button
                             type="button"
@@ -694,15 +702,6 @@ export function PendingChannels() {
                             <span>Reactivate</span>
                           </button>
                         )}
-                        <a
-                          href={`/channels/${channel.id}/manage`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-surface px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-                        >
-                          <ExternalLink size={12} />
-                          <span>Manage</span>
-                        </a>
                       </>
                     )}
                   </div>
@@ -884,15 +883,14 @@ export function PendingChannels() {
 
                           {isActive && (
                             <>
-                              <a
+                              <Link
                                 href={`/channels/${channel.id}/manage`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-surface px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-2xs"
+                                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-surface px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800/50"
+                                title="Manage channel"
                               >
                                 <ExternalLink size={12} />
                                 <span>Manage</span>
-                              </a>
+                              </Link>
                               {canSuspend && (
                                 <button
                                   type="button"
@@ -909,6 +907,14 @@ export function PendingChannels() {
 
                           {isSuspended && (
                             <>
+                              <Link
+                                href={`/channels/${channel.id}/manage`}
+                                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-surface px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800/50"
+                                title="Manage channel"
+                              >
+                                <ExternalLink size={12} />
+                                <span>Manage</span>
+                              </Link>
                               {canSuspend && (
                                 <button
                                   type="button"
@@ -920,15 +926,6 @@ export function PendingChannels() {
                                   <span>Reactivate</span>
                                 </button>
                               )}
-                              <a
-                                href={`/channels/${channel.id}/manage`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-surface px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
-                              >
-                                <ExternalLink size={12} />
-                                <span>Manage</span>
-                              </a>
                             </>
                           )}
 
@@ -1375,69 +1372,71 @@ export function PendingChannels() {
 
               {/* Action Buttons in Modal */}
               <div className="space-y-3 pt-3 border-t border-slate-200">
-                {selectedChannel.status === 'PENDING' && (
-                  <div className="flex flex-wrap sm:flex-nowrap gap-2.5 justify-end">
-                    {canSuspend && (
-                      <button
-                        type="button"
-                        onClick={() => openRejectDialog(selectedChannel)}
-                        className="px-5 py-2.5 bg-surface text-rose-700 rounded-lg hover:bg-rose-50 transition-colors font-medium text-xs border border-rose-200 dark:text-rose-300 dark:hover:bg-rose-500/10 dark:border-rose-500/25"
-                      >
-                        <X size={14} className="inline mr-1" /> Reject Request
-                      </button>
+                <div className="flex flex-wrap sm:flex-nowrap gap-2.5 justify-between items-center">
+                  <Link
+                    href={`/channels/${selectedChannel.id}/manage`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors font-semibold text-xs shadow-2xs dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
+                  >
+                    <ExternalLink size={13} />
+                    <span>Open Studio Manage</span>
+                  </Link>
+
+                  <div className="flex flex-wrap sm:flex-nowrap gap-2.5 justify-end items-center ml-auto">
+                    {selectedChannel.status === 'PENDING' && (
+                      <>
+                        {canSuspend && (
+                          <button
+                            type="button"
+                            onClick={() => openRejectDialog(selectedChannel)}
+                            className="px-5 py-2.5 bg-surface text-rose-700 rounded-lg hover:bg-rose-50 transition-colors font-medium text-xs border border-rose-200 dark:text-rose-300 dark:hover:bg-rose-500/10 dark:border-rose-500/25"
+                          >
+                            <X size={14} className="inline mr-1" /> Reject Request
+                          </button>
+                        )}
+                        {canApprove && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleAccept(selectedChannel.id);
+                              closeChannelDetails();
+                            }}
+                            className="px-6 py-2.5 bg-ink text-on-ink rounded-lg hover:bg-[#205ca8] transition-colors font-medium text-xs shadow-2xs"
+                          >
+                            <Check size={14} className="inline mr-1 text-emerald-400" /> Approve Channel
+                          </button>
+                        )}
+                      </>
                     )}
-                    {canApprove && (
+
+                    {canSuspend && selectedChannel.status === 'ACTIVE' && (
                       <button
                         type="button"
                         onClick={() => {
-                          handleAccept(selectedChannel.id);
+                          closeChannelDetails();
+                          openSuspendDialog(selectedChannel);
+                        }}
+                        className="px-5 py-2.5 bg-surface text-rose-700 rounded-lg hover:bg-rose-50 transition-colors font-medium text-xs border border-rose-200 dark:text-rose-300 dark:hover:bg-rose-500/10 dark:border-rose-500/25"
+                      >
+                        <ShieldOff size={14} className="inline mr-1" /> Suspend Channel
+                      </button>
+                    )}
+
+                    {canSuspend && selectedChannel.status === 'SUSPENDED' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleReactivate(selectedChannel.id);
                           closeChannelDetails();
                         }}
-                        className="px-6 py-2.5 bg-ink text-on-ink rounded-lg hover:bg-[#205ca8] transition-colors font-medium text-xs shadow-2xs"
+                        className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium text-xs shadow-2xs inline-flex items-center gap-1.5"
                       >
-                        <Check size={14} className="inline mr-1 text-emerald-400" /> Approve Channel
+                        <ShieldCheck size={14} /> Reactivate Channel
                       </button>
                     )}
                   </div>
-                )}
-
-                {canSuspend && selectedChannel.status === 'ACTIVE' && (
-                  <div className="flex flex-wrap sm:flex-nowrap gap-2.5 justify-end">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        closeChannelDetails();
-                        openSuspendDialog(selectedChannel);
-                      }}
-                      className="px-5 py-2.5 bg-surface text-rose-700 rounded-lg hover:bg-rose-50 transition-colors font-medium text-xs border border-rose-200 dark:text-rose-300 dark:hover:bg-rose-500/10 dark:border-rose-500/25"
-                    >
-                      <ShieldOff size={14} className="inline mr-1" /> Suspend Channel
-                    </button>
-                    <a
-                      href={`/channels/${selectedChannel.id}/manage`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-6 py-2.5 bg-ink text-on-ink rounded-lg hover:bg-[#205ca8] transition-colors font-medium text-xs shadow-2xs inline-flex items-center gap-1.5"
-                    >
-                      <ExternalLink size={14} /> Open Studio Manage
-                    </a>
-                  </div>
-                )}
-
-                {canSuspend && selectedChannel.status === 'SUSPENDED' && (
-                  <div className="flex gap-2.5 justify-end">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        handleReactivate(selectedChannel.id);
-                        closeChannelDetails();
-                      }}
-                      className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium text-xs shadow-2xs inline-flex items-center gap-1.5"
-                    >
-                      <ShieldCheck size={14} /> Reactivate Channel
-                    </button>
-                  </div>
-                )}
+                </div>
 
                 {/* Danger Zone */}
                 {canSuspend && (selectedChannel.status === 'ACTIVE' || selectedChannel.status === 'SUSPENDED') && (

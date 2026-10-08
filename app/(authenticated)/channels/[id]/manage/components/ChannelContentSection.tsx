@@ -28,11 +28,17 @@ interface CardProps {
   channelId: string;
   openReviews: Record<string, string>;
   index?: number;
+  canEdit?: boolean;
 }
 
 /** One content item styled with the LibraryCard aesthetic. */
-export function ContentCard({ item, channelId, openReviews }: CardProps) {
-  const href = contentHref(item, channelId, openReviews);
+export function ContentCard({ item, channelId, openReviews, canEdit = true }: CardProps) {
+  const isPublished = item.status?.toUpperCase() === 'PUBLISHED';
+  const href = canEdit
+    ? contentHref(item, channelId, openReviews)
+    : isPublished
+      ? `/courses/${item.id}`
+      : null;
 
   return (
     <UnifiedContentCard
@@ -46,9 +52,9 @@ export function ContentCard({ item, channelId, openReviews }: CardProps) {
       channelIconUrl={item.channelIconUrl}
       dateText={`Updated ${new Date(item.updatedAt).toLocaleDateString()}`}
       actionHref={href || undefined}
-      actionLabel="Manage"
+      actionLabel={canEdit ? 'Manage' : 'View'}
       disabledAction={!href}
-      disabledActionLabel="Unavailable"
+      disabledActionLabel={!canEdit && !isPublished ? (item.status || 'Unavailable') : 'Unavailable'}
     />
   );
 }
@@ -58,11 +64,17 @@ interface RowProps {
   channelId: string;
   openReviews: Record<string, string>;
   compact?: boolean;
+  canEdit?: boolean;
 }
 
 /** One content item as a list row. */
-export function ContentRow({ item, channelId, openReviews, compact }: RowProps) {
-  const href = contentHref(item, channelId, openReviews);
+export function ContentRow({ item, channelId, openReviews, compact, canEdit = true }: RowProps) {
+  const isPublished = item.status?.toUpperCase() === 'PUBLISHED';
+  const href = canEdit
+    ? contentHref(item, channelId, openReviews)
+    : isPublished
+      ? `/courses/${item.id}`
+      : null;
   const body = (
     <>
       <div
@@ -94,7 +106,7 @@ export function ContentRow({ item, channelId, openReviews, compact }: RowProps) 
           {body}
         </Link>
       ) : (
-        <div className={rowClass} title="This content type has no studio page yet">
+        <div className={rowClass} title={!canEdit && !isPublished ? "Content is not published yet" : "This content type has no studio page yet"}>
           {body}
         </div>
       )}
@@ -107,12 +119,13 @@ interface Props {
   content: ChannelContentItem[];
   openReviews: Record<string, string>;
   initialStatus?: string;
+  canEdit?: boolean;
 }
 
 /**
  * Everything this channel holds, filterable by status and type.
  */
-export function ChannelContentSection({ channelId, content, openReviews, initialStatus }: Props) {
+export function ChannelContentSection({ channelId, content, openReviews, initialStatus, canEdit = true }: Props) {
   const [query, setQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [status, setStatus] = useState<string>(
@@ -235,12 +248,14 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
             </button>
           </div>
 
-          <Link
-            href="/studio"
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-slate-950 px-4 py-2 text-[12px] font-semibold text-on-ink transition-all hover:bg-slate-800 shadow-xs"
-          >
-            <Plus size={13} /> Create in Studio
-          </Link>
+          {canEdit && (
+            <Link
+              href="/studio"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-slate-950 px-4 py-2 text-[12px] font-semibold text-on-ink transition-all hover:bg-slate-800 shadow-xs"
+            >
+              <Plus size={13} /> Create in Studio
+            </Link>
+          )}
         </div>
       </div>
 
@@ -258,14 +273,14 @@ export function ChannelContentSection({ channelId, content, openReviews, initial
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((item) => (
-            <ContentCard key={item.id} item={item} channelId={channelId} openReviews={openReviews} />
+            <ContentCard key={item.id} item={item} channelId={channelId} openReviews={openReviews} canEdit={canEdit} />
           ))}
         </div>
       ) : (
         <Panel padded={false} className="p-2">
           <ul className="divide-y divide-slate-100">
             {filtered.map((item) => (
-              <ContentRow key={item.id} item={item} channelId={channelId} openReviews={openReviews} />
+              <ContentRow key={item.id} item={item} channelId={channelId} openReviews={openReviews} canEdit={canEdit} />
             ))}
           </ul>
         </Panel>

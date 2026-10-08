@@ -44,7 +44,7 @@ export const EVENT_TABS: WorkspaceTab<OverviewTab>[] = [
   { id: "exams", label: "Assessment & Exams", icon: FileText },
   { id: "pricing", label: "Pricing", icon: Tag },
   { id: "settings", label: "Settings", icon: Settings },
-  { id: "participants", label: "Manage Members", icon: Users, secondary: true },
+  { id: "participants", label: "Manage", icon: Users },
   { id: "collaborators", label: "Collaborators", icon: UserCog, secondary: true },
   { id: "analytics", label: "Analytics", icon: BarChart3, secondary: true },
   { id: "publishing", label: "Publishing", icon: Send, secondary: true },
@@ -151,7 +151,7 @@ export function EventOverviewTab({
     );
   }
 
-  if (tab === "participants" || tab === "people") {
+  if (tab === "participants" || tab === "people" || (tab as string) === "manage") {
     return <RegisteredMembersSection eventId={contentId} participantsResult={data.eventParticipants} onChanged={onChanged} />;
   }
 

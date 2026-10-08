@@ -68,12 +68,14 @@ export function ChannelOverview({
           description="The latest changes across this channel's content."
           actions={
             <>
-              <Link
-                href="/studio"
-                className="inline-flex items-center gap-1.5 rounded-full bg-ink px-3.5 py-1.5 text-[12px] font-semibold text-on-ink hover:bg-ink-hover"
-              >
-                <Plus size={14} /> Create
-              </Link>
+              {canEdit && (
+                <Link
+                  href="/studio"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-ink px-3.5 py-1.5 text-[12px] font-semibold text-on-ink hover:bg-ink-hover"
+                >
+                  <Plus size={14} /> Create
+                </Link>
+              )}
               {content.length > 0 && (
                 <Link
                   href={tabHref('content')}
@@ -92,7 +94,7 @@ export function ChannelOverview({
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {recent.map((item) => (
-              <ContentCard key={item.id} item={item} channelId={channel.id} openReviews={openReviews} />
+              <ContentCard key={item.id} item={item} channelId={channel.id} openReviews={openReviews} canEdit={canEdit} />
             ))}
           </div>
         )}
