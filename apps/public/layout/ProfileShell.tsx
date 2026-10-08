@@ -51,7 +51,7 @@ export function ProfileShell({ children }: { children: React.ReactNode }) {
   }
 
   if (status === 'authenticated') {
-    return <LearnerShell>{children}</LearnerShell>;
+    return <LearnerShell hideDock={true}>{children}</LearnerShell>;
   }
 
   return (

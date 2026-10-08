@@ -237,9 +237,12 @@ export function ProfileEditModal({
       );
 
       // 2. Also save presentation fields and skills to database
+      const cleanHeadline = headline.trim().slice(0, 20);
+      const cleanBio = bio.trim() ? bio.trim().split(/\s+/).slice(0, 40).join(' ') : '';
+
       const skillsClean = skillsList.map(({ icon, ...rest }) => rest);
       await UserService.updateProfilePresentation(firstName.trim(), lastName.trim(), {
-        headline: headline.trim(),
+        headline: cleanHeadline,
         location: location.trim(),
         skills: JSON.stringify(skillsClean),
       });
@@ -247,7 +250,7 @@ export function ProfileEditModal({
       // Update auth store
       updateUser({
         ...updatedUser,
-        headline: headline.trim(),
+        headline: cleanHeadline,
         location: location.trim(),
       });
 
@@ -257,8 +260,8 @@ export function ProfileEditModal({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         fullName: `${firstName.trim()} ${lastName.trim()}`,
-        headline: headline.trim(),
-        bio: bio.trim(),
+        headline: cleanHeadline,
+        bio: cleanBio,
         location: location.trim(),
         linkedinUrl: linkedinUrl.trim(),
         githubUrl: githubUrl.trim(),
@@ -395,14 +398,20 @@ export function ProfileEditModal({
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                        Professional Headline
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                          Professional Headline
+                        </label>
+                        <span className="text-[11px] font-medium text-slate-400">
+                          {headline.length}/20
+                        </span>
+                      </div>
                       <input
                         type="text"
+                        maxLength={20}
                         value={headline}
-                        onChange={(e) => setHeadline(e.target.value)}
-                        placeholder="e.g. Distributed Systems Engineer • Open Source Contributor"
+                        onChange={(e) => setHeadline(e.target.value.slice(0, 20))}
+                        placeholder="e.g. Software Engineer"
                         className="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white"
                       />
                     </div>
@@ -421,14 +430,31 @@ export function ProfileEditModal({
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                        Bio & About
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                          Bio & About
+                        </label>
+                        <span
+                          className={`text-[11px] font-medium ${
+                            bio.trim() && bio.trim().split(/\s+/).length > 40
+                              ? 'text-rose-500 font-bold'
+                              : 'text-slate-400'
+                          }`}
+                        >
+                          {bio.trim() ? bio.trim().split(/\s+/).length : 0}/40 words
+                        </span>
+                      </div>
                       <textarea
-                        rows={4}
+                        rows={3}
                         value={bio}
-                        onChange={(e) => setBio(e.target.value)}
-                        placeholder="Share your background, current focus areas, and what you are building..."
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const words = val.trim().split(/\s+/);
+                          if (!val.trim() || words.length <= 40 || val.length < bio.length) {
+                            setBio(val);
+                          }
+                        }}
+                        placeholder="Share your background, current focus areas, and what you are building (up to 40 words)..."
                         className="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-white"
                       />
                     </div>

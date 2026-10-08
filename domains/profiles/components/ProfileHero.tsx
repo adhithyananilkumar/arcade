@@ -622,25 +622,9 @@ export function ProfileHero({
     }
   }, [isDragging]);
 
-  const joined = formatJoined(joinedAt);
   const FallbackIcon = kind === 'organization' ? Building2 : UserIcon;
 
   const meta: React.ReactNode[] = [];
-  if (handle) {
-    meta.push(
-      <span key="handle" className="font-semibold text-slate-700">
-        @{handle}
-      </span>,
-    );
-  }
-  if (joined) {
-    meta.push(
-      <span key="joined" className="flex items-center gap-1">
-        <Calendar size={13} className="text-slate-400" />
-        {kind === 'organization' ? 'Since' : 'Joined'} {joined}
-      </span>,
-    );
-  }
   if (location) {
     meta.push(
       <span key="location" className="flex items-center gap-1">
@@ -656,9 +640,9 @@ export function ProfileHero({
         href={websiteUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex max-w-[220px] items-center gap-1 truncate text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
+        className="flex max-w-[220px] items-center gap-1 truncate text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:underline"
       >
-        <Globe size={13} className="shrink-0 text-sky-500" />
+        <Globe size={13} className="shrink-0 text-slate-400" />
         {websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
       </a>,
     );
@@ -830,42 +814,42 @@ export function ProfileHero({
           </div>
 
           {/* Identity & Headline Information */}
-          <div className="space-y-1 text-left">
-            {/* Name & Badges */}
+          <div className="space-y-1.5 text-left">
+            {/* Name & Badges (Largest) */}
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
                 {name}
               </h1>
               <BadgeRow badges={badges} size={22} />
             </div>
 
-            {/* Role Line directly below Name (Realistic Chisel Highlighter - Only for Instructor & Learner) */}
-            {(kind === 'instructor' || kind === 'learner') && (
-              <div className="pt-0.5">
-                <RoleHighlighter label={KIND_LABEL[kind]} kind={kind} />
-              </div>
-            )}
-
-            {/* Professional Headline */}
-            {headline && (
-              <p className="text-sm font-medium text-slate-700 sm:text-base pt-0.5">
-                {headline}
+            {/* Handle directly below Name */}
+            {handle && (
+              <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 sm:text-base">
+                @{handle}
               </p>
             )}
 
-            {/* Meta Bar: @username • Joined Date • Location • Website */}
+            {/* Professional Headline (Same unified font style & color) */}
+            {headline && (
+              <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+                {headline.slice(0, 20)}
+              </p>
+            )}
+
+            {/* Meta Bar: Location • Website (Same unified font style & color) */}
             {meta.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-xs font-medium text-slate-500 sm:text-sm">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
                 {meta.flatMap((node, index) =>
-                  index === 0 ? [node] : [<span key={`dot-${index}`}>•</span>, node],
+                  index === 0 ? [node] : [<span key={`dot-${index}`} className="text-slate-400">•</span>, node],
                 )}
               </div>
             )}
 
-            {/* Bio / Summary */}
+            {/* Bio / Summary (Limit: 40 words) */}
             {bio && (
-              <p className="max-w-3xl whitespace-pre-line pt-2 text-xs leading-relaxed text-slate-600 sm:text-sm">
-                {bio}
+              <p className="max-w-3xl whitespace-pre-line text-xs sm:text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                {bio.trim().split(/\s+/).slice(0, 40).join(' ')}
               </p>
             )}
           </div>

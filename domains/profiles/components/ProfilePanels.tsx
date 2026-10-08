@@ -191,6 +191,8 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
   const [modalOpen, setModalOpen] = useState(false);
   const totalCount = badges.length + certificates.length;
 
+  if (totalCount === 0) return null;
+
   return (
     <>
       <Panel
@@ -199,15 +201,13 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
         title="Achievements & Badges"
         count={totalCount}
         action={
-          totalCount > 0 ? (
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              className="text-xs font-semibold text-slate-500 hover:text-indigo-600 hover:underline cursor-pointer transition-colors dark:hover:text-indigo-400"
-            >
-              View all
-            </button>
-          ) : undefined
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="text-xs font-semibold text-slate-500 hover:text-indigo-600 hover:underline cursor-pointer transition-colors dark:hover:text-indigo-400"
+          >
+            View all
+          </button>
         }
       >
         {totalCount === 0 ? (
@@ -260,11 +260,11 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                     <>
                       <Award size={15} className="shrink-0 text-amber-500" />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-xs font-bold text-slate-800">
+                        <span className="block truncate text-xs font-bold text-slate-800 dark:text-slate-200">
                           {certificate.name}
                         </span>
                         {certificate.issuer && (
-                          <span className="block truncate text-[10px] font-medium text-slate-400">
+                          <span className="block truncate text-[10px] font-medium text-slate-400 dark:text-slate-500">
                             {certificate.issuer}
                           </span>
                         )}
@@ -272,12 +272,12 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                     </>
                   );
                   const className =
-                    'flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50/50 p-2.5';
+                    'flex items-center gap-2.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-2.5';
                   return certificate.idCode ? (
                     <Link
                       key={certificate.idCode}
                       href={`/credentials/${encodeURIComponent(certificate.idCode)}`}
-                      className={`${className} transition-colors hover:bg-slate-100`}
+                      className={`${className} transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/80`}
                     >
                       {body}
                     </Link>
@@ -313,19 +313,19 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                 transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col rounded-3xl border border-slate-200/90 bg-surface p-6 shadow-2xl"
+                className="relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-surface dark:bg-slate-900 p-6 shadow-2xl"
               >
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                   <div className="flex items-center gap-2.5">
                     <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-500 dark:bg-amber-950/50 dark:text-amber-400">
                       <Trophy size={20} />
                     </div>
                     <div>
-                      <h2 className="text-base font-bold text-slate-900">
+                      <h2 className="text-base font-bold text-slate-900 dark:text-white">
                         All Public Achievements
                       </h2>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         {badges.length} Credential Badges · {certificates.length} Verified Certificates
                       </p>
                     </div>
@@ -333,7 +333,7 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                   <button
                     type="button"
                     onClick={() => setModalOpen(false)}
-                    className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
+                    className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
                   >
                     <X size={18} />
                   </button>
@@ -344,7 +344,7 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                   {/* Badges Section */}
                   {badges.length > 0 && (
                     <div>
-                      <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+                      <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                         Credential Badges ({badges.length})
                       </h3>
                       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -352,7 +352,7 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                           <Link
                             key={badge.credentialCode}
                             href={`/credentials/${encodeURIComponent(badge.credentialCode)}`}
-                            className="flex flex-col items-center rounded-xl border border-slate-100 bg-slate-50/70 p-4 text-center transition-all hover:scale-[1.02] hover:border-amber-200 hover:bg-amber-50/40 dark:hover:border-amber-500/40 dark:hover:bg-amber-500/10"
+                            className="flex flex-col items-center rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-4 text-center transition-all hover:scale-[1.02] hover:border-amber-200 dark:hover:border-amber-500/40 hover:bg-amber-50/40 dark:hover:bg-amber-500/10"
                           >
                             <CredentialBadge
                               family={badge.badgeClass.family.key}
@@ -360,14 +360,14 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                               title={badge.name}
                               className="h-20 w-20"
                             />
-                            <span className="mt-3 block text-xs font-bold text-slate-800">
+                            <span className="mt-3 block text-xs font-bold text-slate-800 dark:text-slate-200">
                               {badge.name}
                             </span>
                             <span className="mt-1 block text-[10px] font-semibold text-amber-600 dark:text-amber-400">
                               {badge.badgeClass.tier.label}
                             </span>
                             {badge.issuerName && (
-                              <span className="mt-0.5 block text-[10px] text-slate-400">
+                              <span className="mt-0.5 block text-[10px] text-slate-400 dark:text-slate-500">
                                 by {badge.issuerName}
                               </span>
                             )}
@@ -380,7 +380,7 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                   {/* Certificates Section */}
                   {certificates.length > 0 && (
                     <div>
-                      <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+                      <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                         Verified Certificates ({certificates.length})
                       </h3>
                       <div className="space-y-2.5">
@@ -392,10 +392,10 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                                   <Award size={20} />
                                 </div>
                                 <div>
-                                  <span className="block text-sm font-bold text-slate-800">
+                                  <span className="block text-sm font-bold text-slate-800 dark:text-slate-200">
                                     {certificate.name}
                                   </span>
-                                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                                  <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
                                     {certificate.issuer && <span>Issued by {certificate.issuer}</span>}
                                     {certificate.date && <span>• {certificate.date}</span>}
                                   </div>
@@ -410,7 +410,7 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                             </div>
                           );
                           const className =
-                            'block rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 transition-all hover:border-slate-200 hover:bg-slate-100';
+                            'block rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 p-3.5 transition-all hover:border-slate-200 dark:hover:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800';
                           return certificate.idCode ? (
                             <Link
                               key={certificate.idCode}
@@ -783,19 +783,14 @@ export function ActivityPanel({
     <section className={`${SURFACE} flex h-full flex-col justify-between p-6 sm:p-7`}>
       <div>
         {/* Header */}
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-          <div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-              Learning Activity
-            </h3>
-            <p className="text-xs text-slate-400">
-              Daily engaged learning sessions, labs, and assessment milestones
-            </p>
-          </div>
+        <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            Learning Activity
+          </h3>
           {activity.currentStreak > 0 && (
-            <span className="flex items-center gap-1.5 rounded-full border border-amber-200/80 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 px-3.5 py-1 text-xs font-bold text-amber-700 shadow-2xs dark:border-amber-500/30 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-amber-950/40 dark:text-amber-300">
-              <Flame size={13} className="fill-amber-500 text-amber-500 animate-pulse" />
-              {activity.currentStreak} day streak
+            <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 select-none">
+              <Flame size={14} className="fill-amber-500 text-amber-500 shrink-0" />
+              <span>{activity.currentStreak} day streak</span>
             </span>
           )}
         </div>
@@ -844,7 +839,7 @@ export function ActivityPanel({
                         });
                       }}
                       onMouseLeave={() => setHovered(null)}
-                      className={`h-[13px] w-[13px] rounded-[3px] transition-all duration-150 hover:scale-130 hover:z-10 cursor-pointer ${
+                      className={`h-[13px] w-[13px] rounded-full transition-all duration-150 hover:scale-130 hover:z-10 cursor-pointer ${
                         cell.inYear
                           ? LEVEL_CLASS[Math.min(cell.level, LEVEL_CLASS.length - 1)]
                           : 'bg-transparent cursor-default'
@@ -867,7 +862,7 @@ export function ActivityPanel({
             <div className="flex items-center gap-1.5 font-semibold">
               <span className="text-[11px]">Less</span>
               {LEVEL_CLASS.map((cls, idx) => (
-                <div key={idx} className={`h-3 w-3 rounded-[3px] ${cls}`} />
+                <div key={idx} className={`h-3 w-3 rounded-full ${cls}`} />
               ))}
               <span className="text-[11px]">More</span>
             </div>
@@ -1211,15 +1206,12 @@ export function TechStackPanel({
   const showTabs = tabs.length > 0 && skills.length > 0;
 
   return (
-    <section className={`${SURFACE} p-6`}>
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <div>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Skills & Technologies</h3>
-          <p className="text-xs text-slate-400">Verified competencies & tools</p>
-        </div>
+    <section className={`${SURFACE} p-5 sm:p-6`}>
+      <div className="flex flex-wrap items-center justify-between gap-2.5 mb-2.5">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white">Skills & Technologies</h3>
 
         {showTabs && (
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl text-[11px] font-semibold">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-lg text-[11px] font-semibold">
             {tabs.map((tab) => {
               const isActive = filter === tab || (filter === 'all' && tabs.length === 1);
               return (
@@ -1227,7 +1219,7 @@ export function TechStackPanel({
                   key={tab}
                   type="button"
                   onClick={() => setFilter(tab)}
-                  className={`px-2.5 py-1 rounded-lg capitalize transition-all cursor-pointer ${
+                  className={`px-2.5 py-0.5 rounded-md capitalize transition-all cursor-pointer ${
                     isActive
                       ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs font-bold'
                       : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
@@ -1257,7 +1249,7 @@ export function TechStackPanel({
           )}
         </div>
       ) : (
-        <div className="flex flex-wrap gap-2 pt-1">
+        <div className="flex flex-wrap gap-2">
           {filtered.map((skill) => (
             <div
               key={skill.name}

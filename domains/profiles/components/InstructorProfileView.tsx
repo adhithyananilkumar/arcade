@@ -56,6 +56,8 @@ export interface InstructorProfileViewProps {
 import { ProfileEditModal } from './ProfileEditModal';
 import type { TechSkill } from './ProfilePanels';
 
+import { DEMO_BADGES, DEMO_CERTIFICATES } from '../constants/profileDemoData';
+
 export function InstructorProfileView({ data }: InstructorProfileViewProps) {
   const { profile: initialProfile, activity, achievements } = data;
   const [profile, setProfile] = useState<UserProfile>(initialProfile);
@@ -212,8 +214,8 @@ export function InstructorProfileView({ data }: InstructorProfileViewProps) {
 
           {/* Achievements, Badges & Certificates */}
           <AchievementsPanel
-            badges={achievements}
-            certificates={profile.certificates}
+            badges={achievements.length > 0 ? achievements : DEMO_BADGES}
+            certificates={(profile.certificates && profile.certificates.length > 0) ? profile.certificates : DEMO_CERTIFICATES}
             viewAllHref={isSelf ? '/achievements' : undefined}
           />
 
