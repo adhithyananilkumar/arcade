@@ -429,8 +429,7 @@ export function DeletionRequests() {
       <Dialog open={!!selectedRequest} onOpenChange={(open) => !open && setSelectedRequest(null)}>
         <DialogContent className="max-w-md p-6 sm:p-7">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-rose-700 flex items-center gap-2 dark:text-rose-300">
-              <AlertTriangle size={18} />
+            <DialogTitle className="text-lg font-bold text-rose-700 dark:text-rose-300">
               Review Deletion Request
             </DialogTitle>
           </DialogHeader>
@@ -481,16 +480,16 @@ export function DeletionRequests() {
                 <button
                   type="button"
                   onClick={() => handleReview(selectedRequest.id, 'APPROVE', approveForce)}
-                  className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition-colors font-semibold text-xs shadow-sm"
+                  className="flex-1 inline-flex justify-center items-center px-4 py-2.5 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition-colors font-semibold text-xs shadow-sm cursor-pointer"
                 >
-                  <Check size={15} /> {approveForce ? 'Force Approve' : 'Approve Deletion'}
+                  {approveForce ? 'Force Approve' : 'Approve Deletion'}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleReview(selectedRequest.id, 'REJECT')}
-                  className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold text-xs"
+                  className="flex-1 inline-flex justify-center items-center px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold text-xs cursor-pointer"
                 >
-                  <X size={15} /> Reject
+                  Reject
                 </button>
               </div>
             </div>
@@ -502,8 +501,8 @@ export function DeletionRequests() {
       <Dialog open={!!hardDeleteTarget} onOpenChange={(open) => !open && setHardDeleteTarget(null)}>
         <DialogContent className="max-w-md p-6 sm:p-7">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-rose-700 flex items-center gap-2 dark:text-rose-300">
-              <AlertTriangle size={18} /> Permanently Delete Channel
+            <DialogTitle className="text-lg font-bold text-rose-700 dark:text-rose-300">
+              Permanently Delete Channel
             </DialogTitle>
           </DialogHeader>
 
@@ -573,14 +572,14 @@ export function DeletionRequests() {
                     !hardDeleteAcknowledged ||
                     !hardDeleteReason.trim()
                   }
-                  className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-rose-700 text-white rounded-xl hover:bg-rose-800 transition-colors font-semibold text-xs shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex-1 inline-flex justify-center items-center px-4 py-2.5 bg-rose-700 text-white rounded-xl hover:bg-rose-800 transition-colors font-semibold text-xs shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 >
-                  <Trash2 size={15} /> {hardDeleteSubmitting ? 'Deleting...' : 'Permanently Delete'}
+                  {hardDeleteSubmitting ? 'Deleting...' : 'Permanently Delete'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setHardDeleteTarget(null)}
-                  className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold text-xs"
+                  className="flex-1 inline-flex justify-center items-center px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold text-xs cursor-pointer"
                 >
                   Cancel
                 </button>

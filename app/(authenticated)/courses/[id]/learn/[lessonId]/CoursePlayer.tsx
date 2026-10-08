@@ -831,7 +831,7 @@ export function CoursePlayer({
               type="button"
               onClick={handleFeedbackSkip}
               disabled={submittingFeedback}
-              className="inline-flex h-10 items-center justify-center rounded-full px-5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-50"
+              className="inline-flex h-10 items-center justify-center rounded-xl px-5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-50 cursor-pointer"
             >
               Skip
             </button>
@@ -840,7 +840,7 @@ export function CoursePlayer({
               onClick={handleFeedbackSubmit}
               disabled={submittingFeedback || feedbackRating < 1}
               title={feedbackRating < 1 ? 'Pick a star rating to submit' : undefined}
-              className="inline-flex h-10 items-center justify-center rounded-full bg-indigo-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-ink px-6 text-sm font-semibold text-on-ink transition-colors hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
             >
               {submittingFeedback ? 'Saving…' : 'Submit'}
             </button>

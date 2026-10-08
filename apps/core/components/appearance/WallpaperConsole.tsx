@@ -671,7 +671,7 @@ export function WallpaperConsole() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <button type="button" onClick={() => setDeleting(null)} className="rounded-full border border-slate-200 px-4 py-2 text-[13px] font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+            <button type="button" onClick={() => setDeleting(null)} className="rounded-xl border border-slate-200 px-4 py-2 text-[13px] font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer">Cancel</button>
             {deleting && deleting.active && deleting.users > 0 && (
               <button
                 type="button"
@@ -680,7 +680,7 @@ export function WallpaperConsole() {
                   setDeleting(null);
                   void patch(w, { active: false }, 'Retired — hidden from the picker');
                 }}
-                className="rounded-full border border-slate-200 px-4 py-2 text-[13px] font-semibold text-slate-800 hover:bg-slate-50"
+                className="rounded-xl border border-slate-200 px-4 py-2 text-[13px] font-semibold text-slate-800 hover:bg-slate-50 cursor-pointer"
               >
                 Retire instead
               </button>
@@ -689,7 +689,7 @@ export function WallpaperConsole() {
               type="button"
               disabled={busy === deleting?.id}
               onClick={() => void confirmDelete()}
-              className="flex items-center gap-1.5 rounded-full bg-rose-600 px-4 py-2 text-[13px] font-semibold text-white hover:bg-rose-700 disabled:opacity-60"
+              className="flex items-center gap-1.5 rounded-xl bg-rose-600 px-4 py-2 text-[13px] font-semibold text-white hover:bg-rose-700 disabled:opacity-60 cursor-pointer"
             >
               {busy === deleting?.id && <Loader2 size={13} className="animate-spin" />}
               Delete

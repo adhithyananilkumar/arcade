@@ -577,7 +577,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
       )}
 
       <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
-        <DialogContent className="max-w-md p-6 rounded-3xl border border-slate-200 bg-surface shadow-2xl z-[100]">
+        <DialogContent className="max-w-md p-6 border border-slate-200 bg-surface shadow-2xl z-[100]">
           <DialogHeader>
             <DialogTitle className="text-base font-extrabold text-ink">Invite Staff Member</DialogTitle>
           </DialogHeader>
@@ -648,11 +648,11 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
             </div>
 
             <div className="pt-4 flex gap-3">
-              <Button variant="secondary" className="flex-1 rounded-2xl font-bold text-xs" onClick={() => setIsInviteModalOpen(false)}>
+              <Button variant="secondary" className="flex-1 rounded-xl font-semibold text-xs" onClick={() => setIsInviteModalOpen(false)}>
                 Cancel
               </Button>
               <Button
-                className="flex-1 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-md"
+                className="flex-1 rounded-xl bg-ink hover:bg-ink-hover text-on-ink font-semibold text-xs shadow-md"
                 onClick={handleInvite}
                 disabled={emailStatus !== 'FOUND' || selectedRoleIds.length === 0}
               >
@@ -664,7 +664,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
       </Dialog>
 
       <Dialog open={!!editRolesTarget} onOpenChange={(open) => !open && setEditRolesTarget(null)}>
-        <DialogContent className="max-w-md p-6 rounded-3xl border border-slate-200 bg-surface shadow-2xl z-[100]">
+        <DialogContent className="max-w-md p-6 border border-slate-200 bg-surface shadow-2xl z-[100]">
           <DialogHeader>
             <DialogTitle className="text-base font-extrabold text-ink">Edit Policies</DialogTitle>
           </DialogHeader>
@@ -676,23 +676,23 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
               </p>
               <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-2xl border border-slate-200 p-2 bg-slate-50/50">
                 {roles.map(role => (
-                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-blue-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800 dark:hover:bg-blue-500/10">
+                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer text-xs font-semibold text-slate-800">
                     <input
                       type="checkbox"
                       checked={editRoleIds.includes(role.id)}
                       onChange={() => toggleRole(role.id, editRoleIds, setEditRoleIds)}
-                      className="h-4 w-4 rounded-md accent-blue-600 cursor-pointer"
+                      className="h-4 w-4 rounded-md accent-slate-800 cursor-pointer"
                     />
                     <span>{role.displayName || role.code}</span>
                   </label>
                 ))}
               </div>
               <div className="pt-2 flex gap-3">
-                <Button variant="secondary" className="flex-1 rounded-2xl font-bold text-xs" onClick={() => setEditRolesTarget(null)}>
+                <Button variant="secondary" className="flex-1 rounded-xl font-semibold text-xs" onClick={() => setEditRolesTarget(null)}>
                   Cancel
                 </Button>
                 <Button
-                  className="flex-1 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-md"
+                  className="flex-1 rounded-xl bg-ink hover:bg-ink-hover text-on-ink font-semibold text-xs shadow-md"
                   onClick={handleUpdateRoles}
                   disabled={editRolesSubmitting || editRoleIds.length === 0}
                 >

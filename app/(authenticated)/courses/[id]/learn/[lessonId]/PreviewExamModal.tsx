@@ -9,7 +9,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/shared/design-system/ui/dialog';
-import { Award, CheckCircle2, RotateCcw, XCircle } from 'lucide-react';
+import { CheckCircle2, RotateCcw, XCircle } from 'lucide-react';
 
 export interface PreviewExamModalProps {
   isOpen: boolean;
@@ -34,9 +34,8 @@ export function PreviewExamModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[460px]">
         <DialogHeader>
-          <div className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-200">
-            <Award size={14} />
-            <span>Creator Preview Simulation</span>
+          <div className="mb-1 text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-200">
+            Creator Preview Simulation
           </div>
           <DialogTitle className="text-lg font-bold text-ink">
             Simulate Student Sitting
@@ -112,14 +111,14 @@ export function PreviewExamModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer"
+            className="rounded-xl px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={() => onSimulate(score)}
-            className="rounded-full bg-ink px-5 py-2 text-xs font-semibold text-on-ink hover:bg-ink-hover transition-colors cursor-pointer"
+            className="rounded-xl bg-ink px-5 py-2 text-xs font-semibold text-on-ink hover:bg-ink-hover transition-colors cursor-pointer"
           >
             Submit Preview Sitting ({score}%)
           </button>

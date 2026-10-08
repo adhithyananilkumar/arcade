@@ -120,9 +120,6 @@ export function PostCreatorDialog({ isOpen, onClose, editPost }: Props) {
                 <X size={18} />
               </button>
             </div>
-                <X size={20} color="var(--text-muted)" />
-              </button>
-            </div>
 
             {/* Body */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
