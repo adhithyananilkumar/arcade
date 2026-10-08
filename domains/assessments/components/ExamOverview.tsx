@@ -699,6 +699,7 @@ function blockedIcon(reason: AssessmentLandingResponse['blockedReason']) {
     case 'WINDOW_CLOSED':
       return <Clock size={16} />;
     case 'ATTEMPTS_EXHAUSTED':
+    case 'RETAKE_APPROVAL_REQUIRED':
     case 'PREREQUISITE_NOT_MET':
       return <Lock size={16} />;
     case 'IDENTITY_REQUIRED':

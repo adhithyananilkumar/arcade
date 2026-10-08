@@ -430,6 +430,7 @@ function blockedIcon(reason: AssessmentLandingResponse["blockedReason"]) {
     case "ATTEMPTS_EXHAUSTED":
     case "PREREQUISITE_NOT_MET":
     case "COMPLETION_REQUIREMENTS":
+    case "RETAKE_APPROVAL_REQUIRED":
       return <Lock size={16} />;
     case "IDENTITY_REQUIRED":
       return <ShieldCheck size={16} />;

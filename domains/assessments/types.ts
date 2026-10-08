@@ -704,7 +704,8 @@ export type AssessmentBlockedReason =
   | "WINDOW_CLOSED"
   | "ATTEMPTS_EXHAUSTED"
   | "IDENTITY_REQUIRED"
-  | "COMPLETION_REQUIREMENTS";
+  | "COMPLETION_REQUIREMENTS"
+  | "RETAKE_APPROVAL_REQUIRED";
 
 /** One line of a completion (final) assessment's checklist: finish every lesson, pass each graded assessment. */
 export interface CompletionRequirement {
