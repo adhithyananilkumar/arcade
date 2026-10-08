@@ -19,8 +19,8 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { WorkspaceRow, WorkspaceRows } from '@/apps/creator/studio/core/StudioWorkspaceKit';
 
 interface Props {
-  /** "rows" on the Content Overview (numbered rows); the wizard keeps its cards. */
-  layout?: 'card' | 'rows';
+  /** "rows" on the Content Overview (numbered rows); "studio" for modern seamless embedding; "card" for wizard. */
+  layout?: 'card' | 'rows' | 'studio';
   eventId: string;
   startStep?: number;
 }
@@ -108,107 +108,130 @@ export function EventCollaboratorsManager({ eventId, layout = 'card', startStep 
   const inviteForm = (
     <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-3">
       <div className="relative flex-1">
-        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-        <Input
+        <input
           type="email"
-          placeholder="Enter user's email address"
-          className="pl-10"
+          placeholder="Enter collaborator email address…"
+          className="w-full rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm font-medium text-slate-800 shadow-2xs outline-none focus:border-slate-400 dark:border-slate-700"
           value={inviteEmail}
           onChange={(e) => setInviteEmail(e.target.value)}
           required
         />
       </div>
-      <div className="w-full sm:w-48">
+      <div className="w-full sm:w-52">
         <select
-          className="w-full h-10 px-3 rounded-lg border border-zinc-200 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Role"
+          className="w-full rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm font-bold text-slate-800 shadow-2xs outline-none focus:border-slate-400 dark:border-slate-700"
           value={inviteRole}
           onChange={(e) => setInviteRole(e.target.value as any)}
         >
           <option value="OWNER">Owner (Full Admin)</option>
-          <option value="MANAGER">Manager (Can manage team)</option>
-          <option value="EDITOR">Editor (Can edit content)</option>
+          <option value="MANAGER">Manager (Team Access)</option>
+          <option value="EDITOR">Editor (Edit Content)</option>
         </select>
       </div>
-      <Button type="submit" disabled={inviting} className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2">
+      <button
+        type="submit"
+        disabled={inviting}
+        className="inline-flex cursor-pointer items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-slate-800 active:scale-[0.98] disabled:opacity-40 whitespace-nowrap dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
+      >
         {inviting ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <div className="flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Adding…</span>
+          </div>
         ) : (
-          <Plus className="w-4 h-4" />
+          <span>Add Collaborator</span>
         )}
-        Add Collaborator
-      </Button>
+      </button>
     </form>
   );
 
   const roster = collaborators.length === 0 ? (
-  <div className="p-12 text-center text-zinc-500">
-    No collaborators added yet.
-  </div>
-) : (
-  <Table>
-    <TableHeader>
-      <TableRow>
-        <TableHead>User</TableHead>
-        <TableHead>Role Policy</TableHead>
-        <TableHead>Status</TableHead>
-        <TableHead className="text-right">Actions</TableHead>
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      {collaborators.map((c) => (
-        <TableRow key={c.id ?? c.userId ?? c.email}>
-          <TableCell className="flex items-center gap-3">
-            <Avatar className="w-9 h-9">
-              {c.avatarUrl && <AvatarImage src={c.avatarUrl} alt={c.name} />}
-              <AvatarFallback className="bg-indigo-100 text-indigo-700 font-bold dark:bg-indigo-500/15 dark:text-indigo-300">
-                {c.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="font-semibold text-zinc-900 text-sm flex items-center gap-1.5">
-                {c.name}
-                {c.role === 'OWNER' && <Shield className="w-3.5 h-3.5 text-amber-500" />}
-              </div>
-              <div className="text-xs text-zinc-500">{c.email}</div>
-            </div>
-          </TableCell>
-          <TableCell>
-            {c.id === null || !canManage ? (
-              <Badge variant="secondary" className="bg-zinc-100 text-zinc-700">{c.role}</Badge>
-            ) : (
-              <select
-                className="h-8 px-2 rounded border border-zinc-200 bg-surface text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                value={c.role}
-                onChange={(e) => handleRoleChange(c.id || c.userId, e.target.value as any)}
-                disabled={c.userId === user?.id || !canManage}
-              >
-                <option value="OWNER">Owner</option>
-                <option value="MANAGER">Manager</option>
-                <option value="EDITOR">Editor</option>
-              </select>
-            )}
-          </TableCell>
-          <TableCell>
-            <Badge className={c.status === 'ACCEPTED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}>
-              {c.status}
-            </Badge>
-          </TableCell>
-          <TableCell className="text-right">
-            {c.id !== null && c.userId !== user?.id && canManage && (
-              <Button
-                variant="ghost"
-                onClick={() => handleRemove(c.id || c.userId)}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/10 p-2 rounded-lg dark:text-red-400 dark:hover:text-red-300"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            )}
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
-  </Table>
-);
+    <div className="rounded-2xl bg-slate-50/70 p-8 text-center space-y-1 text-slate-500 dark:bg-slate-900/30">
+      <p className="text-sm font-bold text-slate-800 dark:text-slate-200">No additional collaborators added</p>
+      <p className="text-xs text-slate-400">Invite team members above to grant management access to this event.</p>
+    </div>
+  ) : (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <th className="pb-3 pl-2">User</th>
+            <th className="pb-3">Role</th>
+            <th className="pb-3">Status</th>
+            <th className="pb-3 pr-2 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="space-y-1">
+          {collaborators.map((c) => (
+            <tr key={c.id ?? c.userId ?? c.email} className="group transition-colors hover:bg-slate-50/70 dark:hover:bg-slate-900/40">
+              <td className="py-3 pl-2">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-indigo-100 text-xs font-black text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300">
+                    {c.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="font-bold text-slate-900 text-sm flex items-center gap-1.5 leading-tight">
+                      {c.name}
+                      {c.role === 'OWNER' && <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.2 rounded-md">Lead</span>}
+                    </div>
+                    <div className="text-xs text-slate-400 mt-0.5">{c.email}</div>
+                  </div>
+                </div>
+              </td>
+              <td className="py-3">
+                {c.id === null || !canManage ? (
+                  <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    {c.role}
+                  </span>
+                ) : (
+                  <select
+                    className="h-8 px-2 rounded-xl border border-slate-200 bg-surface text-xs font-bold text-slate-800 focus:outline-none dark:border-slate-700"
+                    value={c.role}
+                    onChange={(e) => handleRoleChange(c.id || c.userId, e.target.value as any)}
+                    disabled={c.userId === user?.id || !canManage}
+                  >
+                    <option value="OWNER">Owner</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="EDITOR">Editor</option>
+                  </select>
+                )}
+              </td>
+              <td className="py-3">
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${
+                  c.status === 'ACCEPTED'
+                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300'
+                    : 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300'
+                }`}>
+                  {c.status === 'ACCEPTED' ? 'Active' : 'Pending'}
+                </span>
+              </td>
+              <td className="py-3 pr-2 text-right">
+                {c.id !== null && c.userId !== user?.id && canManage && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(c.id || c.userId)}
+                    className="cursor-pointer text-xs font-bold text-red-500 hover:text-red-700 px-2 py-1 rounded-lg hover:bg-red-50 transition-colors dark:hover:bg-red-950/20"
+                  >
+                    Remove
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  if (layout === 'studio') {
+    return (
+      <div className="space-y-6">
+        {canManage && inviteForm}
+        {roster}
+      </div>
+    );
+  }
 
   if (layout === 'rows') {
     return (

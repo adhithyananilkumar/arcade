@@ -2,35 +2,20 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
-  UserPlus,
   MoreVertical,
   X,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  XCircle,
-  UserCheck,
-  Trash2,
-  CalendarCheck,
-  Users,
-  UserCog,
+  Loader2,
 } from "lucide-react";
 import { api } from "@/infrastructure/http/api";
 import { EventInvitationManager } from "@/domains/events";
 import { EventCollaboratorsManager } from "@/app/(authenticated)/studio/events/components/wizard/review/EventCollaboratorsManager";
 import type { Event as EventDto } from "@/domains/events";
-import {
-  WorkspaceHeading,
-  WorkspaceMessage,
-  WorkspaceStat,
-  WorkspaceRow,
-  WorkspaceRows,
-  WorkspaceChoice,
-  workspaceField,
-} from "@/apps/creator/studio/core/StudioWorkspaceKit";
 import type { FetchResult, EventParticipant } from "../../lib/fetchOverviewData";
+
+const SURFACE_CARD = "rounded-2xl border border-slate-200/80 bg-surface p-6 sm:p-8 shadow-xs";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -42,6 +27,7 @@ interface EnrichedParticipant extends EventParticipant {
   paymentStatus?: PaymentStatus;
   attendanceStatus?: AttendanceStatus;
   phone?: string;
+  _regStatus: RegistrationStatus;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -56,15 +42,15 @@ function initials(name: string): string {
 
 function avatarColor(name: string): string {
   const colors = [
-    "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300",
-    "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300",
-    "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300",
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
-    "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300",
-    "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
-    "bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300",
+    "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300",
+    "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300",
+    "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300",
+    "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
+    "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300",
+    "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300",
+    "bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-300",
   ];
-  const idx = name.charCodeAt(0) % colors.length;
+  const idx = (name.charCodeAt(0) || 0) % colors.length;
   return colors[idx];
 }
 
@@ -74,24 +60,24 @@ function formatDate(iso?: string): string {
 }
 
 function normalizeStatus(raw: string): RegistrationStatus {
-  const up = raw.toUpperCase();
+  const up = raw?.toUpperCase() || "";
   if (up === "APPROVED" || up === "COMPLETED" || up === "CONFIRMED" || up === "REGISTERED") return "CONFIRMED";
   if (up === "CANCELLED" || up === "CANCELED" || up === "REJECTED") return "CANCELLED";
   if (up === "WAITLISTED" || up === "WAITLIST") return "WAITLISTED";
   return "PENDING";
 }
 
-// ── Badge components ──────────────────────────────────────────────────────────
+// ── Badges ────────────────────────────────────────────────────────────────────
 
 function RegBadge({ status }: { status: RegistrationStatus }) {
   const map: Record<RegistrationStatus, string> = {
     CONFIRMED: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
     PENDING: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
     CANCELLED: "bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400",
-    WAITLISTED: "bg-slate-100 text-slate-600",
+    WAITLISTED: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
   };
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${map[status]}`}>
+    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${map[status]}`}>
       {status.charAt(0) + status.slice(1).toLowerCase()}
     </span>
   );
@@ -102,27 +88,16 @@ function PayBadge({ status }: { status?: PaymentStatus }) {
   const map: Record<PaymentStatus, string> = {
     PAID: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
     PENDING: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
-    REFUNDED: "bg-slate-100 text-slate-600",
-    PARTIAL_REFUND: "bg-slate-100 text-slate-600",
+    REFUNDED: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+    PARTIAL_REFUND: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
     NOT_APPLICABLE: "",
     FAILED: "bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400",
     FREE: "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400",
   };
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${map[status]}`}>
-      {status === "PARTIAL_REFUND" ? "Part refunded" : status.charAt(0) + status.slice(1).toLowerCase()}
+    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${map[status]}`}>
+      {status === "PARTIAL_REFUND" ? "Part Refunded" : status.charAt(0) + status.slice(1).toLowerCase()}
     </span>
-  );
-}
-
-function AttBadge({ status }: { status?: AttendanceStatus }) {
-  if (!status || status === "UNKNOWN") return <span className="text-xs text-slate-400">—</span>;
-  return status === "ATTENDED" ? (
-    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-      <CalendarCheck size={11} /> Attended
-    </span>
-  ) : (
-    <span className="text-[11px] font-semibold text-slate-400">Not attended</span>
   );
 }
 
@@ -140,17 +115,17 @@ function ActionMenu({
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const alreadyCancelled = normalizeStatus(participant.status) === "CANCELLED";
+  const alreadyCancelled = participant._regStatus === "CANCELLED";
 
   async function removeMember() {
     const question = alreadyCancelled
-      ? `Remove ${participant.name} from this list? Their registration is already cancelled.`
+      ? `Remove ${participant.name} from this roster?`
       : `Cancel ${participant.name}'s registration and remove them from this event?`;
     if (!confirm(question)) return;
     setBusy(true);
     try {
       await api.delete(`/api/v1/events/${eventId}/participants/${participant.id}`);
-      toast.success(alreadyCancelled ? "Removed from list" : "Registration cancelled");
+      toast.success(alreadyCancelled ? "Removed from roster" : "Registration cancelled");
       onChanged();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not remove member");
@@ -166,32 +141,22 @@ function ActionMenu({
         type="button"
         disabled={busy}
         onClick={() => setOpen((p) => !p)}
-        className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer disabled:opacity-40"
+        className="rounded-xl p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900 cursor-pointer disabled:opacity-40 dark:hover:bg-slate-800"
       >
-        <MoreVertical size={15} />
+        <MoreVertical size={16} />
       </button>
 
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 z-20 mt-1 w-48 rounded-xl border border-slate-200 bg-surface shadow-xl">
-            {[
-              { icon: Trash2, label: alreadyCancelled ? "Remove from list" : "Remove member", action: removeMember },
-            ].map(({ icon: Icon, label, action }) => (
-              <button
-                key={label}
-                type="button"
-                onClick={action}
-                className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-xs font-medium transition-colors hover:bg-slate-50 cursor-pointer ${
-                  label.startsWith("Remove") || label.startsWith("Cancel")
-                    ? "text-red-500 hover:text-red-600 dark:hover:text-red-400"
-                    : "text-slate-700"
-                }`}
-              >
-                <Icon size={13} />
-                {label}
-              </button>
-            ))}
+          <div className="absolute right-0 z-20 mt-1 w-44 rounded-2xl border border-slate-200/90 bg-surface shadow-xl py-1 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={removeMember}
+              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-xs font-bold text-red-500 hover:bg-red-50/50 cursor-pointer dark:hover:bg-red-950/20"
+            >
+              {alreadyCancelled ? "Remove from list" : "Cancel registration"}
+            </button>
           </div>
         </>
       )}
@@ -204,21 +169,24 @@ function ActionMenu({
 function InviteMembersModal({ eventId, onClose }: { eventId: string; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
-      <div className="relative w-full max-w-lg arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-4">
-          <h3 className="text-base font-bold text-ink">Invite members</h3>
+      <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-xs" onClick={onClose} />
+      <div className="relative w-full max-w-lg rounded-2xl border border-slate-200/80 bg-surface shadow-2xl overflow-hidden dark:border-slate-800">
+        <div className="flex items-center justify-between px-7 pt-6 pb-2">
+          <div>
+            <h3 className="text-xl font-bold text-slate-900">Invite Attendees</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Send direct registration invitations via email.</p>
+          </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:bg-slate-100 hover:text-ink transition-colors cursor-pointer dark:hover:bg-slate-800"
+            className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer dark:hover:bg-slate-800"
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         </div>
-        <div className="max-h-[70vh] overflow-y-auto p-4">
-          <EventInvitationManager eventId={eventId} className="border-0 p-2 shadow-none" />
+        <div className="max-h-[70vh] overflow-y-auto p-6">
+          <EventInvitationManager eventId={eventId} className="border-0 p-0 shadow-none" />
         </div>
       </div>
     </div>
@@ -268,7 +236,7 @@ export function RegisteredMembersSection({
 
   const saveSeats = async () => {
     if (seatsInvalid) {
-      toast.error("Enter at least one seat, or choose Unlimited");
+      toast.error("Please enter a seat limit of at least 1, or select Unlimited");
       return;
     }
     setSavingSeats(true);
@@ -277,7 +245,7 @@ export function RegisteredMembersSection({
         capacity: seatsForm.limited ? seatsForm.seatLimit : 0,
       });
       setSavedSeats(seatsForm);
-      toast.success("Seat capacity saved");
+      toast.success("Seat capacity updated successfully");
       onChanged();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not save seat capacity");
@@ -288,25 +256,19 @@ export function RegisteredMembersSection({
 
   if (participantsResult?.status === "error") {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-300">
-        <AlertTriangle size={14} />
-        Member list is temporarily unavailable — try again shortly.
+      <div className={`${SURFACE_CARD} flex flex-col items-center justify-center gap-3 p-14 text-center max-w-2xl mx-auto`}>
+        <h3 className="text-base font-bold text-slate-900">Member roster is temporarily unavailable</h3>
+        <p className="text-sm text-slate-500">We could not load participants right now. Please refresh the page to retry.</p>
       </div>
     );
   }
 
-  const rawList: EnrichedParticipant[] =
-    participantsResult?.status === "ok"
-      ? participantsResult.data.map((p) => ({
-          ...p,
-          paymentStatus: (p as EnrichedParticipant).paymentStatus,
-          attendanceStatus: (p as EnrichedParticipant).attendanceStatus,
-        }))
-      : [];
+  const rawList: EventParticipant[] = participantsResult?.status === "ok" ? participantsResult.data : [];
 
-  // Normalize statuses
-  const enriched = rawList.map((p) => ({
+  const enriched: EnrichedParticipant[] = rawList.map((p) => ({
     ...p,
+    paymentStatus: (p as EnrichedParticipant).paymentStatus,
+    attendanceStatus: (p as EnrichedParticipant).attendanceStatus,
     _regStatus: normalizeStatus(p.status),
   }));
 
@@ -319,7 +281,7 @@ export function RegisteredMembersSection({
   // Filter
   const filtered = useMemo(() => {
     return enriched.filter((p) => {
-      const q = search.toLowerCase();
+      const q = search.toLowerCase().trim();
       const matchesSearch =
         !q ||
         p.name.toLowerCase().includes(q) ||
@@ -330,175 +292,299 @@ export function RegisteredMembersSection({
   }, [enriched, search, regFilter]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <WorkspaceHeading
-        icon={Users}
-        title="Registered members"
-        description="People who registered to attend this event. Invite someone by email; they register (and pay) the normal way and appear here."
-        actions={
+    <div className="max-w-4xl mx-auto space-y-10 pb-16">
+      {/* 1. TOP OVERVIEW METRICS */}
+      <div className={`${SURFACE_CARD} grid grid-cols-2 gap-6 sm:grid-cols-4`}>
+        <div className="space-y-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Enrolled</span>
+          <p className="mt-2 text-3xl sm:text-4xl font-black text-slate-900">{total}</p>
+          <p className="text-sm text-slate-500 mt-1">Registered members</p>
+        </div>
+
+        <div className="space-y-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Confirmed</span>
+          <p className="mt-2 text-3xl sm:text-4xl font-black text-slate-900">{confirmed}</p>
+          <p className="text-sm text-slate-500 mt-1">Active attendees</p>
+        </div>
+
+        <div className="space-y-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Seat Capacity</span>
+          <p className="mt-2 text-3xl sm:text-4xl font-black text-slate-900">
+            {savedSeats.limited && savedSeats.seatLimit != null ? `${confirmed}/${savedSeats.seatLimit}` : "Unlimited"}
+          </p>
+          <p className="text-sm text-slate-500 mt-1">
+            {savedSeats.limited && savedSeats.seatLimit != null
+              ? `${Math.max(0, savedSeats.seatLimit - confirmed)} seats left`
+              : "Open registration"}
+          </p>
+        </div>
+
+        <div className="space-y-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Pending / Other</span>
+          <p className="mt-2 text-3xl sm:text-4xl font-black text-slate-900">{pending + cancelled}</p>
+          <p className="text-sm text-slate-500 mt-1">
+            {pending > 0 ? `${pending} pending confirmation` : "No pending invites"}
+          </p>
+        </div>
+      </div>
+
+      {/* 2. SEAT CAPACITY CONFIGURATION CARD */}
+      <section className={`${SURFACE_CARD} space-y-6`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Seat Capacity & Limits</h2>
+            <p className="text-sm text-slate-500 mt-1">
+              Cap attendance or allow open registration for this event.
+            </p>
+          </div>
+
+          <div className="inline-flex rounded-full bg-slate-100/90 p-1.5 dark:bg-slate-800/90 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setSeatsForm((p) => ({ ...p, limited: false }))}
+              className={`rounded-full px-5 py-2 text-sm font-bold transition-all cursor-pointer ${
+                !seatsForm.limited
+                  ? "bg-surface text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+                  : "text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              Unlimited
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSeatsForm((p) => ({
+                  ...p,
+                  limited: true,
+                  seatLimit: p.seatLimit || 50,
+                }));
+              }}
+              className={`rounded-full px-5 py-2 text-sm font-bold transition-all cursor-pointer ${
+                seatsForm.limited
+                  ? "bg-surface text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+                  : "text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              Capped Seats
+            </button>
+          </div>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {seatsForm.limited ? (
+            <motion.div
+              key="capped-limit"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18 }}
+              className="space-y-4 pt-1"
+            >
+              <label className="block text-sm font-bold text-slate-800 dark:text-slate-200">
+                Maximum Attendee Seat Limit
+              </label>
+              <div className="flex flex-wrap items-center gap-3">
+                <input
+                  type="number"
+                  min={1}
+                  aria-label="Maximum seat limit"
+                  value={seatsForm.seatLimit ?? ""}
+                  onChange={(e) =>
+                    setSeatsForm((p) => ({
+                      ...p,
+                      seatLimit: e.target.value ? Number(e.target.value) : undefined,
+                    }))
+                  }
+                  className="w-36 rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-base font-black text-slate-900 shadow-2xs focus:border-slate-400 focus:outline-none dark:border-slate-700"
+                  placeholder="50"
+                />
+                <span className="text-sm text-slate-500">
+                  Tickets will automatically close once {seatsForm.seatLimit || 0} participants register.
+                </span>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="unlimited-notice"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18 }}
+              className="rounded-2xl bg-slate-50/80 p-6 space-y-2 dark:bg-slate-900/40"
+            >
+              <h3 className="text-base font-bold text-slate-900">Unlimited Attendance Enabled</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                There is no participant limit on this event. Anyone can register without being placed on a waitlist.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {seatsDirty && (
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setSeatsForm(savedSeats)}
+              className="cursor-pointer text-sm font-bold text-slate-500 hover:text-slate-800 px-3 py-2 transition-colors"
+            >
+              Discard
+            </button>
+            <button
+              type="button"
+              onClick={saveSeats}
+              disabled={savingSeats}
+              className="inline-flex cursor-pointer items-center justify-center rounded-full bg-slate-900 px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-slate-800 active:scale-[0.98] disabled:opacity-40 dark:bg-slate-100 dark:text-slate-900"
+            >
+              {savingSeats ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 size={15} className="animate-spin" />
+                  <span>Saving…</span>
+                </div>
+              ) : (
+                <span>Save Seat Limit</span>
+              )}
+            </button>
+          </div>
+        )}
+      </section>
+
+      {/* 3. ATTENDEE ROSTER & SEARCH CARD */}
+      <section className={`${SURFACE_CARD} space-y-6`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Attendee Roster</h2>
+            <p className="text-sm text-slate-500 mt-1">
+              View confirmed members, registration records, and invite attendees.
+            </p>
+          </div>
+
           <button
             type="button"
             onClick={() => setAddModalOpen(true)}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-xs font-extrabold text-on-ink shadow-md transition-colors hover:bg-[#205ca8]"
+            className="inline-flex cursor-pointer items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-slate-800 active:scale-[0.98] self-start sm:self-auto dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
           >
-            <UserPlus size={14} />
-            Invite members
+            Invite Members
           </button>
-        }
-      />
+        </div>
 
-      <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-        <WorkspaceStat icon={Users} label="Total" value={total} />
-        <WorkspaceStat icon={CheckCircle2} label="Confirmed" value={confirmed} />
-        <WorkspaceStat
-          icon={CheckCircle2}
-          label="Seats"
-          value={savedSeats.limited && savedSeats.seatLimit != null ? `${confirmed} / ${savedSeats.seatLimit}` : "Unlimited"}
-          hint={savedSeats.limited && savedSeats.seatLimit != null ? `${Math.max(0, savedSeats.seatLimit - confirmed)} seats left` : undefined}
-        />
-        <WorkspaceStat icon={Clock} label="Pending" value={pending} />
-      </div>
-
-      <WorkspaceRows>
-        <WorkspaceRow step="02" title="Seats" description="Cap the number of participants.">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <WorkspaceChoice
-              value={seatsForm.limited ? "LIMITED" : "UNLIMITED"}
-              onChange={(v) => setSeatsForm((prev) => ({ ...prev, limited: v === "LIMITED" }))}
-              options={[
-                { value: "UNLIMITED", label: "Unlimited" },
-                { value: "LIMITED", label: "Limited" },
-              ]}
+        {/* Search & Filter Pills */}
+        <div className="flex flex-col sm:flex-row gap-3 pt-2">
+          <div className="relative flex-1">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by attendee name or email…"
+              className="w-full rounded-2xl border border-slate-200 bg-surface py-3 pl-11 pr-4 text-sm font-medium text-slate-800 shadow-2xs outline-none focus:border-slate-400 dark:border-slate-700"
             />
-            {seatsForm.limited && (
-              <input
-                type="number"
-                min={1}
-                aria-label="Maximum seats"
-                value={seatsForm.seatLimit ?? ""}
-                onChange={(e) => setSeatsForm((prev) => ({ ...prev, seatLimit: e.target.value ? Number(e.target.value) : undefined }))}
-                className={`${workspaceField.input} sm:max-w-[12rem]`}
-                placeholder="Maximum seats"
-              />
-            )}
-            {seatsDirty && (
-              <button
-                type="button"
-                disabled={savingSeats}
-                onClick={saveSeats}
-                className="inline-flex cursor-pointer items-center justify-center rounded-full bg-ink px-4 py-2 text-xs font-extrabold text-on-ink shadow-sm transition-colors hover:bg-[#205ca8] disabled:opacity-50"
-              >
-                {savingSeats ? "Saving…" : "Save seats"}
-              </button>
-            )}
           </div>
-        </WorkspaceRow>
-      </WorkspaceRows>
 
-      {/* Search + Filter bar */}
-      <div className="flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name or email…"
-            className="w-full rounded-full border border-slate-200/90 bg-surface py-2.5 pl-9 pr-4 text-sm text-slate-800 shadow-2xs outline-none focus:border-[#205ca8] focus:ring-4 focus:ring-blue-500/10"
-          />
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+            {(["ALL", "CONFIRMED", "PENDING", "CANCELLED"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setRegFilter(s)}
+                className={`rounded-full px-4 py-2 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  regFilter === s
+                    ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                    : "bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 dark:bg-slate-800 dark:text-slate-300"
+                }`}
+              >
+                {s === "ALL" ? "All Members" : s.charAt(0) + s.slice(1).toLowerCase()}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          {(["ALL", "CONFIRMED", "PENDING", "CANCELLED", "WAITLISTED"] as const).map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setRegFilter(s)}
-              className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors cursor-pointer ${
-                regFilter === s
-                  ? "bg-ink text-on-ink"
-                  : "border border-slate-200 bg-surface text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              {s === "ALL" ? "All" : s.charAt(0) + s.slice(1).toLowerCase()}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      {/* Table */}
-      {filtered.length === 0 ? (
-        <WorkspaceMessage icon={UserCheck} title={total === 0 ? "No members yet" : "No members match your filters"}>
-          {total === 0 ? "Registered attendees will appear here once people sign up." : "Try adjusting your search or filter."}
-        </WorkspaceMessage>
-      ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-surface">
-          <table className="w-full min-w-[680px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                <th className="px-4 py-3">Member</th>
-                <th className="px-4 py-3">Registration</th>
-                <th className="px-4 py-3">Payment</th>
-                <th className="px-4 py-3">Registered on</th>
-                <th className="px-4 py-3">Attendance</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {filtered.map((p) => (
-                <tr key={p.id} className="group transition-colors hover:bg-slate-50/60">
-                  {/* Member */}
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${avatarColor(p.name)}`}
-                      >
-                        {initials(p.name)}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-ink leading-tight">{p.name}</p>
-                        <p className="text-[11px] text-slate-400">{p.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  {/* Registration status */}
-                  <td className="px-4 py-3">
-                    <RegBadge status={p._regStatus} />
-                  </td>
-                  {/* Payment */}
-                  <td className="px-4 py-3">
-                    <PayBadge status={p.paymentStatus} />
-                  </td>
-                  {/* Registered on */}
-                  <td className="px-4 py-3 text-xs text-slate-500">{formatDate(p.registrationDate)}</td>
-                  {/* Attendance */}
-                  <td className="px-4 py-3">
-                    <AttBadge status={p.attendanceStatus} />
-                  </td>
-                  {/* Actions */}
-                  <td className="px-4 py-3">
-                    <ActionMenu participant={p} eventId={eventId} onChanged={onChanged} />
-                  </td>
+        {/* Table or Empty State */}
+        {filtered.length === 0 ? (
+          <div className="rounded-2xl bg-slate-50/70 p-10 text-center space-y-2 dark:bg-slate-900/30">
+            <p className="text-base font-bold text-slate-900">
+              {total === 0 ? "No attendees registered yet" : "No attendees match your search"}
+            </p>
+            <p className="text-sm text-slate-500">
+              {total === 0
+                ? "Send invitations by email or publish your event to start accepting registrations."
+                : "Try clearing your search query or switching your status filter."}
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto pt-2">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  <th className="pb-4 pl-2 font-bold">Attendee</th>
+                  <th className="pb-4 font-bold">Status</th>
+                  <th className="pb-4 font-bold">Payment</th>
+                  <th className="pb-4 font-bold">Registered</th>
+                  <th className="pb-4 pr-2 text-right font-bold">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody className="space-y-2">
+                {filtered.map((p) => (
+                  <tr key={p.id} className="group transition-colors hover:bg-slate-50/70 dark:hover:bg-slate-900/40">
+                    {/* Attendee Info */}
+                    <td className="py-3.5 pl-2">
+                      <div className="flex items-center gap-3.5">
+                        <div
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-xs font-black ${avatarColor(p.name)}`}
+                        >
+                          {initials(p.name)}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-900 leading-tight">{p.name}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">{p.email}</p>
+                        </div>
+                      </div>
+                    </td>
 
-      {/* Invite members modal */}
+                    {/* Registration Status */}
+                    <td className="py-3.5">
+                      <RegBadge status={p._regStatus} />
+                    </td>
+
+                    {/* Payment Status */}
+                    <td className="py-3.5">
+                      <PayBadge status={p.paymentStatus} />
+                    </td>
+
+                    {/* Registered On Date */}
+                    <td className="py-3.5 text-xs font-semibold text-slate-500">
+                      {formatDate(p.registrationDate)}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-3.5 pr-2 text-right">
+                      <ActionMenu participant={p} eventId={eventId} onChanged={onChanged} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      {/* 4. EVENT COLLABORATORS CARD */}
+      <section className={`${SURFACE_CARD} space-y-6`}>
+        <div>
+          <h2 className="text-xl font-bold text-slate-900">Event Collaborators</h2>
+          <p className="text-sm text-slate-500 mt-1">
+            Team members and co-hosts with access to manage or review this event.
+          </p>
+        </div>
+
+        <div className="pt-2">
+          <EventCollaboratorsManager eventId={eventId} layout="studio" startStep={1} />
+        </div>
+      </section>
+
+      {/* Invite Modal */}
       {addModalOpen && (
         <InviteMembersModal eventId={eventId} onClose={() => setAddModalOpen(false)} />
       )}
-
-      {/* Collaborators */}
-      <div className="flex flex-col gap-6 pt-6 border-t border-slate-200/70">
-        <WorkspaceHeading
-          icon={UserCog}
-          title="Collaborators"
-          description="Team members with access to manage or edit this event."
-        />
-        <EventCollaboratorsManager eventId={eventId} layout="rows" startStep={2} />
-      </div>
     </div>
   );
 }
