@@ -147,7 +147,7 @@ function LevelInfo({ tiers }: { tiers: BadgeTierInfo[] }) {
         <div>
           <p className="text-sm font-bold text-slate-900">Arcade badge levels</p>
           <p className="mt-1 text-xs leading-relaxed text-slate-500">
-            Every badge is issued by Arcade at one of three levels, the same for every channel. Effort is counted in
+            Every badge is issued by Arcade at one of five levels, the same for every channel — the top two, Expert and Distinguished, only with Arcade's approval. Effort is counted in
             credits (1 credit = 30 learning hours), as in NCrF and SWAYAM.
           </p>
         </div>
@@ -196,7 +196,7 @@ function EarnedCard({ badge, index, onOpen }: { badge: IssuedBadge; index: numbe
         className="group/badge relative flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl pb-2 pt-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2962D6]"
       >
         <div className="w-28 drop-shadow-md transition-transform duration-300 group-hover/badge:scale-105 group-active/badge:scale-95 sm:w-32">
-          <CredentialBadge family={badge.badgeClass.family.key} level={level} title={badge.name} issuerLogoUrl={badge.issuerLogoUrl} year={new Date(badge.issuedAt).getFullYear()} revoked={badge.revoked} />
+          <CredentialBadge family={badge.badgeClass.family.key} level={level} title={badge.name} issuerLogoUrl={badge.issuerLogoUrl} year={new Date(badge.issuedAt).getFullYear()} stars={badge.stars} revoked={badge.revoked} />
         </div>
         <span className="mt-4 line-clamp-1 text-center text-base font-bold tracking-tight text-ink transition-colors group-hover/badge:text-[#2962D6] sm:text-lg dark:group-hover/badge:text-[#7eb5ff]">
           {badge.name}

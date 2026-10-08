@@ -14,6 +14,7 @@ import type {
   BadgeAssignment,
   BadgeCatalogue,
   BadgeContentType,
+  ConferHonourRequest,
   IssuedBadge,
   IssuedCertificate,
   MyBadges,
@@ -35,6 +36,13 @@ export const credentialsApi = {
     api.put<BadgeAssignment>(`/api/credentials/badge-assignments/${type}/${contentId}`, { tier }),
   clearTier: (type: BadgeContentType, contentId: string) =>
     api.delete<BadgeAssignment>(`/api/credentials/badge-assignments/${type}/${contentId}`),
+
+  // ── Console (platform.credentials.manage) ──
+  honours: () => api.get<IssuedBadge[]>("/api/v1/console/credentials/honours"),
+  conferHonour: (request: ConferHonourRequest) =>
+    api.post<IssuedBadge>("/api/v1/console/credentials/honours", request),
+  revokeBadge: (code: string, reason: string) =>
+    api.post<IssuedBadge>(`/api/v1/console/credentials/badges/${encodeURIComponent(code)}/revoke`, { reason }),
 
   // ── The holder ──
   mine: () => api.get<MyBadges>("/api/v1/me/credentials/badges"),

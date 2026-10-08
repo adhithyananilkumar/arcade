@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The public statement of the badge standard: three levels, three kinds of achievement, how each is
+ * The public statement of the badge standard: five levels, four kinds of achievement, how each is
  * earned and how any badge can be checked. The levels' wording comes from the server catalogue.
  */
 
@@ -18,6 +18,7 @@ export function CredentialStandards() {
   }, []);
 
   const tiers = catalogue ? [...catalogue.tiers].sort((a, b) => a.level - b.level) : [];
+  const offered = new Set(catalogue?.classes.map((c) => c.code) ?? []);
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 pb-24 pt-28 sm:px-6 lg:px-8">
@@ -32,7 +33,7 @@ export function CredentialStandards() {
       </p>
 
       <section className="mt-10 overflow-hidden rounded-3xl border border-slate-200 bg-surface">
-        <div className="grid border-b border-slate-100 md:grid-cols-[200px_repeat(3,1fr)]">
+        <div className="grid border-b border-slate-100 md:grid-cols-[180px_repeat(5,1fr)]">
           <div className="hidden md:block" />
           {tiers.map((t) => (
             <div key={t.level} className="border-l border-slate-100 p-5">
@@ -43,7 +44,7 @@ export function CredentialStandards() {
           ))}
         </div>
         {catalogue?.families.map((f) => (
-          <div key={f.key} id={f.key} className="grid border-b border-slate-100 last:border-b-0 md:grid-cols-[200px_repeat(3,1fr)]">
+          <div key={f.key} id={f.key} className="grid border-b border-slate-100 last:border-b-0 md:grid-cols-[180px_repeat(5,1fr)]">
             <div className="p-5">
               <p className="text-sm font-bold text-slate-900">{f.label}</p>
               <p className="mt-1 text-xs leading-relaxed text-slate-500">{f.criteria}</p>
@@ -54,9 +55,14 @@ export function CredentialStandards() {
                 id={`ARC-${f.key}-L${t.level}`}
                 className="flex items-center justify-center border-l border-slate-100 bg-slate-50/60 p-5"
               >
-                <div className="w-32">
-                  <CredentialBadge family={f.key} level={t.level as BadgeLevel} />
-                </div>
+                {/* Only the classes the platform offers: Expert on exams, Distinguished as an honour. */}
+                {offered.has(`ARC-${f.key}-L${t.level}`) ? (
+                  <div className="w-32">
+                    <CredentialBadge family={f.key} level={t.level as BadgeLevel} />
+                  </div>
+                ) : (
+                  <span aria-hidden className="text-slate-300">—</span>
+                )}
               </div>
             ))}
           </div>

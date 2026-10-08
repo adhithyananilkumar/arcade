@@ -22,6 +22,7 @@ export const AuthorizationService = {
     AuthorizationService.canViewPayments(user) ||
     AuthorizationService.canManageInbox(user) ||
     AuthorizationService.canManageRecognition(user) ||
+    AuthorizationService.canManageCredentials(user) ||
     AuthorizationService.canManageHandles(user) ||
     AuthorizationService.canManageAppearance(user) ||
     AuthorizationService.canOpenBugConsole(user) ||
@@ -39,6 +40,13 @@ export const AuthorizationService = {
    */
   canManageRecognition: (user: User | null | undefined) =>
     AuthorizationService.hasPermission(user, 'platform.recognition.manage'),
+
+  /**
+   * Console -> Honours: conferring Distinguished honours (Level 5) and
+   * revoking issued credentials. Mirrors the backend's platform.credentials.manage.
+   */
+  canManageCredentials: (user: User | null | undefined) =>
+    AuthorizationService.hasPermission(user, 'platform.credentials.manage'),
 
   /**
    * Console -> Handles: deciding appeals and reassigning a handle from one holder to another.

@@ -31,7 +31,7 @@ const NOUN: Record<BadgeContentType, string> = { COURSE: "course", EVENT: "event
 const EARNED_BY: Record<BadgeContentType, string> = {
   COURSE: "Issued automatically when a learner completes 100% of the course — every required lesson and assessment.",
   EVENT: "Issued automatically when an attendee is checked in, or passes the event's completion assessment if it has one.",
-  EXAM: "Issued automatically when a candidate passes the exam's completion or certification assessment.",
+  EXAM: "Issued automatically when a candidate passes the exam's completion assessment. Passing a certification instead awards the Level 4 Expert badge, with the certificate.",
 };
 
 export interface BadgeTierPanelProps {

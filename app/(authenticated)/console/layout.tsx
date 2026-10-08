@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Tv, ClipboardCheck, Shield, SlidersHorizontal, Inbox, Receipt, Library, AtSign, BadgeCheck, Bug, Palette } from 'lucide-react';
+import { Tv, ClipboardCheck, Shield, SlidersHorizontal, Inbox, Receipt, Library, AtSign, BadgeCheck, Bug, Palette, Gem } from 'lucide-react';
 import { SideNav, SideNavTabs, type SideNavItem } from '@/shared/design-system/ui/side-nav';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
@@ -21,6 +21,7 @@ export default function ArcConsoleLayout({
   const showIam = AuthorizationService.canAccessIamConsole(user);
   const showInbox = AuthorizationService.canManageInbox(user);
   const showRecognition = AuthorizationService.canManageRecognition(user);
+  const showHonours = AuthorizationService.canManageCredentials(user);
   const showHandles = AuthorizationService.canManageHandles(user);
   const showBugs = AuthorizationService.canOpenBugConsole(user);
   const showAppearance = AuthorizationService.canManageAppearance(user);
@@ -49,6 +50,9 @@ export default function ArcConsoleLayout({
       : []),
     ...(showRecognition
       ? [{ name: 'Recognition', href: '/console/recognition', icon: BadgeCheck, iconBg: 'bg-[#ddd6fe] text-[#4c1d95] dark:text-[#bda1ff] dark:bg-[#ddd6fe]/15' }]
+      : []),
+    ...(showHonours
+      ? [{ name: 'Honours', href: '/console/honours', icon: Gem, iconBg: 'bg-[#fde68a] text-[#78350f] dark:bg-[#fde68a]/15 dark:text-[#f3d27a]' }]
       : []),
     ...(showHandles
       ? [{ name: 'Handles', href: '/console/handles', icon: AtSign, iconBg: 'bg-[#c7d2fe] text-[#312e81] dark:text-[#a5adff] dark:bg-[#c7d2fe]/15' }]

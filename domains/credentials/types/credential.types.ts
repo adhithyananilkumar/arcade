@@ -14,13 +14,13 @@ import type { BadgeFamilyKey, BadgeLevel } from "../lib/badgeArt";
 
 export type { BadgeFamilyKey, BadgeLevel };
 
-/** The content types that award badges. */
-export type BadgeContentType = BadgeFamilyKey;
+/** The content types that award badges. An honour (family HONOUR) records no content. */
+export type BadgeContentType = Exclude<BadgeFamilyKey, "HONOUR">;
 
 export interface BadgeTierInfo {
   level: BadgeLevel;
-  key: "LEVEL_1" | "LEVEL_2" | "LEVEL_3";
-  /** "Foundation", "Intermediate", "Advanced". */
+  key: "LEVEL_1" | "LEVEL_2" | "LEVEL_3" | "LEVEL_4" | "LEVEL_5";
+  /** "Foundation", "Intermediate", "Advanced", "Expert", "Distinguished". */
   name: string;
   /** "Level 2 · Intermediate". */
   label: string;
@@ -28,12 +28,18 @@ export interface BadgeTierInfo {
   meaning: string;
   /** Which content warrants this level. */
   guidance: string;
+  /**
+   * Who awards it: CREATOR (chosen for a course, event or exam — levels 1–3), CERTIFICATION
+   * (Expert, issued with a certification exam's certificate) or PLATFORM (Distinguished, an honour).
+   */
+  awardedBy: "CREATOR" | "CERTIFICATION" | "PLATFORM";
 }
 
 export interface BadgeFamilyInfo {
   key: BadgeFamilyKey;
   label: string;
-  contentType: BadgeContentType;
+  /** Null for HONOUR. */
+  contentType: BadgeContentType | null;
   criteria: string;
 }
 
@@ -72,11 +78,13 @@ export interface BadgeAssignment {
 export interface IssuedBadge {
   credentialCode: string;
   badgeClass: BadgeClassInfo;
-  /** The content's title — the individual award's name. */
+  /** The content's title — the individual award's name; an honour's title. */
   name: string;
+  /** How it was earned; an honour's citation. */
   criteria: string;
-  contentType: BadgeContentType;
-  contentId: string;
+  /** Null for an honour. */
+  contentType: BadgeContentType | null;
+  contentId: string | null;
   contentPath: string | null;
   recipientName: string;
   recipientHandle: string | null;
@@ -88,6 +96,22 @@ export interface IssuedBadge {
   revoked: boolean;
   revokedAt: string | null;
   revokedReason: string | null;
+  /** An honour's rating, 1–5; null otherwise. */
+  stars: number | null;
+  /** What an honour was conferred for; null otherwise. */
+  citation: string | null;
+}
+
+/** Console: conferring a Distinguished honour. */
+export interface ConferHonourRequest {
+  /** Handle (with or without @) or account email. */
+  recipient: string;
+  /** Printed on the badge, e.g. "Founding Member". */
+  title: string;
+  /** What it is conferred for; shown on the credential page. */
+  citation: string;
+  /** 1–5, shown on the badge. */
+  stars: number;
 }
 
 export interface InProgressBadge {

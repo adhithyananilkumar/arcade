@@ -218,6 +218,7 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                       family={badge.badgeClass.family.key}
                       level={badge.badgeClass.tier.level}
                       title={badge.name}
+                      stars={badge.stars}
                       className="h-16 w-16"
                     />
                   </Link>
@@ -325,6 +326,7 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                               family={badge.badgeClass.family.key}
                               level={badge.badgeClass.tier.level}
                               title={badge.name}
+                              stars={badge.stars}
                               className="h-20 w-20"
                             />
                             <span className="mt-3 block text-xs font-bold text-slate-800">

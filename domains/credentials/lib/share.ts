@@ -54,11 +54,12 @@ export async function downloadBadgeImage(
   title: string,
   fileName: string,
   format: "svg" | "png" = "png",
-  issuerLogoUrl?: string | null
+  issuerLogoUrl?: string | null,
+  stars?: number | null
 ): Promise<void> {
   // A standalone SVG loads nothing external, so the logo travels inside it as a data: URL.
   const logo = issuerLogoUrl ? await toDataUrl(issuerLogoUrl) : null;
-  const svg = renderBadgeSvg({ family, level, title, issuerLogoUrl: logo, uid: "dl", standalone: true });
+  const svg = renderBadgeSvg({ family, level, title, issuerLogoUrl: logo, stars, uid: "dl", standalone: true });
   const svgBlob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
   if (format === "svg") {
     triggerDownload(svgBlob, `${fileName}.svg`);

@@ -208,8 +208,10 @@ export function ContentOverviewHeader({
     // Preview only
   } else if (statusKey === "PUBLISHED") {
     primaryActions.push(edit);
-    if (segment === "exam" && supportsReviewSubmission(segment, tiedExam)) {
+    if (supportsReviewSubmission(segment, tiedExam)) {
       // Learners keep the published version; edits since then reach them only through review.
+      // This was exam-only, so a published course or event had no way to send later edits — or a
+      // linked exam's new plans — for review (BUG-1074).
       primaryActions.push({ key: "submit", label: "Submit changes for Review", icon: Send, onClick: handleSubmit, variant: "secondary" });
     }
   } else {
