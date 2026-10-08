@@ -22,9 +22,10 @@ interface Props {
   /** "rows" on the Content Overview (numbered rows); the wizard keeps its cards. */
   layout?: 'card' | 'rows';
   eventId: string;
+  startStep?: number;
 }
 
-export function EventCollaboratorsManager({ eventId, layout = 'card' }: Props) {
+export function EventCollaboratorsManager({ eventId, layout = 'card', startStep = 1 }: Props) {
   const { user } = useAuthStore();
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [loading, setLoading] = useState(true);
@@ -213,11 +214,11 @@ export function EventCollaboratorsManager({ eventId, layout = 'card' }: Props) {
     return (
       <WorkspaceRows>
         {canManage && (
-          <WorkspaceRow step={1} title="Add a collaborator" description="Give another person edit or view access to this event under a role.">
+          <WorkspaceRow step={startStep} title="Add a collaborator" description="Give another person edit or view access to this event under a role.">
             {inviteForm}
           </WorkspaceRow>
         )}
-        <WorkspaceRow step={canManage ? 2 : 1} title="Team" description="Everyone with access to this event, their role and whether they have accepted." wide>
+        <WorkspaceRow step={canManage ? startStep + 1 : startStep} title="Team" description="Everyone with access to this event, their role and whether they have accepted." wide>
           <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-surface">{roster}</div>
         </WorkspaceRow>
       </WorkspaceRows>
