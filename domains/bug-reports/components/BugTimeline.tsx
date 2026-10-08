@@ -18,9 +18,9 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
-import type { BugActivity, BugActivityKind, BugAttachment } from '../types/bug-report.types';
-import { absoluteTime, clockTime, dayLabel, describeActivity } from '../utils/labels';
-import { PersonAvatar } from './BugBadges';
+import type { BugActivity, BugActivityKind, BugAttachment, BugReceipts } from '../types/bug-report.types';
+import { absoluteTime, clockTime, dayLabel, describeActivity, receiptState } from '../utils/labels';
+import { MessageTicks, PersonAvatar } from './BugBadges';
 
 const EVENT_ICON: Partial<Record<BugActivityKind, LucideIcon>> = {
   CREATED: Flag,
@@ -39,10 +39,19 @@ const GROUP_WINDOW_MS = 5 * 60 * 1000;
 
 export type BugTimelineFilter = 'all' | 'comments' | 'events';
 
+/** The report as filed — rendered as the conversation's first message. */
+export interface BugTimelineReport {
+  title: string;
+  description: string;
+  expected: string | null;
+  attachments: BugAttachment[];
+}
+
 /**
- * A report's history as a chat: comments as bubbles (the viewer's own on the right), everything
- * else as compact one-line events, grouped under day headings. Staff see INTERNAL entries tinted
- * and marked; reporters never receive them in the first place.
+ * A report's history as a chat, WhatsApp style: messages as bubbles (the viewer's own on the right,
+ * with delivery ticks), status changes and other events as small centred pills, day headings
+ * between days. With `report`, the CREATED entry becomes the first bubble and carries the report
+ * itself. Staff see INTERNAL entries tinted and marked; reporters never receive them.
  */
 export function BugTimeline({
   activity,
@@ -50,6 +59,8 @@ export function BugTimeline({
   names,
   viewerId,
   filter = 'all',
+  receipts,
+  report,
 }: {
   activity: BugActivity[];
   audience: 'staff' | 'reporter';
@@ -58,11 +69,15 @@ export function BugTimeline({
   /** Staff view: whose comments sit on the right. The reporter's own are always on the right. */
   viewerId?: string | null;
   filter?: BugTimelineFilter;
+  /** Delivery markers; without them no ticks are drawn. */
+  receipts?: BugReceipts;
+  report?: BugTimelineReport;
 }) {
-  const shown = activity.filter((e) => (filter === 'all' ? true : filter === 'comments' ? e.kind === 'COMMENT' : e.kind !== 'COMMENT'));
+  const isMessage = (e: BugActivity) => e.kind === 'COMMENT' || (!!report && e.kind === 'CREATED');
+  const shown = activity.filter((e) => (filter === 'all' ? true : filter === 'comments' ? isMessage(e) : !isMessage(e)));
   if (shown.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-1.5 py-6 text-center text-[12px] text-slate-400">
+      <div className="flex flex-col items-center gap-1.5 py-10 text-center text-[12px] text-slate-400">
         <MessageSquare size={18} className="opacity-60" />
         {filter === 'comments' ? 'No messages yet.' : 'No activity yet.'}
       </div>
@@ -79,36 +94,48 @@ export function BugTimeline({
         const who = entry.actor?.name ?? 'Arcade';
         const internal = entry.visibility === 'INTERNAL';
         const dayHeading = newDay && (
-          <li aria-hidden className="flex items-center gap-3 py-2 text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
-            <span className="h-px flex-1 bg-slate-200/80" />
-            {dayLabel(entry.createdAt)}
-            <span className="h-px flex-1 bg-slate-200/80" />
+          <li aria-hidden className="flex justify-center py-2">
+            <span className="rounded-full bg-surface px-3 py-0.5 text-[10.5px] font-semibold text-slate-500 shadow-xs ring-1 ring-slate-200/70">
+              {dayLabel(entry.createdAt)}
+            </span>
           </li>
         );
 
-        if (entry.kind === 'COMMENT') {
+        if (isMessage(entry)) {
           const mine = isMine(entry);
           const continued =
             !newDay &&
-            prev?.kind === 'COMMENT' &&
+            !!prev &&
+            isMessage(prev) &&
             prev.actor?.id === entry.actor?.id &&
             prev.visibility === entry.visibility &&
             new Date(entry.createdAt).getTime() - new Date(prev.createdAt).getTime() < GROUP_WINDOW_MS;
-          const label = audience === 'reporter' && entry.staff ? `${who} · Arcade team` : mine ? 'You' : who;
+          const label = audience === 'reporter' && entry.staff ? `${who} · Arcade team` : who;
+          const ticks = mine && !internal && receipts ? receiptState(entry.createdAt, entry.staff ? 'team' : 'reporter', receipts) : null;
           return (
             <Fragment key={entry.id}>
               {dayHeading}
-              <li className={`flex gap-2.5 ${mine ? 'flex-row-reverse' : ''} ${continued ? 'pt-0.5' : 'pt-2'}`}>
+              <li className={`flex gap-2 ${mine ? 'flex-row-reverse' : ''} ${continued ? 'pt-0.5' : 'pt-2'}`}>
                 {mine ? null : continued ? (
                   <span className="w-7 shrink-0" />
                 ) : (
                   <PersonAvatar name={who} avatarUrl={entry.actor?.avatarUrl} size={28} />
                 )}
-                <div className={`flex min-w-0 max-w-[82%] flex-col ${mine ? 'items-end' : 'items-start'}`}>
-                  {!continued && (
-                    <p className={`mb-1 flex items-center gap-1.5 px-1 text-[11px] text-slate-400 ${mine ? 'flex-row-reverse' : ''}`}>
-                      <span className="font-semibold text-slate-600">{label}</span>
-                      <time title={absoluteTime(entry.createdAt)}>{clockTime(entry.createdAt)}</time>
+                <div
+                  title={absoluteTime(entry.createdAt)}
+                  className={`min-w-0 max-w-[85%] break-words rounded-2xl px-3 pb-1.5 pt-2 text-left text-[13px] leading-relaxed shadow-xs sm:max-w-[75%] ${
+                    continued ? '' : mine ? 'rounded-tr-md' : 'rounded-tl-md'
+                  } ${
+                    internal
+                      ? 'border border-dashed border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100'
+                      : mine
+                        ? 'bg-indigo-50 text-slate-800 ring-1 ring-indigo-100 dark:bg-indigo-500/15 dark:ring-indigo-400/20'
+                        : 'bg-surface text-slate-800 ring-1 ring-slate-200/80'
+                  }`}
+                >
+                  {!continued && (!mine || internal) && (
+                    <p className="mb-0.5 flex items-center gap-1.5 text-[11.5px] font-semibold text-indigo-700 dark:text-indigo-300">
+                      {!mine && label}
                       {internal && (
                         <span className="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1 py-px text-[9.5px] font-bold uppercase tracking-wide text-amber-800 dark:bg-amber-500/15 dark:text-amber-200">
                           <Lock size={9} /> Internal
@@ -116,22 +143,15 @@ export function BugTimeline({
                       )}
                     </p>
                   )}
-                  <div
-                    title={continued ? absoluteTime(entry.createdAt) : undefined}
-                    className={`whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-left text-[13px] leading-relaxed shadow-xs ${
-                      continued ? '' : mine ? 'rounded-tr-md' : 'rounded-tl-md'
-                    } ${
-                      internal
-                        ? 'border border-dashed border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200'
-                        : mine
-                          ? 'bg-ink text-on-ink'
-                          : entry.staff
-                            ? 'bg-indigo-50 text-slate-800 ring-1 ring-indigo-100 dark:bg-indigo-500/10 dark:ring-indigo-500/20'
-                            : 'bg-surface text-slate-800 ring-1 ring-slate-200/80'
-                    }`}
-                  >
-                    {entry.body}
-                  </div>
+                  {entry.kind === 'CREATED' && report ? (
+                    <ReportBubbleBody report={report} />
+                  ) : (
+                    <span className="whitespace-pre-wrap">{entry.body}</span>
+                  )}
+                  <span className="float-right ml-3 mt-1 inline-flex translate-y-0.5 items-center gap-0.5 text-[10.5px] leading-none text-slate-400">
+                    <time dateTime={entry.createdAt}>{clockTime(entry.createdAt)}</time>
+                    {ticks && <MessageTicks state={ticks} />}
+                  </span>
                 </div>
               </li>
             </Fragment>
@@ -143,29 +163,49 @@ export function BugTimeline({
         return (
           <Fragment key={entry.id}>
             {dayHeading}
-            <li className="flex gap-2.5 py-1 pl-1 text-[11.5px] text-slate-500">
+            <li className="flex flex-col items-center gap-1 py-1.5">
               <span
-                className={`mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
-                  internal ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' : 'bg-slate-100 text-slate-500'
+                title={absoluteTime(entry.createdAt)}
+                className={`inline-flex max-w-full items-center gap-1.5 rounded-full px-3 py-1 text-center text-[11.5px] ${
+                  internal
+                    ? 'bg-amber-50 text-amber-800 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/25'
+                    : 'bg-slate-100 text-slate-600'
                 }`}
               >
-                <Icon size={11} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="leading-5">
+                <Icon size={12} className="shrink-0 opacity-70" />
+                <span className="min-w-0">
                   <span className="font-semibold text-slate-700">{entry.actor ? who : 'Arcade'}</span>{' '}
                   {describeActivity(entry, { reporter: audience === 'reporter', names })}
-                  <time className="ml-1.5 text-slate-400" title={absoluteTime(entry.createdAt)}>
-                    {clockTime(entry.createdAt)}
-                  </time>
-                </p>
-                {note && <p className="mt-1 whitespace-pre-wrap break-words border-l-2 border-slate-200 pl-2.5 text-[12px] text-slate-600">{note}</p>}
-              </div>
+                  <span className="ml-1.5 text-slate-400">{clockTime(entry.createdAt)}</span>
+                </span>
+              </span>
+              {note && <p className="max-w-[80%] whitespace-pre-wrap break-words text-center text-[12px] italic text-slate-500">&ldquo;{note}&rdquo;</p>}
             </li>
           </Fragment>
         );
       })}
     </ol>
+  );
+}
+
+/** The report itself, inside the first bubble: title, what happened, what was expected, screenshots. */
+function ReportBubbleBody({ report }: { report: BugTimelineReport }) {
+  return (
+    <div className="space-y-1.5">
+      <p className="font-semibold text-slate-900">{report.title}</p>
+      {report.description !== report.title && <p className="whitespace-pre-wrap">{report.description}</p>}
+      {report.expected && (
+        <p className="whitespace-pre-wrap border-l-2 border-indigo-200 pl-2 text-[12.5px] text-slate-600 dark:border-indigo-400/30">
+          <span className="font-semibold text-slate-700">Expected: </span>
+          {report.expected}
+        </p>
+      )}
+      {report.attachments.length > 0 && (
+        <div className="pt-1">
+          <BugAttachmentGallery attachments={report.attachments} size="sm" />
+        </div>
+      )}
+    </div>
   );
 }
 

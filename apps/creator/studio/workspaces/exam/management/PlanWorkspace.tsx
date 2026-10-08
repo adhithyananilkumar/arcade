@@ -24,6 +24,8 @@ import {
   planTypeMeta,
   renamePlanSection,
   savePlanSectionRules,
+  sittingViolationLimit,
+  SITTING_MAX_VIOLATIONS,
   updateExamPlan,
   validateExamPlan,
   type Difficulty,
@@ -333,7 +335,7 @@ export function PlanWorkspace({
         {panel === "security" && (
           <SettingsCard
             title="Security"
-            description="Proctoring records tab switches, focus loss and leaving fullscreen on the server; reaching the violation limit ends the attempt. Identity verification asks for a photo that you approve in Attempts."
+            description="Every sitting runs under the platform's sitting baseline: its own tab, full screen, and tab switches, focus loss, copy/paste and developer tools recorded on the server. Proctoring marks the sitting for your review; identity verification asks for a photo that you approve in Attempts."
           >
             <ToggleField
               label="Proctoring"
@@ -349,25 +351,23 @@ export function PlanWorkspace({
               disabled={readOnly || busy || locked("IDENTITY_VERIFICATION_REQUIRED")}
               onChange={(v) => patchPlan({ identityVerificationRequired: v })}
             />
-            <ToggleField
-              label="Full screen required"
-              value={plan.fullscreenRequired}
-              setting={setting("FULLSCREEN_REQUIRED")}
-              disabled={readOnly || busy || locked("FULLSCREEN_REQUIRED")}
-              onChange={(v) => patchPlan({ fullscreenRequired: v })}
+            <div className="flex items-start gap-3 py-3">
+              <Lock size={15} className="mt-0.5 shrink-0 text-slate-400" />
+              <p className="text-xs leading-relaxed text-slate-600">
+                <span className="font-semibold text-ink">Full screen — always on.</span> Part of the sitting
+                baseline for every exam; it cannot be switched off.
+              </p>
+            </div>
+            <NumberField
+              key={`violations:${plan.maxViolations}`}
+              label="Violations before the attempt ends"
+              value={plan.maxViolations}
+              allowZero
+              hint={`At most ${SITTING_MAX_VIOLATIONS} (sitting baseline); 0 uses ${SITTING_MAX_VIOLATIONS}. This plan runs at ${sittingViolationLimit(plan.maxViolations)}.`}
+              setting={setting("MAX_VIOLATIONS")}
+              disabled={readOnly || busy || locked("MAX_VIOLATIONS")}
+              onCommit={(v) => patchPlan({ maxViolations: v })}
             />
-            {plan.proctoringRequired && (
-              <NumberField
-                key={`violations:${plan.maxViolations}`}
-                label="Violations before the attempt ends"
-                value={plan.maxViolations}
-                allowZero
-                hint="0 records violations without ending the attempt."
-                setting={setting("MAX_VIOLATIONS")}
-                disabled={readOnly || busy || locked("MAX_VIOLATIONS")}
-                onCommit={(v) => patchPlan({ maxViolations: v })}
-              />
-            )}
           </SettingsCard>
         )}
 

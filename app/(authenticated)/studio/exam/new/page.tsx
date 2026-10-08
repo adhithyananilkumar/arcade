@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { GraduationCap, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { createExam } from "@/domains/assessments";
-import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
+import { useEligibleChannels, ChannelPicker, ChannelBrandingNotice } from "@/domains/channels";
 import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
 import { DescriptionField, PriceField, isPriceValid, toMinor, type PriceValue } from "@/apps/creator/studio/core/ContentBasicsFields";
 
@@ -91,6 +91,7 @@ export default function NewExamPage() {
               onChange={setChannelId}
             />
           )}
+          <ChannelBrandingNotice channelId={channelId} context="create" />
 
           <div>
             <label htmlFor="exam-title" className="mb-1.5 block text-sm font-semibold text-ink">

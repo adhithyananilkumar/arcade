@@ -4,12 +4,16 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import type { SittingRule } from "../lib/sittingBaseline";
 
 export interface HonorCodeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onContinue: () => void;
   platformName?: string;
+  /** The rules the sitting runs under, listed before the candidate continues. */
+  sittingRules?: SittingRule[];
+  continueLabel?: string;
 }
 
 export function HonorCodeModal({
@@ -17,6 +21,8 @@ export function HonorCodeModal({
   onClose,
   onContinue,
   platformName = "Arcade",
+  sittingRules,
+  continueLabel = "Continue",
 }: HonorCodeModalProps) {
   useEffect(() => {
     if (!isOpen) return;
@@ -53,7 +59,7 @@ export function HonorCodeModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 w-full max-w-[500px] rounded-3xl bg-surface p-7 sm:p-8 shadow-2xl border border-slate-100"
+            className="relative z-10 w-full max-h-[calc(100dvh-2rem)] max-w-[560px] overflow-y-auto rounded-3xl bg-surface p-7 sm:p-8 shadow-2xl border border-slate-100"
           >
             {/* Top Row: Title & Close Button */}
             <div className="flex items-start justify-between gap-4">
@@ -100,6 +106,20 @@ export function HonorCodeModal({
                   <li>Report suspected violations</li>
                 </ul>
               </div>
+
+              {sittingRules && sittingRules.length > 0 && (
+                <div className="pt-1.5">
+                  <p className="font-semibold text-slate-900">During this sitting:</p>
+                  <ul className="mt-2.5 space-y-1.5 text-[13px] sm:text-[13.5px]">
+                    {sittingRules.map((rule) => (
+                      <li key={rule.title} className="flex gap-2">
+                        <span className="shrink-0 font-semibold text-slate-900">{rule.title}.</span>
+                        <span className="text-slate-600">{rule.detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
             {/* Action Row */}
@@ -109,7 +129,7 @@ export function HonorCodeModal({
                 onClick={onContinue}
                 className="inline-flex items-center justify-center rounded-xl bg-[#0056D2] px-6 py-2.5 sm:py-3 text-[14px] font-bold text-white shadow-xs transition-all duration-150 hover:bg-[#00419e] active:scale-[0.98] cursor-pointer"
               >
-                Continue
+                {continueLabel}
               </button>
             </div>
           </motion.div>

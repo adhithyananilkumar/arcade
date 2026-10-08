@@ -5,7 +5,6 @@ import LearnerNavbar from '@/apps/learner/layout/LearnerNavbar';
 import LearnerDock from '@/apps/learner/layout/LearnerDock';
 import { QuickAppearance } from '@/apps/core/components/appearance/QuickAppearance';
 import { ThemeScope } from '@/apps/core/components/ThemeScope';
-import { BugIsland } from '@/apps/core/components/bug-reports/BugIsland';
 import { TimeTracker } from "@/domains/learning";
 import { usePathname } from 'next/navigation';
 
@@ -44,6 +43,7 @@ const HIDE_DOCK_ROUTES = [
   // Credentials and verifying surfaces: certificates, badges, verification, standards, and grade cards.
   /^\/credentials(\/|$)/,
   /^\/exams\/grade-cards(\/|$)/,
+  /^\/bug-reports(\/|$)/,
 ];
 
 export default function LearnerShell({
@@ -86,8 +86,6 @@ export default function LearnerShell({
           {/* Quick preferences (theme, glass, wallpaper) on the same browsing surfaces as the dock —
               Home, Explore, Learning, Achievements… — not on focus screens. Hideable in Settings. */}
           {!hideDock && <QuickAppearance />}
-          {/* Renders nothing unless the backend says this account may report bugs. */}
-          <BugIsland />
         </div>
       </div>
     </ProtectedLayout>

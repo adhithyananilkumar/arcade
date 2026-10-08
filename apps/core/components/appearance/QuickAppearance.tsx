@@ -67,7 +67,7 @@ function Island({ children, className, disabled }: { children: React.ReactNode; 
       role="group"
       aria-disabled={disabled || undefined}
       className={cn(
-        'rounded-2xl border border-slate-200/70 bg-surface p-3.5 shadow-2xs transition-opacity',
+        'rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-200/70 bg-surface p-3.5 shadow-2xs transition-opacity',
         disabled && 'pointer-events-none opacity-50',
         className,
       )}
@@ -218,21 +218,18 @@ export function QuickAppearance() {
               exit={{ opacity: 0, y: 14, scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 380, damping: 30 }}
               style={{ transformOrigin: 'bottom left' }}
-              className="absolute bottom-16 left-0 flex h-[min(720px,calc(100vh-7rem))] w-[min(430px,calc(100vw-2rem))] flex-col overflow-hidden rounded-[26px] border border-slate-200/80 bg-surface/98 shadow-[0_25px_70px_-15px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/5 backdrop-blur-2xl"
+              className="absolute bottom-16 left-0 flex h-[min(720px,calc(100vh-7rem))] w-[min(430px,calc(100vw-2rem))] flex-col overflow-hidden rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-lg rounded-bl-lg border border-slate-200/80 bg-surface/98 shadow-[0_25px_70px_-15px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/5 backdrop-blur-2xl"
             >
-              <header className="flex shrink-0 items-center gap-3 border-b border-slate-200/70 bg-slate-50/80 px-4 py-3.5">
-                <span className="grid size-9 place-items-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
-                  <Palette size={16} />
-                </span>
+              <header className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200/70 bg-slate-50/80 px-4.5 py-3.5">
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-[14px] font-bold leading-tight text-slate-900">Quick preferences</h2>
-                  <p className="text-[11.5px] text-slate-500">Changes apply instantly and follow your account.</p>
+                  <h2 className="text-[15px] font-bold tracking-tight text-slate-900">Quick preferences</h2>
+                  <p className="text-[11.5px] font-medium text-slate-500">Changes apply instantly and follow your account.</p>
                 </div>
                 <button
                   type="button"
                   aria-label="Close"
                   onClick={() => setOpen(false)}
-                  className="grid size-8 place-items-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                  className="grid size-8 place-items-center rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs text-slate-400 transition-colors hover:bg-slate-200/60 hover:text-slate-800"
                 >
                   <X size={15} />
                 </button>
@@ -344,7 +341,7 @@ export function QuickAppearance() {
                 <Link
                   href="/settings/appearance"
                   onClick={() => setOpen(false)}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-surface px-3 py-1.5 text-[12px] font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 hover:text-slate-900"
+                  className="inline-flex items-center gap-1.5 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-slate-200/80 bg-surface px-3 py-1.5 text-[12px] font-semibold text-slate-700 shadow-2xs transition-colors hover:border-[#4c6fff]/50 hover:bg-slate-50 hover:text-slate-900"
                 >
                   <Settings2 size={13} /> All appearance settings
                 </Link>
@@ -354,7 +351,7 @@ export function QuickAppearance() {
                     setOpen(false);
                     setVisible(false);
                   }}
-                  className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                  className="inline-flex items-center gap-1 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
                   title="You can turn it back on in Settings → Appearance"
                 >
                   <EyeOff size={12} /> Hide button
@@ -372,7 +369,7 @@ export function QuickAppearance() {
           aria-controls="quick-appearance"
           onClick={() => setOpen((v) => !v)}
           className={cn(
-            'apple-glass-dock grid size-12 place-items-center rounded-full text-slate-700 transition-transform hover:scale-105 active:scale-95',
+            'apple-glass-dock grid size-12 place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md text-slate-700 transition-transform hover:scale-105 active:scale-95',
             open && 'text-[#4c6fff] dark:text-[#8db1ff]',
           )}
         >

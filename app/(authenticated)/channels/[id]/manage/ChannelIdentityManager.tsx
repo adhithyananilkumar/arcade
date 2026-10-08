@@ -13,7 +13,10 @@
  * than shown disabled, because "you cannot have this" is not a setting. Its certificates are issued
  * by the host institution and signed by the owner, so the signature card is what it gets.
  *
- * `focus` (from `?focus=`) scrolls to a card: `logo`, `signatory` or `seal`.
+ * Everything printed on badges and certificates (logo, signature, issuer, seal) is ONE section with
+ * ONE shared preview: `CertificateBrandingSection`. The logo and signature are required to publish.
+ *
+ * `focus` (from `?focus=`) scrolls to a panel: `logo`, `signatory`, `seal` or `certificate-issuer`.
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -28,10 +31,7 @@ import {
   type HandleAppeal,
 } from '@/domains/profiles';
 import { channelService, type Channel } from '@/domains/channels';
-import { ChannelCertificateIssuerCard } from './components/ChannelCertificateIssuerCard';
-import { ChannelLogoCard } from './components/ChannelLogoCard';
-import { ChannelSealCard } from './components/ChannelSealCard';
-import { ChannelSignatoryCard } from './components/ChannelSignatoryCard';
+import { CertificateBrandingSection } from './components/CertificateBrandingSection';
 
 export function ChannelIdentityManager({
   channel,
@@ -46,7 +46,7 @@ export function ChannelIdentityManager({
 }) {
   useEffect(() => {
     if (focus !== 'logo' && focus !== 'signatory' && focus !== 'seal' && focus !== 'certificate-issuer') return;
-    // After the cards mount (the signatory card loads its data first).
+    // After the panels mount (the branding section loads the signatory first).
     const t = window.setTimeout(
       () => document.getElementById(focus)?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
       150,
@@ -57,7 +57,7 @@ export function ChannelIdentityManager({
   if (channel.isPersonal) {
     return (
       <div className="space-y-6">
-        <ChannelSignatoryCard channel={channel} canEdit={canEdit} />
+        <CertificateBrandingSection channel={channel} canEdit={canEdit} onUpdate={onUpdate} />
       </div>
     );
   }
@@ -76,7 +76,6 @@ function OrganizationIdentity({
   const [appeals, setAppeals] = useState<HandleAppeal[]>([]);
   const [appealsLoading, setAppealsLoading] = useState(true);
   const [appealFor, setAppealFor] = useState<string | null>(null);
-  const [issueAsHost, setIssueAsHost] = useState(false);
 
   const [tagline, setTagline] = useState(channel.tagline ?? '');
   const [location, setLocation] = useState(channel.location ?? '');
@@ -222,10 +221,7 @@ function OrganizationIdentity({
         />
       )}
 
-      <ChannelLogoCard channel={channel} canEdit={canEdit} onUpdate={onUpdate} />
-      <ChannelSignatoryCard channel={channel} canEdit={canEdit} />
-      <ChannelCertificateIssuerCard channel={channel} canEdit={canEdit} onChange={setIssueAsHost} />
-      <ChannelSealCard channel={channel} canEdit={canEdit} issueAsHost={issueAsHost} />
+      <CertificateBrandingSection channel={channel} canEdit={canEdit} onUpdate={onUpdate} />
 
       {canEdit && (
         <section className="rounded-[20px] border border-slate-100 bg-surface p-6">

@@ -34,12 +34,12 @@ export {
   CategoryIcon,
   CATEGORY_ICONS,
   PersonAvatar,
+  MessageTicks,
 } from './components/BugBadges';
 export {
   STATUS_LABEL,
   REPORTER_STATUS_LABEL,
   STATUS_ORDER,
-  STATUS_DOT,
   RESOLUTION_LABEL,
   IMPACT_LABEL,
   IMPACT_SHORT,
@@ -49,7 +49,10 @@ export {
   INTAKE_MODE_HINT,
   relativeTime,
   absoluteTime,
+  listTime,
+  receiptState,
 } from './utils/labels';
+export type { ReceiptState } from './utils/labels';
 export type {
   BugStatus,
   BugResolution,
@@ -68,6 +71,8 @@ export type {
   BugPerson,
   BugReportDetail,
   BugReportSummary,
+  BugLastMessage,
+  BugReceipts,
   BugTrackerFilters,
   BugTrackerStats,
   BugCountRow,

@@ -1,5 +1,6 @@
 import type {
   BugActivity,
+  BugReceipts,
   BugImpact,
   BugIntakeMode,
   BugPriority,
@@ -28,24 +29,6 @@ export const REPORTER_STATUS_LABEL: Record<BugStatus, string> = {
   CLOSED: 'Closed',
 };
 
-export const STATUS_TONE: Record<BugStatus, string> = {
-  NEW: 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/25',
-  TRIAGED: 'bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/25',
-  IN_PROGRESS: 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/25',
-  NEEDS_INFO: 'bg-fuchsia-50 text-fuchsia-700 ring-fuchsia-200 dark:bg-fuchsia-500/10 dark:text-fuchsia-300 dark:ring-fuchsia-500/25',
-  RESOLVED: 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/25',
-  CLOSED: 'bg-slate-100 text-slate-600 ring-slate-200',
-};
-
-export const STATUS_DOT: Record<BugStatus, string> = {
-  NEW: 'bg-sky-500',
-  TRIAGED: 'bg-indigo-500',
-  IN_PROGRESS: 'bg-amber-500',
-  NEEDS_INFO: 'bg-fuchsia-500',
-  RESOLVED: 'bg-emerald-500',
-  CLOSED: 'bg-slate-400',
-};
-
 export const STATUS_ORDER: BugStatus[] = ['NEW', 'TRIAGED', 'IN_PROGRESS', 'NEEDS_INFO', 'RESOLVED', 'CLOSED'];
 
 export const RESOLUTION_LABEL: Record<BugResolution, string> = {
@@ -66,12 +49,6 @@ export const IMPACT_SHORT: Record<BugImpact, string> = {
   BLOCKER: 'Blocker',
   MAJOR: 'Major',
   MINOR: 'Minor',
-};
-
-export const IMPACT_TONE: Record<BugImpact, string> = {
-  BLOCKER: 'bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/25',
-  MAJOR: 'bg-orange-50 text-orange-700 ring-orange-200 dark:bg-orange-500/10 dark:text-orange-300 dark:ring-orange-500/25',
-  MINOR: 'bg-slate-50 text-slate-600 ring-slate-200',
 };
 
 export const SEVERITY_LABEL: Record<BugSeverity, string> = {
@@ -190,4 +167,30 @@ export function dayLabel(value: string): string {
 /** Clock time only, for entries already grouped under a day heading. */
 export function clockTime(value: string): string {
   return new Date(value).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+export type ReceiptState = 'sent' | 'delivered' | 'read';
+
+/**
+ * Ticks for a message written by `author` at `createdAt`: compared against the OTHER side's
+ * delivered / read markers.
+ */
+export function receiptState(createdAt: string, author: 'reporter' | 'team', receipts: BugReceipts): ReceiptState {
+  const at = new Date(createdAt).getTime();
+  const read = author === 'reporter' ? receipts.teamReadAt : receipts.reporterReadAt;
+  const delivered = author === 'reporter' ? receipts.teamDeliveredAt : receipts.reporterDeliveredAt;
+  if (read && new Date(read).getTime() >= at) return 'read';
+  if (delivered && new Date(delivered).getTime() >= at) return 'delivered';
+  return 'sent';
+}
+
+/** List timestamp, WhatsApp style: clock time today, "Yesterday", weekday this week, else a date. */
+export function listTime(value: string): string {
+  const d = new Date(value);
+  const label = dayLabel(value);
+  if (label === 'Today') return clockTime(value);
+  if (label === 'Yesterday') return label;
+  const days = (Date.now() - d.getTime()) / 86_400_000;
+  if (days < 7) return d.toLocaleDateString(undefined, { weekday: 'short' });
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
 }

@@ -83,6 +83,7 @@ export function ContentOverviewHeader({
   onPreview,
   parent,
   leading,
+  onSubmit,
 }: {
   segment: ContentTypeSegment;
   contentId: string;
@@ -105,6 +106,8 @@ export function ContentOverviewHeader({
   parent?: { href: string; label: string } | null;
   /** Left end of the action line, e.g. "Back to Course Dashboard". */
   leading?: React.ReactNode;
+  /** The page's submit (shared with the Publishing tab, so a refusal is reported the same way). */
+  onSubmit?: () => Promise<void>;
 }) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -138,6 +141,10 @@ export function ContentOverviewHeader({
   async function handleSubmit() {
     setBusy(true);
     try {
+      if (onSubmit) {
+        await onSubmit();
+        return;
+      }
       await submitForReview(segment, contentId);
       toast.success("Submitted for review");
       router.refresh();

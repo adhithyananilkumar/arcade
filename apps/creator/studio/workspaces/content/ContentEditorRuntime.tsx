@@ -69,6 +69,7 @@ import {
   DropdownMenuItem,
 } from "@/shared/design-system/ui/dropdown-menu";
 import type { TiptapDocument } from "@/shared/types/editor.types";
+import { PageLoader } from "@/shared/design-system/ui/loader";
 import {
   ChevronRight,
   ChevronDown,
@@ -399,6 +400,9 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
 
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const [isInitializing, setIsInitializing] = useState(true);
+  /** Why the content could not be opened; the editor is not shown over a tree that never loaded. */
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [navigatingBack, setNavigatingBack] = useState(false);
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
   const editorRef = useRef<ArcadeEditorHandle>(null);
@@ -591,12 +595,19 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
           return;
         }
         console.error("Failed to load content", e);
+        // Previously this fell through to an empty editor — no title, no days — which looked like
+        // content that had lost everything. Say it didn't load and offer a retry instead.
+        setLoadError(
+          e instanceof Error && e.message
+            ? e.message
+            : `Something went wrong while opening this ${adapter.terminology.root.toLowerCase()}.`
+        );
       }
       setIsInitializing(false);
     }
     bootstrap();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadAttempt]);
 
   // ── Auto-save handler ─────────────────────────────────────────────────────
   const handleSave = useCallback(
@@ -1094,11 +1105,36 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   // ── Render ────────────────────────────────────────────────────────────────
 
   if (isInitializing) {
+    return <PageLoader fullScreen label={`Setting up your ${adapter.terminology.root.toLowerCase()}…`} />;
+  }
+
+  if (loadError) {
+    const noun = adapter.terminology.root.toLowerCase();
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
-          <p className="text-sm text-gray-500">Setting up your {adapter.terminology.root.toLowerCase()}…</p>
+      <div className="flex h-screen items-center justify-center p-6">
+        <div className="w-full max-w-md rounded-[28px] border border-slate-200 bg-surface px-8 py-10 text-center shadow-[0_24px_60px_rgba(20,20,43,0.10)]">
+          <h2 className="text-lg font-bold text-slate-900">We couldn&apos;t open this {noun}</h2>
+          <p className="mt-2 text-sm leading-relaxed text-slate-500">{loadError}</p>
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => router.push(backHref)}
+              className="h-10 rounded-full bg-slate-100 px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200"
+            >
+              Go back
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setLoadError(null);
+                setIsInitializing(true);
+                setLoadAttempt((n) => n + 1);
+              }}
+              className="h-10 rounded-full bg-ink px-5 text-sm font-semibold text-on-ink transition-colors hover:bg-ink-hover"
+            >
+              Try again
+            </button>
+          </div>
         </div>
       </div>
     );

@@ -533,17 +533,11 @@ export function ExamOverview({
                         : 'Your score summary and question feedback for your own reference'
                     }
                   />
-                  {landing.proctoringRequired && (
-                    <Expect
-                      icon={<ShieldCheck size={18} />}
-                      title="Proctored sitting"
-                      sub={
-                        landing.maxViolations > 0
-                          ? `Leaving the exam window is recorded; ${landing.maxViolations} violation${landing.maxViolations === 1 ? '' : 's'} will automatically terminate the sitting.`
-                          : 'Tab switches and leaving the exam window are recorded.'
-                      }
-                    />
-                  )}
+                  <Expect
+                    icon={<ShieldCheck size={18} />}
+                    title={landing.proctoringRequired ? 'Proctored, secured sitting' : 'Secured sitting'}
+                    sub={`Leaving full screen, switching tabs or windows, copying, pasting or opening developer tools is recorded; ${landing.maxViolations} violation${landing.maxViolations === 1 ? '' : 's'} automatically end the sitting.`}
+                  />
                   {landing.identityVerificationRequired && (
                     <Expect
                       icon={<ShieldCheck size={18} />}
@@ -551,13 +545,11 @@ export function ExamOverview({
                       sub="You submit a photo or ID verification before starting; an administrator reviews it."
                     />
                   )}
-                  {landing.fullscreenRequired && (
-                    <Expect
-                      icon={<Maximize2 size={18} />}
-                      title="Fullscreen mode enforced"
-                      sub="The exam runs in full screen; exiting fullscreen will trigger a proctor warning."
-                    />
-                  )}
+                  <Expect
+                    icon={<Maximize2 size={18} />}
+                    title="Own tab, full screen"
+                    sub="The exam opens in its own tab and runs in full screen; the paper is hidden outside it."
+                  />
                 </ul>
               </div>
             )}

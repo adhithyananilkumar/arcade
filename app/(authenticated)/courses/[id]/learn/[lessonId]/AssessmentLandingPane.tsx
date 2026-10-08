@@ -14,7 +14,7 @@ import {
   type AssessmentLandingResponse,
 } from '@/domains/assessments';
 import type { AssessmentNodeResponse } from '@/shared/types/api.types';
-import { examRoutes, courseRoutes } from '@/shared/routes/content.routes';
+import { examRoutes, courseRoutes, openExamSitting } from '@/shared/routes/content.routes';
 import { IdentityCapture } from '@/apps/learner/components/exams/IdentityCapture';
 
 interface AssessmentLandingPaneProps {
@@ -79,7 +79,8 @@ export function AssessmentLandingPane({
     if (courseId) params.set('returnTo', courseRoutes.lesson(courseId, assessment.placementId));
     if (isPreview) params.set('preview', 'true');
     const query = params.toString();
-    router.push(`${examRoutes.attempt(assessment.examId)}${query ? `?${query}` : ''}`);
+    // The sitting runs in its own tab; this pane re-reads when the learner comes back to it.
+    openExamSitting(assessment.examId, `${examRoutes.attempt(assessment.examId)}${query ? `?${query}` : ''}`);
   };
 
   if (error) {

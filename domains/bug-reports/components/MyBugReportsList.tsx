@@ -1,24 +1,44 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { ChevronRight, ImageIcon, Inbox, MessageSquare } from 'lucide-react';
+import { Inbox } from 'lucide-react';
 import type { BugReportSummary } from '../types/bug-report.types';
-import { relativeTime } from '../utils/labels';
-import { BugStatusBadge, CategoryIcon } from './BugBadges';
+import { listTime, receiptState } from '../utils/labels';
+import { BugStatusBadge, CategoryIcon, MessageTicks } from './BugBadges';
 
-/** The reporter's reports, newest activity first. Ones waiting on the reporter are flagged. */
+/** The preview line under a report: who spoke last and what they said, with ticks on your own. */
+function Preview({ report }: { report: BugReportSummary }) {
+  const last = report.lastMessage;
+  if (!last) return <span className="truncate">{report.category.label}</span>;
+  const mine = !last.staff;
+  return (
+    <>
+      {mine && <MessageTicks state={receiptState(last.createdAt, 'reporter', report.receipts)} className="-ml-0.5" />}
+      <span className="truncate">
+        {mine ? (last.kind === 'CREATED' ? '' : 'You: ') : <span className="font-medium text-slate-600">{last.actorName?.split(' ')[0] ?? 'Arcade team'}: </span>}
+        {last.body}
+      </span>
+    </>
+  );
+}
+
+/**
+ * The reporter's reports as a chat list, newest activity first: what was reported, the last
+ * message with its ticks, and how many team replies are unread.
+ */
 export function MyBugReportsList({
   reports,
+  selectedId,
   onOpen,
   emptyHint = 'Reports you send will show up here, with replies from the team.',
 }: {
   reports: BugReportSummary[];
+  selectedId?: string | null;
   onOpen: (id: string) => void;
   emptyHint?: string;
 }) {
   if (reports.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/90 px-4 py-8 text-center">
+      <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-400">
           <Inbox size={18} />
         </span>
@@ -28,55 +48,47 @@ export function MyBugReportsList({
   }
 
   return (
-    <ul className="space-y-1.5 overflow-hidden">
-      {reports.map((r, i) => {
-        const waiting = r.status === 'NEEDS_INFO' || r.status === 'RESOLVED';
+    <ul className="divide-y divide-slate-100">
+      {reports.map((r) => {
+        const selected = selectedId === r.id;
+        const unread = r.unreadCount > 0;
         return (
-          <motion.li
-            key={r.id}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.03, duration: 0.2 }}
-          >
+          <li key={r.id}>
             <button
               type="button"
               onClick={() => onOpen(r.id)}
-              className="group flex w-full cursor-pointer items-center gap-3 rounded-2xl border border-slate-200/80 bg-surface px-3.5 py-3 text-left shadow-xs transition-all duration-150 hover:border-indigo-300 hover:bg-slate-50/80 hover:shadow-sm dark:hover:border-indigo-500/30"
+              aria-current={selected ? 'true' : undefined}
+              className={`flex w-full cursor-pointer items-center gap-3 px-3 py-3 text-left transition-colors ${
+                selected ? 'bg-slate-100' : 'hover:bg-slate-50'
+              }`}
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-colors duration-200 group-hover:bg-indigo-600 group-hover:text-white dark:group-hover:bg-indigo-500">
-                <CategoryIcon icon={r.category.icon} size={14} />
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                <CategoryIcon icon={r.category.icon} size={18} />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="flex items-center gap-1.5">
-                  <span className="font-mono text-[10.5px] font-bold text-slate-400">{r.key}</span>
-                  {waiting && (
-                    <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fuchsia-400 opacity-75" />
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-fuchsia-500" aria-label="Waiting for you" />
+                <span className="flex items-baseline gap-2">
+                  <span className={`min-w-0 flex-1 truncate text-[13.5px] text-slate-900 ${unread ? 'font-bold' : 'font-semibold'}`}>{r.title}</span>
+                  <span className={`shrink-0 text-[11px] ${unread ? 'font-semibold text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
+                    {listTime(r.lastMessage?.createdAt ?? r.lastActivityAt)}
+                  </span>
+                </span>
+                <span className="mt-0.5 flex items-center gap-2">
+                  <span className={`flex min-w-0 flex-1 items-center gap-1 text-[12.5px] ${unread ? 'text-slate-700' : 'text-slate-500'}`}>
+                    <Preview report={r} />
+                  </span>
+                  {unread && (
+                    <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-emerald-500 px-1.5 text-[10.5px] font-bold text-white">
+                      {r.unreadCount}
                     </span>
                   )}
                 </span>
-                <span className="block truncate text-[12.5px] font-semibold text-slate-900 transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                  {r.title}
-                </span>
-                <span className="mt-0.5 flex items-center gap-2 text-[11px] text-slate-400">
-                  {relativeTime(r.lastActivityAt)}
-                  {r.commentCount > 0 && (
-                    <span className="inline-flex items-center gap-0.5">
-                      <MessageSquare size={10} /> {r.commentCount}
-                    </span>
-                  )}
-                  {r.attachmentCount > 0 && (
-                    <span className="inline-flex items-center gap-0.5">
-                      <ImageIcon size={10} /> {r.attachmentCount}
-                    </span>
-                  )}
+                <span className="mt-1 flex items-center gap-2 text-[11px] text-slate-400">
+                  <span className="font-mono">{r.key}</span>
+                  <BugStatusBadge status={r.status} audience="reporter" />
                 </span>
               </span>
-              <BugStatusBadge status={r.status} audience="reporter" />
-              <ChevronRight size={14} className="shrink-0 text-slate-300 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-indigo-500" />
             </button>
-          </motion.li>
+          </li>
         );
       })}
     </ul>

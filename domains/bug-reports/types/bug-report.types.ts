@@ -91,6 +91,28 @@ export interface BugReportSummary {
   commentCount: number;
   createdAt: string;
   lastActivityAt: string;
+  /** Newest message (or the report itself) the viewer may see — the list's preview line. */
+  lastMessage: BugLastMessage | null;
+  /** Messages from the other side the viewer has not opened yet. */
+  unreadCount: number;
+  receipts: BugReceipts;
+}
+
+export interface BugLastMessage {
+  kind: Extract<BugActivityKind, "COMMENT" | "CREATED">;
+  visibility: BugActivityVisibility;
+  body: string;
+  actorName: string | null;
+  staff: boolean;
+  createdAt: string;
+}
+
+/** When each side last received / opened the report. Drives the message ticks. */
+export interface BugReceipts {
+  reporterDeliveredAt: string | null;
+  reporterReadAt: string | null;
+  teamDeliveredAt: string | null;
+  teamReadAt: string | null;
 }
 
 export interface BugConsoleEntry {

@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
-import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
+import { useEligibleChannels, ChannelPicker, ChannelBrandingNotice } from "@/domains/channels";
 
 const roadmapService = {
   updateRoadmap: (id: string, data: { title?: string; description?: string }) =>
@@ -358,6 +358,7 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
           {!channelsLoading && channels.length > 0 && (
             <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           )}
+          <ChannelBrandingNotice channelId={channelId} context="create" />
           {!channelsLoading && channels.length === 0 && (
             <p className="text-sm text-rose-600 dark:text-rose-400">
               You need a channel with content-authoring rights before you can create a course.
@@ -563,6 +564,7 @@ function CreateEventModal({
           <CapacityField id="event-capacity" value={capacity} onChange={setCapacity} />
 
           <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
+          <ChannelBrandingNotice channelId={channelId} context="create" />
 
           <button
             type="submit"

@@ -14,12 +14,14 @@
  *
  * The video only runs when all of these hold: inside the signed-in app,
  * glass is on, the chosen wallpaper is live, "Play live wallpapers" is on
- * for this device, and the system does not ask for reduced motion. It pauses
+ * for this device, the system does not ask for reduced motion, and the page
+ * is not an exam sitting (there the poster frame stands still). It pauses
  * whenever the tab is hidden.
  * ------------------------------------------------------------------
  */
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Loader2 } from 'lucide-react';
 import { LiveWallpaperNotice } from '@/apps/core/components/appearance/AppearanceControls';
@@ -32,6 +34,7 @@ import {
   useLiveWallpaperStore,
 } from '@/apps/core/lib/liveWallpaper';
 import { cn } from '@/shared/utils/utils';
+import { EXAM_SITTING_ROUTE } from '@/shared/routes/content.routes';
 
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
 
@@ -54,8 +57,10 @@ export function useActiveLiveVideo() {
   const wallpaper = useAppearanceStore((s) => s.wallpaper);
   const liveMotion = useAppearanceStore((s) => s.liveMotion);
   const reduced = usePrefersReducedMotion();
+  // A candidate sitting an exam gets a still backdrop: nothing on screen moves but the paper.
+  const sitting = EXAM_SITTING_ROUTE.test(usePathname() ?? '');
   const video = wallpaper.kind === 'image' ? wallpaper.video ?? null : null;
-  return inScope && glass && liveMotion && !reduced ? video : null;
+  return inScope && glass && liveMotion && !reduced && !sitting ? video : null;
 }
 
 export function LiveWallpaperVideo() {

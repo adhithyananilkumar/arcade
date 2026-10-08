@@ -75,6 +75,30 @@ export const examRoutes = {
 } as const;
 
 /**
+ * The exam sitting surfaces: the attempt itself and the "your sitting was ended" page. Nothing
+ * ambient runs here — no floating controls, no moving wallpaper — so the candidate has only the paper.
+ */
+export const EXAM_SITTING_ROUTE = /^\/exams\/[^/]+\/(?:attempt|terminated)\/?$/;
+
+/**
+ * The browser tab an exam's sitting runs in. Named per exam, so starting the same exam again
+ * brings its existing tab forward rather than opening a second copy of the paper.
+ */
+export function examSittingTab(examId: string): string {
+  return `arcade-exam-${examId}`;
+}
+
+/**
+ * Opens a sitting in its own tab, away from the page that started it. Falls back to this tab when
+ * the browser refuses a new one (a popup blocker), so Start always does something.
+ */
+export function openExamSitting(examId: string, href: string): void {
+  const tab = window.open(href, examSittingTab(examId));
+  if (tab) tab.focus();
+  else window.location.assign(href);
+}
+
+/**
  * The overview hub for an enrolled resource, whichever type it is — what a listing row or a
  * "continue" button should link to when it only knows the enrollment.
  *

@@ -18,7 +18,7 @@ import {
   type AssessmentLandingResponse,
 } from '@/domains/assessments';
 import { EnrollmentButton } from '@/domains/enrollment';
-import { courseRoutes, eventRoutes, examRoutes } from '@/shared/routes/content.routes';
+import { courseRoutes, eventRoutes, examRoutes, openExamSitting } from '@/shared/routes/content.routes';
 import { formatMoney } from '@/shared/utils/money';
 import { IdentityCapture } from '@/apps/learner/components/exams/IdentityCapture';
 import { goBackTo, safeReturnTo } from '@/infrastructure/state/navigationHistory';
@@ -74,7 +74,8 @@ export default function ExamPage() {
     if (landing.planId) back.set('planId', landing.planId);
     if (returnTo) back.set('returnTo', returnTo);
     q.set('returnTo', `${examRoutes.landing(examId)}${back.toString() ? `?${back.toString()}` : ''}`);
-    router.push(`${examRoutes.attempt(examId)}?${q.toString()}`);
+    // The sitting runs in its own tab; this page re-reads when the learner comes back to it.
+    openExamSitting(examId, `${examRoutes.attempt(examId)}?${q.toString()}`);
   };
 
   const openPrerequisite = landing.prerequisite

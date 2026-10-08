@@ -74,6 +74,17 @@ function splitMessage(message: unknown, data: { description?: unknown } | undefi
   return ref ? { message: body, data: { ...data, description: ref[1] } } : { message, data }
 }
 
+/**
+ * While this returns true, error and warning toasts are dropped. Set by the app (see
+ * `setErrorToastSuppression`) for states another surface already explains — offline, where every
+ * failing request would otherwise stack one more "couldn't reach" toast under the offline screen.
+ */
+let suppressErrorToasts: () => boolean = () => false
+
+export function setErrorToastSuppression(predicate: () => boolean) {
+  suppressErrorToasts = predicate
+}
+
 // Applied once, here, so every `toast.error(...)` in the app gets these defaults without each call
 // site passing a duration — `toast` is the same object everyone imports from "sonner".
 type ToastFn = (message: unknown, data?: Record<string, unknown>) => string | number
@@ -83,6 +94,7 @@ if (!patched.__arcadeDurations) {
   for (const type of Object.keys(DURATION_BY_TYPE) as Array<keyof typeof DURATION_BY_TYPE>) {
     const original = patched[type].bind(toast)
     patched[type] = (message, data) => {
+      if ((type === "error" || type === "warning") && suppressErrorToasts()) return ""
       const split = type === "error" || type === "warning" ? splitMessage(message, data) : { message, data }
       const d = (split.data ?? {}) as Record<string, unknown>
       return original(split.message, {

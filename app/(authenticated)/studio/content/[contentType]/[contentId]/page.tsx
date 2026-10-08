@@ -20,6 +20,7 @@ import { EVENT_TABS, EventOverviewTab } from "./components/content-types/EventOv
 import { ExamOverviewTab } from "./components/content-types/ExamOverview";
 import { EXAM_TABS, ExamOverviewSections, type ExamTab } from "./components/sections/exam/ExamOverviewSections";
 import { getExam, type ExamResponse } from "@/domains/assessments";
+import { ChannelBrandingNotice, brandingSetupHref, isBrandingIncomplete } from "@/domains/channels";
 
 const VALID_SEGMENTS: ContentTypeSegment[] = ["course", "event", "exam"];
 
@@ -101,6 +102,7 @@ function ContentOverviewPageContent() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [submitting, setSubmitting] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [brandingCheck, setBrandingCheck] = useState(0);
   // The exam's full configuration (duration, pass mark, proctoring, placement …) — only the
   // summary fields are on ContentSummaryLite, and the exam tabs edit the real record.
   const [exam, setExam] = useState<ExamResponse | null>(null);
@@ -224,6 +226,16 @@ function ContentOverviewPageContent() {
       toast.success("Submitted for review");
       reload();
     } catch (err) {
+      if (isBrandingIncomplete(err)) {
+        // The message says what is missing and why; the action goes straight to where it is set.
+        toast.error("Set up your badges & certificates first", {
+          description: (err as Error).message,
+          duration: 12000,
+          action: { label: "Set up", onClick: () => router.push(brandingSetupHref(content.channelId)) },
+        });
+        setBrandingCheck((k) => k + 1);
+        return;
+      }
       toast.error(err instanceof Error ? err.message : "Could not submit for review");
     } finally {
       setSubmitting(false);
@@ -332,6 +344,7 @@ function ContentOverviewPageContent() {
           updatedAt={content.updatedAt}
           review={review}
           onJumpToPublishing={() => selectTab("publishing")}
+          onSubmit={handleSubmit}
           tiedExam={tiedExam}
           tiedTo={tiedExam ? (tiedCourseId ? "course" : tiedEventId ? "event" : null) : null}
           onPreview={segment === "exam" ? () => selectTab("preview") : undefined}
@@ -352,6 +365,9 @@ function ContentOverviewPageContent() {
             )
           }
         />
+
+        {/* A tied exam is published by its course or event, which shows the notice itself. */}
+        {!tiedExam && <ChannelBrandingNotice channelId={content.channelId} refreshKey={brandingCheck} />}
 
         <div className="flex flex-col gap-6">
           <WorkspaceTabs tabs={tabs} active={activeTab} onChange={selectTab} ariaLabel={`${content.title} sections`} />

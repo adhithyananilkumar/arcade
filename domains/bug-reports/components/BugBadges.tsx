@@ -1,6 +1,13 @@
 'use client';
 
 import {
+  Archive,
+  Check,
+  CheckCheck,
+  CircleCheckBig,
+  CircleDot,
+  Hammer,
+  MessageCircleQuestion,
   TriangleAlert,
   Bell,
   Bug,
@@ -9,6 +16,7 @@ import {
   Eye,
   Gauge,
   CircleHelp,
+  Inbox,
   LayoutTemplate,
   Lightbulb,
   Link2,
@@ -24,14 +32,39 @@ import {
 } from 'lucide-react';
 import type { BugImpact, BugPriority, BugStatus } from '../types/bug-report.types';
 import {
+  IMPACT_LABEL,
   IMPACT_SHORT,
-  IMPACT_TONE,
   PRIORITY_TONE,
   REPORTER_STATUS_LABEL,
-  STATUS_DOT,
   STATUS_LABEL,
-  STATUS_TONE,
+  type ReceiptState,
 } from '../utils/labels';
+
+const STATUS_ICON: Record<BugStatus, LucideIcon> = {
+  NEW: Inbox,
+  TRIAGED: CircleDot,
+  IN_PROGRESS: Hammer,
+  NEEDS_INFO: MessageCircleQuestion,
+  RESOLVED: CircleCheckBig,
+  CLOSED: Archive,
+};
+
+const STATUS_ICON_TONE: Record<BugStatus, string> = {
+  NEW: 'text-sky-600 dark:text-sky-400',
+  TRIAGED: 'text-indigo-600 dark:text-indigo-400',
+  IN_PROGRESS: 'text-amber-600 dark:text-amber-400',
+  NEEDS_INFO: 'text-fuchsia-600 dark:text-fuchsia-400',
+  RESOLVED: 'text-emerald-600 dark:text-emerald-400',
+  CLOSED: 'text-slate-400',
+};
+
+const IMPACT_LEVEL: Record<BugImpact, number> = { MINOR: 1, MAJOR: 2, BLOCKER: 3 };
+
+const IMPACT_BAR: Record<BugImpact, string> = {
+  MINOR: 'bg-slate-500',
+  MAJOR: 'bg-amber-500',
+  BLOCKER: 'bg-rose-500',
+};
 
 /** The fixed icon set a category may use. Keys match BugIntakeService.ICONS on the backend. */
 export const CATEGORY_ICONS: Record<string, LucideIcon> = {
@@ -61,20 +94,55 @@ export function CategoryIcon({ icon, size = 16, className }: { icon: string; siz
   return <Icon size={size} className={className} aria-hidden />;
 }
 
+/** Status in words with its icon — no coloured pill, so a list of them stays calm. */
 export function BugStatusBadge({ status, audience = 'staff' }: { status: BugStatus; audience?: 'staff' | 'reporter' }) {
+  const Icon = STATUS_ICON[status];
   return (
-    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${STATUS_TONE[status]}`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[status]}`} />
+    <span className="inline-flex items-center gap-1 whitespace-nowrap text-[11.5px] font-semibold text-slate-600">
+      <Icon size={13} className={STATUS_ICON_TONE[status]} aria-hidden />
       {(audience === 'reporter' ? REPORTER_STATUS_LABEL : STATUS_LABEL)[status]}
     </span>
   );
 }
 
-export function BugImpactBadge({ impact }: { impact: BugImpact }) {
+/**
+ * How much the bug gets in the way, as a three-bar meter (one bar minor, three a blocker).
+ * `label` adds the word next to it; the full sentence is always in the tooltip.
+ */
+export function BugImpactBadge({ impact, label = true }: { impact: BugImpact; label?: boolean }) {
+  const filled = IMPACT_LEVEL[impact];
   return (
-    <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${IMPACT_TONE[impact]}`}>
-      {IMPACT_SHORT[impact]}
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[11.5px] font-semibold text-slate-600" title={`Impact: ${IMPACT_LABEL[impact]}`}>
+      <span className="flex h-3 items-end gap-[2px]" aria-hidden>
+        {[1, 2, 3].map((bar) => (
+          <span
+            key={bar}
+            className={`w-[3px] rounded-full ${bar <= filled ? IMPACT_BAR[impact] : 'bg-slate-200'}`}
+            style={{ height: `${bar * 4}px` }}
+          />
+        ))}
+      </span>
+      {label ? IMPACT_SHORT[impact] : <span className="sr-only">{IMPACT_SHORT[impact]}</span>}
     </span>
+  );
+}
+
+/**
+ * WhatsApp-style delivery ticks on a message the viewer sent: one grey tick once saved, two grey
+ * ticks once the other side's app has received it, two blue ticks once they opened it.
+ */
+export function MessageTicks({ state, className = '' }: { state: ReceiptState; className?: string }) {
+  const title = state === 'read' ? 'Read' : state === 'delivered' ? 'Delivered' : 'Sent';
+  const Icon = state === 'sent' ? Check : CheckCheck;
+  return (
+    <Icon
+      size={15}
+      strokeWidth={2.25}
+      aria-label={title}
+      className={`shrink-0 ${state === 'read' ? 'text-[#53bdeb]' : 'text-slate-400'} ${className}`}
+    >
+      <title>{title}</title>
+    </Icon>
   );
 }
 

@@ -5,8 +5,7 @@ import { CircleAlert, Clock, Inbox, Loader2, MessageCircleQuestion, ShieldAlert,
 import {
   BugTriageService,
   IMPACT_SHORT,
-  STATUS_DOT,
-  STATUS_LABEL,
+  BugStatusBadge,
   type BugImpact,
   type BugStatus,
   type BugTrackerStats,
@@ -179,8 +178,7 @@ export function BugOverviewTab({
               onClick={() => onOpenTracker({ view: 'all', status: r.key })}
               className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200 bg-surface px-3 py-1.5 text-[12px] font-semibold text-slate-700 hover:border-slate-300"
             >
-              <span className={`h-2 w-2 rounded-full ${STATUS_DOT[r.key as BugStatus]}`} />
-              {STATUS_LABEL[r.key as BugStatus] ?? r.key}
+              <BugStatusBadge status={r.key as BugStatus} />
               <span className="tabular-nums text-slate-400">{r.count}</span>
             </button>
           ))}
