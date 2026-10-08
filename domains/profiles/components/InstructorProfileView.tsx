@@ -86,7 +86,9 @@ export function InstructorProfileView({ data }: InstructorProfileViewProps) {
     !!profile.handle &&
     viewer.username.toLowerCase() === profile.handle.toLowerCase();
 
-  const learnerActivityVisible = profile.learnerActivityVisible;
+  const isLearnerActivityVisible = isSelf
+    ? (viewer?.showLearnerActivity ?? profile.learnerActivityVisible ?? true)
+    : (profile.learnerActivityVisible ?? true);
   const organizations = profile.channels ?? [];
   const publishedCourses = profile.courses ?? [];
   const publishedWorkshops = profile.workshops ?? [];
@@ -188,7 +190,7 @@ export function InstructorProfileView({ data }: InstructorProfileViewProps) {
           />
 
           {/* 52-Week Learning Heatmap & Consistency Activity */}
-          {learnerActivityVisible && activity && (
+          {isLearnerActivityVisible && activity && (
             <ActivityPanel
               activity={activity}
               stats={[
@@ -213,11 +215,13 @@ export function InstructorProfileView({ data }: InstructorProfileViewProps) {
           )}
 
           {/* Achievements, Badges & Certificates */}
-          <AchievementsPanel
-            badges={achievements.length > 0 ? achievements : DEMO_BADGES}
-            certificates={(profile.certificates && profile.certificates.length > 0) ? profile.certificates : DEMO_CERTIFICATES}
-            viewAllHref={isSelf ? '/achievements' : undefined}
-          />
+          {isLearnerActivityVisible && (
+            <AchievementsPanel
+              badges={achievements.length > 0 ? achievements : DEMO_BADGES}
+              certificates={(profile.certificates && profile.certificates.length > 0) ? profile.certificates : DEMO_CERTIFICATES}
+              viewAllHref={isSelf ? '/achievements' : undefined}
+            />
+          )}
 
           {/* Social & Web Links */}
           <LinksPanel links={[profile.linkedinUrl, profile.githubUrl, ...(profile.socialLinks ?? [])]} />

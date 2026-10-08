@@ -71,7 +71,7 @@ import {
 import { FaGithub, FaLinkedin, FaReact, FaPython, FaDocker, FaAws, FaNodeJs, FaRust, FaGitAlt } from 'react-icons/fa';
 import { SiTypescript, SiNextdotjs, SiTailwindcss, SiPostgresql, SiKubernetes, SiRedis, SiFigma, SiGo, SiGraphql } from 'react-icons/si';
 import { BadgeRow } from '@/domains/recognition';
-import { CredentialBadge, type IssuedBadge } from '@/domains/credentials';
+import { CredentialBadge, BadgeDetailModal, type IssuedBadge } from '@/domains/credentials';
 import { getAvatarUrl } from '@/shared/utils/avatar';
 import { ContentCard, ProfileEmptyState } from './ProfileCards';
 import type {
@@ -189,6 +189,7 @@ export interface AchievementsPanelProps {
 
 export function AchievementsPanel({ badges, certificates }: AchievementsPanelProps) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [selectedBadge, setSelectedBadge] = useState<IssuedBadge | null>(null);
   const totalCount = badges.length + certificates.length;
 
   if (totalCount === 0) return null;
@@ -236,11 +237,12 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
             {badges.length > 0 && (
               <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-1 scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">
                 {badges.map((badge) => (
-                  <Link
+                  <button
                     key={badge.credentialCode}
-                    href={`/credentials/${encodeURIComponent(badge.credentialCode)}`}
-                    className="shrink-0 transition-transform hover:scale-105"
-                    title={`${badge.name} (${badge.badgeClass.tier.label})`}
+                    type="button"
+                    onClick={() => setSelectedBadge(badge)}
+                    className="shrink-0 transition-transform hover:scale-105 cursor-pointer text-left focus:outline-none"
+                    title={`${badge.name} (${badge.badgeClass.tier.label}) — Click to view details`}
                   >
                     <CredentialBadge
                       family={badge.badgeClass.family.key}
@@ -248,7 +250,7 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                       title={badge.name}
                       className="h-16 w-16"
                     />
-                  </Link>
+                  </button>
                 ))}
               </div>
             )}
@@ -297,81 +299,91 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
       <Portal>
         <AnimatePresence>
           {modalOpen && (
-            <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
               {/* Backdrop */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setModalOpen(false)}
-                className="fixed inset-0 bg-slate-950/75 backdrop-blur-md"
+                className="fixed inset-0 bg-slate-950/75 backdrop-blur-md transition-opacity"
               />
 
               {/* Modal Dialog Box */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                initial={{ opacity: 0, scale: 0.95, y: 14 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-surface dark:bg-slate-900 p-6 shadow-2xl"
+                exit={{ opacity: 0, scale: 0.95, y: 14 }}
+                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                className="relative z-10 my-auto flex max-h-[85vh] w-full max-w-2xl flex-col rounded-tl-[2rem] rounded-br-[2rem] rounded-tr-xl rounded-bl-xl border border-slate-200/90 dark:border-slate-800/90 bg-surface/98 dark:bg-slate-900/98 p-6 sm:p-7 shadow-2xl backdrop-blur-xl"
               >
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-500 dark:bg-amber-950/50 dark:text-amber-400">
-                      <Trophy size={20} />
-                    </div>
-                    <div>
-                      <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                        All Public Achievements
-                      </h2>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {badges.length} Credential Badges · {certificates.length} Verified Certificates
-                      </p>
-                    </div>
+                <div className="flex items-center justify-between pb-3">
+                  <div>
+                    <h2 className="text-sm sm:text-base font-bold tracking-tight text-black dark:text-white">
+                      Achievements & Certifications
+                    </h2>
                   </div>
                   <button
                     type="button"
                     onClick={() => setModalOpen(false)}
-                    className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                    className="flex size-7 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800/80 text-black dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                    aria-label="Close"
                   >
-                    <X size={18} />
+                    <X size={14} />
                   </button>
                 </div>
 
+                {/* Filter / Summary Pills */}
+                <div className="flex items-center gap-2 pt-2 pb-1 text-xs">
+                  <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 font-semibold text-black dark:text-white">
+                    {badges.length} Badges
+                  </span>
+                  <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 font-semibold text-black dark:text-white">
+                    {certificates.length} Certificates
+                  </span>
+                </div>
+
                 {/* Scrollable Content */}
-                <div className="flex-1 overflow-y-auto py-5 space-y-6">
+                <div className="flex-1 overflow-y-auto py-4 space-y-6 pr-1">
                   {/* Badges Section */}
                   {badges.length > 0 && (
                     <div>
-                      <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        Credential Badges ({badges.length})
-                      </h3>
+                      <div className="mb-3 flex items-center justify-between">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+                          Credential Badges
+                        </h3>
+                        <span className="text-xs text-black/60 dark:text-white/60">
+                          Click any badge to inspect
+                        </span>
+                      </div>
                       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                         {badges.map((badge) => (
-                          <Link
+                          <button
                             key={badge.credentialCode}
-                            href={`/credentials/${encodeURIComponent(badge.credentialCode)}`}
-                            className="flex flex-col items-center rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-4 text-center transition-all hover:scale-[1.02] hover:border-amber-200 dark:hover:border-amber-500/40 hover:bg-amber-50/40 dark:hover:bg-amber-500/10"
+                            type="button"
+                            onClick={() => setSelectedBadge(badge)}
+                            className="group flex flex-col items-center justify-between rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 p-4 text-center transition-all duration-200 hover:scale-[1.02] hover:border-black dark:hover:border-white hover:bg-white dark:hover:bg-slate-800/60 hover:shadow-md cursor-pointer focus:outline-none"
                           >
-                            <CredentialBadge
-                              family={badge.badgeClass.family.key}
-                              level={badge.badgeClass.tier.level}
-                              title={badge.name}
-                              className="h-20 w-20"
-                            />
-                            <span className="mt-3 block text-xs font-bold text-slate-800 dark:text-slate-200">
-                              {badge.name}
-                            </span>
-                            <span className="mt-1 block text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-                              {badge.badgeClass.tier.label}
-                            </span>
-                            {badge.issuerName && (
-                              <span className="mt-0.5 block text-[10px] text-slate-400 dark:text-slate-500">
-                                by {badge.issuerName}
+                            <div className="relative my-2 flex items-center justify-center">
+                              <CredentialBadge
+                                family={badge.badgeClass.family.key}
+                                level={badge.badgeClass.tier.level}
+                                title={badge.name}
+                                className="h-20 w-20 transition-transform duration-300 group-hover:scale-105"
+                              />
+                            </div>
+                            <div className="w-full">
+                              <span className="mt-2 block text-xs font-bold text-black dark:text-white line-clamp-2 leading-tight">
+                                {badge.name}
                               </span>
-                            )}
-                          </Link>
+                              {badge.issuerName && (
+                                <span className="mt-1 block text-xs text-black/60 dark:text-white/60 truncate">
+                                  by {badge.issuerName}
+                                </span>
+                              )}
+                            </div>
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -380,49 +392,54 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                   {/* Certificates Section */}
                   {certificates.length > 0 && (
                     <div>
-                      <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        Verified Certificates ({certificates.length})
+                      <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+                        Verified Certificates
                       </h3>
                       <div className="space-y-2.5">
                         {certificates.map((certificate, index) => {
-                          const body = (
-                            <div className="flex items-center justify-between gap-4">
-                              <div className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
-                                  <Award size={20} />
+                          const content = (
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800/60 hover:shadow-xs">
+                              <div className="flex items-start gap-3 min-w-0">
+                                <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
+                                  <Award size={18} />
                                 </div>
-                                <div>
-                                  <span className="block text-sm font-bold text-slate-800 dark:text-slate-200">
+                                <div className="min-w-0 flex-1">
+                                  <span className="block text-xs font-bold text-black dark:text-white leading-snug truncate">
                                     {certificate.name}
                                   </span>
-                                  <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+                                  <div className="flex flex-wrap items-center gap-x-2 text-xs text-black/60 dark:text-white/60 mt-0.5">
                                     {certificate.issuer && <span>Issued by {certificate.issuer}</span>}
                                     {certificate.date && <span>• {certificate.date}</span>}
+                                    {certificate.idCode && (
+                                      <span className="font-mono text-xs text-black/50 dark:text-white/50">
+                                        • {certificate.idCode}
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                               </div>
+
                               {certificate.idCode && (
-                                <div className="flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                                  <span>Verify</span>
-                                  <ExternalLink size={13} />
+                                <div className="self-end sm:self-center shrink-0">
+                                  <span className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1 text-xs font-semibold text-black dark:text-white group-hover:border-black dark:group-hover:border-white transition-colors shadow-2xs">
+                                    <span>Verify</span>
+                                    <ExternalLink size={12} />
+                                  </span>
                                 </div>
                               )}
                             </div>
                           );
-                          const className =
-                            'block rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 p-3.5 transition-all hover:border-slate-200 dark:hover:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800';
+
                           return certificate.idCode ? (
                             <Link
                               key={certificate.idCode}
                               href={`/credentials/${encodeURIComponent(certificate.idCode)}`}
-                              className={className}
+                              className="block group"
                             >
-                              {body}
+                              {content}
                             </Link>
                           ) : (
-                            <div key={index} className={className}>
-                              {body}
-                            </div>
+                            <div key={index}>{content}</div>
                           );
                         })}
                       </div>
@@ -434,6 +451,12 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
           )}
         </AnimatePresence>
       </Portal>
+
+      {/* Interactive Badge Detail Modal */}
+      <BadgeDetailModal
+        badge={selectedBadge}
+        onClose={() => setSelectedBadge(null)}
+      />
     </>
   );
 }
@@ -483,26 +506,27 @@ export function OrganizationsPanel({
             {organizations.slice(0, fullWidth ? 6 : 3).map((channel) => (
               <Link
                 key={channel.id}
-                // An organization that has not claimed a handle is still reachable by id; that
-                // route resolves to the same profile view.
                 href={channel.handle ? `/${channel.handle}` : `/channels/${channel.id}`}
-                className="group flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 shadow-2xs transition-all hover:bg-slate-100"
+                className="group flex items-center justify-between gap-3 rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 p-2.5 transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800/60 hover:shadow-xs"
               >
                 <div className="flex min-w-0 items-center gap-2.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200/60 bg-surface text-slate-600">
+                  <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 shadow-2xs">
                     {channel.iconUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={getAvatarUrl(channel.iconUrl)} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      <Building2 size={15} />
+                      <Building2 size={16} />
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="flex items-center gap-1 truncate text-xs font-bold text-slate-800 transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                    <p className="flex items-center gap-1 truncate text-xs font-bold text-slate-900 dark:text-slate-100 transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
                       <span className="truncate">{channel.name}</span>
                       <BadgeRow badges={channel.badges} size={13} max={1} />
                     </p>
-                    <p className="text-[10px] font-medium text-slate-400">{channel.role}</p>
+                    <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 truncate">
+                      {channel.role || 'Member'}
+                      {channel.handle && <span> · @{channel.handle}</span>}
+                    </p>
                   </div>
                 </div>
                 <ExternalLink
@@ -519,79 +543,81 @@ export function OrganizationsPanel({
       <Portal>
         <AnimatePresence>
           {modalOpen && (
-            <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
               {/* Backdrop */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setModalOpen(false)}
-                className="fixed inset-0 bg-slate-950/75 backdrop-blur-md"
+                className="fixed inset-0 bg-slate-950/75 backdrop-blur-md transition-opacity"
               />
 
               {/* Modal Dialog Box */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                initial={{ opacity: 0, scale: 0.95, y: 14 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="relative z-10 flex max-h-[85vh] w-full max-w-xl flex-col rounded-3xl border border-slate-200/90 bg-surface p-6 shadow-2xl"
+                exit={{ opacity: 0, scale: 0.95, y: 14 }}
+                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                className="relative z-10 my-auto flex max-h-[85vh] w-full max-w-xl flex-col rounded-tl-[2rem] rounded-br-[2rem] rounded-tr-xl rounded-bl-xl border border-slate-200/90 dark:border-slate-800/90 bg-surface/98 dark:bg-slate-900/98 p-6 sm:p-7 shadow-2xl backdrop-blur-xl"
               >
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
-                      <Building2 size={20} />
-                    </div>
-                    <div>
-                      <h2 className="text-base font-bold text-slate-900">
-                        Organizations
-                      </h2>
-                      <p className="text-xs text-slate-500">
-                        Member of {organizations.length} {organizations.length === 1 ? 'organization' : 'organizations'}
-                      </p>
-                    </div>
+                <div className="flex items-center justify-between pb-3">
+                  <div>
+                    <h2 className="text-sm sm:text-base font-bold tracking-tight text-black dark:text-white">
+                      Organizations
+                    </h2>
                   </div>
                   <button
                     type="button"
                     onClick={() => setModalOpen(false)}
-                    className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
+                    className="flex size-7 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800/80 text-black dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                    aria-label="Close"
                   >
-                    <X size={18} />
+                    <X size={14} />
                   </button>
                 </div>
 
+                {/* Summary Pill */}
+                <div className="flex items-center gap-2 pt-2 pb-1 text-xs">
+                  <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 font-semibold text-black dark:text-white">
+                    Member of {organizations.length} {organizations.length === 1 ? 'Organization' : 'Organizations'}
+                  </span>
+                </div>
+
                 {/* Scrollable Content */}
-                <div className="flex-1 overflow-y-auto py-4 space-y-2.5">
+                <div className="flex-1 overflow-y-auto py-4 space-y-2.5 pr-1">
                   {organizations.map((channel) => (
                     <Link
                       key={channel.id}
                       href={channel.handle ? `/${channel.handle}` : `/channels/${channel.id}`}
-                      className="group flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 transition-all hover:border-slate-200 hover:bg-slate-100"
+                      className="group flex items-center justify-between gap-4 rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 p-3.5 transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800/60 hover:shadow-xs"
                     >
                       <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/60 bg-surface text-slate-600 shadow-2xs">
+                        <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 text-black dark:text-white shadow-2xs">
                           {channel.iconUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={getAvatarUrl(channel.iconUrl)} alt="" className="h-full w-full object-cover" />
                           ) : (
-                            <Building2 size={18} />
+                            <Building2 size={20} />
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="flex items-center gap-1.5 truncate text-sm font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                          <p className="flex items-center gap-1.5 truncate text-xs font-bold text-black dark:text-white transition-colors group-hover:text-black dark:group-hover:text-white">
                             <span className="truncate">{channel.name}</span>
                             <BadgeRow badges={channel.badges} size={14} max={2} />
                           </p>
-                          <div className="flex items-center gap-2 text-xs text-slate-400">
-                            <span>{channel.role}</span>
+                          <div className="flex items-center gap-2 text-xs text-black/60 dark:text-white/60 mt-0.5">
+                            <span className="font-semibold text-black/70 dark:text-white/70">
+                              {channel.role || 'Member'}
+                            </span>
                             {channel.handle && <span>• @{channel.handle}</span>}
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                      <div className="flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1 text-xs font-semibold text-black dark:text-white group-hover:border-black dark:group-hover:border-white transition-colors shadow-2xs">
                         <span>Visit</span>
-                        <ExternalLink size={13} />
+                        <ExternalLink size={12} />
                       </div>
                     </Link>
                   ))}

@@ -84,7 +84,9 @@ export function LearnerProfileView({ data }: LearnerProfileViewProps) {
     !!profile.handle &&
     viewer.username.toLowerCase() === profile.handle.toLowerCase();
 
-  const learnerActivityVisible = profile.learnerActivityVisible;
+  const isLearnerActivityVisible = isSelf
+    ? (viewer?.showLearnerActivity ?? profile.learnerActivityVisible ?? true)
+    : (profile.learnerActivityVisible ?? true);
   const hasPublishedContent = (profile.courses?.length ?? 0) > 0 || (profile.workshops?.length ?? 0) > 0;
 
   // Sync if initial data changes
@@ -171,7 +173,7 @@ export function LearnerProfileView({ data }: LearnerProfileViewProps) {
           />
 
           {/* 52-Week Learning Heatmap & Consistency Activity */}
-          {learnerActivityVisible && activity && (
+          {isLearnerActivityVisible && activity && (
             <ActivityPanel
               activity={activity}
               stats={[
@@ -195,11 +197,13 @@ export function LearnerProfileView({ data }: LearnerProfileViewProps) {
         <div className="lg:col-span-4 space-y-6 min-w-0 lg:sticky lg:top-24">
           
           {/* Achievements, Badges & Certificates */}
-          <AchievementsPanel
-            badges={achievements.length > 0 ? achievements : DEMO_BADGES}
-            certificates={(profile.certificates && profile.certificates.length > 0) ? profile.certificates : DEMO_CERTIFICATES}
-            viewAllHref={isSelf ? '/achievements' : undefined}
-          />
+          {isLearnerActivityVisible && (
+            <AchievementsPanel
+              badges={achievements.length > 0 ? achievements : DEMO_BADGES}
+              certificates={(profile.certificates && profile.certificates.length > 0) ? profile.certificates : DEMO_CERTIFICATES}
+              viewAllHref={isSelf ? '/achievements' : undefined}
+            />
+          )}
 
           {/* Social & Web Links */}
           <LinksPanel links={[profile.linkedinUrl, profile.githubUrl, ...(profile.socialLinks ?? [])]} />

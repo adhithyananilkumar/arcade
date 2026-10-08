@@ -58,6 +58,8 @@ export {
 export type { ShareableCredential } from "./lib/share";
 export { CredentialBadge } from "./components/CredentialBadge";
 export type { CredentialBadgeProps } from "./components/CredentialBadge";
+export { BadgeDetailModal } from "./components/BadgeDetailModal";
+export type { BadgeDetailModalProps } from "./components/BadgeDetailModal";
 export { TierLadder } from "./components/TierLadder";
 export { BadgeTierPicker } from "./components/BadgeTierPicker";
 export { LinkedInGlyph } from "./components/LinkedInGlyph";
