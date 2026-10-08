@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
 import { useEligibleChannels, ChannelPicker, ChannelBrandingNotice } from "@/domains/channels";
+import { createExam } from "@/domains/assessments";
+import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
 
 const roadmapService = {
   updateRoadmap: (id: string, data: { title?: string; description?: string }) =>
@@ -573,6 +575,167 @@ function CreateEventModal({
               className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
             >
               {creating ? "Creating..." : `Create ${eventType === "WORKSHOP" ? "Workshop" : "Webinar"}`}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── New Exam creation modal ─────────────────────────────────────────────────────
+// Same dialog as New Course / New Event: picking "Exam" from Create Content used to leave the
+// dashboard for a full page holding one card, the only content type that did.
+
+const EXAM_INPUT_CLASS =
+  "w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60";
+
+function CreateExamModal({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [fee, setFee] = useState<PriceValue>({ paid: false, amount: "" });
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { channels, loading: channelsLoading } = useEligibleChannels();
+  const [channelId, setChannelId] = useState("");
+  const categories = usePublicCategories().filter((c) => c.type === "EXAMS" || c.type === "ALL");
+
+  useEffect(() => {
+    if (channels.length === 1 && !channelId) setChannelId(channels[0].id);
+  }, [channels, channelId]);
+
+  const needsCategory = categories.length > 0;
+  const ready =
+    !!title.trim() && !!description.trim() && !!channelId && (!needsCategory || !!categoryId) && isPriceValid(fee);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!ready) return;
+    setCreating(true);
+    setError(null);
+    try {
+      const exam = await createExam({
+        title: title.trim(),
+        purpose: purpose.trim() || undefined,
+        description: description.trim(),
+        categoryId: categoryId || undefined,
+        priceAmountMinor: toMinor(fee),
+        currency: "INR",
+        channelId,
+      });
+      toast.success(`"${title.trim()}" created`);
+      router.push(`/studio/content/exam/${exam.id}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not create exam";
+      setError(message);
+      toast.error(message);
+      setCreating(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
+        >
+          <X size={18} />
+        </button>
+        <div className="mb-6">
+          <h3 className="text-[17px] font-bold tracking-tight text-ink">New Exam</h3>
+          <p className="mt-1 text-[12px] font-medium text-slate-500">
+            Starts standalone. Attach it to a course or event later, or leave it standalone.
+          </p>
+        </div>
+
+        {error && (
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label htmlFor="exam-title" className="mb-1.5 block text-[13px] font-semibold text-ink">
+              Exam title <span className="text-rose-500">*</span>
+            </label>
+            <input
+              id="exam-title"
+              type="text"
+              required
+              autoFocus
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Logical Reasoning Assessment"
+              className={EXAM_INPUT_CLASS}
+            />
+          </div>
+          <DescriptionField id="exam-description" value={description} onChange={setDescription} />
+          {needsCategory && (
+            <div>
+              <label htmlFor="exam-category" className="mb-1.5 block text-[13px] font-semibold text-ink">
+                Category <span className="text-rose-500">*</span>
+              </label>
+              <select
+                id="exam-category"
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className={`${EXAM_INPUT_CLASS} cursor-pointer`}
+              >
+                <option value="">Select a category…</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          <PriceField id="exam-fee" value={fee} onChange={setFee} />
+          <div>
+            <label htmlFor="exam-purpose" className="mb-1.5 block text-[13px] font-semibold text-ink">
+              Purpose <span className="font-normal text-slate-400">(optional)</span>
+            </label>
+            <input
+              id="exam-purpose"
+              type="text"
+              value={purpose}
+              onChange={(e) => setPurpose(e.target.value)}
+              placeholder="e.g. Entrance test, Practice quiz, Final assessment"
+              className={EXAM_INPUT_CLASS}
+            />
+            <p className="mt-1.5 text-[11.5px] text-slate-400">A label for your own reference — describe it however fits.</p>
+          </div>
+          {!channelsLoading && channels.length > 0 && (
+            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
+          )}
+          <ChannelBrandingNotice channelId={channelId} context="create" />
+          {!channelsLoading && channels.length === 0 && (
+            <p className="text-sm text-rose-600 dark:text-rose-400">
+              You need a channel with content-authoring rights before you can create an exam.
+            </p>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!ready || creating}
+              className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
+            >
+              {creating ? "Creating…" : "Create Exam"}
             </button>
           </div>
         </form>
@@ -1173,7 +1336,7 @@ export default function DashboardPage() {
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [channelDropdownOpen, setChannelDropdownOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState<"course" | "event" | null>(null);
+  const [createOpen, setCreateOpen] = useState<"course" | "event" | "exam" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
@@ -1202,8 +1365,8 @@ export default function DashboardPage() {
       setChannelRequiredModalOpen(true);
       return;
     }
-    if (typeId === "course" || typeId === "event") {
-      setCreateOpen(typeId as any);
+    if (typeId === "course" || typeId === "event" || typeId === "exam") {
+      setCreateOpen(typeId);
     } else if (href) {
       router.push(href);
     }
@@ -1219,7 +1382,7 @@ export default function DashboardPage() {
       } else if (create === "webinar" || create === "workshop" || create === "event") {
         setCreateOpen("event");
       } else if (create === "exam" || create === "quiz") {
-        router.replace("/studio/exam/new");
+        setCreateOpen("exam");
       } else if (create === "course") {
         setCreateOpen(create as any);
       }
@@ -1355,6 +1518,7 @@ export default function DashboardPage() {
       />
       {createOpen === "course" && <CreateCourseModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "event" && <CreateEventModal onClose={() => setCreateOpen(null)} />}
+      {createOpen === "exam" && <CreateExamModal onClose={() => setCreateOpen(null)} />}
       {renameTarget && (
         <RenameRoadmapModal
           item={renameTarget}
@@ -1479,7 +1643,7 @@ export default function DashboardPage() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
                     <div
-                      className="absolute left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 z-50 mt-2 min-w-[170px] w-52 overflow-hidden rounded-2xl border border-slate-200/80 bg-surface/98 p-1.5 shadow-xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150"
+                      className="absolute left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 z-50 mt-2 min-w-[170px] w-52 overflow-hidden rounded-2xl border border-slate-200/80 bg-popover p-1.5 shadow-xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150"
                       role="menu"
                     >
                       <div className="space-y-0.5">
@@ -1661,7 +1825,7 @@ export default function DashboardPage() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
                     <div
-                      className="absolute right-0 z-50 mt-2 min-w-[170px] w-52 overflow-hidden rounded-2xl border border-slate-200/80 bg-surface/98 p-1.5 shadow-xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150"
+                      className="absolute right-0 z-50 mt-2 min-w-[170px] w-52 overflow-hidden rounded-2xl border border-slate-200/80 bg-popover p-1.5 shadow-xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150"
                       role="menu"
                     >
                       <div className="space-y-0.5">
