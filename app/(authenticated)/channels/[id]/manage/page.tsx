@@ -122,7 +122,7 @@ export default function ManageChannelPage() {
     let cancelled = false;
     Promise.all([
       channelService.getChannel(channelId),
-      channelService.getMyChannelPermissions(channelId),
+      channelService.getMyChannelPermissions(channelId).catch(() => [] as string[]),
       channelService.getMyDeletionRequests().catch(() => [] as ChannelDeletionRequestDto[]),
       channelService.getChannelContent(channelId).catch(() => [] as ChannelContentItem[]),
     ])
@@ -178,7 +178,7 @@ export default function ManageChannelPage() {
   const isOrg = !!channel && !channel.isPersonal;
   const isPlatformAdmin = AuthorizationService.canManageChannels(user);
   const isMember = isOwner || permissions.length > 0 || isPlatformAdmin;
-  const canEdit = isOwner || permissions.includes('ALL') || permissions.includes('channel.settings.manage');
+  const canEdit = isOwner || permissions.includes('ALL') || permissions.includes('channel.settings.manage') || permissions.includes('channel.content.manage') || permissions.includes('channel.content.create');
   const canViewAnalytics = isOwner;
   const canViewPayments = isOwner;
   const canViewStaff = isOrg && (isOwner || permissions.includes('ALL') || permissions.includes('channel.staff.manage') || permissions.includes('channel.staff.view') || permissions.length > 0 || isPlatformAdmin);
