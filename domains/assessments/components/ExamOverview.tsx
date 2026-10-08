@@ -134,9 +134,6 @@ export function ExamOverview({
   const needsIdentity = landing.blockedReason === 'IDENTITY_REQUIRED';
   const resuming = landing.openAttemptId !== null;
   const retaking = !resuming && landing.attemptsUsed > 0;
-  // Managers skip attempt limits by design (the server says so with canManage). Without saying it
-  // here, "3 of 3 attempts used" next to "Retake Exam" read as a learner bypass (BUG-1069).
-  const overLimitAsManager = landing.canManage && landing.attemptsUsed >= landing.maxAttempts;
   const latest = landing.latestAttempt ?? landing.history[0] ?? null;
 
   const handleShare = async () => {
@@ -177,7 +174,7 @@ export function ExamOverview({
       onClick={() => setShowHonorCode(true)}
       className="rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md bg-slate-900 px-7 py-3 text-xs sm:text-sm font-extrabold text-on-ink shadow-[0_8px_20px_rgba(15,23,42,0.18)] hover:bg-slate-800 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
     >
-      <span>{resuming ? 'Resume Exam' : overLimitAsManager ? 'Retake as manager' : retaking ? 'Retake Exam' : 'Start Exam'}</span>
+      <span>{resuming ? 'Resume Exam' : retaking ? 'Retake Exam' : 'Start Exam'}</span>
       <ChevronRight size={14} className="stroke-[3]" />
     </button>
   ) : (
@@ -319,7 +316,6 @@ export function ExamOverview({
               {landing.attemptsUsed > 0 && (
                 <p className="text-xs font-medium text-slate-500 pt-1">
                   {landing.attemptsUsed} of {landing.maxAttempts} attempt{landing.maxAttempts === 1 ? '' : 's'} used
-                  {overLimitAsManager && " · the limit doesn't apply to you as this exam's manager; learners are stopped here"}
                   {latest?.gradeCardId && (
                     <>
                       {' · '}

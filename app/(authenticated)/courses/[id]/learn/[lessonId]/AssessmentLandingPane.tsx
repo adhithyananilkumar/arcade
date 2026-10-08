@@ -18,8 +18,12 @@ import { examRoutes, courseRoutes, openExamSitting } from '@/shared/routes/conte
 import { IdentityCapture } from '@/apps/learner/components/exams/IdentityCapture';
 
 interface AssessmentLandingPaneProps {
-  assessment: AssessmentNodeResponse;
+  assessment: Pick<AssessmentNodeResponse, 'examId' | 'planId' | 'placementId'>;
   courseId?: string;
+  /** Where the sitting returns to when it is not a course lesson (an event's assessment page). */
+  returnTo?: string;
+  /** Opens another assessment of the same content — the graded ones a final assessment lists. */
+  onOpenPlacement?: (placementId: string) => void;
   /** Called when a previously-unpassed assessment now shows a pass, so the progress bar catches up. */
   onPassed?: () => void;
   /** Navigate to next item in course curriculum. */
@@ -36,6 +40,8 @@ export function AssessmentLandingPane({
   onPassed,
   onNextItem,
   onReportIssue,
+  returnTo,
+  onOpenPlacement,
   isPreview = false,
 }: AssessmentLandingPaneProps) {
   const router = useRouter();
@@ -77,6 +83,7 @@ export function AssessmentLandingPane({
     const params = new URLSearchParams();
     if (landing?.planId) params.set('planId', landing.planId);
     if (courseId) params.set('returnTo', courseRoutes.lesson(courseId, assessment.placementId));
+    else if (returnTo) params.set('returnTo', returnTo);
     if (isPreview) params.set('preview', 'true');
     const query = params.toString();
     // The sitting runs in its own tab; this pane re-reads when the learner comes back to it.
@@ -118,6 +125,7 @@ export function AssessmentLandingPane({
         onViewGradeCard={(gradeCardId) => router.push(examRoutes.gradeCard(gradeCardId))}
         onNextItem={onNextItem}
         onReportIssue={onReportIssue}
+        onOpenRequirement={onOpenPlacement}
       />
     </div>
   );

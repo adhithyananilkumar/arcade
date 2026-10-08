@@ -703,7 +703,30 @@ export type AssessmentBlockedReason =
   | "NOT_STARTED_YET"
   | "WINDOW_CLOSED"
   | "ATTEMPTS_EXHAUSTED"
-  | "IDENTITY_REQUIRED";
+  | "IDENTITY_REQUIRED"
+  | "COMPLETION_REQUIREMENTS";
+
+/** One line of a completion (final) assessment's checklist: finish every lesson, pass each graded assessment. */
+export interface CompletionRequirement {
+  kind: "LESSONS" | "GRADED_ASSESSMENT";
+  label: string;
+  met: boolean;
+  /** The graded assessment to open, for a GRADED_ASSESSMENT line. */
+  placementId: string | null;
+}
+
+/** An assessment placed in an event, as its learner meets it. */
+export interface LearnerAssessmentNode {
+  placementId: string;
+  examId: string;
+  planId: string;
+  title: string;
+  position: number;
+  planType: "COMPLETION" | "ASSESSMENT";
+  graded: boolean;
+  requiredForCompletion: boolean;
+  passed: boolean;
+}
 
 /** One past sitting. A pending-review entry reports no pass/fail yet, rather than a provisional one. */
 export interface AttemptHistoryItem {
@@ -801,6 +824,8 @@ export interface AssessmentLandingResponse {
   blockedReason: AssessmentBlockedReason | null;
   blockedMessage: string | null;
   canManage: boolean;
+  /** For a content's completion assessment: what must be finished first. Empty otherwise. */
+  completionRequirements?: CompletionRequirement[];
 }
 
 // ── Exam catalogue (Explore > Exams) and My Learning > Exams ──────────────────────────────────────────

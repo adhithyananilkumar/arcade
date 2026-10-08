@@ -16,6 +16,8 @@ import {
   AlertCircle,
   Award,
   CheckCircle2,
+  ChevronRight,
+  Circle,
   Clock,
   FileText,
   Hourglass,
@@ -28,7 +30,7 @@ import {
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { TiptapContentView } from "@/domains/learning";
-import type { AssessmentLandingResponse } from "../types";
+import type { AssessmentLandingResponse, CompletionRequirement } from "../types";
 import { HonorCodeModal } from "./HonorCodeModal";
 import { planKindLabel, planTypeMeta } from "../lib/planTypeMeta";
 import { PrerequisiteNotice, attemptStatusLabel } from "./LandingParts";
@@ -58,6 +60,8 @@ export interface AssessmentLandingProps {
   identitySlot?: ReactNode;
   /** Opens the tied content a certification requires, when its prerequisite is unmet. */
   onOpenPrerequisite?: () => void;
+  /** Opens a graded assessment listed in a completion assessment's checklist. */
+  onOpenRequirement?: (placementId: string) => void;
   /** Preview mode: describes the assessment but never lets the viewer start it. */
   readOnly?: boolean;
   starting?: boolean;
@@ -72,6 +76,7 @@ export function AssessmentLanding({
   registrationSlot,
   identitySlot,
   onOpenPrerequisite,
+  onOpenRequirement,
   readOnly = false,
   starting = false,
 }: AssessmentLandingProps) {
@@ -217,6 +222,14 @@ export function AssessmentLanding({
         <PrerequisiteNotice prerequisite={landing.prerequisite} onOpen={onOpenPrerequisite} />
       )}
 
+      {landing.planType === "COMPLETION" && (landing.completionRequirements?.length ?? 0) > 0 && (
+        <CompletionChecklist
+          requirements={landing.completionRequirements!}
+          contentTitle={landing.tiedContentTitle}
+          onOpen={onOpenRequirement}
+        />
+      )}
+
       {landing.accessWindow && (landing.accessWindow.opensAt || landing.accessWindow.closesAt) && (
         <section className="mb-7 rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
           <p className="text-[13px] font-medium text-slate-600">
@@ -325,6 +338,69 @@ export function AssessmentLanding({
   );
 }
 
+/**
+ * The final assessment comes last, like a final exam on Coursera: every lesson and every graded
+ * assessment first. The server decides each line and enforces the gate on start; this only shows it.
+ */
+function CompletionChecklist({
+  requirements,
+  contentTitle,
+  onOpen,
+}: {
+  requirements: CompletionRequirement[];
+  contentTitle: string | null;
+  onOpen?: (placementId: string) => void;
+}) {
+  const done = requirements.filter((r) => r.met).length;
+  return (
+    <section className="mb-7 rounded-2xl border border-slate-200 bg-surface p-5">
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <h2 className="text-[12px] font-bold uppercase tracking-wider text-slate-400">
+          Before the final assessment
+        </h2>
+        <span className="text-[12px] font-semibold tabular-nums text-slate-500">
+          {done} of {requirements.length} done
+        </span>
+      </div>
+      <p className="mb-3 text-[13px] text-slate-500">
+        This is the last step{contentTitle ? ` of ${contentTitle}` : ""}. It unlocks once you have finished everything
+        below.
+      </p>
+      <ul className="space-y-1.5">
+        {requirements.map((r, i) => {
+          const openable = !r.met && r.placementId && onOpen;
+          const body = (
+            <>
+              <span className={r.met ? "text-emerald-600 dark:text-emerald-400" : "text-slate-300"}>
+                {r.met ? <CheckCircle2 size={16} /> : <Circle size={16} />}
+              </span>
+              <span className={`flex-1 text-[13px] font-medium ${r.met ? "text-slate-500 line-through decoration-slate-300" : "text-ink"}`}>
+                {r.label}
+              </span>
+              {openable && <ChevronRight size={14} className="text-slate-400" />}
+            </>
+          );
+          return (
+            <li key={`${r.kind}-${r.placementId ?? i}`}>
+              {openable ? (
+                <button
+                  type="button"
+                  onClick={() => onOpen!(r.placementId!)}
+                  className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-colors hover:bg-slate-50"
+                >
+                  {body}
+                </button>
+              ) : (
+                <div className="flex items-center gap-2.5 px-2.5 py-2">{body}</div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 function Fact({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-surface px-3.5 py-3">
@@ -353,6 +429,7 @@ function blockedIcon(reason: AssessmentLandingResponse["blockedReason"]) {
       return <Clock size={16} />;
     case "ATTEMPTS_EXHAUSTED":
     case "PREREQUISITE_NOT_MET":
+    case "COMPLETION_REQUIREMENTS":
       return <Lock size={16} />;
     case "IDENTITY_REQUIRED":
       return <ShieldCheck size={16} />;

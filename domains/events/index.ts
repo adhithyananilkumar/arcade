@@ -49,6 +49,7 @@ export {
   getEventBySlugOrId,
 } from './api/eventDiscovery.service';
 
+export { getEventDeleteImpact } from './api/dashboardApi';
 export { EventRegistrationService } from './api/eventRegistration.service';
 export { EventTicketService, MyEventTicketService } from './api/eventTicket.service';
 export {

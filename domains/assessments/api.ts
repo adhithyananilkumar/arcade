@@ -35,6 +35,7 @@ import type {
   QuestionPoolDetail,
   QuestionPoolFilterRequest,
   QuestionPoolMembersRequest,
+  LearnerAssessmentNode,
   QuestionPoolPreviewResponse,
   QuestionPoolRequest,
   QuestionPoolResponse,
@@ -240,6 +241,11 @@ export async function previewPoolDraft(
 ): Promise<QuestionPoolPreviewResponse> {
   const wire = await api.post<WirePoolPreview>(`/api/question-banks/${bankId}/pools/preview`, req);
   return { ...wire, questions: wire.questions.map(fromWire) };
+}
+
+/** An event's placed assessments, with what this learner has passed. */
+export function getEventAssessments(eventId: string) {
+  return api.get<LearnerAssessmentNode[]>(`/api/assessments/learner/event/${eventId}`);
 }
 
 export function deletePool(poolId: string) {

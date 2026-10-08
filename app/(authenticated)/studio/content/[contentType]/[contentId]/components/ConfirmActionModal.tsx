@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { X } from "lucide-react";
 
 // Small reusable confirm dialog for destructive/irreversible header actions
@@ -16,6 +16,7 @@ export function ConfirmActionModal({
   requireTitleMatch,
   onClose,
   onConfirm,
+  children,
 }: {
   title: string;
   description: string;
@@ -24,6 +25,8 @@ export function ConfirmActionModal({
   requireTitleMatch?: string;
   onClose: () => void;
   onConfirm: () => Promise<void>;
+  /** Extra content between the description and the buttons — e.g. what else the delete removes. */
+  children?: ReactNode;
 }) {
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
@@ -58,6 +61,7 @@ export function ConfirmActionModal({
         </button>
         <h3 className="mb-2 text-base font-bold tracking-tight text-ink">{title}</h3>
         <p className="mb-4 text-sm text-slate-500">{description}</p>
+        {children}
 
         {requireTitleMatch && (
           <input

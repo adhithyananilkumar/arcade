@@ -84,6 +84,36 @@ function itemsForModule(mod: ModuleResponse): PlayerItem[] {
   );
 }
 
+/** The pseudo-module the course's own (root-level) assessments sit in. */
+const COURSE_ROOT = '__course';
+
+/**
+ * Assessments placed on the course itself rather than in a module — where every completion
+ * assessment lands. They used to be missing from the player entirely: the course overview sent
+ * learners to the exam's standalone catalogue page instead. They come after every module, with the
+ * completion (final) assessment last, like a final exam.
+ */
+function courseLevelItems(course: CourseResponse): PlayerItem[] {
+  return (course.assessments ?? [])
+    .slice()
+    .sort(
+      (a, b) =>
+        Number(a.planType === 'COMPLETION') - Number(b.planType === 'COMPLETION') || a.position - b.position,
+    )
+    .map((assessment) => ({
+      kind: 'assessment' as const,
+      id: assessment.placementId,
+      moduleId: COURSE_ROOT,
+      position: assessment.position,
+      assessment,
+    }));
+}
+
+/** The whole running order: every module's items, then the course's own assessments. */
+function allItems(course: CourseResponse): PlayerItem[] {
+  return [...(course.modules ?? []).flatMap(itemsForModule), ...courseLevelItems(course)];
+}
+
 export interface CoursePlayerProps {
   courseId?: string;
   lessonId?: string;
@@ -234,8 +264,8 @@ export function CoursePlayer({
         .get<CourseResponse>(`/api/v1/public/courses/${courseId}`)
         .then((data) => {
           setCourse(data);
-          if (data.modules && data.modules.length > 0) {
-            const items = data.modules.flatMap(itemsForModule);
+          const items = allItems(data);
+          if (items.length > 0) {
             const target = lessonParam
               ? items.find((i) => i.id === lessonParam || (i.kind === 'lesson' && i.id === lessonParam))
               : null;
@@ -281,7 +311,7 @@ export function CoursePlayer({
   });
 
   const orderedItems = useMemo(
-    () => course?.modules.flatMap(itemsForModule) ?? [],
+    () => (course ? allItems(course) : []),
     [course],
   );
 
@@ -454,7 +484,7 @@ export function CoursePlayer({
         <aside className="flex w-full shrink-0 flex-col md:sticky md:top-32 md:h-[calc(100vh-8.5rem)] md:w-[280px] lg:w-[300px]">
           <div className="flex h-full flex-col">
             <nav className="flex-1 space-y-3 overflow-y-auto px-3 pb-5 pt-5 md:px-4 arcade-scrollbar-mini">
-              {course.modules.length === 0 ? (
+              {course.modules.length === 0 && courseLevelItems(course).length === 0 ? (
                 <p className="px-2 text-sm text-slate-400">No modules yet.</p>
               ) : (
                 course.modules.map((mod, modIdx) => {
@@ -599,6 +629,50 @@ export function CoursePlayer({
                   );
                 })
               )}
+
+              {courseLevelItems(course).length > 0 && (
+                <div className="mb-2 flex flex-col gap-1">
+                  <div className="flex w-full items-center gap-2 rounded-2xl border border-white/40 bg-surface/60 px-3.5 py-2.5 shadow-sm backdrop-blur-md">
+                    <GraduationCap size={15} className="flex-shrink-0 text-ink/50" />
+                    <span className="flex-1 truncate text-[13px] font-bold text-ink">
+                      {courseLevelItems(course).every((i) => i.kind === 'assessment' && i.assessment.planType === 'COMPLETION')
+                        ? 'Final assessment'
+                        : 'Course assessments'}
+                    </span>
+                  </div>
+                  <div className="ml-5 flex flex-col gap-1 pl-3 pt-1">
+                    {courseLevelItems(course).map((item) => {
+                      if (item.kind !== 'assessment') return null;
+                      const isSelected = selectedItem?.id === item.id;
+                      const final = item.assessment.planType === 'COMPLETION';
+                      return (
+                        <div
+                          key={item.id}
+                          className={`group flex items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
+                            isSelected ? 'bg-ink shadow-md' : 'bg-surface/50 hover:bg-surface/80'
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => goTo(item)}
+                            className={`flex min-w-0 flex-1 items-center gap-1.5 py-2 text-left text-[13px] ${
+                              isSelected ? 'font-semibold text-white' : 'text-slate-500'
+                            }`}
+                          >
+                            <GraduationCap size={13} className="flex-shrink-0" />
+                            <span className="truncate">{item.assessment.title}</span>
+                            {final && (
+                              <span className="flex-shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+                                Final
+                              </span>
+                            )}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </nav>
 
             {progress && progress.totalLessons > 0 && (
@@ -637,6 +711,10 @@ export function CoursePlayer({
                 onPassed={refreshProgress}
                 onNextItem={nextItem ? handleNext : undefined}
                 onReportIssue={() => setReportModalOpen(true)}
+                onOpenPlacement={(placementId) => {
+                  const target = orderedItems.find((i) => i.id === placementId);
+                  if (target) goTo(target);
+                }}
                 isPreview={isPreview}
               />
             ) : selectedLesson ? (

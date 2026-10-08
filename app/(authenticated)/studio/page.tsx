@@ -31,6 +31,7 @@ import {
   SUPPORTS_TITLE_CONFIRM_DELETE,
 } from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/lib/contentActions";
 import { ConfirmActionModal } from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/components/ConfirmActionModal";
+import { LinkedExamDeleteChoice } from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/components/LinkedExamDeleteChoice";
 import {
   CapacityField,
   CategoryField,
@@ -939,6 +940,7 @@ function ContentCard({
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<"archive" | "delete" | null>(null);
+  const [keepExam, setKeepExam] = useState(false);
   const isRoadmap = item.type === "ROADMAP";
   const isExam = item.type === "EXAM";
   const segment = toContentTypeSegment(item.type);
@@ -985,7 +987,7 @@ function ContentCard({
       toast.success("Archived");
     } else if (confirmAction === "delete") {
       // A null request means this type has no delete — never report one that did not happen.
-      const request = deleteContent(segment, item.id, item.title);
+      const request = deleteContent(segment, item.id, item.title, { keepExam });
       if (!request) {
         toast.error("This content can't be deleted here.");
         setConfirmAction(null);
@@ -1155,7 +1157,11 @@ function ContentCard({
             requireTitleMatch={SUPPORTS_TITLE_CONFIRM_DELETE[segment] ? item.title : undefined}
             onClose={() => setConfirmAction(null)}
             onConfirm={handleConfirmed}
-          />
+          >
+            {segment === "event" && (
+              <LinkedExamDeleteChoice eventId={item.id} keepExam={keepExam} onChange={setKeepExam} />
+            )}
+          </ConfirmActionModal>
         </div>
       )}
     </SpotlightCard>

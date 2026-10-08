@@ -54,7 +54,24 @@ export default function ExamPage() {
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, [load]);
 
-  if (error || !landing) {
+  // A linked assessment (graded, practice or the final one) is sat inside its course or event, not
+  // here: this is the catalogue page for certifications and standalone exams, with enrolment and
+  // sharing that make no sense for a step of a course. Managers still see it, to check the terms.
+  const insideContent =
+    landing && !landing.hubListed && !landing.canManage && landing.tieType && landing.tiedContentId
+      ? landing.tieType === 'EVENT'
+        ? landing.placementId
+          ? eventRoutes.assessment(landing.tiedContentId, landing.placementId)
+          : eventRoutes.overview(landing.tiedContentId)
+        : landing.placementId
+          ? courseRoutes.lesson(landing.tiedContentId, landing.placementId)
+          : courseRoutes.overview(landing.tiedContentId)
+      : null;
+  useEffect(() => {
+    if (insideContent) router.replace(insideContent);
+  }, [insideContent, router]);
+
+  if (error || !landing || insideContent) {
     return (
       <main className="arcade-wash theme-page-bg theme-wallpaper-frost flex min-h-screen items-center justify-center px-4">
         {error ? (

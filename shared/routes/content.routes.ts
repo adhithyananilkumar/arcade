@@ -58,6 +58,8 @@ export const eventRoutes = {
   landing: (slug: string) => `/events/${slug}`,
   overview: (slug: string) => `/events/${slug}/learn`,
   session: (slug: string, sessionId: string) => `/events/${slug}/learn/${sessionId}`,
+  /** One of the event's linked assessments, sat from inside the event (never the exam catalogue page). */
+  assessment: (slug: string, placementId: string) => `/events/${slug}/learn/assessments/${placementId}`,
   notes: (slug: string) => `/events/${slug}/notes`,
 } as const;
 

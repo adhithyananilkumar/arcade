@@ -40,10 +40,11 @@ export function archiveContent(segment: ContentTypeSegment, contentId: string): 
 export function deleteContent(
   segment: ContentTypeSegment,
   contentId: string,
-  confirmTitle: string
+  confirmTitle: string,
+  options?: { keepExam?: boolean }
 ): Promise<void> | null {
   if (segment === "course") return api.delete<void>(`/api/courses/${contentId}`, { confirmTitle });
-  if (segment === "event") return deleteEvent(contentId);
+  if (segment === "event") return deleteEvent(contentId, options);
   // Soft delete of an untied exam; the backend refuses a tied one with a message saying why.
   if (segment === "exam") return api.delete<void>(`/api/exams/${contentId}`);
   return null;
