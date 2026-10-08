@@ -41,6 +41,8 @@
   --wallpaper-dim: 0.2;
   --glass-blur: 22px;
   --wallpaper-frost-blur: 36px;
+  --modal-veil: rgba(15, 23, 42, 0.45);
+  --modal-blur: 12px;
   --focus-ring: 0 0 0 3px rgba(32, 92, 168, 0.15);
 }
 
@@ -229,6 +231,8 @@
   --success: #34d399;
   --warning: #fbbf24;
   --destructive-hex: #f87171;
+  --modal-veil: rgba(4, 7, 14, 0.68);
+  --modal-blur: 14px;
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.04);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
@@ -257,6 +261,8 @@
   --n-800: oklch(0.98 0 0);
   --n-900: oklch(1 0 0);
   --n-950: oklch(1 0 0);
+  --modal-veil: rgba(0, 0, 0, 0.85);
+  --modal-blur: 0px;
   --focus-ring: 0 0 0 3px #ffd84d;
   --arcade-blue: #9cc2ff;
 }
@@ -278,6 +284,8 @@
   --n-800: oklch(0.25 0.04 260);
   --n-900: oklch(0.19 0.04 264);
   --n-950: oklch(0.13 0.04 264);
+  --modal-veil: rgba(15, 23, 42, 0.38);
+  --modal-blur: 16px;
   /* light text tone: dimming washes the wallpaper towards white so dark text stays legible */
   --wallpaper-scrim: oklch(0.99 0.004 250 / var(--wallpaper-dim));
   /* reading pages (theme-wallpaper-frost) add a light veil on top of the viewer's dimming */
@@ -299,6 +307,8 @@
   --n-800: oklch(0.92 0.008 262);
   --n-900: oklch(0.96 0.005 262);
   --n-950: oklch(0.985 0.003 262);
+  --modal-veil: rgba(4, 7, 14, 0.58);
+  --modal-blur: 16px;
   /* dark text tone: dimming darkens the wallpaper behind light text */
   --wallpaper-scrim: oklch(0.1 0.02 262 / var(--wallpaper-dim));
   --wallpaper-frost-scrim: oklch(0.1 0.02 262 / calc(var(--wallpaper-dim) + 0.22));
@@ -846,4 +856,92 @@
   .arcade-checkout-shell {
     background: var(--checkout-panel);
   }
+}
+
+/*
+ * ------------------------------------------------------------------
+ * Universal Arcade Modal & Dialog Design Standards
+ *
+ * 1. .arcade-modal-backdrop: Frosted glassy blur based on theme that
+ *    never whitens the background. Uses dark-tinted veil (--modal-veil).
+ * 2. .arcade-modal-box: Exact asymmetric Arcade box shape like the
+ *    home screen and dashboard panels:
+ *    rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl
+ * ------------------------------------------------------------------
+ */
+
+.arcade-modal-backdrop,
+[data-slot="dialog-overlay"],
+[data-slot="sheet-overlay"] {
+  background: var(--modal-veil, rgba(15, 23, 42, 0.45)) !important;
+  -webkit-backdrop-filter: blur(var(--modal-blur, 12px)) saturate(140%) !important;
+  backdrop-filter: blur(var(--modal-blur, 12px)) saturate(140%) !important;
+}
+
+:root[data-contrast="high"] .arcade-modal-backdrop,
+:root[data-contrast="high"] [data-slot="dialog-overlay"],
+:root[data-contrast="high"] [data-slot="sheet-overlay"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.arcade-modal-box,
+[data-slot="dialog-content"]:not(.arcade-checkout) {
+  border-top-left-radius: 2.25rem !important;
+  border-bottom-right-radius: 2.25rem !important;
+  border-top-right-radius: 0.75rem !important;
+  border-bottom-left-radius: 0.75rem !important;
+}
+
+
+/* ── Lite rendering tier ─────────────────────────────────────────────── */
+/*
+ * `<html data-perf="lite">` is set before first paint on low-end devices (see
+ * infrastructure/state/devicePerformance.ts). Glass keeps its look — wallpaper around near-solid
+ * panels — but drops everything the GPU has to recompute while the page changes: backdrop blur on
+ * every panel, the full-screen wallpaper blur on reading pages, and the decorative animated
+ * colour washes. Same treatment as the OS "reduce transparency" preference above, just stronger.
+ */
+:root[data-perf="lite"] *,
+:root[data-perf="lite"] *::before,
+:root[data-perf="lite"] *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* `!important` because the viewer's own opacity is an inline style on <html>. */
+:root[data-perf="lite"][data-material="glass"] {
+  --glass-a: 0.92 !important;
+}
+
+:root[data-perf="lite"][data-material="glass"]:not([data-contrast="high"]) .theme-wallpaper-frost {
+  --surface: oklch(1 0 0 / 0.88);
+  --surface-raised: oklch(1 0 0 / 0.94);
+  --theme-surface: var(--surface);
+  --theme-surface-raised: var(--surface-raised);
+}
+
+:root.dark[data-perf="lite"][data-material="glass"]:not([data-contrast="high"]) .theme-wallpaper-frost {
+  --surface: oklch(0.17 0.015 262 / 0.9);
+  --surface-raised: oklch(0.2 0.015 262 / 0.95);
+  --theme-surface: var(--surface);
+  --theme-surface-raised: var(--surface-raised);
+}
+
+/* No blur filter on the wallpaper; a stronger veil does the legibility work instead. */
+:root[data-perf="lite"][data-material="glass"]:has(.theme-wallpaper-frost) .arcade-wallpaper {
+  filter: none;
+  transform: none;
+}
+
+:root[data-perf="lite"][data-material="glass"]:has(.theme-wallpaper-frost) .arcade-wallpaper::after {
+  background: oklch(0.99 0.004 250 / calc(var(--wallpaper-dim, 0.2) + 0.35));
+}
+
+:root.dark[data-perf="lite"][data-material="glass"]:has(.theme-wallpaper-frost) .arcade-wallpaper::after {
+  background: oklch(0.1 0.02 262 / calc(var(--wallpaper-dim, 0.2) + 0.4));
+}
+
+:root[data-perf="lite"] .theme-page-layer {
+  display: none !important;
 }

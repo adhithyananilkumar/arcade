@@ -283,18 +283,19 @@ export default function ContentGovernancePage() {
       ) : null}
 
       {auditChannel ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-surface p-6 shadow-xl">
-            <header className="flex items-start justify-between gap-4 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 arcade-modal-backdrop" onClick={() => setAuditChannel(null)} />
+          <div className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-xl">
+            <header className="flex items-start justify-between gap-4 pb-4 border-b border-slate-200/70">
               <div>
-                <h2 className="text-[16px] font-bold text-ink">Governance history</h2>
-                <p className="mt-0.5 text-[12px] text-slate-500">{auditChannel.channelName}</p>
+                <h2 className="text-base font-bold text-ink">Governance history</h2>
+                <p className="mt-0.5 text-xs text-slate-500">{auditChannel.channelName}</p>
               </div>
               <button
                 type="button"
                 aria-label="Close"
                 onClick={() => setAuditChannel(null)}
-                className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100"
+                className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:bg-slate-100 hover:text-ink transition-colors cursor-pointer dark:hover:bg-slate-800"
               >
                 <X size={18} />
               </button>

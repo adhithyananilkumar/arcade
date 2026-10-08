@@ -140,7 +140,7 @@ export function EditOrganizationModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md"
+            className="fixed inset-0 arcade-modal-backdrop"
           />
 
           {/* Modal Container */}
@@ -148,15 +148,15 @@ export function EditOrganizationModal({
             initial={{ opacity: 0, scale: 0.95, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
-            className="relative z-10 w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200/80 bg-surface shadow-2xl"
+            className="relative z-10 w-full max-w-2xl overflow-hidden arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface shadow-2xl"
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+            <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-5">
               <div>
                 <h2 className="text-lg font-black tracking-tight text-ink">
                   Edit Organization Profile
                 </h2>
-                <p className="text-xs font-semibold text-slate-500">
+                <p className="mt-0.5 text-xs font-semibold text-slate-500">
                   Update your organizational branding, channel name, logo, and cover banner
                 </p>
               </div>
@@ -164,7 +164,8 @@ export function EditOrganizationModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+                aria-label="Close"
+                className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:bg-slate-100 hover:text-ink transition-colors cursor-pointer dark:hover:bg-slate-800"
               >
                 <X size={18} />
               </button>
@@ -280,11 +281,11 @@ export function EditOrganizationModal({
               </div>
 
               {/* Modal Footer / Buttons */}
-              <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-5">
+              <div className="flex items-center justify-end gap-3 border-t border-slate-200/70 pt-5">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-2xl border border-slate-200 bg-surface px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                  className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
                 >
                   Cancel
                 </button>
@@ -292,19 +293,9 @@ export function EditOrganizationModal({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-ink px-6 py-2.5 text-xs font-extrabold text-on-ink shadow-md hover:bg-indigo-950 transition-all active:scale-[0.98] disabled:opacity-60"
+                  className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
                 >
-                  {loading ? (
-                    <>
-                      <Loader2 size={15} className="animate-spin" />
-                      <span>Saving Profile...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Check size={15} />
-                      <span>Save Changes</span>
-                    </>
-                  )}
+                  {loading ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </form>

@@ -14,9 +14,11 @@ export default async function EditEventPage({ params }: Props) {
   const { id } = await params;
 
   return (
-    // Removes negative margins since the global layout doesn't use padding anymore.
-    // Ensure height works within the new flex layout.
-    <div className="flex flex-col flex-1 bg-surface">
+    // No background here: the editor frame inside is `fixed inset-0` and paints its own ground.
+    // Under the glass theme every `bg-surface` gets a backdrop-filter, which makes this wrapper the
+    // containing block for that fixed frame — so the editor shrinks to this wrapper's height, and
+    // at zero height (BUG-1061) the page shows only the wallpaper.
+    <div className="flex flex-col flex-1">
       <EventWorkspace eventId={id} />
     </div>
   );

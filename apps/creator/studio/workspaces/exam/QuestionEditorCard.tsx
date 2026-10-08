@@ -10,7 +10,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { ArcadeEditor, type ArcadeEditorHandle } from "@/apps/creator/editor";
+import { LazyArcadeEditor as ArcadeEditor, type ArcadeEditorHandle } from "@/apps/creator/editor/lazy";
 import { useStudioConfirm } from "@/apps/creator/studio/core/useStudioConfirm";
 import {
   QuestionTagEditor,

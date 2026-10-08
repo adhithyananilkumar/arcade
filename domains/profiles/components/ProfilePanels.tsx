@@ -276,7 +276,7 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setModalOpen(false)}
-                className="fixed inset-0 bg-slate-950/75 backdrop-blur-md"
+                className="fixed inset-0 arcade-modal-backdrop"
               />
 
               {/* Modal Dialog Box */}
@@ -285,27 +285,22 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                 transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col rounded-3xl border border-slate-200/90 bg-surface p-6 shadow-2xl"
+                className="relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col arcade-modal-box border border-slate-200/90 bg-surface p-6 shadow-2xl"
               >
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-500 dark:bg-amber-950/50 dark:text-amber-400">
-                      <Trophy size={20} />
-                    </div>
-                    <div>
-                      <h2 className="text-base font-bold text-slate-900">
-                        All Public Achievements
-                      </h2>
-                      <p className="text-xs text-slate-500">
-                        {badges.length} Credential Badges · {certificates.length} Verified Certificates
-                      </p>
-                    </div>
+                  <div>
+                    <h2 className="text-base font-bold text-slate-900">
+                      All Public Achievements
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      {badges.length} Credential Badges · {certificates.length} Verified Certificates
+                    </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setModalOpen(false)}
-                    className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
+                    className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
                   >
                     <X size={18} />
                   </button>
@@ -498,7 +493,7 @@ export function OrganizationsPanel({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setModalOpen(false)}
-                className="fixed inset-0 bg-slate-950/75 backdrop-blur-md"
+                className="fixed inset-0 arcade-modal-backdrop"
               />
 
               {/* Modal Dialog Box */}
@@ -507,27 +502,22 @@ export function OrganizationsPanel({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                 transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="relative z-10 flex max-h-[85vh] w-full max-w-xl flex-col rounded-3xl border border-slate-200/90 bg-surface p-6 shadow-2xl"
+                className="relative z-10 flex max-h-[85vh] w-full max-w-xl flex-col arcade-modal-box border border-slate-200/90 bg-surface p-6 shadow-2xl"
               >
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
-                      <Building2 size={20} />
-                    </div>
-                    <div>
-                      <h2 className="text-base font-bold text-slate-900">
-                        Organizations
-                      </h2>
-                      <p className="text-xs text-slate-500">
-                        Member of {organizations.length} {organizations.length === 1 ? 'organization' : 'organizations'}
-                      </p>
-                    </div>
+                  <div>
+                    <h2 className="text-base font-bold text-slate-900">
+                      Organizations
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Member of {organizations.length} {organizations.length === 1 ? 'organization' : 'organizations'}
+                    </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setModalOpen(false)}
-                    className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
+                    className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
                   >
                     <X size={18} />
                   </button>

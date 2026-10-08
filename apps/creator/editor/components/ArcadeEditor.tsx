@@ -21,16 +21,18 @@ if (typeof console !== "undefined") {
     originalError.apply(console, args);
   };
 }
-import { EditorSkeleton } from "./EditorSkeleton";
-import { ToolbarSkeleton } from "./ToolbarSkeleton";
 import {
   createSaveStatusStore,
   SaveStatusFooter,
   type SaveStatusStore,
 } from "./SaveStatusFooter";
+import { EditorContextMenu } from "./EditorContextMenu";
 import { useArcadeEditor, type CollabStatus, type ActiveCollaborator } from "../hooks/useArcadeEditor";
 import "reactjs-tiptap-editor/style.css";
+// After the library sheet: re-points its hsl(var(--token)) colours at Arcade's theme (generated).
+import "../styles/richtext-theme.css";
 import "../styles/editor.css";
+import "../styles/editor-chrome.css";
 import type { TiptapDocument } from "@/shared/types/editor.types";
 
 // ── Code-split chrome ────────────────────────────────────────────────────────
@@ -45,7 +47,9 @@ import type { TiptapDocument } from "@/shared/types/editor.types";
 // inside RichTextBubbles so they travel with that chunk rather than the entry.
 const RichTextToolbar = dynamic(
   () => import("./RichTextToolbar").then((m) => m.RichTextToolbar),
-  { ssr: false, loading: () => <ToolbarSkeleton /> }
+  // Nothing while it loads: the toolbar floats above the page, so an in-card placeholder (the old
+  // row of grey squares) appeared somewhere the real toolbar never is, then vanished.
+  { ssr: false, loading: () => null }
 );
 
 const RichTextBubbles = dynamic(
@@ -198,7 +202,8 @@ export const ArcadeEditor = memo(
     [flushSave, setContent, getJSON, editor]
   );
 
-  // editor is null during SSR — show skeleton
+  // The editor is created right after mount. Hold its space quietly rather than flashing a
+  // skeleton for that one frame — the skeleton read as a broken toolbar inside the card.
   if (!editor) {
     return (
       <div
@@ -207,10 +212,9 @@ export const ArcadeEditor = memo(
             ? `!bg-transparent !shadow-none !border-none ${className}`
             : `rounded-xl border border-gray-200 bg-surface overflow-hidden ${className}`
         }
-        style={chromeless ? { minHeight } : undefined}
-      >
-        <EditorSkeleton />
-      </div>
+        style={{ minHeight }}
+        aria-busy="true"
+      />
     );
   }
 
@@ -238,6 +242,7 @@ export const ArcadeEditor = memo(
           }
         />
         {!readOnly && <RichTextBubbles editor={editor} />}
+        {!readOnly && <EditorContextMenu editor={editor} />}
       </RichTextProvider>
       {/* Autosave status — subtle footer (card mode only) */}
       {!readOnly && !chromeless && (

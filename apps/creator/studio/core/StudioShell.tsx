@@ -43,10 +43,12 @@ export function StudioEditorFrame({ children }: { children: ReactNode }) {
     // `theme-page-layer` so it steps aside for glass and high contrast. In solid light/dark the
     // ground is the theme's own `bg-surface`.
     <div className="theme-page-bg theme-wallpaper-frost fixed inset-0 flex flex-col overflow-hidden bg-surface">
+      {/* Still, not pulsing: an animated 120px blur is recomposited every frame for as long as
+          the editor is open, competing with typing for the GPU on modest hardware. */}
       <div className="theme-page-layer pointer-events-none absolute inset-0 z-0 overflow-hidden dark:opacity-60">
-        <div className="absolute -left-[10%] -top-[20%] h-[70%] w-[50%] animate-pulse rounded-full bg-indigo-500/15 blur-[120px] duration-10000" />
-        <div className="absolute -right-[10%] top-[10%] h-[60%] w-[45%] animate-pulse rounded-full bg-rose-500/15 blur-[120px] duration-7000" />
-        <div className="absolute -bottom-[20%] left-[20%] h-[60%] w-[60%] animate-pulse rounded-full bg-emerald-500/15 blur-[120px] duration-10000" />
+        <div className="absolute -left-[10%] -top-[20%] h-[70%] w-[50%] rounded-full bg-indigo-500/15 blur-[120px]" />
+        <div className="absolute -right-[10%] top-[10%] h-[60%] w-[45%] rounded-full bg-rose-500/15 blur-[120px]" />
+        <div className="absolute -bottom-[20%] left-[20%] h-[60%] w-[60%] rounded-full bg-emerald-500/15 blur-[120px]" />
       </div>
       {children}
     </div>
@@ -272,7 +274,7 @@ export function StudioEditorBody({
           aria-hidden
           data-studio-overlay
           onClick={() => setDrawerOpen(false)}
-          className="fixed inset-0 z-[75] bg-slate-950/20 backdrop-blur-[2px] lg:hidden"
+          className="fixed inset-0 z-[75] arcade-modal-backdrop lg:hidden"
         />
       )}
 
@@ -377,6 +379,18 @@ export const CANVAS_CARD_CLASS =
  * placed inside a differently-scrolled element let content render behind the header).
  */
 export const CANVAS_WRAPPER_CLASS = "mx-auto w-full max-w-[640px] md:max-w-[768px] lg:max-w-[1024px] flex-1 min-h-0 min-w-0";
+
+/**
+ * The document canvas (a lesson being written): the card grows with the document and the Studio
+ * viewport is the one scroll container. As a nested scroller (CANVAS_CARD_CLASS) the card drew
+ * its own scrollbar on its rounded edge, a second bar beside the page's — the "visible edge" on
+ * the writing surface.
+ */
+export const CANVAS_DOCUMENT_WRAPPER_CLASS =
+  "mx-auto flex w-full max-w-[640px] flex-1 flex-col min-w-0 md:max-w-[768px] lg:max-w-[1024px]";
+
+export const CANVAS_DOCUMENT_CARD_CLASS =
+  "flex-1 rounded-3xl bg-surface/30 backdrop-blur-xl border border-surface/40 shadow-lg p-8";
 
 
 // ── Shared canvas states ──────────────────────────────────────────────────────

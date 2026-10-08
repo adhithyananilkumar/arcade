@@ -43,24 +43,21 @@ export function QuizSelectorModal({ onSelect, onClose, channelId }: QuizSelector
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative flex h-[500px] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-surface shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
+      <div className="relative flex h-[500px] w-full max-w-2xl flex-col overflow-hidden arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/10">
-              <FileQuestion size={20} className="text-indigo-600 dark:text-indigo-400" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-slate-900">Select a Quiz</h2>
-              <p className="text-xs text-slate-500">Choose a quiz to embed into this document.</p>
-            </div>
+        <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-4">
+          <div>
+            <h2 className="text-base font-bold text-ink">Select a Quiz</h2>
+            <p className="text-xs text-slate-500">Choose a quiz to embed into this document.</p>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors"
+            aria-label="Close"
+            className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:bg-slate-100 hover:text-ink transition-colors cursor-pointer dark:hover:bg-slate-800"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
@@ -76,18 +73,15 @@ export function QuizSelectorModal({ onSelect, onClose, channelId }: QuizSelector
             </div>
           ) : quizzes.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-50">
-                <FileQuestion size={24} className="text-slate-300" />
-              </div>
-              <h3 className="text-sm font-semibold text-slate-900">No Quizzes Found</h3>
+              <h3 className="text-sm font-semibold text-ink">No Quizzes Found</h3>
               <p className="mt-1 max-w-[250px] text-xs text-slate-500">
                 You haven&apos;t created any quizzes yet. Head to the Studio dashboard to create one.
               </p>
               <button
+                type="button"
                 onClick={() => router.push("/studio/content")}
-                className="mt-6 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                className="mt-6 inline-flex items-center justify-center rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm hover:bg-ink-hover transition-colors cursor-pointer"
               >
-                <Plus size={16} />
                 Create Quiz
               </button>
             </div>
@@ -97,9 +91,9 @@ export function QuizSelectorModal({ onSelect, onClose, channelId }: QuizSelector
                 <button
                   key={quiz.id}
                   onClick={() => onSelect(quiz.id)}
-                  className="group flex flex-col items-start gap-1 rounded-xl border border-slate-200 bg-surface p-4 text-left transition-all hover:border-indigo-300 hover:shadow-md hover:shadow-indigo-500/5 dark:hover:border-indigo-500/40"
+                  className="group flex flex-col items-start gap-1 rounded-xl border border-slate-200 bg-surface p-4 text-left transition-all hover:border-ink/20 hover:bg-ink/5"
                 >
-                  <h3 className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                  <h3 className="text-sm font-semibold text-ink">
                     {quiz.title}
                   </h3>
                   <div className="flex items-center gap-2 mt-1">

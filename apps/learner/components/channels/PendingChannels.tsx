@@ -948,7 +948,7 @@ export function PendingChannels() {
 
       {/* Modal: Channel Details */}
       <Dialog open={!!selectedRow} onOpenChange={(open) => !open && setSelectedRow(null)}>
-        <DialogContent className="max-w-4xl lg:max-w-5xl w-[94vw] p-6 sm:p-8 max-h-[90vh] overflow-y-auto overflow-x-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-2xl border border-slate-200 shadow-2xl">
+        <DialogContent className="max-w-4xl lg:max-w-5xl w-[94vw] p-6 sm:p-8 max-h-[90vh] overflow-y-auto overflow-x-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border border-slate-200 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-slate-900 tracking-tight">Channel Overview</DialogTitle>
           </DialogHeader>
@@ -1423,8 +1423,8 @@ export function PendingChannels() {
       <Dialog open={!!suspendTarget} onOpenChange={(open) => !open && setSuspendTarget(null)}>
         <DialogContent className="max-w-md p-6 sm:p-7">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-rose-700 flex items-center gap-2 dark:text-rose-300">
-              <ShieldOff size={18} /> Suspend Channel
+            <DialogTitle className="text-lg font-bold text-rose-700 dark:text-rose-300">
+              Suspend Channel
             </DialogTitle>
           </DialogHeader>
 
@@ -1466,14 +1466,14 @@ export function PendingChannels() {
                 <button
                   type="button"
                   onClick={confirmSuspend}
-                  className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition-colors font-semibold text-xs shadow-sm"
+                  className="flex-1 inline-flex justify-center items-center px-4 py-2.5 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition-colors font-semibold text-xs shadow-sm cursor-pointer"
                 >
-                  <ShieldOff size={14} /> {suspendForce ? 'Force Suspend' : 'Confirm Suspension'}
+                  {suspendForce ? 'Force Suspend' : 'Confirm Suspension'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setSuspendTarget(null)}
-                  className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold text-xs"
+                  className="flex-1 inline-flex justify-center items-center px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold text-xs cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1487,8 +1487,8 @@ export function PendingChannels() {
       <Dialog open={!!rejectTarget} onOpenChange={(open) => !open && setRejectTarget(null)}>
         <DialogContent className="max-w-md p-6 sm:p-7">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-rose-700 flex items-center gap-2 dark:text-rose-300">
-              <X size={18} /> Reject Channel Request
+            <DialogTitle className="text-lg font-bold text-rose-700 dark:text-rose-300">
+              Reject Channel Request
             </DialogTitle>
           </DialogHeader>
 
@@ -1518,14 +1518,14 @@ export function PendingChannels() {
                   type="button"
                   onClick={confirmReject}
                   disabled={rejectSubmitting || !rejectReason.trim()}
-                  className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition-colors font-semibold text-xs shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex-1 inline-flex justify-center items-center px-4 py-2.5 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition-colors font-semibold text-xs shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 >
-                  <X size={14} /> {rejectSubmitting ? 'Rejecting...' : 'Reject Request'}
+                  {rejectSubmitting ? 'Rejecting...' : 'Reject Request'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setRejectTarget(null)}
-                  className="flex-1 inline-flex justify-center items-center gap-1.5 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold text-xs"
+                  className="flex-1 inline-flex justify-center items-center px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold text-xs cursor-pointer"
                 >
                   Cancel
                 </button>

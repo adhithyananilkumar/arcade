@@ -26,7 +26,7 @@ import {
   Target,
   type LucideIcon,
 } from "lucide-react";
-import { ArcadeEditor } from "@/apps/creator/editor";
+import { LazyArcadeEditor as ArcadeEditor } from "@/apps/creator/editor/lazy";
 import type { TiptapDocument } from "@/shared/types/editor.types";
 import {
   getExamPlan,

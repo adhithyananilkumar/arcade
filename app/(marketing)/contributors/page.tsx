@@ -257,14 +257,14 @@ export default function ContributorsPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedContributor(null)}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 arcade-modal-backdrop"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-surface/90 backdrop-blur-xl border border-white/50 rounded-[2rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+              className="bg-surface/90 backdrop-blur-xl border border-white/50 arcade-modal-box w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
             >
               {/* Modal Header & Pattern Background */}
               <div className="relative pt-8 px-6 sm:px-10 pb-6 rounded-t-[2rem] overflow-hidden">
@@ -274,9 +274,9 @@ export default function ContributorsPage() {
                 
                 <button 
                   onClick={() => setSelectedContributor(null)}
-                  className="absolute top-6 right-6 w-10 h-10 bg-surface/80 hover:bg-surface flex items-center justify-center rounded-full shadow-sm text-slate-500 hover:text-slate-800 transition-colors z-10"
+                  className="absolute top-6 right-6 w-9 h-9 bg-surface/80 hover:bg-surface flex items-center justify-center rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs shadow-sm text-slate-500 hover:text-slate-800 transition-colors z-10 cursor-pointer"
                 >
-                  <X size={20} strokeWidth={2} />
+                  <X size={18} strokeWidth={2} />
                 </button>
 
                 <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-center sm:items-start relative z-10">

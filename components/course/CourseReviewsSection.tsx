@@ -231,13 +231,16 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in">
-          <div className="w-full max-w-lg rounded-3xl border border-gray-200 bg-surface p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-              <h3 className="text-base font-bold text-gray-900">Write a Real-time Review</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in">
+          <div className="absolute inset-0 arcade-modal-backdrop" onClick={() => setIsModalOpen(false)} />
+          <div className="relative w-full max-w-lg arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-200/70 pb-4">
+              <h3 className="text-base font-bold text-ink">Write a Real-time Review</h3>
               <button
+                type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 cursor-pointer"
+                aria-label="Close"
+                className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:bg-slate-100 hover:text-ink transition-colors cursor-pointer dark:hover:bg-slate-800"
               >
                 <X size={18} />
               </button>
@@ -295,16 +298,16 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="rounded-xl px-4 py-2 text-sm font-semibold text-gray-500 hover:bg-gray-100 cursor-pointer"
+                  className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-ink transition-colors cursor-pointer dark:hover:bg-slate-800"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 active:scale-95 disabled:opacity-50 cursor-pointer"
+                  className="inline-flex items-center justify-center rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
                 >
-                  <Send size={15} /> {submitting ? "Posting..." : "Post Review Live"}
+                  {submitting ? "Posting..." : "Post Review Live"}
                 </button>
               </div>
             </form>

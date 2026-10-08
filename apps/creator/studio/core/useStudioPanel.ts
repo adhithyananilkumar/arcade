@@ -47,7 +47,8 @@ export type InviteRole = "EDITOR" | "MANAGER" | "VIEWER";
 
 export function useStudioPanel({ collaboratorsPath, statusHistoryPath }: StudioWorkflowPanelPaths) {
   const { subscribe, connected } = useWebSocket();
-  const { user } = useAuthStore();
+  // Only the id: subscribing to the whole store re-rendered the Studio workspace on every token refresh.
+  const userId = useAuthStore((s) => s.user?.id);
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<string>("status");
 
@@ -66,7 +67,7 @@ export function useStudioPanel({ collaboratorsPath, statusHistoryPath }: StudioW
   const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
-    if (!connected || !user?.id) return;
+    if (!connected || !userId) return;
     const unsub = subscribe("/user/queue/notifications", (body: any) => {
       try {
         const payload = typeof body === "string" ? JSON.parse(body) : body;
@@ -87,7 +88,7 @@ export function useStudioPanel({ collaboratorsPath, statusHistoryPath }: StudioW
       }
     });
     return unsub;
-  }, [connected, user?.id, subscribe]);
+  }, [connected, userId, subscribe]);
 
   const loadCollaborators = useCallback(async () => {
     if (!collaboratorsPath) return;

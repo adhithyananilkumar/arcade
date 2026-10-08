@@ -231,8 +231,9 @@ export function PolicyManager({ headerSlot }: PolicyManagerProps = {}) {
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 arcade-modal-backdrop" onClick={handleCloseModal} />
+          <div className="relative w-full max-w-3xl arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface overflow-hidden shadow-2xl">
             <PolicyEditor
               scope="PLATFORM"
               mode={editingRole ? 'edit' : 'create'}

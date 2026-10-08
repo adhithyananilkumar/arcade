@@ -8,7 +8,7 @@
 // duplicate of it.
 
 import { HocuspocusProvider } from "@hocuspocus/provider";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as Y from "yjs";
 import { toast } from "sonner";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
@@ -42,12 +42,28 @@ export interface UseCollaborativeDocumentResult {
   collaborators: ActiveCollaborator[];
 }
 
+/**
+ * Identity of the people in the room — what the collaborator list actually shows. Cursor positions
+ * are deliberately left out: they change on every keystroke, and the list doesn't display them.
+ */
+function collaboratorsKey(users: ActiveCollaborator[]): string {
+  return users.map((u) => `${u.clientId}:${u.user?.id ?? ""}:${u.user?.name ?? ""}:${u.user?.color ?? ""}`).join("|");
+}
+
 export function useCollaborativeDocument({
   ownerType,
   ownerId,
   ydoc: externalYDoc,
 }: UseCollaborativeDocumentOptions): UseCollaborativeDocumentResult {
-  const { user, accessToken } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
+  const userId = user?.id;
+  const userName = user?.fullName;
+  // Read inside listeners rather than as effect dependencies: the auth store hands out a new
+  // `user` object on every refresh, and re-running the effect for that destroyed the provider.
+  const userIdRef = useRef(userId);
+  useEffect(() => {
+    userIdRef.current = userId;
+  }, [userId]);
 
   const ownYDoc = useMemo(() => createYDoc(), []);
   const ydoc = externalYDoc ?? ownYDoc;
@@ -79,7 +95,10 @@ export function useCollaborativeDocument({
     return new HocuspocusProvider({
       url: COLLAB_WS_URL,
       name: documentName,
-      token: accessToken || undefined,
+      // Read at every (re)connect, so a refreshed access token is picked up without rebuilding the
+      // provider. Rebuilding it on each refresh reconnected the socket and remounted the editor
+      // mid-sentence.
+      token: () => useAuthStore.getState().accessToken || "",
       document: ydoc,
       onAuthenticationFailed: (data) => {
         console.warn("[Collaboration] Hocuspocus authentication failed:", data.reason);
@@ -92,7 +111,7 @@ export function useCollaborativeDocument({
       },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [documentName, accessToken, ydoc]);
+  }, [documentName, ydoc]);
 
   const [status, setStatus] = useState<CollabStatus>(documentName ? "connecting" : "disabled");
   const [collaborators, setCollaborators] = useState<ActiveCollaborator[]>([]);
@@ -105,6 +124,10 @@ export function useCollaborativeDocument({
     }
 
     const updateStatus = ({ status: s }: { status: string }) => setStatus(s as CollabStatus);
+    // Awareness fires on every cursor move — including our own caret on each keystroke. Only a
+    // change in *who* is here updates React state; otherwise every keystroke re-rendered the
+    // editor and, through onCollabStateChange, the whole Studio workspace around it.
+    let lastKey = "";
     const updateAwareness = () => {
       if (!provider.awareness) return;
       const states = provider.awareness.getStates();
@@ -112,13 +135,11 @@ export function useCollaborativeDocument({
       states.forEach((state: any, clientId: number) => {
         if (state.user) users.push({ clientId, user: state.user });
       });
+      const key = collaboratorsKey(users);
+      if (key === lastKey) return;
+      lastKey = key;
       setCollaborators(users);
     };
-
-    // Broadcast who's editing — the same awareness payload useArcadeEditor sets for Tiptap rooms.
-    if (provider.awareness && user) {
-      provider.awareness.setLocalStateField("user", { id: user.id, name: user.fullName });
-    }
 
     const handleAuthFailed = () => {
       handleRevocation();
@@ -133,7 +154,7 @@ export function useCollaborativeDocument({
     const handleStateless = ({ payload }: { payload: string }) => {
       try {
         const msg = JSON.parse(payload);
-        const currentUserId = user?.id ? String(user.id).toLowerCase() : null;
+        const currentUserId = userIdRef.current ? String(userIdRef.current).toLowerCase() : null;
         const targetUserId = msg.userId ? String(msg.userId).toLowerCase() : null;
 
         if (
@@ -166,7 +187,18 @@ export function useCollaborativeDocument({
       }
       provider.destroy();
     };
-  }, [provider, user]);
+  }, [provider]);
+
+  // Broadcast who's editing — the same awareness payload useArcadeEditor sets for Tiptap rooms.
+  // Separate from the effect above so a profile/name change updates the payload without
+  // tearing the connection down.
+  useEffect(() => {
+    if (provider?.awareness && userId) {
+      // Merged, not replaced: the Tiptap cursor extension puts the author's cursor colour here.
+      const current = provider.awareness.getLocalState()?.user ?? {};
+      provider.awareness.setLocalStateField("user", { ...current, id: userId, name: userName });
+    }
+  }, [provider, userId, userName]);
 
   return { ydoc, provider, status, collaborators };
 }

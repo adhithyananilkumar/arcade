@@ -46,7 +46,7 @@ export function ExamGradesDialog({ open, onOpenChange, examTitle, cards, onOpenP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[88vh] gap-0 overflow-y-auto rounded-2xl bg-surface p-0 text-slate-700 sm:max-w-4xl">
+      <DialogContent className="max-h-[88vh] gap-0 overflow-y-auto bg-surface p-0 text-slate-700 sm:max-w-4xl">
         <header className="border-b border-slate-200 px-6 pb-5 pt-6 sm:px-8">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">Grade report</p>
           <DialogTitle className="mt-1.5 pr-8 text-[1.45rem] font-bold leading-tight tracking-tight text-ink">

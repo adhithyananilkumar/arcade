@@ -6,7 +6,7 @@ import processingAnimation from '@/public/lottie/payment-processing.json';
 import successAnimation from '@/public/lottie/payment-success.json';
 import declinedAnimation from '@/public/lottie/payment-declined.json';
 
-export type PaymentLottieKind = 'processing' | 'success' | 'declined';
+import type { PaymentLottieKind } from './PaymentLottie';
 
 const SOURCES: Record<PaymentLottieKind, unknown> = {
   processing: processingAnimation,
@@ -47,7 +47,7 @@ function repaint(node: unknown, rgb: number[]): unknown {
  * Arcade's payment animations: a processing orbit (loops, in the theme's ink), and one-shot success
  * and declined marks. Honours reduced motion by holding the final frame.
  */
-export function PaymentLottie({ kind, size = 132 }: { kind: PaymentLottieKind; size?: number }) {
+export default function PaymentLottieAnimation({ kind, size = 132 }: { kind: PaymentLottieKind; size?: number }) {
   const lottieRef = useRef<LottieRefCurrentProps | null>(null);
   const data = useMemo(() => (kind === 'processing' ? repaint(SOURCES[kind], inkRgb()) : SOURCES[kind]), [kind]);
   const reduceMotion =

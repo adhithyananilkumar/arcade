@@ -43,16 +43,17 @@ export function ConfirmActionModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
+      <div className="relative w-full max-w-sm overflow-hidden arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink"
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
         >
           <X size={18} />
         </button>
-        <h3 className="mb-2 text-[15px] font-bold tracking-tight text-ink">{title}</h3>
+        <h3 className="mb-2 text-base font-bold tracking-tight text-ink">{title}</h3>
         <p className="mb-4 text-sm text-slate-500">{description}</p>
 
         {requireTitleMatch && (
@@ -76,7 +77,7 @@ export function ConfirmActionModal({
             type="button"
             onClick={onClose}
             disabled={busy}
-            className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-ink"
+            className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
           >
             Cancel
           </button>
@@ -84,8 +85,8 @@ export function ConfirmActionModal({
             type="button"
             onClick={handleConfirm}
             disabled={!canConfirm || busy}
-            className={`rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${
-              danger ? "bg-rose-600 hover:bg-rose-700" : "bg-ink hover:bg-ink-hover"
+            className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer ${
+              danger ? "bg-rose-600 text-white hover:bg-rose-700" : "bg-ink text-on-ink hover:bg-ink-hover shadow-sm"
             }`}
           >
             {busy ? "Working…" : confirmLabel}

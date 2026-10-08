@@ -34,32 +34,30 @@ export function RollbackDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="rollback-title"
     >
-      <div className="w-full max-w-lg rounded-2xl bg-surface p-6 shadow-xl">
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onCancel} />
+      <div className="relative w-full max-w-lg arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-xl">
         <header className="flex items-start justify-between gap-4 pb-3">
-          <div className="flex items-center gap-2">
-            <History size={18} className="text-ink" />
-            <h2 id="rollback-title" className="text-[16px] font-bold text-ink">
-              Roll back to version {target.versionNumber}?
-            </h2>
-          </div>
+          <h2 id="rollback-title" className="text-base font-bold text-ink">
+            Roll back to version {target.versionNumber}?
+          </h2>
           <button
             type="button"
             onClick={onCancel}
             aria-label="Close"
-            className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100"
+            className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:bg-slate-100 hover:text-ink transition-colors cursor-pointer dark:hover:bg-slate-800"
           >
             <X size={18} />
           </button>
         </header>
 
-        <div className="space-y-3 text-[13px] leading-relaxed text-slate-600">
+        <div className="space-y-3 text-[13px] leading-relaxed text-slate-600 dark:text-slate-400">
           <p>
-            This creates a <strong>new version</strong> containing the content of version{" "}
+            This creates a <strong className="text-ink">new version</strong> containing the content of version{" "}
             {target.versionNumber}.
             {currentLiveVersionNumber != null ? (
               <>
@@ -70,14 +68,13 @@ export function RollbackDialog({
             ) : null}
           </p>
 
-          <p className="rounded-xl bg-slate-50 px-3 py-2.5 text-[12px]">
+          <p className="rounded-xl bg-slate-50 px-3 py-2.5 text-[12px] dark:bg-slate-900/50">
             Published versions are never modified or reactivated, so the history of what was live and
             when stays accurate.
           </p>
 
           {publishesImmediately ? (
             <p className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[12px] text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
-              <AlertTriangle size={14} className="mt-0.5 shrink-0" />
               Your channel is exempt from review, so this will go live immediately.
             </p>
           ) : (
@@ -96,26 +93,26 @@ export function RollbackDialog({
             onChange={(e) => setReason(e.target.value)}
             rows={2}
             placeholder="Recorded in the content's history"
-            className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-[13px] outline-none focus:border-ink"
+            className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-[13px] text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60"
           />
         </label>
 
-        <div className="mt-4 flex gap-2">
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => onConfirm(reason.trim())}
-            className="rounded-full bg-ink px-4 py-2.5 text-[12px] font-semibold text-on-ink hover:bg-ink-hover disabled:opacity-40"
-          >
-            {busy ? "Rolling back…" : `Roll back to version ${target.versionNumber}`}
-          </button>
+        <div className="mt-6 flex justify-end gap-2">
           <button
             type="button"
             disabled={busy}
             onClick={onCancel}
-            className="rounded-full border border-slate-300 px-4 py-2.5 text-[12px] font-semibold text-ink hover:bg-slate-50 disabled:opacity-40"
+            className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer disabled:opacity-50 dark:hover:bg-slate-800"
           >
             Cancel
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => onConfirm(reason.trim())}
+            className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
+          >
+            {busy ? "Rolling back…" : `Roll back to version ${target.versionNumber}`}
           </button>
         </div>
       </div>

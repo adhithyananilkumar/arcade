@@ -200,7 +200,7 @@ export function QuickAppearance() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[59] bg-slate-950/20 backdrop-blur-[3px]"
+            className="fixed inset-0 z-[59] arcade-modal-backdrop"
           />
         )}
       </AnimatePresence>

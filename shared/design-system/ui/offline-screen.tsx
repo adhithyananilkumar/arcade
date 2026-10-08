@@ -53,10 +53,10 @@ export function OfflineScreen({ onRetry }: OfflineScreenProps) {
       aria-modal="true"
       aria-labelledby="offline-screen-title"
       aria-describedby="offline-screen-body"
-      className="fixed inset-0 flex items-center justify-center bg-slate-900/20 p-4 backdrop-blur-[2px] animate-in fade-in duration-300 dark:bg-black/35"
+      className="fixed inset-0 flex items-center justify-center p-4 arcade-modal-backdrop animate-in fade-in duration-300"
       style={{ zIndex: 2147483600 }}
     >
-      <div className="w-full max-w-md rounded-[28px] border border-slate-200 bg-surface px-6 py-8 text-center shadow-[0_24px_60px_rgba(20,20,43,0.18)] sm:px-10 animate-in zoom-in-95 slide-in-from-bottom-2 duration-300">
+      <div className="w-full max-w-md arcade-modal-box border border-slate-200 bg-surface px-6 py-8 text-center shadow-[0_24px_60px_rgba(20,20,43,0.18)] sm:px-10 animate-in zoom-in-95 slide-in-from-bottom-2 duration-300">
         <OfflineDoodle />
 
         <h2 id="offline-screen-title" className="mt-4 text-xl font-bold tracking-tight text-slate-900">
@@ -73,7 +73,7 @@ export function OfflineScreen({ onRetry }: OfflineScreenProps) {
           type="button"
           onClick={() => void retry()}
           disabled={retrying}
-          className="mt-6 inline-flex h-11 min-w-[148px] items-center justify-center gap-2 rounded-full bg-ink px-6 text-sm font-semibold text-on-ink transition-colors hover:bg-ink-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-default disabled:opacity-80"
+          className="mt-6 inline-flex h-11 min-w-[148px] items-center justify-center gap-2 rounded-xl bg-ink px-6 text-sm font-semibold text-on-ink transition-colors hover:bg-ink-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-default disabled:opacity-80"
         >
           {retrying ? (
             <>

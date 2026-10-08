@@ -9,7 +9,7 @@ import { platformReviewApi } from "@/domains/publishing";
 import { BadgeLevelSummary, credentialsApi, type BadgeAssignment } from "@/domains/credentials";
 import type { CourseRenderResponse } from "@/shared/types/api.types";
 import { VersionHistoryOrchestrator } from "@/apps/creator/studio/workspaces/content/history/VersionHistoryOrchestrator";
-import { ArcadeEditor } from "@/apps/creator/editor";
+import { LazyArcadeEditor as ArcadeEditor } from "@/apps/creator/editor/lazy";
 import { api } from "@/infrastructure/http/api";
 
 type SelectedItem = { kind: "lesson" | "quiz" | "assessment"; id: string } | null;

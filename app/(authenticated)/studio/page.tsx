@@ -305,23 +305,19 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer"
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
         >
           <X size={18} />
         </button>
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
-            <BookOpen size={20} strokeWidth={2.4} />
-          </div>
-          <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-ink">New Course</h3>
-            <p className="text-[12px] font-medium text-slate-500">Add the basics reviewers will look for.</p>
-          </div>
+        <div className="mb-6">
+          <h3 className="text-[17px] font-bold tracking-tight text-ink">New Course</h3>
+          <p className="mt-1 text-[12px] font-medium text-slate-500">Add the basics reviewers will look for.</p>
         </div>
 
         {error && (
@@ -368,14 +364,14 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer"
+              className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!name.trim() || !description.trim() || !channelId || !isPriceValid(price) || creating}
-              className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-ink-hover disabled:opacity-60 cursor-pointer"
+              className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
             >
               {creating ? "Creating…" : "Create Course"}
             </button>
@@ -472,24 +468,20 @@ function CreateEventModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer"
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
         >
           <X size={18} />
         </button>
 
-        <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400">
-            <Calendar size={20} strokeWidth={2.4} />
-          </div>
-          <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-ink">New Event</h3>
-            <p className="text-[12px] font-medium text-slate-500">Choose the type, then fill in the basics.</p>
-          </div>
+        <div className="mb-5">
+          <h3 className="text-[17px] font-bold tracking-tight text-ink">New Event</h3>
+          <p className="mt-1 text-[12px] font-medium text-slate-500">Choose the type, then fill in the basics.</p>
         </div>
 
         {error && (
@@ -509,13 +501,12 @@ function CreateEventModal({
                 onClick={() => setEventType("WORKSHOP")}
                 className={`flex flex-col items-start rounded-xl border p-3 text-left transition-all cursor-pointer ${
                   eventType === "WORKSHOP"
-                    ? "border-violet-600 bg-violet-50/50 ring-2 ring-violet-600/20 dark:bg-violet-500/10"
+                    ? "border-ink bg-ink/5 ring-1 ring-ink/20 font-medium"
                     : "border-slate-200 bg-slate-50/60 hover:bg-slate-100/60"
                 }`}
               >
                 <div className="flex w-full items-center justify-between">
                   <span className="text-xs font-bold text-ink">Workshop</span>
-                  {eventType === "WORKSHOP" && <Check size={14} className="text-violet-600 dark:text-violet-400" />}
                 </div>
                 <p className="mt-1 text-[11px] leading-tight text-slate-500">
                   Interactive sessions with agenda & modules
@@ -527,13 +518,12 @@ function CreateEventModal({
                 onClick={() => setEventType("WEBINAR")}
                 className={`flex flex-col items-start rounded-xl border p-3 text-left transition-all cursor-pointer ${
                   eventType === "WEBINAR"
-                    ? "border-violet-600 bg-violet-50/50 ring-2 ring-violet-600/20 dark:bg-violet-500/10"
+                    ? "border-ink bg-ink/5 ring-1 ring-ink/20 font-medium"
                     : "border-slate-200 bg-slate-50/60 hover:bg-slate-100/60"
                 }`}
               >
                 <div className="flex w-full items-center justify-between">
                   <span className="text-xs font-bold text-ink">Webinar</span>
-                  {eventType === "WEBINAR" && <Check size={14} className="text-violet-600 dark:text-violet-400" />}
                 </div>
                 <p className="mt-1 text-[11px] leading-tight text-slate-500">
                   Live presentation or Q&A stream session
@@ -553,7 +543,7 @@ function CreateEventModal({
               placeholder={eventType === "WORKSHOP" ? "e.g. Full-Stack Web Development Workshop" : "e.g. Intro to AI Webinar"}
               maxLength={120}
               autoFocus
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-violet-600 focus:bg-surface focus:ring-2 focus:ring-violet-600/20"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
 
@@ -566,16 +556,25 @@ function CreateEventModal({
           <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           <ChannelBrandingNotice channelId={channelId} context="create" />
 
-          <button
-            type="submit"
-            disabled={
-              !title.trim() || !description.trim() || !category.trim() || !channelId || !firstDate ||
-              !firstTime || !isPriceValid(price) || (capacity !== "" && Number(capacity) < 1) || creating
-            }
-            className="w-full rounded-xl bg-violet-600 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-700 disabled:opacity-50 cursor-pointer"
-          >
-            {creating ? "Creating..." : `Create ${eventType === "WORKSHOP" ? "Workshop" : "Webinar"}`}
-          </button>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={
+                !title.trim() || !description.trim() || !category.trim() || !channelId || !firstDate ||
+                !firstTime || !isPriceValid(price) || (capacity !== "" && Number(capacity) < 1) || creating
+              }
+              className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
+            >
+              {creating ? "Creating..." : `Create ${eventType === "WORKSHOP" ? "Workshop" : "Webinar"}`}
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -617,20 +616,19 @@ function RenameRoadmapModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink"
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
         >
           <X size={18} />
         </button>
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-            <Pencil size={20} className="text-ink" />
-          </div>
-          <h3 className="text-[15px] font-bold tracking-tight text-ink">Rename Roadmap</h3>
+        <div className="mb-6">
+          <h3 className="text-[17px] font-bold tracking-tight text-ink">Rename Roadmap</h3>
+          <p className="mt-1 text-[12px] font-medium text-slate-500">Update the roadmap title and details.</p>
         </div>
 
         {error && (
@@ -670,14 +668,14 @@ function RenameRoadmapModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-ink"
+              className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!title.trim() || updating}
-              className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-ink-hover disabled:opacity-60"
+              className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
             >
               {updating ? "Saving…" : "Save Changes"}
             </button>
@@ -714,18 +712,22 @@ function DeleteRoadmapModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-sm rounded-2xl bg-surface p-6 shadow-2xl">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10">
-            <Trash2 size={20} className="text-red-600 dark:text-red-400" />
-          </div>
-          <h3 className="text-[15px] font-bold tracking-tight text-ink">Delete Roadmap</h3>
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
+      <div className="relative w-full max-w-sm arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
+        >
+          <X size={18} />
+        </button>
+        <div className="mb-4">
+          <h3 className="text-[17px] font-bold tracking-tight text-ink">Delete Roadmap</h3>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            Are you sure you want to delete <strong className="text-ink">{item.title}</strong>? This action cannot be undone.
+          </p>
         </div>
-        <p className="text-sm text-gray-600 mb-6">
-          Are you sure you want to delete <strong>{item.title}</strong>? This action cannot be
-          undone.
-        </p>
 
         {error && (
           <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
@@ -733,12 +735,12 @@ function DeleteRoadmapModal({
           </div>
         )}
 
-        <div className="flex justify-end gap-2 pt-1">
+        <div className="flex justify-end gap-2 pt-2">
           <button
             type="button"
             onClick={onClose}
             disabled={deleting}
-            className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-ink"
+            className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
           >
             Cancel
           </button>
@@ -746,7 +748,7 @@ function DeleteRoadmapModal({
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:opacity-60"
+            className="rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:opacity-50 cursor-pointer"
           >
             {deleting ? "Deleting…" : "Delete"}
           </button>
@@ -1127,25 +1129,21 @@ function ChannelRequiredModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-ink/40 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 arcade-modal-backdrop"
         onClick={onClose}
       />
-      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.2)] transition-all">
-        <div className="flex items-start justify-between">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
-            <Lock size={24} />
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer"
-          >
-            <X size={18} />
-          </button>
-        </div>
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.2)]">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer dark:hover:bg-slate-800"
+        >
+          <X size={18} />
+        </button>
 
-        <div className="mt-4">
-          <h3 className="text-lg font-bold tracking-tight text-ink">
+        <div>
+          <h3 className="text-[17px] font-bold tracking-tight text-ink">
             Feature Locked
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-slate-500">
@@ -1157,9 +1155,9 @@ function ChannelRequiredModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full bg-ink px-5 py-2 text-xs font-semibold text-on-ink shadow-md transition-colors hover:bg-ink-hover cursor-pointer"
+            className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover cursor-pointer"
           >
-            Cancel
+            Close
           </button>
         </div>
       </div>

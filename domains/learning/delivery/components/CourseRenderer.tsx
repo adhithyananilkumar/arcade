@@ -699,8 +699,8 @@ export function CourseRenderer({
       />
 
       {isRejectDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface shadow-[0_24px_60px_rgba(20,20,43,0.22)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 arcade-modal-backdrop">
+          <div className="w-full max-w-md overflow-hidden arcade-modal-box border border-slate-200/80 bg-surface shadow-[0_24px_60px_rgba(20,20,43,0.22)]">
             <div className="border-b border-slate-100 px-6 py-4">
               <h2 className="text-[16px] font-bold tracking-tight text-ink">Reject course</h2>
               <p className="mt-1 text-[12px] font-medium text-slate-500">
@@ -717,14 +717,14 @@ export function CourseRenderer({
               <div className="mt-4 flex justify-end gap-2">
                 <button
                   type="button"
-                  className="rounded-full px-4 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:bg-slate-100"
+                  className="rounded-xl px-4 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:bg-slate-100 cursor-pointer"
                   onClick={() => setIsRejectDialogOpen(false)}
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  className="rounded-full bg-rose-600 px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-rose-700 disabled:opacity-40"
+                  className="rounded-xl bg-rose-600 px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-rose-700 disabled:opacity-40 cursor-pointer"
                   disabled={!rejectReason.trim()}
                   onClick={() => {
                     if (onReject) {

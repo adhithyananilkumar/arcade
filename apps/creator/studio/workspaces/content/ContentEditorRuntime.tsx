@@ -37,13 +37,14 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
-import { ArcadeEditor } from "@/apps/creator/editor";
-import type { ArcadeEditorHandle } from "@/apps/creator/editor";
+// The lazy entry, not the editor barrel: the tree and header render without waiting for the
+// multi-megabyte editor engine, which streams in when a lesson opens (and is preloaded on idle).
+import { LazyArcadeEditor as ArcadeEditor, preloadArcadeEditor, type ArcadeEditorHandle } from "@/apps/creator/editor/lazy";
 import { VersionHistoryOrchestrator } from "./history/VersionHistoryOrchestrator";
 import { createContentMetadataHistoryAdapter } from "./adapters/ContentMetadataHistoryAdapter";
 import { useCollaborativeDocument } from "@/apps/creator/studio/core/collaboration/useCollaborativeDocument";
 import { useCollaborativeFields } from "@/apps/creator/studio/core/collaboration/useCollaborativeFields";
-import { encodeSnapshotBase64, createYDoc, applyBase64Update, encodeStateBase64 } from "@/apps/creator/editor";
+import { encodeSnapshotBase64, createYDoc, applyBase64Update, encodeStateBase64 } from "@/apps/creator/studio/core/collaboration/yjs";
 import { StudioRightPanel } from "@/apps/creator/studio/core/StudioRightPanel";
 import { useStudioPanel } from "@/apps/creator/studio/core/useStudioPanel";
 import { useUnsavedChangesGuard } from "@/apps/creator/studio/core/useUnsavedChangesGuard";
@@ -57,6 +58,8 @@ import {
   TREE_EMPTY_STATE_CLASS,
   CANVAS_WRAPPER_CLASS,
   CANVAS_CARD_CLASS,
+  CANVAS_DOCUMENT_WRAPPER_CLASS,
+  CANVAS_DOCUMENT_CARD_CLASS,
 } from "@/apps/creator/studio/core/StudioShell";
 import { TiptapContentView } from "@/domains/learning";
 import { CredentialBadge, credentialsApi, type BadgeAssignment, type BadgeContentType, type BadgeLevel } from "@/domains/credentials";
@@ -336,7 +339,15 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   });
 
   const handleCollabStateChange = useCallback((state: { status: CollabStatus; collaborators: ActiveCollaborator[] }) => {
-    setCollabState(state);
+    // Re-rendering this workspace is expensive (tree, header, dialogs), so an update that changes
+    // neither the connection status nor who is here keeps the previous state object.
+    setCollabState((prev) =>
+      prev.status === state.status &&
+      prev.collaborators.length === state.collaborators.length &&
+      prev.collaborators.every((c, i) => c.clientId === state.collaborators[i].clientId && c.user?.name === state.collaborators[i].user?.name)
+        ? prev
+        : state
+    );
   }, []);
 
   const [modules, setModules] = useState<ModuleNode[]>([]);
@@ -583,6 +594,12 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
         const firstLeaf = containers[0]?.leaves?.[0];
         if (firstLeaf && firstLeaf.type === "document") {
           await openLesson(firstLeaf);
+        } else {
+          // No lesson opens by itself, so fetch the editor while the author looks at the tree —
+          // the first lesson they click then opens without a download wait.
+          const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => void }).requestIdleCallback;
+          if (idle) idle(preloadArcadeEditor);
+          else setTimeout(preloadArcadeEditor, 1500);
         }
       } catch (e: any) {
         if (e?.status === 403 || e?.message?.includes("403") || e?.message?.includes("Forbidden")) {
@@ -1632,8 +1649,8 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
             </div>
           </div>
         ) : activeLessonId ? (
-          <div className={CANVAS_WRAPPER_CLASS} style={{ "--arcade-toolbar-top": "64px" } as CSSProperties}>
-            <div className={CANVAS_CARD_CLASS}>
+          <div className={CANVAS_DOCUMENT_WRAPPER_CLASS} style={{ "--arcade-toolbar-top": "64px" } as CSSProperties}>
+            <div className={CANVAS_DOCUMENT_CARD_CLASS}>
               {activeYDoc && (
                 <ArcadeEditor
                   key={activeLessonId}

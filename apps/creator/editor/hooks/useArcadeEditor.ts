@@ -69,7 +69,10 @@ export function useArcadeEditor({
   onSelectionUpdate,
   documentName,
 }: UseArcadeEditorOptions = {}) {
-  const { user } = useAuthStore();
+  // Primitive selectors, not the store object: a token refresh replaces `user`, and an extension
+  // set keyed on that object rebuilt — i.e. destroyed and recreated — the editor mid-typing.
+  const userId = useAuthStore((s) => s.user?.id);
+  const userName = useAuthStore((s) => s.user?.fullName);
 
   // Room name is "{OWNER_TYPE}:{ownerId}" — the exact backend Document.OwnerType enum name (see
   // backend/collaboration/src/server.ts). Defaults to a course Lesson room; a caller editing any
@@ -114,9 +117,9 @@ export function useArcadeEditor({
   const effectiveYDoc = ydoc || (effectiveDocumentName ? resolvedYDoc : undefined);
 
   const extensions = useMemo(
-    () => buildExtensions(placeholder, effectiveYDoc, provider, user ? { id: user.id, name: user.fullName } : undefined, contentType),
+    () => buildExtensions(placeholder, effectiveYDoc, provider, userId ? { id: userId, name: userName } : undefined, contentType),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [effectiveYDoc, contentType, provider, user] // placeholder changes shouldn't tear down the whole extension set
+    [effectiveYDoc, contentType, provider, userId, userName] // placeholder changes shouldn't tear down the whole extension set
   );
 
   const editor = useEditor({

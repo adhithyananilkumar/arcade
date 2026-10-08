@@ -32,7 +32,6 @@ import { Color } from "reactjs-tiptap-editor/color";
 import { Column, ColumnNode, MultipleColumnNode } from "reactjs-tiptap-editor/column";
 import { Emoji } from "reactjs-tiptap-editor/emoji";
 import { Excalidraw } from "reactjs-tiptap-editor/excalidraw";
-import { ExportWord } from "reactjs-tiptap-editor/exportword";
 import { FontFamily } from "reactjs-tiptap-editor/fontfamily";
 import { FontSize } from "reactjs-tiptap-editor/fontsize";
 import { Heading } from "reactjs-tiptap-editor/heading";
@@ -67,6 +66,7 @@ import { EMOJI_LIST } from "../lib/emojiList";
 import { uploadImageFile, uploadMediaFile } from "../lib/imageUpload";
 import { searchUsersForMention } from "../lib/mentionSuggestion";
 import { ImageDropPaste } from "./imageDropPaste";
+import { BlockDragDrop } from "./blockDragDrop";
 
 const lowlight = createLowlight(common);
 
@@ -215,7 +215,8 @@ export function buildExtensions(placeholder?: string, ydoc?: Y.Doc, provider?: a
     Table,
     Iframe,
     ImportWord,
-    ExportWord,
+    // No ExportWord: no toolbar or menu exposes it, and it statically bundled the `docx` and
+    // `prosemirror-docx` writers (~1 MB of script) into every editor load for nothing.
     TextDirection,
     Attachment.configure({ upload: uploadMediaFile }),
     Katex,
@@ -231,6 +232,8 @@ export function buildExtensions(placeholder?: string, ydoc?: Y.Doc, provider?: a
     CodeView,
     Callout,
     ImageDropPaste,
+    // Grip drags land where the pointer is (vertical midpoint), with a drop line — see the file.
+    BlockDragDrop,
 
     // ── Our own backend-tied domain blocks (no library equivalent) ──────────
     ...getBlockExtensions(),

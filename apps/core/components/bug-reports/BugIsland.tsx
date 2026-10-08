@@ -41,13 +41,9 @@ import {
   type BugReportDetail,
 } from '@/domains/bug-reports';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { EXAM_SITTING_ROUTE } from '@/shared/routes/content.routes';
 import { APP_VERSION } from '@/infrastructure/config/env';
 import { captureVisiblePage, prepareImageForUpload } from '@/infrastructure/media/screenshot';
 import { captureEnvironment, installConsoleCapture, recentConsoleEntries } from '@/infrastructure/monitoring/diagnostics';
-
-/** Never float over these: an exam sitting must not gain an extra control. */
-const HIDDEN_ROUTES = [EXAM_SITTING_ROUTE];
 
 /** Where the island rests: snapped to a side, some distance up from the bottom. Per device. */
 type Dock = { side: 'left' | 'right'; bottom: number };
@@ -252,7 +248,7 @@ export function BugIsland() {
     setTimeout(() => setCopiedKey(false), 2000);
   };
 
-  if (!enabled || HIDDEN_ROUTES.some((r) => r.test(pathname))) return null;
+  if (!enabled) return null;
 
   const activeTab = view.name === 'mine' ? 'mine' : 'report';
 
@@ -288,7 +284,7 @@ export function BugIsland() {
             aria-label="Close"
             tabIndex={-1}
             onClick={() => setOpen(false)}
-            className="absolute inset-0 cursor-default bg-slate-950/40 backdrop-blur-[2px]"
+            className="absolute inset-0 cursor-default arcade-modal-backdrop"
           />
           <motion.section
             role="dialog"
@@ -298,7 +294,7 @@ export function BugIsland() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={reduceMotion ? undefined : { opacity: 0, scale: 0.98, y: 4 }}
             transition={ease}
-            className={`relative flex w-full max-w-[640px] flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-surface shadow-2xl ${
+            className={`relative flex w-full max-w-[640px] flex-col overflow-hidden arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface shadow-2xl ${
               view.name === 'detail' ? 'h-[min(760px,calc(100dvh-2rem))]' : 'max-h-[min(760px,calc(100dvh-2rem))]'
             }`}
           >

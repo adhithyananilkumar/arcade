@@ -343,7 +343,7 @@ export function EnrollmentButton({
           <button
             type="button"
             onClick={() => setConfirmingRevoke(false)}
-            className="rounded-full px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+            className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
           >
             Keep {leavingWaitlist ? 'my place' : 'access'}
           </button>
@@ -351,7 +351,7 @@ export function EnrollmentButton({
             type="button"
             onClick={handleRevoke}
             disabled={isProcessing}
-            className="rounded-full bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-50"
+            className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-on-ink hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
           >
             {leavingWaitlist ? 'Leave waitlist' : 'Unenroll'}
           </button>
