@@ -1,26 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { AlertTriangle, History, Tv, UserPlus } from 'lucide-react';
 import { PendingChannels } from '@/apps/learner/components/channels/PendingChannels';
 import { DeletionRequests } from '@/apps/learner/components/admin/DeletionRequests';
 import { ChannelAuditLog } from '@/apps/learner/components/admin/ChannelAuditLog';
 import { InviteUserModal, usePendingDeletionRequestsQuery } from '@/domains/channels';
-import { notFound } from 'next/navigation';
+import { notFound, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 
 type AdminTab = 'CHANNELS' | 'DELETION_REQUESTS' | 'AUDIT_LOG';
 
-export default function AdminChannelsPage() {
+function AdminChannelsContent() {
   const { user } = useAuthStore();
-  const [activeTab, setActiveTab] = useState<AdminTab>('CHANNELS');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const tabParam = searchParams.get('tab')?.toUpperCase();
+  const activeTab: AdminTab =
+    tabParam === 'DELETIONS' || tabParam === 'DELETION_REQUESTS'
+      ? 'DELETION_REQUESTS'
+      : tabParam === 'AUDIT' || tabParam === 'AUDIT_LOG'
+      ? 'AUDIT_LOG'
+      : 'CHANNELS';
+
   const [isInviteOpen, setIsInviteOpen] = useState(false);
 
+  const setActiveTab = (tab: AdminTab) => {
+    const next = new URLSearchParams(searchParams.toString());
+    if (tab === 'CHANNELS') {
+      next.delete('tab');
+    } else {
+      next.set('tab', tab.toLowerCase());
+    }
+    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+  };
+
   // Shares the query the Deletions panel and the navbar's task menu already run, so the tab badge
-  // costs nothing extra. It also used to re-fetch on every tab switch — `activeTab` was in the
-  // effect's dependencies — which meant clicking between tabs re-requested the whole list to
-  // recompute a number that had not changed.
+  // costs nothing extra.
   const { data: deletionRequests } = usePendingDeletionRequestsQuery();
   const deletionRequestCount = deletionRequests?.length ?? null;
 
@@ -123,5 +142,13 @@ export default function AdminChannelsPage() {
 
       <InviteUserModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
     </div>
+  );
+}
+
+export default function AdminChannelsPage() {
+  return (
+    <Suspense fallback={null}>
+      <AdminChannelsContent />
+    </Suspense>
   );
 }
