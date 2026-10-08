@@ -9,5 +9,6 @@ export type OverviewTab =
   | "pricing"
   | "settings"
   | "participants"
+  | "manage"
   | "collaborators"
   | "exams";

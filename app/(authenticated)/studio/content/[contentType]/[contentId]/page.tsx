@@ -36,7 +36,7 @@ const TABS_BY_SEGMENT: Record<ContentTypeSegment, WorkspaceTab<string>[]> = {
 };
 
 /** Older links and in-page jumps that used other names for the same tab. */
-const TAB_ALIASES: Record<string, string> = { people: "participants", overview: "OVERVIEW" };
+const TAB_ALIASES: Record<string, string> = { people: "participants", overview: "OVERVIEW", manage: "participants", members: "participants" };
 
 type LoadState =
   | { status: "loading" }
