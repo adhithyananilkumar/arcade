@@ -78,6 +78,7 @@ import {
   ChevronDown,
   Plus,
   FileText,
+  Link2,
   Layers,
   GraduationCap,
   Pencil,
@@ -168,6 +169,7 @@ export interface ContentEditorRuntimeProps {
 interface LessonNode {
   id: string;
   title: string;
+  type?: "document" | "external" | "quiz";
   body?: string;
   position: number;
 }
@@ -797,6 +799,31 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
     [contentId, modules, openLesson, adapter]
   );
 
+  const addLink = useCallback(
+    async (moduleId: string) => {
+      if (!contentId) return;
+      try {
+        const mod = modules.find((m) => m.id === moduleId);
+        const nextIndex = (mod?.lessons.filter((l) => l.type === "external").length ?? 0) + 1;
+        const newLink = await adapter.addLeaf(
+          moduleId,
+          `Link ${nextIndex}`,
+          "external"
+        );
+        const linkNode: LessonNode = { ...(newLink as LessonNode), type: "external" };
+        setModules((prev) =>
+          prev.map((m) => (m.id === moduleId ? { ...m, expanded: true, lessons: [...m.lessons, linkNode] } : m))
+        );
+        setActiveModuleId(moduleId);
+        await openLesson(linkNode);
+        setHasDraftChanges(true);
+      } catch (e) {
+        console.error("Failed to add link", e);
+      }
+    },
+    [contentId, modules, openLesson, adapter]
+  );
+
   /**
    * Adds an assessment inside a container — the "Add assessment" sibling of "Add lesson". Creates
    * the exam and places it here in one step so the author gets something real immediately, rather
@@ -1333,6 +1360,10 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                               <FileText size={13} />
                               Lesson
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => addLink(mod.id)}>
+                              <Link2 size={13} />
+                              Link
+                            </DropdownMenuItem>
                             {/* Only offered where the adapter can actually place one — the
                                 Capability Honesty Rule applied to an authoring affordance. */}
                             {adapter.addContainerAssessment && (
@@ -1390,7 +1421,11 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                                         }}
                                         className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive ? "font-semibold text-on-ink" : "text-slate-500"}`}
                                       >
-                                        <FileText size={11} className="flex-shrink-0" />
+                                        {lesson.type === "external" ? (
+                                          <Link2 size={11} className="flex-shrink-0" />
+                                        ) : (
+                                          <FileText size={11} className="flex-shrink-0" />
+                                        )}
                                         {isEditing("lesson", lesson.id) ? (
                                           renameInput("text-xs")
                                         ) : (
@@ -1469,7 +1504,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                         ))}
 
                       {status !== "SUBMITTED" && (
-                        <div className="mt-0.5 flex items-center gap-3 pl-2">
+                        <div className="mt-0.5 flex flex-wrap items-center gap-3 pl-2">
                           <button
                             type="button"
                             onClick={() => addLesson(mod.id)}
@@ -1477,6 +1512,14 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                           >
                             <Plus size={11} />
                             Add {adapter.terminology.leafDocument}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => addLink(mod.id)}
+                            className="flex items-center gap-1 py-1 text-[11px] font-semibold text-slate-400 hover:text-ink"
+                          >
+                            <Plus size={11} />
+                            Add link
                           </button>
                           {adapter.addContainerAssessment && (
                             <button

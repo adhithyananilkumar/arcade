@@ -14,7 +14,6 @@ import {
   Send,
   Settings,
   Tag,
-  UserCog,
   Users,
 } from "lucide-react";
 import { ContentArt } from "@/shared/design-system/art";
@@ -35,7 +34,6 @@ import { EventPricingSection } from "../sections/EventPricingSection";
 import { EventSettingsSection } from "../sections/EventSettingsSection";
 import { RegisteredMembersSection } from "../sections/RegisteredMembersSection";
 import { ContentAssessmentsSection } from "../sections/ContentAssessmentsSection";
-import { EventCollaboratorsManager } from "@/app/(authenticated)/studio/events/components/wizard/review/EventCollaboratorsManager";
 import { PublishingWorkflow } from "../sections/PublishingWorkflow";
 import { editorHref } from "../../lib/contentTypeRouting";
 
@@ -45,9 +43,7 @@ export const EVENT_TABS: WorkspaceTab<OverviewTab>[] = [
   { id: "pricing", label: "Pricing", icon: Tag },
   { id: "settings", label: "Settings", icon: Settings },
   { id: "participants", label: "Manage", icon: Users },
-  { id: "collaborators", label: "Collaborators", icon: UserCog, secondary: true },
-  { id: "analytics", label: "Analytics", icon: BarChart3, secondary: true },
-  { id: "publishing", label: "Publishing", icon: Send, secondary: true },
+  { id: "publishing", label: "Publishing", icon: Send },
 ];
 
 function humanizeKey(key: string): string {
@@ -131,8 +127,16 @@ export function EventOverviewTab({
 
   if (tab === "exams") return <ContentAssessmentsSection segment="event" contentId={contentId} />;
 
-  if (tab === "pricing") {
-    return <EventPricingSection eventId={contentId} eventDetails={data.eventDetails} participantCount={participantCount} onChanged={onChanged} />;
+  if (tab === "pricing" || tab === "analytics") {
+    return (
+      <EventPricingSection
+        eventId={contentId}
+        eventDetails={data.eventDetails}
+        eventAnalytics={data.eventAnalytics}
+        participantCount={participantCount}
+        onChanged={onChanged}
+      />
+    );
   }
 
   if (tab === "settings") {
@@ -151,11 +155,9 @@ export function EventOverviewTab({
     );
   }
 
-  if (tab === "participants" || tab === "people" || (tab as string) === "manage") {
-    return <RegisteredMembersSection eventId={contentId} participantsResult={data.eventParticipants} onChanged={onChanged} />;
+  if (tab === "participants" || tab === "people" || (tab as string) === "manage" || tab === "collaborators") {
+    return <RegisteredMembersSection eventId={contentId} eventDetails={data.eventDetails} participantsResult={data.eventParticipants} onChanged={onChanged} />;
   }
-
-  if (tab === "collaborators") return <EventCollaboratorsManager eventId={contentId} layout="rows" />;
 
   if (tab === "publishing") {
     return (
@@ -179,25 +181,6 @@ export function EventOverviewTab({
         }
       />
     );
-  }
-
-  if (tab === "analytics") {
-    if (data.eventAnalytics?.status === "error") {
-      return (
-        <WorkspaceMessage icon={AlertTriangle} tone="warning" title="Analytics temporarily unavailable">
-          Try again shortly.
-        </WorkspaceMessage>
-      );
-    }
-    const metrics = data.eventAnalytics?.status === "ok" ? analyticsToMetrics(data.eventAnalytics.data) : [];
-    if (metrics.length === 0) {
-      return (
-        <WorkspaceMessage icon={BarChart3} title="No learner activity yet">
-          Analytics will appear once learners interact with this event.
-        </WorkspaceMessage>
-      );
-    }
-    return <MetricsGrid metrics={metrics} />;
   }
 
   // ── Overview ──────────────────────────────────────────────────────────────

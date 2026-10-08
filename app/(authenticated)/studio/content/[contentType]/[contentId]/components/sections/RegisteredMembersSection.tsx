@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Search,
@@ -15,10 +15,21 @@ import {
   Trash2,
   CalendarCheck,
   Users,
+  UserCog,
 } from "lucide-react";
 import { api } from "@/infrastructure/http/api";
 import { EventInvitationManager } from "@/domains/events";
-import { WorkspaceHeading, WorkspaceMessage, WorkspaceStat } from "@/apps/creator/studio/core/StudioWorkspaceKit";
+import { EventCollaboratorsManager } from "@/app/(authenticated)/studio/events/components/wizard/review/EventCollaboratorsManager";
+import type { Event as EventDto } from "@/domains/events";
+import {
+  WorkspaceHeading,
+  WorkspaceMessage,
+  WorkspaceStat,
+  WorkspaceRow,
+  WorkspaceRows,
+  WorkspaceChoice,
+  workspaceField,
+} from "@/apps/creator/studio/core/StudioWorkspaceKit";
 import type { FetchResult, EventParticipant } from "../../lib/fetchOverviewData";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -64,8 +75,6 @@ function formatDate(iso?: string): string {
 
 function normalizeStatus(raw: string): RegistrationStatus {
   const up = raw.toUpperCase();
-  // The backend calls a confirmed registration APPROVED (COMPLETED once the event is over); only
-  // CONFIRMED/REGISTERED used to match, so every confirmed member was counted as Pending.
   if (up === "APPROVED" || up === "COMPLETED" || up === "CONFIRMED" || up === "REGISTERED") return "CONFIRMED";
   if (up === "CANCELLED" || up === "CANCELED" || up === "REJECTED") return "CANCELLED";
   if (up === "WAITLISTED" || up === "WAITLIST") return "WAITLISTED";
@@ -131,11 +140,6 @@ function ActionMenu({
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  // The only participant mutation the backend has: it revokes the enrollment, which cancels the
-  // registration and frees the seat. "Mark attended" / "Cancel registration" used to PATCH this
-  // participant — an endpoint that does not exist. Attendance is recorded by ticket check-in at the
-  // door (QR or ticket code), not by hand here.
-  // A cancelled registration has nothing left to revoke; removing it takes the row off this list.
   const alreadyCancelled = normalizeStatus(participant.status) === "CANCELLED";
 
   async function removeMember() {
@@ -197,13 +201,6 @@ function ActionMenu({
 
 // ── Invite Members Modal ──────────────────────────────────────────────────────
 
-/**
- * Organisers add people by inviting them. This used to be an "Add Member" form that POSTed a
- * name/phone/payment status to /api/v1/events/{id}/participants — an endpoint that does not exist
- * (every submit was a 405 "Something went wrong"), and one that could not exist as designed: an
- * organiser cannot mark somebody as paid. The invitation emails them a link; they sign in or up with
- * that address and register (and pay) the normal way, then appear in this list.
- */
 function InviteMembersModal({ eventId, onClose }: { eventId: string; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -232,16 +229,62 @@ function InviteMembersModal({ eventId, onClose }: { eventId: string; onClose: ()
 
 export function RegisteredMembersSection({
   eventId,
+  eventDetails,
   participantsResult,
   onChanged,
 }: {
   eventId: string;
+  eventDetails?: FetchResult<EventDto>;
   participantsResult?: FetchResult<EventParticipant[]>;
   onChanged: () => void;
 }) {
   const [search, setSearch] = useState("");
   const [regFilter, setRegFilter] = useState<RegistrationStatus | "ALL">("ALL");
   const [addModalOpen, setAddModalOpen] = useState(false);
+
+  // Seats capacity state
+  const rawCapacity = eventDetails?.status === "ok" ? eventDetails.data?.capacity : undefined;
+  const [savedSeats, setSavedSeats] = useState<{ limited: boolean; seatLimit?: number }>(() => ({
+    limited: !!(rawCapacity && rawCapacity > 0),
+    seatLimit: rawCapacity && rawCapacity > 0 ? rawCapacity : undefined,
+  }));
+  const [seatsForm, setSeatsForm] = useState(savedSeats);
+  const [savingSeats, setSavingSeats] = useState(false);
+
+  useEffect(() => {
+    if (eventDetails?.status === "ok") {
+      const cap = eventDetails.data?.capacity;
+      const next = {
+        limited: !!(cap && cap > 0),
+        seatLimit: cap && cap > 0 ? cap : undefined,
+      };
+      setSavedSeats(next);
+      setSeatsForm(next);
+    }
+  }, [eventDetails]);
+
+  const seatsDirty = JSON.stringify(seatsForm) !== JSON.stringify(savedSeats);
+  const seatsInvalid = seatsForm.limited && !((seatsForm.seatLimit ?? 0) >= 1);
+
+  const saveSeats = async () => {
+    if (seatsInvalid) {
+      toast.error("Enter at least one seat, or choose Unlimited");
+      return;
+    }
+    setSavingSeats(true);
+    try {
+      await api.patch(`/api/v1/events/${eventId}`, {
+        capacity: seatsForm.limited ? seatsForm.seatLimit : 0,
+      });
+      setSavedSeats(seatsForm);
+      toast.success("Seat capacity saved");
+      onChanged();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save seat capacity");
+    } finally {
+      setSavingSeats(false);
+    }
+  };
 
   if (participantsResult?.status === "error") {
     return (
@@ -307,9 +350,50 @@ export function RegisteredMembersSection({
       <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
         <WorkspaceStat icon={Users} label="Total" value={total} />
         <WorkspaceStat icon={CheckCircle2} label="Confirmed" value={confirmed} />
+        <WorkspaceStat
+          icon={CheckCircle2}
+          label="Seats"
+          value={savedSeats.limited && savedSeats.seatLimit != null ? `${confirmed} / ${savedSeats.seatLimit}` : "Unlimited"}
+          hint={savedSeats.limited && savedSeats.seatLimit != null ? `${Math.max(0, savedSeats.seatLimit - confirmed)} seats left` : undefined}
+        />
         <WorkspaceStat icon={Clock} label="Pending" value={pending} />
-        <WorkspaceStat icon={XCircle} label="Cancelled" value={cancelled} />
       </div>
+
+      <WorkspaceRows>
+        <WorkspaceRow step="02" title="Seats" description="Cap the number of participants.">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <WorkspaceChoice
+              value={seatsForm.limited ? "LIMITED" : "UNLIMITED"}
+              onChange={(v) => setSeatsForm((prev) => ({ ...prev, limited: v === "LIMITED" }))}
+              options={[
+                { value: "UNLIMITED", label: "Unlimited" },
+                { value: "LIMITED", label: "Limited" },
+              ]}
+            />
+            {seatsForm.limited && (
+              <input
+                type="number"
+                min={1}
+                aria-label="Maximum seats"
+                value={seatsForm.seatLimit ?? ""}
+                onChange={(e) => setSeatsForm((prev) => ({ ...prev, seatLimit: e.target.value ? Number(e.target.value) : undefined }))}
+                className={`${workspaceField.input} sm:max-w-[12rem]`}
+                placeholder="Maximum seats"
+              />
+            )}
+            {seatsDirty && (
+              <button
+                type="button"
+                disabled={savingSeats}
+                onClick={saveSeats}
+                className="inline-flex cursor-pointer items-center justify-center rounded-full bg-ink px-4 py-2 text-xs font-extrabold text-on-ink shadow-sm transition-colors hover:bg-[#205ca8] disabled:opacity-50"
+              >
+                {savingSeats ? "Saving…" : "Save seats"}
+              </button>
+            )}
+          </div>
+        </WorkspaceRow>
+      </WorkspaceRows>
 
       {/* Search + Filter bar */}
       <div className="flex flex-wrap gap-3">
@@ -405,6 +489,16 @@ export function RegisteredMembersSection({
       {addModalOpen && (
         <InviteMembersModal eventId={eventId} onClose={() => setAddModalOpen(false)} />
       )}
+
+      {/* Collaborators */}
+      <div className="flex flex-col gap-6 pt-6 border-t border-slate-200/70">
+        <WorkspaceHeading
+          icon={UserCog}
+          title="Collaborators"
+          description="Team members with access to manage or edit this event."
+        />
+        <EventCollaboratorsManager eventId={eventId} layout="rows" startStep={2} />
+      </div>
     </div>
   );
 }

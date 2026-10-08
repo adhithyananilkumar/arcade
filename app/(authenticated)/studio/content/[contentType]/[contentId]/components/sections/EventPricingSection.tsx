@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, CheckCircle, ShieldCheck, TrendingUp, Users } from "lucide-react";
+import { AlertTriangle, BarChart3, CheckCircle, ShieldCheck, TrendingUp, Users } from "lucide-react";
 import { api } from "@/infrastructure/http/api";
 import type { FetchResult } from "../../lib/fetchOverviewData";
 import { RefundPolicy } from "@/app/(authenticated)/studio/events/types";
 import type { Event as EventDto } from "@/domains/events";
 import {
   WorkspaceChoice,
+  WorkspaceHeading,
   WorkspaceMessage,
   WorkspaceRow,
   WorkspaceRows,
@@ -16,6 +17,28 @@ import {
   WorkspaceStat,
   workspaceField,
 } from "@/apps/creator/studio/core/StudioWorkspaceKit";
+import { MetricsGrid, type Metric } from "./MetricsGrid";
+
+function humanizeKey(key: string): string {
+  const spaced = key.replace(/([a-z])([A-Z])/g, "$1 $2");
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+
+const MONEY_KEYS = new Set(["totalRevenue", "pendingRevenue", "refundedRevenue", "netRevenue", "platformCommission", "organizerEarnings"]);
+
+export function analyticsToMetrics(analytics?: Record<string, unknown>): Metric[] {
+  if (!analytics) return [];
+  const currency = (analytics.currency as string) || "INR";
+  return Object.entries(analytics)
+    .filter(([, value]) => typeof value === "number" || typeof value === "string")
+    .map(([key, value]) => ({
+      label: humanizeKey(key),
+      value:
+        MONEY_KEYS.has(key) && typeof value === "number"
+          ? new Intl.NumberFormat("en-IN", { style: "currency", currency }).format(value / 100)
+          : (value as string | number),
+    }));
+}
 
 function formatCurrency(amount: number, currency = "INR"): string {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(amount);
@@ -62,11 +85,13 @@ function formOf(event?: EventDto | null): PricingForm {
 export function EventPricingSection({
   eventId,
   eventDetails,
+  eventAnalytics,
   participantCount,
   onChanged,
 }: {
   eventId: string;
   eventDetails?: FetchResult<EventDto>;
+  eventAnalytics?: FetchResult<Record<string, unknown>>;
   participantCount: number;
   onChanged: () => void;
 }) {
@@ -88,6 +113,7 @@ export function EventPricingSection({
   const dirty = JSON.stringify(form) !== JSON.stringify(saved);
   const priceInvalid = form.paid && !(form.price > 0);
   const seatsInvalid = form.limited && !((form.seatLimit ?? 0) >= 1);
+  const metrics = eventAnalytics?.status === "ok" ? analyticsToMetrics(eventAnalytics.data) : [];
 
   const save = async () => {
     if (priceInvalid || seatsInvalid) {
@@ -215,6 +241,26 @@ export function EventPricingSection({
 
         <WorkspaceSaveBar onSave={save} saving={saving} dirty={dirty} label="Save pricing" savedLabel="Pricing saved" />
       </WorkspaceRows>
+
+      {/* Analytics */}
+      <div className="flex flex-col gap-6 pt-6 border-t border-slate-200/70">
+        <WorkspaceHeading
+          icon={BarChart3}
+          title="Revenue & Analytics"
+          description="Breakdown of event earnings, ticket sales, platform commissions, and attendee registrations."
+        />
+        {eventAnalytics?.status === "error" ? (
+          <WorkspaceMessage icon={AlertTriangle} tone="warning" title="Analytics temporarily unavailable">
+            Try again shortly.
+          </WorkspaceMessage>
+        ) : metrics.length === 0 ? (
+          <WorkspaceMessage icon={BarChart3} title="No learner activity yet">
+            Analytics will appear once learners register or interact with this event.
+          </WorkspaceMessage>
+        ) : (
+          <MetricsGrid metrics={metrics} />
+        )}
+      </div>
     </div>
   );
 }

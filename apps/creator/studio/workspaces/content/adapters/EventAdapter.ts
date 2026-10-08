@@ -42,7 +42,7 @@ export class EventAdapter implements ContentDataAdapter {
         createdAt: workshop.createdAt,
         updatedAt: workshop.updatedAt,
       },
-      // Each session is a "Day" (container), its lessons are the leaves.
+      // Each session is a "Day" (container), its lessons and links are the leaves.
       containers: sessions.map((s, idx) => ({
         id: s.id,
         title: s.title,
@@ -51,7 +51,7 @@ export class EventAdapter implements ContentDataAdapter {
         leaves: ((s as any).lessons ?? []).map((l: any, li: number) => ({
           id: l.id,
           title: l.title,
-          type: "document" as const,
+          type: (l.type || (l.title?.toLowerCase().startsWith("link") ? "external" : "document")) as "document" | "external",
           position: l.position ?? li,
         })),
       })),
@@ -102,10 +102,10 @@ export class EventAdapter implements ContentDataAdapter {
     await api.patch(`/api/v1/events/${this.eventId}/sessions/${containerId}`, { title });
   }
 
-  /** Add a new Lesson inside a Day (sessionId = containerId). */
+  /** Add a new Lesson or Link inside a Day (sessionId = containerId). */
   async addLeaf(containerId: string, title: string, type: LeafNode["type"]): Promise<LeafNode> {
-    if (type !== "document") {
-      throw new Error("Events currently only support lesson documents.");
+    if (type !== "document" && type !== "external") {
+      throw new Error("Events currently only support lessons and links.");
     }
     const l = await api.post<{ id: string; title: string; position: number }>(
       `/api/v1/events/sessions/${containerId}/lessons`,
@@ -114,7 +114,7 @@ export class EventAdapter implements ContentDataAdapter {
     return {
       id: l.id,
       title: l.title,
-      type: "document",
+      type: type === "external" ? "external" : "document",
       position: l.position,
     };
   }
