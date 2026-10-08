@@ -5,9 +5,11 @@ import { Boxes, Check, Eye, Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   deletePool,
+  getPoolMembers,
   previewPoolDraft,
   promptToPlainText,
   searchBankQuestions,
+  setPoolMembers,
   updatePool,
   type BankQuestionResponse,
   type BankQuestionType,
@@ -92,6 +94,52 @@ export function PoolsWorkspace({
   const [countLoading, setCountLoading] = useState(false);
   const [showSample, setShowSample] = useState(false);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
+  // Hand-picked pools: the chosen question ids, as saved and as being edited. Before this the
+  // MANUAL mode had no picker at all and Save sent no members, so a pool showing "6 matching"
+  // saved as an empty pool no plan could draw from (BUG-1070).
+  // Both are tagged with the pool they belong to, so switching pools never shows another pool's
+  // selection while the new one loads.
+  const [loadedMembers, setLoadedMembers] = useState<{ poolId: string; ids: string[] } | null>(null);
+  const [editedMembers, setEditedMembers] = useState<{ poolId: string; ids: string[] } | null>(null);
+  const [bankQuestions, setBankQuestions] = useState<BankQuestionResponse[] | null>(null);
+  const [pickerSearch, setPickerSearch] = useState("");
+
+  const savedMembers = useMemo(
+    () => (pool && pool.mode === "MANUAL" && loadedMembers?.poolId === pool.id ? loadedMembers.ids : []),
+    [pool, loadedMembers]
+  );
+  const members = pool && editedMembers?.poolId === pool.id ? editedMembers.ids : savedMembers;
+  const setMembers = useCallback(
+    (next: string[] | ((prev: string[]) => string[])) => {
+      if (!pool) return;
+      setEditedMembers((prev) => {
+        const current = prev?.poolId === pool.id ? prev.ids : savedMembers;
+        return { poolId: pool.id, ids: typeof next === "function" ? next(current) : next };
+      });
+    },
+    [pool, savedMembers]
+  );
+
+  useEffect(() => {
+    if (!pool || pool.mode !== "MANUAL") return;
+    let cancelled = false;
+    getPoolMembers(pool.id)
+      .then((ids) => {
+        if (!cancelled) setLoadedMembers({ poolId: pool.id, ids });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [pool]);
+
+  const manual = draft?.mode === "MANUAL";
+  useEffect(() => {
+    if (!bankId || !manual || bankQuestions) return;
+    searchBankQuestions(bankId, { limit: 200 })
+      .then((page) => setBankQuestions(page.questions))
+      .catch(() => setBankQuestions([]));
+  }, [bankId, manual, bankQuestions]);
 
   useEffect(() => {
     if (!bankId) return;
@@ -103,11 +151,8 @@ export function PoolsWorkspace({
   // Live match count. Debounced because each facet click would otherwise fire a query, and the
   // author usually clicks several in a row.
   useEffect(() => {
-    if (!bankId || !draft) return;
-    if (draft.mode !== "DYNAMIC") {
-      setMatchCount(pool?.questionCount ?? 0);
-      return;
-    }
+    // A hand-picked pool's count is its selection, derived at render (see `shownCount`).
+    if (!bankId || !draft || draft.mode !== "DYNAMIC") return;
     let cancelled = false;
     setCountLoading(true);
     const timer = setTimeout(() => {
@@ -134,16 +179,43 @@ export function PoolsWorkspace({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [bankId, draft, pool?.questionCount]);
+  }, [bankId, draft]);
 
+  const shownCount = draft?.mode === "MANUAL" ? members.length : matchCount;
+  const shownLoading = draft?.mode !== "MANUAL" && countLoading;
+
+  const membersChanged =
+    manual && (members.length !== savedMembers.length || members.some((id) => !savedMembers.includes(id)));
   const dirty = useMemo(
-    () => Boolean(draft && pool && !sameFilter(draft, toDraft(pool))),
-    [draft, pool]
+    () => Boolean(draft && pool && (!sameFilter(draft, toDraft(pool)) || membersChanged)),
+    [draft, pool, membersChanged]
   );
 
   const patch = useCallback((changes: Partial<Draft>) => {
     setDraft((prev) => (prev ? { ...prev, ...changes } : prev));
   }, []);
+
+  /**
+   * Switching a filtered pool to hand-picked starts from what the filters match now, so the
+   * questions the author was looking at stay in the pool instead of silently becoming zero.
+   */
+  const switchMode = async (mode: Draft["mode"]) => {
+    if (!draft || mode === draft.mode) return;
+    patch({ mode });
+    if (mode !== "MANUAL" || members.length > 0 || !bankId) return;
+    try {
+      const page = await searchBankQuestions(bankId, {
+        sectionIds: draft.sectionIds,
+        difficulties: draft.difficulties,
+        types: draft.questionTypes,
+        tags: draft.tags,
+        limit: 200,
+      });
+      setMembers(page.questions.map((q) => q.id));
+    } catch {
+      // The picker below still works; the author just starts from an empty selection.
+    }
+  };
 
   const toggle = useCallback(
     <T,>(list: T[], value: T): T[] =>
@@ -164,6 +236,11 @@ export function PoolsWorkspace({
         questionTypes: draft.questionTypes,
         tags: draft.tags,
       });
+      if (draft.mode === "MANUAL") {
+        await setPoolMembers(pool.id, { questionIds: members });
+        setLoadedMembers({ poolId: pool.id, ids: members });
+        setEditedMembers(null);
+      }
       toast.success("Pool saved");
       onChanged();
     } catch (err) {
@@ -247,7 +324,7 @@ export function PoolsWorkspace({
                 key={mode}
                 type="button"
                 disabled={readOnly}
-                onClick={() => patch({ mode })}
+                onClick={() => void switchMode(mode)}
                 className={`rounded-xl border p-3 text-left transition-all ${
                   on
                     ? "border-indigo-300 bg-indigo-50/60 ring-1 ring-indigo-200 dark:border-indigo-500/40 dark:bg-indigo-500/10 dark:ring-indigo-500/25"
@@ -345,22 +422,76 @@ export function PoolsWorkspace({
         </div>
       )}
 
+      {/* ── Hand-picked questions ───────────────────────────────────────── */}
+      {draft.mode === "MANUAL" && (
+        <div className="border-t border-slate-200/70 pt-6 first:border-t-0 first:pt-0">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Questions in this pool · {members.length} selected
+            </span>
+            <input
+              value={pickerSearch}
+              onChange={(e) => setPickerSearch(e.target.value)}
+              placeholder="Search questions"
+              className="w-full max-w-xs rounded-xl border border-slate-200 bg-surface px-3 py-1.5 text-xs text-ink outline-none placeholder:text-slate-300 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/25"
+            />
+          </div>
+          {bankQuestions === null ? (
+            <div className="flex justify-center py-6">
+              <Loader2 size={18} className="animate-spin text-slate-400" />
+            </div>
+          ) : bankQuestions.length === 0 ? (
+            <p className="text-xs text-slate-400">This bank has no questions yet. Write some first.</p>
+          ) : (
+            <ul className="max-h-80 space-y-1 overflow-y-auto rounded-xl border border-slate-200 bg-surface p-2 arcade-scrollbar-mini">
+              {bankQuestions
+                .filter((q) => {
+                  const term = pickerSearch.trim().toLowerCase();
+                  return !term || promptToPlainText(q.prompt).toLowerCase().includes(term);
+                })
+                .map((q) => {
+                  const on = members.includes(q.id);
+                  return (
+                    <li key={q.id}>
+                      <label className="flex cursor-pointer items-start gap-2.5 rounded-lg px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50">
+                        <input
+                          type="checkbox"
+                          checked={on}
+                          disabled={readOnly}
+                          onChange={() =>
+                            setMembers((prev) => (on ? prev.filter((id) => id !== q.id) : [...prev, q.id]))
+                          }
+                          className="mt-0.5 accent-indigo-600"
+                        />
+                        <span className="min-w-0 flex-1 truncate">
+                          {promptToPlainText(q.prompt) || "Untitled question"}
+                        </span>
+                      </label>
+                    </li>
+                  );
+                })}
+            </ul>
+          )}
+        </div>
+      )}
+
       {/* ── Live match ──────────────────────────────────────────────────── */}
       <div className="rounded-2xl border border-indigo-200/70 bg-indigo-50/40 p-5 shadow-sm dark:border-indigo-500/25 dark:bg-indigo-500/10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <span className="flex items-baseline gap-2">
               <span className="text-2xl font-black tracking-tight text-ink">
-                {countLoading ? <Loader2 size={20} className="animate-spin text-indigo-500" /> : (matchCount ?? "—")}
+                {shownLoading ? <Loader2 size={20} className="animate-spin text-indigo-500" /> : (shownCount ?? "—")}
               </span>
               <span className="text-sm font-semibold text-ink/60">
-                question{matchCount === 1 ? "" : "s"} match
+                question{shownCount === 1 ? "" : "s"} {draft.mode === "MANUAL" ? "picked" : "match"}
               </span>
             </span>
-            {matchCount === 0 && (
+            {shownCount === 0 && (
               <p className="mt-1 text-[11px] font-medium text-amber-600 dark:text-amber-400">
-                Nothing matches these filters yet — a plan drawing from this pool won&apos;t be able
-                to build a paper.
+                {draft.mode === "MANUAL"
+                  ? "No questions picked yet — a plan drawing from this pool won't be able to build a paper."
+                  : "Nothing matches these filters yet — a plan drawing from this pool won't be able to build a paper."}
               </p>
             )}
           </div>

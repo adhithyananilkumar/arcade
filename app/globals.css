@@ -533,6 +533,33 @@
     linear-gradient(180deg, #eef1fb 0%, #f4f7f6 30%, #f1f5f7 65%, #f4f7f6 100%);
 }
 
+/* The wash is a light-theme ground; dark pages get the theme's own wash and glass shows the
+   wallpaper, instead of a light gradient behind dark or translucent cards (BUG-1063). */
+:root.dark .arcade-wash {
+  background: var(--page-wash);
+}
+:root[data-material="glass"] .arcade-wash {
+  background: transparent;
+}
+
+/* A page can mark the one region it prints; everything else (the shell's floating logo, navbar,
+   dock, bug button) is left off the paper. */
+@media print {
+  body:has(.print-isolate) * {
+    visibility: hidden;
+  }
+  body:has(.print-isolate) .print-isolate,
+  body:has(.print-isolate) .print-isolate * {
+    visibility: visible;
+  }
+  body:has(.print-isolate) .print-isolate {
+    position: absolute;
+    inset: 0 0 auto 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
 .arcade-cta-wash {
   background:
     radial-gradient(70% 120% at 0% 0%, color-mix(in oklab, var(--blue) 26%, transparent) 0%, transparent 55%),

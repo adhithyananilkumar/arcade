@@ -30,6 +30,12 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        // Review notifications sent before the backend link fix point here (BUG-1075/1076).
+        source: '/studio/workshop/:id/edit',
+        destination: '/studio/content/event/:id?tab=publishing',
+        permanent: false,
+      },
+      {
         source: '/dashboard/admin/channels',
         destination: '/arc-console/channels',
         permanent: true,

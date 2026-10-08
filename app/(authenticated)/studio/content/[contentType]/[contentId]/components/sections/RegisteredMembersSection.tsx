@@ -18,6 +18,8 @@ import {
   UserCog,
 } from "lucide-react";
 import { api } from "@/infrastructure/http/api";
+import { useStudioConfirm } from "@/apps/creator/studio/core/useStudioConfirm";
+import { StudioRowMenu } from "@/apps/creator/studio/core/StudioRowMenu";
 import { EventInvitationManager } from "@/domains/events";
 import { EventCollaboratorsManager } from "@/app/(authenticated)/studio/events/components/wizard/review/EventCollaboratorsManager";
 import type { Event as EventDto } from "@/domains/events";
@@ -137,65 +139,49 @@ function ActionMenu({
   eventId: string;
   onChanged: () => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-
+  // The app's own dialog, not window.confirm (BUG-1077), and a portalled menu the table's
+  // scroll wrapper can't clip (BUG-1078).
+  const { confirm, dialog } = useStudioConfirm();
   const alreadyCancelled = normalizeStatus(participant.status) === "CANCELLED";
 
-  async function removeMember() {
-    const question = alreadyCancelled
-      ? `Remove ${participant.name} from this list? Their registration is already cancelled.`
-      : `Cancel ${participant.name}'s registration and remove them from this event?`;
-    if (!confirm(question)) return;
-    setBusy(true);
-    try {
-      await api.delete(`/api/v1/events/${eventId}/participants/${participant.id}`);
-      toast.success(alreadyCancelled ? "Removed from list" : "Registration cancelled");
-      onChanged();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not remove member");
-    } finally {
-      setBusy(false);
-      setOpen(false);
-    }
+  function removeMember() {
+    confirm({
+      title: alreadyCancelled ? "Remove from list?" : "Remove this member?",
+      message: alreadyCancelled
+        ? `${participant.name}'s registration is already cancelled. This removes them from the list.`
+        : `This cancels ${participant.name}'s registration and removes them from the event.`,
+      confirmLabel: alreadyCancelled ? "Remove" : "Remove member",
+      danger: true,
+      onConfirm: async () => {
+        try {
+          await api.delete(`/api/v1/events/${eventId}/participants/${participant.id}`);
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Could not remove member");
+          throw err;
+        }
+        toast.success(alreadyCancelled ? "Removed from list" : "Registration cancelled");
+        onChanged();
+      },
+    });
   }
 
   return (
-    <div className="relative">
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() => setOpen((p) => !p)}
-        className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer disabled:opacity-40"
-      >
-        <MoreVertical size={15} />
-      </button>
-
-      {open && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 z-20 mt-1 w-48 rounded-xl border border-slate-200 bg-surface shadow-xl">
-            {[
-              { icon: Trash2, label: alreadyCancelled ? "Remove from list" : "Remove member", action: removeMember },
-            ].map(({ icon: Icon, label, action }) => (
-              <button
-                key={label}
-                type="button"
-                onClick={action}
-                className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-xs font-medium transition-colors hover:bg-slate-50 cursor-pointer ${
-                  label.startsWith("Remove") || label.startsWith("Cancel")
-                    ? "text-red-500 hover:text-red-600 dark:hover:text-red-400"
-                    : "text-slate-700"
-                }`}
-              >
-                <Icon size={13} />
-                {label}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
+    <>
+      <StudioRowMenu
+        trigger={<MoreVertical size={15} />}
+        width={192}
+        items={[
+          {
+            key: "remove",
+            label: alreadyCancelled ? "Remove from list" : "Remove member",
+            icon: <Trash2 size={13} />,
+            danger: true,
+            onSelect: removeMember,
+          },
+        ]}
+      />
+      {dialog}
+    </>
   );
 }
 

@@ -37,6 +37,9 @@ export function ConfirmActionModal({
       await onConfirm();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      // Callers that report a failure themselves resolve instead of throwing; without this the
+      // button stayed on "Working…" for good and the dialog could only be left with the X (BUG-1064).
       setBusy(false);
     }
   }
@@ -76,7 +79,6 @@ export function ConfirmActionModal({
           <button
             type="button"
             onClick={onClose}
-            disabled={busy}
             className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
           >
             Cancel
