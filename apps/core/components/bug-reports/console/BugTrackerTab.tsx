@@ -295,9 +295,19 @@ export function BugTrackerTab({
                         <CategoryIcon icon={r.category.icon} size={13} />
                       </span>
                       <div className="min-w-0">
-                        <p className="truncate text-[13px] font-semibold text-slate-800">
-                          <span className="mr-1.5 font-mono text-[11px] font-bold text-slate-400">{r.key}</span>
-                          {r.title}
+                        <p className="flex items-center gap-2 text-[13px] text-slate-800">
+                          <span className={`min-w-0 truncate ${r.unreadCount > 0 ? 'font-bold' : 'font-semibold'}`}>
+                            <span className="mr-1.5 font-mono text-[11px] font-bold text-slate-400">{r.key}</span>
+                            {r.title}
+                          </span>
+                          {r.unreadCount > 0 && (
+                            <span
+                              className="grid h-[18px] min-w-[18px] shrink-0 place-items-center rounded-full bg-emerald-500 px-1.5 text-[10px] font-bold text-white"
+                              title={`${r.unreadCount} unread from the reporter`}
+                            >
+                              {r.unreadCount}
+                            </span>
+                          )}
                         </p>
                         <p className="mt-0.5 flex items-center gap-2 truncate text-[11px] text-slate-400">
                           <span className="truncate font-mono">{r.route ?? '—'}</span>

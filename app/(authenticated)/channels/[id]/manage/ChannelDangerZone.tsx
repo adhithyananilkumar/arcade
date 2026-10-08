@@ -452,7 +452,7 @@ export function ChannelDangerZone({ channel }: Props) {
 
       {/* Transfer Ownership Minimal Enterprise Desktop Modal */}
       <Dialog open={isTransferModalOpen} onOpenChange={setIsTransferModalOpen}>
-        <DialogContent className="max-w-3xl w-full sm:max-w-3xl p-6 sm:p-8 overflow-hidden rounded-2xl border border-slate-200 shadow-2xl bg-surface">
+        <DialogContent className="max-w-3xl w-full sm:max-w-3xl p-6 sm:p-8 overflow-hidden border border-slate-200 shadow-2xl bg-surface">
           <DialogHeader className="p-0 pb-4 border-b border-slate-100">
             <DialogTitle className="text-lg font-bold text-slate-900">
               Transfer Ownership
@@ -612,7 +612,7 @@ export function ChannelDangerZone({ channel }: Props) {
 
       {/* Final Confirmation Modal */}
       <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
-        <DialogContent className="max-w-2xl w-full sm:max-w-2xl p-6 sm:p-8 overflow-hidden rounded-2xl border border-slate-200 shadow-2xl bg-surface">
+        <DialogContent className="max-w-2xl w-full sm:max-w-2xl p-6 sm:p-8 overflow-hidden border border-slate-200 shadow-2xl bg-surface">
           <DialogHeader className="p-0 pb-3 border-b border-slate-100">
             <DialogTitle className="text-lg font-bold text-slate-900">
               Confirm Ownership Transfer
@@ -768,10 +768,9 @@ export function ChannelDangerZone({ channel }: Props) {
 
       {/* Delete Modal */}
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className="max-w-2xl w-full sm:max-w-2xl p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-2xl bg-surface">
+        <DialogContent className="max-w-2xl w-full sm:max-w-2xl p-6 sm:p-8 border border-slate-200 shadow-2xl bg-surface">
           <DialogHeader>
-            <DialogTitle className="text-xl text-red-600 flex items-center gap-2 dark:text-red-400">
-              <AlertTriangle size={20} />
+            <DialogTitle className="text-xl text-red-600 dark:text-red-400">
               Request Channel Deletion
             </DialogTitle>
           </DialogHeader>

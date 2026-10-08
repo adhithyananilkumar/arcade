@@ -88,10 +88,12 @@ function useForceTooltipsBelowToolbar() {
       const trigger = content.id
         ? document.querySelector<HTMLElement>(`[aria-describedby~="${content.id}"]`)
         : null;
+      // Only the toolbar strip itself. This observer sees every tooltip on the page — the Insert
+      // popover's, bubble menus', the drag handle's — and shoving those down by a toolbar-sized
+      // offset is what left their tooltips floating far from the button they describe.
+      if (!trigger?.closest(".arcade-floating-toolbar")) return;
       const currentTop = wrapper.getBoundingClientRect().top;
-      const desiredTop = trigger
-        ? trigger.getBoundingClientRect().bottom + TOOLTIP_SIDE_OFFSET
-        : currentTop + content.offsetHeight + TOOLTIP_SIDE_OFFSET * 2;
+      const desiredTop = trigger.getBoundingClientRect().bottom + TOOLTIP_SIDE_OFFSET;
       wrapper.style.translate = `0px ${desiredTop - currentTop}px`;
     };
 

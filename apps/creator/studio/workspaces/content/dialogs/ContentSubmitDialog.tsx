@@ -8,6 +8,14 @@ import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { api, ApiError } from "@/infrastructure/http/api";
+import {
+  CategoryField,
+  DescriptionField,
+  OutcomesField,
+  PriceField,
+  toMinor,
+  type PriceValue,
+} from "@/apps/creator/studio/core/ContentBasicsFields";
 
 export interface ContentSubmitDialogProps {
   course?: CourseResponse | null;
@@ -19,6 +27,26 @@ export interface ContentSubmitDialogProps {
    * there is one place to set them. This only carries the reviewer message.
    */
   onSubmit: (data: { message?: string }) => Promise<void>;
+  /**
+   * Persists basics the author filled in from this dialog (description, and category for events)
+   * before submitting, so a missing field can be fixed here instead of on another page.
+   */
+  onSaveBasics?: (patch: SubmitBasicsPatch) => Promise<void>;
+}
+
+/** The fixable basics this dialog can write. `paid` and `priceAmount` (minor units) travel together. */
+export interface SubmitBasicsPatch {
+  description?: string;
+  category?: string;
+  learningOutcomes?: string;
+  paid?: boolean;
+  priceAmount?: number;
+}
+
+/** One problem the backend's own readiness check reported for an event. */
+interface EventIssue {
+  section: string;
+  message: string;
 }
 
 interface ReadinessItem {
@@ -50,7 +78,7 @@ function readinessFor(course: CourseResponse): ReadinessItem[] {
   ];
 }
 
-export function ContentSubmitDialog({ course, contentType = 'course', open, onClose, onSubmit }: ContentSubmitDialogProps) {
+export function ContentSubmitDialog({ course, contentType = 'course', open, onClose, onSubmit, onSaveBasics }: ContentSubmitDialogProps) {
   const isEvent = contentType === 'event' || contentType === 'workshop';
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -79,9 +107,87 @@ export function ContentSubmitDialog({ course, contentType = 'course', open, onCl
     };
   }, [open, contentType, course]);
 
-  const isChecking = contentType === 'course' && latest === null;
+  // Events: the same re-read, so "missing" reflects what is actually saved.
+  const [latestEvent, setLatestEvent] = useState<{ description?: string | null; category?: string | null } | null>(null);
+  const eventId = isEvent ? (course?.id as string | undefined) : undefined;
+  useEffect(() => {
+    if (!open || !eventId) return;
+    let cancelled = false;
+    api
+      .get<{ description?: string | null; category?: string | null }>(`/api/v1/events/${eventId}`)
+      .then((data) => {
+        if (!cancelled) setLatestEvent(data);
+      })
+      .catch(() => {
+        if (!cancelled) setLatestEvent((course as any) ?? {});
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, eventId, course]);
+
+  // The backend's own readiness evaluation (schedule, pricing, settings, ...). Shown as-is: the
+  // server decides what "ready" means, this only displays it beside the fields fixable here.
+  const [eventIssues, setEventIssues] = useState<EventIssue[]>([]);
+  useEffect(() => {
+    if (!open || !eventId) return;
+    let cancelled = false;
+    api
+      .get<{ issues: EventIssue[] }>(`/api/v1/events/${eventId}/review`)
+      .then((r) => {
+        if (!cancelled) setEventIssues(r.issues ?? []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [open, eventId]);
+  // Basics that can be fixed right here are filtered out so nothing appears twice.
+  const otherIssues = eventIssues.filter((i) => i.section !== 'Basic Information');
+
+  // What the author types here for fields that are missing. Only fields that were blank when the
+  // dialog opened are offered, so saved values are never silently rewritten from this form.
+  const [descriptionDraft, setDescriptionDraft] = useState("");
+  const [categoryDraft, setCategoryDraft] = useState("");
+  const source = contentType === 'course' ? latest : latestEvent;
+  const needsDescription = Boolean(onSaveBasics) && source !== null && !String(source?.description ?? '').trim();
+  const [outcomesDraft, setOutcomesDraft] = useState("");
+  const [priceDraft, setPriceDraft] = useState<PriceValue>({ paid: true, amount: "" });
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const needsOutcomes =
+    contentType === 'course' && Boolean(onSaveBasics) && latest !== null && !String(latest.learningOutcomes ?? '').trim();
+  const needsPrice =
+    contentType === 'course' &&
+    Boolean(onSaveBasics) &&
+    latest !== null &&
+    latest.pricingModel === 'PAID' &&
+    !((latest.priceAmount ?? 0) > 0);
+  const needsCategory =
+    isEvent && Boolean(onSaveBasics) && latestEvent !== null && !String(latestEvent.category ?? '').trim();
+
+  const isChecking = contentType === 'course' ? latest === null : isEvent && eventId !== undefined && latestEvent === null;
   const checklist = contentType === 'course' && latest ? readinessFor(latest) : [];
   const unmet = checklist.filter((item) => !item.done);
+
+  // Everything the server's submit check would reject, asked up front: an assessment plan with no
+  // questions only surfaced as a failed submit before (BUG-1020). Only the problems the checklist
+  // above does not already cover are listed.
+  const [serverProblems, setServerProblems] = useState<string[]>([]);
+  useEffect(() => {
+    if (!open || contentType !== 'course' || !course?.id) return;
+    let cancelled = false;
+    api
+      .get<string[]>(`/api/platform/content/COURSE/${course.id}/submission-problems`)
+      .then((p) => {
+        if (!cancelled) setServerProblems(Array.from(new Set(p ?? [])));
+      })
+      .catch(() => {
+        if (!cancelled) setServerProblems([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, contentType, course?.id]);
 
   const handleSubmit = async () => {
     if (!message.trim()) {
@@ -89,13 +195,37 @@ export function ContentSubmitDialog({ course, contentType = 'course', open, onCl
       return;
     }
 
+    if (
+      (needsDescription && !descriptionDraft.trim()) ||
+      (needsCategory && !categoryDraft.trim()) ||
+      (needsPrice && priceDraft.paid && !(Number(priceDraft.amount) > 0))
+    ) {
+      toast.error("Please fill in the missing details above.");
+      return;
+    }
+
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
+      if (needsDescription || needsCategory || needsOutcomes || needsPrice) {
+        await onSaveBasics?.({
+          ...(needsDescription ? { description: descriptionDraft.trim() } : {}),
+          ...(needsCategory ? { category: categoryDraft.trim() } : {}),
+          // Outcomes are optional on the backend: saved only if the author wrote something.
+          ...(needsOutcomes && outcomesDraft.trim() ? { learningOutcomes: outcomesDraft.trim() } : {}),
+          // A paid course with no price is fixed by setting one, or by switching it to free.
+          ...(needsPrice ? { paid: priceDraft.paid, priceAmount: toMinor(priceDraft) } : {}),
+        });
+      }
       await onSubmit({ message });
       onClose();
     } catch (error) {
       console.error(error);
-      toast.error(error instanceof ApiError ? error.message : "Failed to submit for review.");
+      const message = error instanceof ApiError ? error.message : "Failed to submit for review.";
+      // Kept in the dialog, not only in a toast that disappears, so the author can read what the
+      // server said while fixing it.
+      setSubmitError(message);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -103,7 +233,7 @@ export function ContentSubmitDialog({ course, contentType = 'course', open, onCl
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-[560px]">
+      <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>Submit for review</DialogTitle>
           <DialogDescription>
@@ -157,6 +287,78 @@ export function ContentSubmitDialog({ course, contentType = 'course', open, onCl
                 </>
               )}
             </div>
+          )}
+
+          {(needsDescription || needsCategory || needsOutcomes || needsPrice) && (
+            <div className="space-y-4 rounded-xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-500/25 dark:bg-amber-500/10">
+              <p className="text-xs font-medium text-amber-900 dark:text-amber-200">
+                Reviewers need these before they can look at this {isEvent ? 'event' : 'course'}. Fill them in here.
+              </p>
+              {needsDescription && (
+                <DescriptionField id="submit-description" value={descriptionDraft} onChange={setDescriptionDraft} />
+              )}
+              {needsCategory && (
+                <CategoryField id="submit-category" value={categoryDraft} onChange={setCategoryDraft} type="EVENTS" />
+              )}
+              {needsPrice && (
+                <div className="space-y-1">
+                  <PriceField id="submit-price" value={priceDraft} onChange={setPriceDraft} />
+                  <p className="text-xs text-slate-500">This course is marked paid but has no price. Set one, or choose Free.</p>
+                </div>
+              )}
+              {needsOutcomes && <OutcomesField id="submit-outcomes" value={outcomesDraft} onChange={setOutcomesDraft} />}
+            </div>
+          )}
+
+          {isEvent && otherIssues.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-slate-800">Still to do in the editor</h3>
+              <ul className="space-y-2">
+                {otherIssues.map((i) => (
+                  <li key={i.message} className="flex items-start gap-2 text-sm text-slate-700">
+                    <AlertCircle size={16} className="mt-0.5 shrink-0 text-amber-500" />
+                    <span>
+                      <span className="font-medium">{i.section}:</span> {i.message}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {contentType === 'course' && serverProblems.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-slate-800">Fix before submitting</h3>
+              <ul className="space-y-2">
+                {serverProblems.map((p) => (
+                  <li key={p} className="flex items-start gap-2 text-sm text-slate-700">
+                    <AlertCircle size={16} className="mt-0.5 shrink-0 text-rose-500" />
+                    <span>{p}</span>
+                  </li>
+                ))}
+              </ul>
+              {course?.id && (
+                <Link
+                  href={`/studio/content/course/${course.id}?tab=exams`}
+                  className="inline-block text-xs font-bold text-blue-600 hover:underline dark:text-blue-400"
+                >
+                  Open Assessment &amp; Exams →
+                </Link>
+              )}
+            </div>
+          )}
+
+          {contentType === 'course' && !isChecking && (latest?.modules?.length ?? 0) === 0 && (
+            <p className="rounded-md border border-amber-200 bg-amber-50 p-2.5 text-xs font-medium text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
+              A course needs at least one module with a lesson before it can be submitted. Close this and add one from the
+              sidebar.
+            </p>
+          )}
+
+          {submitError && (
+            <p role="alert" className="rounded-md border border-rose-200 bg-rose-50 p-2.5 text-xs font-medium text-rose-800 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-200">
+              {submitError}
+            </p>
           )}
 
           <div className="space-y-2">

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { AlertCircle, Clock } from 'lucide-react';
 import { PaymentService } from '../api/payment.service';
 import type { PaymentOrderResponse } from '../types/payment.types';
+import { humanizePaymentText } from '../utils/paymentText';
 
 const REFRESH_MS = 30_000;
 
@@ -62,7 +63,8 @@ export function CheckoutHoldStatus({ enrollmentId, refreshKey }: { enrollmentId:
         <p className="flex items-start gap-1.5 text-rose-600 dark:text-rose-400">
           <AlertCircle size={13} className="mt-px shrink-0" />
           <span>
-            Last attempt declined: {order.lastFailureReason}. Nothing was charged — you can try again.
+            Last attempt declined: {humanizePaymentText(order.lastFailureReason).replace(/\.$/, '')}. Nothing was charged — you
+            can try again.
           </span>
         </p>
       )}

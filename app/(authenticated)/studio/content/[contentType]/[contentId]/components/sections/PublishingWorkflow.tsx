@@ -135,7 +135,28 @@ export function PublishingWorkflow({
           ) : statusKey === "PUBLISHED" ? (
             <>
               <span className={`${chip} border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400`}>Published</span>
-              <p className="text-sm font-medium text-slate-600">This is live and available to learners. Later edits reach them after the next approval.</p>
+              <p className="text-sm font-medium text-slate-600">
+                This is live and available to learners. Learners keep this version; edits made since — including a linked
+                exam&apos;s plans — reach them after you submit the changes and they are approved.
+              </p>
+              {/* Without this a published item had no way back into review (BUG-1074). */}
+              {onSubmit && (
+                <>
+                  {reviewPath && (
+                    <div className="w-full text-left">
+                      <ReviewPathPanel preview={reviewPath} loading={reviewPathLoading} error={reviewPathError} />
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={onSubmit}
+                    disabled={submitting || blocked || reviewPathLoading}
+                    className="mt-1 inline-flex cursor-pointer items-center gap-2 rounded-full bg-blue-600 px-7 py-3 text-xs font-extrabold text-white shadow-md transition-all hover:bg-blue-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Send size={14} /> {submitting ? "Submitting…" : reviewPath?.directPublication ? "Publish changes" : "Submit changes for review"}
+                  </button>
+                </>
+              )}
             </>
           ) : (
             <>

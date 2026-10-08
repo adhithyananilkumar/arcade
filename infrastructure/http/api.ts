@@ -23,6 +23,7 @@ import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import { AuthService } from "@/infrastructure/auth/auth.service";
 import { queryClient } from "../state/queryClient";
 import { API_ORIGIN } from "@/infrastructure/config/env";
+import { reportNetworkFailure, reportReachable } from "@/infrastructure/state/connectivity.store";
 
 const BASE_URL = API_ORIGIN;
 
@@ -38,12 +39,36 @@ const USER_FACING_SERVER_ERROR_CODES = new Set(["EMAIL_NOT_SENT"]);
  */
 export const NETWORK_ERROR_STATUS = 0;
 
+/**
+ * The message for a request that got no HTTP answer. Users are told what they can act on; the API
+ * address (which only means something to a developer) is added in development builds.
+ */
+function networkErrorMessage(): string {
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    return "You're not connected to the internet.";
+  }
+  const message = "We couldn't reach Arcade. Check your connection and try again.";
+  return process.env.NODE_ENV === "development"
+    ? `${message} (No answer from ${BASE_URL} — is the API running?)`
+    : message;
+}
+
+/** Rejects with the network {@link ApiError}, after letting the connectivity store look into why. */
+function networkError(cause: unknown): ApiError {
+  // A caller cancelling its own request says nothing about the network.
+  if (!(cause instanceof DOMException && cause.name === "AbortError")) reportNetworkFailure();
+  return new ApiError(NETWORK_ERROR_STATUS, networkErrorMessage(), { cause });
+}
+
 export class ApiError extends Error {
   status: number;
-  constructor(status: number, message: string, options?: ErrorOptions) {
+  /** The backend's machine-readable error code (`ErrorResponse.code`), when it sent one. */
+  code?: string;
+  constructor(status: number, message: string, options?: ErrorOptions & { code?: string }) {
     super(message, options);
     this.name = "ApiError";
     this.status = status;
+    this.code = options?.code;
   }
 
   /** True when the API could not be reached, as opposed to reached and refused. */
@@ -63,6 +88,9 @@ async function refreshTokens(): Promise<boolean> {
         useAuthStore.getState().setAuth(user || useAuthStore.getState().user!, accessToken);
         return true;
       } catch (err) {
+        // No answer at all (fetch rejects with a TypeError): the session may be perfectly valid,
+        // so a dropped connection must not sign the user out. Fail this request as a network error.
+        if (err instanceof TypeError) throw networkError(err);
         return false;
       } finally {
         refreshPromise = null;
@@ -137,12 +165,9 @@ async function request<T>(
     // through to its generic "please try again" branch and told the user to retry something that
     // cannot succeed until the server is back up. Normalising it here means callers can tell
     // "the server said no" apart from "there was no server", and say so.
-    throw new ApiError(
-      NETWORK_ERROR_STATUS,
-      `Cannot reach the Arcade API at ${BASE_URL}. The server may not be running.`,
-      { cause },
-    );
+    throw networkError(cause);
   }
+  reportReachable();
 
   // Access token expired/invalid — try to refresh once, then replay the request.
   if (res.status === 401 && !isRetry) {
@@ -213,7 +238,7 @@ async function request<T>(
         : 'Something went wrong on our end. Please try again in a moment.';
     }
 
-    throw new ApiError(res.status, message);
+    throw new ApiError(res.status, message, { code });
   }
 
   return (text ? JSON.parse(text) : null) as T;
@@ -234,12 +259,9 @@ async function requestBlob(path: string, isRetry = false): Promise<{ blob: Blob;
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   } catch (cause) {
-    throw new ApiError(
-      NETWORK_ERROR_STATUS,
-      `Cannot reach the Arcade API at ${BASE_URL}. The server may not be running.`,
-      { cause },
-    );
+    throw networkError(cause);
   }
+  reportReachable();
   if (res.status === 401 && !isRetry && token && (await refreshTokens())) {
     return requestBlob(path, true);
   }
@@ -317,8 +339,11 @@ export function apiUploadWithProgress<T>(
       };
       xhr.onload = () => {
         cleanup();
+        reportReachable();
         if (xhr.status === 401 && !retried) {
-          refreshTokens().then((ok) => (ok ? send(true).then(resolve, reject) : reject(new ApiError(401, "Unauthorized"))));
+          refreshTokens()
+            .then((ok) => (ok ? send(true).then(resolve, reject) : reject(new ApiError(401, "Unauthorized"))))
+            .catch(reject);
           return;
         }
         if (xhr.status >= 200 && xhr.status < 300) {
@@ -339,7 +364,7 @@ export function apiUploadWithProgress<T>(
       };
       xhr.onerror = () => {
         cleanup();
-        reject(new ApiError(NETWORK_ERROR_STATUS, `Cannot reach the Arcade API at ${BASE_URL}.`));
+        reject(networkError(undefined));
       };
       xhr.onabort = () => {
         cleanup();

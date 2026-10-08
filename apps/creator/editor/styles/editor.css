@@ -23,12 +23,14 @@
   font-size: 1rem;
 }
 
-/* Force all reactjs-tiptap-editor wrappers to be transparent when chromeless */
+/* Force all reactjs-tiptap-editor wrappers to be transparent when chromeless.
+   Floating surfaces are excluded: Tiptap appends bubble menus inside this wrapper, and the
+   blanket `> div > div` made every bubble see-through, text showing through its buttons. */
 .arcade-chromeless-editor .reactjs-tiptap-editor,
 .arcade-chromeless-editor .tiptap-editor,
 .arcade-chromeless-editor .rich-text-provider,
-.arcade-chromeless-editor > div,
-.arcade-chromeless-editor > div > div {
+.arcade-chromeless-editor > div:not(.arcade-editor-pill):not(.richtext-bg-popover),
+.arcade-chromeless-editor > div > div:not(.arcade-editor-pill):not(.richtext-bg-popover) {
   background: transparent !important;
   box-shadow: none !important;
   border: none !important;
@@ -717,9 +719,21 @@
   background: transparent;
   margin-block: 12px;
 }
+/* Hidden until the pointer is over the area: a permanently visible inner scrollbar beside the
+   page's own read as a broken layout (BUG-1034). Scrolling works the same either way. */
+.arcade-scrollbar-mini {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.arcade-scrollbar-mini:hover {
+  scrollbar-color: color-mix(in oklab, var(--theme-n-400, #94a3b8) 30%, transparent) transparent;
+}
 .arcade-scrollbar-mini::-webkit-scrollbar-thumb {
-  background: color-mix(in oklab, var(--theme-n-400, #94a3b8) 15%, transparent);
+  background: transparent;
   border-radius: 10px;
+}
+.arcade-scrollbar-mini:hover::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--theme-n-400, #94a3b8) 15%, transparent);
 }
 .arcade-scrollbar-mini::-webkit-scrollbar-thumb:hover {
   background: color-mix(in oklab, var(--theme-n-400, #94a3b8) 30%, transparent);
@@ -779,4 +793,13 @@
 /* Subtle selection highlight */
 .ProseMirror-yjs-selection {
   background-color: rgba(124, 58, 237, 0.15) !important;
+}
+/* Small embedded editors (an assessment's instructions): no page-width gutter. The library's
+   default left/right padding (room for block drag handles on a full page) left the text indented
+   ~6rem inside a narrow box. */
+.arcade-compact-editor .ProseMirror,
+.arcade-compact-editor .tiptap {
+  padding-left: 0.25rem !important;
+  padding-right: 0.25rem !important;
+  margin-left: 0 !important;
 }

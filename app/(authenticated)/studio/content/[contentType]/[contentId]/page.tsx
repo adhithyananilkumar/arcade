@@ -1,5 +1,6 @@
 "use client";
 
+import { goBackTo, safeReturnTo } from "@/infrastructure/state/navigationHistory";
 import { useEffect, useState, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useParams, useRouter, useSearchParams } from "next/navigation";
@@ -19,6 +20,7 @@ import { EVENT_TABS, EventOverviewTab } from "./components/content-types/EventOv
 import { ExamOverviewTab } from "./components/content-types/ExamOverview";
 import { EXAM_TABS, ExamOverviewSections, type ExamTab } from "./components/sections/exam/ExamOverviewSections";
 import { getExam, type ExamResponse } from "@/domains/assessments";
+import { ChannelBrandingNotice, brandingSetupHref, isBrandingIncomplete } from "@/domains/channels";
 
 const VALID_SEGMENTS: ContentTypeSegment[] = ["course", "event", "exam"];
 
@@ -34,7 +36,7 @@ const TABS_BY_SEGMENT: Record<ContentTypeSegment, WorkspaceTab<string>[]> = {
 };
 
 /** Older links and in-page jumps that used other names for the same tab. */
-const TAB_ALIASES: Record<string, string> = { people: "participants", overview: "OVERVIEW" };
+const TAB_ALIASES: Record<string, string> = { people: "participants", overview: "OVERVIEW", manage: "participants", members: "participants" };
 
 type LoadState =
   | { status: "loading" }
@@ -100,6 +102,7 @@ function ContentOverviewPageContent() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [submitting, setSubmitting] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [brandingCheck, setBrandingCheck] = useState(0);
   // The exam's full configuration (duration, pass mark, proctoring, placement …) — only the
   // summary fields are on ContentSummaryLite, and the exam tabs edit the real record.
   const [exam, setExam] = useState<ExamResponse | null>(null);
@@ -223,6 +226,16 @@ function ContentOverviewPageContent() {
       toast.success("Submitted for review");
       reload();
     } catch (err) {
+      if (isBrandingIncomplete(err)) {
+        // The message says what is missing and why; the action goes straight to where it is set.
+        toast.error("Set up your badges & certificates first", {
+          description: (err as Error).message,
+          duration: 12000,
+          action: { label: "Set up", onClick: () => router.push(brandingSetupHref(content.channelId)) },
+        });
+        setBrandingCheck((k) => k + 1);
+        return;
+      }
       toast.error(err instanceof Error ? err.message : "Could not submit for review");
     } finally {
       setSubmitting(false);
@@ -246,12 +259,18 @@ function ContentOverviewPageContent() {
         ? { href: `/studio/content/event/${tiedEventId}?tab=exams`, label: `Open ${exam?.tiedContentTitle ?? "the event"}` }
         : null;
 
+  // Back goes where the creator came from (the course editor, the course's Assessment & Exams tab,
+  // a review...), named after it — not always to the course dashboard.
+  const returnTo = safeReturnTo(searchParams?.get("returnTo"));
+  const parentTitle = exam?.tiedContentTitle;
   let backNav: { href: string; label: string } | null = null;
   if (segment === "exam") {
-    if (parentCourseId) {
-      backNav = { href: `/studio/content/course/${parentCourseId}?tab=exams`, label: "Back to Course Dashboard" };
+    if (returnTo) {
+      backNav = { href: returnTo, label: studioBackLabel(returnTo, parentTitle) };
+    } else if (parentCourseId) {
+      backNav = { href: `/studio/content/course/${parentCourseId}?tab=exams`, label: parentTitle ? `Back to ${parentTitle}` : "Back to course" };
     } else if (parentEventId) {
-      backNav = { href: `/studio/content/event/${parentEventId}?tab=exams`, label: "Back to Event Dashboard" };
+      backNav = { href: `/studio/content/event/${parentEventId}?tab=exams`, label: parentTitle ? `Back to ${parentTitle}` : "Back to event" };
     }
   }
 
@@ -325,6 +344,7 @@ function ContentOverviewPageContent() {
           updatedAt={content.updatedAt}
           review={review}
           onJumpToPublishing={() => selectTab("publishing")}
+          onSubmit={handleSubmit}
           tiedExam={tiedExam}
           tiedTo={tiedExam ? (tiedCourseId ? "course" : tiedEventId ? "event" : null) : null}
           onPreview={segment === "exam" ? () => selectTab("preview") : undefined}
@@ -333,14 +353,21 @@ function ContentOverviewPageContent() {
             backNav && (
               <Link
                 href={backNav.href}
-                className="group inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200/80 bg-surface/90 px-4 py-2 text-xs font-extrabold text-slate-700 shadow-2xs backdrop-blur-md transition-all duration-200 hover:border-blue-200 hover:bg-surface hover:text-blue-600 hover:shadow-xs active:scale-[0.98] dark:hover:border-blue-500/25 dark:hover:text-blue-400"
+                onClick={(e) => {
+                  e.preventDefault();
+                  goBackTo(router, backNav.href);
+                }}
+                className="group inline-flex max-w-full cursor-pointer items-center gap-2 rounded-full border border-slate-200/80 bg-surface/90 px-4 py-2 text-xs font-extrabold text-slate-700 shadow-2xs backdrop-blur-md transition-all duration-200 hover:border-blue-200 hover:bg-surface hover:text-blue-600 hover:shadow-xs active:scale-[0.98] dark:hover:border-blue-500/25 dark:hover:text-blue-400"
               >
                 <ArrowLeft size={15} className="text-slate-500 transition-transform duration-200 group-hover:-translate-x-1 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
-                <span>{backNav.label}</span>
+                <span className="truncate">{backNav.label}</span>
               </Link>
             )
           }
         />
+
+        {/* A tied exam is published by its course or event, which shows the notice itself. */}
+        {!tiedExam && <ChannelBrandingNotice channelId={content.channelId} refreshKey={brandingCheck} />}
 
         <div className="flex flex-col gap-6">
           <WorkspaceTabs tabs={tabs} active={activeTab} onChange={selectTab} ariaLabel={`${content.title} sections`} />
@@ -357,4 +384,14 @@ export default function ContentOverviewPage() {
       <ContentOverviewPageContent />
     </Suspense>
   );
+}
+
+/** Names the Studio page a Back link leads to. */
+function studioBackLabel(href: string, parentTitle?: string | null): string {
+  const named = (fallback: string) => (parentTitle ? `Back to ${parentTitle}` : fallback);
+  if (href.startsWith("/studio/course/") || href.startsWith("/studio/events/")) return parentTitle ? `Back to ${parentTitle} editor` : "Back to the editor";
+  if (href.startsWith("/studio/content/course/")) return named("Back to course");
+  if (href.startsWith("/studio/content/event/")) return named("Back to event");
+  if (href.startsWith("/console/reviews") || href.includes("/manage/reviews")) return "Back to the review";
+  return "Back";
 }

@@ -88,6 +88,8 @@ export interface ExamOverviewProps {
   landing: AssessmentLandingResponse;
   /** Where the breadcrumb's "Exams" leads (Explore's Exams tab). */
   hubHref: string;
+  /** The page's Back link: where the learner came from, named. */
+  back?: { label: string; onClick: () => void };
   /** Begin or resume, after the honor code is accepted. */
   onStart: () => void;
   /** Switches to another plan of the same exam. */
@@ -105,6 +107,7 @@ export interface ExamOverviewProps {
 export function ExamOverview({
   landing,
   hubHref,
+  back,
   onStart,
   onSelectPlan,
   onViewGradeCard,
@@ -184,6 +187,16 @@ export function ExamOverview({
   return (
     <main className="min-h-screen w-full bg-surface theme-page-bg theme-wallpaper-frost text-slate-900">
       <div className="mx-auto max-w-6xl px-4 pt-12 pb-24 sm:px-6 sm:pt-16 sm:pb-32 lg:px-8">
+        {back && (
+          <button
+            type="button"
+            onClick={back.onClick}
+            className="group mb-2 inline-flex max-w-full cursor-pointer items-center gap-2 rounded-full border border-slate-200/80 bg-surface/90 px-4 py-2 text-xs font-extrabold text-slate-700 shadow-2xs backdrop-blur-md transition-all hover:border-blue-200 hover:text-blue-600 dark:hover:border-blue-500/25 dark:hover:text-blue-400"
+          >
+            <ChevronRight size={14} className="rotate-180 transition-transform group-hover:-translate-x-0.5" />
+            <span className="truncate">{back.label}</span>
+          </button>
+        )}
         
         {/* ================= HERO SECTION (2-Column) ================= */}
         <section className="relative pt-4 pb-8 sm:pt-6 sm:pb-10">
@@ -520,17 +533,11 @@ export function ExamOverview({
                         : 'Your score summary and question feedback for your own reference'
                     }
                   />
-                  {landing.proctoringRequired && (
-                    <Expect
-                      icon={<ShieldCheck size={18} />}
-                      title="Proctored sitting"
-                      sub={
-                        landing.maxViolations > 0
-                          ? `Leaving the exam window is recorded; ${landing.maxViolations} violation${landing.maxViolations === 1 ? '' : 's'} will automatically terminate the sitting.`
-                          : 'Tab switches and leaving the exam window are recorded.'
-                      }
-                    />
-                  )}
+                  <Expect
+                    icon={<ShieldCheck size={18} />}
+                    title={landing.proctoringRequired ? 'Proctored, secured sitting' : 'Secured sitting'}
+                    sub={`Leaving full screen, switching tabs or windows, copying, pasting or opening developer tools is recorded; ${landing.maxViolations} violation${landing.maxViolations === 1 ? '' : 's'} automatically end the sitting.`}
+                  />
                   {landing.identityVerificationRequired && (
                     <Expect
                       icon={<ShieldCheck size={18} />}
@@ -538,13 +545,11 @@ export function ExamOverview({
                       sub="You submit a photo or ID verification before starting; an administrator reviews it."
                     />
                   )}
-                  {landing.fullscreenRequired && (
-                    <Expect
-                      icon={<Maximize2 size={18} />}
-                      title="Fullscreen mode enforced"
-                      sub="The exam runs in full screen; exiting fullscreen will trigger a proctor warning."
-                    />
-                  )}
+                  <Expect
+                    icon={<Maximize2 size={18} />}
+                    title="Own tab, full screen"
+                    sub="The exam opens in its own tab and runs in full screen; the paper is hidden outside it."
+                  />
                 </ul>
               </div>
             )}

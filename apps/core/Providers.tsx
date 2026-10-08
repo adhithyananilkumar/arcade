@@ -17,11 +17,16 @@
  */
 
 
+import { Suspense } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/infrastructure/state/queryClient';
 import { Toaster } from '@/shared/design-system/ui/sonner';
 import { AuthInitializer } from '@/apps/core/components/AuthInitializer';
 import { AppearanceController } from '@/apps/core/components/AppearanceController';
+import { NavigationTracker } from '@/infrastructure/state/navigationHistory';
+import { NavigationProgress } from '@/apps/core/components/NavigationProgress';
+import { ConnectivityGate } from '@/apps/core/components/ConnectivityGate';
+import { BugIsland } from '@/apps/core/components/bug-reports/BugIsland';
 
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -29,8 +34,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AuthInitializer />
       <AppearanceController />
+      {/* useSearchParams needs a Suspense boundary to keep static pages static. */}
+      <Suspense fallback={null}>
+        <NavigationTracker />
+        <NavigationProgress />
+      </Suspense>
       {children}
       <Toaster />
+      <ConnectivityGate />
+      <BugIsland />
     </QueryClientProvider>
   );
 }

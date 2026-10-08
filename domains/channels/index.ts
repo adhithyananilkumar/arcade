@@ -35,10 +35,13 @@ export type {
   ChannelSettingsUpdate,
   ChannelSignatory,
   ChannelSignatoryUpdate,
+  CredentialBrandingItem,
+  CredentialBrandingReadiness,
   OwnershipTransferResponse,
 } from './api/channel.service';
 export { InviteUserModal } from './components/InviteUserModal';
 export { ChannelPicker } from './components/ChannelPicker';
+export { ChannelBrandingNotice, isBrandingIncomplete, brandingSetupHref } from './components/ChannelBrandingNotice';
 export {
   PendingChannelInvitations,
   useMyChannelInvitations,

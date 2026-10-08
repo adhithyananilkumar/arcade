@@ -26,7 +26,8 @@ export interface BadgeTierPickerProps {
 }
 
 export function BadgeTierPicker({ family, tiers, value, onChange, contentTitle, issuerLogoUrl, disabled }: BadgeTierPickerProps) {
-  const ordered = [...tiers].sort((a, b) => a.level - b.level);
+  // Only the levels a creator chooses: Expert comes with a certification, Distinguished is an honour.
+  const ordered = tiers.filter((t) => t.awardedBy === "CREATOR").sort((a, b) => a.level - b.level);
   return (
     <div role="radiogroup" aria-label="Badge level" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
       {ordered.map((tier) => {

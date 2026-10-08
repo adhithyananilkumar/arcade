@@ -56,6 +56,8 @@ export interface Event {
   priceAmount: number;
   currency: string;
   capacity?: number;
+  /** Null until the organiser picks one; shown to participants of a paid event. */
+  refundPolicy?: RefundPolicy | null;
   visibility: Visibility;
   createdBy: string;
   /** The owning channel's display name — the publisher shown on the byline. */

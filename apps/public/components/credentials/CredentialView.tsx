@@ -95,7 +95,8 @@ export function CredentialView({
           name,
           `${name} - Arcade Level ${level} badge`,
           "png",
-          badge!.issuerLogoUrl
+          badge!.issuerLogoUrl,
+          badge!.stars
         );
       } else {
         await credentialsApi.downloadPublicCertificate(cert!.credentialCode);
@@ -150,6 +151,7 @@ export function CredentialView({
                   level={level!}
                   title={name}
                   issuerLogoUrl={badge!.issuerLogoUrl}
+                  stars={badge!.stars}
                   revoked={!valid}
                   label={`${badge!.badgeClass.name} — ${name}`}
                 />
@@ -309,7 +311,7 @@ export function CredentialView({
               <div className="relative flex items-center justify-center">
                 <div className="w-full border-t border-slate-200/70" />
                 <div className="absolute bg-surface px-4 text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold">
-                  CRITERIA &amp; STANDARD
+                  {isBadge && badge!.citation ? "CITATION" : <>CRITERIA &amp; STANDARD</>}
                 </div>
               </div>
 

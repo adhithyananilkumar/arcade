@@ -23,6 +23,21 @@ export interface CheckoutResponse {
   gatewayClientFields: Record<string, unknown>;
 }
 
+/** A UPI QR for one checkout. Short-lived; asking again after it lapses returns a fresh one. */
+export interface QrCodeResponse {
+  qrCodeId: string;
+  /** The gateway-hosted QR image. */
+  imageUrl: string;
+  /** When this QR stops taking payments — the ring timer counts down to it. */
+  expiresAt: string;
+  /** When the whole checkout ends; no new QR is issued close to it. */
+  orderExpiresAt?: string | null;
+  /** Minor units the QR is fixed to. */
+  amount: number;
+  /** The UPI intent the code encodes; the checkout draws its own clean code from it when present. */
+  upiPayload?: string | null;
+}
+
 export interface PaymentOrderResponse {
   id: string;
   enrollmentId: string;
@@ -106,7 +121,12 @@ export interface BillingRefundLine {
   currency: string;
   status: 'REQUESTED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
   requestedAt: string;
+  /** When it was sent to the learner's bank — the bank credits it some working days later. */
   completedAt?: string | null;
+  /** The gateway's refund id ("rfnd_…"). */
+  gatewayRefundId?: string | null;
+  /** ARN / RRN / UTR the learner's bank traces the credit by, once assigned. */
+  bankReference?: string | null;
 }
 
 export interface BillingLine {
@@ -125,6 +145,8 @@ export interface BillingLine {
   /** Minor units, completed refunds only. */
   refundedAmount: number;
   refunds: BillingRefundLine[];
+  /** PENDING only: when the open checkout closes. No money has moved on such a line. */
+  expiresAt?: string | null;
 }
 
 export interface BillingSummary {
@@ -147,6 +169,16 @@ export interface PaymentTransactionView {
   status: string;
   failureReason?: string | null;
   createdAt: string;
+  /** The gateway settlement that paid this capture into Arcade's bank; null until it has. */
+  settlementId?: string | null;
+  settledAt?: string | null;
+  /** The bank's reference for the settlement transfer. */
+  settlementUtr?: string | null;
+  /** The gateway's fee and the GST on it, minor units, as reported at settlement. */
+  gatewayFeeMinor?: number | null;
+  gatewayTaxMinor?: number | null;
+  /** While unsettled: the expected deposit date (YYYY-MM-DD), T+2 working days. An estimate. */
+  settlementExpectedBy?: string | null;
 }
 
 export interface PaymentRefundView {
@@ -162,6 +194,14 @@ export interface PaymentRefundView {
   requestedAt: string;
   completedAt?: string | null;
   lastError?: string | null;
+  /** The gateway's own last word: "pending", "processed" or "failed". */
+  gatewayStatus?: string | null;
+  /** ARN / RRN / UTR the learner's bank traces the credit by, once assigned. */
+  bankReference?: string | null;
+  gatewayCheckedAt?: string | null;
+  /** The gateway settlement this refund was deducted from, once it has been. */
+  settlementId?: string | null;
+  settledAt?: string | null;
 }
 
 export interface PaymentTimelineView {

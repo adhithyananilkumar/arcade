@@ -1,6 +1,7 @@
 "use client";
 
 import { usePublishedEventCardsQuery } from '@/domains/events';
+import { useMyEnrollmentStates } from '@/domains/enrollment';
 import React from "react";
 import { useRouter } from "next/navigation";
 import ExploreEmptyState from "./ExploreEmptyState";
@@ -101,6 +102,8 @@ export default function EventsView({
   setCourseSearchQuery
 }: EventsViewProps) {
   const router = useRouter();
+  // Registered → "Go to event"; waitlisted → said on the button itself.
+  const { ctaFor } = useMyEnrollmentStates();
   const [currentPage, setCurrentPage] = React.useState(0);
   const [webinarsPage, setWebinarsPage] = React.useState(0);
   const [eventType, setEventType] = React.useState<"all" | "bootcamps" | "webinars">("all");
@@ -112,6 +115,15 @@ export default function EventsView({
   }, [activeCategoryName, eventType, courseSearchQuery]);
 
   const isAllCategory = activeCategoryName.toLowerCase() === "all";
+
+  const eventCta = (item: { id?: string; slug?: string }) => {
+    const cta = ctaFor('EVENT', item.id, 'View Details');
+    return {
+      actionHref: cta.href ?? `/events/${item.slug || item.id}`,
+      actionLabel: cta.label,
+      actionTone: cta.tone,
+    };
+  };
 
   // Everything below comes from the server.
   //
@@ -145,10 +157,19 @@ export default function EventsView({
 
   // Sorting stays client-side: it reorders what is already on screen and does not change which
   // events match.
-  if (sortBy === "duration") {
-    filteredBootcamps = [...filteredBootcamps].sort((a, b) => (a.duration || "").localeCompare(b.duration || ""));
-    filteredWebinars = [...filteredWebinars].sort((a, b) => (a.duration || "").localeCompare(b.duration || ""));
-  }
+  // "Upcoming" used to leave the server's order untouched and "Duration" compared the text, so
+  // "10 days" came before "2 days" — the live sessions read in no order (BUG-1048). Both sort on
+  // numbers now, and unscheduled / unknown items go last.
+  const last = (v: number | null) => (v == null ? Number.POSITIVE_INFINITY : v);
+  const byKey = (key: (e: (typeof allEvents)[number]) => number | null) => (a: (typeof allEvents)[number], b: (typeof allEvents)[number]) =>
+    last(key(a)) - last(key(b)) || a.title.localeCompare(b.title);
+  const comparator =
+    sortBy === "duration"
+      ? byKey((e) => e.durationMinutes)
+      : // Upcoming: what starts soonest first; anything already started or past after it.
+        byKey((e) => (e.startsAtMs == null ? null : e.startsAtMs >= Date.now() ? e.startsAtMs : 8.64e15 + e.startsAtMs / 1e6));
+  filteredBootcamps = [...filteredBootcamps].sort(comparator);
+  filteredWebinars = [...filteredWebinars].sort(comparator);
 
   const showBootcamps = eventType === "all" || eventType === "bootcamps";
   const showWebinars = eventType === "all" || eventType === "webinars";
@@ -202,8 +223,7 @@ export default function EventsView({
                   bootcamp.duration ? bootcamp.duration.toUpperCase() : null,
                   bootcamp.level ? bootcamp.level : null,
                 ].filter(Boolean)}
-                actionHref={`/events/${bootcamp.slug || bootcamp.id}`}
-                actionLabel="View Details"
+                {...eventCta(bootcamp)}
               />
             );
           })}
@@ -312,8 +332,7 @@ export default function EventsView({
                 metaTags={[
                   w.duration ? w.duration.toUpperCase() : null,
                 ].filter(Boolean)}
-                actionHref={`/events/${w.slug || w.id}`}
-                actionLabel="View Details"
+                {...eventCta(w)}
               />
             );
           })}

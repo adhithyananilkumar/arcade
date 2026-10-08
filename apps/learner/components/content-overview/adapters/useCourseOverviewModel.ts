@@ -181,7 +181,9 @@ function buildSections(course: CourseResponse, completedLessonIds: string[]): Ov
         title: assessment.title,
         kind: 'ASSESSMENT' as const,
         completed: false,
-        href: courseRoutes.exam(assessment.examId),
+        // Inside the course player, which knows the placement (so the right plan) and returns to the
+        // course after the attempt. The exam's own page lost the course and could open another plan.
+        href: courseRoutes.lesson(course.id, assessment.placementId),
         order: assessment.position,
       }));
 
@@ -207,7 +209,9 @@ function buildSections(course: CourseResponse, completedLessonIds: string[]): Ov
           title: assessment.title,
           kind: 'ASSESSMENT' as const,
           completed: false,
-          href: courseRoutes.exam(assessment.examId),
+          // Course-level assessments are not in the player's running order: open the exam page on
+          // this exact plan, with the way back to this course.
+          href: `${courseRoutes.exam(assessment.examId)}?planId=${assessment.planId}&returnTo=${encodeURIComponent(courseRoutes.overview(course.id))}`,
           order: order++,
         })),
     });

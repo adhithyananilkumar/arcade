@@ -19,7 +19,8 @@ const STATUS: Record<BillingLine['status'], { label: string; cls: string }> = {
   PAID: { label: 'Paid', cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' },
   PARTIALLY_REFUNDED: { label: 'Part refunded', cls: 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300' },
   REFUNDED: { label: 'Refunded', cls: 'bg-slate-100 text-slate-600' },
-  PENDING: { label: 'Processing', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300' },
+  // An open checkout: nothing has been charged yet. It turns Paid, or closes and drops off this list.
+  PENDING: { label: 'Awaiting payment', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300' },
   FAILED: { label: 'Failed', cls: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' },
 };
 
@@ -77,19 +78,49 @@ function BillingRow({ line }: { line: BillingLine }) {
             )}
           </dl>
           {line.status === 'FAILED' && <p className="text-rose-600 dark:text-rose-400">This payment didn&apos;t go through. No money was taken; you can try again from the {KIND[line.resourceType]?.toLowerCase() ?? 'content'} page.</p>}
-          {line.status === 'PENDING' && <p className="text-amber-700 dark:text-amber-300">Still waiting for the payment provider to confirm. This usually takes a minute.</p>}
+          {line.status === 'PENDING' && (
+            <p className="text-amber-700 dark:text-amber-300">
+              Checkout started — no money has been taken.
+              {line.expiresAt && new Date(line.expiresAt).getTime() > Date.now()
+                ? ` It stays open until ${new Date(line.expiresAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}, then closes on its own.`
+                : ' It has closed and will disappear from this list shortly.'}{' '}
+              If you already paid, it is confirmed automatically — you won&apos;t be charged twice.
+            </p>
+          )}
           {line.refunds.length > 0 && (
             <div className="pt-1">
               <p className="font-semibold text-gray-900 flex items-center gap-1"><RotateCcw size={11} /> Refunds</p>
-              <ul className="mt-1 space-y-1">
+              <ul className="mt-1 space-y-2">
                 {line.refunds.map((r) => (
-                  <li key={r.refundId} className="flex justify-between gap-3">
-                    <span>{formatDate(r.completedAt ?? r.requestedAt)} · {r.status === 'COMPLETED' ? 'Refunded' : r.status === 'FAILED' ? 'Refund failed' : 'Refund in progress'}</span>
-                    <span className="font-semibold text-gray-900">{formatMoney(r.amount, r.currency)}</span>
+                  <li key={r.refundId}>
+                    <div className="flex justify-between gap-3">
+                      <span>
+                        {formatDate(r.completedAt ?? r.requestedAt)} ·{' '}
+                        {r.status === 'COMPLETED'
+                          ? 'Sent to your bank'
+                          : r.status === 'FAILED'
+                            ? 'Could not be completed — nothing was sent'
+                            : 'Refund in progress'}
+                      </span>
+                      <span className="font-semibold text-gray-900">{formatMoney(r.amount, r.currency)}</span>
+                    </div>
+                    {r.status !== 'FAILED' && (r.bankReference || r.gatewayRefundId) && (
+                      <p className="mt-0.5 text-slate-400">
+                        {r.bankReference ? (
+                          <>Bank reference <span className="font-mono text-slate-600 select-all">{r.bankReference}</span></>
+                        ) : (
+                          <>Refund ID <span className="font-mono text-slate-600 select-all">{r.gatewayRefundId}</span>
+                            {r.status === 'COMPLETED' && ' · bank reference appears here once your bank assigns it'}</>
+                        )}
+                      </p>
+                    )}
                   </li>
                 ))}
               </ul>
-              <p className="mt-1 text-slate-400">Refunds reach your account in 5–7 working days, depending on your bank.</p>
+              <p className="mt-1 text-slate-400">
+                Once sent, banks usually credit a refund within 5–7 working days (UPI is often quicker). If it hasn&apos;t
+                arrived after that, give your bank the reference above.
+              </p>
             </div>
           )}
           {href && line.resourceTitle && (

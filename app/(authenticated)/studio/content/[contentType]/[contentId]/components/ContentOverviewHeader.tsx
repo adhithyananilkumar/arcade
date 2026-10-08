@@ -83,6 +83,7 @@ export function ContentOverviewHeader({
   onPreview,
   parent,
   leading,
+  onSubmit,
 }: {
   segment: ContentTypeSegment;
   contentId: string;
@@ -105,6 +106,8 @@ export function ContentOverviewHeader({
   parent?: { href: string; label: string } | null;
   /** Left end of the action line, e.g. "Back to Course Dashboard". */
   leading?: React.ReactNode;
+  /** The page's submit (shared with the Publishing tab, so a refusal is reported the same way). */
+  onSubmit?: () => Promise<void>;
 }) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -138,6 +141,10 @@ export function ContentOverviewHeader({
   async function handleSubmit() {
     setBusy(true);
     try {
+      if (onSubmit) {
+        await onSubmit();
+        return;
+      }
       await submitForReview(segment, contentId);
       toast.success("Submitted for review");
       router.refresh();
@@ -201,8 +208,10 @@ export function ContentOverviewHeader({
     // Preview only
   } else if (statusKey === "PUBLISHED") {
     primaryActions.push(edit);
-    if (segment === "exam" && supportsReviewSubmission(segment, tiedExam)) {
+    if (supportsReviewSubmission(segment, tiedExam)) {
       // Learners keep the published version; edits since then reach them only through review.
+      // This was exam-only, so a published course or event had no way to send later edits — or a
+      // linked exam's new plans — for review (BUG-1074).
       primaryActions.push({ key: "submit", label: "Submit changes for Review", icon: Send, onClick: handleSubmit, variant: "secondary" });
     }
   } else {
@@ -217,7 +226,9 @@ export function ContentOverviewHeader({
   return (
     <div className="flex w-full flex-col gap-4 pb-1">
       {/* Back link, when this dashboard was opened from a parent course or event. */}
-      {leading && <div className="flex">{leading}</div>}
+      {/* Centred above the title: at the left it sat under the shell's floating logo and back
+          button, which are pinned to the same corner (BUG-1024/1047). */}
+      {leading && <div className="flex justify-center">{leading}</div>}
 
       <div className="mx-auto flex max-w-4xl flex-col items-center justify-center text-center">
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Satisfy&family=Alex+Brush&display=swap');`}</style>

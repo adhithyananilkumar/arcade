@@ -14,12 +14,14 @@
  *
  * The video only runs when all of these hold: inside the signed-in app,
  * glass is on, the chosen wallpaper is live, "Play live wallpapers" is on
- * for this device, and the system does not ask for reduced motion. It pauses
+ * for this device, the system does not ask for reduced motion, and the page
+ * is not an exam sitting (there the poster frame stands still). It pauses
  * whenever the tab is hidden.
  * ------------------------------------------------------------------
  */
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Loader2 } from 'lucide-react';
 import { LiveWallpaperNotice } from '@/apps/core/components/appearance/AppearanceControls';
@@ -32,6 +34,17 @@ import {
   useLiveWallpaperStore,
 } from '@/apps/core/lib/liveWallpaper';
 import { cn } from '@/shared/utils/utils';
+import { EXAM_SITTING_ROUTE } from '@/shared/routes/content.routes';
+import { isLiteDevice } from '@/infrastructure/state/devicePerformance';
+
+/**
+ * Studio's editing surfaces. Their frosted backdrop is a full-screen blur of the wallpaper, so a
+ * playing video there is re-blurred every frame — GPU time taken straight from typing. Writing
+ * gets a still backdrop, the way an exam sitting does.
+ */
+const noopSubscribe = () => () => {};
+
+const STUDIO_EDITOR_ROUTE = /^\/studio\/(?:course\/[^/]+\/(?:edit|question-bank)|events\/[^/]+\/edit|workshop\/[^/]+\/edit|exam\/[^/]+\/edit|content\/[^/]+\/[^/]+\/edit)\/?$/;
 
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
 
@@ -54,8 +67,16 @@ export function useActiveLiveVideo() {
   const wallpaper = useAppearanceStore((s) => s.wallpaper);
   const liveMotion = useAppearanceStore((s) => s.liveMotion);
   const reduced = usePrefersReducedMotion();
+  // A candidate sitting an exam gets a still backdrop: nothing on screen moves but the paper.
+  const pathname = usePathname() ?? '';
+  const sitting = EXAM_SITTING_ROUTE.test(pathname);
+  const editing = STUDIO_EDITOR_ROUTE.test(pathname);
+  // Low-end devices keep the still poster everywhere: decoding a full-screen video loop is the
+  // single most expensive thing a page can do in the background.
+  // Server snapshot is "not lite" so hydration matches; the device's real tier applies right after.
+  const lite = useSyncExternalStore(noopSubscribe, isLiteDevice, () => false);
   const video = wallpaper.kind === 'image' ? wallpaper.video ?? null : null;
-  return inScope && glass && liveMotion && !reduced ? video : null;
+  return inScope && glass && liveMotion && !reduced && !sitting && !editing && !lite ? video : null;
 }
 
 export function LiveWallpaperVideo() {

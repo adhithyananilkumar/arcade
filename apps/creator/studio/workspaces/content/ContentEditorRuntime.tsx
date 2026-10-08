@@ -12,6 +12,7 @@
  * ------------------------------------------------------------------
  */
 
+import { withReturnTo } from "@/infrastructure/state/navigationHistory";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CSSProperties, ReactNode } from "react";
@@ -36,13 +37,14 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
-import { ArcadeEditor } from "@/apps/creator/editor";
-import type { ArcadeEditorHandle } from "@/apps/creator/editor";
+// The lazy entry, not the editor barrel: the tree and header render without waiting for the
+// multi-megabyte editor engine, which streams in when a lesson opens (and is preloaded on idle).
+import { LazyArcadeEditor as ArcadeEditor, preloadArcadeEditor, type ArcadeEditorHandle } from "@/apps/creator/editor/lazy";
 import { VersionHistoryOrchestrator } from "./history/VersionHistoryOrchestrator";
 import { createContentMetadataHistoryAdapter } from "./adapters/ContentMetadataHistoryAdapter";
 import { useCollaborativeDocument } from "@/apps/creator/studio/core/collaboration/useCollaborativeDocument";
 import { useCollaborativeFields } from "@/apps/creator/studio/core/collaboration/useCollaborativeFields";
-import { encodeSnapshotBase64, createYDoc, applyBase64Update, encodeStateBase64 } from "@/apps/creator/editor";
+import { encodeSnapshotBase64, createYDoc, applyBase64Update, encodeStateBase64 } from "@/apps/creator/studio/core/collaboration/yjs";
 import { StudioRightPanel } from "@/apps/creator/studio/core/StudioRightPanel";
 import { useStudioPanel } from "@/apps/creator/studio/core/useStudioPanel";
 import { useUnsavedChangesGuard } from "@/apps/creator/studio/core/useUnsavedChangesGuard";
@@ -56,11 +58,13 @@ import {
   TREE_EMPTY_STATE_CLASS,
   CANVAS_WRAPPER_CLASS,
   CANVAS_CARD_CLASS,
+  CANVAS_DOCUMENT_WRAPPER_CLASS,
+  CANVAS_DOCUMENT_CARD_CLASS,
 } from "@/apps/creator/studio/core/StudioShell";
 import { TiptapContentView } from "@/domains/learning";
 import { CredentialBadge, credentialsApi, type BadgeAssignment, type BadgeContentType, type BadgeLevel } from "@/domains/credentials";
 import { BadgeTierDialog } from "../../credentials/BadgeTierDialog";
-import { ContentSubmitDialog } from "./dialogs/ContentSubmitDialog";
+import { ContentSubmitDialog, type SubmitBasicsPatch } from "./dialogs/ContentSubmitDialog";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -68,6 +72,7 @@ import {
   DropdownMenuItem,
 } from "@/shared/design-system/ui/dropdown-menu";
 import type { TiptapDocument } from "@/shared/types/editor.types";
+import { PageLoader } from "@/shared/design-system/ui/loader";
 import {
   ChevronRight,
   ChevronDown,
@@ -334,7 +339,15 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   });
 
   const handleCollabStateChange = useCallback((state: { status: CollabStatus; collaborators: ActiveCollaborator[] }) => {
-    setCollabState(state);
+    // Re-rendering this workspace is expensive (tree, header, dialogs), so an update that changes
+    // neither the connection status nor who is here keeps the previous state object.
+    setCollabState((prev) =>
+      prev.status === state.status &&
+      prev.collaborators.length === state.collaborators.length &&
+      prev.collaborators.every((c, i) => c.clientId === state.collaborators[i].clientId && c.user?.name === state.collaborators[i].user?.name)
+        ? prev
+        : state
+    );
   }, []);
 
   const [modules, setModules] = useState<ModuleNode[]>([]);
@@ -398,6 +411,9 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
 
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const [isInitializing, setIsInitializing] = useState(true);
+  /** Why the content could not be opened; the editor is not shown over a tree that never loaded. */
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [navigatingBack, setNavigatingBack] = useState(false);
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
   const editorRef = useRef<ArcadeEditorHandle>(null);
@@ -578,6 +594,12 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
         const firstLeaf = containers[0]?.leaves?.[0];
         if (firstLeaf && firstLeaf.type === "document") {
           await openLesson(firstLeaf);
+        } else {
+          // No lesson opens by itself, so fetch the editor while the author looks at the tree —
+          // the first lesson they click then opens without a download wait.
+          const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => void }).requestIdleCallback;
+          if (idle) idle(preloadArcadeEditor);
+          else setTimeout(preloadArcadeEditor, 1500);
         }
       } catch (e: any) {
         if (e?.status === 403 || e?.message?.includes("403") || e?.message?.includes("Forbidden")) {
@@ -590,12 +612,19 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
           return;
         }
         console.error("Failed to load content", e);
+        // Previously this fell through to an empty editor — no title, no days — which looked like
+        // content that had lost everything. Say it didn't load and offer a retry instead.
+        setLoadError(
+          e instanceof Error && e.message
+            ? e.message
+            : `Something went wrong while opening this ${adapter.terminology.root.toLowerCase()}.`
+        );
       }
       setIsInitializing(false);
     }
     bootstrap();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadAttempt]);
 
   // ── Auto-save handler ─────────────────────────────────────────────────────
   const handleSave = useCallback(
@@ -688,11 +717,11 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
    * the thing they just clicked.
    */
   const openExamConfig = useCallback((examId: string) => {
-    router.push(`/studio/exam/${examId}/edit`);
+    router.push(withReturnTo(`/studio/exam/${examId}/edit`));
   }, [router]);
 
   const openExamManagement = useCallback((examId: string) => {
-    router.push(`/studio/content/exam/${examId}`);
+    router.push(withReturnTo(`/studio/content/exam/${examId}`));
   }, [router]);
 
 
@@ -989,9 +1018,13 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
         tasks.push(Promise.resolve(editorRef.current.flush()).catch((e) => console.warn("Lesson body flush failed", e)));
       }
     }
-    await Promise.all(tasks);
+    // Leaving must never depend on these saves: a hung request (or a locked, under-review course
+    // refusing every write) left the Back button doing nothing (BUG-1030). Give them a few
+    // seconds, then go regardless.
+    const settle = (p: Promise<unknown>) => Promise.race([p, new Promise((r) => setTimeout(r, 4000))]);
+    await settle(Promise.all(tasks));
 
-    if (activeLessonId && activeYDocRef.current && editorRef.current) {
+    if (activeLessonId && activeYDocRef.current && editorRef.current && status !== "SUBMITTED") {
       const json = editorRef.current.getJSON();
       if (json) {
         try {
@@ -999,11 +1032,13 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
             adapter.terminology.root === "Course"
               ? `/api/documents/LESSON/${activeLessonId}/versions`
               : `/api/v1/events/lessons/${activeLessonId}/document/versions`;
-          await api.post(versionsUrl, {
-            snapshot: encodeSnapshotBase64(activeYDocRef.current),
-            body: JSON.stringify(json),
-            kind: "AUTO",
-          });
+          await settle(
+            api.post(versionsUrl, {
+              snapshot: encodeSnapshotBase64(activeYDocRef.current),
+              body: JSON.stringify(json),
+              kind: "AUTO",
+            })
+          );
         } catch (e) {
           console.warn("Exit snapshot failed", e);
         }
@@ -1011,11 +1046,28 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
     }
 
     router.push(backHref);
-  }, [navigatingBack, contentId, title, description, pricingModel, metadataCollabStatus, activeLessonId, activeLessonTitle, router, adapter, backHref]);
+  }, [navigatingBack, contentId, title, description, pricingModel, metadataCollabStatus, activeLessonId, activeLessonTitle, router, adapter, backHref, status]);
 
   // ── Submit for review ─────────────────────────────────────────────────────
 
   const askSubmit = () => setSubmitDialogOpen(true);
+
+  /** Saves basics filled in from the submit dialog, keeping the live metadata state in step. */
+  const saveBasics = async (patch: SubmitBasicsPatch) => {
+    if (!contentId) return;
+    const nextDescription = patch.description ?? description;
+    if (patch.description !== undefined) setDescription(nextDescription);
+    const nextPricing = patch.paid === undefined ? pricingModel : patch.paid ? "PAID" : "FREE";
+    if (patch.paid !== undefined) setPricingModel(nextPricing);
+    await adapter.updateMeta(contentId, {
+      title,
+      description: nextDescription,
+      pricingModel: nextPricing,
+      ...(patch.category !== undefined ? { category: patch.category } : {}),
+      ...(patch.learningOutcomes !== undefined ? { learningOutcomes: patch.learningOutcomes } : {}),
+      ...(patch.priceAmount !== undefined ? { priceAmount: patch.priceAmount } : {}),
+    });
+  };
 
   const handleSubmit = async (data: { message?: string }) => {
     if (!contentId) return;
@@ -1027,6 +1079,10 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
       }
     }
     try {
+      // The backend validates the saved row, but title/description reach it through a debounced
+      // collaboration save, so a just-typed (or just-saved) value can still be in flight when
+      // Submit is pressed. Write the current values explicitly first so the gate sees them.
+      await adapter.updateMeta(contentId, { title, description, pricingModel });
       const updated = await onSubmit(data);
       setStatus(updated.status);
       if (updated.updatedAt !== undefined) {
@@ -1066,11 +1122,36 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   // ── Render ────────────────────────────────────────────────────────────────
 
   if (isInitializing) {
+    return <PageLoader fullScreen label={`Setting up your ${adapter.terminology.root.toLowerCase()}…`} />;
+  }
+
+  if (loadError) {
+    const noun = adapter.terminology.root.toLowerCase();
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
-          <p className="text-sm text-gray-500">Setting up your {adapter.terminology.root.toLowerCase()}…</p>
+      <div className="flex h-screen items-center justify-center p-6">
+        <div className="w-full max-w-md rounded-[28px] border border-slate-200 bg-surface px-8 py-10 text-center shadow-[0_24px_60px_rgba(20,20,43,0.10)]">
+          <h2 className="text-lg font-bold text-slate-900">We couldn&apos;t open this {noun}</h2>
+          <p className="mt-2 text-sm leading-relaxed text-slate-500">{loadError}</p>
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => router.push(backHref)}
+              className="h-10 rounded-full bg-slate-100 px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200"
+            >
+              Go back
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setLoadError(null);
+                setIsInitializing(true);
+                setLoadAttempt((n) => n + 1);
+              }}
+              className="h-10 rounded-full bg-ink px-5 text-sm font-semibold text-on-ink transition-colors hover:bg-ink-hover"
+            >
+              Try again
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -1085,6 +1166,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
           open={submitDialogOpen}
           onClose={() => setSubmitDialogOpen(false)}
           onSubmit={handleSubmit}
+          onSaveBasics={saveBasics}
         />
       )}
       {confirmDialog}
@@ -1549,7 +1631,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                 key={activeAssessment.id}
                 assessment={activeAssessment}
                 readOnly={status === "SUBMITTED"}
-                onEditExam={(examId) => router.push(`/studio/exam/${examId}/edit`)}
+                onEditExam={(examId) => router.push(withReturnTo(`/studio/exam/${examId}/edit`))}
                 onChange={(patch) => {
                   setActiveAssessment((prev) => (prev ? { ...prev, ...patch } : prev));
                   setModules((prev) =>
@@ -1567,8 +1649,8 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
             </div>
           </div>
         ) : activeLessonId ? (
-          <div className={CANVAS_WRAPPER_CLASS} style={{ "--arcade-toolbar-top": "64px" } as CSSProperties}>
-            <div className={CANVAS_CARD_CLASS}>
+          <div className={CANVAS_DOCUMENT_WRAPPER_CLASS} style={{ "--arcade-toolbar-top": "64px" } as CSSProperties}>
+            <div className={CANVAS_DOCUMENT_CARD_CLASS}>
               {activeYDoc && (
                 <ArcadeEditor
                   key={activeLessonId}

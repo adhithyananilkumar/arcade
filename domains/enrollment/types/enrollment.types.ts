@@ -88,6 +88,8 @@ export interface LearnerEnrollmentSummary {
   channelName: string | null;
   /** Its picture; for a personal channel, the owner's profile picture. */
   channelIconUrl: string | null;
+  /** PENDING because the resource is full and the learner holds a waitlist place. */
+  waitlisted?: boolean;
 }
 
 export interface LearnerEnrollmentDetail {

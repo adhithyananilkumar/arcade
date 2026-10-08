@@ -82,21 +82,20 @@ export function ContentStatusHistoryModal({
   return (
     <>
       <div
-        className="fixed inset-0 z-40 bg-ink/40 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 z-40 arcade-modal-backdrop transition-opacity"
         onClick={onClose}
       />
 
       <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-slate-200/80 bg-surface shadow-[0_0_48px_rgba(20,20,43,0.18)]">
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-          <div className="flex items-center gap-2.5">
-            <span className="grid size-9 place-items-center rounded-xl bg-slate-100">
-              <History size={17} className="text-ink" />
-            </span>
+        <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-4">
+          <div>
             <h2 className="text-[15px] font-bold tracking-tight text-ink">Status history</h2>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink"
+            aria-label="Close"
+            className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
           >
             <X size={18} />
           </button>

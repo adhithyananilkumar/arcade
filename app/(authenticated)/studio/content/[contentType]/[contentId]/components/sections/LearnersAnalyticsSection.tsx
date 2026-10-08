@@ -427,31 +427,31 @@ export function LearnersAnalyticsSection({
         {/* Modal 1: Enrolled Members & Progress Details */}
         {isLearnersModalOpen && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-in fade-in duration-200"
-            onClick={() => setIsLearnersModalOpen(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
           >
             <div
-              className="flex flex-col w-full max-w-3xl max-h-[85vh] bg-surface rounded-[28px] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+              className="absolute inset-0 arcade-modal-backdrop"
+              onClick={() => setIsLearnersModalOpen(false)}
+            />
+            <div
+              className="relative flex flex-col w-full max-w-3xl max-h-[85vh] bg-surface arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-slate-50/50">
-                <div className="flex items-center gap-3">
-                  <div className="grid size-10 place-items-center rounded-2xl bg-blue-600 text-white shadow-sm">
-                    <Users size={20} />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black tracking-tight text-slate-900">
-                      Enrolled Learners
-                    </h3>
-                    <p className="text-xs font-semibold text-slate-500">
-                      {effectiveLearners.length} total enrolled students &amp; course progression
-                    </p>
-                  </div>
+              <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200/70 bg-slate-50/50 dark:bg-slate-900/40">
+                <div>
+                  <h3 className="text-base font-bold tracking-tight text-ink">
+                    Enrolled Learners
+                  </h3>
+                  <p className="mt-0.5 text-xs font-semibold text-slate-500">
+                    {effectiveLearners.length} total enrolled students &amp; course progression
+                  </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setIsLearnersModalOpen(false)}
-                  className="grid size-9 place-items-center rounded-full text-slate-400 hover:bg-slate-200/70 hover:text-slate-700 transition-colors cursor-pointer"
+                  aria-label="Close"
+                  className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:bg-slate-100 hover:text-ink transition-colors cursor-pointer dark:hover:bg-slate-800"
                 >
                   <X size={18} />
                 </button>
@@ -571,13 +571,14 @@ export function LearnersAnalyticsSection({
               </div>
 
               {/* Modal Footer */}
-              <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50">
-                <span className="text-xs font-bold text-slate-500">
+              <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200/70 bg-slate-50/50 dark:bg-slate-900/40">
+                <span className="text-xs font-semibold text-slate-500">
                   Showing {filteredLearners.length} of {effectiveLearners.length} learners
                 </span>
                 <button
+                  type="button"
                   onClick={() => setIsLearnersModalOpen(false)}
-                  className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-on-ink hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
+                  className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink hover:bg-ink-hover transition-colors shadow-sm cursor-pointer"
                 >
                   Close
                 </button>
@@ -589,31 +590,31 @@ export function LearnersAnalyticsSection({
         {/* Modal 2: All Feedbacks & Reviews Dedicated View */}
         {isReviewsModalOpen && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-in fade-in duration-200"
-            onClick={() => setIsReviewsModalOpen(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
           >
             <div
-              className="flex flex-col w-full max-w-4xl max-h-[88vh] bg-surface rounded-[32px] border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+              className="absolute inset-0 arcade-modal-backdrop"
+              onClick={() => setIsReviewsModalOpen(false)}
+            />
+            <div
+              className="relative flex flex-col w-full max-w-4xl max-h-[88vh] bg-surface arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="flex items-center justify-between px-7 py-5 border-b border-slate-100 bg-amber-50/30 dark:bg-amber-500/10">
-                <div className="flex items-center gap-3">
-                  <div className="grid size-11 place-items-center rounded-2xl bg-amber-500 text-white shadow-sm">
-                    <MessageSquare size={22} />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-black tracking-tight text-slate-900">
-                      All Student Reviews &amp; Feedback
-                    </h3>
-                    <p className="text-xs font-semibold text-slate-500">
-                      Sorted latest first &bull; {sortedReviews.length} verified ratings
-                    </p>
-                  </div>
+              <div className="flex items-center justify-between px-7 py-5 border-b border-slate-200/70 bg-slate-50/50 dark:bg-slate-900/40">
+                <div>
+                  <h3 className="text-lg font-bold tracking-tight text-ink">
+                    All Student Reviews &amp; Feedback
+                  </h3>
+                  <p className="mt-0.5 text-xs font-semibold text-slate-500">
+                    Sorted latest first &bull; {sortedReviews.length} verified ratings
+                  </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setIsReviewsModalOpen(false)}
-                  className="grid size-9 place-items-center rounded-full text-slate-400 hover:bg-slate-200/70 hover:text-slate-700 transition-colors cursor-pointer"
+                  aria-label="Close"
+                  className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:bg-slate-100 hover:text-ink transition-colors cursor-pointer dark:hover:bg-slate-800"
                 >
                   <X size={18} />
                 </button>
@@ -757,13 +758,14 @@ export function LearnersAnalyticsSection({
               </div>
 
               {/* Modal Footer */}
-              <div className="flex items-center justify-between px-7 py-4 border-t border-slate-100 bg-slate-50/50">
-                <span className="text-xs font-bold text-slate-500">
+              <div className="flex items-center justify-between px-7 py-4 border-t border-slate-200/70 bg-slate-50/50 dark:bg-slate-900/40">
+                <span className="text-xs font-semibold text-slate-500">
                   Showing {modalFilteredReviews.length} of {sortedReviews.length} reviews
                 </span>
                 <button
+                  type="button"
                   onClick={() => setIsReviewsModalOpen(false)}
-                  className="rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-on-ink hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
+                  className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink hover:bg-ink-hover transition-colors shadow-sm cursor-pointer"
                 >
                   Close
                 </button>

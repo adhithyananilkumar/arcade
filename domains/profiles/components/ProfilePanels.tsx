@@ -248,6 +248,7 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                       family={badge.badgeClass.family.key}
                       level={badge.badgeClass.tier.level}
                       title={badge.name}
+                      stars={badge.stars}
                       className="h-16 w-16"
                     />
                   </button>
@@ -306,7 +307,7 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setModalOpen(false)}
-                className="fixed inset-0 bg-slate-950/75 backdrop-blur-md transition-opacity"
+                className="fixed inset-0 arcade-modal-backdrop"
               />
 
               {/* Modal Dialog Box */}
@@ -370,6 +371,7 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
                                 family={badge.badgeClass.family.key}
                                 level={badge.badgeClass.tier.level}
                                 title={badge.name}
+                                stars={badge.stars}
                                 className="h-20 w-20 transition-transform duration-300 group-hover:scale-105"
                               />
                             </div>
@@ -550,7 +552,7 @@ export function OrganizationsPanel({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setModalOpen(false)}
-                className="fixed inset-0 bg-slate-950/75 backdrop-blur-md transition-opacity"
+                className="fixed inset-0 arcade-modal-backdrop"
               />
 
               {/* Modal Dialog Box */}

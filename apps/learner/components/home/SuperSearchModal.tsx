@@ -286,12 +286,12 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
       onOpenChange={onOpenChange}
       title="Search Arcade"
       description="Search courses, events and pages"
-      className="top-[8%] sm:top-[12%] translate-y-0 w-[95vw] sm:max-w-2xl! md:max-w-3xl! gap-0 overflow-hidden rounded-3xl! border border-slate-200/90 bg-surface p-0 shadow-2xl"
+      className="apple-glass-dock top-[8%] sm:top-[12%] translate-y-0 w-[95vw] sm:max-w-2xl! md:max-w-3xl! gap-0 overflow-hidden rounded-3xl! p-0 shadow-2xl"
       showCloseButton={false}
     >
       <Command shouldFilter={false} className="bg-transparent">
         {/* Top Input Header */}
-        <div className="relative flex items-center gap-2.5 sm:gap-3 border-b border-slate-100 px-4 sm:px-6 py-4.5 bg-surface">
+        <div className="relative flex items-center gap-2.5 sm:gap-3 border-b border-slate-200/50 px-4 sm:px-6 py-4.5 bg-transparent">
           {/* Search Glass Doodle */}
           <div className="relative flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center select-none">
             <svg
@@ -371,7 +371,7 @@ export function SuperSearchModal({ open, onOpenChange, initialQuery = '' }: Supe
         </div>
 
         <CommandList
-          className="max-h-[65vh] min-h-[320px] overflow-x-hidden px-3 sm:px-4 py-3 bg-surface divide-y divide-slate-100/60"
+          className="max-h-[65vh] min-h-[320px] overflow-x-hidden px-3 sm:px-4 py-3 bg-transparent divide-y divide-slate-200/40"
         >
           {isSearching && (
             <div className="flex items-center gap-2 px-3 py-3 text-xs font-semibold text-[#2962D6] dark:text-[#3B82F6]">

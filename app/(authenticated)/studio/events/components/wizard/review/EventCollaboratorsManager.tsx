@@ -29,22 +29,17 @@ export function EventCollaboratorsManager({ eventId, layout = 'card' }: Props) {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [loading, setLoading] = useState(true);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<'OWNER' | 'MANAGER' | 'EDITOR' | 'VIEWER'>('EDITOR');
+  const [inviteRole, setInviteRole] = useState<'OWNER' | 'MANAGER' | 'EDITOR'>('EDITOR');
   const [inviting, setInviting] = useState(false);
 
   const currentUserCollab = collaborators.find(c => c.userId === user?.id);
-  const isOwner = currentUserCollab?.role === 'OWNER';
-  const canManage = !currentUserCollab || isOwner || currentUserCollab?.role === 'MANAGER';
+  // Not on the roster = the channel's own staff (the backend decides whether that is enough).
+  // An EDITOR collaborator is the only viewer who certainly cannot manage the team.
+  const canManage = !currentUserCollab || currentUserCollab.role === 'OWNER' || currentUserCollab.role === 'MANAGER';
 
   useEffect(() => {
     loadCollaborators();
   }, [eventId]);
-
-  useEffect(() => {
-    if (collaborators.length > 0 && !isOwner) {
-      setInviteRole('VIEWER');
-    }
-  }, [collaborators, isOwner]);
 
   const loadCollaborators = async () => {
     try {
@@ -77,7 +72,7 @@ export function EventCollaboratorsManager({ eventId, layout = 'card' }: Props) {
     }
   };
 
-  const handleRoleChange = async (userId: string, newRole: 'OWNER' | 'MANAGER' | 'EDITOR' | 'VIEWER') => {
+  const handleRoleChange = async (userId: string, newRole: 'OWNER' | 'MANAGER' | 'EDITOR') => {
     try {
       await updateCollaboratorRole(eventId, userId, newRole);
       toast.success('Collaborator role updated!');
@@ -127,12 +122,10 @@ export function EventCollaboratorsManager({ eventId, layout = 'card' }: Props) {
           className="w-full h-10 px-3 rounded-lg border border-zinc-200 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
           value={inviteRole}
           onChange={(e) => setInviteRole(e.target.value as any)}
-          disabled={!isOwner}
         >
           <option value="OWNER">Owner (Full Admin)</option>
-          <option value="MANAGER">Manager (Can manage workshop)</option>
+          <option value="MANAGER">Manager (Can manage team)</option>
           <option value="EDITOR">Editor (Can edit content)</option>
-          <option value="VIEWER">Viewer (Read-only)</option>
         </select>
       </div>
       <Button type="submit" disabled={inviting} className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2">
@@ -162,7 +155,7 @@ export function EventCollaboratorsManager({ eventId, layout = 'card' }: Props) {
     </TableHeader>
     <TableBody>
       {collaborators.map((c) => (
-        <TableRow key={c.userId}>
+        <TableRow key={c.id ?? c.userId ?? c.email}>
           <TableCell className="flex items-center gap-3">
             <Avatar className="w-9 h-9">
               {c.avatarUrl && <AvatarImage src={c.avatarUrl} alt={c.name} />}
@@ -191,7 +184,6 @@ export function EventCollaboratorsManager({ eventId, layout = 'card' }: Props) {
                 <option value="OWNER">Owner</option>
                 <option value="MANAGER">Manager</option>
                 <option value="EDITOR">Editor</option>
-                <option value="VIEWER">Viewer</option>
               </select>
             )}
           </TableCell>

@@ -28,7 +28,9 @@ export function ChannelPicker({ channels, value, onChange, label = 'Channel' }: 
         {label} <span className="text-red-500">*</span>
       </label>
       <Select value={value} onValueChange={(v) => onChange(v ?? '')}>
-        <SelectTrigger className="w-full">
+        {/* Sized like the text fields beside it, with a hover state and a clear chevron, so it reads
+          as a dropdown rather than another text box (BUG-1033). */}
+        <SelectTrigger className="h-auto w-full cursor-pointer rounded-xl border-slate-200 bg-slate-50/50 px-3.5 py-2.5 hover:border-slate-300 hover:bg-surface [&>svg]:size-[18px] [&>svg]:text-slate-500">
           {value ? (
             <span className="flex flex-1 text-left line-clamp-1">
               {(() => {

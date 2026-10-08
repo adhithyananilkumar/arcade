@@ -84,25 +84,71 @@ export function recentConsoleEntries(): ConsoleEntry[] {
 export function captureEnvironment(): Record<string, unknown> {
   if (typeof window === "undefined") return {};
   const nav = navigator as Navigator & {
-    connection?: { effectiveType?: string; downlink?: number; saveData?: boolean };
+    connection?: { effectiveType?: string; downlink?: number; rtt?: number; saveData?: boolean };
     deviceMemory?: number;
     userAgentData?: { platform?: string; mobile?: boolean };
   };
+
+  const perf = typeof performance !== 'undefined' ? (performance as unknown as {
+    memory?: { jsHeapSizeLimit: number; totalJSHeapSize: number; usedJSHeapSize: number };
+    timing?: { domComplete: number; domLoading: number; navigationStart: number };
+  }) : undefined;
+
+  // Active dialogs/modals currently displayed on the page
+  const activeModals = Array.from(document.querySelectorAll('[role="dialog"], [role="alertdialog"]'))
+    .map((el) => el.getAttribute('aria-label') || el.id || el.getAttribute('data-modal') || el.tagName.toLowerCase())
+    .slice(0, 5);
+
   return {
+    url: window.location.href,
+    pathname: window.location.pathname,
+    search: window.location.search || undefined,
+    hash: window.location.hash || undefined,
+    pageTitle: document.title || undefined,
+    referrer: document.referrer || undefined,
     viewport: { width: window.innerWidth, height: window.innerHeight, dpr: window.devicePixelRatio },
-    screen: { width: window.screen.width, height: window.screen.height },
+    screen: {
+      width: window.screen.width,
+      height: window.screen.height,
+      colorDepth: window.screen.colorDepth,
+      orientation: window.screen.orientation?.type ?? undefined,
+    },
     language: navigator.language,
+    languages: Array.from(navigator.languages || []),
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     platform: nav.userAgentData?.platform ?? navigator.platform,
+    userAgent: navigator.userAgent,
     mobile: nav.userAgentData?.mobile ?? /Mobi|Android/i.test(navigator.userAgent),
     online: navigator.onLine,
+    cookiesEnabled: navigator.cookieEnabled,
+    hardwareConcurrency: navigator.hardwareConcurrency ?? undefined,
     colorScheme: window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light",
     reducedMotion: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false,
+    forcedColors: window.matchMedia?.("(forced-colors: active)").matches ?? false,
     touch: "ontouchstart" in window || navigator.maxTouchPoints > 0,
+    maxTouchPoints: navigator.maxTouchPoints,
     ...(nav.connection
-      ? { network: { type: nav.connection.effectiveType, downlinkMbps: nav.connection.downlink, saveData: nav.connection.saveData } }
+      ? {
+          network: {
+            type: nav.connection.effectiveType,
+            downlinkMbps: nav.connection.downlink,
+            rttMs: nav.connection.rtt,
+            saveData: nav.connection.saveData,
+          },
+        }
       : {}),
     ...(nav.deviceMemory ? { deviceMemoryGb: nav.deviceMemory } : {}),
+    ...(perf?.memory
+      ? {
+          memory: {
+            usedHeapMb: Math.round(perf.memory.usedJSHeapSize / 1048576),
+            totalHeapMb: Math.round(perf.memory.totalJSHeapSize / 1048576),
+            heapLimitMb: Math.round(perf.memory.jsHeapSizeLimit / 1048576),
+          },
+        }
+      : {}),
+    activeModals: activeModals.length > 0 ? activeModals : undefined,
+    recentErrorsCount: buffer.filter((b) => b.level === 'error' || b.level === 'uncaught').length,
     pageLoadedSecondsAgo: Math.round(performance.now() / 1000),
   };
 }

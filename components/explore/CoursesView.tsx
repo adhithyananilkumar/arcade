@@ -5,6 +5,7 @@ import { courseRoutes } from '@/shared/routes/content.routes';
 import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { useMyEnrollmentStates } from '@/domains/enrollment';
 
 import { getCourseChannel, type AttributableCourse, type CardChannel } from "./courseAttribution";
 import ExploreEmptyState from "./ExploreEmptyState";
@@ -513,9 +514,12 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   realRating,
   realReviewsCount
 }) => {
+  const { ctaFor } = useMyEnrollmentStates();
   const enriched = getEnrichedCourse(course, index, activeCategoryName);
   const courseSlug = slugify(course.title);
   const href = courseRoutes.landing(course.id || courseSlug);
+  // Already enrolled → "Go to course"; waitlisted or mid-payment → said on the button itself.
+  const cta = ctaFor('COURSE', course.id, 'Enroll Now');
 
   return (
     <UnifiedContentCard
@@ -540,8 +544,9 @@ export const CourseCard: React.FC<CourseCardProps> = ({
           </div>
         ) : null
       }
-      actionHref={href}
-      actionLabel="Enroll Now"
+      actionHref={cta.href ?? href}
+      actionLabel={cta.label}
+      actionTone={cta.tone}
     />
   );
 };

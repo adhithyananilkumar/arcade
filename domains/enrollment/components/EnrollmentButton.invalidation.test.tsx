@@ -70,15 +70,16 @@ describe('EnrollmentButton — enrollment read-model invalidation', () => {
 
   it('invalidates after an unenroll too, so a revoked course leaves the library immediately', async () => {
     vi.mocked(EnrollmentService.revoke).mockResolvedValue(undefined as never);
-    vi.stubGlobal('confirm', () => true);
     const { invalidateSpy } = renderButton('ENROLLED');
 
     fireEvent.click(screen.getByRole('button', { name: /Unenroll/i }));
+    // A confirmation dialog opens; its own Unenroll button does the revoke.
+    const confirmButtons = await screen.findAllByRole('button', { name: /^Unenroll$/i });
+    fireEvent.click(confirmButtons[confirmButtons.length - 1]);
 
     await waitFor(() =>
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: myEnrollmentKeys.all })
     );
-    vi.unstubAllGlobals();
   });
 
   it('does not invalidate when the enrollment attempt is denied outright', async () => {

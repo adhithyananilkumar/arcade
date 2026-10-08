@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AlertTriangle, ArrowRight, Loader2 } from "lucide-react";
-import { PaymentAdminService, type DateWindow, type PlatformPaymentsOverview } from "@/domains/payment";
+import { PaymentAdminService, type DateWindow, type PaymentFunnel, type PlatformPaymentsOverview } from "@/domains/payment";
 import { formatMoney, fromMinorUnits } from "@/shared/utils/money";
 
 export type Period = "7d" | "30d" | "90d" | "12m" | "all";
@@ -41,6 +41,13 @@ function Kpi({ label, value, hint, accent }: { label: string; value: string; hin
 }
 
 const TYPE_LABEL: Record<string, string> = { COURSE: "Courses", EVENT: "Events", EXAM: "Exams" };
+
+/** The server's figure, or the same rounding done here if an older backend left it out. */
+function conversionPercent(funnel: PaymentFunnel): number | null {
+  if (typeof funnel.conversionPercent === "number") return funnel.conversionPercent;
+  if (!funnel.ordersOpened) return null;
+  return Math.round((1000 * funnel.ordersPaid) / funnel.ordersOpened) / 10;
+}
 
 export function PaymentsOverviewTab({
   period,
@@ -189,7 +196,7 @@ export function PaymentsOverviewTab({
           <section className="rounded-2xl border border-slate-200/80 bg-surface p-5">
             <h3 className="text-sm font-bold text-ink">Checkout conversion</h3>
             <p className="mt-2 text-3xl font-bold tracking-tight text-ink tabular-nums">
-              {funnel.conversionPercent === null ? "—" : `${funnel.conversionPercent}%`}
+              {conversionPercent(funnel) === null ? "—" : `${conversionPercent(funnel)}%`}
             </p>
             <p className="text-[11.5px] font-medium text-slate-500">of checkouts opened ended paid</p>
             <dl className="mt-4 grid grid-cols-2 gap-y-2 text-xs">

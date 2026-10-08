@@ -53,7 +53,7 @@ export function CertificateDetailPanel({ certificate, onClose, onChanged }: Cert
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 cursor-pointer bg-slate-950/40 backdrop-blur-sm"
+            className="absolute inset-0 cursor-pointer arcade-modal-backdrop"
           />
           <div className="absolute inset-y-0 right-0 flex max-w-full pl-6 sm:pl-10">
             <motion.div

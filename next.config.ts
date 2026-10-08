@@ -9,6 +9,13 @@ const nextConfig: NextConfig = {
   // module resolution for Next's built-in client components.
   turbopack: {
     root: path.resolve(__dirname),
+    // One Yjs in the browser bundle. @hocuspocus/provider and @tiptap/y-tiptap resolve its CJS
+    // build while the app imports the ESM one, so two copies loaded ("Yjs was already imported")
+    // and Yjs's instanceof checks failed between them — live edits stopped syncing and editors
+    // could come up blank (BUG-1042/1046/1018/1011).
+    resolveAlias: {
+      yjs: { browser: "./node_modules/yjs/dist/yjs.mjs" },
+    },
   },
   serverExternalPackages: ["yjs"],
   reactStrictMode: false,

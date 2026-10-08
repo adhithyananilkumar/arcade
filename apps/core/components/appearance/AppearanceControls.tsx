@@ -81,7 +81,7 @@ export function ChoiceCard({ selected, onSelect, label, hint, icon: Icon, childr
       disabled={disabled}
       onClick={onSelect}
       className={cn(
-        'group relative flex flex-col overflow-hidden rounded-2xl border text-left transition-all duration-200 outline-none',
+        'group relative flex flex-col overflow-hidden rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border text-left transition-all duration-200 outline-none',
         'focus-visible:ring-2 focus-visible:ring-[#4c6fff] focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
         selected
           ? 'border-[#4c6fff] shadow-[0_0_0_3px_rgba(76,111,255,0.18)]'
@@ -96,7 +96,7 @@ export function ChoiceCard({ selected, onSelect, label, hint, icon: Icon, childr
         {hint && <span className="hidden truncate text-[11px] text-slate-400 sm:inline">{hint}</span>}
         <span
           className={cn(
-            'ml-auto grid size-[18px] place-items-center rounded-full border transition-colors',
+            'ml-auto grid size-[18px] place-items-center rounded-tl-sm rounded-br-sm rounded-tr-none rounded-bl-none border transition-colors',
             selected ? 'border-[#4c6fff] bg-[#4c6fff] text-white' : 'border-slate-300',
           )}
         >
@@ -114,7 +114,7 @@ export function Segmented<T extends string>({ value, options, onChange, label }:
   label: string;
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-full border border-slate-200 bg-slate-100 p-1">
+    <div role="radiogroup" aria-label={label} className="inline-flex rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-slate-200 bg-slate-100 p-1">
       {options.map((o) => {
         const active = o.value === value;
         return (
@@ -125,7 +125,7 @@ export function Segmented<T extends string>({ value, options, onChange, label }:
             aria-checked={active}
             onClick={() => onChange(o.value)}
             className={cn(
-              'flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all',
+              'flex items-center gap-1.5 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs px-3.5 py-1.5 text-xs font-semibold transition-all',
               active ? 'bg-surface text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800',
             )}
           >
@@ -176,7 +176,7 @@ export function WallpaperTile({ selected, onSelect, name, tone, background, imag
       aria-label={`${name} (${live ? `live ${live.size} ` : ''}${tone} wallpaper)`}
       onClick={onSelect}
       className={cn(
-        'group relative aspect-[16/10] overflow-hidden rounded-xl border-2 transition-all outline-none',
+        'group relative aspect-[16/10] overflow-hidden rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border-2 transition-all outline-none',
         'focus-visible:ring-2 focus-visible:ring-[#4c6fff] focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
         selected ? 'border-[#4c6fff] shadow-[0_0_0_3px_rgba(76,111,255,0.2)]' : 'border-transparent hover:scale-[1.02]',
       )}
@@ -191,7 +191,7 @@ export function WallpaperTile({ selected, onSelect, name, tone, background, imag
         {tone === 'dark' ? <Moon size={11} className="shrink-0 text-white/85" /> : <Sun size={11} className="shrink-0 text-white/85" />}
       </span>
       {live && (
-        <span className="theme-fixed absolute left-1.5 top-1.5 flex items-center gap-1 rounded-full bg-black/55 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+        <span className="theme-fixed absolute left-1.5 top-1.5 flex items-center gap-1 rounded-tl-md rounded-br-md rounded-tr-xs rounded-bl-xs bg-black/55 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
           <Play size={8} fill="currentColor" />
           Live{live.size ? ` · ${live.size}` : ''}
         </span>
@@ -205,7 +205,7 @@ export function WallpaperTile({ selected, onSelect, name, tone, background, imag
         </span>
       )}
       {selected && progress == null && (
-        <span className="absolute right-1.5 top-1.5 grid size-5 place-items-center rounded-full bg-[#4c6fff] text-white shadow">
+        <span className="absolute right-1.5 top-1.5 grid size-5 place-items-center rounded-tl-md rounded-br-md rounded-tr-xs rounded-bl-xs bg-[#4c6fff] text-white shadow">
           <Check size={12} strokeWidth={3} />
         </span>
       )}
@@ -228,7 +228,7 @@ export function LiveWallpaperNotice({ size, lowEnd, reasons, playing, onPlayingC
   return (
     <div
       className={cn(
-        'rounded-2xl border p-3 text-[12px] leading-relaxed',
+        'rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border p-3 text-[12px] leading-relaxed',
         lowEnd
           ? 'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200'
           : 'border-indigo-200/70 bg-indigo-50/70 text-indigo-950 dark:border-indigo-500/25 dark:bg-indigo-500/10 dark:text-indigo-200',

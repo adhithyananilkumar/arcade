@@ -40,6 +40,8 @@ export interface EventDto {
   priceAmount: number | null;
   currency: string | null;
   capacity: number | null;
+  /** NO_REFUND | FULL_REFUND | PARTIAL_REFUND | CUSTOM; null until the organiser sets one. */
+  refundPolicy?: 'NO_REFUND' | 'FULL_REFUND' | 'PARTIAL_REFUND' | 'CUSTOM' | null;
   visibility: EventVisibility;
   createdBy: string | null;
   /** The owning channel — the actual publisher, and what belongs on a byline. */
@@ -111,6 +113,9 @@ export interface EventCardView {
   date: string;
   status: 'Live Today' | 'Upcoming' | 'Recorded Video' | 'Past';
   duration: string;
+  /** Sort keys: epoch ms of the first session (null when unscheduled), and minutes long. */
+  startsAtMs: number | null;
+  durationMinutes: number | null;
 }
 
 /** One filter option and how many published events it actually has. */

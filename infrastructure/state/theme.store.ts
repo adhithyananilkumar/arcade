@@ -17,6 +17,7 @@
  */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { PERF_BOOT_SNIPPET } from './devicePerformance';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type ThemeContrast = 'standard' | 'high';
@@ -229,7 +230,8 @@ export function resolveDark(settings: AppearanceSettings, systemPrefersDark: boo
  * `resolveDark` and AppearanceController.applyToDocument — keep them in step.
  * Self-contained by necessity: it runs before any module is loaded.
  */
-export const APPEARANCE_BOOT_SCRIPT = `(function(){try{
+export const APPEARANCE_BOOT_SCRIPT = `(function(){${PERF_BOOT_SNIPPET}
+try{
 var d=document.documentElement,s=null;
 var signedIn=false;try{var au=JSON.parse(localStorage.getItem(${JSON.stringify(AUTH_STORAGE_KEY)})||'null');signedIn=!!(au&&au.state&&au.state.user);}catch(e){}
 var p=location.pathname;

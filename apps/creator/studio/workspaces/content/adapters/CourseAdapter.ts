@@ -25,6 +25,9 @@ import {
 } from "@/domains/assessments";
 
 export class CourseAdapter implements ContentDataAdapter {
+  /** Each course's exam (get-or-create), once per editor session. */
+  private readonly courseExams = new Map<string, ReturnType<typeof createCourseExam>>();
+
   terminology: Terminology = {
     root: "Course",
     container: "Module",
@@ -244,7 +247,16 @@ export class CourseAdapter implements ContentDataAdapter {
     contentId: string,
     planType: "COMPLETION" | "ASSESSMENT" = "ASSESSMENT"
   ): Promise<AssessmentLeaf> {
-    const exam = await createCourseExam(contentId);
+    // The course's exam is get-or-create and never changes for a course, so it is asked for once
+    // per editor session rather than before every new assessment (BUG-1035: four sequential round
+    // trips made adding one feel stuck).
+    let examPromise = this.courseExams.get(contentId);
+    if (!examPromise) {
+      examPromise = createCourseExam(contentId);
+      this.courseExams.set(contentId, examPromise);
+      examPromise.catch(() => this.courseExams.delete(contentId));
+    }
+    const exam = await examPromise;
     const plan = await createExamPlan(exam.id, { planType, name: title });
     const placement = await placeAssessment({
       examId: exam.id,
@@ -253,8 +265,11 @@ export class CourseAdapter implements ContentDataAdapter {
       planId: plan.id,
     });
     // The placement carries its own title so the tree keeps reading correctly even if the plan is
-    // renamed from the Exam workspace later.
-    await updateAssessmentPlacement(placement.id, { titleOverride: title });
+    // renamed from the Exam workspace later. Not awaited: until it lands the placement shows the
+    // plan's name, which is this same title.
+    void updateAssessmentPlacement(placement.id, { titleOverride: title }).catch((e) =>
+      console.warn("Assessment title override failed", e)
+    );
     return {
       id: placement.id,
       examId: exam.id,

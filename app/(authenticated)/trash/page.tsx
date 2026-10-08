@@ -49,22 +49,23 @@ function PermanentDeleteModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl">
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
+      <div className="relative w-full max-w-md arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-2xl">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:bg-slate-100 hover:text-ink transition-colors cursor-pointer dark:hover:bg-slate-800"
         >
           <X size={18} />
         </button>
-        <h3 className="text-base font-semibold text-red-700 dark:text-red-300">Permanently delete course</h3>
-        <p className="mt-1 text-sm text-gray-600">
-          This <span className="font-medium">cannot be undone</span>. The course and all of its
+        <h3 className="text-base font-bold text-ink">Permanently delete course</h3>
+        <p className="mt-1 text-sm text-slate-500">
+          This <span className="font-medium text-rose-500">cannot be undone</span>. The course and all of its
           modules, lessons, and drafts will be permanently removed.
         </p>
-        <label className="mt-4 block text-sm text-gray-700">
-          To confirm, type <span className="font-semibold">{course.title}</span> below:
+        <label className="mt-4 block text-sm font-semibold text-ink">
+          To confirm, type <span className="text-rose-500">{course.title}</span> below:
         </label>
         <input
           type="text"
@@ -72,14 +73,14 @@ function PermanentDeleteModal({
           value={confirmText}
           onChange={(e) => setConfirmText(e.target.value)}
           placeholder={course.title}
-          className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-red-400 focus:ring-1 focus:ring-red-300 dark:focus:ring-red-500/40"
+          className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60"
         />
-        {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
-        <div className="mt-4 flex justify-end gap-2">
+        {error && <p className="mt-2 text-sm text-rose-600 dark:text-rose-400">{error}</p>}
+        <div className="mt-6 flex justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+            className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-ink transition-colors cursor-pointer dark:hover:bg-slate-800"
           >
             Cancel
           </button>
@@ -87,7 +88,7 @@ function PermanentDeleteModal({
             type="button"
             disabled={!canDelete}
             onClick={handleDelete}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
           >
             {deleting ? "Deleting…" : "Delete permanently"}
           </button>

@@ -21,6 +21,7 @@ export default function ArcConsoleIndex() {
   const showInbox = AuthorizationService.canManageInbox(user);
   const showBugs = AuthorizationService.canOpenBugConsole(user);
   const showAppearance = AuthorizationService.canManageAppearance(user);
+  const showHonours = AuthorizationService.canManageCredentials(user);
   const showIam = AuthorizationService.canAccessIamConsole(user);
 
   if (
@@ -32,6 +33,7 @@ export default function ArcConsoleIndex() {
     !showInbox &&
     !showBugs &&
     !showAppearance &&
+    !showHonours &&
     !showIam
   ) {
     notFound();
@@ -54,10 +56,12 @@ export default function ArcConsoleIndex() {
       router.replace('/console/bugs');
     } else if (showAppearance) {
       router.replace('/console/appearance');
+    } else if (showHonours) {
+      router.replace('/console/honours');
     } else if (showIam) {
       router.replace('/console/iam');
     }
-  }, [router, showAdminChannels, showReviewCourses, showContentManage, showExams, showPayments, showInbox, showBugs, showAppearance, showIam]);
+  }, [router, showAdminChannels, showReviewCourses, showContentManage, showExams, showPayments, showInbox, showBugs, showAppearance, showHonours, showIam]);
 
   return (
     <div className="flex h-full items-center justify-center">

@@ -278,6 +278,16 @@ export interface ChannelSignatory {
   issueAsHost?: boolean;
 }
 
+/** Branding a channel must set up before it may publish: logo (organisations) and certificate signature. */
+export type CredentialBrandingItem = 'LOGO' | 'SIGNATURE';
+
+export interface CredentialBrandingReadiness {
+  personal: boolean;
+  /** Empty when the channel may publish. */
+  missing: CredentialBrandingItem[];
+  ready: boolean;
+}
+
 export interface ChannelSignatoryUpdate {
   /** Ignored for a personal channel, which always signs under its owner's name. */
   name?: string;
@@ -432,6 +442,10 @@ export const channelService = {
     const response = await api.post<Channel>(`/api/v1/channels/${channelId}/settings`, formData);
     return response;
   },
+
+  /** What the channel still needs before it may publish. Any member may ask. */
+  getBrandingReadiness: (channelId: string): Promise<CredentialBrandingReadiness> =>
+    api.get<CredentialBrandingReadiness>(`/api/v1/channels/${channelId}/branding-readiness`),
 
   getSignatory: (channelId: string): Promise<ChannelSignatory> =>
     api.get<ChannelSignatory>(`/api/v1/channels/${channelId}/signatory`),

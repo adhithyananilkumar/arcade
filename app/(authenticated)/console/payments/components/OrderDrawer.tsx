@@ -2,10 +2,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Copy, Loader2, RotateCcw, X } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, Copy, Landmark, Loader2, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   describeCommission,
+  gatewayFailureHint,
+  humanizePaymentText,
   PaymentAdminService,
   PaymentStatusBadge,
   REFUND_TREATMENT_LABEL,
@@ -24,8 +26,26 @@ const TIMELINE_LABEL: Record<string, string> = {
   GATEWAY_RECOVERED: "Recovered from gateway",
   GRANT_RETRIED: "Access re-requested",
   REFUND_REQUESTED: "Refund requested",
-  REFUND_COMPLETED: "Refund completed",
+  REFUND_COMPLETED: "Refund sent to bank",
   REFUND_FAILED: "Refund failed",
+};
+
+/**
+ * COMPLETED means the gateway processed it and sent it to the learner's bank — not that the bank
+ * has credited it yet, which takes days. Saying "Refunded" here is what made a refund that hadn't
+ * landed in the learner's account look like a bug.
+ */
+const REFUND_STATUS: Record<string, { label: string; cls: string }> = {
+  REQUESTED: { label: "Sending to gateway", cls: "text-amber-600 dark:text-amber-400" },
+  PROCESSING: { label: "Gateway processing", cls: "text-amber-600 dark:text-amber-400" },
+  COMPLETED: { label: "Sent to bank", cls: "text-emerald-600 dark:text-emerald-400" },
+  FAILED: { label: "Failed — nothing sent", cls: "text-rose-600 dark:text-rose-400" },
+};
+
+const ATTEMPT_STATUS: Record<string, string> = {
+  SUCCESS: "Captured",
+  FAILED: "Declined",
+  PENDING: "Open",
 };
 
 const TIMELINE_TONE: Record<string, string> = {
@@ -42,6 +62,93 @@ function when(value?: string | null) {
   return value
     ? new Date(value).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })
     : "—";
+}
+
+function day(value: string) {
+  // A plain date (YYYY-MM-DD) is a calendar day, not an instant: never shift it by time zone.
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+}
+
+/**
+ * When the money from this sale reaches Arcade's bank. A capture is not money in the bank: the
+ * gateway pays it out a couple of working days later, net of its fee and GST.
+ */
+function SettlementCard({ detail }: { detail: PaymentOrderDetail }) {
+  const order = detail.order;
+  const tx = detail.transactions.find((t) => t.status === "SUCCESS");
+  if (!tx) return null;
+  const settled = Boolean(tx.settledAt);
+  const fee = (tx.gatewayFeeMinor ?? 0) + (tx.gatewayTaxMinor ?? 0);
+
+  return (
+    <section
+      className={`rounded-2xl border px-4 py-3 ${
+        settled
+          ? "border-emerald-200/80 bg-emerald-50/50 dark:border-emerald-500/20 dark:bg-emerald-500/5"
+          : "border-amber-200/80 bg-amber-50/50 dark:border-amber-500/20 dark:bg-amber-500/5"
+      }`}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500">
+          <Landmark size={13} /> Settlement
+        </h4>
+        <span
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-bold ${
+            settled
+              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+              : "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300"
+          }`}
+        >
+          {settled ? <CheckCircle2 size={11} /> : <Clock size={11} />}
+          {settled ? "Settled" : "To be processed"}
+        </span>
+      </div>
+
+      {settled ? (
+        <div className="mt-2 space-y-1 text-xs">
+          <p className="font-semibold text-slate-800">Deposited {when(tx.settledAt)}</p>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[11px]">
+            {tx.settlementId && (
+              <>
+                <dt className="text-slate-400">Settlement</dt>
+                <dd className="font-mono text-slate-600">{tx.settlementId}</dd>
+              </>
+            )}
+            {tx.settlementUtr && (
+              <>
+                <dt className="text-slate-400">Bank UTR</dt>
+                <dd className="font-mono text-slate-600">{tx.settlementUtr}</dd>
+              </>
+            )}
+            {(tx.gatewayFeeMinor != null || tx.gatewayTaxMinor != null) && (
+              <>
+                <dt className="text-slate-400">Gateway fee</dt>
+                <dd className="tabular-nums text-slate-600">
+                  {formatMoney(tx.gatewayFeeMinor ?? 0, order.currency)}
+                  {tx.gatewayTaxMinor ? ` + ${formatMoney(tx.gatewayTaxMinor, order.currency)} GST` : ""}
+                </dd>
+                <dt className="text-slate-400">Net received</dt>
+                <dd className="font-semibold tabular-nums text-slate-800">{formatMoney(order.amount - fee, order.currency)}</dd>
+              </>
+            )}
+          </dl>
+        </div>
+      ) : (
+        <div className="mt-2 text-xs">
+          {tx.settlementExpectedBy ? (
+            <p className="font-semibold text-slate-800">To be deposited by {day(tx.settlementExpectedBy)}</p>
+          ) : (
+            <p className="font-semibold text-slate-800">Awaiting the gateway&apos;s settlement</p>
+          )}
+          <p className="mt-0.5 text-[11px] text-slate-500">
+            Estimated from the gateway&apos;s T+2 working-day cycle; bank holidays can push it later. Updated with the
+            real date, UTR and fee once the gateway settles it.
+          </p>
+        </div>
+      )}
+    </section>
+  );
 }
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -121,8 +228,8 @@ export function OrderDrawer({
       });
       toast.success(
         result.status === "COMPLETED"
-          ? `Refunded ${formatMoney(result.amount, result.currency)}.`
-          : `Refund of ${formatMoney(result.amount, result.currency)} sent — the gateway will confirm it shortly.`,
+          ? `${formatMoney(result.amount, result.currency)} sent to the learner's bank. They have been notified; banks usually credit it in 5–7 working days.`
+          : `Refund of ${formatMoney(result.amount, result.currency)} accepted by the gateway — the learner has been notified and it completes when the gateway confirms.`,
       );
       setRefundOpen(false);
       setConfirming(false);
@@ -194,6 +301,8 @@ export function OrderDrawer({
               </div>
             )}
 
+            {order.paidAt && <SettlementCard detail={detail} />}
+
             {order.paidAt && (
               <section className="rounded-2xl border border-slate-200/80 px-4 py-3">
                 <div className="flex items-center justify-between gap-2">
@@ -246,7 +355,9 @@ export function OrderDrawer({
               {order.attemptCount > 0 && (
                 <Row label="Declined attempts">
                   {order.attemptCount}
-                  {order.lastFailureReason && <span className="block text-[11px] font-medium text-rose-500">{order.lastFailureReason}</span>}
+                  {order.lastFailureReason && (
+                    <span className="block text-[11px] font-medium text-rose-500">{humanizePaymentText(order.lastFailureReason)}</span>
+                  )}
                 </Row>
               )}
             </section>
@@ -371,14 +482,45 @@ export function OrderDrawer({
                     <div key={r.id} className="rounded-xl border border-slate-200/80 px-3 py-2.5 text-xs">
                       <div className="flex items-center justify-between">
                         <span className="font-bold tabular-nums text-slate-900">{formatMoney(r.amount, r.currency)}</span>
-                        <span className="text-[11px] font-bold text-slate-500">{r.status}</span>
+                        <span className={`text-[11px] font-bold ${REFUND_STATUS[r.status]?.cls ?? "text-slate-500"}`}>
+                          {REFUND_STATUS[r.status]?.label ?? r.status}
+                        </span>
                       </div>
                       <p className="mt-1 text-slate-600">{r.reason}</p>
                       <p className="mt-1 text-[11px] text-slate-400">
                         {r.requestedByName || "Operator"} · {when(r.requestedAt)}
+                        {r.completedAt ? ` · sent to bank ${when(r.completedAt)}` : ""}
                         {r.revokeAccess ? " · access withdrawn" : ""}
+                        {r.settledAt ? ` · deducted in settlement ${when(r.settledAt)}` : ""}
                       </p>
-                      {r.lastError && <p className="mt-1 text-[11px] font-medium text-rose-600 dark:text-rose-400">{r.lastError}</p>}
+                      {(r.gatewayRefundId || r.bankReference) && (
+                        <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[11px]">
+                          {r.gatewayRefundId && (
+                            <>
+                              <dt className="text-slate-400">Gateway refund</dt>
+                              <dd className="font-mono text-slate-600">
+                                {r.gatewayRefundId}
+                                {r.gatewayStatus ? ` · ${r.gatewayStatus}` : ""}
+                              </dd>
+                            </>
+                          )}
+                          <dt className="text-slate-400">Bank reference</dt>
+                          <dd className="font-mono text-slate-600">
+                            {r.bankReference || (r.status === "COMPLETED" ? "Not assigned yet — checked hourly" : "—")}
+                          </dd>
+                        </dl>
+                      )}
+                      {r.lastError && (
+                        <div className="mt-2 space-y-1 rounded-lg bg-rose-50 px-2.5 py-2 text-[11px] dark:bg-rose-500/10">
+                          <p className="flex items-start gap-1.5 font-semibold text-rose-700 dark:text-rose-300">
+                            <AlertTriangle size={12} className="mt-px shrink-0" />
+                            {humanizePaymentText(r.lastError)}
+                          </p>
+                          {gatewayFailureHint(r.lastError) && (
+                            <p className="pl-[18px] text-rose-700/80 dark:text-rose-300/80">{gatewayFailureHint(r.lastError)}</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -391,9 +533,18 @@ export function OrderDrawer({
                 <div className="space-y-1.5">
                   {detail.transactions.map((t) => (
                     <div key={t.id} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-[11px]">
-                      <span className="font-mono text-slate-600">{t.gatewayPaymentId || t.gatewayOrderId || "—"}</span>
-                      <span className={`font-bold ${t.status === "SUCCESS" ? "text-emerald-600 dark:text-emerald-400" : t.status === "FAILED" ? "text-rose-600 dark:text-rose-400" : "text-slate-500"}`}>
-                        {t.status}
+                      <span className="min-w-0">
+                        <span className="block truncate font-mono text-slate-600">{t.gatewayPaymentId || t.gatewayOrderId || "—"}</span>
+                        <span className="block text-[10.5px] text-slate-400">
+                          {when(t.createdAt)}
+                          {t.gatewayPaymentId && t.gatewayOrderId ? ` · ${t.gatewayOrderId}` : ""}
+                        </span>
+                        {t.failureReason && (
+                          <span className="block text-[10.5px] text-rose-500">{humanizePaymentText(t.failureReason)}</span>
+                        )}
+                      </span>
+                      <span className={`shrink-0 font-bold ${t.status === "SUCCESS" ? "text-emerald-600 dark:text-emerald-400" : t.status === "FAILED" ? "text-rose-600 dark:text-rose-400" : "text-slate-500"}`}>
+                        {ATTEMPT_STATUS[t.status] ?? t.status}
                       </span>
                     </div>
                   ))}
@@ -411,7 +562,11 @@ export function OrderDrawer({
                     <li key={i} className="relative text-xs">
                       <span className={`absolute -left-[21px] top-1 size-2.5 rounded-full ring-2 ring-surface ${TIMELINE_TONE[e.type] ?? "bg-slate-300"}`} />
                       <p className="font-semibold text-slate-800">{TIMELINE_LABEL[e.type] ?? e.type}</p>
-                      {e.detail && <p className="text-slate-500">{e.detail}</p>}
+                      {e.detail && (
+                        <p className={e.type.endsWith("FAILED") || e.type === "AMOUNT_MISMATCH" ? "text-rose-600 dark:text-rose-400" : "text-slate-500"}>
+                          {humanizePaymentText(e.detail)}
+                        </p>
+                      )}
                       <p className="text-[11px] text-slate-400">
                         {when(e.at)}
                         {e.actorName ? ` · ${e.actorName}` : ""}

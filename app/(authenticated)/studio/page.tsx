@@ -8,7 +8,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
-import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
+import { useEligibleChannels, ChannelPicker, ChannelBrandingNotice } from "@/domains/channels";
+import { createExam } from "@/domains/assessments";
+import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
 
 const roadmapService = {
   updateRoadmap: (id: string, data: { title?: string; description?: string }) =>
@@ -29,6 +31,17 @@ import {
   SUPPORTS_TITLE_CONFIRM_DELETE,
 } from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/lib/contentActions";
 import { ConfirmActionModal } from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/components/ConfirmActionModal";
+import {
+  CapacityField,
+  CategoryField,
+  DescriptionField,
+  FirstDayField,
+  OutcomesField,
+  PriceField,
+  isPriceValid,
+  toMinor,
+  type PriceValue,
+} from "@/apps/creator/studio/core/ContentBasicsFields";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import ShinyText from "@/components/ui/ShinyText";
 import Magnet from "@/components/ui/Magnet";
@@ -256,6 +269,9 @@ const TYPE_CONFIG: Record<
 function CreateCourseModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [outcomes, setOutcomes] = useState("");
+  const [price, setPrice] = useState<PriceValue>({ paid: false, amount: "" });
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { channels, loading: channelsLoading } = useEligibleChannels();
@@ -267,12 +283,16 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !channelId) return;
+    if (!name.trim() || !description.trim() || !channelId || !isPriceValid(price)) return;
     setCreating(true);
     setError(null);
     try {
       const course = await api.post<{ id: string }>("/api/courses", {
         title: name.trim(),
+        description: description.trim(),
+        learningOutcomes: outcomes.trim() || undefined,
+        pricingModel: price.paid ? "PAID" : "FREE",
+        priceAmount: toMinor(price),
         channelId,
       });
       toast.success(`"${name.trim()}" created`);
@@ -287,23 +307,19 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer"
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
         >
           <X size={18} />
         </button>
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
-            <BookOpen size={20} strokeWidth={2.4} />
-          </div>
-          <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-ink">New Course</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
-          </div>
+        <div className="mb-6">
+          <h3 className="text-[17px] font-bold tracking-tight text-ink">New Course</h3>
+          <p className="mt-1 text-[12px] font-medium text-slate-500">Add the basics reviewers will look for.</p>
         </div>
 
         {error && (
@@ -328,9 +344,19 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
+          <DescriptionField
+            id="course-description"
+            value={description}
+            onChange={setDescription}
+            label="Course overview"
+            placeholder="What will learners get out of this course?"
+          />
+          <OutcomesField id="course-outcomes" value={outcomes} onChange={setOutcomes} />
+          <PriceField id="course-price" value={price} onChange={setPrice} />
           {!channelsLoading && channels.length > 0 && (
             <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           )}
+          <ChannelBrandingNotice channelId={channelId} context="create" />
           {!channelsLoading && channels.length === 0 && (
             <p className="text-sm text-rose-600 dark:text-rose-400">
               You need a channel with content-authoring rights before you can create a course.
@@ -340,14 +366,14 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer"
+              className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={!name.trim() || !channelId || creating}
-              className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-ink-hover disabled:opacity-60 cursor-pointer"
+              disabled={!name.trim() || !description.trim() || !channelId || !isPriceValid(price) || creating}
+              className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
             >
               {creating ? "Creating…" : "Create Course"}
             </button>
@@ -359,6 +385,12 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
 }
 
 
+/** "HH:mm" + one hour as "HH:mm:ss", capped at the end of the day so the Day never ends before it starts. */
+function addHour(hhmm: string): string {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h >= 23 ? "23:59:00" : `${String(h + 1).padStart(2, "0")}:${String(m).padStart(2, "0")}:00`;
+}
+
 // ── New Event creation modal ────────────────────────────────────────────────────
 
 function CreateEventModal({
@@ -368,6 +400,12 @@ function CreateEventModal({
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [price, setPrice] = useState<PriceValue>({ paid: false, amount: "" });
+  const [capacity, setCapacity] = useState("");
+  const [firstDate, setFirstDate] = useState("");
+  const [firstTime, setFirstTime] = useState("10:00");
   const [eventType, setEventType] = useState<"WORKSHOP" | "WEBINAR">("WORKSHOP");
   const [creating, setCreating] = useState(false);
   const { channels, loading: channelsLoading } = useEligibleChannels();
@@ -380,24 +418,46 @@ function CreateEventModal({
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !channelId) return;
+    if (
+      !title.trim() || !description.trim() || !category.trim() || !channelId ||
+      !firstDate || !firstTime || !isPriceValid(price) || (capacity !== "" && Number(capacity) < 1)
+    ) {
+      return;
+    }
     setCreating(true);
     setError(null);
 
     try {
       const event = await api.post<{ id: string }>("/api/v1/events", {
         title: title.trim(),
+        description: description.trim(),
         eventType,
-        category: "uncategorized",
+        category: category.trim(),
         tags: [],
         deliveryMode: "ONLINE",
         difficulty: "BEGINNER",
         language: "en",
-        priceAmount: 0,
+        priceAmount: toMinor(price),
         currency: "INR",
+        capacity: capacity === "" ? undefined : Number(capacity),
         visibility: "PRIVATE",
         channelId,
       });
+      // The event exists from here on, so a failure below must not strand the author on the form
+      // (re-submitting would create a duplicate) — the Day can still be added in the editor.
+      try {
+        await api.post(`/api/v1/events/${event.id}/sessions`, {
+          title: "Day 1",
+          startDate: firstDate,
+          endDate: firstDate,
+          startTime: `${firstTime}:00`,
+          endTime: addHour(firstTime),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+          deliveryMode: "ONLINE",
+        });
+      } catch {
+        toast.error("Event created, but its first day couldn't be added. Add it from the editor.");
+      }
       toast.success(`"${title.trim()}" created`);
       router.push(`/studio/content/event/${event.id}`);
     } catch (err) {
@@ -410,24 +470,20 @@ function CreateEventModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer"
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
         >
           <X size={18} />
         </button>
 
-        <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400">
-            <Calendar size={20} strokeWidth={2.4} />
-          </div>
-          <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-ink">New Event</h3>
-            <p className="text-[12px] font-medium text-slate-500">Choose event type and give it a title.</p>
-          </div>
+        <div className="mb-5">
+          <h3 className="text-[17px] font-bold tracking-tight text-ink">New Event</h3>
+          <p className="mt-1 text-[12px] font-medium text-slate-500">Choose the type, then fill in the basics.</p>
         </div>
 
         {error && (
@@ -447,13 +503,12 @@ function CreateEventModal({
                 onClick={() => setEventType("WORKSHOP")}
                 className={`flex flex-col items-start rounded-xl border p-3 text-left transition-all cursor-pointer ${
                   eventType === "WORKSHOP"
-                    ? "border-violet-600 bg-violet-50/50 ring-2 ring-violet-600/20 dark:bg-violet-500/10"
+                    ? "border-ink bg-ink/5 ring-1 ring-ink/20 font-medium"
                     : "border-slate-200 bg-slate-50/60 hover:bg-slate-100/60"
                 }`}
               >
                 <div className="flex w-full items-center justify-between">
                   <span className="text-xs font-bold text-ink">Workshop</span>
-                  {eventType === "WORKSHOP" && <Check size={14} className="text-violet-600 dark:text-violet-400" />}
                 </div>
                 <p className="mt-1 text-[11px] leading-tight text-slate-500">
                   Interactive sessions with agenda & modules
@@ -465,13 +520,12 @@ function CreateEventModal({
                 onClick={() => setEventType("WEBINAR")}
                 className={`flex flex-col items-start rounded-xl border p-3 text-left transition-all cursor-pointer ${
                   eventType === "WEBINAR"
-                    ? "border-violet-600 bg-violet-50/50 ring-2 ring-violet-600/20 dark:bg-violet-500/10"
+                    ? "border-ink bg-ink/5 ring-1 ring-ink/20 font-medium"
                     : "border-slate-200 bg-slate-50/60 hover:bg-slate-100/60"
                 }`}
               >
                 <div className="flex w-full items-center justify-between">
                   <span className="text-xs font-bold text-ink">Webinar</span>
-                  {eventType === "WEBINAR" && <Check size={14} className="text-violet-600 dark:text-violet-400" />}
                 </div>
                 <p className="mt-1 text-[11px] leading-tight text-slate-500">
                   Live presentation or Q&A stream session
@@ -491,19 +545,199 @@ function CreateEventModal({
               placeholder={eventType === "WORKSHOP" ? "e.g. Full-Stack Web Development Workshop" : "e.g. Intro to AI Webinar"}
               maxLength={120}
               autoFocus
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-violet-600 focus:bg-surface focus:ring-2 focus:ring-violet-600/20"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
 
-          <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
+          <DescriptionField id="event-description" value={description} onChange={setDescription} />
+          <CategoryField id="event-category" value={category} onChange={setCategory} type="EVENTS" />
+          <FirstDayField idPrefix="event-first" date={firstDate} time={firstTime} onDate={setFirstDate} onTime={setFirstTime} />
+          <PriceField id="event-price" value={price} onChange={setPrice} />
+          <CapacityField id="event-capacity" value={capacity} onChange={setCapacity} />
 
-          <button
-            type="submit"
-            disabled={!title.trim() || !channelId || creating}
-            className="w-full rounded-xl bg-violet-600 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-700 disabled:opacity-50 cursor-pointer"
-          >
-            {creating ? "Creating..." : `Create ${eventType === "WORKSHOP" ? "Workshop" : "Webinar"}`}
-          </button>
+          <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
+          <ChannelBrandingNotice channelId={channelId} context="create" />
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={
+                !title.trim() || !description.trim() || !category.trim() || !channelId || !firstDate ||
+                !firstTime || !isPriceValid(price) || (capacity !== "" && Number(capacity) < 1) || creating
+              }
+              className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
+            >
+              {creating ? "Creating..." : `Create ${eventType === "WORKSHOP" ? "Workshop" : "Webinar"}`}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── New Exam creation modal ─────────────────────────────────────────────────────
+// Same dialog as New Course / New Event: picking "Exam" from Create Content used to leave the
+// dashboard for a full page holding one card, the only content type that did.
+
+const EXAM_INPUT_CLASS =
+  "w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60";
+
+function CreateExamModal({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [fee, setFee] = useState<PriceValue>({ paid: false, amount: "" });
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { channels, loading: channelsLoading } = useEligibleChannels();
+  const [channelId, setChannelId] = useState("");
+  const categories = usePublicCategories().filter((c) => c.type === "EXAMS" || c.type === "ALL");
+
+  useEffect(() => {
+    if (channels.length === 1 && !channelId) setChannelId(channels[0].id);
+  }, [channels, channelId]);
+
+  const needsCategory = categories.length > 0;
+  const ready =
+    !!title.trim() && !!description.trim() && !!channelId && (!needsCategory || !!categoryId) && isPriceValid(fee);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!ready) return;
+    setCreating(true);
+    setError(null);
+    try {
+      const exam = await createExam({
+        title: title.trim(),
+        purpose: purpose.trim() || undefined,
+        description: description.trim(),
+        categoryId: categoryId || undefined,
+        priceAmountMinor: toMinor(fee),
+        currency: "INR",
+        channelId,
+      });
+      toast.success(`"${title.trim()}" created`);
+      router.push(`/studio/content/exam/${exam.id}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not create exam";
+      setError(message);
+      toast.error(message);
+      setCreating(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
+        >
+          <X size={18} />
+        </button>
+        <div className="mb-6">
+          <h3 className="text-[17px] font-bold tracking-tight text-ink">New Exam</h3>
+          <p className="mt-1 text-[12px] font-medium text-slate-500">
+            Starts standalone. Attach it to a course or event later, or leave it standalone.
+          </p>
+        </div>
+
+        {error && (
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label htmlFor="exam-title" className="mb-1.5 block text-[13px] font-semibold text-ink">
+              Exam title <span className="text-rose-500">*</span>
+            </label>
+            <input
+              id="exam-title"
+              type="text"
+              required
+              autoFocus
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Logical Reasoning Assessment"
+              className={EXAM_INPUT_CLASS}
+            />
+          </div>
+          <DescriptionField id="exam-description" value={description} onChange={setDescription} />
+          {needsCategory && (
+            <div>
+              <label htmlFor="exam-category" className="mb-1.5 block text-[13px] font-semibold text-ink">
+                Category <span className="text-rose-500">*</span>
+              </label>
+              <select
+                id="exam-category"
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className={`${EXAM_INPUT_CLASS} cursor-pointer`}
+              >
+                <option value="">Select a category…</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          <PriceField id="exam-fee" value={fee} onChange={setFee} />
+          <div>
+            <label htmlFor="exam-purpose" className="mb-1.5 block text-[13px] font-semibold text-ink">
+              Purpose <span className="font-normal text-slate-400">(optional)</span>
+            </label>
+            <input
+              id="exam-purpose"
+              type="text"
+              value={purpose}
+              onChange={(e) => setPurpose(e.target.value)}
+              placeholder="e.g. Entrance test, Practice quiz, Final assessment"
+              className={EXAM_INPUT_CLASS}
+            />
+            <p className="mt-1.5 text-[11.5px] text-slate-400">A label for your own reference — describe it however fits.</p>
+          </div>
+          {!channelsLoading && channels.length > 0 && (
+            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
+          )}
+          <ChannelBrandingNotice channelId={channelId} context="create" />
+          {!channelsLoading && channels.length === 0 && (
+            <p className="text-sm text-rose-600 dark:text-rose-400">
+              You need a channel with content-authoring rights before you can create an exam.
+            </p>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!ready || creating}
+              className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
+            >
+              {creating ? "Creating…" : "Create Exam"}
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -545,20 +779,19 @@ function RenameRoadmapModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink"
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
         >
           <X size={18} />
         </button>
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-            <Pencil size={20} className="text-ink" />
-          </div>
-          <h3 className="text-[15px] font-bold tracking-tight text-ink">Rename Roadmap</h3>
+        <div className="mb-6">
+          <h3 className="text-[17px] font-bold tracking-tight text-ink">Rename Roadmap</h3>
+          <p className="mt-1 text-[12px] font-medium text-slate-500">Update the roadmap title and details.</p>
         </div>
 
         {error && (
@@ -598,14 +831,14 @@ function RenameRoadmapModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-ink"
+              className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!title.trim() || updating}
-              className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-ink-hover disabled:opacity-60"
+              className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
             >
               {updating ? "Saving…" : "Save Changes"}
             </button>
@@ -642,18 +875,22 @@ function DeleteRoadmapModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-sm rounded-2xl bg-surface p-6 shadow-2xl">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10">
-            <Trash2 size={20} className="text-red-600 dark:text-red-400" />
-          </div>
-          <h3 className="text-[15px] font-bold tracking-tight text-ink">Delete Roadmap</h3>
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
+      <div className="relative w-full max-w-sm arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
+        >
+          <X size={18} />
+        </button>
+        <div className="mb-4">
+          <h3 className="text-[17px] font-bold tracking-tight text-ink">Delete Roadmap</h3>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            Are you sure you want to delete <strong className="text-ink">{item.title}</strong>? This action cannot be undone.
+          </p>
         </div>
-        <p className="text-sm text-gray-600 mb-6">
-          Are you sure you want to delete <strong>{item.title}</strong>? This action cannot be
-          undone.
-        </p>
 
         {error && (
           <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
@@ -661,12 +898,12 @@ function DeleteRoadmapModal({
           </div>
         )}
 
-        <div className="flex justify-end gap-2 pt-1">
+        <div className="flex justify-end gap-2 pt-2">
           <button
             type="button"
             onClick={onClose}
             disabled={deleting}
-            className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-ink"
+            className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
           >
             Cancel
           </button>
@@ -674,7 +911,7 @@ function DeleteRoadmapModal({
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:opacity-60"
+            className="rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:opacity-50 cursor-pointer"
           >
             {deleting ? "Deleting…" : "Delete"}
           </button>
@@ -1055,25 +1292,21 @@ function ChannelRequiredModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-ink/40 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 arcade-modal-backdrop"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.2)] transition-all">
-        <div className="flex items-start justify-between">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
-            <Lock size={24} />
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer"
-          >
-            <X size={18} />
-          </button>
-        </div>
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.2)]">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer dark:hover:bg-slate-800"
+        >
+          <X size={18} />
+        </button>
 
-        <div className="mt-4">
-          <h3 className="text-lg font-bold tracking-tight text-ink">
+        <div>
+          <h3 className="text-[17px] font-bold tracking-tight text-ink">
             Feature Locked
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-slate-500">
@@ -1085,9 +1318,9 @@ function ChannelRequiredModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full bg-ink px-5 py-2 text-xs font-semibold text-on-ink shadow-md transition-colors hover:bg-ink-hover cursor-pointer"
+            className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover cursor-pointer"
           >
-            Cancel
+            Close
           </button>
         </div>
       </div>
@@ -1103,7 +1336,7 @@ export default function DashboardPage() {
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [channelDropdownOpen, setChannelDropdownOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState<"course" | "event" | null>(null);
+  const [createOpen, setCreateOpen] = useState<"course" | "event" | "exam" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
@@ -1132,8 +1365,8 @@ export default function DashboardPage() {
       setChannelRequiredModalOpen(true);
       return;
     }
-    if (typeId === "course" || typeId === "event") {
-      setCreateOpen(typeId as any);
+    if (typeId === "course" || typeId === "event" || typeId === "exam") {
+      setCreateOpen(typeId);
     } else if (href) {
       router.push(href);
     }
@@ -1149,7 +1382,7 @@ export default function DashboardPage() {
       } else if (create === "webinar" || create === "workshop" || create === "event") {
         setCreateOpen("event");
       } else if (create === "exam" || create === "quiz") {
-        router.replace("/studio/exam/new");
+        setCreateOpen("exam");
       } else if (create === "course") {
         setCreateOpen(create as any);
       }
@@ -1285,6 +1518,7 @@ export default function DashboardPage() {
       />
       {createOpen === "course" && <CreateCourseModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "event" && <CreateEventModal onClose={() => setCreateOpen(null)} />}
+      {createOpen === "exam" && <CreateExamModal onClose={() => setCreateOpen(null)} />}
       {renameTarget && (
         <RenameRoadmapModal
           item={renameTarget}
@@ -1409,7 +1643,7 @@ export default function DashboardPage() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
                     <div
-                      className="absolute left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 z-50 mt-2 min-w-[170px] w-52 overflow-hidden rounded-2xl border border-slate-200/80 bg-surface/98 p-1.5 shadow-xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150"
+                      className="absolute left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 z-50 mt-2 min-w-[170px] w-52 overflow-hidden rounded-2xl border border-slate-200/80 bg-popover p-1.5 shadow-xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150"
                       role="menu"
                     >
                       <div className="space-y-0.5">
@@ -1591,7 +1825,7 @@ export default function DashboardPage() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
                     <div
-                      className="absolute right-0 z-50 mt-2 min-w-[170px] w-52 overflow-hidden rounded-2xl border border-slate-200/80 bg-surface/98 p-1.5 shadow-xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150"
+                      className="absolute right-0 z-50 mt-2 min-w-[170px] w-52 overflow-hidden rounded-2xl border border-slate-200/80 bg-popover p-1.5 shadow-xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150"
                       role="menu"
                     >
                       <div className="space-y-0.5">

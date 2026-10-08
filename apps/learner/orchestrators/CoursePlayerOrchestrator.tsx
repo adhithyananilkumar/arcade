@@ -9,7 +9,7 @@ import { platformReviewApi } from "@/domains/publishing";
 import { BadgeLevelSummary, credentialsApi, type BadgeAssignment } from "@/domains/credentials";
 import type { CourseRenderResponse } from "@/shared/types/api.types";
 import { VersionHistoryOrchestrator } from "@/apps/creator/studio/workspaces/content/history/VersionHistoryOrchestrator";
-import { ArcadeEditor } from "@/apps/creator/editor";
+import { LazyArcadeEditor as ArcadeEditor } from "@/apps/creator/editor/lazy";
 import { api } from "@/infrastructure/http/api";
 
 type SelectedItem = { kind: "lesson" | "quiz" | "assessment"; id: string } | null;
@@ -175,7 +175,9 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
     }
   }, [selectedItem?.id, isFeedbackOpen, reviewId]);
 
-  const handleAddComment = async (content: string) => {
+  // CourseRenderer calls this as (lessonId, content) — taking only the first argument posted the
+  // lesson id as the feedback text (BUG-1037).
+  const handleAddComment = async (_lessonId: string, content: string) => {
     if (selectedItem?.kind !== 'lesson' || !reviewId) return;
     try {
       const added = await platformReviewApi.addComment(reviewId, {
@@ -191,7 +193,7 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
           authorId: added.authorId,
           authorName: added.authorName,
           content: added.body,
-          createdAt: added.createdAt,
+          createdAt: added.createdAt ?? new Date().toISOString(),
         },
       ]);
     } catch (err) {

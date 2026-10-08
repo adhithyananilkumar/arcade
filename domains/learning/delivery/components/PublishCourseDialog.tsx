@@ -37,14 +37,15 @@ export function PublishCourseDialog({ open, onClose, onConfirm }: PublishCourseD
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface shadow-[0_24px_60px_rgba(20,20,43,0.22)] animate-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
+      <div className="relative w-full max-w-md overflow-hidden arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface shadow-[0_24px_60px_rgba(20,20,43,0.22)] animate-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-4">
           <div>
-            <h2 className="text-[16px] font-bold tracking-tight text-ink">
+            <h2 className="text-base font-bold tracking-tight text-ink">
               Approve & publish
             </h2>
-            <p className="mt-0.5 text-[12px] font-medium text-slate-500">
+            <p className="mt-0.5 text-xs font-semibold text-slate-500">
               This course will go live on Arcade.
             </p>
           </div>
@@ -52,7 +53,8 @@ export function PublishCourseDialog({ open, onClose, onConfirm }: PublishCourseD
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink"
+            aria-label="Close"
+            className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:bg-slate-100 hover:text-ink transition-colors cursor-pointer dark:hover:bg-slate-800"
           >
             <X size={18} />
           </button>
@@ -110,12 +112,12 @@ export function PublishCourseDialog({ open, onClose, onConfirm }: PublishCourseD
           </label>
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/80 px-6 py-4">
+        <div className="flex items-center justify-end gap-2 border-t border-slate-200/70 bg-slate-50/60 px-6 py-4 dark:bg-slate-900/40">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="rounded-full px-4 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:bg-slate-200/70"
+            className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
           >
             Cancel
           </button>
@@ -123,10 +125,9 @@ export function PublishCourseDialog({ open, onClose, onConfirm }: PublishCourseD
             type="button"
             onClick={handleConfirm}
             disabled={!checked || loading}
-            className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-on-ink shadow-[0_8px_16px_rgba(20,20,43,0.16)] transition-colors hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
           >
-            {loading && <Loader2 size={14} className="animate-spin" />}
-            Publish
+            {loading ? "Publishing…" : "Publish"}
           </button>
         </div>
       </div>

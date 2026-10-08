@@ -9,10 +9,9 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Lock, AlertTriangle, BookOpen } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import type { LearnerEnrollmentSummary } from '@/domains/enrollment';
 import {
-  STATUS_TONE_CLASSES,
   isOpenable,
   primaryActionLabelFor,
   progressDisplayFor,
@@ -44,18 +43,6 @@ export function LibraryCard({
       id={item.resourceId || item.enrollmentId}
       title={item.title ?? 'Untitled'}
       type="COURSE"
-      statusNode={
-        item.accessState !== 'ACCESSIBLE' ? (
-          <span
-            title={badge.hint ?? undefined}
-            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 ${STATUS_TONE_CLASSES[badge.tone]}`}
-          >
-            {badge.tone === 'amber' && <Lock size={11} />}
-            {badge.tone === 'rose' && <AlertTriangle size={11} />}
-            {badge.label}
-          </span>
-        ) : null
-      }
       channelName={item.channelName}
       channelIconUrl={item.channelIconUrl}
       dateText={enrolledOn ? `Enrolled ${enrolledOn}` : null}
@@ -64,7 +51,7 @@ export function LibraryCard({
       actionLabel={primaryActionLabelFor(item)}
       actionIcon={BookOpen}
       disabledAction={!openable || !href}
-      disabledActionLabel="Unavailable"
+      disabledActionLabel={badge.label}
     />
   );
 }

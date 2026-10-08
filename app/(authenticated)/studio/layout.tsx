@@ -6,6 +6,7 @@ import { useStudioAccess } from '@/domains/channels';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 import { api } from '@/infrastructure/http/api';
+import { PageLoader } from '@/shared/design-system/ui/loader';
 
 export default function ContentStudioLayout({
   children,
@@ -73,11 +74,12 @@ export default function ContentStudioLayout({
   }, [hasAdminAccess, isLayoutLoading, isAuthorized, router]);
 
   if (!hasAdminAccess && isLayoutLoading) {
-    return <div className="theme-page-bg flex-1 flex items-center justify-center min-h-screen bg-slate-50"><p className="text-gray-500 font-medium animate-pulse">Loading Studio...</p></div>;
+    return <PageLoader fullScreen label="Opening Studio…" />;
   }
 
   if (!isAuthorized) {
-    return null; // Will redirect
+    // The effect above is redirecting; a loader rather than an empty page in the meantime.
+    return <PageLoader fullScreen />;
   }
 
   return <>{children}</>;

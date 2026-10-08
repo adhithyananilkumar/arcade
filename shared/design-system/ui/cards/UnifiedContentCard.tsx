@@ -49,6 +49,8 @@ export interface UnifiedContentCardProps {
   actionHref?: string;
   actionLabel?: string;
   actionIcon?: LucideIcon;
+  /** `success` for "go to" actions on something already yours, `waiting` for a held/queued state. */
+  actionTone?: 'default' | 'success' | 'waiting';
   onActionClick?: () => void;
   disabledAction?: boolean;
   disabledActionLabel?: string;
@@ -65,6 +67,13 @@ const TYPE_CONFIG: Record<string, { label: string; icon: LucideIcon }> = {
   WEBINAR: { label: 'Webinar', icon: Calendar },
   ROADMAP: { label: 'Roadmap', icon: Map },
 };
+
+const ACTION_TONES = {
+  default: 'bg-ink hover:bg-ink-hover text-on-ink',
+  success: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+  waiting:
+    'bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 border border-amber-500/25 dark:text-amber-200',
+} as const;
 
 export function UnifiedContentCard({
   id,
@@ -86,6 +95,7 @@ export function UnifiedContentCard({
   actionHref,
   actionLabel = 'View',
   actionIcon: ActionIcon = ArrowUpRight,
+  actionTone = 'default',
   onActionClick,
   disabledAction = false,
   disabledActionLabel = 'Unavailable',
@@ -95,6 +105,7 @@ export function UnifiedContentCard({
   const normType = type?.toUpperCase() || 'COURSE';
   const resolvedLabel = typeLabel || TYPE_CONFIG[normType]?.label || type;
   const ResolvedTypeIcon = typeIcon || TYPE_CONFIG[normType]?.icon || FileText;
+  const toneClass = ACTION_TONES[actionTone];
 
   return (
     <div
@@ -191,7 +202,10 @@ export function UnifiedContentCard({
           ) : actionHref ? (
             <Link
               href={actionHref}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-ink hover:bg-ink-hover text-on-ink px-4 py-2.5 text-[13px] font-semibold transition-all shadow-sm hover:shadow-md"
+              className={cn(
+                'inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md px-4 py-2.5 text-[13px] font-semibold transition-all shadow-sm hover:shadow-md',
+                toneClass,
+              )}
             >
               <span>{actionLabel}</span>
               <ActionIcon size={14} />
@@ -200,7 +214,10 @@ export function UnifiedContentCard({
             <button
               type="button"
               onClick={onActionClick}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md bg-ink hover:bg-ink-hover text-on-ink px-4 py-2.5 text-[13px] font-semibold transition-all shadow-sm hover:shadow-md cursor-pointer"
+              className={cn(
+                'inline-flex w-full items-center justify-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-md rounded-bl-md px-4 py-2.5 text-[13px] font-semibold transition-all shadow-sm hover:shadow-md cursor-pointer',
+                toneClass,
+              )}
             >
               <span>{actionLabel}</span>
               <ActionIcon size={14} />

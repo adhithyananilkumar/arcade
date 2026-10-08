@@ -33,6 +33,7 @@ import {
 } from '@/domains/channels';
 import { platformReviewApi } from '@/domains/publishing';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 import { ChannelReviewQueue } from '@/apps/core/components/reviews/ChannelReviewQueue';
 import { SideNav, SideNavTabs, type SideNavItem, type SideNavSection } from '@/shared/design-system/ui/side-nav';
 
@@ -121,7 +122,7 @@ export default function ManageChannelPage() {
     let cancelled = false;
     Promise.all([
       channelService.getChannel(channelId),
-      channelService.getMyChannelPermissions(channelId),
+      channelService.getMyChannelPermissions(channelId).catch(() => [] as string[]),
       channelService.getMyDeletionRequests().catch(() => [] as ChannelDeletionRequestDto[]),
       channelService.getChannelContent(channelId).catch(() => [] as ChannelContentItem[]),
     ])
@@ -175,11 +176,16 @@ export default function ManageChannelPage() {
 
   const isOwner = !!channel && user?.id === channel.ownerId;
   const isOrg = !!channel && !channel.isPersonal;
-  const canEdit = isOwner || permissions.includes('ALL') || permissions.includes('channel.settings.manage');
+  const isPlatformAdmin = AuthorizationService.canManageChannels(user);
+  const isMember = isOwner || permissions.length > 0 || isPlatformAdmin;
+  const canEdit = isOwner || permissions.includes('ALL') || permissions.includes('channel.settings.manage') || permissions.includes('channel.content.manage') || permissions.includes('channel.content.create');
+  const canViewAnalytics = isOwner;
+  const canViewPayments = isOwner;
+  const canViewStaff = isOrg && (isOwner || permissions.includes('ALL') || permissions.includes('channel.staff.manage') || permissions.includes('channel.staff.view') || permissions.length > 0 || isPlatformAdmin);
+  const canViewActivity = isOwner;
 
-  // Which sections this viewer gets. Personal channels have no handle, staff or organization
-  // review — their owner is the sole authority and their profile is their page — so those are
-  // omitted rather than shown disabled. The backend enforces every one of these independently.
+  // Which sections this viewer gets. Only channel owners and verified staff/members of this channel
+  // can view and manage this channel. Sensitive sections like Payments are strictly restricted.
   const sections: SideNavSection[] = useMemo(() => {
     const item = (key: Section, label: string, icon: SideNavItem['icon'], iconClassName: string, more?: Partial<SideNavItem>): SideNavItem => ({
       key,
@@ -190,42 +196,54 @@ export default function ManageChannelPage() {
       ...more,
     });
     const openCount = Object.keys(openReviews).length;
-    return [
-      {
-        items: [
-          item('overview', 'Overview', LayoutGrid, 'bg-[#bae6fd] text-[#0c4a6e] dark:text-[#85bfe9] dark:bg-[#bae6fd]/15'),
-          item('content', 'Content', BookOpen, 'bg-[#fbcfe8] text-[#831843] dark:text-[#ff8eaf] dark:bg-[#fbcfe8]/15'),
-          ...(isOrg && (isOwner || canReview)
-            ? [item('reviews', 'Reviews', ClipboardCheck, 'bg-[#fef08a] text-[#854d0e] dark:bg-[#fef08a]/15 dark:text-[#e7a871]', { count: openCount })]
-            : []),
-          ...(canEdit ? [item('analytics', 'Analytics', BarChart3, 'bg-[#bbf7d0] text-[#14532d] dark:bg-[#bbf7d0]/15 dark:text-[#8bc89c]')] : []),
-          // Every member: the backend narrows an instructor to their own sales.
-          item('payments', 'Payments', Wallet, 'bg-[#fed7aa] text-[#7c2d12] dark:bg-[#fed7aa]/15 dark:text-[#f79d80]'),
-        ],
-      },
-      {
-        title: 'Channel',
-        items: [
-          // Every channel: an organization's handle, logo and profile; anyone's certificate signature.
-          ...(isOrg || canEdit
-            ? [item('identity', 'Identity & branding', AtSign, 'bg-[#c7d2fe] text-[#312e81] dark:text-[#a5adff] dark:bg-[#c7d2fe]/15')]
-            : []),
-          ...(isOrg
-            ? [item('staff', 'Staff & roles', Users, 'bg-[#e9d5ff] text-[#4c1d95] dark:text-[#bda1ff] dark:bg-[#e9d5ff]/15')]
-            : []),
-        ],
-      },
-      {
-        title: 'Records',
-        items: [item('activity', 'Activity log', Activity, 'bg-[#dbeafe] text-[#1e40af] dark:text-[#86b3ff] dark:bg-[#dbeafe]/15')],
-      },
-      {
-        items: isOwner
-          ? [item('danger', 'Danger zone', ShieldAlert, 'bg-[#fecdd3] text-[#881337] dark:text-[#ff8ca1] dark:bg-[#fecdd3]/15', { danger: true })]
-          : [],
-      },
+
+    const primaryItems = [
+      item('overview', 'Overview', LayoutGrid, 'bg-[#bae6fd] text-[#0c4a6e] dark:text-[#85bfe9] dark:bg-[#bae6fd]/15'),
+      item('content', 'Content', BookOpen, 'bg-[#fbcfe8] text-[#831843] dark:text-[#ff8eaf] dark:bg-[#fbcfe8]/15'),
+      ...(isOrg && (isOwner || canReview)
+        ? [item('reviews', 'Reviews', ClipboardCheck, 'bg-[#fef08a] text-[#854d0e] dark:bg-[#fef08a]/15 dark:text-[#e7a871]', { count: openCount })]
+        : []),
+      ...(canViewAnalytics ? [item('analytics', 'Analytics', BarChart3, 'bg-[#bbf7d0] text-[#14532d] dark:bg-[#bbf7d0]/15 dark:text-[#8bc89c]')] : []),
+      ...(canViewPayments
+        ? [item('payments', 'Payments', Wallet, 'bg-[#fed7aa] text-[#7c2d12] dark:bg-[#fed7aa]/15 dark:text-[#f79d80]')]
+        : []),
     ];
-  }, [tabHref, isOrg, isOwner, canReview, canEdit, openReviews]);
+
+    const channelItems = [
+      ...(canEdit
+        ? [item('identity', 'Identity & branding', AtSign, 'bg-[#c7d2fe] text-[#312e81] dark:text-[#a5adff] dark:bg-[#c7d2fe]/15')]
+        : []),
+      ...(canViewStaff
+        ? [item('staff', 'Staff & roles', Users, 'bg-[#e9d5ff] text-[#4c1d95] dark:text-[#bda1ff] dark:bg-[#e9d5ff]/15')]
+        : []),
+    ];
+
+    const recordItems = [
+      ...(canViewActivity
+        ? [item('activity', 'Activity log', Activity, 'bg-[#dbeafe] text-[#1e40af] dark:text-[#86b3ff] dark:bg-[#dbeafe]/15')]
+        : []),
+    ];
+
+    const result: SideNavSection[] = [
+      { items: primaryItems },
+    ];
+
+    if (channelItems.length > 0) {
+      result.push({ title: 'Channel', items: channelItems });
+    }
+
+    if (recordItems.length > 0) {
+      result.push({ title: 'Records', items: recordItems });
+    }
+
+    if (isOwner) {
+      result.push({
+        items: [item('danger', 'Danger zone', ShieldAlert, 'bg-[#fecdd3] text-[#881337] dark:text-[#ff8ca1] dark:bg-[#fecdd3]/15', { danger: true })],
+      });
+    }
+
+    return result;
+  }, [tabHref, isOrg, isOwner, canReview, canEdit, canViewAnalytics, canViewPayments, canViewStaff, canViewActivity, openReviews]);
 
   const allowed = sections.flatMap((s) => s.items.map((i) => i.key));
   const requested = parseSection(searchParams.get('tab'));
@@ -240,6 +258,36 @@ export default function ManageChannelPage() {
   }
 
   if (!channel) return null;
+
+  if (!isMember) {
+    return (
+      <div className="theme-page-bg flex min-h-screen flex-col items-center justify-center bg-surface px-4 text-center">
+        <div className="max-w-md space-y-4">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 border border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/25 dark:text-rose-400">
+            <ShieldAlert size={28} />
+          </div>
+          <h2 className="text-lg font-bold text-slate-900">Access Restricted</h2>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            This management dashboard is only accessible to members and staff of this organization.
+          </p>
+          <div className="pt-2 flex items-center justify-center gap-3">
+            <Link
+              href={`/channels/${channelId}`}
+              className="inline-flex items-center gap-1.5 rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors shadow-xs"
+            >
+              <ArrowLeft size={13} /> View Public Channel
+            </Link>
+            <Link
+              href="/manage-channels"
+              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
+            >
+              My Channels
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const isSuspended = channel.status === 'SUSPENDED';
   const primaryBtn =
@@ -300,6 +348,7 @@ export default function ManageChannelPage() {
               content={content}
               openReviews={openReviews}
               initialStatus={searchParams.get('status') ?? undefined}
+              canEdit={canEdit}
             />
           )}
           {active === 'reviews' && <ChannelReviewQueue channelId={channelId} />}

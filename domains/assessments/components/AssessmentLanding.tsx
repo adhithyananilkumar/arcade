@@ -184,40 +184,34 @@ export function AssessmentLanding({
         </section>
       )}
 
-      {/* Only shown when the plan actually demands them — never as generic scary boilerplate. */}
-      {(landing.proctoringRequired ||
-        landing.identityVerificationRequired ||
-        landing.fullscreenRequired) && (
-        <section className="mb-7 rounded-2xl border border-slate-200 bg-surface p-5">
-          <h2 className="mb-3 text-[12px] font-bold uppercase tracking-wider text-slate-400">
-            Before you begin
-          </h2>
-          <ul className="space-y-2.5">
-            {landing.proctoringRequired && (
-              <Requirement
-                icon={<ShieldCheck size={15} />}
-                text={
-                  landing.maxViolations > 0
-                    ? `This assessment is proctored. Switching tabs or leaving the window is recorded; ${landing.maxViolations} recorded violation${landing.maxViolations === 1 ? "" : "s"} end the attempt.`
-                    : "This assessment is proctored. Switching tabs or leaving the window is recorded."
-                }
-              />
-            )}
-            {landing.identityVerificationRequired && (
-              <Requirement
-                icon={<ShieldCheck size={15} />}
-                text="You'll submit a photo of yourself before starting. An administrator reviews it."
-              />
-            )}
-            {landing.fullscreenRequired && (
-              <Requirement
-                icon={<Maximize2 size={15} />}
-                text="The assessment runs in fullscreen. Leaving fullscreen is recorded."
-              />
-            )}
-          </ul>
-        </section>
-      )}
+      {/* Every sitting runs under the sitting baseline, so this always shows; the plan adds to it. */}
+      <section className="mb-7 rounded-2xl border border-slate-200 bg-surface p-5">
+        <h2 className="mb-3 text-[12px] font-bold uppercase tracking-wider text-slate-400">
+          Before you begin
+        </h2>
+        <ul className="space-y-2.5">
+          <Requirement
+            icon={<Maximize2 size={15} />}
+            text="It opens in its own tab and runs in full screen; the paper is hidden outside full screen."
+          />
+          <Requirement
+            icon={<ShieldCheck size={15} />}
+            text={`Leaving full screen, switching tabs or windows, copying, pasting or opening developer tools is recorded; ${landing.maxViolations} violation${landing.maxViolations === 1 ? "" : "s"} end the attempt.`}
+          />
+          {landing.proctoringRequired && (
+            <Requirement
+              icon={<ShieldCheck size={15} />}
+              text="This assessment is also proctored: your sitting is reviewed by the exam's administrators."
+            />
+          )}
+          {landing.identityVerificationRequired && (
+            <Requirement
+              icon={<ShieldCheck size={15} />}
+              text="You'll submit a photo of yourself before starting. An administrator reviews it."
+            />
+          )}
+        </ul>
+      </section>
 
       {landing.prerequisite && (
         <PrerequisiteNotice prerequisite={landing.prerequisite} onOpen={onOpenPrerequisite} />

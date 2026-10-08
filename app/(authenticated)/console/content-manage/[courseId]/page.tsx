@@ -356,43 +356,50 @@ export default function CourseDetailConsolePage() {
 
       {/* Suspend Modal Overlay */}
       {isSuspendModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-surface shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 arcade-modal-backdrop"
+            onClick={() => {
+              setIsSuspendModalOpen(false);
+              setSuspendReason('');
+            }}
+          />
+          <div className="relative w-full max-w-md arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface shadow-2xl overflow-hidden">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-slate-900">Suspend Course</h2>
+              <h2 className="text-base font-bold text-ink">Suspend Course</h2>
               <p className="mt-2 text-sm text-slate-500">
                 This course will be hidden from new learners. Existing learners may still be able to access it depending on platform policies.
               </p>
               
               <div className="mt-5">
-                <label htmlFor="suspendReason" className="block text-sm font-medium text-slate-700">
+                <label htmlFor="suspendReason" className="block text-sm font-semibold text-ink">
                   Reason for Suspension
                 </label>
                 <textarea
                   id="suspendReason"
                   rows={4}
-                  className="mt-2 block w-full rounded-xl border border-slate-300 p-3 text-sm shadow-sm focus:border-rose-500 focus:ring-rose-500 resize-none outline-none"
+                  className="mt-2 block w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60 resize-none"
                   placeholder="E.g. Inappropriate content, outdated material..."
                   value={suspendReason}
                   onChange={(e) => setSuspendReason(e.target.value)}
                 />
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 bg-slate-50 px-6 py-4 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-3 bg-slate-50/60 px-6 py-4 border-t border-slate-200/70 dark:bg-slate-900/40">
               <button
                 type="button"
                 onClick={() => {
                   setIsSuspendModalOpen(false);
                   setSuspendReason('');
                 }}
-                className="rounded-full px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200/50 transition-colors"
+                className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-ink transition-colors cursor-pointer dark:hover:bg-slate-800"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={submitSuspend}
-                className="rounded-full bg-rose-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-500 transition-colors"
+                className="rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-rose-700 transition-colors cursor-pointer"
               >
                 Suspend Course
               </button>

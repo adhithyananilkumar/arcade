@@ -525,7 +525,7 @@ export default function FoundersPage() {
       <AnimatePresence>
         {fullScreenImage && (
           <div 
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-8 cursor-pointer"
+            className="fixed inset-0 z-[100] flex items-center justify-center arcade-modal-backdrop p-4 sm:p-8 cursor-pointer"
             onClick={() => setFullScreenImage(null)}
           >
             <motion.div 
@@ -537,7 +537,7 @@ export default function FoundersPage() {
             >
               <button 
                 onClick={() => setFullScreenImage(null)}
-                className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition"
+                className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs hover:bg-black/70 transition cursor-pointer"
               >
                 <X className="w-6 h-6" />
               </button>

@@ -33,6 +33,8 @@ export { planTypeMeta, planKindLabel, PLAN_TYPES } from "./lib/planTypeMeta";
 export type { PlanTypeMeta } from "./lib/planTypeMeta";
 export type { AssessmentResultCardProps } from "./components/AssessmentResultCard";
 export { HonorCodeModal } from "./components/HonorCodeModal";
+export { SITTING_BASELINE_RULES, SITTING_MAX_VIOLATIONS, sittingViolationLimit } from "./lib/sittingBaseline";
+export type { SittingRule } from "./lib/sittingBaseline";
 export type { HonorCodeModalProps } from "./components/HonorCodeModal";
 // The headless question-authoring engine. Rendering a question is deliberately NOT here: it needs
 // Arcade's rich-text editor, which composes infrastructure and other domains and therefore lives

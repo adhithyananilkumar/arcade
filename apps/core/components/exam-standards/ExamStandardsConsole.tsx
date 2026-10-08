@@ -10,7 +10,8 @@
  * Console -> Exam standards. The platform's rules for each exam type — Certification, Completion,
  * Assessment. Each setting is LOCKED (forced on every tied exam) or a DEFAULT (pre-filled; the
  * creator may change it within the min/max set here). Standalone exams only get the defaults
- * unless "Apply locks to standalone exams" is on.
+ * unless "Apply locks to standalone exams" is on. Above them sits the sitting baseline — the
+ * integrity floor every sitting gets, which no standard or plan can switch off.
  *
  * Rules:
  * - Gated on `platform.exams.manage`. The backend validates every value and re-conforms existing
@@ -20,12 +21,14 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import { Award, ClipboardCheck, Flag, Loader2, Lock, Save, Unlock } from 'lucide-react';
+import { Award, ClipboardCheck, Flag, Loader2, Lock, Save, ShieldCheck, Unlock } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   listExamStandards,
   planTypeMeta,
   updateExamStandard,
+  SITTING_BASELINE_RULES,
+  SITTING_MAX_VIOLATIONS,
   type ExamPlanType,
   type ExamSettingMode,
   type ExamStandard,
@@ -41,13 +44,16 @@ const TYPE_ICON: Record<ExamPlanType, typeof Award> = {
 /** Fee is stored in minor units; the console edits it in major units. */
 const MINOR_KEYS = new Set(['FEE_AMOUNT_MINOR']);
 
-/** Settings grouped the way a creator meets them in Studio. */
+/**
+ * Settings grouped the way a creator meets them in Studio. Full screen is not here: the sitting
+ * baseline makes it always on, so a standard has nothing to decide about it.
+ */
 const GROUPS: Array<{ title: string; keys: string[] }> = [
   { title: 'Sitting', keys: ['DURATION_MINUTES', 'MAX_ATTEMPTS', 'PASS_PERCENTAGE', 'GRADED', 'MIN_QUESTIONS'] },
   { title: 'Paper', keys: ['SHUFFLE_QUESTIONS', 'SHUFFLE_OPTIONS', 'FIXED_PAPER'] },
   {
     title: 'Security',
-    keys: ['PROCTORING_REQUIRED', 'IDENTITY_VERIFICATION_REQUIRED', 'FULLSCREEN_REQUIRED', 'MAX_VIOLATIONS'],
+    keys: ['PROCTORING_REQUIRED', 'IDENTITY_VERIFICATION_REQUIRED', 'MAX_VIOLATIONS'],
   },
   { title: 'Registration', keys: ['FEE_AMOUNT_MINOR'] },
 ];
@@ -136,6 +142,8 @@ export function ExamStandardsConsole() {
 
       {draft && (
         <div className="space-y-5">
+          <SittingBaselineCard />
+
           <section className="rounded-2xl border border-slate-200/80 bg-surface p-5">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
@@ -218,6 +226,37 @@ export function ExamStandardsConsole() {
   );
 }
 
+/** The integrity floor every sitting gets — shown, never edited. Enforced by the server. */
+function SittingBaselineCard() {
+  return (
+    <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-surface">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/60 px-5 py-2.5">
+        <h2 className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+          <ShieldCheck size={13} /> Sitting baseline
+        </h2>
+        <span className="inline-flex items-center gap-1 rounded-full bg-ink px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-on-ink">
+          <Lock size={10} /> Always on
+        </span>
+      </div>
+      <p className="px-5 pt-3.5 text-[12px] font-medium text-slate-500">
+        Every exam sitting on the platform runs under these rules, for every exam type. They are not
+        settings: no standard or plan can switch them off.
+      </p>
+      <ul className="grid gap-x-6 gap-y-3 px-5 py-4 md:grid-cols-2">
+        {SITTING_BASELINE_RULES.map((rule) => (
+          <li key={rule.title} className="flex gap-2.5">
+            <ShieldCheck size={15} className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <span>
+              <span className="block text-[13px] font-semibold text-ink">{rule.title}</span>
+              <span className="block text-[12px] font-medium leading-relaxed text-slate-500">{rule.detail}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function SettingRow({
   setting,
   onChange,
@@ -244,7 +283,9 @@ function SettingRow({
           <p className="text-[11px] font-medium text-slate-400">Publishing is refused below this.</p>
         )}
         {setting.key === 'MAX_VIOLATIONS' && (
-          <p className="text-[11px] font-medium text-slate-400">0 means violations are only recorded.</p>
+          <p className="text-[11px] font-medium text-slate-400">
+            Can only be stricter than the baseline: 0, or anything above {SITTING_MAX_VIOLATIONS}, runs as {SITTING_MAX_VIOLATIONS}.
+          </p>
         )}
       </div>
 

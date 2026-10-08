@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Loader2, Lock, Search, ShieldCheck, X } from 'lucide-react';
 import type { Role } from '@/domains/identity';
 import { SURFACE_LABEL, formatPermissionLabel } from '../policy-editor/PermissionSelector';
@@ -48,6 +49,8 @@ export function AssignPolicyDialog({
 }: AssignPolicyDialogProps) {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<Role | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const filtered = useMemo(() => {
     if (!query.trim()) return availablePolicies;
@@ -65,17 +68,27 @@ export function AssignPolicyDialog({
     await onAssign(selected.id);
   };
 
-  return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center bg-black/50 p-4 pt-[10vh]" onClick={onClose}>
+  // Portaled to <body>: the Sheet it opens from is a body-level portal, so a dialog left inside
+  // the page tree sits in a lower stacking context and renders behind/outside the drawer.
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
       <div
-        className="w-full max-w-md rounded-2xl bg-surface shadow-2xl overflow-hidden flex flex-col max-h-[75vh]"
+        className="relative w-full max-w-md arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {!selected ? (
           <>
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50/60 shrink-0">
-              <h2 className="text-sm font-bold text-gray-900">Assign Policy</h2>
-              <button onClick={onClose} className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200/70 bg-slate-50/60 shrink-0 dark:bg-slate-900/40">
+              <h2 className="text-base font-bold text-ink">Assign Policy</h2>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
+                className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:text-ink hover:bg-slate-100 transition-colors cursor-pointer dark:hover:bg-slate-800"
+              >
                 <X size={16} />
               </button>
             </div>
@@ -166,12 +179,12 @@ export function AssignPolicyDialog({
               </p>
             </div>
 
-            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-gray-100 bg-gray-50/60 shrink-0">
+            <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-slate-200/70 bg-slate-50/60 shrink-0 dark:bg-slate-900/40">
               <button
                 type="button"
                 onClick={() => setSelected(null)}
                 disabled={busy}
-                className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-200/60 transition-colors disabled:opacity-50"
+                className="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-ink rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-50 cursor-pointer dark:hover:bg-slate-800"
               >
                 Back
               </button>
@@ -179,16 +192,16 @@ export function AssignPolicyDialog({
                 type="button"
                 onClick={handleConfirm}
                 disabled={busy}
-                className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-on-ink bg-ink rounded-xl hover:bg-ink-hover transition-colors disabled:opacity-50"
+                className="px-5 py-2.5 text-sm font-semibold text-on-ink bg-ink rounded-xl hover:bg-ink-hover shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
               >
-                {busy && <Loader2 size={12} className="animate-spin" />}
-                Assign Policy
+                {busy ? "Assigning..." : "Assign Policy"}
               </button>
             </div>
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

@@ -570,21 +570,36 @@ function ConsoleInboxContent() {
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5">
                 <div className="flex flex-wrap items-center gap-2">
                   {/*
-                    Opened in a new tab: on a browser with no mail app registered, a mailto link
-                    replaced the Console with a blank "mailto:" page. The subject is encoded whole —
-                    lesson-report subjects carry a newline, which broke the link.
+                    A mailto link does nothing visible when no mail app is registered (and opening it
+                    in a new tab only produced a blank tab). So hand it to the OS, and if the browser
+                    neither lost focus nor hid the page shortly after, say so and copy the address.
+                    The subject is encoded whole — lesson-report subjects carry a newline.
                   */}
-                  <a
-                    href={`mailto:${encodeURIComponent(selectedMessage.email)}?subject=${encodeURIComponent(
-                      `Re: ${selectedMessage.subject.replace(/\s*\n\s*/g, ' — ')}`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink hover:bg-slate-800 transition-colors"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const email = selectedMessage.email;
+                      const subject = `Re: ${selectedMessage.subject.replace(/\s*\n\s*/g, ' — ')}`;
+                      let handedOff = false;
+                      const onHandoff = () => {
+                        handedOff = true;
+                      };
+                      window.addEventListener('blur', onHandoff, { once: true });
+                      document.addEventListener('visibilitychange', onHandoff, { once: true });
+                      window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}`;
+                      window.setTimeout(() => {
+                        window.removeEventListener('blur', onHandoff);
+                        document.removeEventListener('visibilitychange', onHandoff);
+                        if (handedOff) return;
+                        navigator.clipboard?.writeText(email).catch(() => undefined);
+                        toast.error(`No email app opened. ${email} was copied — reply from your mail client.`);
+                      }, 1500);
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-on-ink hover:bg-slate-800 transition-colors cursor-pointer"
                   >
                     <Mail size={14} />
                     Reply via Email
-                  </a>
+                  </button>
                   <button
                     type="button"
                     onClick={() => {

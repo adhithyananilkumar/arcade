@@ -53,56 +53,63 @@ export function IssuerLogoPreview({
   className,
 }: IssuerLogoPreviewProps) {
   const name = organisationName || (personal ? "Your name" : "Your organisation");
+  const badge = showBadge && !personal;
   return (
-    <div className={className}>
-      <figure>
-        <figcaption className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-          On certificates
-        </figcaption>
-        <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
-          <CertificateFace
-            verificationUrl="https://arcade.ajce.in/credentials/CERT-SAMPLE"
-            certificate={{
-              credentialCode: "CERT-SAMPLE-0000",
-              documentTitle: "Certificate of Achievement",
-              sourceLabel: "Certification exam",
-              title: "Your course or exam",
-              recipientName: "Learner Name",
-              issuerName: personal || asHost ? HOST_INSTITUTION_NAME : name,
-              issuerLogoUrl: personal ? null : logoSrc ?? null,
-              issuerSealUrl: personal || asHost ? null : sealSrc ?? null,
-              issuedByHost: personal || asHost,
-              signatoryName: signatory?.name ?? null,
-              signatoryTitle: signatory?.title ?? null,
-              signatureUrl: signatory?.signatureUrl ?? null,
-              conductedBy: name,
-              scorePercent: 92,
-              achievedAt: SAMPLE_DATE,
-              issuedAt: SAMPLE_DATE,
-              expiresAt: null,
-              revoked: false,
-            }}
-          />
-        </div>
-      </figure>
-      {showBadge && !personal && (
-        <figure className="mt-3 flex items-center gap-4">
-          <div className="flex h-[112px] w-[112px] shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 p-2">
-            <CredentialBadge
-              family="COURSE"
-              level={2}
-              title="Your course"
-              issuerLogoUrl={logoSrc}
-              label="Badge preview with your logo"
-              className="w-[88px]"
+    // Sized by its own width (container queries), not the viewport: the same preview sits in the
+    // wide branding section and in the narrower cropper dialog.
+    <div className={`@container ${className ?? ""}`}>
+      <div className={badge ? "grid gap-4 @3xl:grid-cols-[minmax(0,1fr)_minmax(220px,28%)]" : undefined}>
+        <figure className="min-w-0">
+          <figcaption className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            On certificates
+          </figcaption>
+          <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+            <CertificateFace
+              verificationUrl="https://arcade.ajce.in/credentials/CERT-SAMPLE"
+              certificate={{
+                credentialCode: "CERT-SAMPLE-0000",
+                documentTitle: "Certificate of Achievement",
+                sourceLabel: "Certification exam",
+                title: "Your course or exam",
+                recipientName: "Learner Name",
+                issuerName: personal || asHost ? HOST_INSTITUTION_NAME : name,
+                issuerLogoUrl: personal ? null : logoSrc ?? null,
+                issuerSealUrl: personal || asHost ? null : sealSrc ?? null,
+                issuedByHost: personal || asHost,
+                signatoryName: signatory?.name ?? null,
+                signatoryTitle: signatory?.title ?? null,
+                signatureUrl: signatory?.signatureUrl ?? null,
+                conductedBy: name,
+                scorePercent: 92,
+                achievedAt: SAMPLE_DATE,
+                issuedAt: SAMPLE_DATE,
+                expiresAt: null,
+                revoked: false,
+              }}
             />
           </div>
-          <figcaption className="text-[11px] font-medium leading-relaxed text-slate-500">
-            <span className="mb-0.5 block font-bold uppercase tracking-wider">On badges</span>
-            Your logo sits in the badge&apos;s lower medallion, recoloured into the badge&apos;s metal.
-          </figcaption>
         </figure>
-      )}
+        {badge && (
+          <figure className="flex min-w-0 flex-col">
+            <figcaption className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              On badges
+            </figcaption>
+            <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-xl border border-slate-200 bg-slate-50 px-6 py-8 shadow-sm">
+              <CredentialBadge
+                family="COURSE"
+                level={2}
+                title="Your course"
+                issuerLogoUrl={logoSrc}
+                label="Badge preview with your logo"
+                className="w-full max-w-[240px]"
+              />
+              <p className="max-w-[260px] text-center text-[11px] font-medium leading-relaxed text-slate-500">
+                Your logo sits in the badge&apos;s lower medallion, recoloured into the badge&apos;s metal.
+              </p>
+            </div>
+          </figure>
+        )}
+      </div>
     </div>
   );
 }

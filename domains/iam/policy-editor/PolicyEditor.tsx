@@ -127,8 +127,10 @@ export function PolicyEditor({
           </p>
         </div>
         <button
+          type="button"
           onClick={onCancel}
-          className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+          aria-label="Close"
+          className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:text-ink hover:bg-slate-100 transition-colors cursor-pointer dark:hover:bg-slate-800"
         >
           <X size={18} />
         </button>
@@ -247,19 +249,20 @@ export function PolicyEditor({
       </div>
 
       {/* Footer */}
-      <div className="shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/60">
+      <div className="shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200/70 bg-slate-50/60 dark:bg-slate-900/40">
         <button
+          type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-200/60 transition-colors"
+          className="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-ink rounded-xl hover:bg-slate-100 transition-colors cursor-pointer dark:hover:bg-slate-800"
         >
           Cancel
         </button>
         <button
+          type="button"
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-on-ink bg-ink rounded-xl hover:bg-ink-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-[0.98]"
+          className="px-5 py-2.5 text-sm font-semibold text-on-ink bg-ink rounded-xl hover:bg-ink-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
         >
-          {saving && <Loader2 size={14} className="animate-spin" />}
           {saving ? 'Saving…' : mode === 'edit' ? 'Update Policy' : 'Create Policy'}
         </button>
       </div>

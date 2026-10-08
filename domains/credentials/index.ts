@@ -5,7 +5,8 @@
  * Domain: Credentials
  *
  * Public surface of the Credentials domain: the platform's issued, verifiable credentials.
- * Badges (three platform levels) and certificates, on one verification model; grade cards (owned by
+ * Badges (five platform levels: three chosen for content, Expert with a certification, Distinguished
+ * an honour Arcade confers) and certificates, on one verification model; grade cards (owned by
  * `domains/assessments`) verify through the same endpoint.
  *
  * Not to be confused with `domains/recognition` (profile badges such as the verified tick, granted
@@ -23,6 +24,7 @@ export type {
   BadgeFamilyKey,
   BadgeLevel,
   BadgeTierInfo,
+  ConferHonourRequest,
   CredentialKind,
   InProgressBadge,
   IssuedBadge,

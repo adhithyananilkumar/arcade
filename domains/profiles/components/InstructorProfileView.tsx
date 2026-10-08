@@ -56,7 +56,6 @@ export interface InstructorProfileViewProps {
 import { ProfileEditModal } from './ProfileEditModal';
 import type { TechSkill } from './ProfilePanels';
 
-import { DEMO_BADGES, DEMO_CERTIFICATES } from '../constants/profileDemoData';
 
 export function InstructorProfileView({ data }: InstructorProfileViewProps) {
   const { profile: initialProfile, activity, achievements } = data;
@@ -133,7 +132,7 @@ export function InstructorProfileView({ data }: InstructorProfileViewProps) {
 
   return (
     <>
-      {/* ── Top Hero & Banner ── */}
+      {/* â”€â”€ Top Hero & Banner â”€â”€ */}
       <ProfileHero
         kind="instructor"
         name={profile.fullName}
@@ -164,7 +163,7 @@ export function InstructorProfileView({ data }: InstructorProfileViewProps) {
         }
       />
 
-      {/* ── 2-Column Responsive Dashboard Layout ── */}
+      {/* â”€â”€ 2-Column Responsive Dashboard Layout â”€â”€ */}
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* ================= LEFT COLUMN (lg:col-span-8): Content, Activity & Projects ================= */}
@@ -217,8 +216,8 @@ export function InstructorProfileView({ data }: InstructorProfileViewProps) {
           {/* Achievements, Badges & Certificates */}
           {isLearnerActivityVisible && (
             <AchievementsPanel
-              badges={achievements.length > 0 ? achievements : DEMO_BADGES}
-              certificates={(profile.certificates && profile.certificates.length > 0) ? profile.certificates : DEMO_CERTIFICATES}
+              badges={achievements}
+              certificates={profile.certificates ?? []}
               viewAllHref={isSelf ? '/achievements' : undefined}
             />
           )}
@@ -228,7 +227,7 @@ export function InstructorProfileView({ data }: InstructorProfileViewProps) {
         </div>
       </div>
 
-      {/* ── Dedicated Profile Edit Modal ── */}
+      {/* â”€â”€ Dedicated Profile Edit Modal â”€â”€ */}
       {isSelf && (
         <ProfileEditModal
           open={editModalOpen}

@@ -1,7 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { BookOpen, CalendarDays, ClipboardCheck, Info, Percent, Users } from 'lucide-react';
 import { formatMoney, fromMinorUnits } from '@/shared/utils/money';
 import { ChannelAvatar } from '@/shared/design-system/ui/cards';
@@ -12,6 +11,9 @@ import type {
   MoneySummary,
 } from '../types/payment.types';
 import { describeCommission, REFUND_TREATMENT_HINT } from '../utils/commission';
+
+// Loaded on demand: see ChannelPaymentsMonthlyChart for why.
+const ChannelPaymentsMonthlyChart = lazy(() => import('./ChannelPaymentsMonthlyChart'));
 
 export interface ChannelPaymentsReportProps {
   detail: ChannelPaymentDetail;
@@ -212,21 +214,9 @@ export function ChannelPaymentsReport({
           <p className="py-10 text-center text-xs font-medium text-slate-400">No payments in the last 12 months.</p>
         ) : (
           <div className="h-56 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthly} margin={{ top: 4, right: 4, left: -12, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  formatter={(value) => formatMoney(Math.round(Number(value) * 100), active)}
-                  contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 12 }}
-                />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="Collected" fill="#4c6fff" radius={[6, 6, 0, 0]} maxBarSize={28} />
-                <Bar dataKey="Refunded" fill="#f472b6" radius={[6, 6, 0, 0]} maxBarSize={28} />
-                <Bar dataKey="Commission" fill="#f59e0b" radius={[6, 6, 0, 0]} maxBarSize={28} />
-              </BarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={null}>
+              <ChannelPaymentsMonthlyChart monthly={monthly} currency={active} />
+            </Suspense>
           </div>
         )}
       </section>

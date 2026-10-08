@@ -97,7 +97,10 @@ export function ImageCropModal({
   const [angle, setAngle] = useState(0);
   // Set when a trim must wait for the rotation to be baked into a new image (see `trim`).
   const trimPending = useRef(false);
-  const [ground, setGround] = useState<Ground>(transparency ? 'checker' : 'dark');
+  // Only the editing backdrop — never exported. It used to be switchable (transparent / light /
+  // dark swatches), which read as a setting applied to the logo (BUG-1022); transparent artwork
+  // is always shown on the checkerboard so its transparency is visible.
+  const ground: Ground = transparency ? 'checker' : 'dark';
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -455,20 +458,6 @@ export function ImageCropModal({
               ) : (
                 <span />
               )}
-              <div className="flex items-center gap-1.5" role="group" aria-label="Background">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Background</span>
-                {(['checker', 'light', 'dark'] as Ground[]).map((g) => (
-                  <button
-                    key={g}
-                    type="button"
-                    onClick={() => setGround(g)}
-                    aria-label={g === 'checker' ? 'Transparent' : g === 'light' ? 'Light' : 'Dark'}
-                    aria-pressed={ground === g}
-                    className={`h-6 w-6 rounded-md border ${ground === g ? 'ring-2 ring-indigo-500 ring-offset-1' : 'border-slate-300'}`}
-                    style={GROUND_STYLE[g]}
-                  />
-                ))}
-              </div>
             </div>
             <p className="text-xs text-slate-500">
               Drag the frame to move it and its edges to resize it. Zoom in to fill the frame, or out to leave space around a logo.

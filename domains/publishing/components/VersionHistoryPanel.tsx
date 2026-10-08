@@ -423,28 +423,24 @@ export function VersionHistoryPanel({
 
   return (
     <div className="fixed inset-0 z-40 flex justify-end">
-      <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
 
       <aside className="relative flex h-full w-full max-w-[420px] flex-col border-l border-slate-200/80 bg-surface shadow-[0_0_56px_rgba(20,20,43,0.2)]">
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-4">
-          <div className="flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-2xl bg-ink text-on-ink shadow-[0_8px_16px_rgba(20,20,43,0.18)]">
-              <History size={17} />
-            </span>
-            <div>
-              <h2 className="text-[15px] font-bold tracking-tight text-ink">
-                {isSuView ? "History" : "Version history"}
-              </h2>
-              <p className="text-[11px] font-medium text-slate-400">
-                {isSuView ? "Versions & workflow activity" : "Restore any saved snapshot"}
-              </p>
-            </div>
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200/70 px-5 py-4">
+          <div>
+            <h2 className="text-[15px] font-bold tracking-tight text-ink">
+              {isSuView ? "History" : "Version history"}
+            </h2>
+            <p className="mt-0.5 text-[11px] font-medium text-slate-400">
+              {isSuView ? "Versions & workflow activity" : "Restore any saved snapshot"}
+            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink"
+            aria-label="Close"
+            className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
           >
             <X size={18} />
           </button>

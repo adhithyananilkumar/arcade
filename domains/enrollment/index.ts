@@ -27,6 +27,8 @@ export {
   useMyEnrollmentForResourceQuery,
   useMyEventsQuery,
 } from './api/myEnrollments.queries';
+export { useMyEnrollmentStates } from './hooks/useMyEnrollmentStates';
+export type { CardCta, CardEnrollmentState } from './hooks/useMyEnrollmentStates';
 
 export type {
   ResourceType,

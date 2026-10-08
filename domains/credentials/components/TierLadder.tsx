@@ -4,7 +4,7 @@
  * Layer: Domains
  * Domain: Credentials
  *
- * The three levels, highest first, with one marked — so a reader sees not just "Level 2" but where
+ * The five levels, highest first, with one marked — so a reader sees not just "Level 2" but where
  * Level 2 sits in the platform standard.
  * ------------------------------------------------------------------
  */

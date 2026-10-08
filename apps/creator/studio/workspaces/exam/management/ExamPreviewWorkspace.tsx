@@ -135,48 +135,7 @@ export function ExamPreviewWorkspace({
           </div>
         )}
       </section>
-      <section className="border-t border-slate-200/70 pt-6 first:border-t-0 first:pt-0">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-500">{plan.name}</span>
-        <h2 className="mt-1 text-xl font-black tracking-tight text-ink">{exam.title}</h2>
-        {exam.description && (
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">{exam.description}</p>
-        )}
 
-        <dl className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Fact icon={Clock} label="Time allowed" value={`${plan.durationMinutes} minutes`} />
-          <Fact icon={Eye} label="Questions" value={String(plan.totalQuestions)} />
-          <Fact icon={ShieldCheck} label="Pass mark" value={`${plan.passPercentage}%`} />
-          <Fact
-            icon={RefreshCw}
-            label="Attempts"
-            value={plan.maxAttempts === 1 ? "One attempt" : `${plan.maxAttempts} attempts`}
-          />
-        </dl>
-
-        {(plan.proctoringRequired || plan.identityVerificationRequired || plan.fullscreenRequired || plan.hubListed) && (
-          <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-500/25 dark:bg-amber-500/10">
-            <span className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-200">
-              <Lock size={13} /> Before you start
-            </span>
-            <ul className="mt-2 space-y-1 text-xs leading-relaxed text-amber-900/80 dark:text-amber-200">
-              {plan.hubListed && (
-                <li>
-                  · You register for this exam from Explore &gt; Exams
-                  {exam.tieType ? ` after completing ${exam.tiedContentTitle ?? "the tied content"}` : ""}.
-                </li>
-              )}
-              {plan.identityVerificationRequired && <li>· You submit a photo of yourself before starting.</li>}
-              {plan.proctoringRequired && (
-                <li>
-                  · This exam is proctored; leaving the window is recorded
-                  {plan.maxViolations > 0 ? ` and ${plan.maxViolations} violations end the attempt` : ""}.
-                </li>
-              )}
-              {plan.fullscreenRequired && <li>· You must stay in full screen for the whole attempt.</li>}
-            </ul>
-          </div>
-        )}
-      </section>
 
       {/* ── A real generated paper ──────────────────────────────────────── */}
       <section className="border-t border-slate-200/70 pt-6 first:border-t-0 first:pt-0">

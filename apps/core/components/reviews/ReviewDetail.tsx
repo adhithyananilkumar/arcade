@@ -1,7 +1,8 @@
 "use client";
 
+import { withReturnTo } from "@/infrastructure/state/navigationHistory";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   platformReviewApi,
@@ -49,7 +50,19 @@ export interface ReviewDetailProps {
  * channel's own organization queue, so both stages review the same way. What the viewer may do is
  * the server's `actions`, never recomputed here.
  */
+/**
+ * Where a reviewer previews the submitted content. Only a course has a learner player route;
+ * sending an exam or event there showed "Course not found" (BUG-1025). An exam previews per plan
+ * from its overview's Preview tab, an event from its overview.
+ */
+function reviewPreviewHref(contentType: string, contentId: string): string {
+  if (contentType === "EXAM") return `/studio/content/exam/${contentId}?tab=preview`;
+  if (contentType === "EVENT") return `/studio/content/event/${contentId}`;
+  return `/studio/published/${contentId}`;
+}
+
 export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews" }: ReviewDetailProps) {
+  const pathname = usePathname();
   const router = useRouter();
 
   const [review, setReview] = useState<ReviewResponse | null>(null);
@@ -288,7 +301,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
 
         <div className="mt-4">
           <Link
-            href={`/studio/published/${review.contentId}`}
+            href={reviewPreviewHref(review.contentType, review.contentId)}
             target="_blank"
             className="inline-flex items-center gap-2 text-[13px] font-semibold text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
           >
@@ -432,7 +445,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
 
                   <div className="shrink-0 flex items-center gap-2">
                     <Link
-                      href={`/studio/exam/${ex.examId}/edit`}
+                      href={withReturnTo(`/studio/exam/${ex.examId}/edit`, pathname)}
                       target="_blank"
                       className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3 py-1.5 text-[12px] font-semibold text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50 transition-colors"
                     >
@@ -672,7 +685,7 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
               </div>
               <div className="flex items-center gap-2">
                 <Link
-                  href={`/studio/exam/${inspectingExam.examId}/edit`}
+                  href={withReturnTo(`/studio/exam/${inspectingExam.examId}/edit`, pathname)}
                   target="_blank"
                   className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3 py-1.5 text-[12px] font-semibold text-ink hover:bg-slate-50 transition-colors shadow-sm"
                 >

@@ -46,9 +46,11 @@ export function CourseOverviewTab({
   submitting: boolean;
 }) {
   const collaborators = data.collaborators.status === "ok" ? data.collaborators.data : undefined;
+  // Hide the invite button only from someone who is on the roster as an EDITOR; the author and
+  // channel staff (not on the roster) may manage, and the backend has the final say.
+  const myEntry = collaborators?.find((c) => c.userId === currentUserId);
   const canManage =
-    data.content?.authorId === currentUserId ||
-    !!collaborators?.some((c) => c.userId === currentUserId && (c.role === "OWNER" || c.role === "MANAGER"));
+    data.content?.authorId === currentUserId || !myEntry || myEntry.role === "OWNER" || myEntry.role === "MANAGER";
 
   switch (tab) {
     case "overview":

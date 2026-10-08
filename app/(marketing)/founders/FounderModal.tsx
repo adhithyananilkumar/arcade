@@ -49,7 +49,7 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity"
+            className="fixed inset-0 arcade-modal-backdrop"
           />
 
           {/* Modal Container */}
@@ -58,12 +58,12 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="relative w-full max-w-2xl bg-surface text-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden z-10 my-6"
+            className="relative w-full max-w-2xl bg-surface text-ink arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl shadow-2xl border border-slate-200/80 overflow-hidden z-10 my-6"
           >
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors shadow-sm"
+              className="absolute top-4 right-4 z-20 p-2 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs bg-slate-100/80 hover:bg-slate-200 text-slate-600 transition-colors shadow-sm cursor-pointer dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300"
               aria-label="Close details"
             >
               <X className="w-5 h-5" />

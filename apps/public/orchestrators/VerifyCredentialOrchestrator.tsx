@@ -168,6 +168,7 @@ export function VerifyCredentialOrchestrator() {
                   family={result.badgeClass.family.key}
                   level={result.badgeClass.tier.level as BadgeLevel}
                   title={result.name}
+                  stars={honourStars(result)}
                   revoked={result.status !== "VALID"}
                 />
               </div>
@@ -214,4 +215,11 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
       <dd className="break-words font-bold">{children}</dd>
     </div>
   );
+}
+
+/** An honour's rating, from the "Rating" detail the server reports ("4 of 5 stars"). */
+function honourStars(result: VerifyResult): number | undefined {
+  const rating = result.details.find((d) => d.label === "Rating")?.value;
+  const n = rating ? parseInt(rating, 10) : NaN;
+  return Number.isFinite(n) ? n : undefined;
 }

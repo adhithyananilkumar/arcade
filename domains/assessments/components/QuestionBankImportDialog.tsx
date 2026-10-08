@@ -90,19 +90,19 @@ export function QuestionBankImportDialog({
   // portalled to <body> at z-70), however high its own z-index.
   return createPortal(
     <div data-studio-overlay className="fixed inset-0 z-[90] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-950/30 backdrop-blur-sm" onClick={() => !saving && onClose()} />
+      <div className="absolute inset-0 arcade-modal-backdrop" onClick={() => !saving && onClose()} />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="question-import-title"
-        className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-surface/40 bg-surface shadow-2xl"
+        className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface shadow-2xl"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-ink/5 px-6 py-5">
+        <div className="flex items-start justify-between gap-4 border-b border-slate-200/70 px-6 py-5">
           <div>
             <h3 id="question-import-title" className="text-base font-semibold text-ink">
               Import questions
             </h3>
-            <p className="mt-1 text-sm text-ink/55">
+            <p className="mt-1 text-sm text-slate-500">
               Paste questions in Arcade&apos;s JSON format. Sections, types, difficulty, points and tags are
               converted into editable questions.
             </p>
@@ -112,7 +112,7 @@ export function QuestionBankImportDialog({
             onClick={onClose}
             disabled={saving}
             aria-label="Close"
-            className="rounded-full p-1.5 text-ink/40 transition-colors hover:bg-ink/5 hover:text-ink"
+            className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
           >
             <X size={16} />
           </button>
@@ -263,12 +263,12 @@ export function QuestionBankImportDialog({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t border-ink/5 px-6 py-4">
+        <div className="flex items-center justify-end gap-2 border-t border-slate-200/70 px-6 py-4">
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="rounded-full px-4 py-2 text-xs font-bold text-ink/60 transition-colors hover:bg-ink/5 hover:text-ink"
+            className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer disabled:opacity-50 dark:hover:bg-slate-800"
           >
             Cancel
           </button>
@@ -276,10 +276,13 @@ export function QuestionBankImportDialog({
             type="button"
             disabled={!result?.ok || saving}
             onClick={handleImport}
-            className="flex items-center gap-1.5 rounded-full bg-ink px-5 py-2 text-xs font-bold text-on-ink shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
           >
-            {saving ? <Loader2 size={13} className="animate-spin" /> : <UploadCloud size={13} />}
-            {result?.ok ? `Import ${result.questionCount} question${result.questionCount === 1 ? "" : "s"}` : "Import"}
+            {saving
+              ? "Importing..."
+              : result?.ok
+                ? `Import ${result.questionCount} question${result.questionCount === 1 ? "" : "s"}`
+                : "Import"}
           </button>
         </div>
       </div>

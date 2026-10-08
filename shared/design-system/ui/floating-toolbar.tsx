@@ -37,7 +37,10 @@ export function FloatingToolbar({
       className="arcade-floating-toolbar pointer-events-none fixed top-[70px] z-[70] transition-[left] duration-300"
       style={{ left: centerX !== undefined ? `${centerX}px` : "50%", transform: "translateX(-50%)" }}
     >
-      <div className="pointer-events-auto flex items-center max-w-[calc(100vw-2rem)] px-4 py-1.5 overflow-x-auto whitespace-nowrap rounded-full bg-surface/60 backdrop-blur-md shadow-sm">
+      {/* `overflow-y-hidden` explicitly: `overflow-x: auto` alone turns the vertical axis to `auto`
+          too, so a hovered button's ring or shadow growing a pixel past the pill popped a vertical
+          scrollbar at the pill's edge. The horizontal scroll (narrow screens) stays, without a bar. */}
+      <div className="arcade-floating-toolbar-strip pointer-events-auto flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden items-center max-w-[calc(100vw-2rem)] px-4 py-1.5 overflow-x-auto overflow-y-hidden whitespace-nowrap rounded-full bg-surface/60 backdrop-blur-md shadow-sm">
         {children}
       </div>
     </div>,

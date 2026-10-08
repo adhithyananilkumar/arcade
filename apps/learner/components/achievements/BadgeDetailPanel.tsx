@@ -57,7 +57,7 @@ export function BadgeDetailPanel({ badge, tiers, onClose, onChanged }: BadgeDeta
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 cursor-pointer bg-slate-950/40 backdrop-blur-sm"
+            className="absolute inset-0 cursor-pointer arcade-modal-backdrop"
           />
           <div className="absolute inset-y-0 right-0 flex max-w-full pl-6 sm:pl-10">
             <motion.div
@@ -114,7 +114,7 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
   const download = async (format: 'png' | 'svg') => {
     setDownloading(format);
     try {
-      await downloadBadgeImage(family, level, badge.name, `${badge.name} - Arcade Level ${level} badge`, format, badge.issuerLogoUrl);
+      await downloadBadgeImage(family, level, badge.name, `${badge.name} - Arcade Level ${level} badge`, format, badge.issuerLogoUrl, badge.stars);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Download failed');
     } finally {
@@ -174,6 +174,7 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
               title={badge.name}
               issuerLogoUrl={badge.issuerLogoUrl}
               year={new Date(badge.issuedAt).getFullYear()}
+              stars={badge.stars}
               revoked={badge.revoked}
               label={`${badge.badgeClass.name} — ${badge.name}`}
             />
@@ -208,9 +209,11 @@ function PanelBody({ badge, tiers, onClose, onChanged }: { badge: IssuedBadge; t
       <div className="space-y-5">
         {/* Criteria */}
         <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Earning criteria</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+            {badge.citation ? 'Citation' : 'Earning criteria'}
+          </p>
           <p className="mt-1.5 text-sm leading-relaxed text-slate-700">{badge.criteria}</p>
-          {badge.contentPath && (
+          {badge.contentPath && badge.contentType && (
             <Link href={badge.contentPath} className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-[#2962D6] hover:underline dark:text-[#7eb5ff]">
               View the {badge.contentType.toLowerCase()} <ExternalLink size={11} />
             </Link>

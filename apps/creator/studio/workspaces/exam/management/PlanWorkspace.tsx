@@ -24,6 +24,8 @@ import {
   planTypeMeta,
   renamePlanSection,
   savePlanSectionRules,
+  sittingViolationLimit,
+  SITTING_MAX_VIOLATIONS,
   updateExamPlan,
   validateExamPlan,
   type Difficulty,
@@ -55,11 +57,27 @@ const DIFFICULTIES: Difficulty[] = ["EASY", "MEDIUM", "HARD"];
 
 type PanelId = "selection" | "attempt" | "security" | "availability";
 
-const PANELS: { id: PanelId; label: string }[] = [
-  { id: "selection", label: "Questions" },
-  { id: "attempt", label: "Attempt & scoring" },
-  { id: "security", label: "Security" },
-  { id: "availability", label: "Availability" },
+const PANELS: { id: PanelId; label: string; help: string }[] = [
+  {
+    id: "selection",
+    label: "1 · Questions",
+    help: "Choose which questions from the bank this plan uses: whole sections, a number picked at random, or hand-picked ones. Each candidate's paper is built from these rules.",
+  },
+  {
+    id: "attempt",
+    label: "2 · Attempt & scoring",
+    help: "Time limit, number of attempts, and the score needed to pass. Some limits are fixed by the platform for certifications — those show a lock.",
+  },
+  {
+    id: "security",
+    label: "3 · Security",
+    help: "Optional proctoring, identity check and full-screen mode, and how many violations end an attempt.",
+  },
+  {
+    id: "availability",
+    label: "4 · Availability",
+    help: "Where learners meet this plan and whether it is offered right now. Hiding a plan keeps its results.",
+  },
 ];
 
 export function PlanWorkspace({
@@ -158,6 +176,12 @@ export function PlanWorkspace({
             {plan.minQuestions > 0 && ` · platform minimum ${plan.minQuestions} questions`}
           </p>
           <p className="mt-1 px-2 text-[11px] font-medium text-slate-500">{meta.effect}</p>
+          {plan.live === false && plan.active && (
+            <p className="mx-2 mt-2 inline-flex items-start gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+              Draft — saved, but learners don’t see this plan yet. It goes live with the next approved submission
+              {plan.hubListed ? "." : " of the course or event it belongs to."}
+            </p>
+          )}
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
@@ -222,6 +246,9 @@ export function PlanWorkspace({
           </button>
         ))}
       </div>
+      <p className="-mt-1 text-xs font-medium leading-relaxed text-slate-500">
+        {PANELS.find((p) => p.id === panel)?.help}
+      </p>
 
       {/* ── Panel body ──────────────────────────────────────────────────── */}
       <div>
@@ -308,7 +335,7 @@ export function PlanWorkspace({
         {panel === "security" && (
           <SettingsCard
             title="Security"
-            description="Proctoring records tab switches, focus loss and leaving fullscreen on the server; reaching the violation limit ends the attempt. Identity verification asks for a photo that you approve in Attempts."
+            description="Every sitting runs under the platform's sitting baseline: its own tab, full screen, and tab switches, focus loss, copy/paste and developer tools recorded on the server. Proctoring marks the sitting for your review; identity verification asks for a photo that you approve in Attempts."
           >
             <ToggleField
               label="Proctoring"
@@ -324,25 +351,23 @@ export function PlanWorkspace({
               disabled={readOnly || busy || locked("IDENTITY_VERIFICATION_REQUIRED")}
               onChange={(v) => patchPlan({ identityVerificationRequired: v })}
             />
-            <ToggleField
-              label="Full screen required"
-              value={plan.fullscreenRequired}
-              setting={setting("FULLSCREEN_REQUIRED")}
-              disabled={readOnly || busy || locked("FULLSCREEN_REQUIRED")}
-              onChange={(v) => patchPlan({ fullscreenRequired: v })}
+            <div className="flex items-start gap-3 py-3">
+              <Lock size={15} className="mt-0.5 shrink-0 text-slate-400" />
+              <p className="text-xs leading-relaxed text-slate-600">
+                <span className="font-semibold text-ink">Full screen — always on.</span> Part of the sitting
+                baseline for every exam; it cannot be switched off.
+              </p>
+            </div>
+            <NumberField
+              key={`violations:${plan.maxViolations}`}
+              label="Violations before the attempt ends"
+              value={plan.maxViolations}
+              allowZero
+              hint={`At most ${SITTING_MAX_VIOLATIONS} (sitting baseline); 0 uses ${SITTING_MAX_VIOLATIONS}. This plan runs at ${sittingViolationLimit(plan.maxViolations)}.`}
+              setting={setting("MAX_VIOLATIONS")}
+              disabled={readOnly || busy || locked("MAX_VIOLATIONS")}
+              onCommit={(v) => patchPlan({ maxViolations: v })}
             />
-            {plan.proctoringRequired && (
-              <NumberField
-                key={`violations:${plan.maxViolations}`}
-                label="Violations before the attempt ends"
-                value={plan.maxViolations}
-                allowZero
-                hint="0 records violations without ending the attempt."
-                setting={setting("MAX_VIOLATIONS")}
-                disabled={readOnly || busy || locked("MAX_VIOLATIONS")}
-                onCommit={(v) => patchPlan({ maxViolations: v })}
-              />
-            )}
           </SettingsCard>
         )}
 

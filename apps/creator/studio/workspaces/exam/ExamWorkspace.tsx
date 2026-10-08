@@ -13,7 +13,8 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { goBackTo, safeReturnTo } from "@/infrastructure/state/navigationHistory";
 import { toast } from "sonner";
 import {
   AlignLeft,
@@ -107,6 +108,9 @@ const QUESTION_TYPE_ICON: Record<string, typeof FileQuestion> = {
 
 export function ExamWorkspace({ examId }: { examId: string }) {
   const router = useRouter();
+  // Where the author opened the question bank from — Back returns there (BUG: it always jumped to
+  // the course editor, even when they came from the course or exam dashboard).
+  const returnTo = safeReturnTo(useSearchParams()?.get("returnTo"));
 
   const [exam, setExam] = useState<ExamResponse | null>(null);
   const [bankId, setBankId] = useState<string | null>(null);
@@ -192,16 +196,18 @@ export function ExamWorkspace({ examId }: { examId: string }) {
     [activeSectionId, saveManager]
   );
 
+  const fallbackBack =
+    exam?.tieType === "COURSE" && exam.tiedContentId
+      ? `/studio/content/course/${exam.tiedContentId}?tab=exams`
+      : exam?.tieType === "EVENT" && exam.tiedContentId
+        ? `/studio/content/event/${exam.tiedContentId}?tab=exams`
+        : `/studio/content/exam/${examId}`;
+  const backTarget = returnTo ?? fallbackBack;
+
   const handleFinish = useCallback(async () => {
     await saveManager.flush();
-    if (exam?.tieType === "COURSE" && exam.tiedContentId) {
-      router.push(`/studio/course/${exam.tiedContentId}/edit`);
-    } else if (exam?.tieType === "EVENT" && exam.tiedContentId) {
-      router.push(`/studio/events/${exam.tiedContentId}/edit`);
-    } else {
-      router.push(`/studio/content/exam/${examId}`);
-    }
-  }, [exam?.tieType, exam?.tiedContentId, examId, router, saveManager]);
+    goBackTo(router, backTarget);
+  }, [backTarget, router, saveManager]);
 
   /** The exam's own dashboard, opened on Exam plans — saving first, like every exit here. */
   const tieType = exam?.tieType ?? null;
@@ -713,13 +719,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
     <StudioEditorFrame>
       <StudioEditorTopBar
         onBack={handleFinish}
-        backTitle={
-          exam.tieType === "COURSE"
-            ? "Back to course editor"
-            : exam.tieType === "EVENT"
-            ? "Back to event editor"
-            : "Back to exam overview"
-        }
+        backTitle={backLabelFor(backTarget)}
         breadcrumb={
           activeQuestion && activeSection ? (
             <div className="flex items-center gap-1.5 text-gray-500">
@@ -902,4 +902,15 @@ export function ExamWorkspace({ examId }: { examId: string }) {
       {confirmDialog}
     </StudioEditorFrame>
   );
+}
+
+/** Names the page Back leads to, from its path. */
+function backLabelFor(href: string): string {
+  if (href.startsWith("/studio/course/")) return "Back to course editor";
+  if (href.startsWith("/studio/events/")) return "Back to event editor";
+  if (href.startsWith("/studio/content/course/")) return "Back to course dashboard";
+  if (href.startsWith("/studio/content/event/")) return "Back to event dashboard";
+  if (href.startsWith("/studio/content/exam/")) return "Back to exam dashboard";
+  if (href.startsWith("/console/reviews")) return "Back to the review";
+  return "Back";
 }

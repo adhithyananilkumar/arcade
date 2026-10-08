@@ -56,7 +56,7 @@ export default function PaymentsConsolePage() {
 
   return (
     <div className="flex h-full w-full flex-col space-y-5 pb-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-none flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-surface/80 p-1 shadow-[0_2px_8px_rgba(20,20,43,0.04)] backdrop-blur-md">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
@@ -91,24 +91,27 @@ export default function PaymentsConsolePage() {
         )}
       </div>
 
-      {tab === "overview" && (
-        <PaymentsOverviewTab
-          period={period}
-          onOpenChannel={(id) => update({ tab: "channels", channel: id })}
-          onOpenIssues={() => update({ tab: "issues" })}
-        />
-      )}
-      {tab === "transactions" && <PaymentLedgerTab onOpenOrder={openOrder} refreshKey={refreshKey} />}
-      {tab === "channels" && (
-        <ChannelBalancesTab
-          period={period}
-          selectedChannelId={channelId}
-          onSelectChannel={(id) => update({ channel: id })}
-          onOpenOrder={openOrder}
-        />
-      )}
-      {tab === "commission" && <CommissionTab canManage={canManageCommission} />}
-      {tab === "issues" && <ReconciliationTab onOpenOrder={openOrder} refreshKey={refreshKey} />}
+      {/* The console layout is a fixed-height, overflow-hidden frame, so the page owns its scroll. */}
+      <div className="relative min-h-0 flex-1 overflow-y-auto pr-2">
+        {tab === "overview" && (
+          <PaymentsOverviewTab
+            period={period}
+            onOpenChannel={(id) => update({ tab: "channels", channel: id })}
+            onOpenIssues={() => update({ tab: "issues" })}
+          />
+        )}
+        {tab === "transactions" && <PaymentLedgerTab onOpenOrder={openOrder} refreshKey={refreshKey} />}
+        {tab === "channels" && (
+          <ChannelBalancesTab
+            period={period}
+            selectedChannelId={channelId}
+            onSelectChannel={(id) => update({ channel: id })}
+            onOpenOrder={openOrder}
+          />
+        )}
+        {tab === "commission" && <CommissionTab canManage={canManageCommission} />}
+        {tab === "issues" && <ReconciliationTab onOpenOrder={openOrder} refreshKey={refreshKey} />}
+      </div>
 
       {orderId && (
         <OrderDrawer

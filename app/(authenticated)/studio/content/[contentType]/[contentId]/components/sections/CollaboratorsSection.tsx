@@ -238,7 +238,7 @@ export function CollaboratorsSection({
                       : "border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-200";
 
                   return (
-                    <tr key={c.userId} className="hover:bg-slate-50/50 transition-colors">
+                    <tr key={c.userId ?? c.email} className="hover:bg-slate-50/50 transition-colors">
                       <td className="py-3.5 px-3 w-1/3 text-left">
                         <div className="flex items-center gap-3">
                           <div className="grid size-9 shrink-0 place-items-center rounded-full bg-ink text-on-ink font-extrabold text-xs shadow-xs">

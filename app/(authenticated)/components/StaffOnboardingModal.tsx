@@ -176,7 +176,7 @@ export function StaffOnboardingModal() {
       }}
     >
       <DialogContent
-        className="max-w-[530px] w-[92vw] p-6 sm:p-7 rounded-2xl border border-slate-200/90 shadow-xl"
+        className="max-w-[530px] w-[92vw] p-6 sm:p-7 border border-slate-200/90 shadow-xl"
         style={{
           backgroundColor: 'var(--theme-surface, #FAFBFD)',
           backgroundImage: `
@@ -266,14 +266,14 @@ export function StaffOnboardingModal() {
               type="button"
               onClick={() => void handleDismiss()}
               disabled={isSubmitting}
-              className="px-4 py-2 text-xs sm:text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
+              className="rounded-xl px-4 py-2 text-xs sm:text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
             >
               {manualOpen ? 'Cancel' : 'Not now'}
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !experienceIsValid}
-              className="relative inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-ink hover:bg-[#205ca8] text-on-ink font-medium text-xs sm:text-sm tracking-wide shadow-2xs transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="relative inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-ink hover:bg-ink-hover text-on-ink font-medium text-xs sm:text-sm tracking-wide shadow-2xs transition-colors disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
               {isSubmitting ? (
                 <>

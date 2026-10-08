@@ -20,6 +20,7 @@ import {
 import type { CourseSummaryResponse } from '@/shared/types/api.types';
 import { RubiksCube3D } from './RubiksCube3D';
 import { UnifiedContentCard } from '@/shared/design-system/ui/cards';
+import { useMyEnrollmentStates } from '@/domains/enrollment';
 
 
 export type EventCard = {
@@ -267,6 +268,7 @@ function EmptyRecommendedCard() {
 }
 
 function RecommendedFeaturedCard({ course }: { course: CourseSummaryResponse }) {
+  const cta = useMyEnrollmentStates().ctaFor('COURSE', course.id, 'View Course');
   return (
     <UnifiedContentCard
       id={course.id}
@@ -277,8 +279,9 @@ function RecommendedFeaturedCard({ course }: { course: CourseSummaryResponse }) 
       channelName={course.channel?.name}
       channelIconUrl={course.channel?.iconUrl}
       categoryId={course.categoryId}
-      actionHref={courseRoutes.landing(course.id)}
-      actionLabel="View Course"
+      actionHref={cta.href ?? courseRoutes.landing(course.id)}
+      actionLabel={cta.label}
+      actionTone={cta.tone}
       actionIcon={BookOpen}
     />
   );
@@ -311,6 +314,7 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
 }
 
 function EventRowItem({ event, index }: { event: EventCard; index: number }) {
+  const cta = useMyEnrollmentStates().ctaFor('EVENT', event.id, 'Register');
   return (
     <UnifiedContentCard
       id={event.id}
@@ -325,8 +329,9 @@ function EventRowItem({ event, index }: { event: EventCard; index: number }) {
         event.where ? event.where : null,
         event.seats ? event.seats : null,
       ].filter(Boolean)}
-      actionHref={event.href}
-      actionLabel="Register"
+      actionHref={cta.href ?? event.href}
+      actionLabel={cta.label}
+      actionTone={cta.tone}
     />
   );
 }

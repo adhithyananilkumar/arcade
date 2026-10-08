@@ -10,8 +10,15 @@ import { EnrollmentService } from '../api/enrollment.service';
 import { myEnrollmentKeys } from '../api/myEnrollments.queries';
 import { ResourceType, UIEnrollmentState } from '../types/enrollment.types';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/shared/design-system/ui/dialog';
 import { ArrowRight, Loader2, LogOut } from 'lucide-react';
-import { launchRazorpayCheckout, CheckoutHoldStatus } from '@/domains/payment';
+import {
+  launchRazorpayCheckout,
+  CheckoutHoldStatus,
+  CustomCheckout,
+  prefersCustomCheckout,
+  type LaunchCheckoutCallbacks,
+} from '@/domains/payment';
 
 /**
  * Turns a thrown enrollment failure into something worth reading.
@@ -75,9 +82,13 @@ export function EnrollmentButton({
   const [isPaying, setIsPaying] = useState(false);
   // Bumped when a checkout window closes, so the hold/decline status line re-reads the server.
   const [checkoutRefresh, setCheckoutRefresh] = useState(0);
+  // Arcade's own (desktop) checkout, while it is open.
+  const [customCheckout, setCustomCheckout] = useState<{ enrollmentId: string; idempotencyKey: string } | null>(null);
 
   // Track idempotency key across component lifecycle for the same logical action
   const idempotencyKeyRef = useRef<string | null>(null);
+  // initialState as it was when the learner unenrolled — ignored until the parent sends a new one.
+  const staleInitialRef = useRef<UIEnrollmentState | null>(null);
 
   const getOrCreateIdempotencyKey = useCallback(() => {
     if (!idempotencyKeyRef.current) {
@@ -111,54 +122,76 @@ export function EnrollmentButton({
     }
   }, [onStateChange, invalidateEnrollmentReads]);
 
+  const paymentCallbacks = useCallback((): LaunchCheckoutCallbacks => ({
+    onGranted: () => {
+      setIsPaying(false);
+      setPendingPaymentEnrollmentId(null);
+      notifyStateChange('ENROLLED');
+      toast.success('Payment successful — you are enrolled!');
+    },
+    onFailed: () => {
+      setIsPaying(false);
+      setCheckoutRefresh((n) => n + 1);
+      toast.error('The payment could not be completed. Nothing was charged — you can try again.');
+    },
+    onExpired: () => {
+      setIsPaying(false);
+      setCheckoutRefresh((n) => n + 1);
+      toast.error('This checkout timed out before a payment was made. Start again whenever you are ready.');
+    },
+    onVerifying: () => {
+      toast.info('Confirming your payment with the bank…');
+    },
+    onVerifyTimeout: () => {
+      setIsPaying(false);
+      setCheckoutRefresh((n) => n + 1);
+      toast.info(
+        'Your bank is taking longer than usual to confirm. If you were charged, access is granted automatically — no need to pay again.',
+        { duration: 10000 },
+      );
+    },
+    onDismissed: () => {
+      setIsPaying(false);
+      setCheckoutRefresh((n) => n + 1);
+    },
+    onAttemptFailed: (reason) => {
+      toast.error(`That attempt didn't go through: ${reason}. You can retry in the same window.`);
+    },
+    onError: (message) => {
+      setIsPaying(false);
+      setCheckoutRefresh((n) => n + 1);
+      toast.error(message);
+    },
+  }), [notifyStateChange]);
+
   const startPayment = useCallback(async (paymentEnrollmentId: string) => {
     if (isPaying) return;
     setIsPaying(true);
     setPendingPaymentEnrollmentId(paymentEnrollmentId);
     notifyStateChange('PENDING');
 
-    await launchRazorpayCheckout(paymentEnrollmentId, crypto.randomUUID(), {
-      onGranted: () => {
-        setIsPaying(false);
-        setPendingPaymentEnrollmentId(null);
-        notifyStateChange('ENROLLED');
-        toast.success('Payment successful — you are enrolled!');
-      },
-      onFailed: () => {
-        setIsPaying(false);
-        setCheckoutRefresh((n) => n + 1);
-        toast.error('The payment could not be completed. Nothing was charged — you can try again.');
-      },
-      onExpired: () => {
-        setIsPaying(false);
-        setCheckoutRefresh((n) => n + 1);
-        toast.error('This checkout timed out before a payment was made. Start again whenever you are ready.');
-      },
-      onVerifying: () => {
-        toast.info('Confirming your payment with the bank…');
-      },
-      onVerifyTimeout: () => {
-        setIsPaying(false);
-        setCheckoutRefresh((n) => n + 1);
-        toast.info(
-          'Your bank is taking longer than usual to confirm. If you were charged, access is granted automatically — no need to pay again.',
-          { duration: 10000 },
-        );
-      },
-      onDismissed: () => {
-        setIsPaying(false);
-        setCheckoutRefresh((n) => n + 1);
-      },
-      onAttemptFailed: (reason) => {
-        toast.error(`That attempt didn't go through: ${reason}. You can retry in the same window.`);
-      },
-      onError: (message) => {
-        setIsPaying(false);
-        setCheckoutRefresh((n) => n + 1);
-        toast.error(message);
-      },
-    });
-  }, [isPaying, notifyStateChange]);
+    const idempotencyKey = crypto.randomUUID();
+    // Desktop gets Arcade's own checkout; phones and tablets keep Razorpay's hosted modal.
+    if (user?.email && prefersCustomCheckout()) {
+      setCustomCheckout({ enrollmentId: paymentEnrollmentId, idempotencyKey });
+      return;
+    }
+    await launchRazorpayCheckout(paymentEnrollmentId, idempotencyKey, paymentCallbacks());
+  }, [isPaying, notifyStateChange, paymentCallbacks, user?.email]);
+
+  const customCheckoutView = customCheckout && user ? (
+    <CustomCheckout
+      enrollmentId={customCheckout.enrollmentId}
+      idempotencyKey={customCheckout.idempotencyKey}
+      payerEmail={user.email}
+      payerPhone={user.mobileNumber}
+      callbacks={paymentCallbacks()}
+      onClosed={() => setCustomCheckout(null)}
+      onUseHosted={() =>
+        void launchRazorpayCheckout(customCheckout.enrollmentId, customCheckout.idempotencyKey, paymentCallbacks())
+      }
+    />
+  ) : null;
 
   const handleEnroll = async () => {
     if (isProcessing) return;
@@ -229,16 +262,18 @@ export function EnrollmentButton({
     }
   };
 
+  // A styled confirmation instead of the browser's confirm() box (BUG-1004).
+  const [confirmingRevoke, setConfirmingRevoke] = useState(false);
+
   const handleRevoke = async () => {
     if (isProcessing) return;
-    
-    if (!confirm('Are you sure you want to unenroll from this resource?')) {
-      return;
-    }
-
+    setConfirmingRevoke(false);
     setIsProcessing(true);
     try {
       await EnrollmentService.revoke(resourceType, resourceId);
+      // The parent still passes the pre-revoke ENROLLED until its query refetches; remember it so
+      // the upgrade effect below does not put the Unenroll button straight back (BUG-1023).
+      staleInitialRef.current = initialState;
       notifyStateChange('NOT_ENROLLED');
       toast.success('Successfully unenrolled');
       resetIdempotencyKey();
@@ -280,6 +315,10 @@ export function EnrollmentButton({
    */
   useEffect(() => {
     if (isProcessing || isPaying) return;
+    if (staleInitialRef.current !== null) {
+      if (initialState === staleInitialRef.current) return;
+      staleInitialRef.current = null;
+    }
     const rank: Record<UIEnrollmentState, number> = {
       NOT_ENROLLED: 0,
       PENDING: 1,
@@ -288,6 +327,38 @@ export function EnrollmentButton({
     };
     setCurrentState((prev) => (rank[initialState] > rank[prev] ? initialState : prev));
   }, [initialState, isProcessing, isPaying]);
+
+  const revokeNoun = resourceType === 'COURSE' ? 'course' : resourceType === 'EXAM' ? 'exam' : 'event';
+  const leavingWaitlist = currentState === 'WAITLISTED';
+  const revokeDialog = (
+    <Dialog open={confirmingRevoke} onOpenChange={setConfirmingRevoke}>
+      <DialogContent className="max-w-sm">
+        <DialogTitle>{leavingWaitlist ? 'Leave the waitlist?' : `Unenroll from this ${revokeNoun}?`}</DialogTitle>
+        <DialogDescription>
+          {leavingWaitlist
+            ? 'You will lose your place in the queue.'
+            : `It leaves your library and you lose access straight away. You can enroll again later if enrollment is still open.`}
+        </DialogDescription>
+        <div className="mt-2 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setConfirmingRevoke(false)}
+            className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
+          >
+            Keep {leavingWaitlist ? 'my place' : 'access'}
+          </button>
+          <button
+            type="button"
+            onClick={handleRevoke}
+            disabled={isProcessing}
+            className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-on-ink hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
+          >
+            {leavingWaitlist ? 'Leave waitlist' : 'Unenroll'}
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 
   // Render logic based on explicit UI state
   if (currentState === 'ENROLLED') {
@@ -301,13 +372,14 @@ export function EnrollmentButton({
           <ArrowRight className="w-4 h-4 shrink-0 text-white" />
         </button>
         <button
-          onClick={handleRevoke}
+          onClick={() => setConfirmingRevoke(true)}
           disabled={isProcessing}
           className="bg-slate-950/5 hover:bg-slate-950/10 active:scale-[0.98] text-slate-700 hover:text-red-600 backdrop-blur-md border border-slate-950/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 flex items-center gap-1.5 disabled:opacity-50 dark:hover:text-red-400"
           title="Unenroll">
           <LogOut className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Unenroll</span>
         </button>
+        {revokeDialog}
       </div>
     );
   }
@@ -321,12 +393,13 @@ export function EnrollmentButton({
           Waitlisted
         </button>
         <button
-          onClick={handleRevoke}
+          onClick={() => setConfirmingRevoke(true)}
           disabled={isProcessing}
           className="bg-slate-950/5 hover:bg-slate-950/10 active:scale-[0.98] text-slate-700 hover:text-red-600 backdrop-blur-md border border-slate-950/10 font-semibold py-3.5 px-5 rounded-full transition-all text-xs shrink-0 disabled:opacity-50 dark:hover:text-red-400"
           title="Leave waitlist">
           Leave
         </button>
+        {revokeDialog}
       </div>
     );
   }
@@ -351,6 +424,7 @@ export function EnrollmentButton({
         {!isPaying && (
           <CheckoutHoldStatus enrollmentId={pendingPaymentEnrollmentId} refreshKey={checkoutRefresh} />
         )}
+        {customCheckoutView}
         </div>
       );
     }

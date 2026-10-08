@@ -23,7 +23,6 @@ import {
   RichTextBubbleVideo,
   RichTextBubbleImageGif,
   RichTextBubbleMermaid,
-  RichTextBubbleTable,
   RichTextBubbleText,
   RichTextBubbleCallout,
   RichTextBubbleCodeBlock,
@@ -32,7 +31,46 @@ import {
 import { SlashCommandList, renderCommandListDefault } from "reactjs-tiptap-editor/slashcommand";
 import { useLocale } from "reactjs-tiptap-editor/locale-bundle";
 import { getBlockDefinitions } from "@/domains/courses";
+import { RichTextHeading } from "reactjs-tiptap-editor/heading";
+import { RichTextFontSize } from "reactjs-tiptap-editor/fontsize";
+import { RichTextBold } from "reactjs-tiptap-editor/bold";
+import { RichTextItalic } from "reactjs-tiptap-editor/italic";
+import { RichTextUnderline } from "reactjs-tiptap-editor/textunderline";
+import { RichTextStrike } from "reactjs-tiptap-editor/strike";
+import { RichTextCode } from "reactjs-tiptap-editor/code";
+import { RichTextLink } from "reactjs-tiptap-editor/link";
+import { RichTextColor } from "reactjs-tiptap-editor/color";
+import { RichTextHighlight } from "reactjs-tiptap-editor/highlight";
+import { RichTextAlign } from "reactjs-tiptap-editor/textalign";
 import { ImageAlignBubble, findSelectedImage } from "./ImageAlignBubble";
+import { TableBubble } from "./TableBubble";
+import { EditorPillDivider } from "./EditorIconButton";
+
+/**
+ * What the selection bubble holds: the same pill as every other editor surface, with the text
+ * size beside the block type — selecting a phrase to resize it shouldn't need a trip to the
+ * toolbar. The library's own bubble draws a square card with no size control.
+ */
+const TEXT_BUBBLE_CONTENT = (
+  <div className="arcade-editor-pill arcade-text-bubble" role="toolbar" aria-label="Text formatting">
+    <div className="arcade-toolbar-selects flex items-center">
+      <RichTextHeading />
+      <RichTextFontSize />
+    </div>
+    <EditorPillDivider />
+    <RichTextBold />
+    <RichTextItalic />
+    <RichTextUnderline />
+    <RichTextStrike />
+    <RichTextCode />
+    <RichTextLink />
+    <EditorPillDivider />
+    <RichTextColor />
+    <RichTextHighlight />
+    <EditorPillDivider />
+    <RichTextAlign />
+  </div>
+);
 
 /**
  * Node types that can appear in the ancestor chain of a plain-text caret without any
@@ -149,7 +187,7 @@ export const RichTextBubbles = memo(function RichTextBubbles({ editor }: RichTex
     <>
       {/* Mounted while the user types in prose; unmounted when an image is selected so it
           can't render on top of the image controls (see imageSelected above). */}
-      {!imageSelected && <RichTextBubbleText />}
+      {!imageSelected && <RichTextBubbleText buttonBubble={TEXT_BUBBLE_CONTENT} />}
       <RichTextBubbleLink />
       <SlashCommandList commandList={commandList} />
       <RichTextBubbleMenuDragHandle />
@@ -172,7 +210,7 @@ export const RichTextBubbles = memo(function RichTextBubbles({ editor }: RichTex
           <RichTextBubbleImageGif />
 
           <RichTextBubbleMermaid />
-          <RichTextBubbleTable />
+          <TableBubble editor={editor} />
           <RichTextBubbleCallout />
           <RichTextBubbleCodeBlock />
         </>
