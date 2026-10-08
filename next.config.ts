@@ -75,6 +75,16 @@ const nextConfig: NextConfig = {
         destination: '/:path*',
         permanent: true,
       },
+      {
+        source: '/studio/workshop/:id/edit',
+        destination: '/studio/content/event/:id?tab=publishing',
+        permanent: true,
+      },
+      {
+        source: '/studio/workshop/:id',
+        destination: '/studio/content/event/:id',
+        permanent: true,
+      },
     ];
   },
 };
