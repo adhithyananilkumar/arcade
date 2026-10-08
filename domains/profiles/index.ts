@@ -42,6 +42,7 @@ export {
   LinksPanel,
   OrganizationsPanel,
   PeoplePanel,
+  QuietProfilePanel,
 } from './components/ProfilePanels';
 export type {
   AchievementsPanelProps,

@@ -49,6 +49,11 @@ export interface User {
   headline?: string;
   location?: string;
   showLearnerActivity?: boolean;
+  /**
+   * Whether the "show learning activity" switch is offered. Only instructors may hide their
+   * learning; for a learner the backend always shows it and refuses a request to hide it.
+   */
+  canHideLearnerActivity?: boolean;
   /** Verification and staff badges, so signed-in chrome can render the tick without a refetch. */
   badges?: {
     code: string;

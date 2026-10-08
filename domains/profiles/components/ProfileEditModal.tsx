@@ -284,7 +284,8 @@ export function ProfileEditModal({
   const [newSkillCategory, setNewSkillCategory] = useState<TechSkill['category']>('languages');
   const [presetCategoryFilter, setPresetCategoryFilter] = useState<string>('all');
 
-  // Activity visibility state
+  // Activity visibility state. Only instructors may hide it — the backend refuses a learner.
+  const canHideLearnerActivity = user?.canHideLearnerActivity ?? false;
   const [showLearnerActivity, setShowLearnerActivity] = useState<boolean>(
     user?.showLearnerActivity ?? profile.learnerActivityVisible ?? true
   );
@@ -390,7 +391,7 @@ export function ProfileEditModal({
         headline: cleanHeadline,
         location: location.trim(),
         skills: JSON.stringify(skillsClean),
-        showLearnerActivity,
+        ...(canHideLearnerActivity ? { showLearnerActivity } : {}),
       });
 
       // Update auth store
@@ -603,7 +604,8 @@ export function ProfileEditModal({
                       />
                     </div>
 
-                    {/* Learning Activity & Achievements Privacy Toggle */}
+                    {/* Learning Activity & Achievements Privacy Toggle — instructors only */}
+                    {canHideLearnerActivity && (
                     <div className="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40">
                       <div className="flex-1 min-w-0">
                         <label className="text-xs font-bold text-black dark:text-white block">
@@ -629,6 +631,7 @@ export function ProfileEditModal({
                         />
                       </button>
                     </div>
+                    )}
                   </div>
                 )}
 

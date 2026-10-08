@@ -672,6 +672,15 @@ export function ProfileHero({
       </a>,
     );
   }
+  const joinedLabel = formatJoined(joinedAt);
+  if (joinedLabel) {
+    meta.push(
+      <span key="joined" className="flex items-center gap-1">
+        <Calendar size={13} className="text-slate-400" />
+        Joined {joinedLabel}
+      </span>,
+    );
+  }
 
   // Active banner rendering
   const isCustomBanner = isCustomBannerUrl(bannerConfig.idOrUrl);

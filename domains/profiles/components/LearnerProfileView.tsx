@@ -12,6 +12,7 @@ import {
   ActivityPanel,
   TechStackPanel,
   ContentLibrary,
+  QuietProfilePanel,
 } from './ProfilePanels';
 import type { UserProfile, PublicActivity } from '../types/profile.types';
 import type { IssuedBadge } from '@/domains/credentials';
@@ -180,6 +181,14 @@ export function LearnerProfileView({ data }: LearnerProfileViewProps) {
                 { label: 'Longest streak', value: activity.longestStreak },
                 { label: 'Credentials', value: achievements.length + (profile.certificates?.length ?? 0) },
               ]}
+            />
+          )}
+
+          {/* Every panel above hides itself when empty; say so rather than leave a blank page */}
+          {!(skills.length > 0 || isSelf) && !(isLearnerActivityVisible && activity) && !hasPublishedContent && (
+            <QuietProfilePanel
+              firstName={profile.firstName || profile.fullName}
+              learningPrivate={!isLearnerActivityVisible}
             />
           )}
 

@@ -977,7 +977,8 @@ export default function PersonalInfoPage() {
             )}
           </div>
 
-          {/* Show Learning Activity on Profile */}
+          {/* Show Learning Activity on Profile — instructors only; a learner's profile is their learning */}
+          {user?.canHideLearnerActivity && (
           <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 transition-colors border-b border-slate-100 flex items-center justify-between gap-3 md:col-span-2">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="text-slate-400 shrink-0">
@@ -1014,6 +1015,7 @@ export default function PersonalInfoPage() {
               </span>
             </button>
           </div>
+          )}
 
           {/* Handle Appeals */}
           {appeals.length > 0 && (

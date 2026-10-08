@@ -43,6 +43,7 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
+  EyeOff,
   Flame,
   Globe,
   Search,
@@ -147,6 +148,33 @@ function linkIcon(url: string): React.ReactNode {
   if (/linkedin\.com/i.test(url)) return <FaLinkedin size={15} className="shrink-0 text-slate-500" />;
   if (/github\.com/i.test(url)) return <FaGithub size={15} className="shrink-0 text-slate-500" />;
   return <Globe size={15} className="shrink-0 text-slate-500" />;
+}
+
+/**
+ * What a profile shows when none of its panels has anything to render. Every panel hides itself
+ * when empty, so without this a quiet profile was a hero above a blank page and read as broken.
+ */
+export function QuietProfilePanel({
+  firstName,
+  learningPrivate,
+}: {
+  firstName: string;
+  /** The owner hides their learning, so the heatmap and credentials were withheld server-side. */
+  learningPrivate: boolean;
+}) {
+  return (
+    <section className={SURFACE}>
+      <ProfileEmptyState
+        icon={learningPrivate ? EyeOff : Sparkles}
+        title={learningPrivate ? `${firstName} keeps their learning private` : 'Nothing public yet'}
+        description={
+          learningPrivate
+            ? 'Their learning activity, badges and certificates are hidden from their profile.'
+            : `Courses, events, badges and certificates ${firstName} earns or publishes will appear here.`
+        }
+      />
+    </section>
+  );
 }
 
 /** Social and web links. Renders nothing when there are none, rather than an empty card. */
@@ -1220,16 +1248,18 @@ export function TechStackPanel({
     return skills.filter((s) => s.category === filter);
   }, [skills, filter]);
 
-  if (skills.length === 0 && !onAddClick) {
-    return null;
-  }
-
   // If only 1 category exists, show only that category tab; if multiple, show 'all' + categories
   const tabs = useMemo(() => {
     if (availableCategories.length === 0) return [];
     if (availableCategories.length === 1) return availableCategories;
     return ['all', ...availableCategories];
   }, [availableCategories]);
+
+  // After every hook: returning before one changed the hook count when skills went from none to
+  // some, and React threw "Rendered more hooks than during the previous render".
+  if (skills.length === 0 && !onAddClick) {
+    return null;
+  }
 
   const showTabs = tabs.length > 0 && skills.length > 0;
 

@@ -22,12 +22,17 @@
   flex-shrink: 0;
   line-height: 0;
   border-radius: 9999px;
-  color: var(--badge-accent, #1d9bf0);
+  color: var(--badge-accent, #0095f6);
   transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .arc-badge:hover {
   transform: translateY(-1px);
+}
+
+/* The verification tick sits still beside a name, like Instagram's: no lift on hover. */
+.arc-badge--verified:hover {
+  transform: none;
 }
 
 .arc-badge__mark {
