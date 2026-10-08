@@ -108,7 +108,7 @@ export function openExamSitting(examId: string, href: string): void {
  * the identifier rather than deriving it.
  */
 export function contentOverviewRoute(
-  resourceType: 'COURSE' | 'EVENT' | 'EXAM',
+  resourceType: 'COURSE' | 'EVENT' | 'EXAM' | 'EXAM_RETAKE',
   identifier: string,
 ): string {
   switch (resourceType) {
@@ -118,5 +118,8 @@ export function contentOverviewRoute(
       return eventRoutes.overview(identifier);
     case 'EXAM':
       return examRoutes.landing(identifier);
+    // A retake is an extra attempt, not content: its home is the learner's exams.
+    case 'EXAM_RETAKE':
+      return examRoutes.mine;
   }
 }

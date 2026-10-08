@@ -25,6 +25,7 @@ export { AssessmentLanding } from "./components/AssessmentLanding";
 export type { AssessmentLandingProps } from "./components/AssessmentLanding";
 export { AssessmentResultCard } from "./components/AssessmentResultCard";
 export { ExamOverview } from "./components/ExamOverview";
+export { RetakePanel } from "./components/RetakePanel";
 export { ExamGradesDialog } from "./components/ExamGradesDialog";
 export type { ExamGradesDialogProps } from "./components/ExamGradesDialog";
 export type { ExamOverviewProps } from "./components/ExamOverview";
@@ -130,6 +131,8 @@ export {
   updateAssessmentPlacement,
   getAssessmentLanding,
   getEventAssessments,
+  openRetakeOffer,
+  listExamRetakes,
   getExamQuestionBank,
   getExamQuestions,
   listExamVersions,
@@ -173,6 +176,9 @@ export type {
   AssessmentBlockedReason,
   CompletionRequirement,
   LearnerAssessmentNode,
+  RetakeQuote,
+  RetakeOffer,
+  RetakeAuditRow,
   AssessmentLandingResponse,
   AttemptHistoryItem,
   SelectionMode,

@@ -8,7 +8,7 @@ export type PaymentOrderStatus =
   | 'PARTIALLY_REFUNDED'
   | 'REFUNDED';
 
-export type PaymentResourceType = 'COURSE' | 'EVENT' | 'EXAM';
+export type PaymentResourceType = 'COURSE' | 'EVENT' | 'EXAM' | 'EXAM_RETAKE';
 
 export interface CheckoutResponse {
   orderId: string;

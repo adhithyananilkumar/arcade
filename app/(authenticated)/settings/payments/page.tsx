@@ -24,7 +24,7 @@ const STATUS: Record<BillingLine['status'], { label: string; cls: string }> = {
   FAILED: { label: 'Failed', cls: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' },
 };
 
-const KIND: Record<string, string> = { COURSE: 'Course', EVENT: 'Event', EXAM: 'Exam' };
+const KIND: Record<string, string> = { COURSE: 'Course', EVENT: 'Event', EXAM: 'Exam', EXAM_RETAKE: 'Exam retake' };
 
 function hrefFor(line: BillingLine): string | null {
   if (line.resourceType === 'COURSE') return courseRoutes.landing(line.resourceId);

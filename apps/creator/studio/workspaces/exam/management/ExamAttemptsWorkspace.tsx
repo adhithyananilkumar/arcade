@@ -3,13 +3,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Ban, Check, Clock, Loader2, MoreHorizontal, Plus, RotateCcw, ShieldAlert, X } from "lucide-react";
 import { toast } from "sonner";
+import { formatMoney } from "@/shared/utils/money";
 import {
   cancelExamAttempt,
   extendExamAttempt,
   grantExtraAttempts,
   listAttemptsForExam,
+  listExamRetakes,
   reviewAttemptIdentity,
   type ExamAttemptSummaryResponse,
+  type RetakeAuditRow,
   type ExamPlanResponse,
 } from "@/domains/assessments";
 import { useStudioConfirm } from "@/apps/creator/studio/core/useStudioConfirm";
@@ -280,8 +283,86 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
           </tbody>
         </table>
       </div>
+      <RetakeAudit examId={examId} attempts={attempts} plans={plans} />
       {dialog}
     </div>
+  );
+}
+
+/**
+ * Every retake offered on this exam under the certification standard — paid, second-chance or
+ * free — and whether it was taken up. The record behind each extra attempt that no person granted.
+ */
+function RetakeAudit({
+  examId,
+  attempts,
+  plans,
+}: {
+  examId: string;
+  attempts: ExamAttemptSummaryResponse[];
+  plans: ExamPlanResponse[];
+}) {
+  const [rows, setRows] = useState<RetakeAuditRow[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    listExamRetakes(examId)
+      .then((r) => !cancelled && setRows(r))
+      .catch(() => !cancelled && setRows([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [examId]);
+
+  if (!rows || rows.length === 0) return null;
+  const nameOf = (userId: string) => attempts.find((a) => a.userId === userId)?.userName ?? "A candidate";
+  const planOf = (planId: string) => plans.find((p) => p.id === planId)?.name ?? "—";
+
+  return (
+    <section className="mt-2">
+      <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Retakes</h3>
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-surface">
+        <table className="w-full min-w-[640px] text-left text-xs">
+          <thead>
+            <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wide text-slate-400">
+              <th className="px-4 py-2.5">Candidate</th>
+              <th className="px-4 py-2.5">Plan</th>
+              <th className="px-4 py-2.5">Kind</th>
+              <th className="px-4 py-2.5">Price</th>
+              <th className="px-4 py-2.5">Status</th>
+              <th className="px-4 py-2.5">Offered</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {rows.map((r) => (
+              <tr key={r.offerId}>
+                <td className="px-4 py-2.5 font-semibold text-ink">{nameOf(r.userId)}</td>
+                <td className="px-4 py-2.5 text-slate-600">{planOf(r.planId)}</td>
+                <td className="px-4 py-2.5 text-slate-600">
+                  {r.kind === "SECOND_CHANCE" ? `Second chance${r.discountPercent ? ` · ${r.discountPercent}% off` : ""}` : "Retake"}
+                </td>
+                <td className="px-4 py-2.5 tabular-nums text-slate-600">
+                  {r.amountMinor === 0 ? "Free" : formatMoney(r.amountMinor, r.currency)}
+                </td>
+                <td className="px-4 py-2.5">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      r.status === "GRANTED"
+                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+                        : r.status === "OFFERED"
+                        ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
+                        : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    {r.status === "GRANTED" ? "Taken" : r.status === "OFFERED" ? "Awaiting payment" : r.status === "EXPIRED" ? "Lapsed" : "Replaced"}
+                  </span>
+                </td>
+                <td className="px-4 py-2.5 text-slate-500">{formatDate(r.createdAt)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
 

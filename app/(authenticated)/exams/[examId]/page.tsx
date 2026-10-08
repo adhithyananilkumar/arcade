@@ -14,9 +14,13 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import {
   ExamOverview,
+  RetakePanel,
   getAssessmentLanding,
+  openRetakeOffer,
   type AssessmentLandingResponse,
+  type RetakeOffer,
 } from '@/domains/assessments';
+import { toast } from 'sonner';
 import { EnrollmentButton } from '@/domains/enrollment';
 import { courseRoutes, eventRoutes, examRoutes, openExamSitting } from '@/shared/routes/content.routes';
 import { formatMoney } from '@/shared/utils/money';
@@ -33,6 +37,9 @@ export default function ExamPage() {
 
   const [landing, setLanding] = useState<AssessmentLandingResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // The retake offer being paid for, once the candidate asked for one.
+  const [retakeOffer, setRetakeOffer] = useState<RetakeOffer | null>(null);
+  const [openingRetake, setOpeningRetake] = useState(false);
 
   const load = useCallback(() => {
     getAssessmentLanding(examId, { planId })
@@ -114,6 +121,53 @@ export default function ExamPage() {
     />
   );
 
+  const getRetake = async () => {
+    if (!landing.planId) return;
+    setOpeningRetake(true);
+    try {
+      const offer = await openRetakeOffer(examId, landing.planId);
+      if (offer.granted) {
+        toast.success('Your retake is ready');
+        setRetakeOffer(null);
+        load();
+      } else {
+        setRetakeOffer(offer);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not prepare a retake');
+    } finally {
+      setOpeningRetake(false);
+    }
+  };
+
+  // Paying goes through the shared enrolment checkout on the server's offer (EXAM_RETAKE), so the
+  // price, receipts and refunds are the platform's own.
+  const retake = landing.retake ? (
+    <RetakePanel
+      quote={landing.retake}
+      onGetRetake={getRetake}
+      busy={openingRetake}
+      checkoutSlot={
+        retakeOffer ? (
+          <EnrollmentButton
+            resourceType="EXAM_RETAKE"
+            resourceId={retakeOffer.offerId}
+            initialState="NOT_ENROLLED"
+            idleLabel={`Pay ${formatMoney(retakeOffer.amountMinor, retakeOffer.currency)} for a retake`}
+            onStateChange={(state) => {
+              if (state === 'ENROLLED') {
+                toast.success('Retake purchased — you can sit the exam again');
+                setRetakeOffer(null);
+                load();
+              }
+            }}
+            onGoToResource={load}
+          />
+        ) : undefined
+      }
+    />
+  ) : undefined;
+
   const identity =
     landing.planId && landing.blockedReason === 'IDENTITY_REQUIRED' ? (
       <IdentityCapture
@@ -152,6 +206,7 @@ export default function ExamPage() {
       onViewGradeCard={(id) => router.push(examRoutes.gradeCard(id))}
       registrationSlot={registration}
       identitySlot={identity}
+      retakeSlot={retake}
       feeLabel={landing.feeMinor > 0 ? formatMoney(landing.feeMinor, landing.currency ?? 'INR') : null}
       onOpenPrerequisite={openPrerequisite}
     />

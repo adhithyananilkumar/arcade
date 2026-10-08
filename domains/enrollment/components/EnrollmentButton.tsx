@@ -61,6 +61,8 @@ export interface EnrollmentButtonProps {
   onStateChange?: (newState: UIEnrollmentState) => void;
   onGoToResource?: () => void;
   targetUrl?: string;
+  /** Replaces "Enroll Now"/"Register" — e.g. "Pay ₹250 for a retake". */
+  idleLabel?: string;
 }
 
 export function EnrollmentButton({
@@ -71,7 +73,8 @@ export function EnrollmentButton({
   className = '',
   onStateChange,
   onGoToResource,
-  targetUrl
+  targetUrl,
+  idleLabel,
 }: EnrollmentButtonProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -478,7 +481,7 @@ export function EnrollmentButton({
         </>
       ) : (
         <>
-          <span>{resourceType === 'EXAM' ? 'Register' : 'Enroll Now'}</span>
+          <span>{idleLabel ?? (resourceType === 'EXAM' ? 'Register' : 'Enroll Now')}</span>
           <ArrowRight className="w-4 h-4 shrink-0 text-white" />
         </>
       )}
