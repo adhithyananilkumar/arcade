@@ -111,7 +111,7 @@ export function EventCollaboratorsManager({ eventId, layout = 'card', startStep 
         <input
           type="email"
           placeholder="Enter collaborator email address…"
-          className="w-full rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm font-medium text-slate-800 shadow-2xs outline-none focus:border-slate-400 dark:border-slate-700"
+          className="h-12 w-full rounded-xl border border-slate-200/90 bg-surface px-4 text-sm font-medium text-slate-800 shadow-2xs outline-none focus:border-[#205ca8] focus:ring-4 focus:ring-blue-500/10 dark:border-slate-700"
           value={inviteEmail}
           onChange={(e) => setInviteEmail(e.target.value)}
           required
@@ -120,7 +120,7 @@ export function EventCollaboratorsManager({ eventId, layout = 'card', startStep 
       <div className="w-full sm:w-52">
         <select
           aria-label="Role"
-          className="w-full rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm font-bold text-slate-800 shadow-2xs outline-none focus:border-slate-400 dark:border-slate-700"
+          className="h-12 w-full rounded-xl border border-slate-200/90 bg-surface px-4 text-sm font-bold text-slate-800 shadow-2xs outline-none focus:border-[#205ca8] focus:ring-4 focus:ring-blue-500/10 dark:border-slate-700"
           value={inviteRole}
           onChange={(e) => setInviteRole(e.target.value as any)}
         >
@@ -132,7 +132,7 @@ export function EventCollaboratorsManager({ eventId, layout = 'card', startStep 
       <button
         type="submit"
         disabled={inviting}
-        className="inline-flex cursor-pointer items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-slate-800 active:scale-[0.98] disabled:opacity-40 whitespace-nowrap dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
+        className="h-12 inline-flex cursor-pointer items-center justify-center rounded-xl bg-ink px-6 text-sm font-bold text-on-ink shadow-md transition-all hover:bg-[#205ca8] active:scale-[0.98] disabled:opacity-40 whitespace-nowrap"
       >
         {inviting ? (
           <div className="flex items-center gap-2">

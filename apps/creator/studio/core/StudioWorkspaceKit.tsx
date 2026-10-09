@@ -161,7 +161,7 @@ export function WorkspaceTabBody({ children }: { children: ReactNode }) {
 /* ------------------------------------------------------------------ */
 
 export function WorkspaceRows({ children }: { children: ReactNode }) {
-  return <div className="flex w-full flex-col divide-y divide-slate-200/70">{children}</div>;
+  return <div className="flex w-full flex-col gap-8">{children}</div>;
 }
 
 export function WorkspaceStep({ n }: { n: number | string }) {
@@ -207,7 +207,7 @@ export function WorkspaceRow({
 
   if (wide) {
     return (
-      <section id={id} className="flex flex-col gap-6 py-8 first:pt-0">
+      <section id={id} className="flex flex-col gap-6 py-1">
         {heading}
         {children && <div className="min-w-0 md:pl-[3.375rem]">{children}</div>}
       </section>
@@ -215,7 +215,7 @@ export function WorkspaceRow({
   }
 
   return (
-    <section id={id} className="grid grid-cols-1 items-start gap-6 py-8 first:pt-0 md:grid-cols-12">
+    <section id={id} className="grid grid-cols-1 items-start gap-6 py-1 md:grid-cols-12">
       <div className="md:col-span-4">{heading}</div>
       <div className="flex min-w-0 flex-col gap-1.5 md:col-span-8">{children}</div>
     </section>
