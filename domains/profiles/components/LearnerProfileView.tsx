@@ -54,7 +54,6 @@ export interface LearnerProfileViewProps {
 
 import { ProfileEditModal } from './ProfileEditModal';
 import type { TechSkill } from './ProfilePanels';
-import { DEMO_BADGES, DEMO_CERTIFICATES } from '../constants/profileDemoData';
 
 export function LearnerProfileView({ data }: LearnerProfileViewProps) {
   const { profile: initialProfile, activity, achievements } = data;
@@ -199,8 +198,8 @@ export function LearnerProfileView({ data }: LearnerProfileViewProps) {
           {/* Achievements, Badges & Certificates */}
           {isLearnerActivityVisible && (
             <AchievementsPanel
-              badges={achievements.length > 0 ? achievements : DEMO_BADGES}
-              certificates={(profile.certificates && profile.certificates.length > 0) ? profile.certificates : DEMO_CERTIFICATES}
+              badges={achievements}
+              certificates={profile.certificates ?? []}
               viewAllHref={isSelf ? '/achievements' : undefined}
             />
           )}

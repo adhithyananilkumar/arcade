@@ -211,88 +211,65 @@ export function AchievementsPanel({ badges, certificates }: AchievementsPanelPro
           </button>
         }
       >
-        {totalCount === 0 ? (
-          <div className="space-y-3 py-1">
-            <div className="flex items-center justify-center gap-8 px-1">
-              <div className="flex flex-col items-center gap-1.5 opacity-60">
-                <div className="size-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-dashed border-amber-300 dark:border-amber-700/60 flex items-center justify-center text-amber-500">
-                  <Trophy size={20} />
-                </div>
-                <span className="text-[10px] font-bold text-slate-500 text-center">Course Ace</span>
-              </div>
-
-              <div className="flex flex-col items-center gap-1.5 opacity-60">
-                <div className="size-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-dashed border-indigo-300 dark:border-indigo-700/60 flex items-center justify-center text-indigo-500">
-                  <Award size={20} />
-                </div>
-                <span className="text-[10px] font-bold text-slate-500 text-center">Certified</span>
-              </div>
+        <div className="space-y-4">
+          {badges.length > 0 && (
+            <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-1 scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">
+              {badges.map((badge) => (
+                <button
+                  key={badge.credentialCode}
+                  type="button"
+                  onClick={() => setSelectedBadge(badge)}
+                  className="shrink-0 transition-transform hover:scale-105 cursor-pointer text-left focus:outline-none"
+                  title={`${badge.name} (${badge.badgeClass.tier.label}) — Click to view details`}
+                >
+                  <CredentialBadge
+                    family={badge.badgeClass.family.key}
+                    level={badge.badgeClass.tier.level}
+                    title={badge.name}
+                    className="h-16 w-16"
+                  />
+                </button>
+              ))}
             </div>
-            <p className="text-xs text-slate-400 dark:text-slate-500 text-center pt-1 font-medium">
-              Complete courses & checkpoint exams to unlock verified digital badges.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {badges.length > 0 && (
-              <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-1 scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">
-                {badges.map((badge) => (
-                  <button
-                    key={badge.credentialCode}
-                    type="button"
-                    onClick={() => setSelectedBadge(badge)}
-                    className="shrink-0 transition-transform hover:scale-105 cursor-pointer text-left focus:outline-none"
-                    title={`${badge.name} (${badge.badgeClass.tier.label}) — Click to view details`}
-                  >
-                    <CredentialBadge
-                      family={badge.badgeClass.family.key}
-                      level={badge.badgeClass.tier.level}
-                      title={badge.name}
-                      className="h-16 w-16"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
+          )}
 
-            {certificates.length > 0 && (
-              <div className="space-y-2">
-                {certificates.slice(0, 3).map((certificate, index) => {
-                  const body = (
-                    <>
-                      <Award size={15} className="shrink-0 text-amber-500" />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-xs font-bold text-slate-800 dark:text-slate-200">
-                          {certificate.name}
-                        </span>
-                        {certificate.issuer && (
-                          <span className="block truncate text-[10px] font-medium text-slate-400 dark:text-slate-500">
-                            {certificate.issuer}
-                          </span>
-                        )}
+          {certificates.length > 0 && (
+            <div className="space-y-2">
+              {certificates.slice(0, 3).map((certificate, index) => {
+                const body = (
+                  <>
+                    <Award size={15} className="shrink-0 text-amber-500" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-xs font-bold text-slate-800 dark:text-slate-200">
+                        {certificate.name}
                       </span>
-                    </>
-                  );
-                  const className =
-                    'flex items-center gap-2.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-2.5';
-                  return certificate.idCode ? (
-                    <Link
-                      key={certificate.idCode}
-                      href={`/credentials/${encodeURIComponent(certificate.idCode)}`}
-                      className={`${className} transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/80`}
-                    >
-                      {body}
-                    </Link>
-                  ) : (
-                    <div key={index} className={className}>
-                      {body}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
+                      {certificate.issuer && (
+                        <span className="block truncate text-[10px] font-medium text-slate-400 dark:text-slate-500">
+                          {certificate.issuer}
+                        </span>
+                      )}
+                    </span>
+                  </>
+                );
+                const className =
+                  'flex items-center gap-2.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-2.5';
+                return certificate.idCode ? (
+                  <Link
+                    key={certificate.idCode}
+                    href={`/credentials/${encodeURIComponent(certificate.idCode)}`}
+                    className={`${className} transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/80`}
+                  >
+                    {body}
+                  </Link>
+                ) : (
+                  <div key={index} className={className}>
+                    {body}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </Panel>
 
       {/* Public Achievements Modal */}
