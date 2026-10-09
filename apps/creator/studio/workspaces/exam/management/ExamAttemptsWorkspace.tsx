@@ -3,15 +3,20 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Ban, Check, Clock, Loader2, MoreHorizontal, Plus, RotateCcw, ShieldAlert, X } from "lucide-react";
 import { toast } from "sonner";
+import { formatMoney } from "@/shared/utils/money";
 import {
   cancelExamAttempt,
   extendExamAttempt,
   grantExtraAttempts,
   listAttemptsForExam,
+  listExamRetakes,
   reviewAttemptIdentity,
   type ExamAttemptSummaryResponse,
+  type RetakeAuditRow,
   type ExamPlanResponse,
 } from "@/domains/assessments";
+import { useStudioConfirm } from "@/apps/creator/studio/core/useStudioConfirm";
+import { StudioRowMenu } from "@/apps/creator/studio/core/StudioRowMenu";
 
 /**
  * Who has sat this exam, how they did, and the administrator's levers: identity review, ending an
@@ -96,7 +101,7 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
   const [attempts, setAttempts] = useState<ExamAttemptSummaryResponse[] | null>(null);
   const [error, setError] = useState(false);
   const [planFilter, setPlanFilter] = useState<string>("");
-  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const { confirm, dialog } = useStudioConfirm();
 
   const load = useCallback(() => {
     listAttemptsForExam(examId)
@@ -117,13 +122,13 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
   );
 
   const act = async (fn: () => Promise<unknown>, done: string) => {
-    setMenuFor(null);
     try {
       await fn();
       toast.success(done);
       load();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "That didn't work.");
+      throw err;
     }
   };
 
@@ -203,98 +208,161 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
                   <IdentityCell
                     attempt={a}
                     onReview={(approved) =>
-                      act(
+                      void act(
                         () => reviewAttemptIdentity(a.attemptId, approved),
                         approved ? "Identity approved" : "Identity rejected"
-                      )
+                      ).catch(() => undefined)
                     }
                   />
                 </td>
                 <td className="px-4 py-3 text-xs tabular-nums text-slate-600">{a.violationCount || "—"}</td>
                 <td className="px-4 py-3 text-xs text-slate-500">{formatDate(a.submittedAt)}</td>
-                <td className="relative px-4 py-3 text-right">
-                  <button
-                    type="button"
-                    onClick={() => setMenuFor(menuFor === a.attemptId ? null : a.attemptId)}
-                    className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-ink"
-                    aria-label="Attempt actions"
-                  >
-                    <MoreHorizontal size={15} />
-                  </button>
-                  {menuFor === a.attemptId && (
-                    <div className="absolute right-4 z-20 mt-1 w-56 overflow-hidden rounded-xl border border-slate-200 bg-surface py-1 text-left shadow-lg">
-                      {a.status === "IN_PROGRESS" && (
-                        <>
-                          <MenuItem
-                            icon={<Clock size={13} />}
-                            label="Give extra time…"
-                            onClick={() => {
-                              const raw = window.prompt("Extra minutes for this attempt", "10");
-                              const minutes = Number(raw);
-                              if (raw && Number.isFinite(minutes) && minutes > 0) {
-                                void act(() => extendExamAttempt(a.attemptId, minutes), `Added ${minutes} minutes`);
-                              }
-                            }}
-                          />
-                          <MenuItem
-                            icon={<Ban size={13} />}
-                            label="Cancel attempt"
-                            danger
-                            onClick={() => {
-                              if (window.confirm(`Cancel ${a.userName}'s attempt? It cannot pass.`)) {
-                                void act(() => cancelExamAttempt(a.attemptId), "Attempt cancelled");
-                              }
-                            }}
-                          />
-                        </>
-                      )}
-                      <MenuItem
-                        icon={<Plus size={13} />}
-                        label="Grant an extra attempt…"
-                        onClick={() => {
-                          const reason = window.prompt(`Why is ${a.userName} getting another attempt?`, "");
-                          if (reason !== null) {
-                            void act(
-                              () => grantExtraAttempts(a.planId, a.userId, 1, reason || undefined),
-                              "Extra attempt granted"
-                            );
-                          }
-                        }}
-                      />
-                      <MenuItem icon={<RotateCcw size={13} />} label="Refresh" onClick={() => { setMenuFor(null); load(); }} />
-                    </div>
-                  )}
+                <td className="px-4 py-3 text-right">
+                  <StudioRowMenu
+                    label="Attempt actions"
+                    trigger={<MoreHorizontal size={15} />}
+                    items={[
+                      ...(a.status === "IN_PROGRESS"
+                        ? [
+                            {
+                              key: "time",
+                              label: "Give extra time…",
+                              icon: <Clock size={13} />,
+                              onSelect: () =>
+                                confirm({
+                                  title: "Give extra time",
+                                  message: `Adds minutes to ${a.userName}'s current attempt.`,
+                                  confirmLabel: "Add time",
+                                  input: { label: "Extra minutes", type: "number", defaultValue: "10", required: true },
+                                  onConfirm: async (raw) => {
+                                    const minutes = Number(raw);
+                                    if (!Number.isFinite(minutes) || minutes <= 0) {
+                                      toast.error("Enter a number of minutes above zero.");
+                                      throw new Error("invalid minutes");
+                                    }
+                                    await act(() => extendExamAttempt(a.attemptId, minutes), `Added ${minutes} minutes`);
+                                  },
+                                }),
+                            },
+                            {
+                              key: "cancel",
+                              label: "Cancel attempt",
+                              icon: <Ban size={13} />,
+                              danger: true,
+                              onSelect: () =>
+                                confirm({
+                                  title: "Cancel this attempt?",
+                                  message: `${a.userName}'s attempt ends now and cannot pass.`,
+                                  confirmLabel: "Cancel attempt",
+                                  danger: true,
+                                  onConfirm: () => act(() => cancelExamAttempt(a.attemptId), "Attempt cancelled"),
+                                }),
+                            },
+                          ]
+                        : []),
+                      {
+                        key: "extra",
+                        label: "Grant an extra attempt…",
+                        icon: <Plus size={13} />,
+                        onSelect: () =>
+                          confirm({
+                            title: "Grant an extra attempt",
+                            message: `${a.userName} gets one more attempt at ${a.planName ?? "this plan"}. The reason is kept in the audit log.`,
+                            confirmLabel: "Grant attempt",
+                            input: { label: "Reason (optional)", placeholder: "e.g. connection dropped mid-exam" },
+                            onConfirm: (reason) =>
+                              act(() => grantExtraAttempts(a.planId, a.userId, 1, reason || undefined), "Extra attempt granted"),
+                          }),
+                      },
+                      { key: "refresh", label: "Refresh", icon: <RotateCcw size={13} />, onSelect: load },
+                    ]}
+                  />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <RetakeAudit examId={examId} attempts={attempts} plans={plans} />
+      {dialog}
     </div>
   );
 }
 
-function MenuItem({
-  icon,
-  label,
-  onClick,
-  danger,
+/**
+ * Every retake offered on this exam under the certification standard — paid, second-chance or
+ * free — and whether it was taken up. The record behind each extra attempt that no person granted.
+ */
+function RetakeAudit({
+  examId,
+  attempts,
+  plans,
 }: {
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-  danger?: boolean;
+  examId: string;
+  attempts: ExamAttemptSummaryResponse[];
+  plans: ExamPlanResponse[];
 }) {
+  const [rows, setRows] = useState<RetakeAuditRow[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    listExamRetakes(examId)
+      .then((r) => !cancelled && setRows(r))
+      .catch(() => !cancelled && setRows([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [examId]);
+
+  if (!rows || rows.length === 0) return null;
+  const nameOf = (userId: string) => attempts.find((a) => a.userId === userId)?.userName ?? "A candidate";
+  const planOf = (planId: string) => plans.find((p) => p.id === planId)?.name ?? "—";
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold transition-colors ${
-        danger ? "text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10" : "text-slate-700 hover:bg-slate-50"
-      }`}
-    >
-      {icon}
-      {label}
-    </button>
+    <section className="mt-2">
+      <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Retakes</h3>
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-surface">
+        <table className="w-full min-w-[640px] text-left text-xs">
+          <thead>
+            <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wide text-slate-400">
+              <th className="px-4 py-2.5">Candidate</th>
+              <th className="px-4 py-2.5">Plan</th>
+              <th className="px-4 py-2.5">Kind</th>
+              <th className="px-4 py-2.5">Price</th>
+              <th className="px-4 py-2.5">Status</th>
+              <th className="px-4 py-2.5">Offered</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {rows.map((r) => (
+              <tr key={r.offerId}>
+                <td className="px-4 py-2.5 font-semibold text-ink">{nameOf(r.userId)}</td>
+                <td className="px-4 py-2.5 text-slate-600">{planOf(r.planId)}</td>
+                <td className="px-4 py-2.5 text-slate-600">
+                  {r.kind === "SECOND_CHANCE" ? `Second chance${r.discountPercent ? ` · ${r.discountPercent}% off` : ""}` : "Retake"}
+                </td>
+                <td className="px-4 py-2.5 tabular-nums text-slate-600">
+                  {r.amountMinor === 0 ? "Free" : formatMoney(r.amountMinor, r.currency)}
+                </td>
+                <td className="px-4 py-2.5">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      r.status === "GRANTED"
+                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+                        : r.status === "OFFERED"
+                        ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
+                        : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    {r.status === "GRANTED" ? "Taken" : r.status === "OFFERED" ? "Awaiting payment" : r.status === "EXPIRED" ? "Lapsed" : "Replaced"}
+                  </span>
+                </td>
+                <td className="px-4 py-2.5 text-slate-500">{formatDate(r.createdAt)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
+

@@ -44,8 +44,8 @@ import {
   ZoomOut,
   Move,
   RotateCcw,
-  Upload,
   Sliders,
+  Upload,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BadgeRow, type ProfileBadge } from '@/domains/recognition';
@@ -363,6 +363,7 @@ export interface ProfileHeroProps {
   joinedAt?: string | null;
   actions?: React.ReactNode;
   isSelf?: boolean;
+  onBannerUpdate?: (bannerUrl: string) => void;
 }
 
 function formatJoined(value?: string | null): string | null {
@@ -386,6 +387,7 @@ export function ProfileHero({
   joinedAt,
   actions,
   isSelf = false,
+  onBannerUpdate,
 }: ProfileHeroProps) {
   const storageKey = handle ? `arcade_profile_banner_v2_${handle}` : null;
   const legacyStorageKey = handle ? `arcade_profile_banner_${handle}` : null;
@@ -461,6 +463,7 @@ export function ProfileHero({
 
   const [modalOpen, setModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'presets' | 'crop_editor'>('presets');
+  const bannerFileInputRef = useRef<HTMLInputElement>(null);
 
   // Staging state inside modal for cropping / repositioning
   const [stagingUrl, setStagingUrl] = useState<string>('');
@@ -478,10 +481,35 @@ export function ProfileHero({
     initPosX: 0,
     initPosY: 0,
   });
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Load user's saved banner choice from localStorage if present and isSelf
+  const handleBannerFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl) {
+        setStagingUrl(dataUrl);
+        setStagingZoom(1.0);
+        setStagingPosX(0);
+        setStagingPosY(0);
+        setUrlError(false);
+        setActiveTab('crop_editor');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+  // Load user's saved banner choice from initialBannerUrl (backend database) or localStorage fallback
   useEffect(() => {
+    if (initialBannerUrl) {
+      setBannerConfig(parseBannerConfig(initialBannerUrl, kind));
+      return;
+    }
     if (isSelf && storageKey) {
       const savedV2 = localStorage.getItem(storageKey);
       if (savedV2) {
@@ -530,10 +558,25 @@ export function ProfileHero({
       posX: 0,
       posY: 0,
     };
+    const bannerJson = JSON.stringify(nextConfig);
     setBannerConfig(nextConfig);
     if (storageKey) {
-      localStorage.setItem(storageKey, JSON.stringify(nextConfig));
+      localStorage.setItem(storageKey, bannerJson);
     }
+    onBannerUpdate?.(bannerJson);
+
+    // Save to database
+    if (isSelf && kind !== 'organization') {
+      const viewerUser = useAuthStore.getState().user;
+      if (viewerUser?.firstName) {
+        UserService.updateProfilePresentation(viewerUser.firstName, viewerUser.lastName ?? '', {
+          bannerUrl: bannerJson,
+        }).catch((err) => {
+          console.error('Failed to sync banner to database', err);
+        });
+      }
+    }
+
     setModalOpen(false);
   };
 
@@ -547,32 +590,26 @@ export function ProfileHero({
       posX: Math.round(stagingPosX),
       posY: Math.round(stagingPosY),
     };
+    const bannerJson = JSON.stringify(nextConfig);
     setBannerConfig(nextConfig);
     if (storageKey) {
-      localStorage.setItem(storageKey, JSON.stringify(nextConfig));
+      localStorage.setItem(storageKey, bannerJson);
     }
-    setModalOpen(false);
-  };
+    onBannerUpdate?.(bannerJson);
 
-  // File Upload handler
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      if (dataUrl) {
-        setStagingUrl(dataUrl);
-        setStagingZoom(1.0);
-        setStagingPosX(0);
-        setStagingPosY(0);
-        setUrlError(false);
-        setActiveTab('crop_editor');
+    // Save to database
+    if (isSelf && kind !== 'organization') {
+      const viewerUser = useAuthStore.getState().user;
+      if (viewerUser?.firstName) {
+        UserService.updateProfilePresentation(viewerUser.firstName, viewerUser.lastName ?? '', {
+          bannerUrl: bannerJson,
+        }).catch((err) => {
+          console.error('Failed to sync banner to database', err);
+        });
       }
-    };
-    reader.readAsDataURL(file);
-    // Reset file input value
-    e.target.value = '';
+    }
+
+    setModalOpen(false);
   };
 
   // Drag handlers for repositioning
@@ -610,25 +647,9 @@ export function ProfileHero({
     }
   }, [isDragging]);
 
-  const joined = formatJoined(joinedAt);
   const FallbackIcon = kind === 'organization' ? Building2 : UserIcon;
 
   const meta: React.ReactNode[] = [];
-  if (handle) {
-    meta.push(
-      <span key="handle" className="font-semibold text-slate-700">
-        @{handle}
-      </span>,
-    );
-  }
-  if (joined) {
-    meta.push(
-      <span key="joined" className="flex items-center gap-1">
-        <Calendar size={13} className="text-slate-400" />
-        {kind === 'organization' ? 'Since' : 'Joined'} {joined}
-      </span>,
-    );
-  }
   if (location) {
     meta.push(
       <span key="location" className="flex items-center gap-1">
@@ -644,11 +665,20 @@ export function ProfileHero({
         href={websiteUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex max-w-[220px] items-center gap-1 truncate text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
+        className="flex max-w-[220px] items-center gap-1 truncate text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:underline"
       >
-        <Globe size={13} className="shrink-0 text-sky-500" />
+        <Globe size={13} className="shrink-0 text-slate-400" />
         {websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
       </a>,
+    );
+  }
+  const joinedLabel = formatJoined(joinedAt);
+  if (joinedLabel) {
+    meta.push(
+      <span key="joined" className="flex items-center gap-1">
+        <Calendar size={13} className="text-slate-400" />
+        Joined {joinedLabel}
+      </span>,
     );
   }
 
@@ -659,7 +689,7 @@ export function ProfileHero({
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-surface shadow-xs">
+      <div className="relative overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/80 bg-surface/95 shadow-xs">
         {/* LinkedIn-Style Full Width Cover Banner */}
         <div className="group relative h-40 w-full overflow-hidden sm:h-52 md:h-60 bg-slate-950">
           {isCustomBanner ? (
@@ -818,42 +848,42 @@ export function ProfileHero({
           </div>
 
           {/* Identity & Headline Information */}
-          <div className="space-y-1 text-left">
-            {/* Name & Badges */}
+          <div className="space-y-1.5 text-left">
+            {/* Name & Badges (Largest) */}
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
                 {name}
               </h1>
               <BadgeRow badges={badges} size={22} />
             </div>
 
-            {/* Role Line directly below Name (Realistic Chisel Highlighter - Only for Instructor & Learner) */}
-            {(kind === 'instructor' || kind === 'learner') && (
-              <div className="pt-0.5">
-                <RoleHighlighter label={KIND_LABEL[kind]} kind={kind} />
-              </div>
-            )}
-
-            {/* Professional Headline */}
-            {headline && (
-              <p className="text-sm font-medium text-slate-700 sm:text-base pt-0.5">
-                {headline}
+            {/* Handle directly below Name */}
+            {handle && (
+              <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 sm:text-base">
+                @{handle}
               </p>
             )}
 
-            {/* Meta Bar: @username • Joined Date • Location • Website */}
+            {/* Professional Headline (Same unified font style & color) */}
+            {headline && (
+              <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+                {headline.slice(0, 20)}
+              </p>
+            )}
+
+            {/* Meta Bar: Location • Website (Same unified font style & color) */}
             {meta.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-xs font-medium text-slate-500 sm:text-sm">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
                 {meta.flatMap((node, index) =>
-                  index === 0 ? [node] : [<span key={`dot-${index}`}>•</span>, node],
+                  index === 0 ? [node] : [<span key={`dot-${index}`} className="text-slate-400">•</span>, node],
                 )}
               </div>
             )}
 
-            {/* Bio / Summary */}
+            {/* Bio / Summary (Limit: 40 words) */}
             {bio && (
-              <p className="max-w-3xl whitespace-pre-line pt-2 text-xs leading-relaxed text-slate-600 sm:text-sm">
-                {bio}
+              <p className="max-w-3xl whitespace-pre-line text-xs sm:text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                {bio.trim().split(/\s+/).slice(0, 40).join(' ')}
               </p>
             )}
           </div>
@@ -864,7 +894,7 @@ export function ProfileHero({
       <Portal>
         <AnimatePresence>
           {modalOpen && (
-            <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-[150] flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -874,183 +904,214 @@ export function ProfileHero({
               />
 
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                initial={{ opacity: 0, scale: 0.95, y: 14 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                transition={{ duration: 0.2 }}
-                className="relative z-10 flex max-h-[92vh] w-full max-w-2xl flex-col arcade-modal-box border border-slate-200/90 bg-surface p-6 shadow-2xl"
+                exit={{ opacity: 0, scale: 0.95, y: 14 }}
+                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                className="relative z-10 my-auto flex h-[88vh] max-h-[760px] w-full max-w-2xl flex-col rounded-tl-[2rem] rounded-br-[2rem] rounded-tr-xl rounded-bl-xl border border-slate-200/90 dark:border-slate-800/90 bg-surface/98 dark:bg-slate-900/98 p-6 sm:p-7 shadow-2xl overflow-hidden backdrop-blur-xl"
               >
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
-                <div>
-                  <h2 className="text-base font-bold text-slate-900">
-                    Cover Banner Studio
-                  </h2>
-                  <p className="text-xs text-slate-500">
-                    Customize themes, upload custom photos, crop, zoom, and reposition
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Navigation Tabs */}
-              <div className="mt-3 flex border-b border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('presets')}
-                  className={`flex items-center gap-2 border-b-2 px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
-                    activeTab === 'presets'
-                      ? 'border-sky-600 text-sky-600 dark:border-sky-400 dark:text-sky-400'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  <Sparkles size={14} />
-                  <span>Curated Themes & Wallpapers</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!stagingUrl && isCustomBanner) {
-                      setStagingUrl(bannerConfig.idOrUrl);
-                    }
-                    setActiveTab('crop_editor');
-                  }}
-                  className={`flex items-center gap-2 border-b-2 px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
-                    activeTab === 'crop_editor'
-                      ? 'border-sky-600 text-sky-600 dark:border-sky-400 dark:text-sky-400'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  <Sliders size={14} />
-                  <span>Crop, Resize & Position Image</span>
-                </button>
-              </div>
-
-              {/* Tab 1: Presets Grid */}
-              {activeTab === 'presets' && (
-                <div className="flex-1 overflow-y-auto py-4 space-y-6">
-                  {/* High-Definition Photography */}
+                {/* Header */}
+                <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800/80">
                   <div>
-                    <div className="mb-2.5 flex items-center justify-between">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                        4K Photography Wallpapers
-                      </h3>
-                      <span className="text-[11px] text-sky-600 dark:text-sky-400">
-                        Click any to crop & reposition
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      {HD_PHOTO_PRESETS.map((photo) => {
-                        const isSelected = bannerConfig.idOrUrl === photo.url;
-                        return (
-                          <button
-                            key={photo.id}
-                            type="button"
-                            onClick={() => handleSelectPreset(photo.url)}
-                            className={`group relative flex flex-col overflow-hidden rounded-xl border text-left transition-all cursor-pointer ${
-                              isSelected
-                                ? 'border-sky-500 ring-2 ring-sky-500/40'
-                                : 'border-slate-200 hover:border-slate-300'
-                            }`}
-                          >
-                            <div className="relative h-20 w-full overflow-hidden bg-slate-900">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={photo.url}
-                                alt={photo.name}
-                                className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
-                                loading="lazy"
-                                referrerPolicy="no-referrer"
-                              />
-                              {isSelected && (
-                                <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-sky-600 text-white shadow-xs">
-                                  <Check size={14} />
-                                </div>
-                              )}
-                            </div>
-                            <div className="bg-slate-50 p-2.5">
-                              <p className="text-xs font-bold text-slate-900">
-                                {photo.name}
-                              </p>
-                              <p className="text-[11px] text-slate-500 truncate">
-                                {photo.description}
-                              </p>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <h2 className="text-sm sm:text-base font-bold text-black dark:text-white">
+                      Cover Banner Studio
+                    </h2>
+                    <p className="text-xs text-black/60 dark:text-white/60 mt-0.5">
+                      Personalize your profile with curated themes or your custom visual
+                    </p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setModalOpen(false)}
+                    className="flex size-7 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800/80 text-black dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                    aria-label="Close"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
 
-                  {/* Vector & Digital Themes Grid */}
-                  <div>
-                    <h3 className="mb-2.5 text-xs font-bold uppercase tracking-wider text-slate-400">
-                      Vector & Digital Art Themes
-                    </h3>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      {Object.values(BANNER_PRESETS).map((presetItem) => {
-                        const isSelected = bannerConfig.idOrUrl === presetItem.id;
-                        return (
-                          <button
-                            key={presetItem.id}
-                            type="button"
-                            onClick={() => handleSelectPreset(presetItem.id)}
-                            className={`group relative flex flex-col overflow-hidden rounded-xl border text-left transition-all cursor-pointer ${
-                              isSelected
-                                ? 'border-sky-500 ring-2 ring-sky-500/40'
-                                : 'border-slate-200 hover:border-slate-300'
-                            }`}
-                          >
-                            <div className="relative h-20 w-full overflow-hidden">
-                              {presetItem.render()}
-                              {isSelected && (
-                                <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-sky-600 text-white shadow-xs">
-                                  <Check size={14} />
-                                </div>
-                              )}
-                            </div>
-                            <div className="bg-slate-50 p-2.5">
-                              <p className="text-xs font-bold text-slate-900">
-                                {presetItem.name}
-                              </p>
-                              <p className="text-[11px] text-slate-500 truncate">
-                                {presetItem.description}
-                              </p>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
+                {/* Navigation Segmented Tabs */}
+                <div className="py-3">
+                  <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 overflow-x-auto scrollbar-none">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('presets')}
+                      className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap text-black dark:text-white ${
+                        activeTab === 'presets'
+                          ? 'bg-white dark:bg-slate-900 shadow-2xs font-bold'
+                          : 'hover:bg-white/60 dark:hover:bg-slate-900/60 opacity-80 hover:opacity-100'
+                      }`}
+                    >
+                      <Sparkles size={13} />
+                      <span>Curated Artwork & Themes</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!stagingUrl && isCustomBanner) {
+                          setStagingUrl(bannerConfig.idOrUrl);
+                        }
+                        setActiveTab('crop_editor');
+                      }}
+                      className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap text-black dark:text-white ${
+                        activeTab === 'crop_editor'
+                          ? 'bg-white dark:bg-slate-900 shadow-2xs font-bold'
+                          : 'hover:bg-white/60 dark:hover:bg-slate-900/60 opacity-80 hover:opacity-100'
+                      }`}
+                    >
+                      <Sliders size={13} />
+                      <span>Custom Photo & Positioning</span>
+                    </button>
                   </div>
                 </div>
-              )}
 
-              {/* Tab 2: Interactive Crop, Zoom, and Reposition Editor */}
-              {activeTab === 'crop_editor' && (
-                <div className="flex-1 overflow-y-auto py-4 space-y-4">
-                  {/* Image Source Input: URL or File Upload */}
-                  <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3.5">
-                    <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex-1">
-                        <label className="text-xs font-bold text-slate-900 block mb-1">
-                          Image Source URL
+                {/* Tab 1: Presets Grid */}
+                {activeTab === 'presets' && (
+                  <div className="flex-1 overflow-y-auto py-2 space-y-6 pr-1">
+                    {/* Vector & Generative Themes */}
+                    <div>
+                      <div className="mb-2.5 flex items-center justify-between">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+                          Vector & Generative Themes
+                        </h3>
+                        <span className="text-xs text-black/60 dark:text-white/60">
+                          Interactive & Vector Art
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                        {Object.values(BANNER_PRESETS).map((presetItem) => {
+                          const isSelected = bannerConfig.idOrUrl === presetItem.id;
+                          return (
+                            <button
+                              key={presetItem.id}
+                              type="button"
+                              onClick={() => handleSelectPreset(presetItem.id)}
+                              className={`group relative flex flex-col overflow-hidden rounded-2xl border text-left transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'border-black dark:border-white ring-2 ring-black/10 dark:ring-white/20'
+                                  : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
+                              }`}
+                            >
+                              <div className="relative h-20 w-full overflow-hidden">
+                                {presetItem.render()}
+                                {isSelected && (
+                                  <div className="absolute right-2 top-2 flex size-5 items-center justify-center rounded-full bg-black dark:bg-white text-white dark:text-black shadow-xs">
+                                    <Check size={12} />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="p-2.5 bg-white dark:bg-slate-900">
+                                <p className="text-xs font-bold text-black dark:text-white">
+                                  {presetItem.name}
+                                </p>
+                                <p className="text-xs text-black/60 dark:text-white/60 truncate">
+                                  {presetItem.description}
+                                </p>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Cinematic Photography Wallpapers */}
+                    <div>
+                      <div className="mb-2.5 flex items-center justify-between">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+                          Cinematic Photography
+                        </h3>
+                        <span className="text-xs text-black/60 dark:text-white/60">
+                          Click to customize framing
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                        {HD_PHOTO_PRESETS.map((photo) => {
+                          const isSelected = bannerConfig.idOrUrl === photo.url;
+                          return (
+                            <button
+                              key={photo.id}
+                              type="button"
+                              onClick={() => handleSelectPreset(photo.url)}
+                              className={`group relative flex flex-col overflow-hidden rounded-2xl border text-left transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'border-black dark:border-white ring-2 ring-black/10 dark:ring-white/20'
+                                  : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
+                              }`}
+                            >
+                              <div className="relative h-20 w-full overflow-hidden bg-slate-900">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={photo.url}
+                                  alt={photo.name}
+                                  className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                                  loading="lazy"
+                                  referrerPolicy="no-referrer"
+                                />
+                                {isSelected && (
+                                  <div className="absolute right-2 top-2 flex size-5 items-center justify-center rounded-full bg-black dark:bg-white text-white dark:text-black shadow-xs">
+                                    <Check size={12} />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="p-2.5 bg-white dark:bg-slate-900">
+                                <p className="text-xs font-bold text-black dark:text-white">
+                                  {photo.name}
+                                </p>
+                                <p className="text-xs text-black/60 dark:text-white/60 truncate">
+                                  {photo.description}
+                                </p>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab 2: Interactive Crop, Zoom, and Reposition Editor */}
+                {activeTab === 'crop_editor' && (
+                  <div className="flex-1 overflow-y-auto py-2 space-y-4 pr-1">
+                    {/* Image Source Input: Upload File + URL */}
+                    <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40 p-3.5 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-black dark:text-white">
+                          Artwork Source
                         </label>
-                        <div className="flex items-center gap-2">
+                        <span className="text-xs text-black/60 dark:text-white/60">
+                          Recommended: 1920 × 480 px (4:1)
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => bannerFileInputRef.current?.click()}
+                          className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-black dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                        >
+                          <Upload size={13} />
+                          <span>Upload File</span>
+                        </button>
+                        <div className="sm:col-span-2 flex items-center gap-1.5">
                           <input
                             type="url"
-                            placeholder="Paste image link (Unsplash, Imgur, etc.)..."
+                            placeholder="Or paste direct image URL..."
                             value={customUrlInput}
                             onChange={(e) => {
                               setCustomUrlInput(e.target.value);
                               setUrlError(false);
                             }}
-                            className="flex-1 rounded-xl border border-slate-200 bg-surface px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && customUrlInput.trim()) {
+                                e.preventDefault();
+                                setStagingUrl(sanitizeBannerUrl(customUrlInput.trim()));
+                                setStagingZoom(1.0);
+                                setStagingPosX(0);
+                                setStagingPosY(0);
+                                setUrlError(false);
+                              }
+                            }}
+                            className="flex-1 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none"
                           />
                           <button
                             type="button"
@@ -1064,221 +1125,217 @@ export function ProfileHero({
                                 setUrlError(false);
                               }
                             }}
-                            className="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-on-ink transition-colors hover:bg-slate-800 disabled:opacity-40 cursor-pointer"
+                            className="rounded-xl bg-black dark:bg-white px-3.5 py-2 text-xs font-bold text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors disabled:opacity-40 cursor-pointer shrink-0"
                           >
                             Load
                           </button>
                         </div>
                       </div>
-
-                      <div className="sm:border-l sm:border-slate-200 sm:pl-3">
-                        <label className="text-xs font-bold text-slate-900 block mb-1">
-                          Or Upload File
-                        </label>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/png,image/jpeg,image/webp,image/jpg"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-surface px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 cursor-pointer"
-                        >
-                          <Upload size={13} />
-                          <span>Browse Device</span>
-                        </button>
-                      </div>
                     </div>
-                  </div>
 
-                  {/* Interactive Crop & Reposition Viewport */}
-                  {stagingUrl ? (
-                    <div className="space-y-3">
-                      {/* Viewport Frame */}
-                      <div className="relative overflow-hidden rounded-xl border-2 border-sky-500/60 bg-slate-950 shadow-inner">
-                        <div
-                          onPointerDown={handlePointerDown}
-                          onPointerMove={handlePointerMove}
-                          onPointerUp={handlePointerUp}
-                          onPointerLeave={handlePointerUp}
-                          className={`relative h-44 w-full select-none overflow-hidden sm:h-52 ${
-                            isDragging ? 'cursor-grabbing' : 'cursor-grab'
-                          }`}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={getAvatarUrl(stagingUrl)}
-                            alt="Crop Preview"
-                            style={{
-                              transform: `translate(${stagingPosX}%, ${stagingPosY}%) scale(${stagingZoom})`,
-                              transformOrigin: 'center center',
-                            }}
-                            className="pointer-events-none h-full w-full object-cover object-center block transform-gpu select-none"
-                            onError={() => setUrlError(true)}
-                            onLoad={() => setUrlError(false)}
-                            referrerPolicy="no-referrer"
-                          />
-
-                          {/* Overlay Instructions Badge */}
-                          <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-slate-950/70 px-2.5 py-1 text-[11px] font-semibold text-on-ink backdrop-blur-md">
-                            <Move size={12} />
-                            <span>Click & Drag to reposition</span>
-                          </div>
-
-                          {/* Safe crop grid guidelines overlay */}
-                          <div className="pointer-events-none absolute inset-0 border border-white/20">
-                            <div className="grid h-full w-full grid-cols-3 grid-rows-3 opacity-25">
-                              <div className="border-r border-b border-surface" />
-                              <div className="border-r border-b border-surface" />
-                              <div className="border-b border-surface" />
-                              <div className="border-r border-b border-surface" />
-                              <div className="border-r border-b border-surface" />
-                              <div className="border-b border-surface" />
-                              <div className="border-r border-surface" />
-                              <div className="border-r border-surface" />
-                              <div />
-                            </div>
-                          </div>
-
-                          {urlError && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-red-950/85 p-4 text-center text-xs font-semibold text-red-200">
-                              Unable to render image from this link. Please check the URL or upload a file.
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Controls Toolbar: Zoom Slider & Alignments */}
-                      <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-3">
-                        {/* Zoom Slider */}
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-bold text-slate-700 shrink-0 flex items-center gap-1">
-                            <ZoomIn size={14} className="text-sky-500" />
-                            Zoom: {Math.round(stagingZoom * 100)}%
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setStagingZoom((z) => Math.max(1.0, +(z - 0.1).toFixed(2)))}
-                            className="rounded-lg p-1 text-slate-500 hover:bg-slate-200 cursor-pointer"
-                            title="Zoom out"
+                    {/* Interactive Crop & Reposition Viewport */}
+                    {stagingUrl ? (
+                      <div className="space-y-3">
+                        {/* Viewport Frame with Simulated Profile Silhouette */}
+                        <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-950 shadow-inner">
+                          <div
+                            onPointerDown={handlePointerDown}
+                            onPointerMove={handlePointerMove}
+                            onPointerUp={handlePointerUp}
+                            onPointerLeave={handlePointerUp}
+                            className={`relative h-44 w-full select-none overflow-hidden sm:h-52 ${
+                              isDragging ? 'cursor-grabbing' : 'cursor-grab'
+                            }`}
                           >
-                            <ZoomOut size={15} />
-                          </button>
-                          <input
-                            type="range"
-                            min="1.0"
-                            max="3.0"
-                            step="0.05"
-                            value={stagingZoom}
-                            onChange={(e) => setStagingZoom(parseFloat(e.target.value))}
-                            className="flex-1 accent-sky-600 h-1.5 rounded-lg bg-slate-200 cursor-pointer"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setStagingZoom((z) => Math.min(3.0, +(z + 0.1).toFixed(2)))}
-                            className="rounded-lg p-1 text-slate-500 hover:bg-slate-200 cursor-pointer"
-                            title="Zoom in"
-                          >
-                            <ZoomIn size={15} />
-                          </button>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={getAvatarUrl(stagingUrl)}
+                              alt="Crop Preview"
+                              style={{
+                                transform: `translate(${stagingPosX}%, ${stagingPosY}%) scale(${stagingZoom})`,
+                                transformOrigin: 'center center',
+                              }}
+                              className="pointer-events-none h-full w-full object-cover object-center block transform-gpu select-none"
+                              onError={() => setUrlError(true)}
+                              onLoad={() => setUrlError(false)}
+                              referrerPolicy="no-referrer"
+                            />
+
+                            {/* Simulated Avatar Cutout Badge (Bottom-left) */}
+                            <div className="pointer-events-none absolute -bottom-6 left-6 flex size-20 items-center justify-center rounded-full border-2 border-dashed border-white/60 bg-black/40 backdrop-blur-xs">
+                              <span className="text-[10px] font-semibold text-white/80 text-center px-1">
+                                Avatar zone
+                              </span>
+                            </div>
+
+                            {/* Overlay Instructions Badge */}
+                            <div className="pointer-events-none absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-black/75 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-md">
+                              <Move size={12} />
+                              <span>Drag to position</span>
+                            </div>
+
+                            {/* Safe crop grid guidelines overlay */}
+                            <div className="pointer-events-none absolute inset-0 border border-white/20">
+                              <div className="grid h-full w-full grid-cols-3 grid-rows-3 opacity-20">
+                                <div className="border-r border-b border-white" />
+                                <div className="border-r border-b border-white" />
+                                <div className="border-b border-white" />
+                                <div className="border-r border-b border-white" />
+                                <div className="border-r border-b border-white" />
+                                <div className="border-b border-white" />
+                                <div className="border-r border-white" />
+                                <div className="border-r border-white" />
+                                <div />
+                              </div>
+                            </div>
+
+                            {urlError && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-red-950/85 p-4 text-center text-xs font-semibold text-red-200">
+                                Unable to render image from this link. Please check the URL or try uploading a file.
+                              </div>
+                            )}
+                          </div>
                         </div>
 
-                        {/* Alignment & Reset Presets */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-200/60">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] font-bold text-slate-400 uppercase">
-                              Quick Align:
+                        {/* Controls Toolbar: Zoom Slider & Alignments */}
+                        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40 p-3 space-y-2.5">
+                          {/* Zoom Slider */}
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-bold text-black dark:text-white shrink-0 flex items-center gap-1">
+                              <ZoomIn size={13} />
+                              Zoom: {Math.round(stagingZoom * 100)}%
                             </span>
                             <button
                               type="button"
-                              onClick={() => {
-                                setStagingPosX(0);
-                                setStagingPosY(25);
-                              }}
-                              className="rounded-lg bg-surface px-2 py-1 text-[11px] font-semibold text-slate-700 border border-slate-200 hover:bg-slate-100 cursor-pointer"
+                              onClick={() => setStagingZoom((z) => Math.max(1.0, +(z - 0.1).toFixed(2)))}
+                              className="rounded-lg p-1 text-black dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                              title="Zoom out"
                             >
-                              Top
+                              <ZoomOut size={14} />
                             </button>
+                            <input
+                              type="range"
+                              min="1.0"
+                              max="3.0"
+                              step="0.05"
+                              value={stagingZoom}
+                              onChange={(e) => setStagingZoom(parseFloat(e.target.value))}
+                              className="flex-1 accent-black dark:accent-white h-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 cursor-pointer"
+                            />
                             <button
                               type="button"
-                              onClick={() => {
-                                setStagingPosX(0);
-                                setStagingPosY(0);
-                              }}
-                              className="rounded-lg bg-surface px-2 py-1 text-[11px] font-semibold text-slate-700 border border-slate-200 hover:bg-slate-100 cursor-pointer"
+                              onClick={() => setStagingZoom((z) => Math.min(3.0, +(z + 0.1).toFixed(2)))}
+                              className="rounded-lg p-1 text-black dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                              title="Zoom in"
                             >
-                              Center
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setStagingPosX(0);
-                                setStagingPosY(-25);
-                              }}
-                              className="rounded-lg bg-surface px-2 py-1 text-[11px] font-semibold text-slate-700 border border-slate-200 hover:bg-slate-100 cursor-pointer"
-                            >
-                              Bottom
+                              <ZoomIn size={14} />
                             </button>
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setStagingZoom(1.0);
-                              setStagingPosX(0);
-                              setStagingPosY(0);
-                            }}
-                            className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-slate-800 cursor-pointer"
-                          >
-                            <RotateCcw size={12} />
-                            <span>Reset Crop</span>
-                          </button>
+                          {/* Alignment & Reset Presets */}
+                          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200/60 dark:border-slate-800">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-black dark:text-white opacity-70">
+                                Align:
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setStagingPosX(0);
+                                  setStagingPosY(25);
+                                }}
+                                className="rounded-lg bg-white dark:bg-slate-900 px-2.5 py-1 text-xs font-semibold text-black dark:text-white border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                              >
+                                Top
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setStagingPosX(0);
+                                  setStagingPosY(0);
+                                }}
+                                className="rounded-lg bg-white dark:bg-slate-900 px-2.5 py-1 text-xs font-semibold text-black dark:text-white border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                              >
+                                Center
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setStagingPosX(0);
+                                  setStagingPosY(-25);
+                                }}
+                                className="rounded-lg bg-white dark:bg-slate-900 px-2.5 py-1 text-xs font-semibold text-black dark:text-white border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                              >
+                                Bottom
+                              </button>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setStagingZoom(1.0);
+                                setStagingPosX(0);
+                                setStagingPosY(0);
+                              }}
+                              className="flex items-center gap-1 text-xs font-bold text-black dark:text-white opacity-70 hover:opacity-100 cursor-pointer"
+                            >
+                              <RotateCcw size={12} />
+                              <span>Reset</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center bg-slate-50/40 dark:bg-slate-950/20">
+                        <ImageIcon size={32} className="text-black dark:text-white opacity-40 mb-2" />
+                        <p className="text-xs font-bold text-black dark:text-white">
+                          No custom visual loaded
+                        </p>
+                        <p className="text-xs text-black/60 dark:text-white/60 max-w-sm mt-1">
+                          Upload a photo from your computer or paste an image link above.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Footer */}
+                <div className="flex items-center justify-end border-t border-slate-100 dark:border-slate-800/80 px-1 pt-3.5 mt-2">
+                  {activeTab === 'crop_editor' ? (
+                    <button
+                      type="button"
+                      disabled={!stagingUrl || urlError}
+                      onClick={handleApplyCroppedBanner}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-black dark:bg-white px-5 py-2 text-xs font-bold text-white dark:text-black shadow-xs hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors disabled:opacity-40 cursor-pointer active:scale-[0.98]"
+                    >
+                      <Check size={13} />
+                      <span>Save & Apply Banner</span>
+                    </button>
                   ) : (
-                    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 p-8 text-center">
-                      <ImageIcon size={36} className="text-slate-400 mb-2" />
-                      <p className="text-xs font-bold text-slate-700">
-                        No custom image loaded
-                      </p>
-                      <p className="text-[11px] text-slate-500 max-w-sm mt-1">
-                        Paste an image URL above or choose a photo from the Themes tab to zoom, resize, and reposition.
-                      </p>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setModalOpen(false)}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-black dark:bg-white px-5 py-2 text-xs font-bold text-white dark:text-black shadow-xs hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors cursor-pointer active:scale-[0.98]"
+                    >
+                      <Check size={13} />
+                      <span>Done</span>
+                    </button>
                   )}
                 </div>
-              )}
-
-              {/* Footer */}
-              <div className="flex items-center justify-end border-t border-slate-100 pt-3">
-                {activeTab === 'crop_editor' ? (
-                  <button
-                    type="button"
-                    disabled={!stagingUrl || urlError}
-                    onClick={handleApplyCroppedBanner}
-                    className="rounded-xl bg-ink px-5 py-2 text-xs font-semibold text-on-ink transition-colors hover:bg-ink-hover disabled:opacity-40 cursor-pointer"
-                  >
-                    Save & Apply Cover
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setModalOpen(false)}
-                    className="rounded-xl bg-ink px-5 py-2 text-xs font-semibold text-on-ink transition-colors hover:bg-ink-hover cursor-pointer"
-                  >
-                    Done
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </Portal>
+
+      {/* Hidden Banner File Input */}
+      <input
+        type="file"
+        ref={bannerFileInputRef}
+        className="hidden"
+        accept="image/jpeg, image/png, image/webp"
+        onChange={handleBannerFileSelect}
+      />
 
       {/* Hidden Avatar File Input */}
       <input

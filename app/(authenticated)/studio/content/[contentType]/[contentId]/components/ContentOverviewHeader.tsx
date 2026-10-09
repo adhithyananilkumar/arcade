@@ -26,6 +26,7 @@ import {
   SUPPORTS_TITLE_CONFIRM_DELETE,
 } from "../lib/contentActions";
 import { ConfirmActionModal } from "./ConfirmActionModal";
+import { LinkedExamDeleteChoice } from "./LinkedExamDeleteChoice";
 
 type ActionBtnVariant = "primary" | "secondary";
 
@@ -113,6 +114,7 @@ export function ContentOverviewHeader({
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<"delete" | "archive" | null>(null);
   const [busy, setBusy] = useState(false);
+  const [keepExam, setKeepExam] = useState(false);
 
   const statusKey = status?.toUpperCase();
   const reviewStatus = review?.status ?? null;
@@ -159,7 +161,7 @@ export function ContentOverviewHeader({
     if (confirmAction === "delete") {
       // A null request means this type has no delete. It used to be awaited anyway and reported as
       // "Deleted", which is how an exam "deleted" here was still on the dashboard afterwards.
-      const request = deleteContent(segment, contentId, title);
+      const request = deleteContent(segment, contentId, title, { keepExam });
       if (!request) {
         toast.error("This content can't be deleted here.");
         setConfirmAction(null);
@@ -338,7 +340,11 @@ export function ContentOverviewHeader({
           requireTitleMatch={SUPPORTS_TITLE_CONFIRM_DELETE[segment] ? title : undefined}
           onClose={() => setConfirmAction(null)}
           onConfirm={handleConfirmedAction}
-        />
+        >
+          {segment === "event" && (
+            <LinkedExamDeleteChoice eventId={contentId} keepExam={keepExam} onChange={setKeepExam} />
+          )}
+        </ConfirmActionModal>
       )}
       {confirmAction === "archive" && (
         <ConfirmActionModal

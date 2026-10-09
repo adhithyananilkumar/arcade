@@ -23,6 +23,9 @@ export interface NotificationMetadata {
   proposedOwnerId?: string;
   proposedOwnerName?: string;
   status?: TransferStatus;
+  contentType?: string;
+  contentId?: string;
+  reviewId?: string;
   [key: string]: unknown;
 }
 
@@ -43,6 +46,15 @@ interface LinkableNotification {
   metadata?: string;
 }
 
+function toContentTypeSegment(rawType?: unknown): string | null {
+  if (typeof rawType !== 'string') return null;
+  const type = rawType.toUpperCase();
+  if (type === 'COURSE') return 'course';
+  if (type === 'EXAM') return 'exam';
+  if (['EVENT', 'WORKSHOP', 'WEBINAR', 'BOOTCAMP'].includes(type)) return 'event';
+  return null;
+}
+
 /**
  * Resolves where clicking a notification should take the user. A handful of types need a query
  * param stitched onto a generic `linkUrl` (e.g. the console inbox needs to know which message to
@@ -61,6 +73,42 @@ export function getNotificationTargetUrl(n: LinkableNotification): string | null
 
   if (n.type === 'CONTENT_REPORTED') {
     return messageId ? `/console/inbox?tab=reports&reportId=${messageId}` : '/console/inbox?tab=reports';
+  }
+
+  const isReviewType =
+    n.type === 'CONTENT_SUBMITTED' ||
+    n.type === 'CONTENT_APPROVED' ||
+    n.type === 'CONTENT_CHANGES_REQUESTED';
+  const isReviewerRoute =
+    n.linkUrl?.startsWith('/console/reviews') || n.linkUrl?.startsWith('/channels/');
+
+  // Review notifications directed to creators should point to the content's Publishing workspace
+  if (isReviewType && !isReviewerRoute) {
+    if (metadataObj?.contentType && metadataObj?.contentId) {
+      const segment = toContentTypeSegment(metadataObj.contentType) || 'event';
+      return `/studio/content/${segment}/${metadataObj.contentId}?tab=publishing`;
+    }
+    if (n.linkUrl) {
+      const workshopMatch = n.linkUrl.match(/^\/studio\/workshop\/([^/?#]+)/);
+      if (workshopMatch) return `/studio/content/event/${workshopMatch[1]}?tab=publishing`;
+
+      const courseMatch = n.linkUrl.match(/^\/studio\/course\/([^/?#]+)/);
+      if (courseMatch) return `/studio/content/course/${courseMatch[1]}?tab=publishing`;
+
+      const eventMatch = n.linkUrl.match(/^\/studio\/events\/([^/?#]+)/);
+      if (eventMatch) return `/studio/content/event/${eventMatch[1]}?tab=publishing`;
+
+      const examMatch = n.linkUrl.match(/^\/studio\/(?:content\/)?exam\/([^/?#]+)/);
+      if (examMatch) return `/studio/content/exam/${examMatch[1]}?tab=publishing`;
+    }
+  }
+
+  // Normalize legacy workshop studio links if encountered in any notification
+  if (n.linkUrl?.startsWith('/studio/workshop/')) {
+    const match = n.linkUrl.match(/^\/studio\/workshop\/([^/?#]+)/);
+    if (match) {
+      return `/studio/content/event/${match[1]}?tab=publishing`;
+    }
   }
 
   // A route the sender picked wins over the text heuristics below, which exist only for older

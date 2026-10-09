@@ -31,4 +31,73 @@ describe('getNotificationTargetUrl', () => {
       '/console/inbox?tab=reports&reportId=r9',
     );
   });
+
+  it('routes author review notifications to the content publishing tab', () => {
+    expect(
+      getNotificationTargetUrl({
+        type: 'CONTENT_SUBMITTED',
+        title: 'Event submitted for review',
+        message: 'Your event was submitted',
+        metadata: JSON.stringify({ contentType: 'EVENT', contentId: 'evt-123' }),
+      }),
+    ).toBe('/studio/content/event/evt-123?tab=publishing');
+
+    expect(
+      getNotificationTargetUrl({
+        type: 'CONTENT_APPROVED',
+        title: 'Course approved',
+        message: 'Your course was approved',
+        metadata: JSON.stringify({ contentType: 'COURSE', contentId: 'crs-456' }),
+      }),
+    ).toBe('/studio/content/course/crs-456?tab=publishing');
+
+    expect(
+      getNotificationTargetUrl({
+        type: 'CONTENT_CHANGES_REQUESTED',
+        title: 'Exam needs changes',
+        message: 'Please revise',
+        metadata: JSON.stringify({ contentType: 'EXAM', contentId: 'exm-789' }),
+      }),
+    ).toBe('/studio/content/exam/exm-789?tab=publishing');
+  });
+
+  it('normalizes legacy /studio/workshop/ links to /studio/content/event/...', () => {
+    expect(
+      getNotificationTargetUrl({
+        type: 'CONTENT_CHANGES_REQUESTED',
+        title: 'Workshop needs changes',
+        message: 'Changes requested',
+        linkUrl: '/studio/workshop/ws-101/edit',
+      }),
+    ).toBe('/studio/content/event/ws-101?tab=publishing');
+
+    expect(
+      getNotificationTargetUrl({
+        type: 'OTHER',
+        title: 'Other notification',
+        message: 'Info',
+        linkUrl: '/studio/workshop/ws-101/edit',
+      }),
+    ).toBe('/studio/content/event/ws-101?tab=publishing');
+  });
+
+  it('preserves reviewer queue and management links for reviewers', () => {
+    expect(
+      getNotificationTargetUrl({
+        type: 'CONTENT_SUBMITTED',
+        title: 'Review assigned to you',
+        message: 'Please review',
+        linkUrl: '/console/reviews/rev-1',
+      }),
+    ).toBe('/console/reviews/rev-1');
+
+    expect(
+      getNotificationTargetUrl({
+        type: 'CONTENT_SUBMITTED',
+        title: '1 submission awaiting organization review',
+        message: 'Waiting for review',
+        linkUrl: '/channels/ch-1/manage?tab=REVIEWS',
+      }),
+    ).toBe('/channels/ch-1/manage?tab=REVIEWS');
+  });
 });

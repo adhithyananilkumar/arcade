@@ -138,6 +138,7 @@ export interface UserProfile {
   fullName: string;
   avatarUrl?: string | null;
   bannerUrl?: string | null;
+  skills?: string | null;
   headline?: string | null;
   bio?: string | null;
   location?: string | null;

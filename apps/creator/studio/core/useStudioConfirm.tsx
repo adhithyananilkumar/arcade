@@ -26,7 +26,19 @@ export interface StudioConfirmOptions {
    * problem where there isn't one.
    */
   icon?: ReactNode;
-  onConfirm: () => void | Promise<void>;
+  /**
+   * Asks for a value as part of the confirmation (a reason, a number of minutes). Replaces the
+   * browser's own prompt(), which showed as a grey system alert at the top of the page (BUG-1068).
+   */
+  input?: {
+    label: string;
+    placeholder?: string;
+    defaultValue?: string;
+    type?: "text" | "number";
+    required?: boolean;
+  };
+  /** Receives the input's trimmed value when `input` is set. Throw to keep the dialog open. */
+  onConfirm: (value: string) => void | Promise<void>;
 }
 
 export function useStudioConfirm() {
@@ -48,9 +60,24 @@ export function useStudioConfirm() {
 
 function StudioConfirmDialog({ options, onClose }: { options: StudioConfirmOptions | null; onClose: () => void }) {
   const [busy, setBusy] = useState(false);
+  const [value, setValue] = useState(options?.input?.defaultValue ?? "");
 
   if (!options || typeof document === "undefined") return null;
-  const { title, message, confirmLabel, danger } = options;
+  const { title, message, confirmLabel, danger, input } = options;
+  const canConfirm = !busy && (!input?.required || value.trim().length > 0);
+
+  async function run() {
+    if (!options || !canConfirm) return;
+    setBusy(true);
+    try {
+      await options.onConfirm(value.trim());
+      onClose();
+    } catch {
+      // The caller reported the failure; keep the dialog open so it can be retried or cancelled.
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -60,6 +87,23 @@ function StudioConfirmDialog({ options, onClose }: { options: StudioConfirmOptio
           <h3 className="text-[17px] font-bold tracking-tight text-ink">{title}</h3>
           <p className="mt-2 text-sm leading-relaxed text-slate-500">{message}</p>
         </div>
+        {input && (
+          <label className="mt-4 block">
+            <span className="mb-1.5 block text-xs font-semibold text-slate-600">{input.label}</span>
+            <input
+              autoFocus
+              type={input.type ?? "text"}
+              min={input.type === "number" ? 1 : undefined}
+              value={value}
+              placeholder={input.placeholder}
+              onChange={(e) => setValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void run();
+              }}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60"
+            />
+          </label>
+        )}
         <div className="mt-6 flex justify-end gap-2">
           <button
             type="button"
@@ -71,16 +115,8 @@ function StudioConfirmDialog({ options, onClose }: { options: StudioConfirmOptio
           </button>
           <button
             type="button"
-            disabled={busy}
-            onClick={async () => {
-              setBusy(true);
-              try {
-                await options.onConfirm();
-                onClose();
-              } finally {
-                setBusy(false);
-              }
-            }}
+            disabled={!canConfirm}
+            onClick={() => void run()}
             className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer ${
               danger
                 ? "bg-rose-600 text-white hover:bg-rose-700"

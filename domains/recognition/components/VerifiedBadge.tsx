@@ -22,6 +22,7 @@
 import { useCallback, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { ProfileBadge } from '../types/badge.types';
 import { BadgeIcon } from './BadgeIcon';
+import { VerifiedMark } from './VerifiedMark';
 import './VerifiedBadge.css';
 
 export interface VerifiedBadgeProps {
@@ -66,8 +67,11 @@ export function VerifiedBadge({
   const hide = useCallback(() => setOpen(false), []);
 
   const accessibleName = [badge.label, badge.tenure].filter(Boolean).join(', ');
-  const effectClass =
-    badge.effect === 'PRISM'
+  // Verification ticks are drawn as one clean mark, never with an effect.
+  const isVerification = badge.category === 'VERIFICATION';
+  const effectClass = isVerification
+    ? 'arc-badge--verified'
+    : badge.effect === 'PRISM'
       ? 'arc-badge--prism'
       : badge.effect === 'GLOW'
         ? 'arc-badge--glow'
@@ -92,14 +96,18 @@ export function VerifiedBadge({
         aria-label={accessibleName}
         aria-describedby={open ? cardId : undefined}
       >
-        <BadgeIcon
-          name={badge.icon}
-          className="arc-badge__mark"
-          size={size}
-          strokeWidth={2.2}
-          fill={badge.effect === 'NONE' ? badge.accentColor : 'none'}
-          color={badge.effect === 'NONE' ? '#ffffff' : badge.accentColor}
-        />
+        {isVerification ? (
+          <VerifiedMark className="arc-badge__mark" size={size} color={badge.accentColor} />
+        ) : (
+          <BadgeIcon
+            name={badge.icon}
+            className="arc-badge__mark"
+            size={size}
+            strokeWidth={2.2}
+            fill={badge.effect === 'NONE' ? badge.accentColor : 'none'}
+            color={badge.effect === 'NONE' ? '#ffffff' : badge.accentColor}
+          />
+        )}
       </span>
 
       {open && showDetailOnHover && (
@@ -116,13 +124,17 @@ export function VerifiedBadge({
         >
           <span className="arc-badge-card__inner block">
             <span className="flex items-center gap-2">
-              <BadgeIcon
-                name={badge.icon}
-                size={15}
-                strokeWidth={2.4}
-                color={badge.accentColor}
-                className="shrink-0"
-              />
+              {isVerification ? (
+                <VerifiedMark size={16} color={badge.accentColor} className="shrink-0" />
+              ) : (
+                <BadgeIcon
+                  name={badge.icon}
+                  size={15}
+                  strokeWidth={2.4}
+                  color={badge.accentColor}
+                  className="shrink-0"
+                />
+              )}
               <span className="text-[13px] font-bold tracking-tight text-slate-900">
                 {badge.label}
               </span>

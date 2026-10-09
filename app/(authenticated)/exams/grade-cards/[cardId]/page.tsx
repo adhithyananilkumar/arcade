@@ -49,6 +49,37 @@ export default function GradeCardPage() {
       .catch((err) => setError(err?.message ?? 'Could not load this grade card.'));
   }, [cardId]);
 
+  // Print on paper colours whatever theme is on screen: a dark or glass theme printed grey text on
+  // a translucent card (BUG-1063/1066). The theme is restored as soon as the print dialog closes.
+  useEffect(() => {
+    const root = document.documentElement;
+    let saved: { dark: boolean; material: string | null; contrast: string | null } | null = null;
+    const before = () => {
+      saved = {
+        dark: root.classList.contains('dark'),
+        material: root.getAttribute('data-material'),
+        contrast: root.getAttribute('data-contrast'),
+      };
+      root.classList.remove('dark');
+      root.removeAttribute('data-material');
+      root.removeAttribute('data-contrast');
+    };
+    const after = () => {
+      if (!saved) return;
+      if (saved.dark) root.classList.add('dark');
+      if (saved.material) root.setAttribute('data-material', saved.material);
+      if (saved.contrast) root.setAttribute('data-contrast', saved.contrast);
+      saved = null;
+    };
+    window.addEventListener('beforeprint', before);
+    window.addEventListener('afterprint', after);
+    return () => {
+      after();
+      window.removeEventListener('beforeprint', before);
+      window.removeEventListener('afterprint', after);
+    };
+  }, []);
+
   const download = async () => {
     if (!card) return;
     setDownloading(true);
@@ -62,7 +93,7 @@ export default function GradeCardPage() {
   };
 
   return (
-    <main className="min-h-screen bg-surface text-ink print:bg-surface">
+    <main className="min-h-screen bg-surface text-ink theme-page-bg theme-wallpaper-frost print:bg-surface">
       <div className="arcade-wash w-full print:bg-none">
         <div className="mx-auto w-full max-w-4xl px-5 pb-32 pt-28 sm:px-8 sm:pt-32 print:pb-6 print:pt-6">
           {error ? (
@@ -107,7 +138,10 @@ export default function GradeCardPage() {
                   </button>
                 </div>
               </div>
-              <Card card={card} />
+              {/* Only the card prints — not the app's logo, navbar or floating buttons (BUG-1066). */}
+              <div className="print-isolate">
+                <Card card={card} />
+              </div>
             </>
           )}
         </div>

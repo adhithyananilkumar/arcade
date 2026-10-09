@@ -6,6 +6,7 @@ import { CalendarDays, Globe, Layers, Signal, Users, Video } from 'lucide-react'
 import { api, ApiError } from '@/infrastructure/http/api';
 import { useMyEnrollmentForResourceQuery } from '@/domains/enrollment';
 import { getEventBySlugOrId } from '@/domains/events';
+import { getEventAssessments } from '@/domains/assessments';
 import type { EventDto } from '@/domains/events';
 import { eventRoutes } from '@/shared/routes/content.routes';
 import type {
@@ -63,6 +64,14 @@ export function useEventOverviewModel(slugOrId: string): ContentOverviewModel {
 
   const enrollmentQuery = useMyEnrollmentForResourceQuery('EVENT', event?.id);
 
+  // The event's linked assessments — sat here, inside the event. Empty for a visitor.
+  const assessmentsQuery = useQuery({
+    queryKey: ['events', 'assessments', event?.id],
+    queryFn: () => getEventAssessments(event!.id),
+    enabled: Boolean(event?.id),
+    retry: false,
+  });
+
   const sessions = useMemo(
     () =>
       [...(sessionsQuery.data ?? [])].sort(
@@ -91,6 +100,27 @@ export function useEventOverviewModel(slugOrId: string): ContentOverviewModel {
         order: index,
       })),
     [sessions, slugOrId],
+  );
+
+  const assessmentItems: OverviewItem[] = useMemo(
+    () =>
+      [...(assessmentsQuery.data ?? [])]
+        // The completion (final) assessment comes last, after every graded one.
+        .sort(
+          (a, b) =>
+            Number(a.planType === 'COMPLETION') - Number(b.planType === 'COMPLETION') || a.position - b.position,
+        )
+        .map((a, index) => ({
+          id: a.placementId,
+          title: a.planType === 'COMPLETION' ? `${a.title} · Final` : a.title,
+          kind: 'ASSESSMENT' as const,
+          durationLabel: null,
+          completed: a.passed,
+          href: eventRoutes.assessment(slugOrId, a.placementId),
+          locked: false,
+          order: items.length + index,
+        })),
+    [assessmentsQuery.data, slugOrId, items.length],
   );
 
   const nextSession = useMemo(() => sessions.find((s) => !hasPassed(s)), [sessions]);
@@ -124,7 +154,18 @@ export function useEventOverviewModel(slugOrId: string): ContentOverviewModel {
       ? { label: 'Open the next session', itemTitle: nextSession.title, href: eventRoutes.session(slugOrId, nextSession.id) }
       : null,
 
-    sections: items.length > 0 ? [{ id: 'sessions', title: 'Sessions', items }] : [],
+    sections: [
+      ...(items.length > 0 ? [{ id: 'sessions', title: 'Sessions', items }] : []),
+      ...(assessmentItems.length > 0
+        ? [
+            {
+              id: 'assessments',
+              title: assessmentItems.every((i) => i.title.endsWith('· Final')) ? 'Final assessment' : 'Assessments',
+              items: assessmentItems,
+            },
+          ]
+        : []),
+    ],
 
     overviewHref: eventRoutes.overview(slugOrId),
     notesHref: eventRoutes.notes(slugOrId),

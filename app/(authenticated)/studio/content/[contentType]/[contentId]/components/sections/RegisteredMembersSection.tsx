@@ -8,8 +8,11 @@ import {
   MoreVertical,
   X,
   Loader2,
+  Trash2,
 } from "lucide-react";
 import { api } from "@/infrastructure/http/api";
+import { useStudioConfirm } from "@/apps/creator/studio/core/useStudioConfirm";
+import { StudioRowMenu } from "@/apps/creator/studio/core/StudioRowMenu";
 import { EventInvitationManager } from "@/domains/events";
 import { EventCollaboratorsManager } from "@/app/(authenticated)/studio/events/components/wizard/review/EventCollaboratorsManager";
 import type { Event as EventDto } from "@/domains/events";
@@ -112,55 +115,47 @@ function ActionMenu({
   eventId: string;
   onChanged: () => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-
+  const { confirm, dialog } = useStudioConfirm();
   const alreadyCancelled = participant._regStatus === "CANCELLED";
 
-  async function removeMember() {
-    const question = alreadyCancelled
-      ? `Remove ${participant.name} from this roster?`
-      : `Cancel ${participant.name}'s registration and remove them from this event?`;
-    if (!confirm(question)) return;
-    setBusy(true);
-    try {
-      await api.delete(`/api/v1/events/${eventId}/participants/${participant.id}`);
-      toast.success(alreadyCancelled ? "Removed from roster" : "Registration cancelled");
-      onChanged();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not remove member");
-    } finally {
-      setBusy(false);
-      setOpen(false);
-    }
+  function removeMember() {
+    confirm({
+      title: alreadyCancelled ? "Remove from roster?" : "Remove this member?",
+      message: alreadyCancelled
+        ? `${participant.name}'s registration is already cancelled. This removes them from the roster.`
+        : `This cancels ${participant.name}'s registration and removes them from the event.`,
+      confirmLabel: alreadyCancelled ? "Remove" : "Remove member",
+      danger: true,
+      onConfirm: async () => {
+        try {
+          await api.delete(`/api/v1/events/${eventId}/participants/${participant.id}`);
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Could not remove member");
+          throw err;
+        }
+        toast.success(alreadyCancelled ? "Removed from roster" : "Registration cancelled");
+        onChanged();
+      },
+    });
   }
 
   return (
-    <div className="relative">
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() => setOpen((p) => !p)}
-        className="rounded-xl p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900 cursor-pointer disabled:opacity-40 dark:hover:bg-slate-800"
-      >
-        <MoreVertical size={16} />
-      </button>
-
-      {open && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 z-20 mt-1 w-44 rounded-2xl border border-slate-200/90 bg-surface shadow-xl py-1 dark:border-slate-800">
-            <button
-              type="button"
-              onClick={removeMember}
-              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-xs font-bold text-red-500 hover:bg-red-50/50 cursor-pointer dark:hover:bg-red-950/20"
-            >
-              {alreadyCancelled ? "Remove from list" : "Cancel registration"}
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+    <>
+      <StudioRowMenu
+        trigger={<MoreVertical size={16} />}
+        width={192}
+        items={[
+          {
+            key: "remove",
+            label: alreadyCancelled ? "Remove from roster" : "Cancel registration",
+            icon: <Trash2 size={13} />,
+            danger: true,
+            onSelect: removeMember,
+          },
+        ]}
+      />
+      {dialog}
+    </>
   );
 }
 

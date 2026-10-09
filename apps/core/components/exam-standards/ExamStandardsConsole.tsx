@@ -48,6 +48,37 @@ const MINOR_KEYS = new Set(['FEE_AMOUNT_MINOR']);
  * Settings grouped the way a creator meets them in Studio. Full screen is not here: the sitting
  * baseline makes it always on, so a standard has nothing to decide about it.
  */
+/**
+ * The certification standard's retake controls. Platform-wide policy, not plan settings: they
+ * have no Locked/Default choice and no creator range — every certification exam follows them.
+ */
+const RETAKE_KEYS = new Set([
+  'RETAKE_PURCHASE_ENABLED',
+  'RETAKE_FEE_PERCENT',
+  'RETAKE_MAX_PURCHASES',
+  'RETAKE_COOLDOWN_HOURS',
+  'VIOLATION_RETAKE_NEEDS_APPROVAL',
+  'SECOND_CHANCE_ENABLED',
+  'SECOND_CHANCE_DISCOUNT_PERCENT',
+  'SECOND_CHANCE_WINDOW_DAYS',
+  'SECOND_CHANCE_AFTER_VIOLATION',
+]);
+
+const RETAKE_HINTS: Record<string, string> = {
+  RETAKE_PURCHASE_ENABLED:
+    'When a candidate has used every attempt (or a sitting was ended for violations), they can buy another one. Off: only the publisher can allow more.',
+  RETAKE_FEE_PERCENT: 'Charged per retake, as a share of the registration fee. 0 makes retakes free.',
+  RETAKE_MAX_PURCHASES: 'After this many bought retakes, only the publisher can allow more.',
+  RETAKE_COOLDOWN_HOURS: 'Time to wait after the last sitting before a retake can be bought.',
+  VIOLATION_RETAKE_NEEDS_APPROVAL:
+    'A sitting ended for proctoring violations is not followed by a retake until the publisher approves. Off: the candidate can buy one like any other.',
+  SECOND_CHANCE_ENABLED:
+    'The first retake after a failed sitting is offered at a discount, once per candidate. Off: every retake costs the retake fee.',
+  SECOND_CHANCE_DISCOUNT_PERCENT: '100 makes the second chance free.',
+  SECOND_CHANCE_WINDOW_DAYS: 'The discounted price lapses this many days after the failed sitting. 0: it never lapses.',
+  SECOND_CHANCE_AFTER_VIOLATION: 'Off: a sitting ended for violations never earns the discount.',
+};
+
 const GROUPS: Array<{ title: string; keys: string[] }> = [
   { title: 'Sitting', keys: ['DURATION_MINUTES', 'MAX_ATTEMPTS', 'PASS_PERCENTAGE', 'GRADED', 'MIN_QUESTIONS'] },
   { title: 'Paper', keys: ['SHUFFLE_QUESTIONS', 'SHUFFLE_OPTIONS', 'FIXED_PAPER'] },
@@ -56,6 +87,14 @@ const GROUPS: Array<{ title: string; keys: string[] }> = [
     keys: ['PROCTORING_REQUIRED', 'IDENTITY_VERIFICATION_REQUIRED', 'MAX_VIOLATIONS'],
   },
   { title: 'Registration', keys: ['FEE_AMOUNT_MINOR'] },
+  {
+    title: 'Retakes',
+    keys: ['RETAKE_PURCHASE_ENABLED', 'RETAKE_FEE_PERCENT', 'RETAKE_MAX_PURCHASES', 'RETAKE_COOLDOWN_HOURS', 'VIOLATION_RETAKE_NEEDS_APPROVAL'],
+  },
+  {
+    title: 'Second chance',
+    keys: ['SECOND_CHANCE_ENABLED', 'SECOND_CHANCE_DISCOUNT_PERCENT', 'SECOND_CHANCE_WINDOW_DAYS', 'SECOND_CHANCE_AFTER_VIOLATION'],
+  },
 ];
 
 export function ExamStandardsConsole() {
@@ -192,9 +231,15 @@ export function ExamStandardsConsole() {
                 <h2 className="border-b border-slate-100 bg-slate-50/60 px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                   {group.title}
                 </h2>
+                {group.title === 'Second chance' && <RetakePricePreview settings={draft.settings} />}
                 <div className="divide-y divide-slate-100">
                   {rows.map((setting) => (
-                    <SettingRow key={setting.key} setting={setting} onChange={(p) => patchSetting(setting.key, p)} />
+                    <SettingRow
+                      key={setting.key}
+                      setting={setting}
+                      onChange={(p) => patchSetting(setting.key, p)}
+                      inactive={retakeRowInactive(setting.key, draft.settings)}
+                    />
                   ))}
                 </div>
               </section>
@@ -257,13 +302,57 @@ function SittingBaselineCard() {
   );
 }
 
+/** A retake row whose switch is off has no effect; it is dimmed rather than hidden. */
+function retakeRowInactive(key: string, settings: ExamStandardSetting[]): boolean {
+  const on = (k: string) => (settings.find((s) => s.key === k)?.value ?? 0) > 0;
+  if (!RETAKE_KEYS.has(key)) return false;
+  if (key !== 'RETAKE_PURCHASE_ENABLED' && !on('RETAKE_PURCHASE_ENABLED')) return true;
+  return key.startsWith('SECOND_CHANCE_') && key !== 'SECOND_CHANCE_ENABLED' && !on('SECOND_CHANCE_ENABLED');
+}
+
+/**
+ * What a candidate would pay under the draft, at the standard's default registration fee — so the
+ * percentages read as money before they are saved. The server prices every real offer itself.
+ */
+function RetakePricePreview({ settings }: { settings: ExamStandardSetting[] }) {
+  const v = (k: string) => settings.find((s) => s.key === k)?.value ?? 0;
+  const fee = v('FEE_AMOUNT_MINOR');
+  const retake = Math.round((fee * v('RETAKE_FEE_PERCENT')) / 100);
+  const second = Math.round((retake * (100 - v('SECOND_CHANCE_DISCOUNT_PERCENT'))) / 100);
+  const money = (minor: number) =>
+    minor === 0 ? 'free' : `₹${(minor / 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+  if (v('RETAKE_PURCHASE_ENABLED') <= 0) {
+    return (
+      <p className="border-b border-slate-100 px-5 py-3 text-[12px] font-medium text-slate-500">
+        Paid retakes are off: once attempts run out, only the exam&apos;s publisher can allow another.
+      </p>
+    );
+  }
+  return (
+    <p className="border-b border-slate-100 px-5 py-3 text-[12px] font-medium text-slate-500">
+      At the default registration fee ({money(fee)}): a retake costs <b className="text-ink">{money(retake)}</b>
+      {v('SECOND_CHANCE_ENABLED') > 0 ? (
+        <>
+          ; the second chance costs <b className="text-ink">{money(second)}</b>
+          {v('SECOND_CHANCE_WINDOW_DAYS') > 0 ? ` if taken within ${v('SECOND_CHANCE_WINDOW_DAYS')} days` : ''}.
+        </>
+      ) : (
+        '; there is no second-chance discount, so every retake costs the full retake fee.'
+      )}
+    </p>
+  );
+}
+
 function SettingRow({
   setting,
   onChange,
+  inactive = false,
 }: {
   setting: ExamStandardSetting;
   onChange: (patch: Partial<ExamStandardSetting>) => void;
+  inactive?: boolean;
 }) {
+  const platformOnly = RETAKE_KEYS.has(setting.key);
   const minor = MINOR_KEYS.has(setting.key);
   const toInput = (v: number | null) => (v === null ? '' : String(minor ? v / 100 : v));
   const fromInput = (raw: string): number | null => {
@@ -276,9 +365,14 @@ function SettingRow({
   const setMode = (mode: ExamSettingMode) => onChange({ mode });
 
   return (
-    <div className="grid grid-cols-1 items-center gap-3 px-5 py-3.5 md:grid-cols-[1.4fr_auto_1fr_1.4fr]">
+    <div
+      className={`grid grid-cols-1 items-center gap-3 px-5 py-3.5 md:grid-cols-[1.4fr_auto_1fr_1.4fr] ${inactive ? 'opacity-50' : ''}`}
+    >
       <div>
         <p className="text-[13px] font-semibold text-ink">{minor ? 'Registration fee' : setting.label}</p>
+        {RETAKE_HINTS[setting.key] && (
+          <p className="text-[11px] font-medium leading-relaxed text-slate-400">{RETAKE_HINTS[setting.key]}</p>
+        )}
         {setting.key === 'MIN_QUESTIONS' && (
           <p className="text-[11px] font-medium text-slate-400">Publishing is refused below this.</p>
         )}
@@ -289,6 +383,11 @@ function SettingRow({
         )}
       </div>
 
+      {platformOnly ? (
+        <span className="inline-flex w-fit items-center gap-1 rounded-full bg-ink px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-on-ink">
+          <Lock size={10} /> Platform-wide
+        </span>
+      ) : (
       <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 p-0.5">
         {(['LOCKED', 'DEFAULT'] as const).map((m) => (
           <button
@@ -304,6 +403,7 @@ function SettingRow({
           </button>
         ))}
       </div>
+      )}
 
       <div>
         {setting.kind === 'BOOLEAN' ? (
@@ -329,7 +429,9 @@ function SettingRow({
       </div>
 
       <div className="flex items-center gap-2 text-[12px] text-slate-500">
-        {setting.kind !== 'BOOLEAN' && !locked ? (
+        {platformOnly ? (
+          <span className="text-slate-400">Every certification exam follows this.</span>
+        ) : setting.kind !== 'BOOLEAN' && !locked ? (
           <>
             <span>Creators may set</span>
             <input

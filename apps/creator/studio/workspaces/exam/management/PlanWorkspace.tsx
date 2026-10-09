@@ -390,9 +390,54 @@ export function PlanWorkspace({
               disabled={readOnly || busy}
               onChange={(v) => patchPlan({ active: v })}
             />
+            {plan.planType === "CERTIFICATION" && <RetakePolicySummary settings={plan.settings} />}
           </SettingsCard>
         )}
       </div>
+    </div>
+  );
+}
+
+/**
+ * The certification standard's retake rules as this exam's candidates will meet them. Read-only:
+ * they are platform-wide (Console → Exam standards), so the creator sees them rather than sets them.
+ */
+function RetakePolicySummary({ settings }: { settings: { key: string; value: number | null }[] }) {
+  const v = (k: string) => settings.find((s) => s.key === k)?.value ?? null;
+  if (v("RETAKE_PURCHASE_ENABLED") === null) return null;
+  const lines: string[] = [];
+  if ((v("RETAKE_PURCHASE_ENABLED") ?? 0) <= 0) {
+    lines.push("Once a candidate's attempts run out, only you can allow another (Attempts & results).");
+  } else {
+    const pct = v("RETAKE_FEE_PERCENT") ?? 100;
+    lines.push(
+      pct === 0
+        ? "Candidates who run out of attempts can take another for free."
+        : `Candidates who run out of attempts can buy another at ${pct}% of the registration fee.`
+    );
+    const cooldown = v("RETAKE_COOLDOWN_HOURS") ?? 0;
+    if (cooldown > 0) lines.push(`They wait ${cooldown} hour${cooldown === 1 ? "" : "s"} after their last sitting first.`);
+    const max = v("RETAKE_MAX_PURCHASES") ?? 0;
+    if (max > 0) lines.push(`At most ${max} bought retake${max === 1 ? "" : "s"} per candidate.`);
+    if ((v("SECOND_CHANCE_ENABLED") ?? 0) > 0) {
+      const off = v("SECOND_CHANCE_DISCOUNT_PERCENT") ?? 0;
+      const days = v("SECOND_CHANCE_WINDOW_DAYS") ?? 0;
+      lines.push(
+        `The first retake after a fail is a second chance at ${off >= 100 ? "no charge" : `${off}% off`}${days > 0 ? `, within ${days} days` : ""}.`
+      );
+    }
+  }
+  if ((v("VIOLATION_RETAKE_NEEDS_APPROVAL") ?? 1) > 0) {
+    lines.push("After a sitting ended for proctoring violations, you approve the next attempt.");
+  }
+  return (
+    <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3.5">
+      <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">Retakes · platform standard</p>
+      <ul className="space-y-1 text-xs leading-relaxed text-slate-600">
+        {lines.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
     </div>
   );
 }

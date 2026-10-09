@@ -35,6 +35,9 @@ import type {
   QuestionPoolDetail,
   QuestionPoolFilterRequest,
   QuestionPoolMembersRequest,
+  LearnerAssessmentNode,
+  RetakeOffer,
+  RetakeAuditRow,
   QuestionPoolPreviewResponse,
   QuestionPoolRequest,
   QuestionPoolResponse,
@@ -240,6 +243,21 @@ export async function previewPoolDraft(
 ): Promise<QuestionPoolPreviewResponse> {
   const wire = await api.post<WirePoolPreview>(`/api/question-banks/${bankId}/pools/preview`, req);
   return { ...wire, questions: wire.questions.map(fromWire) };
+}
+
+/** Opens (or reuses) the caller's retake offer at the server's price. */
+export function openRetakeOffer(examId: string, planId: string) {
+  return api.post<RetakeOffer>(`/api/exams/${examId}/plans/${planId}/retake`, {});
+}
+
+/** Every retake offered on an exam — administrators only. */
+export function listExamRetakes(examId: string) {
+  return api.get<RetakeAuditRow[]>(`/api/exams/${examId}/retakes`);
+}
+
+/** An event's placed assessments, with what this learner has passed. */
+export function getEventAssessments(eventId: string) {
+  return api.get<LearnerAssessmentNode[]>(`/api/assessments/learner/event/${eventId}`);
 }
 
 export function deletePool(poolId: string) {

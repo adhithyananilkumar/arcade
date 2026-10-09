@@ -416,7 +416,17 @@ export type ExamSettingKey =
   | "IDENTITY_VERIFICATION_REQUIRED"
   | "FULLSCREEN_REQUIRED"
   | "MAX_VIOLATIONS"
-  | "FEE_AMOUNT_MINOR";
+  | "FEE_AMOUNT_MINOR"
+  // Certification retake policy — platform-wide, read-only for creators.
+  | "RETAKE_PURCHASE_ENABLED"
+  | "RETAKE_FEE_PERCENT"
+  | "RETAKE_MAX_PURCHASES"
+  | "RETAKE_COOLDOWN_HOURS"
+  | "VIOLATION_RETAKE_NEEDS_APPROVAL"
+  | "SECOND_CHANCE_ENABLED"
+  | "SECOND_CHANCE_DISCOUNT_PERCENT"
+  | "SECOND_CHANCE_WINDOW_DAYS"
+  | "SECOND_CHANCE_AFTER_VIOLATION";
 
 export type ExamSettingKind = "BOOLEAN" | "INTEGER" | "DECIMAL";
 
@@ -703,7 +713,77 @@ export type AssessmentBlockedReason =
   | "NOT_STARTED_YET"
   | "WINDOW_CLOSED"
   | "ATTEMPTS_EXHAUSTED"
-  | "IDENTITY_REQUIRED";
+  | "IDENTITY_REQUIRED"
+  | "COMPLETION_REQUIREMENTS"
+  | "RETAKE_APPROVAL_REQUIRED";
+
+/** One line of a completion (final) assessment's checklist: finish every lesson, pass each graded assessment. */
+export interface CompletionRequirement {
+  kind: "LESSONS" | "GRADED_ASSESSMENT";
+  label: string;
+  met: boolean;
+  /** The graded assessment to open, for a GRADED_ASSESSMENT line. */
+  placementId: string | null;
+}
+
+/**
+ * Another attempt at a certification exam after the attempts ran out (or a sitting was ended for
+ * violations), as the certification standard allows. Every figure is the server's.
+ */
+export interface RetakeQuote {
+  state: "AVAILABLE" | "PUBLISHER_ONLY" | "APPROVAL_REQUIRED" | "COOLDOWN" | "LIMIT_REACHED";
+  kind: "STANDARD" | "SECOND_CHANCE" | null;
+  baseAmountMinor: number;
+  discountPercent: number;
+  amountMinor: number;
+  currency: string;
+  /** When a retake can be bought (end of the cooldown). */
+  availableAt: string | null;
+  /** When a second-chance price lapses. */
+  offerExpiresAt: string | null;
+  purchasesUsed: number;
+  /** 0 = no limit. */
+  purchasesAllowed: number;
+  message: string;
+  offerId: string | null;
+}
+
+/** An opened retake offer: pay for it via an EXAM_RETAKE enrollment, unless it was free (granted). */
+export interface RetakeOffer {
+  offerId: string;
+  kind: "STANDARD" | "SECOND_CHANCE";
+  amountMinor: number;
+  currency: string;
+  granted: boolean;
+}
+
+/** One retake offer on an exam, for its administrators. */
+export interface RetakeAuditRow {
+  offerId: string;
+  planId: string;
+  userId: string;
+  kind: "STANDARD" | "SECOND_CHANCE";
+  status: "OFFERED" | "GRANTED" | "EXPIRED" | "CANCELLED";
+  baseAmountMinor: number;
+  discountPercent: number;
+  amountMinor: number;
+  currency: string;
+  createdAt: string;
+  grantedAt: string | null;
+}
+
+/** An assessment placed in an event, as its learner meets it. */
+export interface LearnerAssessmentNode {
+  placementId: string;
+  examId: string;
+  planId: string;
+  title: string;
+  position: number;
+  planType: "COMPLETION" | "ASSESSMENT";
+  graded: boolean;
+  requiredForCompletion: boolean;
+  passed: boolean;
+}
 
 /** One past sitting. A pending-review entry reports no pass/fail yet, rather than a provisional one. */
 export interface AttemptHistoryItem {
@@ -801,6 +881,10 @@ export interface AssessmentLandingResponse {
   blockedReason: AssessmentBlockedReason | null;
   blockedMessage: string | null;
   canManage: boolean;
+  /** For a content's completion assessment: what must be finished first. Empty otherwise. */
+  completionRequirements?: CompletionRequirement[];
+  /** Certification only: whether and at what price another attempt can be had. */
+  retake?: RetakeQuote | null;
 }
 
 // ── Exam catalogue (Explore > Exams) and My Learning > Exams ──────────────────────────────────────────

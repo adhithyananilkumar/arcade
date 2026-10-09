@@ -71,6 +71,19 @@ export function ProfileOrchestrator({ handle }: { handle: string }) {
   const loaded = state?.forHandle === handle ? state.result : null;
 
   useEffect(() => {
+    // Scroll to top of the page on refresh / navigation
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+    }
+  }, [handle]);
+
+  useEffect(() => {
+    if (loaded && typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+    }
+  }, [loaded]);
+
+  useEffect(() => {
     let cancelled = false;
 
     (async () => {

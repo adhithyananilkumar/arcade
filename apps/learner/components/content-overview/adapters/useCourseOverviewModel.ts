@@ -200,18 +200,23 @@ function buildSections(course: CourseResponse, completedLessonIds: string[]): Ov
   if (courseLevel.length > 0) {
     sections.push({
       id: `${course.id}-assessments`,
-      title: 'Assessments',
+      title: courseLevel.every((a) => a.planType === 'COMPLETION') ? 'Final assessment' : 'Course assessments',
       items: courseLevel
         .slice()
-        .sort((a, b) => a.position - b.position)
+        // Same order as the player: the completion (final) assessment last.
+        .sort(
+          (a, b) =>
+            Number(a.planType === 'COMPLETION') - Number(b.planType === 'COMPLETION') || a.position - b.position,
+        )
         .map((assessment) => ({
           id: assessment.placementId,
           title: assessment.title,
           kind: 'ASSESSMENT' as const,
           completed: false,
-          // Course-level assessments are not in the player's running order: open the exam page on
-          // this exact plan, with the way back to this course.
-          href: `${courseRoutes.exam(assessment.examId)}?planId=${assessment.planId}&returnTo=${encodeURIComponent(courseRoutes.overview(course.id))}`,
+          // Course-level assessments (the final assessment among them) are sat inside the course
+          // player, after every module. They used to open the exam's standalone catalogue page,
+          // which offered enrolment and sharing for something that belongs to this course.
+          href: courseRoutes.lesson(course.id, assessment.placementId),
           order: order++,
         })),
     });

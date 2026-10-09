@@ -7,7 +7,8 @@
  * only a way for the type system to bless a request the server rejects.
  */
 /** EXAM is a registration for a main exam (certification or standalone) from Explore > Exams. */
-export type ResourceType = 'COURSE' | 'EVENT' | 'EXAM';
+/** EXAM_RETAKE buys one more attempt at a certification exam; its id is the server's retake offer. */
+export type ResourceType = 'COURSE' | 'EVENT' | 'EXAM' | 'EXAM_RETAKE';
 
 export type EnrollmentResultStatus = 'GRANTED' | 'PENDING_ACTION' | 'DENIED';
 

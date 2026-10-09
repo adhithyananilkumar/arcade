@@ -70,7 +70,7 @@ const TYPE_CONFIG: Record<string, { label: string; icon: LucideIcon }> = {
 
 const ACTION_TONES = {
   default: 'bg-ink hover:bg-ink-hover text-on-ink',
-  success: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+  success: 'bg-ink hover:bg-ink-hover text-on-ink',
   waiting:
     'bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 border border-amber-500/25 dark:text-amber-200',
 } as const;

@@ -29,7 +29,8 @@ export default function ExamTerminatedPage() {
         <div className="px-8 py-7">
           <p className="text-[13px] font-medium leading-relaxed text-slate-500">
             Leaving the exam window was recorded each time. Your answers were submitted, but an attempt
-            ended this way cannot pass. If you have attempts left you can sit the exam again.
+            ended this way cannot pass. The exam&apos;s publisher has been notified; you can sit it again
+            only once they allow another attempt.
           </p>
 
           <Link

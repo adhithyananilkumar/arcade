@@ -42,6 +42,7 @@ export {
   LinksPanel,
   OrganizationsPanel,
   PeoplePanel,
+  QuietProfilePanel,
 } from './components/ProfilePanels';
 export type {
   AchievementsPanelProps,
@@ -59,6 +60,8 @@ export {
 } from './components/HandleAppealList';
 export type { HandleAppealListProps } from './components/HandleAppealList';
 export { ProfileSkeleton } from './components/ProfileSkeleton';
+export { ProfileEditModal } from './components/ProfileEditModal';
+export type { ProfileEditModalProps } from './components/ProfileEditModal';
 
 export type {
   ChannelAddress,

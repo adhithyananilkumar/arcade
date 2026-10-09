@@ -48,8 +48,10 @@ const HIDE_DOCK_ROUTES = [
 
 export default function LearnerShell({
   children,
+  hideDock: hideDockProp = false,
 }: {
   children: React.ReactNode;
+  hideDock?: boolean;
 }) {
   const pathname = usePathname();
 
@@ -59,7 +61,7 @@ export default function LearnerShell({
   // its own page-local floating dock instead (ContentWorkspaceDock),
   // reflecting that specific content item's own sections rather than the
   // app-wide destinations.
-  const hideDock = immersive || HIDE_DOCK_ROUTES.some((r) => r.test(pathname ?? ''));
+  const hideDock = hideDockProp || immersive || HIDE_DOCK_ROUTES.some((r) => r.test(pathname ?? ''));
 
   return (
     <>

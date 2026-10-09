@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { X } from "lucide-react";
 
 // Small reusable confirm dialog for destructive/irreversible header actions
@@ -16,6 +16,7 @@ export function ConfirmActionModal({
   requireTitleMatch,
   onClose,
   onConfirm,
+  children,
 }: {
   title: string;
   description: string;
@@ -24,6 +25,8 @@ export function ConfirmActionModal({
   requireTitleMatch?: string;
   onClose: () => void;
   onConfirm: () => Promise<void>;
+  /** Extra content between the description and the buttons — e.g. what else the delete removes. */
+  children?: ReactNode;
 }) {
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
@@ -37,6 +40,9 @@ export function ConfirmActionModal({
       await onConfirm();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      // Callers that report a failure themselves resolve instead of throwing; without this the
+      // button stayed on "Working…" for good and the dialog could only be left with the X (BUG-1064).
       setBusy(false);
     }
   }
@@ -55,6 +61,7 @@ export function ConfirmActionModal({
         </button>
         <h3 className="mb-2 text-base font-bold tracking-tight text-ink">{title}</h3>
         <p className="mb-4 text-sm text-slate-500">{description}</p>
+        {children}
 
         {requireTitleMatch && (
           <input
@@ -76,7 +83,6 @@ export function ConfirmActionModal({
           <button
             type="button"
             onClick={onClose}
-            disabled={busy}
             className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
           >
             Cancel

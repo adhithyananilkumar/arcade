@@ -25,6 +25,8 @@ export { VerifiedBadge, BadgeRow } from './components/VerifiedBadge';
 export type { VerifiedBadgeProps, BadgeRowProps } from './components/VerifiedBadge';
 export { BADGE_ICON_NAMES, resolveBadgeIcon } from './components/badgeIconMap';
 export { BadgeIcon } from './components/BadgeIcon';
+export { VerifiedMark } from './components/VerifiedMark';
+export type { VerifiedMarkProps } from './components/VerifiedMark';
 export type { BadgeIconProps } from './components/BadgeIcon';
 export type {
   BadgeAppliesTo,

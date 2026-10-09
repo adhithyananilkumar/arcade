@@ -99,6 +99,11 @@ export interface ExamOverviewProps {
   registrationSlot?: ReactNode;
   /** The identity capture step, shown when the blocker is identity verification. */
   identitySlot?: ReactNode;
+  /**
+   * Shown instead of "no attempts left" when the certification standard offers another attempt
+   * (a paid retake or a second chance) — the host passes RetakePanel with its checkout.
+   */
+  retakeSlot?: ReactNode;
   /** The registration fee, already formatted; omitted when free. */
   feeLabel?: string | null;
   onOpenPrerequisite?: () => void;
@@ -113,6 +118,7 @@ export function ExamOverview({
   onViewGradeCard,
   registrationSlot,
   identitySlot,
+  retakeSlot,
   feeLabel,
   onOpenPrerequisite,
 }: ExamOverviewProps) {
@@ -168,6 +174,8 @@ export function ExamOverview({
     </div>
   ) : needsIdentity && identitySlot ? (
     <div className="max-w-md">{identitySlot}</div>
+  ) : !landing.startable && landing.retake && retakeSlot ? (
+    <div className="w-full max-w-md">{retakeSlot}</div>
   ) : landing.startable ? (
     <button
       type="button"
@@ -699,6 +707,7 @@ function blockedIcon(reason: AssessmentLandingResponse['blockedReason']) {
     case 'WINDOW_CLOSED':
       return <Clock size={16} />;
     case 'ATTEMPTS_EXHAUSTED':
+    case 'RETAKE_APPROVAL_REQUIRED':
     case 'PREREQUISITE_NOT_MET':
       return <Lock size={16} />;
     case 'IDENTITY_REQUIRED':

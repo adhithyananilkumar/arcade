@@ -58,6 +58,8 @@ export const eventRoutes = {
   landing: (slug: string) => `/events/${slug}`,
   overview: (slug: string) => `/events/${slug}/learn`,
   session: (slug: string, sessionId: string) => `/events/${slug}/learn/${sessionId}`,
+  /** One of the event's linked assessments, sat from inside the event (never the exam catalogue page). */
+  assessment: (slug: string, placementId: string) => `/events/${slug}/learn/assessments/${placementId}`,
   notes: (slug: string) => `/events/${slug}/notes`,
 } as const;
 
@@ -106,7 +108,7 @@ export function openExamSitting(examId: string, href: string): void {
  * the identifier rather than deriving it.
  */
 export function contentOverviewRoute(
-  resourceType: 'COURSE' | 'EVENT' | 'EXAM',
+  resourceType: 'COURSE' | 'EVENT' | 'EXAM' | 'EXAM_RETAKE',
   identifier: string,
 ): string {
   switch (resourceType) {
@@ -116,5 +118,8 @@ export function contentOverviewRoute(
       return eventRoutes.overview(identifier);
     case 'EXAM':
       return examRoutes.landing(identifier);
+    // A retake is an extra attempt, not content: its home is the learner's exams.
+    case 'EXAM_RETAKE':
+      return examRoutes.mine;
   }
 }

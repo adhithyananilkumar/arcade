@@ -82,6 +82,17 @@ export const getEventSummary = async (eventId: string): Promise<EventSummary> =>
   return await api.get<EventSummary>(`${API_BASE_PATH}/${eventId}/summary`);
 };
 
-export const deleteEvent = async (eventId: string): Promise<void> => {
-  await api.delete<void>(`${API_BASE_PATH}/${eventId}`);
+/**
+ * Permanently deletes an event. Its linked exam is deleted with it unless `keepExam` is set, in
+ * which case the exam is unlinked and kept as a standalone draft exam.
+ */
+export const deleteEvent = async (eventId: string, options?: { keepExam?: boolean }): Promise<void> => {
+  await api.delete<void>(`${API_BASE_PATH}/${eventId}${options?.keepExam ? '?keepExam=true' : ''}`);
+};
+
+/** What deleting this event would take with it: its linked exam, if it has one. */
+export const getEventDeleteImpact = async (
+  eventId: string
+): Promise<{ linkedExam: { examId: string; title: string; attemptCount: number } | null }> => {
+  return await api.get(`${API_BASE_PATH}/${eventId}/delete-impact`);
 };
