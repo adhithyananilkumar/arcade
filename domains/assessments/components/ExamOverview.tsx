@@ -293,8 +293,7 @@ export function ExamOverview({
 
               {/* Primary Action & Pricing Row */}
               <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-3">
-                <div className="inline-flex items-center gap-2 rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-emerald-300/80 bg-emerald-50/90 px-4 py-2.5 text-xs font-extrabold text-emerald-900 dark:border-emerald-800/70 dark:bg-emerald-950/60 dark:text-emerald-300 shadow-2xs">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <div className="inline-flex items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-emerald-300/80 bg-emerald-50/90 px-4 py-2.5 text-xs font-extrabold text-emerald-900 dark:border-emerald-800/70 dark:bg-emerald-950/60 dark:text-emerald-300 shadow-2xs">
                   <span>{feeLabel ?? 'Free Exam'}</span>
                 </div>
 

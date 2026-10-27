@@ -92,12 +92,12 @@ export function ReportModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[480px] p-6 border border-slate-200/80 bg-surface shadow-2xl">
+      <DialogContent className="sm:max-w-[480px] p-6 border border-slate-200/80 dark:border-slate-800 bg-surface/98 backdrop-blur-2xl shadow-2xl">
         <DialogHeader className="mb-2">
-          <DialogTitle className="text-xl font-bold tracking-tight text-slate-900">
+          <DialogTitle className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             {title}
           </DialogTitle>
-          <DialogDescription className="text-xs font-medium text-slate-500">
+          <DialogDescription className="text-xs font-medium text-slate-500 dark:text-slate-400">
             {description}
           </DialogDescription>
         </DialogHeader>
@@ -105,7 +105,7 @@ export function ReportModal({
         <div className="space-y-5 py-2">
           {/* Section 1: Report Reasons */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-3">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-3">
               {sectionHeading}
             </label>
             <div className="space-y-2">
@@ -116,18 +116,18 @@ export function ReportModal({
                     type="button"
                     key={reason}
                     onClick={() => toggleReason(reason)}
-                    className={`flex w-full items-center justify-between rounded-xl border px-3.5 py-2.5 text-left text-xs font-semibold transition-all ${
+                    className={`flex w-full items-center justify-between rounded-xl border px-3.5 py-2.5 text-left text-xs font-semibold transition-all cursor-pointer ${
                       isSelected
-                        ? 'border-indigo-600 bg-indigo-50/70 text-indigo-950 shadow-xs dark:bg-indigo-500/10 dark:text-indigo-200'
-                        : 'border-slate-200/90 bg-slate-50/40 text-slate-700 hover:border-slate-300 hover:bg-slate-100/60'
+                        ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/80 dark:bg-indigo-950/40 text-indigo-950 dark:text-indigo-200 shadow-xs'
+                        : 'border-slate-200/90 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-100/70 dark:hover:bg-slate-800/70'
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div
                         className={`grid size-4 shrink-0 place-items-center rounded-md border transition-all ${
                           isSelected
-                            ? 'border-indigo-600 bg-indigo-600 text-white'
-                            : 'border-slate-300 bg-surface'
+                            ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-600 dark:bg-indigo-500 text-white'
+                            : 'border-slate-300 dark:border-slate-600 bg-surface'
                         }`}
                       >
                         {isSelected && <Check size={11} strokeWidth={3} />}
@@ -147,11 +147,11 @@ export function ReportModal({
 
           {/* Section 2: Additional Details */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
               Additional details
             </label>
             <textarea
-              className="min-h-[90px] w-full rounded-xl border border-slate-200 p-3 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="min-h-[95px] w-full rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/50 p-3 text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-500/30 transition-all resize-y"
               placeholder="Tell us more about the issue..."
               value={details}
               onChange={(e) => setDetails(e.target.value)}
@@ -159,11 +159,11 @@ export function ReportModal({
           </div>
         </div>
 
-        <DialogFooter className="mt-4 flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
+        <DialogFooter className="mt-4 flex items-center justify-end gap-2 border-t border-slate-200/70 dark:border-slate-800/70 pt-4">
           <button
             type="button"
             onClick={handleClose}
-            className="rounded-xl px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+            className="rounded-xl px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -171,7 +171,7 @@ export function ReportModal({
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="rounded-xl bg-ink px-5 py-2 text-xs font-semibold text-on-ink shadow-sm hover:bg-ink-hover transition-colors disabled:opacity-50 cursor-pointer"
+            className="rounded-xl bg-ink px-5 py-2 text-xs font-semibold text-on-ink shadow-sm hover:bg-ink-hover active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
           >
             {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </button>
