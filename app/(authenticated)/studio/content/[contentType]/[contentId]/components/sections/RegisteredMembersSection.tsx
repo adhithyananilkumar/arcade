@@ -16,6 +16,7 @@ import {
   CalendarCheck,
   Users,
   UserCog,
+  FileSpreadsheet,
 } from "lucide-react";
 import { api } from "@/infrastructure/http/api";
 import { useStudioConfirm } from "@/apps/creator/studio/core/useStudioConfirm";
@@ -187,13 +188,25 @@ function ActionMenu({
 
 // ── Invite Members Modal ──────────────────────────────────────────────────────
 
-function InviteMembersModal({ eventId, onClose }: { eventId: string; onClose: () => void }) {
+function InviteMembersModal({
+  eventId,
+  isPrivate,
+  initialMode = "one",
+  onClose,
+}: {
+  eventId: string;
+  isPrivate?: boolean;
+  initialMode?: "one" | "many" | "file";
+  onClose: () => void;
+}) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
-      <div className="relative w-full max-w-lg arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-xl arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-4">
-          <h3 className="text-base font-bold text-ink">Invite members</h3>
+          <h3 className="text-base font-bold text-ink">
+            {initialMode === "file" ? "Bulk Invite Attendees" : "Invite Members"}
+          </h3>
           <button
             type="button"
             onClick={onClose}
@@ -203,8 +216,13 @@ function InviteMembersModal({ eventId, onClose }: { eventId: string; onClose: ()
             <X size={16} />
           </button>
         </div>
-        <div className="max-h-[70vh] overflow-y-auto p-4">
-          <EventInvitationManager eventId={eventId} className="border-0 p-2 shadow-none" />
+        <div className="max-h-[75vh] overflow-y-auto p-4 sm:p-5">
+          <EventInvitationManager
+            eventId={eventId}
+            isPrivate={isPrivate}
+            initialMode={initialMode}
+            className="border-0 p-0 shadow-none"
+          />
         </div>
       </div>
     </div>
@@ -227,6 +245,8 @@ export function RegisteredMembersSection({
   const [search, setSearch] = useState("");
   const [regFilter, setRegFilter] = useState<RegistrationStatus | "ALL">("ALL");
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"one" | "many" | "file">("one");
+  const isPrivate = eventDetails?.status === "ok" && eventDetails.data?.visibility === "PRIVATE";
 
   // Seats capacity state
   const rawCapacity = eventDetails?.status === "ok" ? eventDetails.data?.capacity : undefined;
@@ -322,14 +342,30 @@ export function RegisteredMembersSection({
         title="Registered members"
         description="People who registered to attend this event. Invite someone by email; they register (and pay) the normal way and appear here."
         actions={
-          <button
-            type="button"
-            onClick={() => setAddModalOpen(true)}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-xs font-extrabold text-on-ink shadow-md transition-colors hover:bg-[#205ca8]"
-          >
-            <UserPlus size={14} />
-            Invite members
-          </button>
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                setModalMode("file");
+                setAddModalOpen(true);
+              }}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200/90 bg-surface px-4 py-2 text-xs font-bold text-slate-700 shadow-2xs transition-colors hover:border-blue-300 hover:bg-slate-50 hover:text-blue-600 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <FileSpreadsheet size={14} className="text-blue-600 dark:text-blue-400" />
+              Bulk invite (CSV / JSON)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setModalMode("one");
+                setAddModalOpen(true);
+              }}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-ink px-4 py-2 text-xs font-extrabold text-on-ink shadow-md transition-colors hover:bg-[#205ca8]"
+            >
+              <UserPlus size={14} />
+              Invite members
+            </button>
+          </div>
         }
       />
 
@@ -473,7 +509,12 @@ export function RegisteredMembersSection({
 
       {/* Invite members modal */}
       {addModalOpen && (
-        <InviteMembersModal eventId={eventId} onClose={() => setAddModalOpen(false)} />
+        <InviteMembersModal
+          eventId={eventId}
+          isPrivate={isPrivate}
+          initialMode={modalMode}
+          onClose={() => setAddModalOpen(false)}
+        />
       )}
 
       {/* Collaborators */}

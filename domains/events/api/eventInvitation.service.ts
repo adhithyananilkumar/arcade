@@ -21,12 +21,27 @@ export class EventInvitationService {
     );
   }
 
-  /** Up to 100 addresses; each is invited on its own and reported in `results`. */
+  /** Up to any number of addresses; automatically batches in slices of 100 to respect server limits. */
   static async inviteMany(eventId: string, emails: string[], validityDays?: number): Promise<BulkInviteResponse> {
-    return api.post<BulkInviteResponse>(
-      `${EventInvitationService.BASE}/${eventId}/invitations/bulk`,
-      { emails, validityDays }
-    );
+    if (emails.length <= 100) {
+      return api.post<BulkInviteResponse>(
+        `${EventInvitationService.BASE}/${eventId}/invitations/bulk`,
+        { emails, validityDays }
+      );
+    }
+    const chunkSize = 100;
+    const combined: BulkInviteResponse = { invited: 0, skipped: 0, results: [] };
+    for (let i = 0; i < emails.length; i += chunkSize) {
+      const slice = emails.slice(i, i + chunkSize);
+      const res = await api.post<BulkInviteResponse>(
+        `${EventInvitationService.BASE}/${eventId}/invitations/bulk`,
+        { emails: slice, validityDays }
+      );
+      combined.invited += res.invited;
+      combined.skipped += res.skipped;
+      combined.results.push(...res.results);
+    }
+    return combined;
   }
 
   static async revoke(eventId: string, invitationId: string): Promise<void> {
