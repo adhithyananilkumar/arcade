@@ -16,6 +16,29 @@
 .arcade-rich-text :where(.ProseMirror) {
   outline: none;
   cursor: text;
+  caret-color: var(--ink, #14142b);
+}
+
+.arcade-rich-text :where(.ProseMirror):focus,
+.arcade-rich-text :where(.ProseMirror):focus-visible {
+  outline: none;
+  caret-color: var(--ink, #14142b);
+}
+
+:root.dark .arcade-rich-text :where(.ProseMirror),
+:root.dark .arcade-rich-text :where(.ProseMirror):focus,
+:root.dark .arcade-rich-text :where(.ProseMirror):focus-visible {
+  caret-color: #ffffff;
+}
+
+.arcade-rich-text :where(.ProseMirror) ::selection,
+.arcade-rich-text :where(.ProseMirror)::selection {
+  background-color: rgba(37, 99, 235, 0.22);
+}
+
+:root.dark .arcade-rich-text :where(.ProseMirror) ::selection,
+:root.dark .arcade-rich-text :where(.ProseMirror)::selection {
+  background-color: rgba(96, 165, 250, 0.35);
 }
 
 /* ── Headings ── */
@@ -247,4 +270,19 @@
 .arcade-rich-text-compact :where(pre) {
   padding: 0.625rem 0.75rem;
   margin: 0.625rem 0;
+}
+
+/* ── Notes editor toolbar horizontal scroll container (hidden scrollbar) ── */
+.notes-toolbar-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  -webkit-overflow-scrolling: touch;
+}
+
+.notes-toolbar-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }

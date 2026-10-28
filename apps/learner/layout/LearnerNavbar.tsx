@@ -356,10 +356,13 @@ export default function LearnerNavbar() {
 
       {/* Center: Course learn page — course title */}
       {courseLearnId && (
-        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex h-12 items-center rounded-full px-5 apple-glass-dock text-xs shadow-none [box-shadow:none]">
-          <span className="max-w-[220px] truncate font-extrabold text-ink whitespace-nowrap">
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+          <h1
+            title={courseLearnData?.title ?? 'Course'}
+            className="max-w-[240px] sm:max-w-[380px] md:max-w-[480px] truncate text-center text-sm sm:text-[15px] font-bold tracking-tight text-ink dark:text-white"
+          >
             {courseLearnData?.title ?? 'Course'}
-          </span>
+          </h1>
         </div>
       )}
 
