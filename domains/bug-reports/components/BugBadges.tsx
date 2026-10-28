@@ -28,6 +28,7 @@ import {
   Upload,
   Video,
   Wrench,
+  ShieldAlert,
   type LucideIcon,
 } from 'lucide-react';
 import type { BugImpact, BugPriority, BugStatus } from '../types/bug-report.types';
@@ -87,6 +88,7 @@ export const CATEGORY_ICONS: Record<string, LucideIcon> = {
   upload: Upload,
   search: Search,
   pointer: MousePointerClick,
+  shield: ShieldAlert,
 };
 
 export function CategoryIcon({ icon, size = 16, className }: { icon: string; size?: number; className?: string }) {

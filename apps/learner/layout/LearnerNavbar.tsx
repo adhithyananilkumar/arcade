@@ -12,13 +12,9 @@ import { AuthorizationService } from '@/infrastructure/auth/authorization.servic
 import {
   useStudioAccess,
   useUserChannels,
-  useHasAnyChannel,
-  usePendingChannelRequestsQuery,
-  usePendingDeletionRequestsQuery,
   PendingChannelInvitations,
   useMyChannelInvitations,
 } from "@/domains/channels";
-import { platformReviewApi } from "@/domains/publishing";
 import { api } from '@/infrastructure/http/api';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -28,12 +24,6 @@ import { getEventBySlugOrId } from '@/domains/events';
 
 /** Shared so the accept/decline handlers can invalidate exactly this query. */
 
-/**
- * How many pending items the console's task menu lists. It is a "needs attention" dropdown, not a
- * queue view — the queue itself lives at /console/reviews — so there is no reason to fetch beyond
- * what the menu shows.
- */
-const ADMIN_TASK_LIMIT = 10;
 
 export default function LearnerNavbar() {
   const { user, clearAuth } = useAuthStore();
@@ -69,76 +59,7 @@ export default function LearnerNavbar() {
   const collaboratedEventId = collaborations.length > 0 ? collaborations[0].id : null;
   const hasMultipleCollabs = collaborations.length > 1;
 
-  // The pending-task menu is derived from the *shared* admin queries rather than a composite
-  // query of its own. A composite one still worked, but its fetches happened inside its own query
-  // function, so they could not deduplicate against the identical requests `/console/channels`
-  // makes — that page issued `delete-requests` three times and `requests` twice on one load.
-  // Reading the same keys the page reads means the navbar adds nothing on top of it.
-  const canManageChannels = AuthorizationService.canManageChannels(user);
-  const canReviewContent = AuthorizationService.canAccessPlatformReviews(user);
 
-  // Only as many as the menu shows. Unpaged this returned all 1,235 pending requests — 775 KB —
-  // on every authenticated page load.
-  const { requests: pendingChannelRequests } = usePendingChannelRequestsQuery(
-    { page: 0, size: ADMIN_TASK_LIMIT },
-    { enabled: canManageChannels },
-  );
-  const { data: pendingDeletions } = usePendingDeletionRequestsQuery({
-    enabled: canManageChannels,
-  });
-  const { data: openReviews } = useQuery({
-    queryKey: ['open-platform-reviews', ADMIN_TASK_LIMIT],
-    enabled: canReviewContent,
-    staleTime: 60 * 1000,
-    // Filtered and bounded server-side. Asking for everything and keeping the OPEN ones in the
-    // browser also got the filtering wrong: the endpoint defaults to the first 25 rows of the whole
-    // queue, so a queue whose first 25 happened to be closed showed no pending tasks even when open
-    // work existed.
-    queryFn: () =>
-      platformReviewApi.list({ status: 'OPEN', page: 0, size: ADMIN_TASK_LIMIT }).catch(() => []),
-  });
-
-  const pendingAdminTasks = useMemo(() => {
-    const tasks: { id: string; title: string; subtitle: string; href: string; type: string; timestamp: string }[] = [];
-
-    pendingChannelRequests.forEach((ch) => {
-      tasks.push({
-        id: `ch-${ch.id}`,
-        title: `New Channel Request: ${ch.name}`,
-        subtitle: `Requested by ${ch.ownerName}`,
-        href: `/console/channels`,
-        type: 'channel_approval',
-        timestamp: ch.createdAt,
-      });
-    });
-
-    (pendingDeletions ?? [])
-      .filter((d) => d.status === 'PENDING')
-      .forEach((d) => {
-        tasks.push({
-          id: `del-${d.id}`,
-          title: `Channel Deletion: ${d.channelName}`,
-          subtitle: `Requested by ${d.requestedByName}`,
-          href: `/console/channels`,
-          type: 'channel_deletion',
-          timestamp: d.createdAt,
-        });
-      });
-
-    (openReviews ?? []).forEach((r) => {
-      tasks.push({
-        id: `rev-${r.id}`,
-        title: `Content Review: ${r.title}`,
-        subtitle: `Submitted by ${r.ownerName} (${r.channelName})`,
-        href: `/console/reviews/${r.id}`,
-        type: 'content_review',
-        timestamp: r.submittedAt || new Date().toISOString(),
-      });
-    });
-
-    tasks.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    return tasks;
-  }, [pendingChannelRequests, pendingDeletions, openReviews]);
 
   const handleLogout = async () => {
     if (isLoggingOut) return;
@@ -372,9 +293,6 @@ export default function LearnerNavbar() {
           >
             <LayoutDashboard size={15} className="text-slate-500 shrink-0" />
             <span>Console</span>
-            {pendingAdminTasks.length > 0 && (
-              <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" title={`${pendingAdminTasks.length} pending admin task${pendingAdminTasks.length === 1 ? '' : 's'}`} />
-            )}
           </Link>
           {consoleCrumb && (
             <>

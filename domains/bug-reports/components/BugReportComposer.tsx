@@ -10,6 +10,7 @@ import {
   Loader2,
   Pencil,
   Send,
+  ShieldAlert,
   Trash2,
 } from 'lucide-react';
 import type { BugCategory, BugImpact } from '../types/bug-report.types';
@@ -72,9 +73,13 @@ export function BugReportComposer({
   const textRef = useRef<HTMLTextAreaElement>(null);
 
   const category = useMemo(() => categories.find((c) => c.id === categoryId) ?? null, [categories, categoryId]);
+  const isVulnerability = category?.code === 'VULNERABILITY';
 
   useEffect(() => {
     if (category) {
+      if (category.code === 'VULNERABILITY') {
+        setImpact((prev) => (prev === 'MINOR' ? 'MAJOR' : prev));
+      }
       setTimeout(() => titleRef.current?.focus(), 50);
     }
   }, [category]);
@@ -221,13 +226,29 @@ export function BugReportComposer({
         <span>{category.label}</span>
       </button>
 
-      {/* Question 1: What happened? */}
+      {/* Security Advisory for Vulnerabilities */}
+      {isVulnerability && (
+        <div className="flex items-start gap-2.5 rounded-2xl border border-rose-200/90 bg-rose-50/70 p-3.5 text-[12px] text-rose-950 dark:border-rose-500/30 dark:bg-rose-950/20 dark:text-rose-200">
+          <ShieldAlert size={16} className="mt-0.5 shrink-0 text-rose-600 dark:text-rose-400" />
+          <div className="space-y-0.5">
+            <p className="font-bold text-rose-900 dark:text-rose-100">Confidential Security Report</p>
+            <p className="text-[11.5px] leading-relaxed text-rose-800/90 dark:text-rose-300/90">
+              Vulnerability reports are handled with high priority and confidentiality. Please do not submit real user credentials, live secrets, or destructive exploit payloads.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Question 1: What happened / Vulnerability title */}
       <div>
         <div className="mb-1.5 flex items-center justify-between">
           <label htmlFor="bug-what-happened" className="block text-[12.5px] font-semibold text-slate-900">
-            What happened? <span className="text-rose-500">*</span>
+            {isVulnerability ? 'What is the vulnerability?' : 'What happened?'}{' '}
+            <span className="text-rose-500">*</span>
           </label>
-          <span className="text-[11px] text-slate-400">Brief summary of the issue</span>
+          <span className="text-[11px] text-slate-400">
+            {isVulnerability ? 'Brief summary of the security vulnerability' : 'Brief summary of the issue'}
+          </span>
         </div>
         <input
           id="bug-what-happened"
@@ -235,18 +256,25 @@ export function BugReportComposer({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           maxLength={160}
-          placeholder="e.g. Save button doesn't work on my profile"
+          placeholder={
+            isVulnerability
+              ? 'e.g. Broken authentication on user endpoints, sensitive data leak, IDOR...'
+              : "e.g. Save button doesn't work on my profile"
+          }
           className="w-full rounded-xl border border-slate-200 bg-surface px-3.5 py-2.5 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/20"
         />
       </div>
 
-      {/* Question 2: Describe */}
+      {/* Question 2: Describe / Steps & Impact */}
       <div>
         <div className="mb-1.5 flex items-center justify-between">
           <label htmlFor="bug-describe" className="block text-[12.5px] font-semibold text-slate-900">
-            Describe <span className="text-rose-500">*</span>
+            {isVulnerability ? 'Vulnerability details & reproduction steps' : 'Describe'}{' '}
+            <span className="text-rose-500">*</span>
           </label>
-          <span className="text-[11px] text-slate-400">Steps, expected behavior, or context</span>
+          <span className="text-[11px] text-slate-400">
+            {isVulnerability ? 'Steps, affected endpoints, and security impact' : 'Steps, expected behavior, or context'}
+          </span>
         </div>
         <textarea
           id="bug-describe"
@@ -255,7 +283,11 @@ export function BugReportComposer({
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
           maxLength={8000}
-          placeholder="Describe what you were doing, what went wrong, and what should happen..."
+          placeholder={
+            isVulnerability
+              ? 'Describe the vulnerability in detail, exact steps or request payload to reproduce, affected endpoints, and potential security impact...'
+              : 'Describe what you were doing, what went wrong, and what should happen...'
+          }
           className="w-full resize-none rounded-xl border border-slate-200 bg-surface px-3.5 py-2.5 text-[13px] leading-relaxed text-slate-900 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/20"
         />
       </div>

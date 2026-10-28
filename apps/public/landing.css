@@ -1,6 +1,14 @@
 /* ─── Custom Fonts ─────────────────────────────────────────────────── */
-@import url("https://fonts.cdnfonts.com/css/latin-modern-roman");
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Caveat:wght@700&display=swap");
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@500,600,700,800,900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap");
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* ─── Landing Design Tokens ────────────────────────────────────────── */
 :root {
@@ -236,9 +244,9 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1800px;
   padding-top: 3rem;
-  margin-top: -10vh;
+  margin-top: -8vh;
   /* nudge content up less to move text down */
   display: flex;
   flex-direction: column;
@@ -262,11 +270,11 @@
 
 /* ─── Headline ──────────────────────────────────────────────────────── */
 .l-headline {
-  font-family: "CSBliska", sans-serif;
-  font-size: clamp(4.5rem, 10vw, 8.5rem);
-  font-weight: 400;
-  line-height: 1.0;
-  letter-spacing: 0em;
+  font-family: "Satoshi", "Satoshi-Medium", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: clamp(5.6rem, 12vw, 10.5rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
   color: var(--l-ink);
   margin: 0;
   padding: 0;
@@ -350,7 +358,7 @@
   }
 
   .l-headline {
-    font-size: clamp(2.5rem, 8vw, 3.5rem);
+    font-size: clamp(3.2rem, 9.5vw, 4.6rem);
   }
 
   .l-token-wrap {
