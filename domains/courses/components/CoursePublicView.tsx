@@ -14,7 +14,7 @@
  * ------------------------------------------------------------------
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Award,
   BadgeCheck,
@@ -224,12 +224,35 @@ function CourseHero({
   hasExam,
   hasBadge,
 }: CourseHeroProps) {
-  const instructors: Array<Pick<CourseCollaboratorSummary, 'id' | 'name' | 'username' | 'avatarUrl'>> =
-    (collaborators?.length ?? 0) > 0
-      ? collaborators!
-      : authorName
-        ? [{ id: authorId ?? 'author', name: authorName, username: authorUsername, avatarUrl: authorAvatarUrl }]
-        : [];
+  const instructors = useMemo(() => {
+    const list: Array<Pick<CourseCollaboratorSummary, 'id' | 'name' | 'username' | 'avatarUrl'>> = [];
+    const seen = new Set<string>();
+
+    const source = (collaborators?.length ?? 0) > 0 ? collaborators! : [];
+    for (const c of source) {
+      const key = (c.id || c.name || '').toLowerCase();
+      if (key && !seen.has(key)) {
+        seen.add(key);
+        list.push(c);
+      }
+    }
+
+    if (authorName) {
+      const authorKey = (authorId || authorName).toLowerCase();
+      const nameKey = authorName.toLowerCase();
+      if (!seen.has(authorKey) && !seen.has(nameKey)) {
+        seen.add(authorKey);
+        list.unshift({
+          id: authorId ?? 'author',
+          name: authorName,
+          username: authorUsername,
+          avatarUrl: authorAvatarUrl,
+        });
+      }
+    }
+
+    return list;
+  }, [collaborators, authorName, authorId, authorUsername, authorAvatarUrl]);
 
   const isPaid = pricingModel === 'PAID';
   const priceDisplay = isPaid ? formatMoney(priceAmount ?? 0, currency ?? 'INR') : 'Free';
@@ -479,9 +502,10 @@ interface CourseTabsProps {
   courseTitle?: string;
   course?: CourseResponse | null;
   courseId: string;
+  collaborators?: CourseCollaboratorSummary[] | null;
 }
 
-function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
+function CourseTabs({ courseTitle, course, courseId, collaborators }: CourseTabsProps) {
   const [openMod, setOpenMod] = useState(0);
   const [certification, setCertification] = useState<ContentCertificationView | null>(null);
   const params = useParams<{ id?: string }>();
@@ -532,22 +556,45 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
-  const instructors: Array<Pick<CourseCollaboratorSummary, 'id' | 'name' | 'username' | 'avatarUrl' | 'bio' | 'role' | 'specialities' | 'experienceYears' | 'courseCount'>> =
-    (course?.collaborators?.length ?? 0) > 0
-      ? course!.collaborators!
-      : course?.authorName
-        ? [{
-            id: course.authorId ?? 'author',
-            name: course.authorName,
-            username: course.authorUsername,
-            avatarUrl: course.authorAvatarUrl,
-            role: 'Author',
-            bio: null,
-            specialities: [],
-            experienceYears: null,
-            courseCount: 1,
-          }]
+  const instructors = useMemo(() => {
+    const list: Array<Pick<CourseCollaboratorSummary, 'id' | 'name' | 'username' | 'avatarUrl' | 'bio' | 'role' | 'specialities' | 'experienceYears' | 'courseCount'>> = [];
+    const seen = new Set<string>();
+
+    const source = (collaborators?.length ?? 0) > 0
+      ? collaborators!
+      : (course?.collaborators?.length ?? 0) > 0
+        ? course!.collaborators!
         : [];
+
+    for (const c of source) {
+      const key = (c.id || c.name || '').toLowerCase();
+      if (key && !seen.has(key)) {
+        seen.add(key);
+        list.push(c);
+      }
+    }
+
+    if (course?.authorName) {
+      const authorKey = (course.authorId || course.authorName).toLowerCase();
+      const nameKey = course.authorName.toLowerCase();
+      if (!seen.has(authorKey) && !seen.has(nameKey)) {
+        seen.add(authorKey);
+        list.unshift({
+          id: course.authorId ?? 'author',
+          name: course.authorName,
+          username: course.authorUsername,
+          avatarUrl: course.authorAvatarUrl,
+          role: 'Author',
+          bio: null,
+          specialities: [],
+          experienceYears: null,
+          courseCount: 1,
+        });
+      }
+    }
+
+    return list;
+  }, [collaborators, course]);
 
   const orgName = course?.channel && !course.channel.isPersonal ? course.channel.name : null;
   const titleFromQuery = searchParams?.get('title');
@@ -707,7 +754,7 @@ function CourseTabs({ courseTitle, course, courseId }: CourseTabsProps) {
         {tab === 'Instructor' && (
           <div className="space-y-6">
             <h2 className="text-xl font-bold tracking-tight text-slate-900">
-              Instructor Profile
+              {instructors.length > 1 ? 'Instructor Profiles' : 'Instructor Profile'}
             </h2>
 
             {instructors.map((person) => (
@@ -1136,6 +1183,7 @@ export function CoursePublicView({ courseId: propCourseId }: CoursePublicViewPro
   const courseId = propCourseId || (params?.id as string) || '';
 
   const [course, setCourse] = useState<CourseResponse | null>(null);
+  const [extraCollaborators, setExtraCollaborators] = useState<CourseCollaboratorSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [reportModalOpen, setReportModalOpen] = useState(false);
 
@@ -1160,16 +1208,118 @@ export function CoursePublicView({ courseId: propCourseId }: CoursePublicViewPro
   const handleEnrollSuccess = () => {};
 
   useEffect(() => {
-    if (courseId) {
-      api
-        .get<CourseResponse>(`/api/v1/public/courses/${courseId}`)
-        .then(setCourse)
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    } else {
+    if (!courseId) {
       setLoading(false);
+      return;
     }
-  }, [courseId]);
+
+    let isMounted = true;
+    setLoading(true);
+
+    const loadData = async () => {
+      try {
+        let loadedCourse: CourseResponse | null = null;
+        try {
+          loadedCourse = await api.get<CourseResponse>(`/api/v1/public/courses/${courseId}`);
+        } catch (err) {
+          // If public endpoint failed (e.g. course in draft or preview), try studio endpoint
+          if (user) {
+            try {
+              loadedCourse = await api.get<CourseResponse>(`/api/courses/${courseId}`);
+            } catch (studioErr) {
+              console.error('Failed to load course from studio API:', studioErr);
+            }
+          }
+        }
+
+        if (isMounted && loadedCourse) {
+          setCourse(loadedCourse);
+        }
+
+        // Fetch all course collaborators (collaborators added as editor, manager, etc.)
+        try {
+          const collabs = await api.get<Array<{
+            id?: string;
+            userId?: string;
+            email?: string;
+            name: string;
+            avatarUrl?: string | null;
+            role?: string;
+            status?: string;
+          }>>(`/api/v1/content/COURSE/${courseId}/collaborators`);
+
+          if (isMounted && Array.isArray(collabs)) {
+            const mapped: CourseCollaboratorSummary[] = collabs.map((c) => ({
+              id: c.userId || c.id || c.email || 'collab',
+              name: c.name || c.email?.split('@')[0] || 'Collaborator',
+              username: undefined,
+              avatarUrl: c.avatarUrl,
+              bio: null,
+              role: c.role || 'Instructor',
+              specialities: [],
+              experienceYears: null,
+              courseCount: 1,
+            }));
+            setExtraCollaborators(mapped);
+          }
+        } catch {
+          // Unauthenticated or endpoint not accessible
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [courseId, user]);
+
+  const allCollaborators = useMemo(() => {
+    const list: CourseCollaboratorSummary[] = [];
+    const seen = new Set<string>();
+
+    const addPerson = (person: CourseCollaboratorSummary) => {
+      const key = (person.id || person.name || '').toLowerCase();
+      const nameKey = (person.name || '').toLowerCase();
+      if (key && !seen.has(key) && !seen.has(nameKey)) {
+        seen.add(key);
+        if (nameKey) seen.add(nameKey);
+        list.push(person);
+      }
+    };
+
+    // 1. Author first
+    if (course?.authorName) {
+      addPerson({
+        id: course.authorId || 'author',
+        name: course.authorName,
+        username: course.authorUsername,
+        avatarUrl: course.authorAvatarUrl,
+        role: 'Author',
+        bio: null,
+        specialities: [],
+        experienceYears: null,
+        courseCount: 1,
+      });
+    }
+
+    // 2. Collaborators from course response (rich profile info)
+    if (course?.collaborators && course.collaborators.length > 0) {
+      for (const c of course.collaborators) {
+        addPerson(c);
+      }
+    }
+
+    // 3. Extra collaborators from collaboration API (editors, managers, pending invites)
+    for (const ec of extraCollaborators) {
+      addPerson(ec);
+    }
+
+    return list;
+  }, [course, extraCollaborators]);
 
   if (loading) {
     return (
@@ -1218,7 +1368,7 @@ export function CoursePublicView({ courseId: propCourseId }: CoursePublicViewPro
           initialState={enrollButtonState}
           pendingReason={pendingReason}
           channel={course?.channel}
-          collaborators={course?.collaborators}
+          collaborators={allCollaborators}
           authorId={course?.authorId}
           pricingModel={course?.pricingModel}
           priceAmount={course?.priceAmount}
@@ -1234,6 +1384,7 @@ export function CoursePublicView({ courseId: propCourseId }: CoursePublicViewPro
           courseTitle={displayTitle}
           course={course}
           courseId={courseId}
+          collaborators={allCollaborators}
         />
       </div>
 
