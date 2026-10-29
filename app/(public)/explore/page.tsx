@@ -872,8 +872,221 @@ function CategoryHeaderIllustration({ category, activeTab }: { category: string;
         </svg>
       );
     default:
+      return <RandomCategoryIllustration category={category} colors={colors} />;
+  }
+}
 
-      return null;
+function getCategorySeed(category: string): number {
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) {
+    hash = (hash << 5) - hash + category.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function RandomCategoryIllustration({
+  category,
+  colors,
+}: {
+  category: string;
+  colors: { light: string; veryLight: string; medium: string; dark: string };
+}) {
+  const variant = getCategorySeed(category || "default") % 6;
+
+  switch (variant) {
+    case 0:
+      // Variation 0: Discovery & Ideas (Lightbulb + Notebook + Coffee Mug)
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          {/* Center Lightbulb with glow rays */}
+          <g transform="translate(140, 62)">
+            <path d="M 10,0 C 22,0 30,10 26,22 C 23,28 18,32 18,38 H 2 C 2,32 -3,28 -6,22 C -10,10 -2,0 10,0 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M 6,24 L 6,14 L 14,14 L 14,24" stroke={colors.medium} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+            <rect x="3" y="38" width="14" height="4" rx="1" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+            <rect x="5" y="42" width="10" height="3" rx="1" fill={colors.dark} />
+            <line x1="10" y1="-8" x2="10" y2="-16" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+            <line x1="-4" y1="-2" x2="-10" y2="-8" stroke={colors.medium} strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="24" y1="-2" x2="30" y2="-8" stroke={colors.medium} strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="-12" y1="12" x2="-20" y2="12" stroke={colors.light} strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="32" y1="12" x2="40" y2="12" stroke={colors.light} strokeWidth="1.5" strokeLinecap="round" />
+          </g>
+          {/* Left: Open Notebook with lines */}
+          <g transform="translate(50, 78)">
+            <path d="M 0,25 C 15,22 30,24 35,26 C 40,24 55,22 70,25 L 70,45 C 55,42 40,44 35,46 C 30,44 15,42 0,45 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+            <line x1="35" y1="26" x2="35" y2="46" stroke={colors.dark} strokeWidth="1.5" />
+            <line x1="8" y1="30" x2="28" y2="30" stroke={colors.light} strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="8" y1="36" x2="24" y2="36" stroke={colors.light} strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="42" y1="30" x2="62" y2="30" stroke={colors.medium} strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="42" y1="36" x2="56" y2="36" stroke={colors.medium} strokeWidth="1.5" strokeLinecap="round" />
+          </g>
+          {/* Right: Steaming Coffee Mug */}
+          <g transform="translate(225, 95)">
+            <rect x="0" y="0" width="24" height="26" rx="3" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <path d="M 24,5 C 32,5 32,20 24,20" stroke={colors.dark} strokeWidth="1.5" fill="none" />
+            <path d="M 6,-4 Q 4,-10 8,-14" stroke={colors.medium} strokeWidth="1.2" fill="none" strokeLinecap="round" />
+            <path d="M 14,-4 Q 12,-10 16,-14" stroke={colors.medium} strokeWidth="1.2" fill="none" strokeLinecap="round" />
+          </g>
+          <path d="M 235,50 L 237,55 L 242,56 L 238,58 L 239,63 L 235,60 L 231,63 L 232,58 L 228,56 L 233,55 Z" fill={colors.light} />
+        </svg>
+      );
+
+    case 1:
+      // Variation 1: Rocket Launch & Innovation
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          {/* Center Rocket */}
+          <g transform="translate(130, 42)">
+            <path d="M 20,0 C 5,15 0,40 0,60 H 40 C 40,40 35,15 20,0 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            <path d="M 20,0 C 13,10 9,18 7,24 H 33 C 31,18 27,10 20,0 Z" fill={colors.dark} />
+            <circle cx="20" cy="38" r="6" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="20" cy="38" r="3" fill="#FFFFFF" />
+            <path d="M 0,45 L -10,62 L 0,60 Z" fill={colors.medium} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M 40,45 L 50,62 L 40,60 Z" fill={colors.medium} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M 12,60 Q 20,78 28,60 Z" fill={colors.dark} />
+            <path d="M 15,60 Q 20,70 25,60 Z" fill={colors.light} />
+          </g>
+          {/* Smoke puffs */}
+          <circle cx="135" cy="118" r="14" fill={colors.veryLight} stroke={colors.medium} strokeWidth="1.2" />
+          <circle cx="155" cy="115" r="17" fill="#FFFFFF" stroke={colors.dark} strokeWidth="1.5" />
+          <circle cx="175" cy="118" r="12" fill={colors.light} stroke={colors.medium} strokeWidth="1.2" />
+          {/* Ringed planet & stars */}
+          <g transform="translate(230, 35)">
+            <circle cx="15" cy="15" r="12" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <ellipse cx="15" cy="15" rx="20" ry="5" fill="none" stroke={colors.dark} strokeWidth="1.2" transform="rotate(-20 15 15)" />
+          </g>
+          <circle cx="65" cy="45" r="2.5" fill={colors.dark} />
+          <circle cx="75" cy="70" r="1.5" fill={colors.medium} />
+          <circle cx="220" cy="85" r="2" fill={colors.medium} />
+        </svg>
+      );
+
+    case 2:
+      // Variation 2: Achievement & Mastery (Trophy + Graduation Cap + Diploma Scroll)
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          {/* Trophy in center */}
+          <g transform="translate(130, 60)">
+            <path d="M 5,0 H 35 L 32,25 C 32,35 25,40 20,40 C 15,40 8,35 8,25 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M 5,6 C -5,6 -5,22 5,22" stroke={colors.dark} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+            <path d="M 35,6 C 45,6 45,22 35,22" stroke={colors.dark} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+            <line x1="20" y1="40" x2="20" y2="52" stroke={colors.dark} strokeWidth="2" />
+            <rect x="8" y="52" width="24" height="8" rx="2" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="20" cy="18" r="4.5" fill={colors.dark} />
+          </g>
+          {/* Mortarboard / Graduation Cap */}
+          <g transform="translate(50, 75)">
+            <path d="M 25,0 L 50,10 L 25,20 L 0,10 Z" fill={colors.dark} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M 12,16 V 28 C 12,34 38,34 38,28 V 16" fill={colors.medium} stroke={colors.dark} strokeWidth="1.2" />
+            <path d="M 25,10 L 42,18 V 30" stroke={colors.light} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+            <circle cx="42" cy="31" r="2" fill={colors.light} />
+          </g>
+          {/* Diploma Scroll */}
+          <g transform="translate(210, 85)">
+            <rect x="0" y="5" width="40" height="20" rx="3" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" transform="rotate(-15)" />
+            <rect x="16" y="2" width="8" height="24" fill={colors.medium} stroke={colors.dark} strokeWidth="1" transform="rotate(-15)" />
+            <circle cx="20" cy="14" r="3" fill={colors.dark} />
+          </g>
+        </svg>
+      );
+
+    case 3:
+      // Variation 3: Creative Studio & Design (Easel Canvas + Palette + Set Square)
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          {/* Easel Canvas */}
+          <g transform="translate(125, 45)">
+            <line x1="25" y1="0" x2="0" y2="85" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+            <line x1="25" y1="0" x2="50" y2="85" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+            <line x1="25" y1="0" x2="25" y2="85" stroke={colors.medium} strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="-5" y1="65" x2="55" y2="65" stroke={colors.dark} strokeWidth="2.5" strokeLinecap="round" />
+            <rect x="3" y="15" width="44" height="42" rx="3" fill="#FFFFFF" stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="20" cy="32" r="8" fill={colors.light} />
+            <path d="M 8,50 L 22,36 L 42,50 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1" />
+          </g>
+          {/* Artist Palette */}
+          <g transform="translate(50, 85)">
+            <path d="M 25,0 C 38,0 42,15 36,25 C 32,32 20,32 15,26 C 10,22 4,24 2,18 C -2,10 10,0 25,0 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+            <circle cx="12" cy="8" r="2.5" fill={colors.dark} />
+            <circle cx="24" cy="8" r="2.5" fill={colors.medium} />
+            <circle cx="30" cy="18" r="2.5" fill={colors.light} />
+            <line x1="0" y1="32" x2="35" y2="0" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+            <polygon points="35,0 40,-3 38,4" fill={colors.medium} />
+          </g>
+          {/* Drafting Set Square */}
+          <g transform="translate(220, 85)">
+            <polygon points="0,35 40,35 40,-5" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+            <polygon points="12,28 32,28 32,8" fill="#FFFFFF" stroke={colors.dark} strokeWidth="1" />
+          </g>
+        </svg>
+      );
+
+    case 4:
+      // Variation 4: Navigator & World Explorer (Globe + Compass + Expedition Path)
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          {/* Globe on stand */}
+          <g transform="translate(130, 50)">
+            <circle cx="20" cy="25" r="24" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            <ellipse cx="20" cy="25" rx="12" ry="24" fill="none" stroke={colors.medium} strokeWidth="1.2" />
+            <line x1="-4" y1="25" x2="44" y2="25" stroke={colors.medium} strokeWidth="1.2" />
+            <path d="M -4,25 A 28,28 0 0,0 35,46" stroke={colors.dark} strokeWidth="2" fill="none" strokeLinecap="round" />
+            <line x1="20" y1="52" x2="20" y2="65" stroke={colors.dark} strokeWidth="2.5" />
+            <rect x="8" y="65" width="24" height="6" rx="2" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+          </g>
+          {/* Compass rose */}
+          <g transform="translate(55, 80)">
+            <circle cx="18" cy="18" r="18" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="18" cy="18" r="15" fill="none" stroke={colors.light} strokeWidth="1" strokeDasharray="3 3" />
+            <polygon points="18,5 22,18 18,15 14,18" fill={colors.dark} />
+            <polygon points="18,31 22,18 18,21 14,18" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+            <circle cx="18" cy="18" r="2.5" fill="#FFFFFF" stroke={colors.dark} strokeWidth="1" />
+          </g>
+          {/* Expedition trail with flag */}
+          <g transform="translate(205, 75)">
+            <path d="M 0,35 Q 15,10 35,20 T 60,35" fill="none" stroke={colors.dark} strokeWidth="1.5" strokeDasharray="4 4" />
+            <line x1="35" y1="8" x2="35" y2="28" stroke={colors.dark} strokeWidth="1.5" />
+            <polygon points="35,8 52,14 35,20" fill={colors.medium} stroke={colors.dark} strokeWidth="1" />
+            <circle cx="35" cy="28" r="2" fill={colors.dark} />
+          </g>
+        </svg>
+      );
+
+    case 5:
+    default:
+      // Variation 5: Brainstorm & Mind Matrix (Lightning Idea + Sticky Notes + Idea Nodes)
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          {/* Center Idea Core with lightning */}
+          <g transform="translate(135, 55)">
+            <circle cx="15" cy="25" r="24" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            <polygon points="18,10 8,26 15,26 12,40 24,22 17,22" fill={colors.dark} stroke={colors.dark} strokeWidth="1" strokeLinejoin="round" />
+            <circle cx="15" cy="25" r="30" fill="none" stroke={colors.light} strokeWidth="1" strokeDasharray="3 4" />
+          </g>
+          {/* Sticky Notes */}
+          <g transform="translate(50, 75)">
+            <rect x="0" y="6" width="30" height="30" rx="2" fill={colors.light} stroke={colors.dark} strokeWidth="1.2" transform="rotate(-8)" />
+            <rect x="14" y="0" width="30" height="30" rx="2" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.2" transform="rotate(6)" />
+            <circle cx="29" cy="4" r="2.5" fill={colors.dark} />
+            <line x1="20" y1="12" x2="36" y2="12" stroke={colors.medium} strokeWidth="1.2" strokeLinecap="round" transform="rotate(6 29 4)" />
+            <line x1="20" y1="18" x2="32" y2="18" stroke={colors.medium} strokeWidth="1.2" strokeLinecap="round" transform="rotate(6 29 4)" />
+          </g>
+          {/* Concept Nodes */}
+          <g transform="translate(215, 75)">
+            <line x1="10" y1="12" x2="35" y2="28" stroke={colors.medium} strokeWidth="1.5" strokeDasharray="3 3" />
+            <line x1="10" y1="36" x2="35" y2="28" stroke={colors.medium} strokeWidth="1.5" strokeDasharray="3 3" />
+            <circle cx="10" cy="12" r="7" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="10" cy="36" r="6" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="35" cy="28" r="9" fill={colors.dark} stroke="#FFFFFF" strokeWidth="1.5" />
+          </g>
+        </svg>
+      );
   }
 }
 
@@ -1031,11 +1244,26 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
 
   useEffect(() => {
     if (tabParam) {
-      if (tabParam === "bootcamps" || tabParam === "events") setActiveTab("bootcamps");
-      else if (tabParam === "exams") setActiveTab("exams");
-      else if (tabParam === "courses") setActiveTab("courses");
+      if (tabParam === "bootcamps" || tabParam === "events") {
+        setActiveTab("bootcamps");
+        if (typeof window !== "undefined") sessionStorage.setItem("arcade_explore_active_tab", "bootcamps");
+      } else if (tabParam === "exams") {
+        setActiveTab("exams");
+        if (typeof window !== "undefined") sessionStorage.setItem("arcade_explore_active_tab", "exams");
+      } else if (tabParam === "courses") {
+        setActiveTab("courses");
+        if (typeof window !== "undefined") sessionStorage.setItem("arcade_explore_active_tab", "courses");
+      }
+    } else {
+      const savedTab = typeof window !== "undefined" ? sessionStorage.getItem("arcade_explore_active_tab") : null;
+      if (savedTab === "bootcamps" || savedTab === "events" || savedTab === "exams" || savedTab === "courses") {
+        const resolved = savedTab === "events" ? "bootcamps" : (savedTab as "courses" | "bootcamps" | "exams");
+        setActiveTab(resolved);
+        const basePath = hubBasePath || "/explore";
+        router.replace(`${basePath}?tab=${resolved}`, { scroll: false });
+      }
     }
-  }, [tabParam]);
+  }, [tabParam, hubBasePath, router]);
 
   // Categories created via Console -> Content Manage -> Categories (super-user only),
   // merged additively on top of the hardcoded dummy categories — never removes them.
@@ -1181,6 +1409,11 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
   const handleTabSwitch = (tab: "courses" | "bootcamps" | "exams") => {
     setActiveTab(tab);
     setSearchQuery("");
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("arcade_explore_active_tab", tab);
+    }
+    const basePath = hubBasePath || "/explore";
+    router.replace(`${basePath}?tab=${tab}`, { scroll: false });
     // Small delay lets React flush the state before scrolling
     setTimeout(() => {
       contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1201,6 +1434,9 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
 
   const handleCategorySwitch = (category: string) => {
     setActiveCategory(category);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("arcade_explore_active_tab", activeTab);
+    }
     const encodedCat = encodeURIComponent(category);
     if (hubBasePath) {
       router.push(`${hubBasePath}?category=${encodedCat}&tab=${activeTab}`);
@@ -1213,7 +1449,8 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
 
   const handleGoBackToExplore = () => {
     setActiveCategory(null);
-    router.push(hubBasePath || "/explore");
+    const basePath = hubBasePath || "/explore";
+    router.push(`${basePath}?tab=${activeTab}`);
   };
 
   // RENDER OPTION B: Main Explore Hub Dashboard
@@ -1740,8 +1977,8 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                     {currentCategories
                       .map((cat) => {
 
-                        const data = getCategoryData(cat)!;
-                        const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "exams" ? "#10B981" : data.colors.primary;
+                        const data = getCategoryData(cat);
+                        const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "exams" ? "#10B981" : data?.colors?.primary || "#3B82F6";
                         return (
                           <div
                             key={cat}
@@ -1790,7 +2027,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                                 </div>
 
                                 <p style={{ fontSize: "0.85rem", color: "var(--theme-n-600, #4B5563)", lineHeight: "1.6", margin: "0 0 16px" }}>
-                                  {data.desc}
+                                  {data?.desc || ""}
                                 </p>
                               </div>
 

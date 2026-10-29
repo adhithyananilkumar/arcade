@@ -1232,7 +1232,10 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
     }
   }, [tabFromQuery]);
 
-  const exploreHome = hubBasePath || (mode === "events" ? "/events" : mode === "exams" ? "/explore?tab=exams" : "/explore");
+  const currentTabParam = mode === "events" ? "bootcamps" : mode === "exams" ? "exams" : "courses";
+  const exploreHome = hubBasePath
+    ? `${hubBasePath}?tab=${currentTabParam}`
+    : (mode === "events" ? "/events" : mode === "exams" ? "/explore?tab=exams" : "/explore");
   const isEmbeddedHub = Boolean(hubBasePath);
 
   // Route selector
@@ -1544,8 +1547,11 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
 
   const handleModeChange = (newMode: "courses" | "events" | "exams") => {
     setMode(newMode);
+    const tabParam = newMode === "events" ? "bootcamps" : newMode;
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("arcade_explore_active_tab", tabParam);
+    }
     if (hubBasePath) {
-      const tabParam = newMode === "events" ? "bootcamps" : newMode;
       const newUrl = `${hubBasePath}?category=${encodeURIComponent(activeCategoryName)}&tab=${tabParam}`;
       window.history.replaceState(null, "", newUrl);
     } else {
@@ -1555,6 +1561,10 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
   };
 
   const goToExploreHome = () => {
+    const tabParam = mode === "events" ? "bootcamps" : mode === "exams" ? "exams" : "courses";
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("arcade_explore_active_tab", tabParam);
+    }
     router.push(exploreHome);
   };
 
