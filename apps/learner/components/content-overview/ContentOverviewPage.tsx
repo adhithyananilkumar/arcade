@@ -10,6 +10,7 @@ import { OverviewNotesPanel } from './sections/OverviewNotesPanel';
 import { OverviewFacts, OverviewPeople } from './sections/OverviewAside';
 import { OverviewVideoPlayer } from './sections/OverviewVideoPlayer';
 import { CertificationCard } from './sections/CertificationCard';
+import { OverviewRatingCard } from './sections/OverviewRatingCard';
 import type { ContentOverviewModel } from './contentOverview.types';
 
 export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) {
@@ -142,6 +143,11 @@ export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) 
             notesHref={model.notesHref}
             items={flatItems}
           />
+
+          {/* Course Rating Section — allowing viewing and editing ratings */}
+          {model.contentType === 'COURSE' && (
+            <OverviewRatingCard courseId={model.contentId} />
+          )}
 
           {/* Certification Status */}
           <CertificationCard

@@ -36,6 +36,16 @@ export const courseReviewService = {
   submit: (courseId: string, input: SubmitCourseReviewInput) =>
     api.post<CourseReview>(`/api/v1/learning/courses/${courseId}/reviews`, input),
 
+  /** The authenticated learner's own review on this course, if any. */
+  getMyReview: async (courseId: string): Promise<CourseReview | null> => {
+    try {
+      const review = await api.get<CourseReview>(`/api/v1/learning/courses/${courseId}/reviews/my`);
+      return review || null;
+    } catch {
+      return null;
+    }
+  },
+
   /** Every review on a course — author-facing, requires course-read authority. */
   listForCourse: (courseId: string) =>
     api.get<CourseReview[]>(`/api/courses/${courseId}/reviews`),
