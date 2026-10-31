@@ -5,8 +5,8 @@ import { AuditLog, AuditService } from '@/infrastructure/monitoring/audit.servic
 import { Session, SessionService } from '@/infrastructure/auth/session.service';
 import { PasswordService, type PasswordChallenge, type PasswordStatus } from '@/infrastructure/auth/password.service';
 import { AesService, type AesLinkStatus } from '@/infrastructure/auth/aes.service';
+import { AesLogo } from '@/domains/identity';
 import {
-  GraduationCap,
   Shield,
   Loader2,
   Clock,
@@ -509,7 +509,7 @@ function AesCard() {
     <div className="rounded-2xl border border-gray-200 bg-surface p-6 shadow-sm space-y-4">
       <div>
         <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-          <GraduationCap size={18} className="text-sky-500" /> AES login
+          <AesLogo className="h-6 w-6 text-ink" /> AES login
         </h3>
         <p className="text-xs text-gray-500 mt-0.5">
           Amal Jyothi&apos;s official portal login, for AJCE students and staff. Link it to sign in
@@ -559,7 +559,7 @@ function AesCard() {
             onClick={() => AesService.setIntent('link')}
             className="aes-dologin px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold shadow-sm transition-all flex items-center gap-2"
           >
-            <GraduationCap size={16} /> Link AES account
+            Link AES account
           </button>
         </div>
       )}

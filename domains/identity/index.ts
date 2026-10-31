@@ -20,6 +20,7 @@ export type { Page, UserSearchResult } from './api/user.service';
 export { default as AuthForm } from './components/AuthForm';
 export type { AuthView, AuthFormProps } from './components/AuthForm';
 export { AuthPeriodGear } from './components/AuthPeriodGear';
+export { AesLogo } from './components/AesLogo';
 export { PebbleLoader } from './components/PebbleLoader';
 export { roleService } from './api/iam/role.service';
 export type { Role, RoleRequest } from './api/iam/role.service';

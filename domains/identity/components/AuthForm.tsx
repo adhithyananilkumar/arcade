@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { Eye, EyeOff, Mail, User, CheckCircle2, ArrowLeft, XCircle, GraduationCap } from 'lucide-react';
+import { Eye, EyeOff, Mail, User, CheckCircle2, ArrowLeft, XCircle } from 'lucide-react';
+import { AesLogo } from './AesLogo';
 import { PebbleLoader } from './PebbleLoader';
 import { AuthPeriodGear } from './AuthPeriodGear';
 import './auth-fields.css';
@@ -772,7 +773,7 @@ export default function AuthForm({
                   whileTap={reduce ? undefined : { scale: 0.985 }}
                   className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-surface px-8 py-3.5 text-sm font-semibold text-ink transition-colors hover:border-slate-300 hover:bg-slate-50"
                 >
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
+                  <svg viewBox="0 0 24 24" className="h-6 w-6 shrink-0" aria-hidden>
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                       fill="#4285F4"
@@ -801,9 +802,8 @@ export default function AuthForm({
                     whileTap={reduce ? undefined : { scale: 0.985 }}
                     className="aes-dologin flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-surface px-8 py-3.5 text-sm font-semibold text-ink transition-colors hover:border-slate-300 hover:bg-slate-50"
                   >
-                    <GraduationCap className="h-5 w-5 text-[#1984c9]" aria-hidden />
+                    <AesLogo className="h-6 w-6 shrink-0 text-ink" />
                     Continue with AES
-                    <span className="-ml-1 text-[11px] font-medium text-slate-400">AJCE</span>
                   </motion.button>
                 )}
               </>
