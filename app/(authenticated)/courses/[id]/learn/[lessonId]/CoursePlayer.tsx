@@ -542,7 +542,7 @@ export function CoursePlayer({
                                 <div
                                   key={item.id}
                                   className={`group flex w-full items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
-                                    isSelected ? 'bg-ink shadow-md text-white' : 'bg-surface/50 hover:bg-surface/80 text-slate-500'
+                                    isSelected ? 'bg-ink shadow-md text-on-ink' : 'bg-surface/50 hover:bg-surface/80 text-slate-500'
                                   }`}
                                 >
                                   <button
@@ -570,7 +570,7 @@ export function CoursePlayer({
                               <div
                                 key={lesson.id}
                                 className={`group/item flex w-full items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
-                                  isSelected ? 'bg-ink shadow-md text-white' : 'bg-surface/50 hover:bg-surface/80'
+                                  isSelected ? 'bg-ink shadow-md text-on-ink' : 'bg-surface/50 hover:bg-surface/80'
                                 }`}
                               >
                                 <button

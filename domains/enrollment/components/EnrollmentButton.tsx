@@ -410,7 +410,7 @@ export function EnrollmentButton({
   if (currentState === 'PENDING') {
     if (pendingPaymentEnrollmentId) {
       return (
-        <div className="w-full">
+        <div className="w-full flex flex-col items-center">
         <button
           onClick={() => startPayment(pendingPaymentEnrollmentId)}
           disabled={isPaying}

@@ -11,6 +11,7 @@ import { OverviewFacts, OverviewPeople } from './sections/OverviewAside';
 import { OverviewVideoPlayer } from './sections/OverviewVideoPlayer';
 import { CertificationCard } from './sections/CertificationCard';
 import { OverviewRatingCard } from './sections/OverviewRatingCard';
+import { OverviewReport } from './sections/OverviewReport';
 import type { ContentOverviewModel } from './contentOverview.types';
 
 export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) {
@@ -155,6 +156,9 @@ export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) 
             contentId={model.contentId}
             completed={model.progress.state === 'COMPLETED'}
           />
+
+          {/* Report — only reachable by enrolled learners, since this page is entitlement-gated */}
+          <OverviewReport contentType={model.contentType} contentId={model.contentId} />
         </aside>
       </div>
     </div>

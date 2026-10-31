@@ -14,7 +14,7 @@
  * ------------------------------------------------------------------
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Calendar,
   Clock,
@@ -26,7 +26,6 @@ import {
   Award,
   Check,
   ChevronRight,
-  Flag,
   Share2,
   Sparkles,
   Ticket,
@@ -51,7 +50,6 @@ import {
   useMyEnrollmentForResourceQuery,
 } from '@/domains/enrollment';
 import { eventRoutes, examRoutes } from '@/shared/routes/content.routes';
-import { ReportModal } from '@/shared/design-system/ui/ReportModal';
 import { getContentCertification, type ContentCertificationView } from '@/domains/assessments';
 import { toast } from 'sonner';
 
@@ -192,8 +190,8 @@ function TabButton({
       onClick={onClick}
       className={`relative px-5 sm:px-6 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm font-black tracking-tight transition-all duration-200 select-none cursor-pointer min-w-[96px] text-center ${
         active
-          ? 'bg-surface text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6] shadow-2xs'
-          : 'bg-slate-100/80 text-slate-700 border border-slate-200/70 hover:bg-slate-200/70 hover:text-slate-900'
+          ? 'bg-ink text-on-ink border border-ink shadow-2xs'
+          : 'bg-surface/70 text-subtle border border-line hover:bg-surface hover:text-ink'
       }`}
     >
       <span className="relative z-10">{label}</span>
@@ -216,7 +214,15 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
   const [collaborators, setCollaborators] = useState<EventCollaborator[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<string>('Overview');
-  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const tabsTopRef = useRef<HTMLDivElement>(null);
+  const selectTab = (t: string) => {
+    setTab(t);
+    // Bring the tab bar to the top of the viewport (below the floating navbar) so the new tab's
+    // content is in view instead of staying wherever the page was scrolled.
+    requestAnimationFrame(() =>
+      tabsTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    );
+  };
   const [certification, setCertification] = useState<ContentCertificationView | null>(null);
 
   const { data: myEnrollment } = useMyEnrollmentForResourceQuery(
@@ -298,15 +304,6 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
       .finally(() => setLoading(false));
   }, [slug]);
 
-  const handleReportSubmit = async (combinedNote: string) => {
-    if (!event) return;
-    await api.post('/api/v1/reports', {
-      contentId: event.id,
-      contentType: 'EVENT',
-      note: combinedNote,
-    });
-    toast.success('Event reported. Our moderation team will review it shortly.');
-  };
 
   const handleShare = () => {
     if (typeof window !== 'undefined') {
@@ -382,24 +379,24 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                 <div className="pt-1">
                   <Link
                     href={event.channelId ? `/channels/${event.channelId}` : '#'}
-                    className="group inline-flex items-center gap-2 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-slate-200/90 bg-surface/95 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs hover:border-blue-400 hover:bg-slate-50 dark:hover:border-blue-500 transition-all select-none"
+                    className="group inline-flex items-center gap-3 rounded-tl-xl rounded-br-xl rounded-tr-xs rounded-bl-xs border border-slate-200/90 bg-surface/95 px-4 py-2 text-base font-bold text-slate-700 shadow-2xs hover:border-blue-400 hover:bg-slate-50 dark:hover:border-blue-500 transition-all select-none"
                   >
                     {getAvatarUrl(event.channelIconUrl) ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={getAvatarUrl(event.channelIconUrl)}
                         alt={event.channelName}
-                        className="size-4.5 rounded-md object-cover"
+                        className="size-9 rounded-lg object-cover"
                       />
                     ) : (
-                      <span className="flex size-4.5 items-center justify-center rounded-md bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
-                        <Radio size={11} className="stroke-[2.5]" />
+                      <span className="flex size-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
+                        <Radio size={17} className="stroke-[2.5]" />
                       </span>
                     )}
                     <span className="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       {event.channelName}
                     </span>
-                    <ChevronRight size={12} className="text-slate-400 group-hover:translate-x-0.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all" />
+                    <ChevronRight size={16} className="text-slate-400 group-hover:translate-x-0.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all" />
                   </Link>
                 </div>
               )}
@@ -542,15 +539,6 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                   <Share2 size={15} />
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => setReportModalOpen(true)}
-                  aria-label="Report event"
-                  className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 bg-surface/95 hover:bg-slate-100 active:scale-95 text-slate-400 hover:text-red-600 dark:hover:text-red-400 shadow-2xs transition-all cursor-pointer"
-                  title="Report this event"
-                >
-                  <Flag size={15} />
-                </button>
               </div>
             </div>
 
@@ -592,21 +580,21 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
         </section>
 
         {/* ================= TABS SECTION ================= */}
-        <div className="pt-4 sm:pt-6">
+        <div ref={tabsTopRef} className="pt-4 sm:pt-6 scroll-mt-24">
           {/* Tabs Header - matching My Learning / Course Public style */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5">
             {tabs.map((t) => (
               <TabButton
                 key={t}
                 active={tab === t}
-                onClick={() => setTab(t)}
+                onClick={() => selectTab(t)}
                 label={t}
               />
             ))}
           </div>
 
           {/* Tab Content Display */}
-          <div key={tab} className="mt-8 arcade-fade">
+          <div key={tab} className="mt-8 arcade-fade min-h-[70vh]">
             {/* OVERVIEW TAB */}
             {tab === 'Overview' && (
               <div className="space-y-8">
@@ -916,14 +904,6 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
         </div>
       </div>
 
-      <ReportModal
-        isOpen={reportModalOpen}
-        onClose={() => setReportModalOpen(false)}
-        onSubmit={handleReportSubmit}
-        title="Report Event"
-        description="Help us understand what is wrong with this event."
-        contentType="EVENT"
-      />
     </main>
   );
 }

@@ -27,10 +27,22 @@ const IMMERSIVE_ROUTES = [
   /^\/exams\/[^/]+\/(attempt|terminated)\/?$/,
 ];
 
+/**
+ * Content overview (learn hub) and enroll pages for courses, events and exams. They carry their own
+ * in-page tab navigation, so the global bottom dock is removed here (Quick Appearance stays).
+ */
+const CONTENT_PAGE_ROUTES = [
+  /^\/courses\/[^/]+\/?$/,
+  /^\/courses\/[^/]+\/learn\/?$/,
+  /^\/events\/[^/]+\/?$/,
+  /^\/events\/[^/]+\/learn\/?$/,
+  /^\/exams\/[^/]+\/?$/,
+];
+
 /** Full-focus surfaces — hide the bottom dock so content can breathe. */
 const HIDE_DOCK_ROUTES = [
   // The lesson player. Deliberately only the player: the course overview hub at
-  // /courses/{id}/learn is an ordinary browsing surface and keeps the dock.
+  // /courses/{id}/learn (the overview hub) is covered by CONTENT_PAGE_ROUTES.
   /^\/courses\/[^/]+\/learn\/[^/]+\/?$/,
   /^\/exams\/[^/]+\/(attempt|terminated)\/?$/,
   /^\/studio(\/|$)/,
@@ -61,7 +73,8 @@ export default function LearnerShell({
   // its own page-local floating dock instead (ContentWorkspaceDock),
   // reflecting that specific content item's own sections rather than the
   // app-wide destinations.
-  const hideDock = hideDockProp || immersive || HIDE_DOCK_ROUTES.some((r) => r.test(pathname ?? ''));
+  const hideChrome = hideDockProp || immersive || HIDE_DOCK_ROUTES.some((r) => r.test(pathname ?? ''));
+  const hideDock = hideChrome || CONTENT_PAGE_ROUTES.some((r) => r.test(pathname ?? ''));
 
   return (
     <>
@@ -87,7 +100,7 @@ export default function LearnerShell({
           {!hideDock && <LearnerDock />}
           {/* Quick preferences (theme, glass, wallpaper) on the same browsing surfaces as the dock —
               Home, Explore, Learning, Achievements… — not on focus screens. Hideable in Settings. */}
-          {!hideDock && <QuickAppearance />}
+          {!hideChrome && <QuickAppearance />}
         </div>
       </div>
     </ProtectedLayout>

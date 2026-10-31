@@ -31,7 +31,7 @@ import {
   Sparkles,
   Star,
   Users,
-  Flag,
+  Share2,
 } from 'lucide-react';
 import { Dancing_Script } from 'next/font/google';
 import Link from 'next/link';
@@ -52,7 +52,6 @@ import {
   useMyEnrollmentForResourceQuery,
 } from '@/domains/enrollment';
 import { toast } from 'sonner';
-import { ReportModal } from '@/shared/design-system/ui/ReportModal';
 import { getContentCertification, type ContentCertificationView } from '@/domains/assessments';
 import { ChannelAvatar } from '@/shared/design-system/ui/cards';
 import { getAvatarUrl } from '@/shared/utils/avatar';
@@ -187,7 +186,7 @@ interface CourseHeroProps {
   priceAmount?: number;
   currency?: string;
   courseId?: string;
-  onReportClick?: () => void;
+  onShareClick?: () => void;
   channel?: CourseChannelSummary | null;
   collaborators?: CourseCollaboratorSummary[] | null;
   authorId?: string | null;
@@ -213,7 +212,7 @@ function CourseHero({
   priceAmount,
   currency,
   courseId,
-  onReportClick,
+  onShareClick,
   channel,
   collaborators,
   authorId,
@@ -262,18 +261,18 @@ function CourseHero({
           <div className="pt-1 flex justify-center">
             <Link
               href={`/channels/${channel.id}`}
-              className="group inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors select-none"
+              className="group inline-flex items-center gap-3 text-base sm:text-lg font-bold text-slate-700 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors select-none"
             >
               {getAvatarUrl(channel.iconUrl) ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={getAvatarUrl(channel.iconUrl)}
                   alt={channel.name}
-                  className="size-5 rounded-full object-cover border border-slate-200/80 dark:border-slate-700"
+                  className="size-10 sm:size-12 rounded-full object-cover border border-slate-200/80 dark:border-slate-700"
                 />
               ) : (
-                <span className="flex size-5 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">
-                  <Radio size={11} className="stroke-[2.5]" />
+                <span className="flex size-10 sm:size-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">
+                  <Radio size={18} className="stroke-[2.5]" />
                 </span>
               )}
               <span className="group-hover:underline">
@@ -395,12 +394,12 @@ function CourseHero({
 
           <button
             type="button"
-            onClick={onReportClick}
-            aria-label="Report course"
-            className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-slate-300/80 dark:border-slate-700/80 bg-surface/95 backdrop-blur-md hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 text-slate-400 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-900/50 shadow-2xs transition-all cursor-pointer"
-            title="Report this course"
+            onClick={onShareClick}
+            aria-label="Share course"
+            className="h-11 w-11 shrink-0 grid place-items-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md border border-line bg-surface/95 backdrop-blur-md hover:bg-surface active:scale-95 text-subtle hover:text-ink shadow-2xs transition-all cursor-pointer"
+            title="Share this course"
           >
-            <Flag size={15} />
+            <Share2 size={15} />
           </button>
         </div>
       </div>
@@ -429,7 +428,7 @@ function TabButton({
       onClick={onClick}
       className={`relative px-4 sm:px-5 py-2 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-[13px] sm:text-sm font-semibold transition-colors duration-200 select-none cursor-pointer text-center ${
         active
-          ? 'text-paper'
+          ? 'text-on-ink'
           : 'text-subtle hover:text-ink'
       }`}
     >
@@ -492,6 +491,15 @@ function CourseTabs({ courseTitle, course, courseId, collaborators }: CourseTabs
   }, [hasBadge, hasCertification]);
 
   const [tab, setTab] = useState<string>('Overview');
+  const tabsTopRef = useRef<HTMLDivElement>(null);
+  const selectTab = (t: string) => {
+    setTab(t);
+    // Bring the tab bar to the top of the viewport (below the floating navbar) so the new tab's
+    // content is in view instead of staying wherever the page was scrolled.
+    requestAnimationFrame(() =>
+      tabsTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    );
+  };
 
   useEffect(() => {
     if (!tabs.includes(tab)) {
@@ -550,22 +558,22 @@ function CourseTabs({ courseTitle, course, courseId, collaborators }: CourseTabs
   const badgeInfo = getBadgeForCourse(courseTitle || titleFromQuery || params?.id);
 
   return (
-    <div className="pt-4 sm:pt-6">
+    <div ref={tabsTopRef} className="pt-4 sm:pt-6 scroll-mt-24">
       {/* Segmented tab control enclosed in outer container matching tab asymmetric shape */}
       <div className="flex justify-center">
-        <div className="inline-flex flex-wrap items-center justify-center gap-1.5 rounded-tl-[1.85rem] rounded-br-[1.85rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shadow-sm">
+        <div className="inline-flex flex-wrap items-center justify-center gap-1.5 rounded-tl-[1.85rem] rounded-br-[1.85rem] rounded-tr-xl rounded-bl-xl border border-line bg-surface/80 backdrop-blur-md p-1.5 shadow-sm">
           {tabs.map((t) => (
             <TabButton
               key={t}
               active={tab === t}
-              onClick={() => setTab(t)}
+              onClick={() => selectTab(t)}
               label={t}
             />
           ))}
         </div>
       </div>
 
-      <div key={tab} className="mt-8 arcade-fade">
+      <div key={tab} className="mt-8 arcade-fade min-h-[70vh]">
         {/* ================= OVERVIEW TAB ================= */}
         {tab === 'Overview' && (
           <div className="space-y-10">
@@ -1002,6 +1010,8 @@ function ReviewsBlock({ courseId }: { courseId?: string }) {
   );
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 function getTitleFromSlug(slug?: string): string {
   if (!slug) return '';
   const knownTitles: Record<string, string> = {
@@ -1035,93 +1045,6 @@ function getTitleFromSlug(slug?: string): string {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Sticky Enrollment Bottom Bar                                       */
-/* ------------------------------------------------------------------ */
-
-function StickyEnrollBar({
-  title,
-  pricingModel,
-  priceAmount,
-  currency,
-  courseId,
-  initialState,
-  pendingReason,
-  onEnroll,
-}: {
-  title: string;
-  pricingModel?: string;
-  priceAmount?: number;
-  currency?: string;
-  courseId: string;
-  initialState: 'ENROLLED' | 'NOT_ENROLLED' | 'PENDING' | 'WAITLISTED';
-  pendingReason?: 'PAYMENT' | 'REQUIREMENTS';
-  onEnroll?: () => void;
-}) {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 450) {
-        setVisible(true);
-      } else {
-        setVisible(false);
-      }
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  if (!visible) return null;
-
-  const isPaid = pricingModel === 'PAID';
-  const priceDisplay = isPaid ? formatMoney(priceAmount ?? 0, currency ?? 'INR') : 'Free';
-
-  return (
-    <div className="fixed bottom-0 inset-x-0 z-40 bg-surface/95 border-t border-slate-200 shadow-lg backdrop-blur-md transition-all duration-300">
-      <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6 flex items-center justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 hidden sm:block">
-            Course
-          </p>
-          <p className="text-sm font-bold text-slate-900 truncate">
-            {title}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-4 shrink-0">
-          {initialState !== 'ENROLLED' && (
-            isPaid ? (
-              <span className="text-base font-extrabold text-slate-900 hidden sm:block">
-                {priceDisplay}
-              </span>
-            ) : (
-              <span className="hidden sm:inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/80 px-2.5 py-0.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 dark:border-emerald-500/25">
-                Free Course
-              </span>
-            )
-          )}
-
-          <div className="min-w-[180px] sm:min-w-[210px]">
-            <EnrollmentButton
-              resourceType="COURSE"
-              resourceId={courseId}
-              initialState={initialState}
-              pendingReason={pendingReason}
-              className="rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md shadow-[0_8px_24px_-8px_rgba(20,20,43,0.45)] hover:shadow-[0_12px_28px_-8px_rgba(20,20,43,0.5)] font-semibold"
-              onStateChange={(state) => {
-                if (state === 'ENROLLED' && onEnroll) {
-                  onEnroll();
-                }
-              }}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 /*  Main Dedicated Public View Component                              */
 /* ------------------------------------------------------------------ */
 
@@ -1139,15 +1062,19 @@ export function CoursePublicView({ courseId: propCourseId }: CoursePublicViewPro
   const [course, setCourse] = useState<CourseResponse | null>(null);
   const [extraCollaborators, setExtraCollaborators] = useState<CourseCollaboratorSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [reportModalOpen, setReportModalOpen] = useState(false);
-
-  const handleReportSubmit = async (combinedNote: string) => {
-    await api.post('/api/v1/reports', {
-      contentId: courseId,
-      contentType: 'COURSE',
-      note: combinedNote,
-    });
-    toast.success('Course reported. Our moderation team will review it shortly.');
+  const handleShare = async () => {
+    if (typeof window === 'undefined') return;
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: course?.title, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      toast.success('Course link copied to clipboard!');
+    } catch {
+      // The native share sheet was dismissed, or the clipboard is unavailable.
+    }
   };
 
   const titleFromQuery = searchParams.get('title');
@@ -1283,7 +1210,9 @@ export function CoursePublicView({ courseId: propCourseId }: CoursePublicViewPro
     );
   }
 
-  const displayTitle = titleFromQuery || course?.title || getTitleFromSlug(courseId) || COURSE_TITLE;
+  // A UUID id must never be shown as a title (it was title-cased into "19765de3 B3ee…").
+  const slugTitle = UUID_RE.test(courseId) ? '' : getTitleFromSlug(courseId);
+  const displayTitle = titleFromQuery || course?.title || slugTitle || COURSE_TITLE;
   const authorName = course?.authorName;
   const authorUsername = course?.authorUsername;
   const authorAvatarUrl = course?.authorAvatarUrl;
@@ -1330,7 +1259,7 @@ export function CoursePublicView({ courseId: propCourseId }: CoursePublicViewPro
           courseId={courseId}
           hasBadge={hasBadge}
           hasExam={hasExam}
-          onReportClick={() => setReportModalOpen(true)}
+          onShareClick={handleShare}
         />
 
         {/* Tabbed Content Navigation & Details Sections */}
@@ -1342,26 +1271,7 @@ export function CoursePublicView({ courseId: propCourseId }: CoursePublicViewPro
         />
       </div>
 
-      {/* Sticky Bottom Bar on Scroll */}
-      <StickyEnrollBar
-        title={displayTitle}
-        pricingModel={course?.pricingModel}
-        priceAmount={course?.priceAmount}
-        currency={course?.currency}
-        courseId={courseId}
-        initialState={enrollButtonState}
-        pendingReason={pendingReason}
-        onEnroll={handleEnrollSuccess}
-      />
 
-      <ReportModal
-        isOpen={reportModalOpen}
-        onClose={() => setReportModalOpen(false)}
-        onSubmit={handleReportSubmit}
-        title="Report Course"
-        description="Help us understand what is wrong with this course."
-        contentType="COURSE"
-      />
     </main>
   );
 }

@@ -14,7 +14,7 @@
  * ------------------------------------------------------------------
  */
 
-import React, { useState, type ReactNode } from 'react';
+import React, { useRef, useState, type ReactNode } from 'react';
 import {
   AlertCircle,
   Award,
@@ -75,8 +75,8 @@ function TabButton({
       onClick={onClick}
       className={`relative px-5 sm:px-6 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm font-black tracking-tight transition-all duration-200 select-none cursor-pointer min-w-[96px] text-center ${
         active
-          ? 'bg-surface text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6] shadow-2xs'
-          : 'bg-slate-100/80 text-slate-700 border border-slate-200/70 hover:bg-slate-200/70 hover:text-slate-900'
+          ? 'bg-ink text-on-ink border border-ink shadow-2xs'
+          : 'bg-surface/70 text-subtle border border-line hover:bg-surface hover:text-ink'
       }`}
     >
       <span className="relative z-10">{label}</span>
@@ -132,6 +132,15 @@ export function ExamOverview({
   if (landing.prerequisite && !landing.prerequisite.met) tabs.push('Prerequisites');
 
   const [activeTab, setActiveTab] = useState<string>('Overview');
+  const tabsTopRef = useRef<HTMLDivElement>(null);
+  const selectTab = (t: string) => {
+    setActiveTab(t);
+    // Bring the tab bar to the top of the viewport (below the floating navbar) so the new tab's
+    // content is in view instead of staying wherever the page was scrolled.
+    requestAnimationFrame(() =>
+      tabsTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    );
+  };
 
   const meta = planTypeMeta(landing.planType);
   const kind = planKindLabel(landing.planType, landing.graded);
@@ -309,6 +318,7 @@ export function ExamOverview({
                   <Share2 size={15} />
                 </button>
 
+                {landing.history.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setIsReportModalOpen(true)}
@@ -318,6 +328,7 @@ export function ExamOverview({
                 >
                   <Flag size={15} />
                 </button>
+                )}
               </div>
 
               {landing.attemptsUsed > 0 && (
@@ -421,21 +432,21 @@ export function ExamOverview({
         )}
 
         {/* ================= TABS SECTION ================= */}
-        <div className="pt-4 sm:pt-6">
+        <div ref={tabsTopRef} className="pt-4 sm:pt-6 scroll-mt-24">
           {/* Tabs Header - matching My Learning / Course / Event style */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5">
             {tabs.map((t) => (
               <TabButton
                 key={t}
                 active={activeTab === t}
-                onClick={() => setActiveTab(t)}
+                onClick={() => selectTab(t)}
                 label={t}
               />
             ))}
           </div>
 
           {/* Tab Content Display */}
-          <div key={activeTab} className="mt-8 arcade-fade">
+          <div key={activeTab} className="mt-8 arcade-fade min-h-[70vh]">
             {/* OVERVIEW TAB */}
             {activeTab === 'Overview' && (
               <div className="space-y-8">

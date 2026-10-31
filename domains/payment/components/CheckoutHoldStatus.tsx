@@ -52,15 +52,15 @@ export function CheckoutHoldStatus({ enrollmentId, refreshKey }: { enrollmentId:
   if (!order || !left) return null;
 
   return (
-    <div className="mt-2 space-y-1 text-[12px] font-medium" aria-live="polite">
-      <p className="flex items-center gap-1.5 text-slate-500">
+    <div className="mt-2.5 flex flex-col items-center gap-1.5 text-center text-[12px] font-medium" aria-live="polite">
+      <p className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-line bg-surface/70 px-3 py-1 text-subtle">
         <Clock size={13} className="shrink-0" />
         <span>
-          Your place is held for <span className="tabular-nums font-semibold text-slate-700">{left}</span>
+          Your place is held for <span className="tabular-nums font-semibold text-ink">{left}</span>
         </span>
       </p>
       {order.attemptCount > 0 && order.lastFailureReason && (
-        <p className="flex items-start gap-1.5 text-rose-600 dark:text-rose-400">
+        <p className="flex max-w-xs items-start gap-1.5 text-left text-rose-600 dark:text-rose-400">
           <AlertCircle size={13} className="mt-px shrink-0" />
           <span>
             Last attempt declined: {humanizePaymentText(order.lastFailureReason).replace(/\.$/, '')}. Nothing was charged — you

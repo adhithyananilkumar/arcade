@@ -27,7 +27,7 @@ export function LearningTabs({ tabs, defaultTab }: LearningTabsProps) {
               onClick={() => setActiveTabId(t.id)}
               aria-pressed={activeTabId === t.id}
               className={`rounded-full px-4 py-2 text-[13px] font-semibold transition-colors sm:px-5 ${
-                activeTabId === t.id ? "bg-ink text-paper" : "text-subtle hover:text-ink"
+                activeTabId === t.id ? "bg-ink text-on-ink" : "text-subtle hover:text-ink"
               }`}
             >
               {t.label}
