@@ -14,6 +14,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronsLeftRight,
   Check,
   CheckCircle2,
   FileText,
@@ -24,6 +25,7 @@ import {
   Star,
   RotateCcw,
 } from 'lucide-react';
+import { ArcadeAIIcon } from '@/shared/design-system/ui/ArcadeAIIcon';
 import {
   Dialog,
   DialogContent,
@@ -44,6 +46,7 @@ import {
 import { toast } from 'sonner';
 import { ReportModal } from '@/shared/design-system/ui/ReportModal';
 import { AssessmentLandingPane } from './AssessmentLandingPane';
+import { AILessonAssistant } from './AILessonAssistant';
 
 /**
  * A node in the course's running order. Until assessments existed every node was a lesson and this
@@ -111,7 +114,8 @@ function courseLevelItems(course: CourseResponse): PlayerItem[] {
 
 /** The whole running order: every module's items, then the course's own assessments. */
 function allItems(course: CourseResponse): PlayerItem[] {
-  return [...(course.modules ?? []).flatMap(itemsForModule), ...courseLevelItems(course)];
+  const sortedModules = [...(course.modules ?? [])].sort((a, b) => a.position - b.position);
+  return [...sortedModules.flatMap(itemsForModule), ...courseLevelItems(course)];
 }
 
 export interface CoursePlayerProps {
@@ -143,6 +147,9 @@ export function CoursePlayer({
   const [collapsedModules, setCollapsedModules] = useState<Record<string, boolean>>({});
   const toggleModule = (moduleId: string) =>
     setCollapsedModules((prev) => ({ ...prev, [moduleId]: !prev[moduleId] }));
+
+  const [isNotesCollapsed, setIsNotesCollapsed] = useState(false);
+  const [rightRailTab, setRightRailTab] = useState<'notes' | 'ai'>('notes');
 
   const [rightPanelWidth, setRightPanelWidth] = useState(380);
 
@@ -180,15 +187,27 @@ export function CoursePlayer({
     return () => mq.removeEventListener('change', update);
   }, []);
 
+  const [isDraggingRightPanel, setIsDraggingRightPanel] = useState(false);
+
   const handleRightPanelResizeStart = (e: React.PointerEvent) => {
     e.preventDefault();
+    setIsDraggingRightPanel(true);
     const startX = e.clientX;
     const startWidth = rightPanelWidth;
+
+    const originalUserSelect = document.body.style.userSelect;
+    const originalCursor = document.body.style.cursor;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+
     const onMove = (moveEvent: PointerEvent) => {
       const next = Math.min(640, Math.max(280, startWidth + (startX - moveEvent.clientX)));
       setRightPanelWidth(next);
     };
     const onUp = () => {
+      setIsDraggingRightPanel(false);
+      document.body.style.userSelect = originalUserSelect;
+      document.body.style.cursor = originalCursor;
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
@@ -309,6 +328,11 @@ export function CoursePlayer({
     lessonId: selectedLesson?.id,
     enabled: Boolean(courseId && selectedLesson?.id && !loading && !isPreview),
   });
+
+  const sortedModules = useMemo(
+    () => [...(course?.modules ?? [])].sort((a, b) => a.position - b.position),
+    [course?.modules],
+  );
 
   const orderedItems = useMemo(
     () => (course ? allItems(course) : []),
@@ -479,22 +503,23 @@ export function CoursePlayer({
       )}
 
       {/* Clear floating navbar padding */}
-      <div className={`relative z-10 flex min-h-screen w-full flex-col gap-4 px-4 ${isPreview ? 'pt-8' : 'pt-28 md:pt-32'} md:flex-row md:px-8 lg:px-12 xl:px-16`}>
+      <div className={`relative z-10 flex min-h-screen w-full max-w-[1720px] mx-auto flex-col gap-4 px-4 ${isPreview ? 'pt-6' : 'pt-20 md:pt-24'} md:flex-row md:gap-5 md:px-6 lg:px-8`}>
         {/* Sidebar */}
-        <aside className="flex w-full shrink-0 flex-col md:sticky md:top-32 md:h-[calc(100vh-8.5rem)] md:w-[280px] lg:w-[300px]">
+        <aside className="flex w-full shrink-0 flex-col md:sticky md:top-24 md:h-[calc(100vh-7.5rem)] md:w-[204px]">
           <div className="flex h-full flex-col">
-            <nav className="flex-1 space-y-3 overflow-y-auto px-3 pb-5 pt-5 md:px-4 arcade-scrollbar-mini">
-              {course.modules.length === 0 && courseLevelItems(course).length === 0 ? (
+            <nav className="flex-1 space-y-3.5 overflow-y-auto px-0 pb-5 pt-0 arcade-scrollbar-mini">
+              {sortedModules.length === 0 && courseLevelItems(course).length === 0 ? (
                 <p className="px-2 text-sm text-slate-400">No modules yet.</p>
               ) : (
-                course.modules.map((mod, modIdx) => {
+                sortedModules.map((mod, modIdx) => {
                   const isCollapsed = Boolean(collapsedModules[mod.id]);
+                  const moduleItems = itemsForModule(mod);
                   return (
-                    <div key={mod.id} className="mb-2 flex flex-col gap-1">
+                    <div key={mod.id} className="mb-3.5 flex flex-col">
                       <button
                         type="button"
                         onClick={() => toggleModule(mod.id)}
-                        className="group flex w-full items-center gap-2 rounded-2xl border border-white/40 bg-surface/60 px-3.5 py-2.5 text-left shadow-sm backdrop-blur-md transition-all hover:border-surface/60 hover:bg-surface/80"
+                        className="group flex w-full items-center gap-2 rounded-2xl border border-white/40 bg-surface/60 px-3.5 py-2.5 text-left shadow-sm backdrop-blur-md transition-all hover:border-surface/60 hover:bg-surface/80 cursor-pointer"
                       >
                         {isCollapsed ? (
                           <ChevronRight size={15} className="flex-shrink-0 text-ink/50" />
@@ -507,8 +532,8 @@ export function CoursePlayer({
                       </button>
 
                       {!isCollapsed && (
-                        <div className="ml-5 flex flex-col gap-1 pl-3 pt-1">
-                          {itemsForModule(mod).map((item) => {
+                        <div className="flex flex-col gap-1.5 pl-3.5 pt-1.5">
+                          {moduleItems.map((item) => {
                             const isSelected = selectedItem?.id === item.id;
 
                             // Assessments get a distinct row: no completion tick, no report menu, and an icon instead
@@ -516,14 +541,14 @@ export function CoursePlayer({
                               return (
                                 <div
                                   key={item.id}
-                                  className={`group flex items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
-                                    isSelected ? 'bg-ink shadow-md' : 'bg-surface/50 hover:bg-surface/80'
+                                  className={`group flex w-full items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
+                                    isSelected ? 'bg-ink shadow-md text-white' : 'bg-surface/50 hover:bg-surface/80 text-slate-500'
                                   }`}
                                 >
                                   <button
                                     type="button"
                                     onClick={() => goTo(item)}
-                                    className={`flex min-w-0 flex-1 items-center gap-1.5 py-2 text-left text-[13px] ${
+                                    className={`flex min-w-0 flex-1 items-center gap-1.5 py-2 text-left text-[13px] cursor-pointer ${
                                       isSelected ? 'font-semibold text-white' : 'text-slate-500'
                                     }`}
                                   >
@@ -544,14 +569,14 @@ export function CoursePlayer({
                             return (
                               <div
                                 key={lesson.id}
-                                className={`group/item flex items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
-                                  isSelected ? 'bg-ink shadow-md' : 'bg-surface/50 hover:bg-surface/80'
+                                className={`group/item flex w-full items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
+                                  isSelected ? 'bg-ink shadow-md text-white' : 'bg-surface/50 hover:bg-surface/80'
                                 }`}
                               >
                                 <button
                                   type="button"
                                   onClick={() => goTo(item)}
-                                  className={`flex min-w-0 flex-1 items-center gap-1.5 py-2 text-left text-[13px] ${
+                                  className={`flex min-w-0 flex-1 items-center gap-1.5 py-2 text-left text-[13px] cursor-pointer ${
                                     isSelected
                                       ? 'font-semibold text-white'
                                       : isComplete
@@ -562,7 +587,7 @@ export function CoursePlayer({
                                   {isComplete && !isSelected ? (
                                     <Check size={13} strokeWidth={2.5} className="flex-shrink-0 text-emerald-500" />
                                   ) : (
-                                    <FileText size={13} className="flex-shrink-0" />
+                                    <FileText size={13} className={`flex-shrink-0 ${isSelected ? 'text-white' : 'text-slate-400'}`} />
                                   )}
                                   <span className="truncate" title={lesson.title}>
                                     {lesson.title}
@@ -631,7 +656,7 @@ export function CoursePlayer({
               )}
 
               {courseLevelItems(course).length > 0 && (
-                <div className="mb-2 flex flex-col gap-1">
+                <div className="mb-3.5 flex flex-col">
                   <div className="flex w-full items-center gap-2 rounded-2xl border border-white/40 bg-surface/60 px-3.5 py-2.5 shadow-sm backdrop-blur-md">
                     <GraduationCap size={15} className="flex-shrink-0 text-ink/50" />
                     <span className="flex-1 truncate text-[13px] font-bold text-ink">
@@ -640,7 +665,7 @@ export function CoursePlayer({
                         : 'Course assessments'}
                     </span>
                   </div>
-                  <div className="ml-5 flex flex-col gap-1 pl-3 pt-1">
+                  <div className="flex flex-col gap-1.5 pl-3.5 pt-1.5">
                     {courseLevelItems(course).map((item) => {
                       if (item.kind !== 'assessment') return null;
                       const isSelected = selectedItem?.id === item.id;
@@ -648,7 +673,7 @@ export function CoursePlayer({
                       return (
                         <div
                           key={item.id}
-                          className={`group flex items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
+                          className={`group flex w-full items-center gap-2 rounded-full px-3.5 backdrop-blur-md transition-all ${
                             isSelected ? 'bg-ink shadow-md' : 'bg-surface/50 hover:bg-surface/80'
                           }`}
                         >
@@ -676,7 +701,7 @@ export function CoursePlayer({
             </nav>
 
             {progress && progress.totalLessons > 0 && (
-              <div className="space-y-2 px-5 pt-3 pb-5 md:px-6">
+              <div className="space-y-2 px-1 pt-3 pb-5">
                 {progress.enrollmentStatus === 'COMPLETED' && (
                   <p className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                     <CheckCircle2 size={12} />
@@ -700,9 +725,10 @@ export function CoursePlayer({
           </div>
         </aside>
 
-        {/* Lesson canvas — centered & wide */}
-        <main className="relative flex min-w-0 flex-1 justify-center px-4 py-6 sm:px-8 md:py-8 lg:px-12">
-          <article className="relative flex w-full max-w-4xl flex-col">
+        {/* Lesson canvas — aligns neatly next to sidebar with balanced spacing */}
+        <main className="relative flex min-w-0 flex-1 pb-8">
+          <div className="relative flex w-full min-w-0 items-start gap-3.5">
+            <article className="relative flex min-w-0 flex-1 flex-col min-h-[calc(100vh-7.5rem)] justify-between">
             {selectedItem?.kind === 'assessment' ? (
               <AssessmentLandingPane
                 key={selectedItem.id}
@@ -719,15 +745,15 @@ export function CoursePlayer({
               />
             ) : selectedLesson ? (
               <>
-                <div className="min-h-[42vh] flex-1 rounded-3xl border border-white/40 bg-white/30 px-5 py-7 shadow-lg backdrop-blur-xl sm:px-8 sm:py-9 md:px-12 md:py-11">
-                  <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-ink prose-a:text-[#FF6B4A] hover:prose-a:text-[#D94F32] prose-p:text-slate-700 dark:hover:prose-a:text-[#ff8d71]">
+                <div className="min-h-[65vh] md:min-h-[calc(100vh-13rem)] flex-1 rounded-3xl border border-white/60 bg-white/45 p-6 shadow-[0_4px_24px_-2px_rgba(20,20,43,0.035)] backdrop-blur-xl sm:p-8 md:p-10 lg:p-12 dark:border-white/10 dark:bg-slate-900/40">
+                  <div className="arcade-rich-text max-w-4xl text-ink/90 leading-relaxed text-[15px] sm:text-base selection:bg-ink/10 dark:text-slate-100">
                     {selectedLesson.body ? (
                       <TiptapContentView body={selectedLesson.body} />
                     ) : (
-                      <div className="rounded-2xl border border-white/40 bg-white/20 px-6 py-14 text-center backdrop-blur-md">
-                        <BookOpen size={36} className="mx-auto mb-3 text-slate-300" />
-                        <p className="text-[15px] font-semibold text-ink">No content yet</p>
-                        <p className="mt-1 text-sm text-slate-400">
+                      <div className="rounded-2xl border border-white/40 bg-white/30 px-6 py-14 text-center backdrop-blur-md dark:border-white/10 dark:bg-white/5">
+                        <BookOpen size={36} className="mx-auto mb-3 text-slate-300 dark:text-slate-600" />
+                        <p className="text-[15px] font-semibold text-ink dark:text-white">No content yet</p>
+                        <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">
                           This lesson does not have material published.
                         </p>
                       </div>
@@ -787,35 +813,172 @@ export function CoursePlayer({
                 </footer>
               </>
             ) : (
-              <div className="flex min-h-[50vh] flex-col items-center justify-center rounded-3xl border border-white/40 bg-white/30 px-6 py-16 text-center shadow-lg backdrop-blur-xl">
-                <BookOpen size={40} className="mb-3 text-slate-300" />
-                <p className="text-lg font-bold text-ink">Pick a lesson</p>
-                <p className="mt-1 text-sm text-slate-400">Choose one from the sidebar to start.</p>
+              <div className="flex min-h-[65vh] md:min-h-[calc(100vh-13rem)] flex-col items-center justify-center rounded-3xl border border-white/60 bg-white/45 px-6 py-16 text-center shadow-[0_4px_24px_-2px_rgba(20,20,43,0.035)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/40">
+                <BookOpen size={40} className="mb-3 text-slate-300 dark:text-slate-600" />
+                <p className="text-lg font-bold text-ink dark:text-white">Pick a lesson</p>
+                <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">Choose one from the sidebar to start.</p>
               </div>
             )}
-          </article>
+            </article>
+
+            {/* Vertical floating action icons aligned directly along the card's right edge */}
+            {isNotesCollapsed && (
+              <div className="sticky top-20 md:top-24 shrink-0 self-start flex flex-col items-center gap-2 animate-in fade-in slide-in-from-right-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRightRailTab('notes');
+                    setIsNotesCollapsed(false);
+                  }}
+                  title="Notes"
+                  aria-label="Open Notes"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/60 bg-white/50 text-ink shadow-[0_2px_12px_rgba(20,20,43,0.04)] backdrop-blur-xl transition-all hover:bg-white/80 hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  <NotebookPen size={16} className="shrink-0 text-ink" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRightRailTab('ai');
+                    setIsNotesCollapsed(false);
+                  }}
+                  title="AI Assistant"
+                  aria-label="Open AI Assistant"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/60 bg-white/50 text-ink shadow-[0_2px_12px_rgba(20,20,43,0.04)] backdrop-blur-xl transition-all hover:bg-white/80 hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  <ArcadeAIIcon size={21} className="shrink-0 text-ink" />
+                </button>
+              </div>
+            )}
+          </div>
         </main>
 
-        {/* Drag handle */}
-        <div
-          onPointerDown={handleRightPanelResizeStart}
-          className="group hidden w-4 shrink-0 cursor-col-resize md:sticky md:top-32 md:flex md:h-[calc(100vh-8.5rem)] md:items-stretch md:justify-center"
-        >
-          <div className="w-1.5 rounded-full bg-transparent transition-colors group-hover:bg-slate-300/60 group-active:bg-slate-400/70" />
-        </div>
+        {/* Drag handle between main content and Notes/AI rail */}
+        {!isNotesCollapsed && (
+          <div
+            id="notes-ai-resize-divider"
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize Notes and AI panel"
+            aria-valuenow={rightPanelWidth}
+            aria-valuemin={280}
+            aria-valuemax={640}
+            tabIndex={0}
+            onPointerDown={handleRightPanelResizeStart}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                setRightPanelWidth((w) => Math.min(640, w + 20));
+              } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                setRightPanelWidth((w) => Math.max(280, w - 20));
+              }
+            }}
+            className="group hidden w-3.5 -mx-1.5 shrink-0 cursor-col-resize select-none md:sticky md:top-24 md:flex md:h-[calc(100vh-7.5rem)] md:items-center md:justify-center z-20 focus-visible:outline-none"
+          >
+            {/* Resize handle with bidirectional arrows — only the icon, no vertical line */}
+            <div
+              className={`relative flex h-8 w-4.5 items-center justify-center rounded-full border shadow-xs backdrop-blur-md transition-all duration-200 ${
+                isDraggingRightPanel
+                  ? 'scale-110 border-ink/30 bg-white text-ink shadow-md dark:border-white/40 dark:bg-slate-800 dark:text-white'
+                  : 'border-white/80 bg-white/90 text-ink/60 group-hover:scale-110 group-hover:border-ink/20 group-hover:bg-white group-hover:text-ink group-hover:shadow-md dark:border-white/20 dark:bg-slate-900/80 dark:text-white/60 dark:group-hover:bg-slate-800 dark:group-hover:text-white'
+              }`}
+            >
+              <ChevronsLeftRight size={11} strokeWidth={2.5} className="shrink-0" />
+
+              {/* "Drag to resize" Tooltip */}
+              <div
+                role="tooltip"
+                className={`pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-30 transition-all duration-200 ease-out whitespace-nowrap ${
+                  isDraggingRightPanel
+                    ? 'opacity-100 scale-100 translate-y-0'
+                    : 'opacity-0 scale-95 translate-y-1 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0'
+                }`}
+              >
+                <div className="relative rounded-lg bg-ink px-2.5 py-1 text-[11px] font-semibold text-on-ink shadow-lg flex items-center gap-1.5 dark:bg-white dark:text-slate-900">
+                  <span>Drag to resize</span>
+                  <div className="absolute left-1/2 top-full -translate-x-1/2 -mt-px border-4 border-transparent border-t-ink dark:border-t-white" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Right rail — notes / AI chat, glass-pill styled */}
         <aside
-          className="flex w-full shrink-0 flex-col md:sticky md:top-32 md:h-[calc(100vh-8.5rem)]"
-          style={isDesktopViewport ? { width: rightPanelWidth } : undefined}
+          className={`shrink-0 overflow-hidden ${
+            isDraggingRightPanel ? 'transition-none' : 'transition-all duration-300 ease-in-out'
+          } ${
+            isNotesCollapsed
+              ? 'w-0 max-h-0 md:max-h-none opacity-0 pointer-events-none m-0 p-0 border-0'
+              : 'flex w-full flex-col md:sticky md:top-24 md:h-[calc(100vh-7.5rem)] opacity-100'
+          }`}
+          style={isDesktopViewport ? { width: isNotesCollapsed ? 0 : rightPanelWidth, marginLeft: isNotesCollapsed ? 0 : undefined } : undefined}
         >
-          <div className="flex flex-col gap-3 h-full px-5 pb-8 md:px-4">
-            <div className="flex items-center gap-2 rounded-full border border-white/40 bg-white/30 px-4 py-2.5 shadow-lg backdrop-blur-xl">
-              <NotebookPen size={16} className="text-ink" />
-              <h2 className="text-sm font-bold text-ink">Notes</h2>
+          <div className="flex flex-col gap-3 h-full px-5 pb-8 md:px-0">
+            {/* Header pill with Notes and AI tabs */}
+            <div className="flex items-center justify-between gap-1 rounded-full border border-white/60 bg-white/45 p-1 shadow-[0_2px_12px_rgba(20,20,43,0.03)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/40">
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (rightRailTab === 'notes') {
+                      setIsNotesCollapsed(true);
+                    } else {
+                      setRightRailTab('notes');
+                      setIsNotesCollapsed(false);
+                    }
+                  }}
+                  title={rightRailTab === 'notes' ? 'Hide notes' : 'Switch to Notes'}
+                  className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer ${
+                    rightRailTab === 'notes'
+                      ? 'bg-ink text-on-ink shadow-xs'
+                      : 'text-ink/70 hover:bg-white/40 hover:text-ink'
+                  }`}
+                >
+                  <NotebookPen size={14} className={rightRailTab === 'notes' ? 'text-on-ink' : 'text-ink/80'} />
+                  <span>Notes</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (rightRailTab === 'ai') {
+                      setIsNotesCollapsed(true);
+                    } else {
+                      setRightRailTab('ai');
+                      setIsNotesCollapsed(false);
+                    }
+                  }}
+                  title={rightRailTab === 'ai' ? 'Hide AI' : 'Switch to AI Assistant'}
+                  className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer ${
+                    rightRailTab === 'ai'
+                      ? 'bg-ink text-on-ink shadow-xs'
+                      : 'text-ink/70 hover:bg-white/40 hover:text-ink'
+                  }`}
+                >
+                  <ArcadeAIIcon size={18} className={rightRailTab === 'ai' ? 'text-on-ink' : 'text-ink/80'} />
+                  <span>AI</span>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsNotesCollapsed(true)}
+                title="Collapse panel"
+                className="flex h-7 w-7 items-center justify-center rounded-full text-ink/60 transition-all hover:bg-white/50 hover:text-ink cursor-pointer mr-0.5"
+              >
+                <ChevronDown size={14} className="rotate-0 transition-transform duration-200" />
+              </button>
             </div>
 
-            <div className="flex h-full flex-1 flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/30 p-4 shadow-lg backdrop-blur-xl">
+            {/* Notes Editor View */}
+            <div
+              id="notes-editor-panel"
+              className={`h-full flex-1 flex-col overflow-hidden rounded-3xl border border-white/60 bg-white/45 p-4 sm:p-5 shadow-[0_4px_24px_-2px_rgba(20,20,43,0.035)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/40 ${
+                rightRailTab === 'notes' ? 'flex' : 'hidden'
+              }`}
+            >
               <NotesEditor
                 key={noteEditorKey}
                 content={noteInitialBody}
@@ -828,9 +991,52 @@ export function CoursePlayer({
                 }
               />
             </div>
+
+            {/* AI Assistant View */}
+            <div
+              id="ai-assistant-panel"
+              className={`h-full flex-1 flex-col overflow-hidden rounded-3xl border border-white/60 bg-white/45 p-4 sm:p-5 shadow-[0_4px_24px_-2px_rgba(20,20,43,0.035)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/40 ${
+                rightRailTab === 'ai' ? 'flex' : 'hidden'
+              }`}
+            >
+              <AILessonAssistant
+                lesson={selectedLesson}
+                assessmentTitle={selectedItem?.kind === 'assessment' ? selectedItem.assessment.title : undefined}
+              />
+            </div>
           </div>
         </aside>
       </div>
+
+      {/* Mobile Floating Expand Trigger (when notes / AI rail is collapsed) */}
+      {isNotesCollapsed && (
+        <div className="fixed top-20 right-3 z-30 md:hidden flex flex-col items-center gap-2 animate-in fade-in slide-in-from-right-2">
+          <button
+            type="button"
+            onClick={() => {
+              setRightRailTab('notes');
+              setIsNotesCollapsed(false);
+            }}
+            title="Notes"
+            aria-label="Open Notes"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/60 bg-white/50 text-ink shadow-[0_2px_12px_rgba(20,20,43,0.04)] backdrop-blur-xl transition-all hover:bg-white/80 hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <NotebookPen size={16} className="shrink-0 text-ink" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setRightRailTab('ai');
+              setIsNotesCollapsed(false);
+            }}
+            title="AI Assistant"
+            aria-label="Open AI Assistant"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/60 bg-white/50 text-ink shadow-[0_2px_12px_rgba(20,20,43,0.04)] backdrop-blur-xl transition-all hover:bg-white/80 hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <ArcadeAIIcon size={21} className="shrink-0 text-ink" />
+          </button>
+        </div>
+      )}
 
       {/* Report Lesson Modal */}
       <ReportModal
