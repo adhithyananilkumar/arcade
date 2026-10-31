@@ -37,6 +37,9 @@ export async function POST(request: Request) {
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || typeof data?.ticket !== 'string') {
+      // Field NAMES only, never values: enough to see what AES sends while the backend
+      // verification is being finished, without logging anyone's identity.
+      console.warn('AES callback refused. Fields received:', Object.keys(fields).join(', '));
       return back(data?.message || 'AES sign-in could not be completed.');
     }
 
