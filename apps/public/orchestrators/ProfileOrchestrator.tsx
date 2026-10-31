@@ -120,7 +120,7 @@ export function ProfileOrchestrator({ handle }: { handle: string }) {
   }, [handle]);
 
   if (!loaded) return <ProfileFrame><ProfileSkeleton /></ProfileFrame>;
-  if (loaded.kind === 'missing') return <ProfileNotFound handle={handle} />;
+  if (loaded.kind === 'missing') return <ProfileNotFound />;
   if (loaded.kind === 'error') {
     return (
       <ProfileFrame>

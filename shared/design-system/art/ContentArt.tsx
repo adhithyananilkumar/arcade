@@ -4,7 +4,7 @@ import React, { useId, useMemo } from 'react';
 import { cn } from '@/shared/utils/utils';
 import { usePublicCategoriesStatus } from '@/shared/hooks/usePublicCategories';
 import { createRng, type Rng } from './rng';
-import { paletteFor, resolveArtTheme, type ArtPalette, type ArtTheme } from './themes';
+import { artThemeByKey, paletteFor, resolveArtTheme, type ArtPalette, type ArtTheme, type ArtThemeKey } from './themes';
 import { MOTIFS, type Motif, type MotifPaint } from './motifs';
 
 /**
@@ -81,8 +81,13 @@ interface Scene {
   motif: Motif;
   /** Two more subjects from the same theme, for the doodle scenes. */
   companions: [Motif, Motif];
+  /** Separate stream for placement variety, so each item's layout is its own. */
+  vary: Rng;
   uid: string;
 }
+
+/** Theme first drawn for an item (seed|family), kept so the picture never changes afterwards. */
+const LOCKED_THEMES = new Map<string, ArtThemeKey>();
 
 export function ContentArt({ seed, kind, category, categoryId, title, className, label }: ContentArtProps) {
   const { categories, settled } = usePublicCategoriesStatus();
@@ -95,7 +100,13 @@ export function ContentArt({ seed, kind, category, categoryId, title, className,
   const family = artKindOf(kind);
 
   const scene = useMemo<Omit<Scene, 'uid'>>(() => {
-    const theme = resolveArtTheme(categoryName, title);
+    // The first theme drawn for an item is kept for the whole session: any later change in what the
+    // page knows about it (category arriving, a channel name replacing a placeholder) must not redraw.
+    // Only category-informed draws are remembered; a title-only guess never overrides a real category.
+    const lockKey = `${seed}|${family}`;
+    const locked = LOCKED_THEMES.get(lockKey);
+    const theme = locked ? artThemeByKey(locked) : resolveArtTheme(categoryName, title);
+    if (!locked && categoryName) LOCKED_THEMES.set(lockKey, theme.key);
     const rng = createRng(`${seed}|${family}|${theme.key}`);
     const motif = rng.pick(MOTIFS[theme.key]);
     // Companions come from their own stream so the main sequence — and with it every exam picture
@@ -104,7 +115,11 @@ export function ContentArt({ seed, kind, category, categoryId, title, className,
     const pool = MOTIFS[theme.key].filter((m) => m !== motif);
     const first = pool.splice(pick.int(0, pool.length - 1), 1)[0];
     const second = pool[pick.int(0, pool.length - 1)];
-    return { rng, theme, pal: paletteFor(theme, seed), motif, companions: [first, second] };
+    // Per-item variation (palette roles, placement, scale, signature) on yet another stream.
+    const vary = createRng(`${seed}|${family}|vary`);
+    const base = paletteFor(theme, seed);
+    const pal = vary.chance(0.5) ? { ...base, main: base.accent, accent: base.main } : base;
+    return { rng, vary, theme, pal, motif, companions: [first, second] };
   }, [seed, family, categoryName, title]);
 
   const s: Scene = { ...scene, uid };
@@ -388,9 +403,36 @@ function CalendarPage({ x, y, pal }: { x: number; y: number; pal: ArtPalette }) 
 
 // ── Course: a learning path ─────────────────────────────────────────────────
 
-function LearningPath({ rng, pal, motif, companions }: Scene) {
+/**
+ * A tiny constellation unique to the item: 4–6 dots joined by a hairline, in a corner chosen by the
+ * seed. It is the item's signature — no two items share one, even with the same subject and palette.
+ */
+function Signature({ vary, pal, x, y }: { vary: Rng; pal: ArtPalette; x: number; y: number }) {
+  const n = vary.int(4, 6);
+  const pts = Array.from({ length: n }, (_, i) => [r2(x + i * 9 + vary.range(-2, 2)), r2(y + vary.range(-9, 9))] as const);
+  const line = pts.map(([px, py], i) => `${i ? 'L' : 'M'}${px} ${py}`).join(' ');
+  const colors = [pal.main, pal.accent, pal.spark];
+  return (
+    <g>
+      <path d={line} fill="none" stroke={ART.ink} strokeOpacity={0.3} strokeWidth={0.8} strokeLinejoin="round" />
+      {pts.map(([px, py], i) => (
+        <circle key={i} cx={px} cy={py} r={vary.chance(0.35) ? 2.6 : 1.7} fill={colors[vary.int(0, 2)]} opacity={0.75} />
+      ))}
+    </g>
+  );
+}
+
+function LearningPath({ rng, vary, pal, motif, companions }: Scene) {
   const flip = rng.chance(0.5);
   const X = (x: number) => (flip ? W - x : x);
+  // Per-item placement: main subject and companions sit slightly differently on every course.
+  const jx = r2(vary.range(-10, 10));
+  const jy = r2(vary.range(-6, 6));
+  const big = r2(vary.range(0.95, 1.18));
+  const small = [r2(vary.range(0.38, 0.52)), r2(vary.range(0.38, 0.52))];
+  const swap = vary.chance(0.5);
+  const [c1, c2] = swap ? [companions[1], companions[0]] : companions;
+  const sig = { x: vary.chance(0.5) ? 28 : 300, y: vary.chance(0.5) ? 24 : 226 };
 
   return (
     <g>
@@ -399,25 +441,29 @@ function LearningPath({ rng, pal, motif, companions }: Scene) {
       <Trail from={[X(286), 100]} to={[X(296), 144]} bend={0} rng={rng} />
       <Trail from={[X(324), 176]} to={[X(340), 196]} bend={4} rng={rng} />
       <Flag x={X(352)} y={214} color={pal.spark} />
-      <Place motif={motif} pal={pal} x={X(132)} y={128} scale={1.05} rotate={r2(rng.range(-4, 4))} />
-      <Place motif={companions[0]} pal={pal} x={X(270)} y={68} scale={0.44} rotate={r2(rng.range(-8, 8))} />
-      <Place motif={companions[1]} pal={pal} x={X(298)} y={172} scale={0.44} rotate={r2(rng.range(-8, 8))} />
+      <Place motif={motif} pal={pal} x={X(132 + jx)} y={128 + jy} scale={big} rotate={r2(rng.range(-4, 4) + vary.range(-4, 4))} />
+      <Place motif={c1} pal={pal} x={X(270)} y={68} scale={small[0]} rotate={r2(rng.range(-8, 8) + vary.range(-6, 6))} />
+      <Place motif={c2} pal={pal} x={X(298)} y={172} scale={small[1]} rotate={r2(rng.range(-8, 8) + vary.range(-6, 6))} />
       <Sparkle x={X(66)} y={50} s={8} color={pal.spark} />
       <Sparkle x={X(214)} y={202} s={5} color={pal.accent} />
       <Squiggle x={X(44)} y={212} len={44} color={pal.main} rng={rng} />
       <Dot x={X(360)} y={42} color={pal.accent} />
       <Dot x={X(210)} y={38} color={pal.main} r={1.8} />
+      <Signature vary={vary} pal={pal} x={X(flip ? W - sig.x - 36 : sig.x)} y={sig.y} />
     </g>
   );
 }
 
 // ── Event: a celebration ────────────────────────────────────────────────────
 
-function Celebration({ rng, pal, motif, companions }: Scene) {
+function Celebration({ rng, vary, pal, motif, companions }: Scene) {
   const flip = rng.chance(0.5);
   const X = (x: number) => (flip ? W - x : x);
-  const mx = X(170);
-  const my = 128;
+  const mx = X(170 + r2(vary.range(-10, 10)));
+  const my = 128 + r2(vary.range(-6, 6));
+  const big = r2(vary.range(0.95, 1.16));
+  const comp = companions[vary.int(0, 1)];
+  const sigLeft = vary.chance(0.5);
 
   return (
     <g>
@@ -429,19 +475,20 @@ function Celebration({ rng, pal, motif, companions }: Scene) {
         avoid={[{ x: mx, y: my, r: 76 }, { x: X(316), y: 78, r: 40 }, { x: X(304), y: 176, r: 34 }]}
       />
       <Burst x={mx} y={my - 4} r={60} rng={rng} />
-      <Place motif={motif} pal={pal} x={mx} y={my} scale={1.02} rotate={r2(rng.range(-4, 4))} />
+      <Place motif={motif} pal={pal} x={mx} y={my} scale={big} rotate={r2(rng.range(-4, 4) + vary.range(-4, 4))} />
       <CalendarPage x={X(316)} y={78} pal={pal} />
-      <Place motif={companions[0]} pal={pal} x={X(304)} y={176} scale={0.42} rotate={r2(rng.range(-10, 10))} />
+      <Place motif={comp} pal={pal} x={X(304)} y={176} scale={r2(vary.range(0.38, 0.5))} rotate={r2(rng.range(-10, 10))} />
       <Sparkle x={X(62)} y={66} s={9} color={pal.spark} />
       <Sparkle x={X(250)} y={38} s={5} color={pal.accent} />
       <Squiggle x={X(46)} y={200} len={40} color={pal.accent} rng={rng} />
+      <Signature vary={vary} pal={pal} x={sigLeft ? 24 : 320} y={sigLeft ? 28 : 224} />
     </g>
   );
 }
 
 // ── Exam: the subject on a fading graph-paper sheet with a small seal ───────
 
-function Sheet({ rng, pal, motif, uid }: Scene) {
+function Sheet({ rng, vary, pal, motif, uid }: Scene) {
   const cx = rng.pick([182, 200, 218]);
   const cy = 122;
   const sealRight = cx <= 200;
@@ -494,6 +541,7 @@ function Sheet({ rng, pal, motif, uid }: Scene) {
         <path d="M-5 0 L-1.5 3.5 L5.5 -4" fill="none" stroke={pal.main} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
       </g>
       <Accents rng={rng} pal={pal} avoid={{ x: cx, y: cy, r: 96 }} />
+      <Signature vary={vary} pal={pal} x={sealRight ? 24 : 330} y={sealY === 76 ? 220 : 24} />
     </g>
   );
 }

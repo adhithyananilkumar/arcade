@@ -435,7 +435,6 @@ function CourseHero({
               <ContentArt
                 seed={courseId || title || 'default'}
                 kind="COURSE"
-                category={channel?.name || 'Technology'}
                 title={title}
               />
               <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5 rounded-full bg-slate-950/60 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-md">

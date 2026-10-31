@@ -116,7 +116,7 @@ export function UnifiedContentCard({
     >
       <div className="relative z-10 flex flex-1 flex-col justify-between gap-3">
         {/* Generated, category-themed artwork */}
-        <div className="relative h-36 sm:h-38 w-full shrink-0 overflow-hidden rounded-tl-[1.5rem] rounded-br-[1.5rem] rounded-tr-md rounded-bl-md border border-slate-200/70 shadow-xs transition-transform duration-500 group-hover:scale-[1.02]">
+        <div className="relative h-36 sm:h-38 w-full shrink-0 overflow-hidden rounded-tl-[1.5rem] rounded-br-[1.5rem] rounded-tr-md rounded-bl-md border border-slate-200/70 shadow-xs">
           <ContentArt seed={id || title || 'default'} kind={type} category={category} categoryId={categoryId} title={title} />
           {statusNode && (
             <div className="absolute top-2.5 right-2.5 z-10">
