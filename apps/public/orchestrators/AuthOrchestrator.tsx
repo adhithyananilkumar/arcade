@@ -18,6 +18,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthService } from '@/infrastructure/auth/auth.service';
+import { AesService } from '@/infrastructure/auth/aes.service';
 import { GOOGLE_OAUTH_URL } from '@/infrastructure/config/env';
 import AuthForm, { type AuthView } from '@/domains/identity/components/AuthForm';
 
@@ -62,8 +63,17 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
   const [successKind, setSuccessKind] = useState<'signup' | 'forgot' | 'reset' | 'verify'>(
     'signup',
   );
-  const [globalError, setGlobalError] = useState<string | undefined>();
+  // `aes_error` is set by the AES callback / complete page when an AES sign-in is refused.
+  const [globalError, setGlobalError] = useState<string | undefined>(
+    searchParams.get('aes_error') || undefined,
+  );
   const [verifyStatus, setVerifyStatus] = useState<'loading' | 'success' | 'error'>('loading');
+
+  // AES's script (and jQuery, which it needs) load once the sign-in page is open, so the first
+  // click on "Continue with AES" opens the popup straight away.
+  useEffect(() => {
+    AesService.loadScript().catch((err) => console.error('AES script failed to load:', err));
+  }, []);
 
   // Sync mode from URL (supports deep links + browser back)
   useEffect(() => {
@@ -187,6 +197,12 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
     window.location.href = GOOGLE_OAUTH_URL;
   };
 
+  // The button itself opens AES's popup (its script listens for the `aes-dologin` class); here we
+  // only mark this attempt as a sign-in so the callback knows what to do with the result.
+  const handleAesLogin = () => {
+    AesService.setIntent('login');
+  };
+
   const handleResendOtp = async (email: string) => {
     try {
       await AuthService.resendVerificationCode(email);
@@ -207,6 +223,7 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
       onModeChange={handleModeChange}
       onSubmit={handleSubmit}
       onGoogleLogin={handleGoogleLogin}
+      onAesLogin={AesService.available ? handleAesLogin : undefined}
       hasToken={!!token}
       onResendOtp={handleResendOtp}
       defaultEmail={prefillEmail}

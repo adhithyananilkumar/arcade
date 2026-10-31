@@ -34,6 +34,12 @@ export const WS_ORIGIN = process.env.NEXT_PUBLIC_WS_URL || RAW_API_ORIGIN;
 /** Google OAuth2 authorization endpoint on the backend. */
 export const GOOGLE_OAUTH_URL = `${RAW_API_ORIGIN}/oauth2/authorization/google`;
 
+/**
+ * Key AES (the AJCE portal login) issued for this site's host. It travels in the AES script URL
+ * by design, so it is public; the button is hidden when it is unset.
+ */
+export const AES_LOGIN_KEY = process.env.NEXT_PUBLIC_AES_LOGIN_KEY || "";
+
 /** Hocuspocus/yjs collaboration server WS origin — a separate service from the main backend, not derived from API_ORIGIN. */
 export const COLLAB_WS_URL =
   process.env.NEXT_PUBLIC_COLLABORATION_URL || process.env.NEXT_PUBLIC_COLLAB_WS_URL || "ws://localhost:1234";

@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { AuditLog, AuditService } from '@/infrastructure/monitoring/audit.service';
 import { Session, SessionService } from '@/infrastructure/auth/session.service';
 import { PasswordService, type PasswordChallenge, type PasswordStatus } from '@/infrastructure/auth/password.service';
+import { AesService, type AesLinkStatus } from '@/infrastructure/auth/aes.service';
 import {
+  GraduationCap,
   Shield,
   Loader2,
   Clock,
@@ -446,6 +448,125 @@ function PasswordCard() {
   );
 }
 
+// ── Linked AES account ────────────────────────────────────────────────────────
+
+function AesCard() {
+  const [status, setStatus] = useState<AesLinkStatus | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    // Back from the AES popup: the callback sends the browser here with either a ticket to
+    // redeem (link the profile to this account) or the reason AES was refused.
+    const params = new URLSearchParams(window.location.search);
+    const ticket = params.get('aes_ticket');
+    const aesError = params.get('aes_error');
+    if (ticket || aesError) {
+      params.delete('aes_ticket');
+      params.delete('aes_error');
+      const query = params.toString();
+      window.history.replaceState(null, '', query ? `?${query}` : window.location.pathname);
+    }
+    if (aesError) toast.error(aesError);
+
+    AesService.loadScript().catch(() => undefined);
+
+    (async () => {
+      try {
+        if (ticket) {
+          setStatus(await AesService.link(ticket));
+          toast.success('AES account linked');
+          return;
+        }
+      } catch (err) {
+        toast.error(errorMessage(err, 'Could not link the AES account'));
+      }
+      try {
+        setStatus(await AesService.status());
+      } catch {
+        setFailed(true);
+      }
+    })();
+  }, []);
+
+  const unlink = async () => {
+    if (!confirm('Unlink your AES account? You will no longer be able to sign in with AES.')) return;
+    setBusy(true);
+    try {
+      await AesService.unlink();
+      setStatus(await AesService.status());
+      toast.success('AES account unlinked');
+    } catch (err) {
+      toast.error(errorMessage(err, 'Could not unlink the AES account'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!AesService.available) return null;
+
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-surface p-6 shadow-sm space-y-4">
+      <div>
+        <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+          <GraduationCap size={18} className="text-sky-500" /> AES login
+        </h3>
+        <p className="text-xs text-gray-500 mt-0.5">
+          Amal Jyothi&apos;s official portal login, for AJCE students and staff. Link it to sign in
+          to this account with AES.
+        </p>
+      </div>
+
+      {failed ? (
+        <p className="text-xs text-amber-700 dark:text-amber-300">Couldn&apos;t load your AES status.</p>
+      ) : !status ? (
+        <div className="py-2">
+          <Loader2 className="animate-spin text-sky-500" size={20} />
+        </div>
+      ) : status.linked ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0 text-xs text-gray-600">
+            <p className="font-semibold text-gray-900">
+              {status.name || 'AES account'}
+              {status.kind && status.kind !== 'UNKNOWN' && (
+                <span className="ml-2 rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold uppercase text-sky-700 dark:bg-sky-950/40 dark:text-sky-300">
+                  {status.kind.toLowerCase()}
+                </span>
+              )}
+            </p>
+            <p className="mt-0.5">
+              {[status.aesEmail, status.admissionNo].filter(Boolean).join(' · ')}
+              {status.linkedAt ? ` · linked ${new Date(status.linkedAt).toLocaleDateString()}` : ''}
+            </p>
+            {!status.canUnlink && (
+              <p className="mt-1.5 text-amber-700 dark:text-amber-300">
+                AES is the only way you sign in. Set a password below before you can unlink it.
+              </p>
+            )}
+          </div>
+          <button
+            onClick={unlink}
+            disabled={busy || !status.canUnlink}
+            className="shrink-0 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 text-xs font-semibold transition-colors disabled:opacity-50"
+          >
+            {busy ? 'Unlinking…' : 'Unlink'}
+          </button>
+        </div>
+      ) : (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => AesService.setIntent('link')}
+            className="aes-dologin px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold shadow-sm transition-all flex items-center gap-2"
+          >
+            <GraduationCap size={16} /> Link AES account
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function SecuritySettingsPage() {
@@ -489,6 +610,7 @@ export default function SecuritySettingsPage() {
     <motion.div className="space-y-6" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
       <SessionsCard />
       <PasswordCard />
+      <AesCard />
 
       {/* Audit Logs Section */}
       <div className="rounded-2xl border border-gray-200 bg-surface shadow-sm overflow-hidden">

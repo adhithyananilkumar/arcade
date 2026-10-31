@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { Eye, EyeOff, Mail, User, CheckCircle2, ArrowLeft, XCircle } from 'lucide-react';
+import { Eye, EyeOff, Mail, User, CheckCircle2, ArrowLeft, XCircle, GraduationCap } from 'lucide-react';
 import { PebbleLoader } from './PebbleLoader';
 import { AuthPeriodGear } from './AuthPeriodGear';
 import './auth-fields.css';
@@ -27,6 +27,12 @@ export interface AuthFormProps {
     otp?: string;
   }) => void;
   onGoogleLogin: () => void;
+  /**
+   * Shows "Continue with AES" (AJCE students and staff). The button carries the `aes-dologin`
+   * class, which AES's own script listens for to open its login popup; this callback only lets
+   * the orchestrator prepare (e.g. mark the attempt as a sign-in).
+   */
+  onAesLogin?: () => void;
   hasToken?: boolean;
   onResendOtp?: (email: string) => Promise<void>;
   /** Prefills the email field, e.g. from a `?email=` query param on an invite link. */
@@ -243,6 +249,7 @@ export default function AuthForm({
   onModeChange,
   onSubmit,
   onGoogleLogin,
+  onAesLogin,
   hasToken,
   onResendOtp,
   defaultEmail,
@@ -785,6 +792,20 @@ export default function AuthForm({
                   </svg>
                   Continue with Google
                 </motion.button>
+
+                {onAesLogin && (
+                  <motion.button
+                    type="button"
+                    onClick={onAesLogin}
+                    whileHover={reduce ? undefined : { y: -1 }}
+                    whileTap={reduce ? undefined : { scale: 0.985 }}
+                    className="aes-dologin flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-surface px-8 py-3.5 text-sm font-semibold text-ink transition-colors hover:border-slate-300 hover:bg-slate-50"
+                  >
+                    <GraduationCap className="h-5 w-5 text-[#1984c9]" aria-hidden />
+                    Continue with AES
+                    <span className="-ml-1 text-[11px] font-medium text-slate-400">AJCE</span>
+                  </motion.button>
+                )}
               </>
             )}
           </div>
