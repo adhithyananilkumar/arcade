@@ -370,7 +370,7 @@ export function EnrollmentButton({
       <div className="flex items-center gap-2.5 w-full">
         <button
           onClick={handleGoToResource}
-          className={`bg-ink hover:bg-ink active:scale-[0.98] text-on-ink font-bold py-3.5 px-7 rounded-full shadow-[0_8px_25px_rgba(20,22,28,0.22),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15 transition-all text-sm flex items-center justify-center gap-2 flex-1 ${className}`}>
+          className={`bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] hover:opacity-95 active:scale-[0.98] text-white font-bold py-3.5 px-7 rounded-full shadow-[0_8px_25px_rgba(41,98,214,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] border border-white/20 transition-all text-sm flex items-center justify-center gap-2 flex-1 ${className}`}>
           <span>Go to {resourceLabel}</span>
           <ArrowRight className="w-4 h-4 shrink-0 text-white" />
         </button>

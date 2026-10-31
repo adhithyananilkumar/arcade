@@ -14,7 +14,7 @@
  * ------------------------------------------------------------------
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Calendar,
   Clock,
@@ -50,8 +50,9 @@ import {
   EnrollmentButton,
   useMyEnrollmentForResourceQuery,
 } from '@/domains/enrollment';
-import { eventRoutes } from '@/shared/routes/content.routes';
+import { eventRoutes, examRoutes } from '@/shared/routes/content.routes';
 import { ReportModal } from '@/shared/design-system/ui/ReportModal';
+import { getContentCertification, type ContentCertificationView } from '@/domains/assessments';
 import { toast } from 'sonner';
 
 const dancingScript = Dancing_Script({
@@ -214,14 +215,46 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
   const [sessions, setSessions] = useState<EventSessionItem[]>([]);
   const [collaborators, setCollaborators] = useState<EventCollaborator[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<Tab>('Overview');
+  const [tab, setTab] = useState<string>('Overview');
   const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [certification, setCertification] = useState<ContentCertificationView | null>(null);
 
   const { data: myEnrollment } = useMyEnrollmentForResourceQuery(
     'EVENT',
     event?.id,
     Boolean(user)
   );
+
+  useEffect(() => {
+    if (!event?.id) return;
+    let cancelled = false;
+    getContentCertification('EVENT', event.id)
+      .then((c) => {
+        if (!cancelled) setCertification(c && c.published ? c : null);
+      })
+      .catch(() => {
+        if (!cancelled) setCertification(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [event?.id]);
+
+  const hasCertification = Boolean(certification && certification.published);
+
+  const tabs = useMemo(() => {
+    const list = ['Overview', 'Schedule', 'Speakers & Hosts', 'Venue & Access'];
+    if (hasCertification) {
+      list.push('Certificate');
+    }
+    return list;
+  }, [hasCertification]);
+
+  useEffect(() => {
+    if (!tabs.includes(tab)) {
+      setTab('Overview');
+    }
+  }, [tabs, tab]);
 
   const isEnrolled = myEnrollment?.enrollment?.accessState === 'ACCESSIBLE';
   const enrollmentStatus = myEnrollment?.enrollment?.enrollmentStatus;
@@ -453,23 +486,24 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
 
               {/* Primary Action & Pricing Row */}
               <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-3">
-                {isPaid ? (
-                  <div className="flex flex-col pr-1">
-                    <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-none">
-                      {priceDisplay}
-                    </span>
-                    <span className="text-[11px] font-medium text-slate-400 mt-1">
-                      Per ticket
-                      {event.refundPolicy && ` · ${REFUND_POLICY_TEXT[event.refundPolicy]}`}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="inline-flex items-center">
-                    <span className="h-11 px-4 inline-flex items-center justify-center gap-2 rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 dark:border-emerald-800 text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-300 shadow-2xs shrink-0 select-none">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Free Event
-                    </span>
-                  </div>
+                {!isEnrolled && (
+                  isPaid ? (
+                    <div className="flex flex-col pr-1">
+                      <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-none">
+                        {priceDisplay}
+                      </span>
+                      <span className="text-[11px] font-medium text-slate-400 mt-1">
+                        Per ticket
+                        {event.refundPolicy && ` · ${REFUND_POLICY_TEXT[event.refundPolicy]}`}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center">
+                      <span className="h-11 px-4 inline-flex items-center justify-center rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 dark:border-emerald-800 text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-300 shadow-2xs shrink-0 select-none">
+                        Free Event
+                      </span>
+                    </div>
+                  )
                 )}
 
                 {event.id && (
@@ -561,7 +595,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
         <div className="pt-4 sm:pt-6">
           {/* Tabs Header - matching My Learning / Course Public style */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5">
-            {TABS.map((t) => (
+            {tabs.map((t) => (
               <TabButton
                 key={t}
                 active={tab === t}
@@ -824,6 +858,58 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* CERTIFICATE TAB */}
+            {tab === 'Certificate' && hasCertification && (
+              <div className="space-y-8 max-w-3xl mx-auto pt-2">
+                <div className="mx-auto flex max-w-2xl flex-col items-center gap-8 sm:flex-row sm:items-center">
+                  <div className="grid size-20 sm:size-24 place-items-center rounded-2xl bg-gradient-to-br from-violet-500/15 via-indigo-500/10 to-amber-500/10 border border-violet-200/80 dark:border-violet-700/60 text-violet-600 dark:text-violet-400 shrink-0 shadow-sm">
+                    <Award size={44} className="stroke-[1.75]" />
+                  </div>
+                  <div>
+                    <div className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300">
+                      <Sparkles size={13} /> Official Certificate of Attendance
+                    </div>
+                    <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 font-sans">
+                      {certification?.title || 'Verified Event Certificate'}
+                    </h3>
+                    <p className="mt-2.5 text-sm sm:text-base leading-relaxed text-slate-600 font-normal font-sans">
+                      Attend this event and complete all requirements to earn an official verified certificate recognized across the community. Share your credential directly on your profile, resume, and portfolio.
+                    </p>
+                  </div>
+                </div>
+
+                {certification && (
+                  <div className="mt-6 rounded-2xl border border-violet-200/80 dark:border-violet-900/50 bg-violet-50/40 dark:bg-violet-950/20 p-6 sm:p-8">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                      <div>
+                        <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300">
+                          <Award size={14} /> Official Certification Exam
+                        </div>
+                        <h4 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 font-sans">
+                          {certification.title}
+                        </h4>
+                        <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-600 font-normal font-sans">
+                          Attending this event qualifies you to take the verified certification exam.
+                        </p>
+                        {certification.feeMinor && certification.feeMinor > 0 && (
+                          <p className="mt-2 text-xs font-semibold text-slate-500">
+                            Exam registration fee: {formatMoney(certification.feeMinor, certification.currency ?? 'INR')}
+                          </p>
+                        )}
+                      </div>
+
+                      <Link
+                        href={examRoutes.landing(certification.examId)}
+                        className="shrink-0 rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md bg-ink px-6 py-3.5 text-center text-sm font-semibold text-on-ink shadow-2xs transition-all hover:bg-ink-hover flex items-center gap-2 cursor-pointer"
+                      >
+                        View Exam Details <ChevronRight size={15} />
+                      </Link>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

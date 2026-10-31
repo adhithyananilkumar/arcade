@@ -185,21 +185,7 @@ export default function LearnerNavbar() {
         )}
       </div>
 
-      {/* Center: Course Public page breadcrumbs */}
-      {isCoursePublic && (
-        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center gap-2 text-[13.5px]">
-          <Link
-            href="/courses"
-            className="font-bold text-slate-700 hover:text-ink transition-colors"
-          >
-            Courses
-          </Link>
-          <span className="text-slate-400">/</span>
-          <span className="max-w-[180px] sm:max-w-[300px] truncate font-bold text-ink whitespace-nowrap">
-            {coursePublicData?.title ?? 'Course'}
-          </span>
-        </div>
-      )}
+
 
       {/* Center: Event Public page breadcrumbs */}
       {isEventPublic && (
