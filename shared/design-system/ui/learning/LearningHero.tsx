@@ -59,7 +59,7 @@ export interface LearningHeroProps {
   isWishlisted?: boolean
   onReportClick?: () => void
   previewImageUrl?: string | null
-  previewVideoDuration?: string // e.g. "0:42 / 2:00"
+  previewVideoDuration?: string // e.g. "0:42 / 2:00" — only shown with a preview
   onPlayPreview?: () => void
   previewLabel?: string
   previewAuthorLabel?: string
@@ -89,7 +89,7 @@ export function LearningHero({
   isWishlisted = false,
   onReportClick,
   previewImageUrl,
-  previewVideoDuration = "0:42 / 2:00",
+  previewVideoDuration,
   onPlayPreview,
   previewLabel = "Course preview",
   previewAuthorLabel,
@@ -106,6 +106,10 @@ export function LearningHero({
   const displayUsername = authorUsername || authorName.toLowerCase().replace(/\s+/g, "")
   const displayPreviewAuthor = previewAuthorLabel || `@${displayUsername}`
 
+  // The dark player card is only real when there is something to play or show. Without a preview it
+  // used to render a fake player (made-up duration and progress bar), so it is omitted instead.
+  const hasPreview = Boolean(previewImageUrl || onPlayPreview);
+
   const isOrgChannel = Boolean(channel && !channel.isPersonal && channel.name)
   const authorProfileHref = authorUsername ? `/${authorUsername}` : null
 
@@ -119,7 +123,7 @@ export function LearningHero({
   return (
     <div className="arcade-fade">
       {breadcrumbs.length > 0 && <LearningBreadcrumb items={breadcrumbs} title={title} />}
-      <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className={`grid items-center gap-12 ${hasPreview ? "lg:grid-cols-[1.05fr_0.95fr]" : ""}`}>
         {/* Left — editorial copy */}
         <div>
         {category && (
@@ -272,6 +276,7 @@ export function LearningHero({
       </div>
 
       {/* Right — dark video preview card */}
+      {hasPreview && (
       <div className="relative">
         <div
           className="absolute -right-4 -top-5 hidden size-24 rounded-full opacity-70 blur-2xl lg:block"
@@ -337,6 +342,7 @@ export function LearningHero({
           </div>
         </div>
       </div>
+      )}
     </div>
     </div>
   )

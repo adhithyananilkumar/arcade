@@ -8,7 +8,6 @@ import { OverviewHero } from './sections/OverviewHero';
 import { OverviewSyllabus } from './sections/OverviewSyllabus';
 import { OverviewNotesPanel } from './sections/OverviewNotesPanel';
 import { OverviewFacts, OverviewPeople } from './sections/OverviewAside';
-import { OverviewVideoPlayer } from './sections/OverviewVideoPlayer';
 import { CertificationCard } from './sections/CertificationCard';
 import { OverviewRatingCard } from './sections/OverviewRatingCard';
 import { OverviewReport } from './sections/OverviewReport';
@@ -42,20 +41,7 @@ export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) 
 
   const flatItems = model.sections.flatMap((section) => section.items);
 
-  // Default outcomes matching reference image if none provided
-  const outcomes =
-    model.outcomes.length > 0
-      ? model.outcomes
-      : [
-          'UI fundamentals and layout systems',
-          'UX research and wireframing',
-          'Prototyping tools like Figma',
-          'Accessibility and user testing',
-          'Design handoff for developers',
-        ];
-
-  const defaultImage =
-    'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=1200&q=80';
+  const outcomes = model.outcomes;
 
   const isComplete = model.progress.state === 'COMPLETED';
 
@@ -69,39 +55,35 @@ export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_21rem]">
         {/* Left Main Content Column */}
         <main className="min-w-0 space-y-8">
-          {/* Interactive Course Video Preview Player */}
-          <OverviewVideoPlayer
-            posterUrl={model.coverImageUrl || defaultImage}
-            title={model.title}
-          />
+          {/* About, then what the learner takes away — each only when the content provides it */}
+          {(model.description || outcomes.length > 0) && (
+            <div className="space-y-6">
+              {model.description && (
+                <section>
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900">About</h2>
+                  <p className="mt-2 whitespace-pre-line text-sm sm:text-base leading-relaxed text-slate-600 font-normal">
+                    {model.description}
+                  </p>
+                </section>
+              )}
 
-          {/* Course Description & Outcomes */}
-          <div className="space-y-4">
-            <p className="text-sm sm:text-base leading-relaxed text-slate-600 font-normal">
-              {model.description ||
-                'Great design goes beyond appearance — it creates intuitive, enjoyable user experiences. This course teaches design principles and UX thinking to create interfaces people love to use.'}
-            </p>
-
-            {/* What You'll Learn Section */}
-            <div className="pt-2">
-              <h2 className="text-base sm:text-lg font-bold text-slate-900">
-                What You&apos;ll Learn:
-              </h2>
-
-              <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                {outcomes.map((outcome) => (
-                  <li key={outcome} className="flex items-start gap-2.5">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-900" />
-                    <span>{outcome}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <p className="mt-4 text-sm text-slate-600">
-                Through real projects, you&apos;ll go from user problem to clickable prototype with confidence.
-              </p>
+              {outcomes.length > 0 && (
+                <section>
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                    What You&apos;ll Learn:
+                  </h2>
+                  <ul className="mt-3 space-y-2 text-sm text-slate-600">
+                    {outcomes.map((outcome) => (
+                      <li key={outcome} className="flex items-start gap-2.5">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-900" />
+                        <span>{outcome}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
             </div>
-          </div>
+          )}
 
           {/* Course Curriculum / Syllabus */}
           <OverviewSyllabus

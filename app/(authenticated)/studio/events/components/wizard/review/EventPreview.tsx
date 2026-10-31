@@ -240,7 +240,6 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: E
       onWishlistToggle={() => setIsWishlisted(!isWishlisted)}
       onReportClick={() => setReportModalOpen(true)}
       previewLabel="Event Preview"
-      previewVideoDuration="0:15 / 1:30"
       accentColor="#4c6fff"
       actionButton={renderActionButton()}
     />
