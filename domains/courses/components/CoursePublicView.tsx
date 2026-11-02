@@ -26,6 +26,7 @@ import {
   Clock,
   GraduationCap,
   Layers,
+  Play,
   PlayCircle,
   Radio,
   Sparkles,
@@ -54,6 +55,7 @@ import {
 import { toast } from 'sonner';
 import { getContentCertification, type ContentCertificationView } from '@/domains/assessments';
 import { ChannelAvatar } from '@/shared/design-system/ui/cards';
+import { parsePreviewMedia } from '@/apps/learner/components/content-overview/sections/OverviewVideoPlayer';
 import { getAvatarUrl } from '@/shared/utils/avatar';
 import BadgeGraphic, { getBadgeForCourse } from '@/components/ui/BadgeGraphic';
 import FoldText from '@/components/ui/FoldText';
@@ -193,6 +195,7 @@ interface CourseHeroProps {
   moduleCount?: number;
   hasExam?: boolean;
   hasBadge?: boolean;
+  previewUrl?: string | null;
 }
 
 function CourseHero({
@@ -219,7 +222,10 @@ function CourseHero({
   moduleCount = 0,
   hasExam,
   hasBadge,
+  previewUrl,
 }: CourseHeroProps) {
+  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
+  const previewMedia = previewUrl ? parsePreviewMedia(previewUrl) : null;
   const instructors = useMemo(() => {
     const list: Array<Pick<CourseCollaboratorSummary, 'id' | 'name' | 'username' | 'avatarUrl'>> = [];
     const seen = new Set<string>();
@@ -402,8 +408,67 @@ function CourseHero({
             <Share2 size={15} />
           </button>
         </div>
+
+        {/* Course Preview Media (if previewUrl is configured) */}
+        {previewMedia && (
+          <div className="pt-6 w-full max-w-2xl mx-auto">
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/80 bg-slate-900 shadow-lg">
+              {previewMedia.kind === 'image' ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={previewMedia.embedUrl}
+                  alt={title}
+                  className="aspect-[16/9] w-full object-cover transition-transform duration-500 hover:scale-105"
+                />
+              ) : (
+                <div className="relative aspect-[16/9] w-full">
+                  {!isPlayingVideo ? (
+                    <div
+                      className="group relative h-full w-full cursor-pointer overflow-hidden"
+                      onClick={() => setIsPlayingVideo(true)}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={
+                          previewMedia.thumbnailUrl ||
+                          'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=800&q=80'
+                        }
+                        alt={title}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-slate-950/40 flex items-center justify-center">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface/90 text-blue-600 shadow-xl group-hover:scale-110 transition">
+                          <Play size={24} className="ml-0.5 fill-current" />
+                        </div>
+                      </div>
+                      <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-slate-950/60 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
+                        <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                        Course Preview
+                      </div>
+                    </div>
+                  ) : previewMedia.kind === 'video' ? (
+                    <video
+                      src={previewMedia.embedUrl}
+                      controls
+                      autoPlay
+                      className="h-full w-full object-contain"
+                    />
+                  ) : (
+                    <iframe
+                      src={previewMedia.embedUrl}
+                      title={title}
+                      className="h-full w-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
-      </section>
+    </section>
     );
 }
 
@@ -1259,6 +1324,7 @@ export function CoursePublicView({ courseId: propCourseId }: CoursePublicViewPro
           courseId={courseId}
           hasBadge={hasBadge}
           hasExam={hasExam}
+          previewUrl={course?.previewUrl}
           onShareClick={handleShare}
         />
 

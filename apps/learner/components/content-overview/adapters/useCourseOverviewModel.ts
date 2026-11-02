@@ -112,6 +112,7 @@ export function useCourseOverviewModel(courseId: string): ContentOverviewModel {
     title: course?.title ?? '',
     subtitle: null,
     description: course?.description ?? null,
+    previewUrl: course?.previewUrl ?? null,
     categoryId: course?.categoryId ?? null,
     outcomes: splitOutcomes(course?.learningOutcomes),
 

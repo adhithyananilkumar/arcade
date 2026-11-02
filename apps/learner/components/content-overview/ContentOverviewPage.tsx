@@ -8,6 +8,7 @@ import { OverviewHero } from './sections/OverviewHero';
 import { OverviewSyllabus } from './sections/OverviewSyllabus';
 import { OverviewNotesPanel } from './sections/OverviewNotesPanel';
 import { OverviewFacts, OverviewPeople } from './sections/OverviewAside';
+import { OverviewVideoPlayer } from './sections/OverviewVideoPlayer';
 import { CertificationCard } from './sections/CertificationCard';
 import { OverviewRatingCard } from './sections/OverviewRatingCard';
 import { OverviewReport } from './sections/OverviewReport';
@@ -55,6 +56,15 @@ export function ContentOverviewPage({ model }: { model: ContentOverviewModel }) 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_21rem]">
         {/* Left Main Content Column */}
         <main className="min-w-0 space-y-8">
+          {/* Interactive Course Video/Media Preview Player if previewUrl is set */}
+          {model.previewUrl && (
+            <OverviewVideoPlayer
+              previewUrl={model.previewUrl}
+              posterUrl={model.coverImageUrl}
+              title={model.title}
+            />
+          )}
+
           {/* About, then what the learner takes away — each only when the content provides it */}
           {(model.description || outcomes.length > 0) && (
             <div className="space-y-6">

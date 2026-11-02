@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AlertTriangle, Clock } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AlertTriangle, Clock, Link as LinkIcon, Loader2, Trash2, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
+import { uploadFileToStorage } from "@/infrastructure/media/upload";
+import { parsePreviewMedia } from "@/apps/learner/components/content-overview/sections/OverviewVideoPlayer";
 import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
 import type { CourseResponse } from "@/shared/types/api.types";
 import { formatMoney, fromMinorUnits, toMinorUnits } from "@/shared/utils/money";
@@ -63,11 +65,8 @@ function LoadFailed({ what }: { what: string }) {
 /* ------------------------------------------------------------------ */
 
 /**
- * Authors the three fields the public course page reads for its Overview tab: the declared
- * length, the description and the "what you'll walk away with" outcomes.
- *
- * Outcomes are stored as one newline-separated string rather than a list, matching the
- * `courses.learning_outcomes` column — the reader splits on newlines.
+ * Authors the fields the public course page reads for its Overview tab: the course preview,
+ * declared length, description, and "what you'll walk away with" outcomes.
  */
 export function CourseOverviewEditor({ contentId }: { contentId: string }) {
   const course = useCourse(contentId);
@@ -76,8 +75,247 @@ export function CourseOverviewEditor({ contentId }: { contentId: string }) {
   return <CourseOverviewForm contentId={contentId} course={course} />;
 }
 
+function CoursePreviewField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (url: string) => void;
+}) {
+  const [mode, setMode] = useState<"upload" | "link">("upload");
+  const [uploading, setUploading] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [urlInput, setUrlInput] = useState(value);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setUrlInput(value);
+  }, [value]);
+
+  const handleFile = async (file: File | undefined | null) => {
+    if (!file) return;
+    if (file.type && !file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+      toast.error("Please select an image or video file");
+      return;
+    }
+    setUploading(true);
+    try {
+      const uploadedUrl = await uploadFileToStorage(file, null);
+      onChange(uploadedUrl);
+      toast.success("Course preview media uploaded");
+    } catch (err: any) {
+      console.error("Preview upload error:", err);
+      toast.error(err?.message || "Failed to upload preview media");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleApplyUrl = () => {
+    const trimmed = urlInput.trim();
+    onChange(trimmed);
+    if (trimmed) {
+      toast.success("Preview link updated");
+    }
+  };
+
+  if (value) {
+    const media = parsePreviewMedia(value);
+    return (
+      <div className="space-y-3">
+        <div className="relative max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 shadow-sm aspect-[16/9]">
+          {media.kind === "image" ? (
+            <img src={media.embedUrl} alt="Course preview" className="h-full w-full object-cover" />
+          ) : media.kind === "youtube" || media.kind === "vimeo" ? (
+            <iframe
+              src={media.embedUrl}
+              title="Course preview"
+              className="h-full w-full border-0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <video src={media.embedUrl} controls className="h-full w-full object-contain" />
+          )}
+          <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-slate-950/70 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
+            <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+            {media.kind === "image" ? "Image Preview" : "Video Preview"}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 max-w-lg">
+          <p className="truncate text-xs font-medium text-slate-500 max-w-[280px]" title={value}>
+            {value}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+            >
+              <UploadCloud size={14} />
+              Replace file
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onChange("");
+                setUrlInput("");
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition"
+            >
+              <Trash2 size={14} />
+              Remove
+            </button>
+          </div>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,video/*"
+          className="hidden"
+          onChange={(e) => {
+            handleFile(e.target.files?.[0]);
+            e.target.value = "";
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Tab toggle between Upload and Link */}
+      <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1 w-fit">
+        <button
+          type="button"
+          onClick={() => setMode("upload")}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+            mode === "upload"
+              ? "bg-surface text-slate-900 shadow-xs"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <UploadCloud size={14} />
+          Upload File
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("link")}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+            mode === "link"
+              ? "bg-surface text-slate-900 shadow-xs"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <LinkIcon size={14} />
+          Link / URL
+        </button>
+      </div>
+
+      {mode === "upload" ? (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => !uploading && fileInputRef.current?.click()}
+          onDragOver={(e) => {
+            e.preventDefault();
+            if (!uploading) setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragging(false);
+            if (!uploading) handleFile(e.dataTransfer.files?.[0]);
+          }}
+          className={`group flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-6 text-center outline-none transition-colors ${
+            dragging
+              ? "border-blue-400 bg-blue-50/70"
+              : "border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-slate-50"
+          } ${uploading ? "pointer-events-none opacity-60" : ""}`}
+        >
+          {uploading ? (
+            <div className="flex flex-col items-center gap-2 py-2">
+              <Loader2 size={24} className="animate-spin text-blue-600" />
+              <span className="text-xs font-bold text-slate-700">Uploading preview media...</span>
+            </div>
+          ) : (
+            <>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface text-blue-600 shadow-xs">
+                <UploadCloud size={24} />
+              </div>
+              <div>
+                <span className="text-sm font-bold text-slate-800">
+                  Choose a video or image file, or drag and drop
+                </span>
+                <p className="mt-0.5 text-xs text-slate-500 font-medium">
+                  Supports MP4, WebM, PNG, JPG, WebP, SVG, GIF
+                </p>
+              </div>
+              <button
+                type="button"
+                className="mt-1 rounded-xl bg-surface px-4 py-1.5 text-xs font-bold text-slate-700 border border-slate-200 shadow-2xs hover:bg-slate-100"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fileInputRef.current?.click();
+                }}
+              >
+                Choose file
+              </button>
+            </>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/*"
+            className="hidden"
+            onChange={(e) => {
+              handleFile(e.target.files?.[0]);
+              e.target.value = "";
+            }}
+          />
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="relative flex items-center">
+            <LinkIcon size={16} className="pointer-events-none absolute left-4 text-slate-400" />
+            <input
+              id="course-preview-url"
+              type="url"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleApplyUrl();
+                }
+              }}
+              placeholder="e.g. https://www.youtube.com/watch?v=... or direct video/image URL"
+              className={workspaceField.inputWithIcon}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] font-medium text-slate-400">
+              Paste a link to YouTube, Vimeo, or a hosted video / image file.
+            </p>
+            <button
+              type="button"
+              onClick={handleApplyUrl}
+              disabled={!urlInput.trim()}
+              className="rounded-xl bg-slate-900 px-3.5 py-1.5 text-xs font-bold text-white shadow-2xs hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            >
+              Apply Link
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CourseOverviewForm({ contentId, course }: { contentId: string; course: CourseResponse }) {
   const initial = {
+    previewUrl: course.previewUrl ?? "",
     duration: course.duration ?? "",
     description: course.description ?? "",
     learningOutcomes: course.learningOutcomes ?? "",
@@ -92,7 +330,10 @@ function CourseOverviewForm({ contentId, course }: { contentId: string; course: 
     setSaving(true);
     try {
       // PATCH only the fields this form owns; the server ignores absent fields.
-      await api.patch(`/api/courses/${contentId}`, form);
+      await api.patch(`/api/courses/${contentId}`, {
+        ...form,
+        previewUrl: form.previewUrl ? form.previewUrl.trim() : null,
+      });
       setSaved(form);
       toast.success("Course overview saved");
     } catch {
@@ -104,7 +345,15 @@ function CourseOverviewForm({ contentId, course }: { contentId: string; course: 
 
   return (
     <WorkspaceRows>
-      <WorkspaceRow step={1} title="Course length" description="Shown as-is on the course page. Leave blank to show “Self-paced”.">
+      <WorkspaceRow
+        step={1}
+        title="Course preview"
+        description="Optional. Add a preview video or image to showcase your course. If left blank, the “About this course” section acts as the preview."
+      >
+        <CoursePreviewField value={form.previewUrl} onChange={set("previewUrl")} />
+      </WorkspaceRow>
+
+      <WorkspaceRow step={2} title="Course length" description="Shown as-is on the course page. Leave blank to show “Self-paced”.">
         <div className="relative flex items-center">
           <Clock size={16} className="pointer-events-none absolute left-4 text-slate-400" />
           <input
@@ -118,7 +367,7 @@ function CourseOverviewForm({ contentId, course }: { contentId: string; course: 
         </div>
       </WorkspaceRow>
 
-      <WorkspaceRow step={2} title="About this course" description="Write a brief overview of what this course is about.">
+      <WorkspaceRow step={3} title="About this course" description="Write a brief overview of what this course is about.">
         <textarea
           id="course-description"
           value={form.description}
@@ -129,7 +378,7 @@ function CourseOverviewForm({ contentId, course }: { contentId: string; course: 
       </WorkspaceRow>
 
       <WorkspaceRow
-        step={3}
+        step={4}
         title="What learners will walk away with"
         description="One per line. Each line becomes a ticked bullet on the course page."
       >

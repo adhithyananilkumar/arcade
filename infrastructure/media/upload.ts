@@ -64,7 +64,7 @@ export function putToPresignedUrl(
   });
 }
 
-/** Upload a file to storage via presign -> PUT -> register-metadata. Throws on failure. */
+/** Upload a file to storage via presign -> PUT -> register-metadata with fallback to relayed multipart upload. */
 export async function uploadFileToStorage(
   file: File,
   allowedTypes: string[] | null
@@ -73,26 +73,38 @@ export async function uploadFileToStorage(
     throw new Error(`Unsupported file type: ${file.type || "unknown"}`);
   }
 
-  const presign = await api.post<PresignResponse>("/api/media/presign", {
-    fileName: file.name,
-    contentType: file.type,
-  });
+  // 1. Try direct-to-bucket presigned upload
+  try {
+    const presign = await api.post<PresignResponse>("/api/media/presign", {
+      fileName: file.name,
+      contentType: file.type || "application/octet-stream",
+    });
 
-  const putRes = await fetch(presign.uploadUrl, {
-    method: "PUT",
-    headers: { "Content-Type": file.type },
-    body: file,
-  });
-  if (!putRes.ok) throw new Error("Upload to storage failed");
+    const putRes = await fetch(presign.uploadUrl, {
+      method: "PUT",
+      headers: file.type ? { "Content-Type": file.type } : undefined,
+      body: file,
+    });
 
-  await api.post("/api/media/metadata", {
-    key: presign.key,
-    fileName: file.name,
-    contentType: file.type,
-    sizeBytes: file.size,
-  });
+    if (putRes.ok) {
+      await api.post("/api/media/metadata", {
+        key: presign.key,
+        fileName: file.name,
+        contentType: file.type || "application/octet-stream",
+        sizeBytes: file.size,
+      });
 
-  return presign.publicUrl;
+      return presign.publicUrl;
+    }
+  } catch (err) {
+    console.warn("Direct bucket upload failed (CORS or network), falling back to backend upload:", err);
+  }
+
+  // 2. Fallback to relayed backend multipart upload
+  const formData = new FormData();
+  formData.append("file", file);
+  const relayed = await api.post<{ publicUrl: string }>("/api/media/upload", formData);
+  return relayed.publicUrl;
 }
 
 /**
@@ -112,45 +124,55 @@ export async function uploadFileToStorageWithProgress(
     throw new DOMException("Upload cancelled", "AbortError");
   }
 
-  const presign = await api.post<PresignResponse>("/api/media/presign", {
-    fileName: file.name,
-    contentType: file.type,
-  });
+  try {
+    const presign = await api.post<PresignResponse>("/api/media/presign", {
+      fileName: file.name,
+      contentType: file.type || "application/octet-stream",
+    });
 
-  await new Promise<void>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
 
-    const onAbort = () => xhr.abort();
-    signal?.addEventListener("abort", onAbort);
-    const cleanup = () => signal?.removeEventListener("abort", onAbort);
+      const onAbort = () => xhr.abort();
+      signal?.addEventListener("abort", onAbort);
+      const cleanup = () => signal?.removeEventListener("abort", onAbort);
 
-    xhr.open("PUT", presign.uploadUrl);
-    xhr.setRequestHeader("Content-Type", file.type);
-    xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable) onProgress?.(Math.round((event.loaded / event.total) * 100));
-    };
-    xhr.onload = () => {
-      cleanup();
-      if (xhr.status >= 200 && xhr.status < 300) resolve();
-      else reject(new Error("Upload to storage failed"));
-    };
-    xhr.onerror = () => {
-      cleanup();
-      reject(new Error("Upload to storage failed"));
-    };
-    xhr.onabort = () => {
-      cleanup();
-      reject(new DOMException("Upload cancelled", "AbortError"));
-    };
-    xhr.send(file);
-  });
+      xhr.open("PUT", presign.uploadUrl);
+      if (file.type) xhr.setRequestHeader("Content-Type", file.type);
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) onProgress?.(Math.round((event.loaded / event.total) * 100));
+      };
+      xhr.onload = () => {
+        cleanup();
+        if (xhr.status >= 200 && xhr.status < 300) resolve();
+        else reject(new Error("Upload to storage failed"));
+      };
+      xhr.onerror = () => {
+        cleanup();
+        reject(new Error("Upload to storage failed"));
+      };
+      xhr.onabort = () => {
+        cleanup();
+        reject(new DOMException("Upload cancelled", "AbortError"));
+      };
+      xhr.send(file);
+    });
 
-  await api.post("/api/media/metadata", {
-    key: presign.key,
-    fileName: file.name,
-    contentType: file.type,
-    sizeBytes: file.size,
-  });
+    await api.post("/api/media/metadata", {
+      key: presign.key,
+      fileName: file.name,
+      contentType: file.type || "application/octet-stream",
+      sizeBytes: file.size,
+    });
 
-  return presign.publicUrl;
+    return presign.publicUrl;
+  } catch (err) {
+    if (signal?.aborted) throw err;
+    console.warn("Direct upload with progress failed, attempting relayed backend upload:", err);
+    const formData = new FormData();
+    formData.append("file", file);
+    const relayed = await api.post<{ publicUrl: string }>("/api/media/upload", formData);
+    onProgress?.(100);
+    return relayed.publicUrl;
+  }
 }

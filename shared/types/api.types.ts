@@ -78,6 +78,8 @@ export interface CourseResponse {
   currency?: string;
   /** Author-declared total length, free text (e.g. "4h 30m"). */
   duration?: string | null;
+  /** Course preview media URL (image, video, or external video embed like YouTube/Vimeo). */
+  previewUrl?: string | null;
   /** Super-user-managed category (Console -> Content Manage -> Categories), or null for "Other". */
   categoryId?: string | null;
   /** Derived: whether an exam is tied to this course. */
@@ -111,6 +113,7 @@ export interface CreateCourseRequest {
   priceAmount?: number;
   currency?: string;
   duration?: string;
+  previewUrl?: string | null;
 }
 
 export interface PatchCourseRequest {
@@ -122,6 +125,7 @@ export interface PatchCourseRequest {
   priceAmount?: number;
   currency?: string;
   duration?: string;
+  previewUrl?: string | null;
 }
 
 /** Aggregate rating for one course — `GET /api/v1/public/reviews/stats`, keyed by course id. */
