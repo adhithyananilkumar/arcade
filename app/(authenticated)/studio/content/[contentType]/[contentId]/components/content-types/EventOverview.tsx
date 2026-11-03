@@ -10,7 +10,16 @@ import {
   CheckCircle2,
   DollarSign,
   FileText,
+  ClipboardList,
+  Gavel,
+  Inbox,
+  Lightbulb,
+  Medal,
+  Scale,
+  Trophy,
+  UsersRound,
   LayoutGrid,
+  Rocket,
   Send,
   Settings,
   Tag,
@@ -35,16 +44,27 @@ import { EventSettingsSection } from "../sections/EventSettingsSection";
 import { RegisteredMembersSection } from "../sections/RegisteredMembersSection";
 import { ContentAssessmentsSection } from "../sections/ContentAssessmentsSection";
 import { PublishingWorkflow } from "../sections/PublishingWorkflow";
+import { TeamEventSetupSection, type TeamSetupPage } from "../sections/HackathonSetupSection";
+import { TeamEventDeskSection, type TeamDeskPage } from "../sections/HackathonDeskSection";
 import { editorHref } from "../../lib/contentTypeRouting";
 
+/**
+ * The main tab bar. Tabs with several features (Settings, Pricing, Manage, the team competition)
+ * split them into sidebar pages — see lib/overviewNav. "team" is relabelled with the event's own
+ * format name ("Buildathon") once it has a competition.
+ */
 export const EVENT_TABS: WorkspaceTab<OverviewTab>[] = [
   { id: "OVERVIEW", label: "Overview", icon: LayoutGrid },
   { id: "exams", label: "Assessment & Exams", icon: FileText },
   { id: "pricing", label: "Pricing", icon: Tag },
   { id: "settings", label: "Settings", icon: Settings },
   { id: "participants", label: "Manage", icon: Users },
+  { id: "team", label: "Team competition", icon: Rocket },
   { id: "publishing", label: "Publishing", icon: Send },
 ];
+
+const TEAM_SETUP_PAGES = ["setup", "form", "tracks", "rubric", "prizes", "judges"] as const;
+const TEAM_DESK_PAGES = ["teams", "submissions", "results"] as const;
 
 function humanizeKey(key: string): string {
   const spaced = key.replace(/([a-z])([A-Z])/g, "$1 $2");
@@ -110,6 +130,7 @@ export function EventOverviewTab({
   onSubmit,
   submitting,
   onSelectTab,
+  page,
 }: {
   tab: OverviewTab;
   data: OverviewData;
@@ -119,6 +140,8 @@ export function EventOverviewTab({
   onSubmit: () => void;
   submitting: boolean;
   onSelectTab?: (tab: OverviewTab) => void;
+  /** The active sidebar page within this tab (lib/overviewNav), when the tab has several. */
+  page?: string | null;
 }) {
   const eventSummary = data.eventSummary?.status === "ok" ? data.eventSummary.data : null;
   const eventDetails = data.eventDetails?.status === "ok" ? data.eventDetails.data : null;
@@ -126,6 +149,13 @@ export function EventOverviewTab({
   const participantCount = data.eventParticipants?.status === "ok" ? data.eventParticipants.data.length : 0;
 
   if (tab === "exams") return <ContentAssessmentsSection segment="event" contentId={contentId} />;
+
+  if (tab === "team") {
+    const desk = TEAM_DESK_PAGES.find((p) => p === page);
+    if (desk) return <TeamEventDeskSection eventId={contentId} page={desk as TeamDeskPage} onOpenSetup={() => onSelectTab?.("team")} />;
+    const setup = (TEAM_SETUP_PAGES.find((p) => p === page) ?? "setup") as TeamSetupPage;
+    return <TeamEventSetupSection eventId={contentId} page={setup} onSelectTab={(t) => onSelectTab?.(t as OverviewTab)} />;
+  }
 
   if (tab === "pricing" || tab === "analytics") {
     return (
@@ -135,6 +165,7 @@ export function EventOverviewTab({
         eventAnalytics={data.eventAnalytics}
         participantCount={participantCount}
         onChanged={onChanged}
+        part={page === "analytics" ? "analytics" : "pricing"}
       />
     );
   }
@@ -142,21 +173,27 @@ export function EventOverviewTab({
   if (tab === "settings") {
     return (
       <div className="flex flex-col gap-10">
-        <EventSettingsSection eventId={contentId} initialEvent={eventDetails} onChanged={onChanged} />
-        <WorkspaceRows>
-          <WorkspaceRow step={8} title="Schedule" description="When learners can register for this event, and when registered learners can access it." wide>
-            <SchedulePanel contentType="EVENT" contentId={contentId} enrollmentNoun="Registration" bare />
-          </WorkspaceRow>
-          <WorkspaceRow step={9} title="Completion badge" description="The recognition participants receive after completing this event." wide>
-            <BadgeTierPanel contentType="EVENT" contentId={contentId} bare />
-          </WorkspaceRow>
-        </WorkspaceRows>
+        {(page ?? "details") === "details" && <EventSettingsSection eventId={contentId} initialEvent={eventDetails} onChanged={onChanged} />}
+        {page === "schedule" && (
+          <WorkspaceRows>
+            <WorkspaceRow step={1} title="Schedule" description="When learners can register for this event, and when registered learners can access it." wide>
+              <SchedulePanel contentType="EVENT" contentId={contentId} enrollmentNoun="Registration" bare />
+            </WorkspaceRow>
+          </WorkspaceRows>
+        )}
+        {page === "badge" && (
+          <WorkspaceRows>
+            <WorkspaceRow step={1} title="Completion badge" description="The recognition participants receive after completing this event." wide>
+              <BadgeTierPanel contentType="EVENT" contentId={contentId} bare />
+            </WorkspaceRow>
+          </WorkspaceRows>
+        )}
       </div>
     );
   }
 
   if (tab === "participants" || tab === "people" || (tab as string) === "manage" || tab === "collaborators") {
-    return <RegisteredMembersSection eventId={contentId} eventDetails={data.eventDetails} participantsResult={data.eventParticipants} onChanged={onChanged} />;
+    return <RegisteredMembersSection eventId={contentId} eventDetails={data.eventDetails} participantsResult={data.eventParticipants} onChanged={onChanged} part={page === "collaborators" ? "collaborators" : "members"} />;
   }
 
   if (tab === "publishing") {

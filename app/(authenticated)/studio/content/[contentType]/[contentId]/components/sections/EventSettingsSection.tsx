@@ -50,6 +50,7 @@ function formOf(event?: EventDto | null) {
     category: event?.category ?? "General",
     tags: (event?.tags ?? []).join(", "),
     eventType: event?.eventType ?? EventType.WORKSHOP,
+    formatLabel: event?.formatLabel ?? "",
     deliveryMode: event?.deliveryMode ?? DeliveryMode.ONLINE,
     difficulty: event?.difficulty ?? Difficulty.BEGINNER,
     language: event?.language ?? "English",
@@ -88,6 +89,7 @@ export function EventSettingsSection({ eventId, initialEvent, onChanged }: Props
           .map((t) => t.trim())
           .filter(Boolean),
         eventType: form.eventType,
+        formatLabel: form.eventType === EventType.TEAM_EVENT ? form.formatLabel.trim() : null,
         deliveryMode: form.deliveryMode,
         difficulty: form.difficulty,
         language: form.language,
@@ -139,7 +141,8 @@ export function EventSettingsSection({ eventId, initialEvent, onChanged }: Props
           <div>
             <WorkspaceLabel htmlFor="event-category">Category</WorkspaceLabel>
             <select id="event-category" value={form.category} onChange={(e) => set("category", e.target.value)} className={workspaceField.select}>
-              {CATEGORIES.map((cat) => (
+              {/* A category typed at creation may not be in the list; keep it rather than silently showing another. */}
+              {(CATEGORIES.includes(form.category) ? CATEGORIES : [form.category, ...CATEGORIES]).map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
                 </option>
@@ -170,8 +173,23 @@ export function EventSettingsSection({ eventId, initialEvent, onChanged }: Props
             { value: EventType.BOOTCAMP, label: "Bootcamp" },
             { value: EventType.MASTERCLASS, label: "Masterclass" },
             { value: EventType.AMA, label: "AMA" },
+            { value: EventType.TEAM_EVENT, label: "Team event" },
           ]}
         />
+        {form.eventType === EventType.TEAM_EVENT && (
+          <div className="mt-3">
+            <WorkspaceLabel htmlFor="event-format">What do you call it?</WorkspaceLabel>
+            <input
+              id="event-format"
+              type="text"
+              maxLength={60}
+              value={form.formatLabel}
+              onChange={(e) => set("formatLabel", e.target.value)}
+              className={workspaceField.input}
+              placeholder="e.g. Hackathon, Buildathon, Makeathon"
+            />
+          </div>
+        )}
       </WorkspaceRow>
 
       <WorkspaceRow step={5} title="Delivery mode" description="Where and how the sessions happen.">

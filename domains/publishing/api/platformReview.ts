@@ -413,7 +413,6 @@ export type CourseExamPlanSummary = {
   active: boolean;
   graded: boolean;
   proctoringRequired: boolean;
-  identityVerificationRequired: boolean;
   sectionsCount: number;
   totalQuestionsAsked: number;
   valid: boolean;

@@ -236,11 +236,14 @@ export function RegisteredMembersSection({
   eventDetails,
   participantsResult,
   onChanged,
+  part,
 }: {
   eventId: string;
   eventDetails?: FetchResult<EventDto>;
   participantsResult?: FetchResult<EventParticipant[]>;
   onChanged: () => void;
+  /** One feature as its own page: registrations, or collaborators. Both when omitted. */
+  part?: "members" | "collaborators";
 }) {
   const [search, setSearch] = useState("");
   const [regFilter, setRegFilter] = useState<RegistrationStatus | "ALL">("ALL");
@@ -334,6 +337,15 @@ export function RegisteredMembersSection({
       return matchesSearch && matchesReg;
     });
   }, [enriched, search, regFilter]);
+
+  if (part === "collaborators") {
+    return (
+      <div className="flex flex-col gap-6">
+        <WorkspaceHeading icon={UserCog} title="Collaborators" description="Team members with access to manage or edit this event." />
+        <EventCollaboratorsManager eventId={eventId} layout="rows" startStep={1} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -518,6 +530,7 @@ export function RegisteredMembersSection({
       )}
 
       {/* Collaborators */}
+      {part !== "members" && (
       <div className="flex flex-col gap-6 pt-6 border-t border-slate-200/70">
         <WorkspaceHeading
           icon={UserCog}
@@ -526,6 +539,7 @@ export function RegisteredMembersSection({
         />
         <EventCollaboratorsManager eventId={eventId} layout="rows" startStep={2} />
       </div>
+      )}
     </div>
   );
 }

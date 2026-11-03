@@ -11,4 +11,5 @@ export type OverviewTab =
   | "participants"
   | "manage"
   | "collaborators"
-  | "exams";
+  | "exams"
+  | "team";

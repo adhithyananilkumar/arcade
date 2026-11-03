@@ -61,6 +61,10 @@ export const eventRoutes = {
   /** One of the event's linked assessments, sat from inside the event (never the exam catalogue page). */
   assessment: (slug: string, placementId: string) => `/events/${slug}/learn/assessments/${placementId}`,
   notes: (slug: string) => `/events/${slug}/notes`,
+  /** A hackathon's team board: your team, invites, project submission, results. */
+  team: (slug: string, joinCode?: string) => `/events/${slug}/team${joinCode ? `?join=${encodeURIComponent(joinCode)}` : ''}`,
+  /** The judge's scoring workspace for a hackathon. */
+  judge: (slug: string) => `/events/${slug}/judge`,
 } as const;
 
 export const examRoutes = {

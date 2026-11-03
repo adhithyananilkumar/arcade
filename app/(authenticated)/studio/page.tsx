@@ -78,6 +78,9 @@ import {
   RotateCcw,
   SlidersHorizontal,
   Info,
+  Presentation,
+  Radio,
+  Users,
 } from "lucide-react";
 
 // ── Unified content summary (backing GET /api/content) ─────────────────────────
@@ -407,7 +410,11 @@ function CreateEventModal({
   const [capacity, setCapacity] = useState("");
   const [firstDate, setFirstDate] = useState("");
   const [firstTime, setFirstTime] = useState("10:00");
-  const [eventType, setEventType] = useState<"WORKSHOP" | "WEBINAR">("WORKSHOP");
+  const [eventType, setEventType] = useState<NewEventKind>("WORKSHOP");
+  // Team events are named by their organiser — "Buildathon", "Makeathon" — and sized up front.
+  const [formatLabel, setFormatLabel] = useState("Hackathon");
+  const [minTeam, setMinTeam] = useState("1");
+  const [maxTeam, setMaxTeam] = useState("4");
   const [creating, setCreating] = useState(false);
   const { channels, loading: channelsLoading } = useEligibleChannels();
   const [channelId, setChannelId] = useState("");
@@ -419,20 +426,19 @@ function CreateEventModal({
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (
-      !title.trim() || !description.trim() || !category.trim() || !channelId ||
-      !firstDate || !firstTime || !isPriceValid(price) || (capacity !== "" && Number(capacity) < 1)
-    ) {
-      return;
-    }
+    if (!canCreate) return;
     setCreating(true);
     setError(null);
 
     try {
+      const isTeam = eventType === "TEAM_EVENT";
       const event = await api.post<{ id: string }>("/api/v1/events", {
         title: title.trim(),
         description: description.trim(),
         eventType,
+        formatLabel: isTeam ? formatLabel.trim() : undefined,
+        minTeamSize: isTeam ? Number(minTeam) : undefined,
+        maxTeamSize: isTeam ? Number(maxTeam) : undefined,
         category: category.trim(),
         tags: [],
         deliveryMode: "ONLINE",
@@ -460,7 +466,8 @@ function CreateEventModal({
         toast.error("Event created, but its first day couldn't be added. Add it from the editor.");
       }
       toast.success(`"${title.trim()}" created`);
-      router.push(`/studio/content/event/${event.id}`);
+      // A team event opens on its competition setup — that is what the organiser does next.
+      router.push(`/studio/content/event/${event.id}${eventType === "TEAM_EVENT" ? "?tab=team&page=setup" : ""}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not create event";
       setError(message);
@@ -469,120 +476,196 @@ function CreateEventModal({
     }
   }
 
+  const isTeam = eventType === "TEAM_EVENT";
+  const teamValid =
+    !isTeam ||
+    (formatLabel.trim().length > 0 && Number(minTeam) >= 1 && Number(maxTeam) >= Number(minTeam) && Number(maxTeam) <= 50);
+  const canCreate =
+    !!title.trim() && !!description.trim() && !!category.trim() && !!channelId && !!firstDate && !!firstTime &&
+    isPriceValid(price) && !(capacity !== "" && Number(capacity) < 1) && teamValid;
+  const kindName = isTeam ? formatLabel.trim() || "Team event" : EVENT_KINDS.find((k) => k.id === eventType)!.label;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 arcade-modal-backdrop" onClick={onClose} />
-      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="relative flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden arcade-modal-box rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-4 top-4 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
+          className="absolute right-4 top-4 z-10 rounded-tl-lg rounded-br-lg rounded-tr-xs rounded-bl-xs p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer"
         >
           <X size={18} />
         </button>
 
-        <div className="mb-5">
-          <h3 className="text-[17px] font-bold tracking-tight text-ink">New Event</h3>
-          <p className="mt-1 text-[12px] font-medium text-slate-500">Choose the type, then fill in the basics.</p>
-        </div>
+        <form onSubmit={handleCreate} className="flex min-h-0 flex-1 flex-col md:flex-row">
+          {/* Left: what kind of event */}
+          <aside className="flex shrink-0 flex-col gap-4 border-b border-slate-200/70 bg-slate-50/60 p-6 md:w-[300px] md:border-b-0 md:border-r">
+            <div>
+              <h3 className="text-[18px] font-bold tracking-tight text-ink">New event</h3>
+              <p className="mt-1 text-[12px] font-medium text-slate-500">Pick a format, then fill in the basics.</p>
+            </div>
+            <div role="radiogroup" aria-label="Event format" className="flex flex-col gap-2">
+              {EVENT_KINDS.map((k) => {
+                const selected = eventType === k.id;
+                return (
+                  <button
+                    key={k.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => setEventType(k.id)}
+                    className={`flex items-start gap-3 rounded-2xl border p-3 text-left transition-all cursor-pointer ${
+                      selected ? "border-ink bg-surface ring-1 ring-ink/20 shadow-sm" : "border-slate-200 bg-surface/60 hover:bg-surface"
+                    }`}
+                  >
+                    <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${k.chip}`}>
+                      <k.icon size={17} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-xs font-bold text-ink">{k.label}</span>
+                      <span className="mt-0.5 block text-[11px] leading-snug text-slate-500">{k.hint}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
 
-        {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
-            {error}
-          </div>
-        )}
+            {isTeam && (
+              <div className="flex flex-col gap-3 rounded-2xl border border-violet-200 bg-violet-50/60 p-4 dark:border-violet-500/30 dark:bg-violet-500/10">
+                <div>
+                  <label htmlFor="event-format" className="mb-1.5 block text-[12px] font-semibold text-ink">
+                    What do you call it? <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="event-format"
+                    value={formatLabel}
+                    onChange={(e) => setFormatLabel(e.target.value)}
+                    maxLength={60}
+                    placeholder="e.g. Buildathon"
+                    className="w-full rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-ink/30 focus:ring-4 focus:ring-slate-200/60"
+                  />
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {TEAM_FORMAT_SUGGESTIONS.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setFormatLabel(s)}
+                        className={`cursor-pointer rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition ${
+                          formatLabel === s ? "border-violet-400 bg-violet-100 text-violet-800 dark:bg-violet-500/20 dark:text-violet-200" : "border-slate-200 bg-surface text-slate-600 hover:bg-slate-50"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <span className="mb-1.5 block text-[12px] font-semibold text-ink">Team size</span>
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <input aria-label="Smallest team" type="number" min={1} max={50} value={minTeam} onChange={(e) => setMinTeam(e.target.value)} className="w-16 rounded-xl border border-slate-200 bg-surface px-2.5 py-2 text-sm text-ink outline-none" />
+                    to
+                    <input aria-label="Largest team" type="number" min={1} max={50} value={maxTeam} onChange={(e) => setMaxTeam(e.target.value)} className="w-16 rounded-xl border border-slate-200 bg-surface px-2.5 py-2 text-sm text-ink outline-none" />
+                    people
+                  </div>
+                  <p className="mt-1.5 text-[11px] leading-snug text-slate-500">Set the smallest to 1 to allow solo entries. Tracks, the submission form, judges and prizes come next.</p>
+                </div>
+              </div>
+            )}
+          </aside>
 
-        <form onSubmit={handleCreate} className="space-y-4">
-          <div>
-            <label className="mb-1.5 block text-[13px] font-semibold text-ink">
-              Event Type <span className="text-red-500">*</span>
-            </label>
-            <div className="grid grid-cols-2 gap-3">
+          {/* Right: the basics */}
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-6 pt-12 md:pt-6">
+              {error && (
+                <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300">
+                  {error}
+                </div>
+              )}
+              <div>
+                <label htmlFor="event-title" className="mb-1.5 block text-[13px] font-semibold text-ink">
+                  Title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="event-title"
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder={EVENT_KINDS.find((k) => k.id === eventType)!.example}
+                  maxLength={120}
+                  autoFocus
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60"
+                />
+              </div>
+
+              <DescriptionField id="event-description" value={description} onChange={setDescription} />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <CategoryField id="event-category" value={category} onChange={setCategory} type="EVENTS" />
+                <CapacityField id="event-capacity" value={capacity} onChange={setCapacity} />
+              </div>
+              <FirstDayField idPrefix="event-first" date={firstDate} time={firstTime} onDate={setFirstDate} onTime={setFirstTime} />
+              <PriceField id="event-price" value={price} onChange={setPrice} />
+              <div className="flex items-end gap-2">
+                <div className="min-w-0 flex-1">
+                  <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
+                </div>
+                <ChannelBrandingNotice channelId={channelId} context="create" variant="icon" />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 border-t border-slate-200/70 px-6 py-4">
               <button
                 type="button"
-                onClick={() => setEventType("WORKSHOP")}
-                className={`flex flex-col items-start rounded-xl border p-3 text-left transition-all cursor-pointer ${
-                  eventType === "WORKSHOP"
-                    ? "border-ink bg-ink/5 ring-1 ring-ink/20 font-medium"
-                    : "border-slate-200 bg-slate-50/60 hover:bg-slate-100/60"
-                }`}
+                onClick={onClose}
+                className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer"
               >
-                <div className="flex w-full items-center justify-between">
-                  <span className="text-xs font-bold text-ink">Workshop</span>
-                </div>
-                <p className="mt-1 text-[11px] leading-tight text-slate-500">
-                  Interactive sessions with agenda & modules
-                </p>
+                Cancel
               </button>
-
               <button
-                type="button"
-                onClick={() => setEventType("WEBINAR")}
-                className={`flex flex-col items-start rounded-xl border p-3 text-left transition-all cursor-pointer ${
-                  eventType === "WEBINAR"
-                    ? "border-ink bg-ink/5 ring-1 ring-ink/20 font-medium"
-                    : "border-slate-200 bg-slate-50/60 hover:bg-slate-100/60"
-                }`}
+                type="submit"
+                disabled={!canCreate || creating}
+                className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
               >
-                <div className="flex w-full items-center justify-between">
-                  <span className="text-xs font-bold text-ink">Webinar</span>
-                </div>
-                <p className="mt-1 text-[11px] leading-tight text-slate-500">
-                  Live presentation or Q&A stream session
-                </p>
+                {creating ? "Creating…" : `Create ${kindName}`}
               </button>
             </div>
-          </div>
-
-          <div>
-            <label className="mb-1.5 block text-[13px] font-semibold text-ink">
-              Title <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={eventType === "WORKSHOP" ? "e.g. Full-Stack Web Development Workshop" : "e.g. Intro to AI Webinar"}
-              maxLength={120}
-              autoFocus
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-ink/30 focus:bg-surface focus:ring-4 focus:ring-slate-200/60"
-            />
-          </div>
-
-          <DescriptionField id="event-description" value={description} onChange={setDescription} />
-          <CategoryField id="event-category" value={category} onChange={setCategory} type="EVENTS" />
-          <FirstDayField idPrefix="event-first" date={firstDate} time={firstTime} onDate={setFirstDate} onTime={setFirstTime} />
-          <PriceField id="event-price" value={price} onChange={setPrice} />
-          <CapacityField id="event-capacity" value={capacity} onChange={setCapacity} />
-
-          <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
-          <ChannelBrandingNotice channelId={channelId} context="create" />
-
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink cursor-pointer dark:hover:bg-slate-800"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={
-                !title.trim() || !description.trim() || !category.trim() || !channelId || !firstDate ||
-                !firstTime || !isPriceValid(price) || (capacity !== "" && Number(capacity) < 1) || creating
-              }
-              className="rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-on-ink shadow-sm transition-colors hover:bg-ink-hover disabled:opacity-50 cursor-pointer"
-            >
-              {creating ? "Creating..." : `Create ${eventType === "WORKSHOP" ? "Workshop" : "Webinar"}`}
-            </button>
           </div>
         </form>
       </div>
     </div>
   );
 }
+
+type NewEventKind = "WORKSHOP" | "WEBINAR" | "TEAM_EVENT";
+
+const EVENT_KINDS: { id: NewEventKind; label: string; hint: string; example: string; icon: typeof Users; chip: string }[] = [
+  {
+    id: "WORKSHOP",
+    label: "Workshop",
+    hint: "Interactive sessions with an agenda and modules",
+    example: "e.g. Full-Stack Web Development Workshop",
+    icon: Presentation,
+    chip: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300",
+  },
+  {
+    id: "WEBINAR",
+    label: "Webinar",
+    hint: "A live talk or Q&A stream",
+    example: "e.g. Intro to AI Webinar",
+    icon: Radio,
+    chip: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+  },
+  {
+    id: "TEAM_EVENT",
+    label: "Team event",
+    hint: "Hackathons, buildathons, challenges — teams form, submit and get judged",
+    example: "e.g. AJCE Buildathon 2026",
+    icon: Users,
+    chip: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300",
+  },
+];
+
+const TEAM_FORMAT_SUGGESTIONS = ["Hackathon", "Buildathon", "Makeathon", "Ideathon", "Designathon", "Case challenge"];
 
 // ── New Exam creation modal ─────────────────────────────────────────────────────
 // Same dialog as New Course / New Event: picking "Exam" from Create Content used to leave the

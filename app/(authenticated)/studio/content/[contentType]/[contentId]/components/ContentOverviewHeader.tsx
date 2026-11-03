@@ -84,6 +84,7 @@ export function ContentOverviewHeader({
   onPreview,
   parent,
   leading,
+  trailing,
   onSubmit,
 }: {
   segment: ContentTypeSegment;
@@ -107,6 +108,8 @@ export function ContentOverviewHeader({
   parent?: { href: string; label: string } | null;
   /** Left end of the action line, e.g. "Back to Course Dashboard". */
   leading?: React.ReactNode;
+  /** Beside the actions: small status icons, e.g. the channel-branding warning. */
+  trailing?: React.ReactNode;
   /** The page's submit (shared with the Publishing tab, so a refusal is reported the same way). */
   onSubmit?: () => Promise<void>;
 }) {
@@ -243,6 +246,7 @@ export function ContentOverviewHeader({
 
         {/* Preview · Edit · Submit · more — under the name, on every tab. */}
         <div className="flex flex-wrap items-center justify-center gap-2.5 pt-3">
+          {trailing}
           {channelSuspended ? (
             <span
               className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300"

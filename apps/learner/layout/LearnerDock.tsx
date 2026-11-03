@@ -2,7 +2,9 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useMemo } from 'react';
-import { Home, Compass, BookOpen, Trophy, ShieldAlert } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Home, Compass, BookOpen, Trophy, ShieldAlert, Gavel } from 'lucide-react';
+import { JudgingService } from '@/domains/events';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/shared/design-system/ui/dock';
 import { cn } from '@/shared/utils/utils';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -60,8 +62,28 @@ export default function LearnerDock() {
   const user = useAuthStore((s) => s.user);
   const canAccessConsole = AuthorizationService.canAccessConsole(user);
 
+  // A judge sees a Judging shortcut while any event they accepted is upcoming or live (results not yet out).
+  const { data: assignments } = useQuery({
+    queryKey: ['judging', 'assignments'],
+    queryFn: () => JudgingService.assignments(),
+    enabled: !!user,
+    retry: false,
+    staleTime: 60_000,
+  });
+  const judgesLiveEvent = (assignments ?? []).some((a) => a.status === 'ACCEPTED' && a.phase !== 'RESULTS');
+
   const items = useMemo(() => {
     const list: DockNavItem[] = [...dockItems];
+    if (judgesLiveEvent) {
+      list.push({
+        id: 'judging',
+        label: 'Judging',
+        href: '/judging',
+        icon: Gavel,
+        activeColor: 'text-sky-600 dark:text-sky-400',
+        exact: false,
+      });
+    }
     if (canAccessConsole) {
       list.push({
         id: 'console',
@@ -73,7 +95,7 @@ export default function LearnerDock() {
       });
     }
     return list;
-  }, [canAccessConsole]);
+  }, [canAccessConsole, judgesLiveEvent]);
 
   // Hide the dock on content studio, settings, active proctored exams, and credentials.
   // /studio itself and the Content Workspace are handled by LearnerShell's

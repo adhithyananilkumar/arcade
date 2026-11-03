@@ -33,7 +33,6 @@ function mockLanding(
     passPercentage: 70,
     questionCount: 10,
     proctoringRequired: false,
-    identityVerificationRequired: false,
     fullscreenRequired: false,
     maxViolations: 0,
     registrationRequired: false,
@@ -43,7 +42,6 @@ function mockLanding(
     prerequisite: null,
     enrollmentWindow: null,
     accessWindow: null,
-    identityStatus: null,
     attemptsUsed: 0,
     attemptsRemaining: 3,
     openAttemptId: null,
@@ -75,7 +73,7 @@ describe("AssessmentLanding", () => {
     expect(screen.queryByText("Not passed yet")).toBeNull();
   });
 
-  it("renders State B (Attempted - Passed) with threshold, grade card link and action buttons", () => {
+  it("renders State B (Attempted - Passed) with a neutral completed state and action buttons", () => {
     const onStart = vi.fn();
     const onViewGradeCard = vi.fn();
     const onNextItem = vi.fn();
@@ -156,11 +154,8 @@ describe("AssessmentLanding", () => {
     const retakeButton = screen.getByText("Retake assessment");
     expect(retakeButton).toBeDefined();
 
-    // Grade card
-    const gradeCardButtons = screen.getAllByText("View grade card");
-    expect(gradeCardButtons.length).toBeGreaterThan(0);
-    fireEvent.click(gradeCardButtons[0]);
-    expect(onViewGradeCard).toHaveBeenCalledWith("card-1");
+    expect(screen.queryByText("View grade card")).toBeNull();
+    expect(onViewGradeCard).not.toHaveBeenCalled();
   });
 
   it("renders State B (Attempted - Failed) with retry action", () => {
@@ -213,7 +208,8 @@ describe("AssessmentLanding", () => {
 
     render(<AssessmentLanding landing={landing} onStart={onStart} />);
 
-    expect(screen.getByText("Not passed yet")).toBeDefined();
+    expect(screen.getByText("Exam completed")).toBeDefined();
+    expect(screen.queryByText("Not passed yet")).toBeNull();
     expect(screen.queryByText("60%")).toBeNull();
     expect(screen.getByText("Try again")).toBeDefined();
   });

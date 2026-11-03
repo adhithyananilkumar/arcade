@@ -6,6 +6,7 @@ export const WORKSHOP_TYPES = [
   { value: EventType.MASTERCLASS, label: 'Masterclass' },
   { value: EventType.WEBINAR, label: 'Webinar' },
   { value: EventType.AMA, label: 'AMA' },
+  { value: EventType.TEAM_EVENT, label: 'Team event' },
 ];
 
 export const DELIVERY_MODES = [

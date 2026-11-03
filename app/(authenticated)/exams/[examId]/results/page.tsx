@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Trophy, Award, Loader2, ChevronLeft, Hourglass, FileText, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Trophy, Award, Loader2, ChevronLeft, Hourglass, FileText, CheckCircle2 } from 'lucide-react';
 import { examRoutes } from '@/shared/routes/content.routes';
-import { getExamResult, getMyGradeCards, type ExamResultResponse } from '@/domains/assessments';
+import { getExamResult, type ExamResultResponse } from '@/domains/assessments';
 
 const pageBg = {
   background: 'var(--theme-wash, linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 32%, #FFFFFF 70%))',
@@ -20,10 +20,6 @@ export default function ExamResultsPage() {
   const [result, setResult] = useState<ExamResultResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const isPreview = searchParams.get('preview') === 'true';
-  // The sitting's grade card — where the marks are read. Issued in the same transaction as a final
-  // result, so it exists as soon as the result does (a paper awaiting marking has none yet).
-  const [gradeCardId, setGradeCardId] = useState<string | null>(null);
-
   useEffect(() => {
     if (isPreview) {
       const mockStr = sessionStorage.getItem(`preview_result_${examId}`);
@@ -44,14 +40,7 @@ export default function ExamResultsPage() {
       return;
     }
     getExamResult(attemptId)
-      .then((r) => {
-        setResult(r);
-        if (r.status !== 'PENDING_REVIEW') {
-          getMyGradeCards()
-            .then((cards) => setGradeCardId(cards.find((c) => c.attemptId === attemptId)?.id ?? null))
-            .catch(() => undefined);
-        }
-      })
+      .then(setResult)
       .catch(() => setError('We could not load your result.'));
   }, [examId, isPreview, router, searchParams]);
 
@@ -80,41 +69,25 @@ export default function ExamResultsPage() {
   const back = searchParams.get('returnTo') ?? examRoutes.landing(examId);
   const backLabel = back.startsWith('/courses') ? 'Back to course' : back.startsWith('/events') ? 'Back to event' : 'Back to exam';
 
+  // Results are published separately, once the sitting is processed — until then the candidate
+  // only learns that the exam is complete.
   if (!isPreview) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4 pb-28 pt-28" style={pageBg}>
         <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-surface/95 text-center shadow-[0_12px_40px_rgba(20,20,43,0.08)]">
           <div className="px-8 py-9">
-            <div
-              className={`mx-auto grid size-16 place-items-center rounded-2xl ${
-                awaiting ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
-              }`}
-            >
-              {awaiting ? <Hourglass size={28} /> : <CheckCircle2 size={28} />}
+            <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <CheckCircle2 size={28} />
             </div>
-            <h1 className="mt-5 text-[1.5rem] font-bold tracking-tight text-ink">
-              {awaiting ? 'Submitted for marking' : 'Submission received'}
-            </h1>
+            <h1 className="mt-5 text-[1.5rem] font-bold tracking-tight text-ink">Exam completed</h1>
             <p className="mx-auto mt-2 max-w-sm text-[13px] font-medium leading-relaxed text-slate-500">
-              {awaiting
-                ? 'Some answers are written and need marking. Your grade card is issued, and you are notified, once they are marked.'
-                : 'Your grade card has been issued. Open it for your marks, section by section.'}
+              Your answers have been submitted. Results are published after your paper is processed, and you will be
+              notified as soon as yours is ready.
             </p>
-
             <div className="mt-7 flex flex-col gap-2">
-              {!awaiting && (
-                <Link
-                  href={gradeCardId ? examRoutes.gradeCard(gradeCardId) : examRoutes.mine}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-full bg-ink px-5 py-3 text-[13px] font-semibold text-on-ink hover:bg-ink-hover"
-                >
-                  <Award size={15} />
-                  View grade card
-                  <ArrowRight size={15} />
-                </Link>
-              )}
               <Link
                 href={back}
-                className="inline-flex items-center justify-center gap-1.5 rounded-full border border-slate-200 bg-surface px-5 py-3 text-[13px] font-semibold text-slate-700 hover:bg-slate-50"
+                className="inline-flex items-center justify-center gap-1.5 rounded-full bg-ink px-5 py-3 text-[13px] font-semibold text-on-ink hover:bg-ink-hover"
               >
                 <ChevronLeft size={16} />
                 {backLabel}

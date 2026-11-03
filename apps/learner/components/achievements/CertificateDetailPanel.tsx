@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import {
-  ArrowLeft, Calendar, Check, ClipboardList, Copy, Download, ExternalLink, Eye, EyeOff, Loader2, ShieldAlert, ShieldCheck,
+  ArrowLeft, Calendar, Check, Copy, Download, ExternalLink, Eye, EyeOff, Loader2, ShieldAlert, ShieldCheck,
   TimerOff, X,
 } from 'lucide-react';
 import {
@@ -23,7 +23,6 @@ import {
   linkedInAddToProfileUrl,
   type IssuedCertificate,
 } from '@/domains/credentials';
-import { examRoutes } from '@/shared/routes/content.routes';
 import { cn } from '@/shared/utils/utils';
 
 function formatDate(iso: string) {
@@ -194,14 +193,6 @@ function PanelBody({
         <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4">
           <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">What it certifies</p>
           <p className="mt-1.5 text-sm leading-relaxed text-slate-700">{c.criteria}</p>
-          {c.gradeCardId && (
-            <Link
-              href={examRoutes.gradeCard(c.gradeCardId)}
-              className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-[#2962D6] hover:underline dark:text-[#7eb5ff]"
-            >
-              <ClipboardList size={12} /> View the grade card
-            </Link>
-          )}
         </div>
 
         {/* Credential ID */}

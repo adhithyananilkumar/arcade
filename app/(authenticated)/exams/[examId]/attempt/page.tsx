@@ -53,6 +53,21 @@ const TEXT_ANSWER_DEBOUNCE_MS = 600;
 /** Two reports this close together are one incident (blur and visibilitychange fire as a pair). */
 const REPORT_DEDUPE_MS = 1500;
 
+/** How often a live sitting tells the server it is still being watched. */
+const HEARTBEAT_MS = 15_000;
+
+/** Reports kept while the server is unreachable, to be sent once it is. */
+const MAX_UNSENT_REPORTS = 50;
+
+/** No input at all for this long is worth the author knowing about. */
+const IDLE_MS = 5 * 60_000;
+
+/** A single edit inserting more than this many characters came from somewhere else. */
+const BULK_INSERT_CHARS = 40;
+
+/** In full screen the browser chrome is gone; a window this much larger than its viewport has a docked panel. */
+const DOCKED_PANEL_PX = 200;
+
 /**
  * What the sitting runs under. Every sitting gets the baseline — full screen, monitored, a hard
  * violation limit — and the server sends the limit it enforces (the plan's, when stricter). A
@@ -333,10 +348,43 @@ export default function ExamEnginePage() {
           // Best-effort: a lost report must never interrupt the candidate's sitting.
         });
     };
+    // Reports that could not reach the server wait here and ride along with the next heartbeat, so
+    // cutting the connection does not make a violation disappear.
+    const unsent: { type: string; detail: string }[] = [];
+    const queue = (type: string, detail: string) => {
+      if (unsent.length < MAX_UNSENT_REPORTS) unsent.push({ type, detail });
+    };
     /** Recorded for the author's review; costs the candidate nothing. */
     const audit = (eventType: string, detail: string) => {
       if (isPreview || isSubmittingRef.current) return;
-      recordProctorEvent(attemptId, eventType, detail).catch(() => {});
+      recordProctorEvent(attemptId, eventType, detail).catch(() => queue(eventType, detail));
+    };
+    const heartbeat = () => {
+      if (isPreview || isSubmittingRef.current) return;
+      const backlog = unsent.splice(0, unsent.length);
+      const beat = (): Promise<AttemptResponse> =>
+        backlog.reduce<Promise<unknown>>(
+          (chain, r) => chain.then(() => recordProctorEvent(attemptId, r.type, r.detail)),
+          Promise.resolve()
+        ).then(() => recordProctorEvent(attemptId, 'HEARTBEAT'));
+      beat()
+        .then((attempt) => {
+          // The server's clock is the only one that counts: re-seed the countdown from it.
+          if (attempt.status !== 'IN_PROGRESS') {
+            isSubmittingRef.current = true;
+            exitFullscreenThen(() =>
+              router.replace(
+                attempt.terminationReason === 'PROCTORING_VIOLATIONS'
+                  ? examRoutes.terminated(examId)
+                  : examRoutes.results(examId, attempt.id)
+              )
+            );
+            return;
+          }
+          setTimeLeft(attempt.secondsRemaining);
+          setViolations(attempt.violationCount);
+        })
+        .catch(() => backlog.forEach((r) => queue(r.type, r.detail)));
     };
     const editable = (t: EventTarget | null) => t instanceof HTMLTextAreaElement || t instanceof HTMLInputElement;
 
@@ -374,6 +422,7 @@ export default function ExamEnginePage() {
       // Print, save page, view source, and select-all outside the answer box.
       if (mod && (['p', 's', 'u'].includes(key) || (key === 'a' && !editable(e.target)))) {
         e.preventDefault();
+        audit('KEYBOARD_SHORTCUT', `Blocked ${e.ctrlKey ? 'Ctrl' : 'Cmd'}+${key.toUpperCase()}`);
         return;
       }
       // These only reach the page under the keyboard lock; swallowing them keeps the candidate here.
@@ -384,6 +433,70 @@ export default function ExamEnginePage() {
       navigator.clipboard?.writeText('').catch(() => {});
       audit('SCREEN_CAPTURE', 'Print Screen key');
     };
+    // Typed answers only: a paste or drop arrives as one big insertion, so refuse it and record it.
+    const onBeforeInput = (e: InputEvent) => {
+      if (!editable(e.target)) return;
+      const size = e.data?.length ?? 0;
+      if (
+        e.inputType === 'insertFromPaste' ||
+        e.inputType === 'insertFromDrop' ||
+        e.inputType === 'insertFromYank' ||
+        size > BULK_INSERT_CHARS
+      ) {
+        e.preventDefault();
+        report('PASTED_CONTENT', `Blocked ${e.inputType || 'insertion'} of ${size} characters`);
+      }
+    };
+
+    let lastInput = Date.now();
+    let idleReported = false;
+    const onActivity = () => {
+      lastInput = Date.now();
+      idleReported = false;
+    };
+    let lastPointerLeft = 0;
+    const onPointerLeft = (e: MouseEvent) => {
+      if (e.relatedTarget || Date.now() - lastPointerLeft < 20_000) return;
+      lastPointerLeft = Date.now();
+      audit('POINTER_LEFT', 'Pointer left the paper');
+    };
+    let resizeTimer: ReturnType<typeof setTimeout> | undefined;
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (document.fullscreenElement) audit('VIEWPORT_CHANGED', `${window.innerWidth}x${window.innerHeight}`);
+      }, 800);
+    };
+
+    // A second screen: Chromium's Window Management API says so directly; elsewhere it is unknowable.
+    const screenInfo = window.screen as Screen & { isExtended?: boolean };
+    const checkDisplays = () => {
+      if (screenInfo.isExtended) report('MULTIPLE_DISPLAYS', 'More than one display is connected');
+    };
+    // A docked developer-tools panel shrinks the viewport inside a full-screen window.
+    const checkDevtools = () => {
+      if (!document.fullscreenElement) return;
+      if (
+        window.outerWidth - window.innerWidth > DOCKED_PANEL_PX ||
+        window.outerHeight - window.innerHeight > DOCKED_PANEL_PX
+      ) {
+        report('DEVTOOLS_OPEN', 'A docked panel is open beside the paper');
+      }
+    };
+    if (navigator.webdriver) report('AUTOMATION_DETECTED', 'The browser is under automation control');
+    checkDisplays();
+    screenInfo.addEventListener?.('change', checkDisplays);
+
+    const monitor = setInterval(() => {
+      checkDevtools();
+      if (!idleReported && Date.now() - lastInput > IDLE_MS) {
+        idleReported = true;
+        audit('LONG_IDLE', `No input for ${Math.round((Date.now() - lastInput) / 60_000)} minutes`);
+      }
+    }, 2000);
+    const beat = setInterval(heartbeat, HEARTBEAT_MS);
+    const activityEvents = ['keydown', 'pointerdown', 'pointermove', 'wheel'] as const;
+
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isPreview || isSubmittingRef.current) return;
       e.preventDefault();
@@ -403,8 +516,20 @@ export default function ExamEnginePage() {
     document.addEventListener('keydown', onKeyDown, true);
     document.addEventListener('keyup', onKeyUp, true);
     window.addEventListener('beforeunload', onBeforeUnload);
+    document.addEventListener('beforeinput', onBeforeInput as EventListener, true);
+    document.addEventListener('mouseleave', onPointerLeft);
+    window.addEventListener('resize', onResize);
+    activityEvents.forEach((t) => window.addEventListener(t, onActivity, { passive: true }));
 
     return () => {
+      document.removeEventListener('beforeinput', onBeforeInput as EventListener, true);
+      document.removeEventListener('mouseleave', onPointerLeft);
+      window.removeEventListener('resize', onResize);
+      activityEvents.forEach((t) => window.removeEventListener(t, onActivity));
+      screenInfo.removeEventListener?.('change', checkDisplays);
+      clearInterval(monitor);
+      clearInterval(beat);
+      clearTimeout(resizeTimer);
       document.removeEventListener('fullscreenchange', onFullscreenChange);
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('blur', onBlur);

@@ -97,8 +97,6 @@ export interface ExamOverviewProps {
   onViewGradeCard: (gradeCardId: string) => void;
   /** The shared enrolment checkout, shown when the blocker is registration or payment. */
   registrationSlot?: ReactNode;
-  /** The identity capture step, shown when the blocker is identity verification. */
-  identitySlot?: ReactNode;
   /**
    * Shown instead of "no attempts left" when the certification standard offers another attempt
    * (a paid retake or a second chance) — the host passes RetakePanel with its checkout.
@@ -117,7 +115,6 @@ export function ExamOverview({
   onSelectPlan,
   onViewGradeCard,
   registrationSlot,
-  identitySlot,
   retakeSlot,
   feeLabel,
   onOpenPrerequisite,
@@ -146,7 +143,6 @@ export function ExamOverview({
   const kind = planKindLabel(landing.planType, landing.graded);
   const needsRegistration =
     landing.blockedReason === 'REGISTRATION_REQUIRED' || landing.blockedReason === 'PAYMENT_REQUIRED';
-  const needsIdentity = landing.blockedReason === 'IDENTITY_REQUIRED';
   const resuming = landing.openAttemptId !== null;
   const retaking = !resuming && landing.attemptsUsed > 0;
   const latest = landing.latestAttempt ?? landing.history[0] ?? null;
@@ -181,8 +177,6 @@ export function ExamOverview({
     <div className="flex flex-wrap items-center gap-3">
       <div className="min-w-[220px] sm:min-w-[240px]">{registrationSlot}</div>
     </div>
-  ) : needsIdentity && identitySlot ? (
-    <div className="max-w-md">{identitySlot}</div>
   ) : !landing.startable && landing.retake && retakeSlot ? (
     <div className="w-full max-w-md">{retakeSlot}</div>
   ) : landing.startable ? (
@@ -554,15 +548,8 @@ export function ExamOverview({
                   <Expect
                     icon={<ShieldCheck size={18} />}
                     title={landing.proctoringRequired ? 'Proctored, secured sitting' : 'Secured sitting'}
-                    sub={`Leaving full screen, switching tabs or windows, copying, pasting or opening developer tools is recorded; ${landing.maxViolations} violation${landing.maxViolations === 1 ? '' : 's'} automatically end the sitting.`}
+                    sub={`Leaving full screen, switching tabs or windows, copying or pasting, opening developer tools or connecting a second screen is recorded; ${landing.maxViolations} violation${landing.maxViolations === 1 ? '' : 's'} automatically end the sitting.`}
                   />
-                  {landing.identityVerificationRequired && (
-                    <Expect
-                      icon={<ShieldCheck size={18} />}
-                      title="Identity verification required"
-                      sub="You submit a photo or ID verification before starting; an administrator reviews it."
-                    />
-                  )}
                   <Expect
                     icon={<Maximize2 size={18} />}
                     title="Own tab, full screen"
@@ -720,8 +707,6 @@ function blockedIcon(reason: AssessmentLandingResponse['blockedReason']) {
     case 'RETAKE_APPROVAL_REQUIRED':
     case 'PREREQUISITE_NOT_MET':
       return <Lock size={16} />;
-    case 'IDENTITY_REQUIRED':
-      return <ShieldCheck size={16} />;
     default:
       return <AlertCircle size={16} />;
   }

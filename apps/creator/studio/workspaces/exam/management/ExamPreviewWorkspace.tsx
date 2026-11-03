@@ -111,7 +111,7 @@ export function ExamPreviewWorkspace({
           />
         </dl>
 
-        {(plan.proctoringRequired || plan.identityVerificationRequired || plan.fullscreenRequired || plan.hubListed) && (
+        {(plan.proctoringRequired || plan.fullscreenRequired || plan.hubListed) && (
           <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-500/25 dark:bg-amber-500/10">
             <span className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-200">
               <Lock size={13} /> Before you start
@@ -123,7 +123,6 @@ export function ExamPreviewWorkspace({
                   {exam.tieType ? ` after completing ${exam.tiedContentTitle ?? "the tied content"}` : ""}.
                 </li>
               )}
-              {plan.identityVerificationRequired && <li>· You submit a photo of yourself before starting.</li>}
               {plan.proctoringRequired && (
                 <li>
                   · This exam is proctored; leaving the window is recorded

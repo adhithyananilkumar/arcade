@@ -1,7 +1,7 @@
 "use client";
 
 import { goBackTo, safeReturnTo } from "@/infrastructure/state/navigationHistory";
-import { useEffect, useState, useCallback, Suspense } from "react";
+import { useEffect, useMemo, useState, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useParams, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -9,7 +9,11 @@ import { ShieldAlert, FileQuestion, AlertTriangle, ArrowLeft } from "lucide-reac
 import { Skeleton } from "@/shared/design-system/ui/skeleton";
 import { ApiError } from "@/infrastructure/http/api";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
+import { useQuery } from "@tanstack/react-query";
 import { WorkspaceLoading, WorkspaceTabBody, WorkspaceTabs, type WorkspaceTab } from "@/apps/creator/studio/core/StudioWorkspaceKit";
+import { SideNav, SideNavTabs, type SideNavItem, type SideNavSection } from "@/shared/design-system/ui/side-nav";
+import { CompetitionAdminService } from "@/domains/events";
+import { LEGACY_TAB_PAGES, subPagesFor, type SubPage, type SubPageGroup } from "./lib/overviewNav";
 import type { ContentTypeSegment } from "./lib/contentTypeRouting";
 import { fetchOverviewData, type OverviewData } from "./lib/fetchOverviewData";
 import { submitForReview } from "./lib/contentActions";
@@ -25,9 +29,11 @@ import { ChannelBrandingNotice, brandingSetupHref, isBrandingIncomplete } from "
 const VALID_SEGMENTS: ContentTypeSegment[] = ["course", "event", "exam"];
 
 /**
- * Every content type's dashboard is one tab bar over one body, built from the shared Content
- * Overview kit (StudioWorkspaceKit). The tab lives in the URL (`?tab=`) so a tab can be linked to —
- * e.g. the question bank editor's "Exam settings" opens an exam straight on its plans.
+ * Every content type's dashboard is one horizontal tab bar over one body, built from the shared
+ * Content Overview kit (StudioWorkspaceKit). A tab that holds several features splits them into
+ * sub-pages in a sidebar beside the body — the same SideNav Settings uses (see lib/overviewNav).
+ * The tab and page live in the URL (`?tab=&page=`) so they can be linked to — e.g. the question
+ * bank editor's "Exam settings" opens an exam straight on its plans.
  */
 const TABS_BY_SEGMENT: Record<ContentTypeSegment, WorkspaceTab<string>[]> = {
   course: COURSE_TABS,
@@ -107,22 +113,51 @@ function ContentOverviewPageContent() {
   // summary fields are on ContentSummaryLite, and the exam tabs edit the real record.
   const [exam, setExam] = useState<ExamResponse | null>(null);
 
-  const tabs = segment ? TABS_BY_SEGMENT[segment] : [];
+  // An event's team-competition pages exist only once it has a competition; until then the group
+  // offers the one page that sets it up.
+  const competitionQuery = useQuery({
+    queryKey: ["competition", contentId, "admin"],
+    queryFn: () => CompetitionAdminService.get(contentId),
+    enabled: segment === "event",
+    retry: false,
+  });
+  const competition = competitionQuery.data ?? null;
+
+  // The team-competition tab is named after the event's own format ("Buildathon").
+  // Memoised: the breadcrumb effect below depends on it, and a fresh array every render made that
+  // effect (and the shell it notifies) re-run in a loop.
+  const formatLabel = competition?.settings.formatLabel ?? null;
+  const tabs = useMemo(
+    () => (segment ? TABS_BY_SEGMENT[segment] : []).map((t) => (t.id === "team" && formatLabel ? { ...t, label: formatLabel } : t)),
+    [segment, formatLabel],
+  );
   const requested = searchParams?.get("tab") ?? "";
-  const requestedTab = tabs.some((t) => t.id === requested) ? requested : TAB_ALIASES[requested];
+  const legacy = LEGACY_TAB_PAGES[requested];
+  const requestedTab = tabs.some((t) => t.id === requested) ? requested : legacy?.tab ?? TAB_ALIASES[requested];
   const activeTab = tabs.find((t) => t.id === requestedTab)?.id ?? tabs[0]?.id ?? "OVERVIEW";
   const activeLabel = tabs.find((t) => t.id === activeTab)?.label ?? "Content Overview";
 
-  const selectTab = useCallback(
-    (tab: string) => {
-      const next = new URLSearchParams(searchParams?.toString() ?? "");
-      if (tab === tabs[0]?.id) next.delete("tab");
-      else next.set("tab", tab);
-      const query = next.toString();
-      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
-    },
-    [searchParams, tabs, router, pathname]
-  );
+  // The active tab's own features, as sidebar pages (empty for single-feature tabs).
+  const subGroups: SubPageGroup[] = segment ? subPagesFor(segment, activeTab, { hasCompetition: !!competition }) : [];
+  const subPages = subGroups.flatMap((g) => g.pages);
+  const requestedPage = searchParams?.get("page") ?? legacy?.page ?? "";
+  const activePage = subPages.find((p) => p.id === requestedPage)?.id ?? subPages[0]?.id ?? null;
+
+  const hrefFor = (tab: string, page?: string | null) => {
+    const next = new URLSearchParams(searchParams?.toString() ?? "");
+    if (tab === tabs[0]?.id) next.delete("tab");
+    else next.set("tab", tab);
+    if (page) next.set("page", page);
+    else next.delete("page");
+    const query = next.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  };
+
+  // Accepts a tab id, or an older single id that names a tab and one of its pages ("team-form").
+  const selectTab = (tab: string) => {
+    const mapped = LEGACY_TAB_PAGES[tab];
+    router.replace(mapped ? hrefFor(mapped.tab, mapped.page) : hrefFor(tab), { scroll: false });
+  };
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);
 
@@ -298,6 +333,7 @@ function ContentOverviewPageContent() {
         onSubmit={handleSubmit}
         submitting={submitting}
         onSelectTab={selectTab}
+        page={activePage}
       />
     );
   } else if (activeTab === "publishing") {
@@ -316,7 +352,9 @@ function ContentOverviewPageContent() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-1 flex-col overflow-hidden w-full text-slate-900 font-sans">
+    // Desktop: an app frame — the title, actions and tab bar stay put and only the content pane
+    // (and the sidebar, if it overflows) scrolls. Phones keep ordinary page scrolling.
+    <div className="relative flex min-h-screen w-full flex-1 flex-col overflow-x-clip font-sans text-slate-900 lg:h-[100dvh] lg:min-h-0 lg:flex-none lg:overflow-hidden">
       {/* Page backdrop. One layer: --theme-wash is the themed page ground (dark, high contrast);
           the light gradient is only its fallback. A separate `dark:block bg-slate-950` layer used
           to paint dark mode, but slate already flips there, so it painted a near-white page. */}
@@ -332,8 +370,16 @@ function ContentOverviewPageContent() {
         }}
       />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 pt-4 pb-12 sm:px-6 sm:pt-6 lg:pt-7">
+      <div
+        className={`relative z-10 mx-auto flex w-full flex-col gap-5 px-4 pt-4 pb-12 sm:px-6 sm:pt-6 lg:min-h-0 lg:flex-1 lg:pb-0 lg:pt-7 ${
+          subPages.length > 0 ? "max-w-7xl" : "max-w-6xl"
+        }`}
+      >
         <ContentOverviewHeader
+          trailing={
+            // A tied exam is published by its course or event, which shows the notice itself.
+            !tiedExam && <ChannelBrandingNotice channelId={content.channelId} refreshKey={brandingCheck} variant="icon" />
+          }
           segment={segment!}
           contentId={contentId}
           title={content.title}
@@ -366,12 +412,42 @@ function ContentOverviewPageContent() {
           }
         />
 
-        {/* A tied exam is published by its course or event, which shows the notice itself. */}
-        {!tiedExam && <ChannelBrandingNotice channelId={content.channelId} refreshKey={brandingCheck} />}
-
-        <div className="flex flex-col gap-6">
-          <WorkspaceTabs tabs={tabs} active={activeTab} onChange={selectTab} ariaLabel={`${content.title} sections`} />
-          <WorkspaceTabBody>{body}</WorkspaceTabBody>
+        <div className="flex flex-col gap-6 lg:min-h-0 lg:flex-1">
+          <div className="shrink-0">
+            <WorkspaceTabs tabs={tabs} active={activeTab} onChange={selectTab} ariaLabel={`${content.title} sections`} />
+          </div>
+          {subPages.length === 0 ? (
+            // The content sits in a softly opaque panel; its slim scrollbar lives inside the panel.
+            <div className="lg:min-h-0 lg:flex-1 lg:overflow-hidden lg:rounded-[28px] lg:border lg:border-slate-200/60 lg:bg-surface/65 lg:shadow-[0_12px_40px_-16px_rgba(20,20,43,0.14)] lg:backdrop-blur-xl">
+              <div className="arcade-scrollbar-mini lg:h-full lg:overflow-y-auto lg:px-8 lg:pb-10">
+                <WorkspaceTabBody>{body}</WorkspaceTabBody>
+              </div>
+            </div>
+          ) : (
+            // This tab's own features, one page each, in the Settings-style sidebar. The sidebar
+            // stays put; the page beside it scrolls on its own.
+            <div className="flex flex-col gap-6 pt-6 sm:pt-8 lg:min-h-0 lg:flex-1 lg:flex-row lg:gap-10">
+                <SideNavTabs
+                  className="lg:hidden"
+                  items={subGroups.flatMap((g) => g.pages.map((p) => subNavItem(p, g, activeTab, hrefFor)))}
+                  activeKey={activePage}
+                  ariaLabel={`${activeLabel} pages`}
+                />
+                <aside className="arcade-scrollbar-mini hidden w-[240px] shrink-0 lg:block lg:overflow-y-auto lg:pb-8">
+                  <SideNav
+                    sections={subGroups.map<SideNavSection>((g) => ({
+                      title: g.title,
+                      items: g.pages.map((p) => subNavItem(p, g, activeTab, hrefFor)),
+                    }))}
+                    activeKey={activePage}
+                    ariaLabel={`${activeLabel} pages`}
+                  />
+                </aside>
+                <div className="min-w-0 flex-1 lg:min-h-0 lg:flex-1 lg:overflow-hidden lg:rounded-[28px] lg:border lg:border-slate-200/60 lg:bg-surface/65 lg:shadow-[0_12px_40px_-16px_rgba(20,20,43,0.14)] lg:backdrop-blur-xl">
+                  <div className="arcade-scrollbar-mini lg:h-full lg:overflow-y-auto lg:px-8 lg:py-8">{body}</div>
+                </div>
+              </div>
+          )}
         </div>
       </div>
     </div>
@@ -384,6 +460,15 @@ export default function ContentOverviewPage() {
       <ContentOverviewPageContent />
     </Suspense>
   );
+}
+
+function subNavItem(
+  page: SubPage,
+  group: SubPageGroup,
+  tab: string,
+  hrefFor: (tab: string, page?: string | null) => string,
+): SideNavItem {
+  return { key: page.id, label: page.label, href: hrefFor(tab, page.id), icon: page.icon, iconClassName: group.chip };
 }
 
 /** Names the Studio page a Back link leads to. */

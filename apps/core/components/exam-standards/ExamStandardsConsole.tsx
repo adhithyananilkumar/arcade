@@ -84,7 +84,7 @@ const GROUPS: Array<{ title: string; keys: string[] }> = [
   { title: 'Paper', keys: ['SHUFFLE_QUESTIONS', 'SHUFFLE_OPTIONS', 'FIXED_PAPER'] },
   {
     title: 'Security',
-    keys: ['PROCTORING_REQUIRED', 'IDENTITY_VERIFICATION_REQUIRED', 'MAX_VIOLATIONS'],
+    keys: ['PROCTORING_REQUIRED', 'MAX_VIOLATIONS'],
   },
   { title: 'Registration', keys: ['FEE_AMOUNT_MINOR'] },
   {

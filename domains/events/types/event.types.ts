@@ -15,6 +15,8 @@ export enum EventType {
   MASTERCLASS = 'MASTERCLASS',
   WEBINAR = 'WEBINAR',
   AMA = 'AMA',
+  /** A team competition: teams, project submissions and judging. */
+  TEAM_EVENT = 'TEAM_EVENT',
 }
 
 export enum DeliveryMode {
@@ -48,6 +50,8 @@ export interface Event {
   tags?: string[];
   promoVideoUrl?: string;
   eventType: EventType;
+  /** A team event's own name ("Buildathon"); null for other types. */
+  formatLabel?: string | null;
   meetingUrl?: string;
   deliveryMode: DeliveryMode;
   difficulty: Difficulty;

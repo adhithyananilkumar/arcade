@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Ban, Check, Clock, Loader2, MoreHorizontal, Plus, RotateCcw, ShieldAlert, X } from "lucide-react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { Ban, Clock, Loader2, MoreHorizontal, Plus, RotateCcw, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { formatMoney } from "@/shared/utils/money";
 import {
@@ -10,8 +10,9 @@ import {
   grantExtraAttempts,
   listAttemptsForExam,
   listExamRetakes,
-  reviewAttemptIdentity,
+  getProctorTimeline,
   type ExamAttemptSummaryResponse,
+  type ProctorTimelineEntry,
   type RetakeAuditRow,
   type ExamPlanResponse,
 } from "@/domains/assessments";
@@ -19,7 +20,7 @@ import { useStudioConfirm } from "@/apps/creator/studio/core/useStudioConfirm";
 import { StudioRowMenu } from "@/apps/creator/studio/core/StudioRowMenu";
 
 /**
- * Who has sat this exam, how they did, and the administrator's levers: identity review, ending an
+ * Who has sat this exam, how they did, and the administrator's levers: the integrity timeline, ending an
  * attempt, extra time as an accommodation, and extra attempts for one learner. Every action is
  * authorised and audited server-side; this tab only calls it.
  */
@@ -47,53 +48,71 @@ function StatusBadge({ attempt }: { attempt: ExamAttemptSummaryResponse }) {
   return <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${cls}`}>{label}</span>;
 }
 
-function IdentityCell({
-  attempt,
-  onReview,
-}: {
-  attempt: ExamAttemptSummaryResponse;
-  onReview: (approved: boolean) => void;
-}) {
-  if (!attempt.identityStatus || attempt.identityStatus === "NOT_SUBMITTED") {
-    return <span className="text-[11px] text-slate-400">—</span>;
+/** A silence this long means the sitting went dark; mirrors the server's `ProctoringService.SILENCE_SECONDS`. */
+const SILENCE_SECONDS = 75;
+
+const EVENT_LABELS: Record<string, string> = {
+  FULLSCREEN_EXIT: "Left full screen",
+  TAB_HIDDEN: "Switched tab or minimised",
+  WINDOW_BLUR: "Window lost focus",
+  COPY_PASTE: "Copy, cut or paste attempt",
+  PASTED_CONTENT: "Text inserted in bulk",
+  DEVTOOLS_OPEN: "Developer tools",
+  MULTIPLE_DISPLAYS: "More than one display",
+  AUTOMATION_DETECTED: "Automated browser",
+  SCREEN_CAPTURE: "Print Screen key",
+  VIEWPORT_CHANGED: "Window resized",
+  POINTER_LEFT: "Pointer left the paper",
+  LONG_IDLE: "Long idle stretch",
+  CONNECTION_GAP: "No signal from the sitting",
+  KEYBOARD_SHORTCUT: "Blocked shortcut",
+  SESSION_RESUMED: "Sitting resumed",
+};
+
+function gapLabel(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  return m > 0 ? `${m}m ${seconds % 60}s` : `${seconds}s`;
+}
+
+function SignalCell({ attempt }: { attempt: ExamAttemptSummaryResponse }) {
+  if (attempt.longestGapSeconds < SILENCE_SECONDS) {
+    return <span className="text-[11px] text-slate-400">{attempt.status === "IN_PROGRESS" ? "Steady" : "—"}</span>;
   }
   return (
-    <div className="flex items-center gap-2">
-      {attempt.identityEvidenceUrl && (
-        <a href={attempt.identityEvidenceUrl} target="_blank" rel="noreferrer" title="Open photo">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={attempt.identityEvidenceUrl} alt="" className="size-8 rounded-lg border border-slate-200 object-cover" />
-        </a>
-      )}
-      {attempt.identityStatus === "SUBMITTED" ? (
-        <span className="flex gap-1">
-          <button
-            type="button"
-            title="Approve identity"
-            onClick={() => onReview(true)}
-            className="rounded-md border border-emerald-200 bg-emerald-50 p-1 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/15"
-          >
-            <Check size={12} />
-          </button>
-          <button
-            type="button"
-            title="Reject identity"
-            onClick={() => onReview(false)}
-            className="rounded-md border border-rose-200 bg-rose-50 p-1 text-rose-700 hover:bg-rose-100 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15"
-          >
-            <X size={12} />
-          </button>
-        </span>
-      ) : (
-        <span
-          className={`text-[11px] font-bold ${
-            attempt.identityStatus === "APPROVED" ? "text-emerald-700 dark:text-emerald-300" : "text-rose-700 dark:text-rose-300"
-          }`}
-        >
-          {attempt.identityStatus === "APPROVED" ? "Approved" : "Rejected"}
-        </span>
-      )}
-    </div>
+    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-300">
+      <ShieldAlert size={12} /> Silent {gapLabel(attempt.longestGapSeconds)}
+    </span>
+  );
+}
+
+/** Everything the sitting's scripts reported, oldest first: strikes in rose, audit entries in grey. */
+function Timeline({ attemptId }: { attemptId: string }) {
+  const [rows, setRows] = useState<ProctorTimelineEntry[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    getProctorTimeline(attemptId)
+      .then((r) => !cancelled && setRows(r))
+      .catch(() => !cancelled && setRows([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [attemptId]);
+
+  if (rows === null) return <Loader2 className="animate-spin text-slate-400" size={14} />;
+  if (rows.length === 0) return <p className="text-xs text-slate-500">Nothing was reported for this sitting.</p>;
+  return (
+    <ol className="space-y-1">
+      {rows.map((e, i) => (
+        <li key={i} className="flex flex-wrap items-baseline gap-x-3 text-xs">
+          <span className="w-36 shrink-0 tabular-nums text-slate-400">{formatDate(e.occurredAt)}</span>
+          <span className={e.violation ? "font-bold text-rose-700 dark:text-rose-300" : "font-semibold text-slate-600"}>
+            {EVENT_LABELS[e.eventType] ?? e.eventType}
+            {e.violation ? " · strike" : ""}
+          </span>
+          {e.detail && <span className="text-slate-400">{e.detail}</span>}
+        </li>
+      ))}
+    </ol>
   );
 }
 
@@ -101,6 +120,7 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
   const [attempts, setAttempts] = useState<ExamAttemptSummaryResponse[] | null>(null);
   const [error, setError] = useState(false);
   const [planFilter, setPlanFilter] = useState<string>("");
+  const [openLog, setOpenLog] = useState<string | null>(null);
   const { confirm, dialog } = useStudioConfirm();
 
   const load = useCallback(() => {
@@ -149,8 +169,6 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
     );
   }
 
-  const pendingIdentity = attempts.filter((a) => a.identityStatus === "SUBMITTED").length;
-
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -166,11 +184,6 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
             </option>
           ))}
         </select>
-        {pendingIdentity > 0 && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
-            <ShieldAlert size={12} /> {pendingIdentity} identity photo{pendingIdentity === 1 ? "" : "s"} to review
-          </span>
-        )}
       </div>
 
       <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-surface">
@@ -181,15 +194,16 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
               <th className="px-4 py-3">Plan</th>
               <th className="px-4 py-3">Score</th>
               <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Identity</th>
-              <th className="px-4 py-3">Violations</th>
+              <th className="px-4 py-3">Signal</th>
+              <th className="px-4 py-3">Strikes</th>
               <th className="px-4 py-3">Submitted</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {visible.map((a) => (
-              <tr key={a.attemptId}>
+              <Fragment key={a.attemptId}>
+              <tr>
                 <td className="px-4 py-3">
                   <span className="font-semibold text-ink">{a.userName}</span>
                   <span className="block text-[11px] text-slate-400">Attempt {a.attemptNumber}</span>
@@ -205,17 +219,17 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <IdentityCell
-                    attempt={a}
-                    onReview={(approved) =>
-                      void act(
-                        () => reviewAttemptIdentity(a.attemptId, approved),
-                        approved ? "Identity approved" : "Identity rejected"
-                      ).catch(() => undefined)
-                    }
-                  />
+                  <SignalCell attempt={a} />
                 </td>
-                <td className="px-4 py-3 text-xs tabular-nums text-slate-600">{a.violationCount || "—"}</td>
+                <td className="px-4 py-3">
+                  <button
+                    type="button"
+                    onClick={() => setOpenLog(openLog === a.attemptId ? null : a.attemptId)}
+                    className="text-xs font-semibold tabular-nums text-slate-600 underline-offset-2 hover:underline"
+                  >
+                    {a.violationCount || "0"} · log
+                  </button>
+                </td>
                 <td className="px-4 py-3 text-xs text-slate-500">{formatDate(a.submittedAt)}</td>
                 <td className="px-4 py-3 text-right">
                   <StudioRowMenu
@@ -279,6 +293,14 @@ export function ExamAttemptsWorkspace({ examId, plans }: { examId: string; plans
                   />
                 </td>
               </tr>
+              {openLog === a.attemptId && (
+                <tr className="bg-slate-50/60 dark:bg-white/[0.02]">
+                  <td colSpan={8} className="px-4 py-3">
+                    <Timeline attemptId={a.attemptId} />
+                  </td>
+                </tr>
+              )}
+            </Fragment>
             ))}
           </tbody>
         </table>

@@ -601,7 +601,7 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                 {/* About this Event Card */}
                 <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm">
                   <h2 className="text-base sm:text-lg font-bold text-slate-900">
-                    About this {event.eventType?.toLowerCase() || 'event'}
+                    About this {event.eventType?.toLowerCase().replace(/_/g, ' ') || 'event'}
                   </h2>
                   {event.description ? (
                     <div className="mt-3 text-sm sm:text-base leading-relaxed text-slate-600 font-normal whitespace-pre-wrap">

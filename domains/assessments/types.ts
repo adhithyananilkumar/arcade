@@ -323,9 +323,9 @@ export interface ExamAttemptSummaryResponse {
   percentage: number | null;
   passed: boolean | null;
   awaitingMarking: boolean;
-  identityStatus: IdentityStatus | null;
-  identityEvidenceUrl: string | null;
   violationCount: number;
+  /** The longest stretch the sitting went without a signal, in seconds. */
+  longestGapSeconds: number;
 }
 
 export interface ExamResultResponse {
@@ -413,7 +413,6 @@ export type ExamSettingKey =
   | "SHUFFLE_OPTIONS"
   | "FIXED_PAPER"
   | "PROCTORING_REQUIRED"
-  | "IDENTITY_VERIFICATION_REQUIRED"
   | "FULLSCREEN_REQUIRED"
   | "MAX_VIOLATIONS"
   | "FEE_AMOUNT_MINOR"
@@ -477,7 +476,6 @@ export interface ExamPlanResponse {
   shuffleQuestions: boolean;
   shuffleOptions: boolean;
   proctoringRequired: boolean;
-  identityVerificationRequired: boolean;
   fullscreenRequired: boolean;
   maxViolations: number;
   /** Shown in Explore > Exams (certifications, and every plan of a standalone exam). */
@@ -512,7 +510,6 @@ export type ExamPlanRequest = Partial<{
   shuffleQuestions: boolean;
   shuffleOptions: boolean;
   proctoringRequired: boolean;
-  identityVerificationRequired: boolean;
   fullscreenRequired: boolean;
   maxViolations: number;
 }>;
@@ -593,20 +590,12 @@ export interface MarkingItem {
 
 // ── Proctoring ────────────────────────────────────────────────────────────────
 
-/** SUBMITTED lets the candidate start; an administrator then approves or rejects the evidence. */
-export type IdentityStatus = "NOT_SUBMITTED" | "SUBMITTED" | "APPROVED" | "REJECTED";
-
-export interface ProctorSessionResponse {
-  id: string | null;
-  examId: string;
-  planId: string;
-  attemptId: string | null;
-  status: string;
-  identityStatus: IdentityStatus;
-  identitySubmittedAt: string | null;
-  violationCount: number;
-  startedAt: string | null;
-  endedAt: string | null;
+/** One entry of a sitting's integrity timeline; `violation` says whether it cost a strike. */
+export interface ProctorTimelineEntry {
+  eventType: string;
+  detail: string | null;
+  occurredAt: string;
+  violation: boolean;
 }
 
 // ── Question pools, dynamic ───────────────────────────────────────────────────
@@ -713,7 +702,6 @@ export type AssessmentBlockedReason =
   | "NOT_STARTED_YET"
   | "WINDOW_CLOSED"
   | "ATTEMPTS_EXHAUSTED"
-  | "IDENTITY_REQUIRED"
   | "COMPLETION_REQUIREMENTS"
   | "RETAKE_APPROVAL_REQUIRED";
 
@@ -853,7 +841,6 @@ export interface AssessmentLandingResponse {
   questionCount: number;
 
   proctoringRequired: boolean;
-  identityVerificationRequired: boolean;
   fullscreenRequired: boolean;
   maxViolations: number;
 
@@ -864,7 +851,6 @@ export interface AssessmentLandingResponse {
   prerequisite: LandingPrerequisite | null;
   enrollmentWindow: LandingWindow | null;
   accessWindow: LandingWindow | null;
-  identityStatus: IdentityStatus | null;
 
   attemptsUsed: number;
   attemptsRemaining: number;
@@ -1005,9 +991,7 @@ export interface GradeCardResponse {
    */
   certificateStatus:
     | "ISSUED"
-    | "AWAITING_IDENTITY_REVIEW"
     | "AWAITING_ISSUE"
-    | "IDENTITY_REJECTED"
     | "WITHHELD"
     | "NOT_APPLICABLE"
     | null;

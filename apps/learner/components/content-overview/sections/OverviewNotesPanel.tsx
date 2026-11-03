@@ -110,13 +110,21 @@ export function OverviewNotesPanel({
                   onClick={() => setOpenNote(note)}
                   className="group w-full rounded-xl border border-slate-200/70 bg-surface/60 p-3 text-left transition hover:border-indigo-300 hover:bg-indigo-50/40 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30"
                 >
-                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
-                    <PenLine size={11} />
-                    {note.anchorLabel ?? 'On this course'}
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="truncate text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
+                      {note.anchorLabel ?? 'On this course'}
+                    </span>
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                      <PenLine size={10} />
+                      Edit
+                    </span>
                   </span>
                   <p className="mt-1 line-clamp-3 text-[13px] leading-relaxed text-slate-600">
                     {note.excerpt}
                   </p>
+                  <span className="mt-1.5 block text-[10px] font-medium text-slate-400">
+                    {note.wordCount} {note.wordCount === 1 ? 'word' : 'words'}
+                  </span>
                 </button>
               </li>
             ))}
@@ -126,6 +134,8 @@ export function OverviewNotesPanel({
 
       <NotePreviewSheet
         note={openNote}
+        contentType={contentType}
+        contentId={contentId}
         itemHref={openNote?.anchorId ? hrefByAnchor.get(openNote.anchorId) ?? null : null}
         onClose={() => setOpenNote(null)}
       />

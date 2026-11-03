@@ -344,13 +344,6 @@ export function PlanWorkspace({
               disabled={readOnly || busy || locked("PROCTORING_REQUIRED")}
               onChange={(v) => patchPlan({ proctoringRequired: v })}
             />
-            <ToggleField
-              label="Identity verification"
-              value={plan.identityVerificationRequired}
-              setting={setting("IDENTITY_VERIFICATION_REQUIRED")}
-              disabled={readOnly || busy || locked("IDENTITY_VERIFICATION_REQUIRED")}
-              onChange={(v) => patchPlan({ identityVerificationRequired: v })}
-            />
             <div className="flex items-start gap-3 py-3">
               <Lock size={15} className="mt-0.5 shrink-0 text-slate-400" />
               <p className="text-xs leading-relaxed text-slate-600">

@@ -24,7 +24,6 @@ import { toast } from 'sonner';
 import { EnrollmentButton } from '@/domains/enrollment';
 import { courseRoutes, eventRoutes, examRoutes, openExamSitting } from '@/shared/routes/content.routes';
 import { formatMoney } from '@/shared/utils/money';
-import { IdentityCapture } from '@/apps/learner/components/exams/IdentityCapture';
 import { goBackTo, safeReturnTo } from '@/infrastructure/state/navigationHistory';
 
 export default function ExamPage() {
@@ -168,16 +167,6 @@ export default function ExamPage() {
     />
   ) : undefined;
 
-  const identity =
-    landing.planId && landing.blockedReason === 'IDENTITY_REQUIRED' ? (
-      <IdentityCapture
-        examId={examId}
-        planId={landing.planId}
-        rejected={landing.identityStatus === 'REJECTED'}
-        onSubmitted={load}
-      />
-    ) : undefined;
-
   // Back to where the learner came from: a course passes returnTo; a linked assessment belongs to its
   // course or event; a certification or standalone exam to the Exams catalogue.
   const tiedHome =
@@ -205,7 +194,6 @@ export default function ExamPage() {
       }
       onViewGradeCard={(id) => router.push(examRoutes.gradeCard(id))}
       registrationSlot={registration}
-      identitySlot={identity}
       retakeSlot={retake}
       feeLabel={landing.feeMinor > 0 ? formatMoney(landing.feeMinor, landing.currency ?? 'INR') : null}
       onOpenPrerequisite={openPrerequisite}

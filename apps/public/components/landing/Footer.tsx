@@ -80,6 +80,8 @@ export default function Footer() {
             <h4 className="arc-footer__mono-title">RESOURCES</h4>
             <ul className="arc-footer__mono-list">
               <li><a href="https://www.amaljyothi.ac.in" target="_blank" rel="noreferrer">College Portal ↗</a></li>
+              <li><Link href="/credentials/verify">Verify a Credential</Link></li>
+              <li><Link href="/credentials/standards">Credential Standards</Link></li>
               <li><Link href="/placement">Placements 2026</Link></li>
               <li><Link href="/library">Digital Library</Link></li>
               <li><Link href="/calendar">Academic Calendar</Link></li>

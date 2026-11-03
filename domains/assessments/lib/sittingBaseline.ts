@@ -33,12 +33,23 @@ export const SITTING_BASELINE_RULES: SittingRule[] = [
       'Switching tab or window — Alt+Tab, another app, a browser sidebar or AI assistant — counts as a violation.',
   },
   {
-    title: 'No copy or paste',
-    detail: 'Copy, cut and paste are blocked, and each try counts as a violation.',
+    title: 'Typed answers only',
+    detail:
+      'Copy, cut, paste and drag-and-drop are blocked, and so is any single edit that inserts a block of text. Each try counts as a violation.',
   },
   {
     title: 'No developer tools',
-    detail: 'Developer-tools shortcuts count as a violation; the right-click menu, printing and saving the page are blocked.',
+    detail:
+      'Developer-tools shortcuts, or a panel docked beside the paper, count as a violation; the right-click menu, printing and saving the page are blocked.',
+  },
+  {
+    title: 'One screen, no automation',
+    detail: 'A second connected display, or a browser driven by automation software, counts as a violation.',
+  },
+  {
+    title: 'Watched throughout',
+    detail:
+      'The paper reports to the server every few seconds. Silences, idle stretches, window resizes and the pointer leaving the page are logged for the exam author to review.',
   },
   {
     title: `${SITTING_MAX_VIOLATIONS} strikes`,

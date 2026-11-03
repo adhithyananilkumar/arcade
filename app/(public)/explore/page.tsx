@@ -1397,11 +1397,6 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
   });
   const publishedEvents = publishedEventPage?.content ?? [];
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
 
   // Ref for the content section — used to auto-scroll into view on tab switch
   const contentRef = React.useRef<HTMLDivElement>(null);
@@ -1927,9 +1922,8 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
               ? mergedCategoriesList.filter(cat => cat.toLowerCase().includes(query) || getCategoryData(cat)?.desc.toLowerCase().includes(query))
               : mergedCategoriesList;
               
-            const itemsPerPage = 8;
-            const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
-            const currentCategories = filteredCategories.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+            // Every section is listed down the page — no paging.
+            const currentCategories = filteredCategories;
 
             let searchResults: any[] = [];
             if (searchQuery) {
@@ -2144,46 +2138,6 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
                     <h3 style={{ margin: "0 0 8px 0", fontSize: "1.25rem", color: "var(--theme-ink, #111827)" }}>No results found</h3>
                     <p style={{ margin: 0, color: "var(--theme-n-500, #6B7280)" }}>We couldn't find any departments or items matching "{searchQuery}".</p>
                   </div>
-              )}
-
-              {!searchQuery && totalPages > 1 && (
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "16px", marginTop: "32px" }}>
-                  <button
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    style={{
-                      padding: "8px 16px",
-                      borderRadius: "8px",
-                      border: "1px solid var(--theme-n-200, #E5E7EB)",
-                      background: currentPage === 1 ? "var(--theme-n-50, #F9FAFB)" : "var(--theme-surface, #FFFFFF)",
-                      color: currentPage === 1 ? "var(--theme-n-400, #9CA3AF)" : "var(--theme-n-700, #374151)",
-                      cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                      fontWeight: "500",
-                      transition: "all 0.2s"
-                    }}
-                  >
-                    Previous
-                  </button>
-                  <span style={{ fontSize: "0.9rem", color: "var(--theme-n-500, #6B7280)", fontWeight: "500" }}>
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <button
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    style={{
-                      padding: "8px 16px",
-                      borderRadius: "8px",
-                      border: "1px solid var(--theme-n-200, #E5E7EB)",
-                      background: currentPage === totalPages ? "var(--theme-n-50, #F9FAFB)" : "var(--theme-surface, #FFFFFF)",
-                      color: currentPage === totalPages ? "var(--theme-n-400, #9CA3AF)" : "var(--theme-n-700, #374151)",
-                      cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                      fontWeight: "500",
-                      transition: "all 0.2s"
-                    }}
-                  >
-                    Next
-                  </button>
-                </div>
               )}
             </div>
             );

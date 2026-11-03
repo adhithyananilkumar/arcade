@@ -88,12 +88,15 @@ export function EventPricingSection({
   eventAnalytics,
   participantCount,
   onChanged,
+  part,
 }: {
   eventId: string;
   eventDetails?: FetchResult<EventDto>;
   eventAnalytics?: FetchResult<Record<string, unknown>>;
   participantCount: number;
   onChanged: () => void;
+  /** One half of the tab as its own page: the pricing form, or revenue & analytics. Both when omitted. */
+  part?: "pricing" | "analytics";
 }) {
   // The page has loaded the event before this tab renders, and a save keeps `saved` current
   // itself, so the initial value is all this needs from props.
@@ -146,6 +149,7 @@ export function EventPricingSection({
 
   return (
     <div className="flex flex-col gap-8">
+      {part !== "analytics" && (<>
       <div className="grid grid-cols-2 gap-6 border-b border-slate-200/70 pb-8 sm:grid-cols-4">
         <WorkspaceStat icon={Users} label="Registrations" value={participantCount} />
         <WorkspaceStat
@@ -242,8 +246,11 @@ export function EventPricingSection({
         <WorkspaceSaveBar onSave={save} saving={saving} dirty={dirty} label="Save pricing" savedLabel="Pricing saved" />
       </WorkspaceRows>
 
+      </>)}
+
       {/* Analytics */}
-      <div className="flex flex-col gap-6 pt-6 border-t border-slate-200/70">
+      {part !== "pricing" && (
+      <div className={part === "analytics" ? "flex flex-col gap-6" : "flex flex-col gap-6 pt-6 border-t border-slate-200/70"}>
         <WorkspaceHeading
           icon={BarChart3}
           title="Revenue & Analytics"
@@ -261,6 +268,7 @@ export function EventPricingSection({
           <MetricsGrid metrics={metrics} />
         )}
       </div>
+      )}
     </div>
   );
 }

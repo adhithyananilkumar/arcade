@@ -53,11 +53,6 @@ export interface AssessmentLandingProps {
    * rather than growing a second one.
    */
   registrationSlot?: ReactNode;
-  /**
-   * Rendered in place of the Start button when the candidate must verify their identity first —
-   * the host owns the capture/upload flow (it needs the media endpoint).
-   */
-  identitySlot?: ReactNode;
   /** Opens the tied content a certification requires, when its prerequisite is unmet. */
   onOpenPrerequisite?: () => void;
   /** Opens a graded assessment listed in a completion assessment's checklist. */
@@ -74,7 +69,6 @@ export function AssessmentLanding({
   onNextItem,
   onReportIssue,
   registrationSlot,
-  identitySlot,
   onOpenPrerequisite,
   onOpenRequirement,
   readOnly = false,
@@ -101,7 +95,6 @@ export function AssessmentLanding({
   };
 
   const meta = planTypeMeta(landing.planType);
-  const needsIdentity = landing.blockedReason === "IDENTITY_REQUIRED";
 
   // STATE B — ATTEMPTED AT LEAST ONCE:
   // Render the post-attempt status and result card instead of the untouched landing view.
@@ -111,11 +104,9 @@ export function AssessmentLanding({
         <AssessmentResultCard
           landing={landing}
           onStart={handleStartClick}
-          onViewGradeCard={onViewGradeCard}
           onNextItem={onNextItem}
           onReportIssue={onReportIssue}
           registrationSlot={registrationSlot}
-          identitySlot={identitySlot}
           readOnly={readOnly}
           starting={starting}
         />
@@ -209,12 +200,6 @@ export function AssessmentLanding({
               text="This assessment is also proctored: your sitting is reviewed by the exam's administrators."
             />
           )}
-          {landing.identityVerificationRequired && (
-            <Requirement
-              icon={<ShieldCheck size={15} />}
-              text="You'll submit a photo of yourself before starting. An administrator reviews it."
-            />
-          )}
         </ul>
       </section>
 
@@ -252,8 +237,6 @@ export function AssessmentLanding({
             )}
             {registrationSlot}
           </div>
-        ) : needsIdentity && identitySlot ? (
-          <div>{identitySlot}</div>
         ) : landing.startable ? (
           <button
             type="button"
@@ -294,34 +277,9 @@ export function AssessmentLanding({
                 </div>
 
                 <div className="flex shrink-0 items-center gap-3">
-                  {attempt.awaitingReview ? (
-                    // A provisional score is withheld rather than shown as if it were final.
-                    <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-amber-700 dark:text-amber-300">
-                      <Hourglass size={13} />
-                      Awaiting marking
-                    </span>
-                  ) : attempt.percentage !== null ? (
-                    <span
-                      className={`inline-flex items-center gap-1.5 text-[12px] font-semibold ${
-                        attempt.passed ? "text-emerald-700 dark:text-emerald-300" : "text-slate-500"
-                      }`}
-                    >
-                      {attempt.passed && <CheckCircle2 size={13} />}
-                      {attempt.percentage}%
-                    </span>
-                  ) : (
-                    <span className="text-[12px] font-medium text-slate-400">{attemptStatusLabel(attempt)}</span>
-                  )}
-
-                  {attempt.gradeCardId && onViewGradeCard && (
-                    <button
-                      type="button"
-                      onClick={() => onViewGradeCard(attempt.gradeCardId!)}
-                      className="rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition-colors hover:bg-slate-50"
-                    >
-                      Grade card
-                    </button>
-                  )}
+                  <span className="text-[12px] font-medium text-slate-500">
+                    {attempt.submittedAt ? "Completed" : attemptStatusLabel(attempt)}
+                  </span>
                 </div>
               </li>
             ))}
@@ -432,8 +390,6 @@ function blockedIcon(reason: AssessmentLandingResponse["blockedReason"]) {
     case "COMPLETION_REQUIREMENTS":
     case "RETAKE_APPROVAL_REQUIRED":
       return <Lock size={16} />;
-    case "IDENTITY_REQUIRED":
-      return <ShieldCheck size={16} />;
     default:
       return <AlertCircle size={16} />;
   }

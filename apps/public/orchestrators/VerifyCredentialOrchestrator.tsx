@@ -89,45 +89,60 @@ export function VerifyCredentialOrchestrator() {
   const Icon = look?.icon ?? ShieldCheck;
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-2xl px-4 pb-24 pt-28 sm:px-6">
-      <div className="text-center">
-        <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-ink text-on-ink shadow-lg">
-          <ShieldCheck size={22} />
+    <main className="mx-auto min-h-screen w-full max-w-3xl px-4 pb-24 pt-28 sm:px-6 sm:pt-32">
+      <header className="text-center">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
+          <ShieldCheck size={13} className="text-[#2962D6] dark:text-[#7eb5ff]" />
+          Credential verification
         </span>
-        <h1 className="mt-4 text-3xl font-black tracking-tight text-ink sm:text-4xl">Verify a credential</h1>
-        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-500">
-          Enter the ID printed on an Arcade badge, certificate or grade card — e.g.{" "}
-          <span className="font-mono font-bold">ARC-…</span>, <span className="font-mono font-bold">CERT-…</span> or{" "}
-          <span className="font-mono font-bold">GC-…</span>.
+        <h1 className="mt-4 text-3xl font-bold tracking-tight text-ink sm:text-[2.5rem] sm:leading-tight">
+          Verify an Arcade credential
+        </h1>
+        <p className="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-slate-500">
+          Confirm that a badge, certificate or grade card is genuine, current and unaltered. No sign-in needed.
         </p>
-      </div>
+      </header>
 
-      <form onSubmit={submit} className="mt-8 flex gap-2">
-        <label className="relative flex-1">
-          <span className="sr-only">Credential ID</span>
-          <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="CERT-XXXX-XXXX-XXXX"
-            autoComplete="off"
-            spellCheck={false}
-            className="w-full rounded-2xl border border-slate-200 bg-surface py-3.5 pl-11 pr-4 font-mono text-sm font-bold uppercase tracking-wider text-slate-900 shadow-sm placeholder:font-sans placeholder:normal-case placeholder:tracking-normal placeholder:text-slate-400 focus:border-[#2962D6] focus:outline-none focus:ring-2 focus:ring-[#2962D6]/20"
-          />
+      <form
+        onSubmit={submit}
+        className="mt-9 rounded-2xl border border-slate-200/80 bg-surface p-4 shadow-[0_8px_30px_rgba(20,20,43,0.05)] sm:p-5"
+      >
+        <label htmlFor="credential-id" className="text-[12px] font-bold uppercase tracking-[0.12em] text-slate-500">
+          Credential ID
         </label>
-        <button
-          type="submit"
-          disabled={checking || !input.trim()}
-          className="inline-flex items-center gap-2 rounded-2xl bg-ink px-5 text-sm font-bold text-on-ink hover:bg-[#23234a] disabled:opacity-50"
-        >
-          {checking ? <Loader2 size={16} className="animate-spin" /> : "Verify"}
-        </button>
+        <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+          <div className="relative flex-1">
+            <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              id="credential-id"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="CERT-XXXX-XXXX-XXXX"
+              autoComplete="off"
+              spellCheck={false}
+              className="w-full rounded-xl border border-slate-200 bg-surface py-3 pl-11 pr-4 font-mono text-sm font-bold uppercase tracking-wider text-slate-900 placeholder:font-sans placeholder:normal-case placeholder:tracking-normal placeholder:font-medium placeholder:text-slate-400 focus:border-[#2962D6] focus:outline-none focus:ring-2 focus:ring-[#2962D6]/20"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={checking || !input.trim()}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-ink px-6 py-3 text-sm font-semibold text-on-ink transition hover:bg-ink-hover disabled:opacity-50"
+          >
+            {checking ? <Loader2 size={16} className="animate-spin" /> : "Verify"}
+          </button>
+        </div>
+        <p className="mt-3 text-xs leading-relaxed text-slate-500">
+          Found printed on the document or beside the QR code. Badges start with{" "}
+          <span className="font-mono font-bold">ARC-</span>, certificates with{" "}
+          <span className="font-mono font-bold">CERT-</span> and grade cards with{" "}
+          <span className="font-mono font-bold">GC-</span>.
+        </p>
       </form>
 
       {error && <p className="mt-6 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">{error}</p>}
 
       {result && look && (
-        <section className={cn("mt-8 rounded-3xl border p-5 sm:p-6", look.cls)} aria-live="polite">
+        <section className={cn("mt-6 rounded-2xl border p-5 sm:p-6", look.cls)} aria-live="polite">
           <div className="flex items-start gap-3">
             <Icon size={24} className="mt-0.5 shrink-0" />
             <div>
@@ -204,6 +219,28 @@ export function VerifyCredentialOrchestrator() {
           )}
         </section>
       )}
+      {!result && !error && !checking && (
+        <ul className="mt-8 grid gap-3 sm:grid-cols-3">
+          {[
+            { icon: ShieldCheck, title: "Genuine", text: "Issued by Arcade and recorded at the time of award." },
+            { icon: TimerOff, title: "Current", text: "Shows if a credential has expired or been revoked." },
+            { icon: ShieldX, title: "Unaltered", text: "Details are checked against the sealed original." },
+          ].map(({ icon: I, title, text }) => (
+            <li key={title} className="rounded-2xl border border-slate-200/80 bg-surface p-4">
+              <I size={18} className="text-[#2962D6] dark:text-[#7eb5ff]" />
+              <p className="mt-2 text-sm font-bold text-ink">{title}</p>
+              <p className="mt-0.5 text-xs leading-relaxed text-slate-500">{text}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <p className="mt-8 text-center text-xs text-slate-500">
+        Want to know how credentials are awarded?{" "}
+        <Link href="/credentials/standards" className="font-semibold text-[#2962D6] hover:underline dark:text-[#7eb5ff]">
+          Read the credential standards
+        </Link>
+      </p>
     </main>
   );
 }

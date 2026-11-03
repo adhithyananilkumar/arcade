@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
 import { ApiError } from '@/infrastructure/http/api';
 import { channelService, type CredentialBrandingReadiness } from '../api/channel.service';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/design-system/ui/popover';
 
 /** The backend refused a submission because the channel's credential branding is incomplete. */
 export function isBrandingIncomplete(error: unknown): boolean {
@@ -30,12 +31,15 @@ export function ChannelBrandingNotice({
   channelId,
   refreshKey,
   context = 'publish',
+  variant = 'banner',
   className,
 }: {
   channelId: string | null | undefined;
   refreshKey?: unknown;
   /** `create`: shown while creating content — creation is allowed, publishing is not. */
   context?: 'create' | 'publish';
+  /** `icon`: a small amber warning button that opens the same notice — for crowded headers and forms. */
+  variant?: 'banner' | 'icon';
   className?: string;
 }) {
   // Tagged with its channel, so a stale answer is never shown for a newly picked channel.
@@ -58,6 +62,38 @@ export function ChannelBrandingNotice({
 
   const items = readiness.missing.map((m) => (m === 'LOGO' ? 'a logo' : 'a certificate signature (image, name and title)'));
   const what = items.join(' and ');
+  const heading =
+    context === 'create' ? 'You can create this now, but the channel cannot publish it yet' : 'This channel cannot publish yet';
+  const body = `It needs ${what} first — they are printed on every badge and certificate learners earn from it. ${
+    readiness.personal
+      ? 'Add your signature and title in your channel’s Identity & branding.'
+      : 'A channel manager can add them in the channel’s Identity & branding.'
+  }`;
+
+  if (variant === 'icon') {
+    return (
+      <Popover>
+        <PopoverTrigger
+          aria-label={heading}
+          title={heading}
+          className={`relative inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-amber-300 bg-amber-50 text-amber-600 shadow-2xs transition hover:bg-amber-100 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300 ${className ?? ''}`}
+        >
+          <AlertTriangle size={17} />
+          <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-amber-500 ring-2 ring-surface" />
+        </PopoverTrigger>
+        <PopoverContent side="bottom" align="end" className="w-80 p-4">
+          <p className="text-[13px] font-bold text-slate-900">{heading}</p>
+          <p className="text-[12.5px] leading-relaxed text-slate-600">{body}</p>
+          <Link
+            href={brandingSetupHref(channelId, readiness)}
+            className="inline-flex items-center gap-1.5 text-[12.5px] font-extrabold text-amber-700 underline-offset-2 hover:underline dark:text-amber-300"
+          >
+            Set up badges &amp; certificates <ArrowRight size={13} />
+          </Link>
+        </PopoverContent>
+      </Popover>
+    );
+  }
 
   return (
     <div

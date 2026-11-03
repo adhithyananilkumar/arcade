@@ -802,10 +802,6 @@ export function ReviewDetail({ reviewId, backHref, backLabel = "Back to reviews"
                                 <Shield size={12} className={pl.proctoringRequired ? "text-indigo-600 dark:text-indigo-400" : "text-slate-300"} />
                                 Proctoring {pl.proctoringRequired ? "on" : "off"}
                               </span>
-                              <span className="inline-flex items-center gap-1">
-                                <FileCheck size={12} className={pl.identityVerificationRequired ? "text-indigo-600 dark:text-indigo-400" : "text-slate-300"} />
-                                Identity check {pl.identityVerificationRequired ? "on" : "off"}
-                              </span>
                             </div>
                           </div>
                         ))}

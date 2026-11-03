@@ -75,6 +75,65 @@ export {
   useRevokeInvitationMutation,
 } from './api/events.queries';
 
+// Team competitions (hackathons): organiser console, participant team board, judging.
+export { CompetitionAdminService, TeamBoardService, JudgingService } from './api/competition.service';
+export type {
+  CompetitionPhase,
+  CompetitionPerson,
+  CompetitionSettings,
+  CompetitionTrack,
+  JudgingCriterion,
+  CompetitionAward,
+  Competition,
+  TeamMember,
+  TeamCard,
+  JoinRequestKind,
+  TeamJoinRequest,
+  CompetitionTeam,
+  CompetitionSubmission,
+  SubmissionEvaluation,
+  CompetitionJudge,
+  LeaderboardEntry,
+  AdminSubmission,
+  AdminSubmissionDetail,
+  CompetitionSummary,
+  CompetitionResults,
+  TeamBoard,
+  InviteResult,
+  InviteResults,
+  JoinPreview,
+  JudgingQueueItem,
+  JudgingQueue,
+  JudgingDetail,
+  JudgingAssignment,
+  UpdateCompetitionRequest,
+  TeamRequest,
+  SubmissionRequest,
+  EvaluationRequest,
+  SubmissionField,
+  SubmissionFieldType,
+  SubmissionFieldRequest,
+  SubmissionAnswer,
+  JudgeStatus,
+  UploadedFile,
+} from './types/competition.types';
+
+export {
+  AvatarStack,
+  Chip as CompetitionChip,
+  Countdown,
+  LeaderboardTable,
+  PersonAvatar,
+  PhaseTimeline,
+  Podium,
+  TeamCardView,
+  PHASE_LABEL,
+  formatCompetitionDate,
+  nextMilestone,
+} from './components/competition/CompetitionUI';
+
+export { SubmissionFormFields, SubmissionAnswersView, FIELD_TYPE_LABEL } from './components/competition/SubmissionForm';
+
 export { EventTicketCard } from './components/EventTicketCard';
 export { TicketCheckInPanel } from './components/TicketCheckInPanel';
 export { EventInvitationManager } from './components/EventInvitationManager';

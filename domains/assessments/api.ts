@@ -13,13 +13,13 @@ import type {
   ExamTieType,
   GradeCardResponse,
   MarkingItem,
-  ProctorSessionResponse,
   AssessmentLandingResponse,
   AssessmentPlacementResponse,
   AttemptResponse,
   BankQuestionRequest,
   BankQuestionResponse,
   ExamAttemptSummaryResponse,
+  ProctorTimelineEntry,
   ExamPlanRequest,
   ExamPlanResponse,
   ExamPlanSectionResponse,
@@ -427,28 +427,21 @@ export function submitExamAttempt(attemptId: string) {
 export function getExamResult(attemptId: string) {
   return api.get<ExamResultResponse>(`/api/exam-attempts/${attemptId}/result`);
 }
-
 // ── Proctoring ───────────────────────────────────────────────────────────────────────────────
 // The server counts violations and ends the attempt at the plan's limit; the client only reports.
 
-/** The candidate's proctoring session for a plan — identity status before starting. */
-export function getProctorSession(examId: string, planId: string) {
-  return api.get<ProctorSessionResponse>(`/api/exams/${examId}/plans/${planId}/proctoring/session`);
-}
-
-/** Submits identity evidence: a photo already uploaded through the media endpoint. */
-export function submitIdentityEvidence(examId: string, planId: string, evidenceUrl: string) {
-  return api.post<ProctorSessionResponse>(`/api/exams/${examId}/plans/${planId}/proctoring/identity`, {
-    evidenceUrl,
-  });
-}
-
 /**
  * Reports a proctoring event (tab switch, fullscreen exit…). Returns the attempt as the server now
- * sees it — which may be CANCELLED if this report reached the plan's violation limit.
+ * sees it — which may be CANCELLED if this report reached the plan's violation limit. A `HEARTBEAT`
+ * is the liveness ping: stored nowhere, but it carries the server's clock back in `secondsRemaining`.
  */
 export function recordProctorEvent(attemptId: string, eventType: string, detail?: string) {
   return api.post<AttemptResponse>(`/api/exam-attempts/${attemptId}/proctoring/events`, { eventType, detail });
+}
+
+/** One sitting's integrity timeline — every strike and audit entry the browser reported. Administrators only. */
+export function getProctorTimeline(attemptId: string) {
+  return api.get<ProctorTimelineEntry[]>(`/api/exam-attempts/${attemptId}/proctoring/events`);
 }
 
 // ── Exam administration (creator-facing) ─────────────────────────────────────
@@ -473,10 +466,6 @@ export function grantExtraAttempts(planId: string, learnerId: string, extraAttem
     extraAttempts,
     reason: reason ?? null,
   });
-}
-
-export function reviewAttemptIdentity(attemptId: string, approved: boolean, note?: string) {
-  return api.post<void>(`/api/exam-attempts/${attemptId}/identity-review`, { approved, note: note ?? null });
 }
 
 /** Attempts with written answers awaiting marking. */

@@ -70,7 +70,7 @@ const FILL_TINT = 0.3;
 export function artKindOf(type?: string | null): ContentArtKind {
   const t = (type ?? '').toUpperCase();
   if (t === 'EXAM' || t === 'ASSESSMENT' || t === 'QUIZ' || t === 'CERTIFICATION') return 'EXAM';
-  if (t === 'EVENT' || t === 'WORKSHOP' || t === 'WEBINAR' || t === 'BOOTCAMP' || t === 'HACKATHON' || t === 'MEETUP') return 'EVENT';
+  if (t === 'EVENT' || t === 'WORKSHOP' || t === 'WEBINAR' || t === 'BOOTCAMP' || t === 'TEAM_EVENT' || t === 'MEETUP') return 'EVENT';
   return 'COURSE';
 }
 
@@ -83,6 +83,8 @@ interface Scene {
   companions: [Motif, Motif];
   /** Separate stream for placement variety, so each item's layout is its own. */
   vary: Rng;
+  /** Mirror the layout? Drawn from the content id alone, so it never changes when the theme does. */
+  flip: boolean;
   uid: string;
 }
 
@@ -119,7 +121,8 @@ export function ContentArt({ seed, kind, category, categoryId, title, className,
     const vary = createRng(`${seed}|${family}|vary`);
     const base = paletteFor(theme, seed);
     const pal = vary.chance(0.5) ? { ...base, main: base.accent, accent: base.main } : base;
-    return { rng, vary, theme, pal, motif, companions: [first, second] };
+    const flip = createRng(`${seed}|${family}|flip`).chance(0.5);
+    return { rng, vary, flip, theme, pal, motif, companions: [first, second] };
   }, [seed, family, categoryName, title]);
 
   const s: Scene = { ...scene, uid };
@@ -422,8 +425,8 @@ function Signature({ vary, pal, x, y }: { vary: Rng; pal: ArtPalette; x: number;
   );
 }
 
-function LearningPath({ rng, vary, pal, motif, companions }: Scene) {
-  const flip = rng.chance(0.5);
+function LearningPath({ rng, vary, flip, pal, motif, companions }: Scene) {
+  rng.chance(0.5); // keeps the rest of the stream where it was
   const X = (x: number) => (flip ? W - x : x);
   // Per-item placement: main subject and companions sit slightly differently on every course.
   const jx = r2(vary.range(-10, 10));
@@ -456,8 +459,8 @@ function LearningPath({ rng, vary, pal, motif, companions }: Scene) {
 
 // ── Event: a celebration ────────────────────────────────────────────────────
 
-function Celebration({ rng, vary, pal, motif, companions }: Scene) {
-  const flip = rng.chance(0.5);
+function Celebration({ rng, vary, flip, pal, motif, companions }: Scene) {
+  rng.chance(0.5); // keeps the rest of the stream where it was
   const X = (x: number) => (flip ? W - x : x);
   const mx = X(170 + r2(vary.range(-10, 10)));
   const my = 128 + r2(vary.range(-6, 6));

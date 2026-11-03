@@ -14,7 +14,7 @@ export type EventStatus =
   | 'REJECTED'
   | 'ARCHIVED';
 
-export type EventTypeName = 'WORKSHOP' | 'WEBINAR' | 'BOOTCAMP' | 'MASTERCLASS' | 'CONFERENCE';
+export type EventTypeName = 'WORKSHOP' | 'WEBINAR' | 'BOOTCAMP' | 'MASTERCLASS' | 'CONFERENCE' | 'AMA' | 'TEAM_EVENT';
 
 export type EventDeliveryMode = 'ONLINE' | 'OFFLINE' | 'HYBRID';
 

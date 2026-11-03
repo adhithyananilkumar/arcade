@@ -567,7 +567,8 @@ export default function MyLearningPage() {
                         index={idx}
                         hideTypeAndFeeBadge
                         onOpen={() => router.push(examRoutes.landing(card.examId))}
-                        onViewGrades={gradesByExam.has(card.examId) ? () => setGradesFor(card) : undefined}
+                        // Grades are withheld until results are published.
+                        onViewGrades={undefined}
                       />
                     ))}
                   </motion.div>
