@@ -22,6 +22,14 @@ export interface AesChallenge {
   sentTo: string;
 }
 
+/**
+ * What starting an AES sign-in gave back: an emailed link to open, or — on a browser already
+ * remembered for the account — a session straight away.
+ */
+export type AesExchange =
+  | { signedIn: false; challenge: AesChallenge }
+  | { signedIn: true; accessToken: string; user: unknown };
+
 export type AesIntent = 'login' | 'link';
 
 const JQUERY_URL = 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js';
@@ -87,10 +95,10 @@ export class AesService {
   }
 
   /**
-   * Step 1 of an AES sign-in: redeems the ticket and has a link emailed. An AES result alone never
+   * Step 1 of an AES sign-in: redeems the ticket and has a link emailed (or, on a remembered browser, signs in). An AES result alone never
    * signs anyone in — the link, sent to a mailbox only the real person can read, does.
    */
-  static async exchange(ticket: string): Promise<AesChallenge> {
+  static async exchange(ticket: string): Promise<AesExchange> {
     const res = await fetch('/api/internal/auth/aes/exchange', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },

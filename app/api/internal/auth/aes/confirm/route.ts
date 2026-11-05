@@ -3,11 +3,12 @@ import { cookies } from 'next/headers';
 import { API_V1_BASE_URL } from '@/infrastructure/config/env';
 import { edgeClientHeaders } from '../../_lib/edgeClient';
 import { refreshCookieOptions } from '../../_lib/refreshCookie';
+import { AES_DEVICE_COOKIE, aesDeviceCookieOptions } from '../_lib/deviceCookie';
 
 /**
  * Step 2 of an AES sign-in: the emailed link opens the session. Trades it server-to-server for
  * tokens and sets the refresh cookie on this host (the backend can't — it lives on a different
- * host). Mirrors oauth/exchange for Google.
+ * host), and remembers this browser so the next AES sign-in here needs no email.
  */
 export async function POST(request: Request) {
   try {
@@ -31,11 +32,10 @@ export async function POST(request: Request) {
       return NextResponse.json(data, { status: response.status });
     }
 
-    const { accessToken, refreshToken, user } = data;
-    if (refreshToken) {
-      const cookieStore = await cookies();
-      cookieStore.set('refreshToken', refreshToken, refreshCookieOptions(request));
-    }
+    const { accessToken, refreshToken, user } = data.session ?? {};
+    const cookieStore = await cookies();
+    if (refreshToken) cookieStore.set('refreshToken', refreshToken, refreshCookieOptions(request));
+    if (data.deviceToken) cookieStore.set(AES_DEVICE_COOKIE, data.deviceToken, aesDeviceCookieOptions(request));
 
     return NextResponse.json({ accessToken, user });
   } catch (error) {

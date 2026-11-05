@@ -1,5 +1,6 @@
 'use client';
 
+import { postLoginPath } from '@/domains/identity/postLoginPath';
 import { useEffect, useRef, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -21,7 +22,7 @@ const Spinner = () => (
 function AesCompleteHandler() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const setStatus = useAuthStore((s) => s.setStatus);
+  const { setAuth, setStatus } = useAuthStore();
   const handled = useRef(false);
   const [challenge, setChallenge] = useState<AesChallenge | null>(null);
 
@@ -37,12 +38,23 @@ function AesCompleteHandler() {
     }
 
     AesService.exchange(ticket)
-      .then(setChallenge)
+      .then((result) => {
+        if (result.signedIn) {
+          // A browser already remembered for this account: no email needed.
+          setAuth(result.user as Parameters<typeof setAuth>[0], result.accessToken);
+          const destination = postLoginPath(result.user as Parameters<typeof postLoginPath>[0]);
+          // Document navigation for "/": see the same note in oauth2/redirect.
+          if (destination === "/") window.location.replace("/");
+          else router.replace(destination);
+        } else {
+          setChallenge(result.challenge);
+        }
+      })
       .catch((err: Error) => {
         setStatus('unauthenticated');
         router.replace(`/sign?aes_error=${encodeURIComponent(err.message || 'AES sign-in failed')}`);
       });
-  }, [searchParams, router, setStatus]);
+  }, [searchParams, router, setAuth, setStatus]);
 
   if (!challenge) return <Spinner />;
 
