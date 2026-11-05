@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { AuditLog, AuditService } from '@/infrastructure/monitoring/audit.service';
 import { Session, SessionService } from '@/infrastructure/auth/session.service';
 import { PasswordService, type PasswordChallenge, type PasswordStatus } from '@/infrastructure/auth/password.service';
-import { AesService, type AesLinkStatus } from '@/infrastructure/auth/aes.service';
+import { AesService, type AesChallenge, type AesLinkStatus } from '@/infrastructure/auth/aes.service';
 import { AesLogo } from '@/domains/identity';
 import {
   Shield,
@@ -454,10 +454,11 @@ function AesCard() {
   const [status, setStatus] = useState<AesLinkStatus | null>(null);
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [challenge, setChallenge] = useState<AesChallenge | null>(null);
 
   useEffect(() => {
     // Back from the AES popup: the callback sends the browser here with either a ticket to
-    // redeem (link the profile to this account) or the reason AES was refused.
+    // redeem (which emails a link) or the reason AES was refused.
     const params = new URLSearchParams(window.location.search);
     const ticket = params.get('aes_ticket');
     const aesError = params.get('aes_error');
@@ -469,17 +470,31 @@ function AesCard() {
     }
     if (aesError) toast.error(aesError);
 
+    // Back from the email: its button opens this page with the link's secret in the fragment.
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const challengeId = hash.get('c');
+    const token = hash.get('t');
+    if (challengeId && token) window.history.replaceState(null, '', window.location.pathname);
+
     AesService.loadScript().catch(() => undefined);
 
     (async () => {
-      try {
-        if (ticket) {
-          setStatus(await AesService.link(ticket));
+      if (challengeId && token) {
+        try {
+          setStatus(await AesService.confirmLink(challengeId, token));
           toast.success('AES account linked');
           return;
+        } catch (err) {
+          toast.error(errorMessage(err, 'That link did not work. Start again.'));
         }
-      } catch (err) {
-        toast.error(errorMessage(err, 'Could not link the AES account'));
+      } else if (ticket) {
+        // Redeeming the ticket emails a link to the AES profile's AJCE address; the account is
+        // linked when that link is opened.
+        try {
+          setChallenge(await AesService.link(ticket));
+        } catch (err) {
+          toast.error(errorMessage(err, 'Could not link the AES account'));
+        }
       }
       try {
         setStatus(await AesService.status());
@@ -550,6 +565,23 @@ function AesCard() {
             className="shrink-0 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 text-xs font-semibold transition-colors disabled:opacity-50"
           >
             {busy ? 'Unlinking…' : 'Unlink'}
+          </button>
+        </div>
+      ) : challenge ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-sky-50 px-4 py-3 text-xs text-sky-900 dark:bg-sky-950/30 dark:text-sky-200">
+          <span className="flex items-start gap-2">
+            <MailCheck size={16} className="mt-0.5 shrink-0" />
+            <span>
+              We emailed a link to <b>{challenge.sentTo}</b>, the address on your AES profile. Tap the button in it to
+              finish linking.
+            </span>
+          </span>
+          <button
+            type="button"
+            onClick={() => setChallenge(null)}
+            className="font-bold underline"
+          >
+            Dismiss
           </button>
         </div>
       ) : (

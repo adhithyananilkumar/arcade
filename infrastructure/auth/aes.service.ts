@@ -14,6 +14,14 @@ export interface AesLinkStatus {
   canUnlink: boolean;
 }
 
+/** A link has been emailed; opening it finishes the sign-in or link. */
+export interface AesChallenge {
+  challengeId: string;
+  expiresAt: string;
+  /** Masked, e.g. "ad•••@bca.ajce.in" — where the email went. */
+  sentTo: string;
+}
+
 export type AesIntent = 'login' | 'link';
 
 const JQUERY_URL = 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js';
@@ -78,8 +86,11 @@ export class AesService {
     document.cookie = `${INTENT_COOKIE}=${intent}; path=/; max-age=600; SameSite=Lax`;
   }
 
-  /** Finishes an AES sign-in: trades the ticket for a session (cookie set by the BFF route). */
-  static async exchange(ticket: string) {
+  /**
+   * Step 1 of an AES sign-in: redeems the ticket and has a link emailed. An AES result alone never
+   * signs anyone in — the link, sent to a mailbox only the real person can read, does.
+   */
+  static async exchange(ticket: string): Promise<AesChallenge> {
     const res = await fetch('/api/internal/auth/aes/exchange', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -90,12 +101,30 @@ export class AesService {
     return res.json();
   }
 
+  /** Step 2: opening the emailed link signs in (cookie set by the BFF route). */
+  static async confirm(challengeId: string, token: string) {
+    const res = await fetch('/api/internal/auth/aes/confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'include',
+      body: JSON.stringify({ challengeId, token }),
+    });
+    if (!res.ok) throw await readError(res, 'That link did not work');
+    return res.json();
+  }
+
   static async status(): Promise<AesLinkStatus> {
     return api.get<AesLinkStatus>('/api/v1/users/me/aes');
   }
 
-  static async link(ticket: string): Promise<AesLinkStatus> {
-    return api.post<AesLinkStatus>('/api/v1/users/me/aes/link', { ticket });
+  /** Step 1 of linking: redeems the ticket and emails a link to the AES profile's AJCE address. */
+  static async link(ticket: string): Promise<AesChallenge> {
+    return api.post<AesChallenge>('/api/v1/users/me/aes/link', { ticket });
+  }
+
+  /** Step 2 of linking. */
+  static async confirmLink(challengeId: string, token: string): Promise<AesLinkStatus> {
+    return api.post<AesLinkStatus>('/api/v1/users/me/aes/link/confirm', { challengeId, token });
   }
 
   static async unlink(): Promise<void> {
