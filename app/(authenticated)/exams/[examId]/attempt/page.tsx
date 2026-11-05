@@ -469,7 +469,8 @@ export default function ExamEnginePage() {
     };
 
     // A second screen: Chromium's Window Management API says so directly; elsewhere it is unknowable.
-    const screenInfo = window.screen as Screen & { isExtended?: boolean };
+    // Screen is an event target in browsers, but not in every lib.dom version this builds against.
+    const screenInfo = window.screen as Screen & EventTarget & { isExtended?: boolean };
     const checkDisplays = () => {
       if (screenInfo.isExtended) report('MULTIPLE_DISPLAYS', 'More than one display is connected');
     };
