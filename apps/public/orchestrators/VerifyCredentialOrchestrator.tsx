@@ -8,22 +8,25 @@
  * "Is this credential real?" — for an employer holding only an ID from a CV. The answer is the
  * server's; this page asks and shows it. Works for private credentials too: the holder chose to
  * share the ID, so it verifies without exposing their public page.
+ *
+ * Styled like the Reach Us page: open editorial layout, serif headline, underline field, no cards.
  * ------------------------------------------------------------------
  */
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Award, ClipboardList, Loader2, Search, ShieldAlert, ShieldCheck, ShieldQuestion, ShieldX, TimerOff } from "lucide-react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { ArrowUpRight, Loader2 } from "lucide-react";
+import "@/apps/public/landing.css";
 import { CredentialBadge, credentialsApi, type BadgeLevel, type CredentialKind, type VerifyResult } from "@/domains/credentials";
-import { cn } from "@/shared/utils/utils";
 
 const LOOK = {
-  VALID: { icon: ShieldCheck, title: "Valid", cls: "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-200" },
-  REVOKED: { icon: ShieldAlert, title: "Revoked", cls: "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200" },
-  EXPIRED: { icon: TimerOff, title: "Expired", cls: "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200" },
-  TAMPERED: { icon: ShieldX, title: "Failed verification", cls: "border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-200" },
-  NOT_FOUND: { icon: ShieldQuestion, title: "No such credential", cls: "border-slate-200 bg-slate-50 text-slate-800" },
+  VALID: { title: "Valid", tag: "Verified", text: "text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-500" },
+  REVOKED: { title: "Revoked", tag: "Revoked", text: "text-amber-700 dark:text-amber-300", dot: "bg-amber-500" },
+  EXPIRED: { title: "Expired", tag: "Expired", text: "text-amber-700 dark:text-amber-300", dot: "bg-amber-500" },
+  TAMPERED: { title: "Failed verification", tag: "Failed", text: "text-rose-700 dark:text-rose-300", dot: "bg-rose-500" },
+  NOT_FOUND: { title: "No such credential", tag: "Not found", text: "text-slate-600 dark:text-slate-300", dot: "bg-slate-400" },
 } as const;
 
 const NOUN: Record<CredentialKind, string> = {
@@ -31,6 +34,21 @@ const NOUN: Record<CredentialKind, string> = {
   CERTIFICATE: "certificate",
   GRADE_CARD: "grade card",
 };
+
+const fadeInUp: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: (i: number = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, delay: i * 0.07, ease: [0.215, 0.61, 0.355, 1] },
+  }),
+};
+
+const ASSURANCES = [
+  { title: "Genuine", text: "Issued by Arcade and recorded at the time of award." },
+  { title: "Current", text: "Shows if a credential has expired or been revoked." },
+  { title: "Unaltered", text: "Details are checked against the sealed original." },
+];
 
 function heading(result: VerifyResult) {
   const look = LOOK[result.status];
@@ -41,6 +59,7 @@ function heading(result: VerifyResult) {
 export function VerifyCredentialOrchestrator() {
   const params = useSearchParams();
   const router = useRouter();
+  const reduce = useReducedMotion();
   const fromUrl = params.get("id") ?? "";
   const [input, setInput] = useState(fromUrl);
   // Each lookup is its own request object, so checking the same ID twice still runs. The lookup
@@ -86,170 +105,231 @@ export function VerifyCredentialOrchestrator() {
   };
 
   const look = result ? LOOK[result.status] : null;
-  const Icon = look?.icon ?? ShieldCheck;
+  const anim = (i: number) => ({
+    initial: reduce ? undefined : ("hidden" as const),
+    animate: "visible" as const,
+    custom: i,
+    variants: fadeInUp,
+  });
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-3xl px-4 pb-24 pt-28 sm:px-6 sm:pt-32">
-      <header className="text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-surface px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
-          <ShieldCheck size={13} className="text-[#2962D6] dark:text-[#7eb5ff]" />
-          Credential verification
-        </span>
-        <h1 className="mt-4 text-3xl font-bold tracking-tight text-ink sm:text-[2.5rem] sm:leading-tight">
-          Verify an Arcade credential
-        </h1>
-        <p className="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-slate-500">
-          Confirm that a badge, certificate or grade card is genuine, current and unaltered. No sign-in needed.
-        </p>
-      </header>
+    <div className="landing-root relative flex min-h-[calc(100vh-140px)] flex-col justify-center px-6 pb-16 pt-28 font-sans text-ink selection:bg-blue-100 selection:text-blue-900 sm:px-12 sm:pt-32 lg:px-20 lg:pb-20 lg:pt-36 dark:selection:bg-blue-500/15 dark:selection:text-blue-200">
+      <div
+        className="pointer-events-none fixed inset-0 -z-10"
+        style={{
+          backgroundColor: "var(--theme-surface, #FAFBFD)",
+          backgroundImage: `var(--theme-wash,
+            radial-gradient(ellipse 70% 40% at 50% 0%, rgba(224, 236, 255, 0.25) 0%, transparent 70%),
+            radial-gradient(ellipse 60% 40% at 10% 25%, rgba(233, 225, 254, 0.20) 0%, transparent 65%),
+            radial-gradient(ellipse 60% 40% at 90% 75%, rgba(253, 232, 240, 0.18) 0%, transparent 65%),
+            linear-gradient(180deg, #FAFBFD 0%, #F6F8FD 35%, #F8F6FD 70%, #FAF9FB 100%)
+          )`,
+        }}
+      />
 
-      <form
-        onSubmit={submit}
-        className="mt-9 rounded-2xl border border-slate-200/80 bg-surface p-4 shadow-[0_8px_30px_rgba(20,20,43,0.05)] sm:p-5"
-      >
-        <label htmlFor="credential-id" className="text-[12px] font-bold uppercase tracking-[0.12em] text-slate-500">
-          Credential ID
-        </label>
-        <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-          <div className="relative flex-1">
-            <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              id="credential-id"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="CERT-XXXX-XXXX-XXXX"
-              autoComplete="off"
-              spellCheck={false}
-              className="w-full rounded-xl border border-slate-200 bg-surface py-3 pl-11 pr-4 font-mono text-sm font-bold uppercase tracking-wider text-slate-900 placeholder:font-sans placeholder:normal-case placeholder:tracking-normal placeholder:font-medium placeholder:text-slate-400 focus:border-[#2962D6] focus:outline-none focus:ring-2 focus:ring-[#2962D6]/20"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={checking || !input.trim()}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-ink px-6 py-3 text-sm font-semibold text-on-ink transition hover:bg-ink-hover disabled:opacity-50"
-          >
-            {checking ? <Loader2 size={16} className="animate-spin" /> : "Verify"}
-          </button>
-        </div>
-        <p className="mt-3 text-xs leading-relaxed text-slate-500">
-          Found printed on the document or beside the QR code. Badges start with{" "}
-          <span className="font-mono font-bold">ARC-</span>, certificates with{" "}
-          <span className="font-mono font-bold">CERT-</span> and grade cards with{" "}
-          <span className="font-mono font-bold">GC-</span>.
-        </p>
-      </form>
-
-      {error && <p className="mt-6 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">{error}</p>}
-
-      {result && look && (
-        <section className={cn("mt-6 rounded-2xl border p-5 sm:p-6", look.cls)} aria-live="polite">
-          <div className="flex items-start gap-3">
-            <Icon size={24} className="mt-0.5 shrink-0" />
-            <div>
-              <p className="text-lg font-black">{heading(result)}</p>
-              <p className="mt-1 text-sm opacity-80">{result.message}</p>
-            </div>
-          </div>
-
-          {!result.badgeClass && result.name && result.kind && (
-            <div className="mt-5 flex items-start gap-4 rounded-2xl bg-surface/80 p-4">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-ink text-on-ink">
-                {result.kind === "GRADE_CARD" ? <ClipboardList size={20} /> : <Award size={20} />}
-              </span>
-              <dl className="grid min-w-0 flex-1 gap-x-4 gap-y-1.5 text-sm text-slate-800 sm:grid-cols-2">
-                <Row label={result.subtitle ?? "Credential"}>{result.name}</Row>
-                <Row label="Holder">{result.recipientName}</Row>
-                <Row label="Issuer">{result.issuerName}</Row>
-                {result.issuedAt && <Row label="Issued">{new Date(result.issuedAt).toLocaleDateString()}</Row>}
-                {result.expiresAt && <Row label="Valid until">{new Date(result.expiresAt).toLocaleDateString()}</Row>}
-                {result.details
-                  .filter((d) => d.label !== "Type")
-                  .map((d) => (
-                    <Row key={d.label} label={d.label}>
-                      {d.value}
-                    </Row>
-                  ))}
-                <Row label="ID">
-                  <span className="font-mono">{result.credentialCode}</span>
-                </Row>
-              </dl>
-            </div>
-          )}
-
-          {result.badgeClass && result.name && (
-            <div className="mt-5 flex items-center gap-4 rounded-2xl bg-surface/80 p-4">
-              <div className="w-20 shrink-0">
-                <CredentialBadge
-                  family={result.badgeClass.family.key}
-                  level={result.badgeClass.tier.level as BadgeLevel}
-                  title={result.name}
-                  stars={honourStars(result)}
-                  revoked={result.status !== "VALID"}
-                />
-              </div>
-              <dl className="grid min-w-0 flex-1 gap-x-4 gap-y-1.5 text-sm text-slate-800 sm:grid-cols-2">
-                <Row label="Credential">{result.name}</Row>
-                <Row label="Level">{result.badgeClass.tier.label}</Row>
-                <Row label="Holder">{result.recipientName}</Row>
-                <Row label="Issuer">{result.issuerName}</Row>
-                {result.issuedAt && <Row label="Issued">{new Date(result.issuedAt).toLocaleDateString()}</Row>}
-                <Row label="ID">
-                  <span className="font-mono">{result.credentialCode}</span>
-                </Row>
-              </dl>
-            </div>
-          )}
-
-          {result.publicPage && result.publicPath && result.status !== "NOT_FOUND" && (
-            <Link
-              href={result.publicPath}
-              className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[#2962D6] hover:underline dark:text-[#7eb5ff]"
+      <main className="mx-auto my-auto w-[84vw] max-w-[1400px]">
+        <div className="flex flex-col gap-12 lg:gap-16">
+          {/* What this page is */}
+          <div className="mx-auto max-w-3xl text-center">
+            <motion.p
+              {...anim(0)}
+              className="mb-5 font-mono text-xs font-semibold uppercase tracking-wider text-slate-500"
             >
-              Open the full credential page <ArrowRight size={14} />
-            </Link>
-          )}
-          {!result.publicPage && result.status !== "NOT_FOUND" && result.kind !== "GRADE_CARD" && (
-            <p className="mt-4 text-xs opacity-70">The holder keeps this credential off their public profile.</p>
-          )}
-          {result.kind === "GRADE_CARD" && result.status !== "NOT_FOUND" && (
-            <p className="mt-4 text-xs opacity-70">
-              Grade cards have no public page. Compare these facts with the document you were given; any difference means
-              the document was altered.
-            </p>
-          )}
-        </section>
-      )}
-      {!result && !error && !checking && (
-        <ul className="mt-8 grid gap-3 sm:grid-cols-3">
-          {[
-            { icon: ShieldCheck, title: "Genuine", text: "Issued by Arcade and recorded at the time of award." },
-            { icon: TimerOff, title: "Current", text: "Shows if a credential has expired or been revoked." },
-            { icon: ShieldX, title: "Unaltered", text: "Details are checked against the sealed original." },
-          ].map(({ icon: I, title, text }) => (
-            <li key={title} className="rounded-2xl border border-slate-200/80 bg-surface p-4">
-              <I size={18} className="text-[#2962D6] dark:text-[#7eb5ff]" />
-              <p className="mt-2 text-sm font-bold text-ink">{title}</p>
-              <p className="mt-0.5 text-xs leading-relaxed text-slate-500">{text}</p>
-            </li>
-          ))}
-        </ul>
-      )}
+              Credential verification
+            </motion.p>
+            <motion.h1
+              {...anim(1)}
+              className="mb-8 font-serif text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl lg:text-[64px]"
+            >
+              <span className="font-bold">Is it</span>{" "}
+              <span className="font-normal italic text-[#205ca8] dark:text-[#7cbaff]">real?</span>
+            </motion.h1>
+            <motion.p
+              {...anim(2)}
+              className="mx-auto max-w-xl text-base font-normal leading-relaxed text-slate-600 sm:text-lg"
+            >
+              Check that a badge, certificate or grade card is genuine, current and unaltered. No sign-in needed.
+            </motion.p>
 
-      <p className="mt-8 text-center text-xs text-slate-500">
-        Want to know how credentials are awarded?{" "}
-        <Link href="/credentials/standards" className="font-semibold text-[#2962D6] hover:underline dark:text-[#7eb5ff]">
-          Read the credential standards
-        </Link>
-      </p>
-    </main>
+          </div>
+
+          {/* The lookup and its answer */}
+          <div className="mx-auto w-full max-w-2xl">
+            <motion.div {...anim(2)} className="space-y-10">
+              <div className="border-t border-slate-200/70 pt-8">
+                <p className="text-sm leading-relaxed text-slate-500">
+                  Printed on the document or beside the QR code. Badges start with{" "}
+                  <span className="font-mono font-bold">ARC-</span>, certificates with{" "}
+                  <span className="font-mono font-bold">CERT-</span>, grade cards with{" "}
+                  <span className="font-mono font-bold">GC-</span>.
+                </p>
+              </div>
+
+              <form onSubmit={submit} className="space-y-7">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="credential-id"
+                    className="block font-mono text-xs font-semibold uppercase tracking-wider text-slate-500"
+                  >
+                    Credential ID <span className="text-blue-600 dark:text-blue-400">*</span>
+                  </label>
+                  <input
+                    id="credential-id"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="CERT-XXXX-XXXX-XXXX"
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="w-full border-b border-slate-300 bg-transparent py-3 font-mono text-lg font-bold uppercase tracking-wider text-slate-900 transition-colors placeholder:font-sans placeholder:text-base placeholder:font-normal placeholder:normal-case placeholder:tracking-normal placeholder:text-slate-400 focus:border-[#205ca8] focus:outline-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={checking || !input.trim()}
+                  className="group relative inline-flex items-center gap-3 rounded-full bg-ink px-8 py-3.5 text-sm font-medium tracking-wide text-on-ink shadow-sm transition-all duration-300 ease-out hover:bg-[#205ca8] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {checking ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Checking...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Verify</span>
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 transition-colors group-hover:bg-white/20">
+                        <ArrowUpRight className="h-3.5 w-3.5 text-white transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                      </span>
+                    </>
+                  )}
+                </button>
+              </form>
+
+              {error && (
+                <p className="border-l-2 border-rose-400 pl-4 text-sm font-medium text-rose-700 dark:text-rose-300">
+                  {error}
+                </p>
+              )}
+
+              {result && look && (
+                <motion.section
+                  initial={reduce ? undefined : { opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  aria-live="polite"
+                  className="space-y-6 border-t border-slate-200/70 pt-8"
+                >
+                  <div className="space-y-2">
+                    <p className={`inline-flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wider ${look.text}`}>
+                      <span className={`h-2 w-2 rounded-full ${look.dot}`} />
+                      {look.tag}
+                    </p>
+                    <h3 className="font-serif text-3xl font-normal italic leading-snug text-ink sm:text-4xl">
+                      {heading(result)}.
+                    </h3>
+                    <p className="max-w-lg text-sm leading-relaxed text-slate-600">{result.message}</p>
+                  </div>
+
+                  {!result.badgeClass && result.name && result.kind && (
+                    <dl>
+                      <Row label={result.subtitle ?? "Credential"}>{result.name}</Row>
+                      <Row label="Holder">{result.recipientName}</Row>
+                      <Row label="Issuer">{result.issuerName}</Row>
+                      {result.issuedAt && <Row label="Issued">{new Date(result.issuedAt).toLocaleDateString()}</Row>}
+                      {result.expiresAt && <Row label="Valid until">{new Date(result.expiresAt).toLocaleDateString()}</Row>}
+                      {result.details
+                        .filter((d) => d.label !== "Type")
+                        .map((d) => (
+                          <Row key={d.label} label={d.label}>
+                            {d.value}
+                          </Row>
+                        ))}
+                      <Row label="ID">
+                        <span className="font-mono">{result.credentialCode}</span>
+                      </Row>
+                    </dl>
+                  )}
+
+                  {result.badgeClass && result.name && (
+                    <div className="flex items-start gap-6">
+                      <div className="w-24 shrink-0">
+                        <CredentialBadge
+                          family={result.badgeClass.family.key}
+                          level={result.badgeClass.tier.level as BadgeLevel}
+                          title={result.name}
+                          stars={honourStars(result)}
+                          revoked={result.status !== "VALID"}
+                        />
+                      </div>
+                      <dl className="min-w-0 flex-1">
+                        <Row label="Credential">{result.name}</Row>
+                        <Row label="Level">{result.badgeClass.tier.label}</Row>
+                        <Row label="Holder">{result.recipientName}</Row>
+                        <Row label="Issuer">{result.issuerName}</Row>
+                        {result.issuedAt && <Row label="Issued">{new Date(result.issuedAt).toLocaleDateString()}</Row>}
+                        <Row label="ID">
+                          <span className="font-mono">{result.credentialCode}</span>
+                        </Row>
+                      </dl>
+                    </div>
+                  )}
+
+                  {result.publicPage && result.publicPath && result.status !== "NOT_FOUND" && (
+                    <Link
+                      href={result.publicPath}
+                      className="group inline-flex items-center gap-2 font-bricolage text-base font-bold text-ink transition-colors hover:text-[#205ca8] dark:hover:text-[#7cbaff]"
+                    >
+                      Open the full credential page
+                      <ArrowUpRight className="h-4 w-4 text-slate-400 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#205ca8] dark:group-hover:text-[#7cbaff]" />
+                    </Link>
+                  )}
+                  {!result.publicPage && result.status !== "NOT_FOUND" && result.kind !== "GRADE_CARD" && (
+                    <p className="text-xs text-slate-500">The holder keeps this credential off their public profile.</p>
+                  )}
+                  {result.kind === "GRADE_CARD" && result.status !== "NOT_FOUND" && (
+                    <p className="text-xs leading-relaxed text-slate-500">
+                      Grade cards have no public page. Compare these facts with the document you were given; any
+                      difference means the document was altered.
+                    </p>
+                  )}
+                </motion.section>
+              )}
+
+              <ul className="border-t border-slate-200/70">
+                {ASSURANCES.map((a, i) => (
+                  <li key={a.title} className="grid grid-cols-[auto_1fr] gap-x-6 border-b border-slate-200/70 py-5 sm:gap-x-10">
+                    <span className="pt-1 font-mono text-xs font-semibold tracking-wider text-slate-400">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <p className="font-bricolage text-base font-bold leading-snug text-ink sm:text-lg">{a.title}</p>
+                      <p className="mt-1 text-sm leading-relaxed text-slate-500">{a.text}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              <p className="text-center text-xs text-slate-500 sm:text-sm">
+                Want to know how credentials are awarded?{" "}
+                <Link
+                  href="/credentials/standards"
+                  className="font-semibold text-[#205ca8] hover:underline dark:text-[#7cbaff]"
+                >
+                  Read the credential standards
+                </Link>
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="min-w-0">
-      <dt className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">{label}</dt>
-      <dd className="break-words font-bold">{children}</dd>
+    <div className="flex flex-col gap-1 border-b border-slate-200/70 py-3 sm:flex-row sm:items-baseline sm:gap-6">
+      <dt className="shrink-0 font-mono text-xs font-semibold uppercase tracking-wider text-slate-500 sm:w-32">{label}</dt>
+      <dd className="min-w-0 break-words text-base font-bold text-ink">{children}</dd>
     </div>
   );
 }

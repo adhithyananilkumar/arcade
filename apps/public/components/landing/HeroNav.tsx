@@ -7,8 +7,8 @@ import "@/apps/public/landing.css";
 
 const navLinks = [
   { label: "Explore", href: "/explore" },
-  { label: "About", href: "/about" },
-  { label: "For creators", href: "/creators" },
+  { label: "Contributors", href: "/contributors" },
+  { label: "Contact", href: "/reach-us" },
 ];
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';

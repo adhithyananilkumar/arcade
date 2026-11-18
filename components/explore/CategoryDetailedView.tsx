@@ -121,21 +121,38 @@ const RocketJourney: React.FC<{ activeColor: string; progress: MotionValue<numbe
       const p = (val - 0.02) / 0.13;
       return 0 * (1 - p) + targetAngle * p;
     }
-    return targetAngle;
+    // A faint sway while climbing, settling to upright as it comes in to land.
+    const sway = Math.sin(val * 22) * 2.2 * Math.min(1, (val - 0.15) * 4) * (1 - val);
+    const settle = val > 0.8 ? (val - 0.8) / 0.2 : 0;
+    return (targetAngle + sway) * (1 - settle * 0.6);
   });
 
   const flameOpacity = useTransform(t, [0, 0.03, 0.85, 0.92], [0, 1, 1, 0]);
   const flameLen = useTransform(t, (v) => (v <= 0 || v >= 0.88) ? 0 : 0.7 + Math.abs(Math.sin(v * 60)) * 0.45);
   const rocketFade = useTransform(t, [0.84, 0.91], [1, 0]);
-  const astronautX = useTransform(t, (v) => v < 0.85 ? P3.x - 4 : P3.x - 4 + Math.min((v - 0.85) / 0.08, 1) * 60);
-  const astronautOp = useTransform(t, [0.82, 0.88], [0, 1]);
-  const flagScale = useTransform(t, [0.90, 1.0], [0, 1]);
+  // The astronaut steps out and walks to the flag spot with an eased stride and a small bob.
+  const walk = (v: number) => {
+    const p = Math.min(Math.max((v - 0.86) / 0.09, 0), 1);
+    return p * p * (3 - 2 * p);
+  };
+  const astronautX = useTransform(t, (v) => P3.x - 4 + walk(v) * 58);
+  const astronautY = useTransform(t, (v) => {
+    const w = walk(v);
+    const moving = w > 0 && w < 1 ? 1 : 0;
+    return P3.y - 4 - moving * Math.abs(Math.sin(v * 420)) * 2.2;
+  });
+  const astronautOp = useTransform(t, [0.84, 0.88], [0, 1]);
+  // The flag is raised up its pole rather than popping in.
+  const flagRise = useTransform(t, [0.95, 1.0], [0, 1]);
+  const flagPoleScale = useTransform(flagRise, [0, 0.35], [0, 1], { clamp: true });
+  const flagFabricY = useTransform(flagRise, [0.2, 1], [58, 0], { clamp: true });
+  const flagFabricOp = useTransform(flagRise, [0.2, 0.4], [0, 1]);
   const trailOp = useTransform(t, [0, 0.06, 0.82, 1], [0, 0.5, 0.5, 0]);
   const dustOp = useTransform(t, [0.82, 0.88, 0.95, 1], [0, 0.85, 0.3, 0]);
   const dustSc = useTransform(t, [0.82, 1], [0.2, 2.8]);
-  const moonScale = useTransform(t, [0, 0.6, 1], [0.8, 1.2, 2.8]);
+  const moonScale = useTransform(t, [0, 0.6, 1], [0.8, 1.2, 3.0]);
   const moonX = useTransform(t, [0, 0.6, 1], [380, 350, P3.x + 30]);
-  const moonY = useTransform(t, [0, 0.6, 1], [80, 200, P3.y + 148]);
+  const moonY = useTransform(t, [0, 0.6, 1], [80, 200, P3.y + 159]);
 
   return (
     <div style={{ position: "relative", width: "100%", height: "460px", display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -186,6 +203,9 @@ const RocketJourney: React.FC<{ activeColor: string; progress: MotionValue<numbe
             100%{ d: path("M 0,0 Q 20,-2 40,0 L 40,22 Q 20,24 0,22 Z"); }
           }
           .fw { animation: flagWave 2.8s ease-in-out infinite; }
+          @keyframes astroIdle { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-0.6px);} }
+          .astro-idle { animation: astroIdle 3.2s ease-in-out infinite; }
+          @media (prefers-reduced-motion: reduce) { .fw, .astro-idle, .st-a, .st-b, .st-c, .st-d { animation: none; } }
           .st-a { animation: twinkle 2.3s ease-in-out infinite; }
           .st-b { animation: twinkle 3.2s ease-in-out infinite 0.7s; }
           .st-c { animation: twinkle 2.8s ease-in-out infinite 1.2s; }
@@ -248,28 +268,31 @@ const RocketJourney: React.FC<{ activeColor: string; progress: MotionValue<numbe
         </motion.g>
 
         {/* ── Flag ── */}
-        <motion.g style={{ x: P3.x + 82, y: P3.y, scale: flagScale, originX: "0px", originY: "0px" }}>
-          <g transform="scale(1.8)">
-            {/* Pole — metallic cylinder suggestion */}
-            <line x1="0.5" y1="2" x2="0.5" y2="-58" stroke="#8898a8" strokeWidth="2.2" strokeLinecap="round" />
-            <line x1="0" y1="2" x2="0" y2="-58" stroke="#c0d0dc" strokeWidth="1.0" strokeLinecap="round" opacity="0.5" />
-            {/* Flag fabric with wave */}
-            <g transform="translate(0,-58)">
-              <path className="fw" d="M 0,0 Q 20,-2 40,0 L 40,22 Q 20,24 0,22 Z" fill={activeColor} />
-              {/* Lighting fold */}
-              <path d="M 0,0 L 16,0 L 16,22 L 0,22 Z" fill="white" opacity="0.12" />
-              {/* Right shadow */}
-              <path d="M 32,0 L 40,0 L 40,22 L 32,22 Z" fill="var(--theme-ink, #000)" opacity="0.15" />
-              <text x="3" y="14" fill="white" fontSize="8.5" fontWeight="900"
-                fontFamily="'Inter','Outfit',sans-serif" letterSpacing="-0.5">arcade.</text>
-            </g>
+        <motion.g style={{ x: P3.x + 84, y: P3.y + 5 }}>
+          <g transform="scale(2)">
+            {/* Pole — grows out of the ground */}
+            <motion.g style={{ scaleY: flagPoleScale, originX: 0.5, originY: 1 }}>
+              <line x1="0.5" y1="2" x2="0.5" y2="-58" stroke="#8898a8" strokeWidth="2.2" strokeLinecap="round" />
+              <line x1="0" y1="2" x2="0" y2="-58" stroke="#c0d0dc" strokeWidth="1.0" strokeLinecap="round" opacity="0.5" />
+            </motion.g>
+            {/* Flag fabric is hoisted up the pole, then waves */}
+            <motion.g style={{ y: flagFabricY, opacity: flagFabricOp }}>
+              <g transform="translate(0,-58)">
+                <path className="fw" d="M 0,0 Q 20,-2 40,0 L 40,22 Q 20,24 0,22 Z" fill={activeColor} />
+                <path d="M 0,0 L 16,0 L 16,22 L 0,22 Z" fill="white" opacity="0.12" />
+                <path d="M 32,0 L 40,0 L 40,22 L 32,22 Z" fill="var(--theme-ink, #000)" opacity="0.15" />
+                <text x="3" y="14" fill="white" fontSize="8.5" fontWeight="900"
+                  fontFamily="'Inter','Outfit',sans-serif" letterSpacing="-0.5">arcade.</text>
+              </g>
+            </motion.g>
           </g>
         </motion.g>
 
         {/* ── Astronaut — cute cartoon style ── */}
-        <motion.g style={{ x: astronautX, y: P3.y + 26, opacity: astronautOp }}>
-          <g transform="scale(1.8) translate(0, -9)">
+        <motion.g style={{ x: astronautX, y: astronautY, opacity: astronautOp }}>
+          <g transform="scale(2) translate(0, -9)">
             <ellipse cx="0" cy="16" rx="8" ry="2" fill="#94a3b8" opacity="0.3" />
+            <g className="astro-idle">
 
             {/* Legs */}
             <path d="M -3,6 L -5,14 Q -6,16 -3,15 Z" fill="#ffffff" />
@@ -291,6 +314,7 @@ const RocketJourney: React.FC<{ activeColor: string; progress: MotionValue<numbe
             <circle cx="0" cy="-8" r="5" fill={activeColor} />
             {/* Visor shine */}
             <ellipse cx="-2" cy="-10" rx="2" ry="1" fill="#ffffff" opacity="0.4" transform="rotate(-30,-2,-10)" />
+            </g>
           </g>
         </motion.g>
 
@@ -1469,8 +1493,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
     const obj = { val: 0 };
     const tween = gsap.to(obj, {
       val: 1,
-      duration: 3.5,
-      ease: "power2.inOut",
+      duration: 5.5,
+      ease: "sine.inOut",
       onUpdate: () => {
         progressValue.set(obj.val);
       },
@@ -2153,16 +2177,16 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
             <div
               style={{
                 position: "absolute",
-                right: "-20px",
-                top: "-20px",
-                width: "280px",
-                height: "280px",
+                right: "40px",
+                top: "0px",
+                width: "400px",
+                height: "400px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 zIndex: 0,
-                opacity: 0.7,
-                transform: "scale(0.65)",
+                opacity: 0.9,
+                transform: "scale(0.8)",
                 pointerEvents: "none",
               }}
             >

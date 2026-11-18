@@ -4,10 +4,15 @@
   --fe-text-soft: var(--theme-n-600, #4b5563);
   --fe-border: color-mix(in oklab, var(--theme-ink, #111827) 8%, transparent);
   --fe-accent: #2563eb;
+  --fe-overlap: 90px;
 
   background: transparent !important;
   background-color: transparent !important;
-  padding: 64px 0 160px 0;
+  /* The footer overlaps the bottom of the page above it and fades in over that overlap, so the
+     page's own background (whatever tints it has) is what blends into the footer. */
+  margin-top: calc(-1 * var(--fe-overlap));
+  padding: calc(72px + var(--fe-overlap)) 0 150px 0;
+  pointer-events: none;
   color: var(--fe-text);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   position: relative;
@@ -15,18 +20,21 @@
   overflow: hidden;
 }
 
-/* Page-neutral backdrop: the footer is transparent, so on pages whose content sits on the
-   surface colour it would otherwise expose the tinted body as a hard blue block. This layer
-   starts at the surface colour, so the footer's top edge is seamless with the page above it. */
+/* Fade-in backdrop: transparent where the footer overlaps the page above (so the page's own
+   background shows through), reaching the surface colour at the end of the overlap. */
 .arc-footer::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: var(--theme-surface, #ffffff);
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0.6) 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.85) 60%, rgba(0, 0, 0, 0.6) 100%);
+  background: linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 25px,
+    color-mix(in oklab, var(--theme-surface, #ffffff) 50%, transparent) 60px,
+    var(--theme-surface, #ffffff) var(--fe-overlap)
+  );
 }
 
 /* Blueprint background grid overlay */
@@ -45,6 +53,7 @@
 }
 
 .arc-footer__container {
+  pointer-events: auto;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 40px;
@@ -57,7 +66,7 @@
   width: auto;
   display: block;
   margin-bottom: 20px;
-  margin-left: -12px;
+  margin-left: 0;
   align-self: flex-start;
 }
 
@@ -189,11 +198,35 @@
   transform: translateY(0);
 }
 
+/* Institution marks — sit at the end of the bottom bar */
+.arc-footer__partners {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.arc-footer__partner {
+  display: block;
+  width: auto;
+  object-fit: contain;
+}
+
+.arc-footer__partner--round { height: 48px; }
+.arc-footer__partner--aes { height: 45px; }
+
+.arc-footer__bottom-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 /* Bottom Monolith Bar */
 .arc-footer__monolith-bottom {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 24px;
+  padding-top: 8px;
   font-size: 13.5px;
   color: var(--fe-text-soft);
   position: relative;
@@ -229,36 +262,87 @@
 /* Responsive configurations */
 @media (max-width: 1024px) {
   .arc-footer__monolith-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 32px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px 24px;
+  }
+  .arc-footer__mono-newsletter {
+    grid-column: 1 / -1;
   }
 }
 
 @media (max-width: 768px) {
-  .arc-footer__monolith-grid {
-    grid-template-columns: 1fr;
-    gap: 32px;
+  .arc-footer {
+    padding: calc(48px + var(--fe-overlap)) 0 120px 0;
   }
-
+  .arc-footer__container {
+    padding: 0 24px;
+  }
+  .arc-footer__logo {
+    height: 40px;
+    margin-bottom: 16px;
+  }
+  .arc-footer__mono-form,
+  .arc-footer__news-desc {
+    max-width: none;
+  }
+  /* Link columns sit side by side instead of one long stack */
+  .arc-footer__monolith-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px 20px;
+    margin-bottom: 32px;
+  }
+  .arc-footer__mono-col:last-child {
+    grid-column: 1 / -1;
+  }
+  /* Resources has only a couple of links: lay them out in a row instead of a lonely column */
+  .arc-footer__mono-col:last-child .arc-footer__mono-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px 24px;
+  }
+  .arc-footer__mono-list {
+    gap: 10px;
+  }
+  .arc-footer__mono-list a {
+    padding: 2px 0;
+  }
   .arc-footer__monolith-bottom {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
+    align-items: center;
+    text-align: center;
+    gap: 22px;
+  }
+  .arc-footer__bottom-text {
+    align-items: center;
+  }
+  .arc-footer__partners {
+    justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
+  .arc-footer__container {
+    padding: 0 20px;
+  }
   .arc-footer__input-group {
     flex-direction: column;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 8px;
     gap: 8px;
   }
+  .arc-footer__mono-input {
+    padding: 8px 6px;
+  }
   .arc-footer__mono-btn {
     width: 100%;
-    border-radius: 8px;
-    padding: 10px;
+    border-radius: 10px;
+    padding: 11px;
   }
+  .arc-footer__partners {
+    gap: 16px;
+  }
+  .arc-footer__partner--round { height: 42px; }
+  .arc-footer__partner--aes { height: 40px; }
 }
 
 /* Full Wide Architectural Building Sketch Watermark - Bigger Top View */
@@ -273,17 +357,17 @@
   user-select: none;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.65;
+  opacity: 0.4;
   mix-blend-mode: multiply;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.9) 15%, #000 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.9) 15%, #000 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 25%, #000 80%);
+  mask-image: linear-gradient(to bottom, transparent 0%, transparent 25%, #000 80%);
 }
 
 .arc-footer__sketch-img {
   width: 100%;
   height: auto;
   min-width: 100%;
-  max-height: 320px;
+  max-height: 240px;
   object-fit: cover;
   object-position: top center;
   mix-blend-mode: multiply;

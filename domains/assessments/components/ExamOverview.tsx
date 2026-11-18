@@ -14,7 +14,7 @@
  * ------------------------------------------------------------------
  */
 
-import React, { useRef, useState, type ReactNode } from 'react';
+import React, { useState, type ReactNode } from 'react';
 import {
   AlertCircle,
   Award,
@@ -47,6 +47,7 @@ import { toast } from 'sonner';
 import { ContentArt } from '@/shared/design-system/art';
 import { TiptapContentView } from '@/domains/learning';
 import { ReportModal } from '@/shared/design-system/ui/ReportModal';
+import { EnrollTabs } from '@/shared/design-system/ui/enroll';
 import { api } from '@/infrastructure/http/api';
 import type { AssessmentLandingResponse } from '../types';
 import { HonorCodeModal } from './HonorCodeModal';
@@ -57,32 +58,6 @@ const dancingScript = Dancing_Script({
   subsets: ['latin'],
   weight: ['600', '700'],
 });
-
-function TabButton({
-  active,
-  onClick,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
-      onClick={onClick}
-      className={`relative px-5 sm:px-6 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm font-black tracking-tight transition-all duration-200 select-none cursor-pointer min-w-[96px] text-center ${
-        active
-          ? 'bg-ink text-on-ink border border-ink shadow-2xs'
-          : 'bg-surface/70 text-subtle border border-line hover:bg-surface hover:text-ink'
-      }`}
-    >
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 export interface ExamOverviewProps {
   landing: AssessmentLandingResponse;
@@ -129,15 +104,6 @@ export function ExamOverview({
   if (landing.prerequisite && !landing.prerequisite.met) tabs.push('Prerequisites');
 
   const [activeTab, setActiveTab] = useState<string>('Overview');
-  const tabsTopRef = useRef<HTMLDivElement>(null);
-  const selectTab = (t: string) => {
-    setActiveTab(t);
-    // Bring the tab bar to the top of the viewport (below the floating navbar) so the new tab's
-    // content is in view instead of staying wherever the page was scrolled.
-    requestAnimationFrame(() =>
-      tabsTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
-    );
-  };
 
   const meta = planTypeMeta(landing.planType);
   const kind = planKindLabel(landing.planType, landing.graded);
@@ -426,21 +392,8 @@ export function ExamOverview({
         )}
 
         {/* ================= TABS SECTION ================= */}
-        <div ref={tabsTopRef} className="pt-4 sm:pt-6 scroll-mt-24">
-          {/* Tabs Header - matching My Learning / Course / Event style */}
-          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5">
-            {tabs.map((t) => (
-              <TabButton
-                key={t}
-                active={activeTab === t}
-                onClick={() => selectTab(t)}
-                label={t}
-              />
-            ))}
-          </div>
-
-          {/* Tab Content Display */}
-          <div key={activeTab} className="mt-8 arcade-fade min-h-[70vh]">
+        <EnrollTabs tabs={tabs} active={activeTab} onChange={setActiveTab}>
+          <>
             {/* OVERVIEW TAB */}
             {activeTab === 'Overview' && (
               <div className="space-y-8">
@@ -624,8 +577,8 @@ export function ExamOverview({
                 <PrerequisiteNotice prerequisite={landing.prerequisite} onOpen={onOpenPrerequisite} />
               </div>
             )}
-          </div>
-        </div>
+          </>
+        </EnrollTabs>
       </div>
 
       {/* Honor Code Modal */}

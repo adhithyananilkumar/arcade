@@ -180,7 +180,7 @@ export const APP_THEME_ROUTE = new RegExp(APP_THEME_ROUTE_SOURCE);
  * group — landing, About, Creators…), sign-in flows, onboarding.
  */
 export const OUTSIDE_APP_SHELL_SOURCE =
-  '^/$|^/(?:about|contributors|creators|founders|privacy|terms|reach-us|sign|forgot-password|reset-password|verify-email|oauth2|onboarding|dev-editor-perf)(?:/|$)';
+  '^/$|^/(?:about|contributors|creators|privacy|terms|reach-us|sign|forgot-password|reset-password|verify-email|oauth2|onboarding|dev-editor-perf)(?:/|$)';
 export const OUTSIDE_APP_SHELL_ROUTE = new RegExp(OUTSIDE_APP_SHELL_SOURCE);
 
 export const AUTH_STORAGE_KEY = 'arcade-auth-storage';

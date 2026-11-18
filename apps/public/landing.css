@@ -270,11 +270,13 @@
 
 /* ─── Headline ──────────────────────────────────────────────────────── */
 .l-headline {
-  font-family: "Satoshi", "Satoshi-Medium", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* Plus Jakarta Sans ships real 600/700 weights (see @import above); Satoshi is
+     only loaded at 500 locally, so bolding it was synthesized and looked smeared. */
+  font-family: "Plus Jakarta Sans", "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: clamp(5.6rem, 12vw, 10.5rem);
-  font-weight: 600;
-  line-height: 1.02;
-  letter-spacing: -0.025em;
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -0.045em;
   color: var(--l-ink);
   margin: 0;
   padding: 0;
@@ -402,13 +404,13 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid color-mix(in oklab, var(--theme-ink, #14171f) 8%, transparent);
-  border-radius: 28px;
-  box-shadow: 0 12px 32px -8px rgba(20, 23, 31, 0.08);
+  border-radius: 32px;
+  box-shadow: 0 24px 60px -24px rgba(20, 23, 31, 0.18), 0 2px 6px rgba(20, 23, 31, 0.04);
   display: grid;
   grid-template-columns: 1.15fr 1.2fr;
   gap: 2.5rem;
   align-items: center;
-  padding: 2.25rem 2.75rem;
+  padding: 3rem 3.25rem;
   width: 100%;
   max-width: 1200px;
   position: relative;
@@ -418,11 +420,15 @@
 .l-showcase__card::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(90deg, #2451D6 0%, #10b981 100%);
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(520px 260px at 0% 0%, rgba(36, 81, 214, 0.10), transparent 70%),
+    radial-gradient(480px 240px at 100% 100%, rgba(16, 185, 129, 0.10), transparent 70%);
+}
+
+.l-showcase__card > * {
+  position: relative;
 }
 
 .l-showcase__info {
@@ -430,29 +436,24 @@
   flex-direction: column;
 }
 
-.l-showcase__badge {
-  display: inline-flex;
+.l-showcase__eyebrow {
+  display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(36, 81, 214, 0.07);
-  border: 1px solid rgba(36, 81, 214, 0.15);
+  margin: 0 0 1.1rem 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: #2451D6;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 99px;
-  margin-bottom: 1rem;
-  width: fit-content;
-  letter-spacing: 0.01em;
 }
 
-.l-showcase__badge-icon {
-  width: 16px;
-  height: 16px;
-  background: #2451D6;
-  border-radius: 4px;
-  position: relative;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+.l-showcase__eyebrow::before {
+  content: '';
+  width: 14px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #2451D6, #10b981);
 }
 
 .l-showcase__title {
@@ -462,7 +463,7 @@
   line-height: 1.15;
   letter-spacing: -0.02em;
   color: var(--theme-ink, #12141C);
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 1.5rem 0;
 }
 
 .l-showcase__subtitle-wrap {
@@ -480,16 +481,20 @@
 }
 
 .l-showcase__subtitle-text {
-  font-size: 14.5px;
-  font-weight: 600;
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--theme-ink, #12141C);
 }
 
 .l-showcase__description {
   color: var(--theme-n-600, #4b5563);
   font-size: 15.5px;
-  line-height: 1.6;
-  margin: 0 0 1.5rem 0;
+  line-height: 1.7;
+  margin: 0 0 1.75rem 0;
 }
 
 .l-showcase__btn {
@@ -497,7 +502,7 @@
   color: var(--theme-on-ink, #ffffff);
   border: none;
   border-radius: 99px;
-  padding: 12px 24px;
+  padding: 13px 26px;
   font-size: 14.5px;
   font-weight: 600;
   text-decoration: none;

@@ -17,7 +17,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Award,
-  BadgeCheck,
   BookOpen,
   Briefcase,
   Check,
@@ -30,7 +29,6 @@ import {
   PlayCircle,
   Radio,
   Sparkles,
-  Star,
   Users,
   Share2,
 } from 'lucide-react';
@@ -55,6 +53,7 @@ import {
 import { toast } from 'sonner';
 import { getContentCertification, type ContentCertificationView } from '@/domains/assessments';
 import { ChannelAvatar } from '@/shared/design-system/ui/cards';
+import { EnrollTabs, InstructorCard, ReviewsSection } from '@/shared/design-system/ui/enroll';
 import { parsePreviewMedia } from '@/apps/learner/components/content-overview/sections/OverviewVideoPlayer';
 import { getAvatarUrl } from '@/shared/utils/avatar';
 import BadgeGraphic, { getBadgeForCourse } from '@/components/ui/BadgeGraphic';
@@ -68,13 +67,6 @@ const dancingScript = Dancing_Script({
 });
 
 const COURSE_TITLE = 'Design interfaces people actually love';
-
-const REVIEW_ACCENTS = [
-  '#3b82f6',
-  '#f59e0b',
-  '#8b5cf6',
-  '#10b981',
-];
 
 function formatCollaboratorRole(role?: string): string {
   if (!role) return 'Instructor';
@@ -476,39 +468,6 @@ function CourseHero({
 /*  Tabs Section (Overview, Curriculum, Instructor, Reviews, etc.)    */
 /* ------------------------------------------------------------------ */
 
-function TabButton({
-  active,
-  onClick,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
-      onClick={onClick}
-      className={`relative px-4 sm:px-5 py-2 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-[13px] sm:text-sm font-semibold transition-colors duration-200 select-none cursor-pointer text-center ${
-        active
-          ? 'text-on-ink'
-          : 'text-subtle hover:text-ink'
-      }`}
-    >
-      {active && (
-        <motion.div
-          layoutId="activePublicCourseTabPill"
-          className="absolute inset-0 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md bg-ink shadow-xs"
-          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-        />
-      )}
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
-
 interface CourseTabsProps {
   courseTitle?: string;
   course?: CourseResponse | null;
@@ -556,15 +515,6 @@ function CourseTabs({ courseTitle, course, courseId, collaborators }: CourseTabs
   }, [hasBadge, hasCertification]);
 
   const [tab, setTab] = useState<string>('Overview');
-  const tabsTopRef = useRef<HTMLDivElement>(null);
-  const selectTab = (t: string) => {
-    setTab(t);
-    // Bring the tab bar to the top of the viewport (below the floating navbar) so the new tab's
-    // content is in view instead of staying wherever the page was scrolled.
-    requestAnimationFrame(() =>
-      tabsTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
-    );
-  };
 
   useEffect(() => {
     if (!tabs.includes(tab)) {
@@ -618,27 +568,12 @@ function CourseTabs({ courseTitle, course, courseId, collaborators }: CourseTabs
     return list;
   }, [collaborators, course]);
 
-  const orgName = course?.channel && !course.channel.isPersonal ? course.channel.name : null;
   const titleFromQuery = searchParams?.get('title');
   const badgeInfo = getBadgeForCourse(courseTitle || titleFromQuery || params?.id);
 
   return (
-    <div ref={tabsTopRef} className="pt-4 sm:pt-6 scroll-mt-24">
-      {/* Segmented tab control enclosed in outer container matching tab asymmetric shape */}
-      <div className="flex justify-center">
-        <div className="inline-flex flex-wrap items-center justify-center gap-1.5 rounded-tl-[1.85rem] rounded-br-[1.85rem] rounded-tr-xl rounded-bl-xl border border-line bg-surface/80 backdrop-blur-md p-1.5 shadow-sm">
-          {tabs.map((t) => (
-            <TabButton
-              key={t}
-              active={tab === t}
-              onClick={() => selectTab(t)}
-              label={t}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div key={tab} className="mt-8 arcade-fade min-h-[70vh]">
+    <EnrollTabs tabs={tabs} active={tab} onChange={setTab}>
+      <>
         {/* ================= OVERVIEW TAB ================= */}
         {tab === 'Overview' && (
           <div className="space-y-10">
@@ -777,81 +712,39 @@ function CourseTabs({ courseTitle, course, courseId, collaborators }: CourseTabs
         {/* ================= INSTRUCTOR TAB ================= */}
         {tab === 'Instructor' && (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold tracking-tight text-slate-900">
-              {instructors.length > 1 ? 'Instructor Profiles' : 'Instructor Profile'}
-            </h2>
-
             {instructors.map((person) => (
-              <div key={person.id} className="pt-2">
-                <div className="flex flex-col sm:flex-row items-start gap-6">
-                  <Avatar
-                    name={person.name || 'Unknown'}
-                    imageUrl={person.avatarUrl}
-                    size={64}
-                  />
-
-                  <div className="flex-1 min-w-0">
-                    {orgName && (
-                      <div className="mb-2 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                        <BadgeCheck size={14} className="text-blue-600 dark:text-blue-400" /> {orgName}
-                      </div>
-                    )}
-
-                    <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 font-sans">
-                      {person.name || 'Unknown'}
-                    </h3>
-
-                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-1">
-                      {formatCollaboratorRole(person.role)}
-                      {person.username && ` • @${person.username}`}
-                    </p>
-
-                    {person.bio ? (
-                      <p className="mt-4 text-sm sm:text-base leading-relaxed text-slate-600 font-normal">
-                        {person.bio}
-                      </p>
-                    ) : (
-                      <p className="mt-4 text-sm italic text-slate-400">
-                        {`${person.name || 'This instructor'} hasn't added a bio yet.`}
-                      </p>
-                    )}
-
-                    {person.specialities && person.specialities.length > 0 && (
-                      <div className="mt-5 flex flex-wrap gap-2">
-                        {person.specialities.map((e) => (
-                          <span
-                            key={e}
-                            className="rounded-full border border-slate-200/80 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-800/60 px-3 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300"
-                          >
-                            {e}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-6 flex items-center gap-8 pt-2">
-                  <div>
-                    <p className="text-2xl font-bold tracking-tight text-slate-900 font-sans">
-                      {person.courseCount ?? 1}
-                    </p>
-                    <p className="text-xs font-medium text-slate-400 mt-0.5">
-                      {person.courseCount === 1 ? 'Course' : 'Courses'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold tracking-tight text-slate-900 font-sans">
-                      {person.experienceYears != null ? `${person.experienceYears} yrs` : '—'}
-                    </p>
-                    <p className="text-xs font-medium text-slate-400 mt-0.5">Experience</p>
-                  </div>
-                </div>
-              </div>
+              <InstructorCard
+                key={person.id}
+                name={person.name || 'Unknown'}
+                avatarUrl={person.avatarUrl}
+                role={formatCollaboratorRole(person.role)}
+                username={person.username}
+                channel={
+                  course?.channel && !course.channel.isPersonal && course.channel.name
+                    ? { name: course.channel.name, iconUrl: course.channel.iconUrl }
+                    : null
+                }
+                bio={person.bio}
+                tags={person.specialities ?? []}
+                stats={[
+                  {
+                    icon: BookOpen,
+                    value: person.courseCount ?? 1,
+                    label: person.courseCount === 1 || person.courseCount == null ? 'Course' : 'Courses',
+                    color: 'var(--color-blue)',
+                  },
+                  {
+                    icon: GraduationCap,
+                    value: person.experienceYears != null ? `${person.experienceYears} yrs` : '—',
+                    label: 'Experience',
+                    color: 'var(--color-purple)',
+                  },
+                ]}
+              />
             ))}
 
             {instructors.length === 0 && (
-              <div className="py-8 text-center text-sm text-slate-400">
+              <div className="py-8 text-center text-sm text-subtle">
                 Instructor bio will be updated soon.
               </div>
             )}
@@ -937,8 +830,8 @@ function CourseTabs({ courseTitle, course, courseId, collaborators }: CourseTabs
             )}
           </div>
         )}
-      </div>
-    </div>
+      </>
+    </EnrollTabs>
   );
 }
 
@@ -974,104 +867,19 @@ function ReviewsBlock({ courseId }: { courseId?: string }) {
 
   if (reviews === null) return null;
 
-  if (reviews.length === 0) {
-    return (
-      <div className="py-12 text-center">
-        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-500 mb-3">
-          <Star size={18} fill="currentColor" />
-        </div>
-        <h3 className="text-base font-bold text-slate-900 font-sans">
-          No reviews yet
-        </h3>
-        <p className="mt-1 text-sm text-slate-500">
-          Be the first learner to review this course after finishing.
-        </p>
-      </div>
-    );
-  }
-
-  const average = stats?.averageRating ?? 0;
-  const totalRatings = stats?.reviewsCount ?? reviews.length;
-
   return (
-    <div className="space-y-6">
-      {/* Header with Average Rating */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-2">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900 font-sans">
-            Learner Feedback
-          </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Based on {totalRatings.toLocaleString()} verified ratings
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <span className="text-3xl font-extrabold text-slate-900 font-sans">
-            {average.toFixed(1)}
-          </span>
-          <div>
-            <div className="flex gap-0.5">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Star
-                  key={i}
-                  size={15}
-                  className={i <= Math.round(average) ? 'text-amber-500' : 'text-slate-200'}
-                  fill={i <= Math.round(average) ? '#f59e0b' : 'none'}
-                  strokeWidth={i <= Math.round(average) ? 0 : 1.5}
-                />
-              ))}
-            </div>
-            <p className="text-[11px] text-slate-400 mt-0.5">Course Rating</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Review Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {reviews.map((r, i) => {
-          const accent = REVIEW_ACCENTS[i % REVIEW_ACCENTS.length];
-          return (
-            <div
-              key={r.id}
-              className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 p-5 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm flex flex-col justify-between"
-            >
-              {r.reviewText ? (
-                <p className="text-sm leading-relaxed text-slate-700 font-normal">
-                  &ldquo;{r.reviewText}&rdquo;
-                </p>
-              ) : (
-                <p className="text-sm italic text-slate-400">
-                  Rated this course {r.rating} out of 5 stars.
-                </p>
-              )}
-
-              <div className="mt-4 flex items-center justify-between pt-2">
-                <div className="flex items-center gap-2.5">
-                  <Avatar name={r.userName} imageUrl={r.userAvatarUrl} accent={accent} size={28} />
-                  <div>
-                    <p className="text-xs font-bold text-slate-900 leading-tight">
-                      {r.userName}
-                    </p>
-                    <div className="flex gap-0.5 mt-0.5">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          size={10}
-                          className={star <= r.rating ? 'text-amber-500' : 'text-slate-200'}
-                          fill={star <= r.rating ? '#f59e0b' : 'none'}
-                          strokeWidth={star <= r.rating ? 0 : 1.5}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+    <ReviewsSection
+      noun="course"
+      average={stats?.averageRating ?? 0}
+      ratingCount={stats?.reviewsCount ?? reviews.length}
+      reviews={reviews.map((r) => ({
+        id: r.id,
+        rating: r.rating,
+        text: r.reviewText,
+        name: r.userName,
+        avatarUrl: r.userAvatarUrl,
+      }))}
+    />
   );
 }
 

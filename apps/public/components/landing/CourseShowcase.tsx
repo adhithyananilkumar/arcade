@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Play, VolumeX, Settings, Share2, Clock } from "lucide-react";
+import { Play, VolumeX, Settings, Share2, Clock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export default function CourseShowcase() {
@@ -16,25 +16,20 @@ export default function CourseShowcase() {
       <div className="l-showcase__card">
         {/* Left Column: Info & Details */}
         <div className="l-showcase__info">
-          <div className="l-showcase__badge">
-            <div className="l-showcase__badge-icon" />
-            <span>The Arcade Story</span>
-          </div>
+          <p className="l-showcase__eyebrow">The Arcade Story</p>
 
           <h2 className="l-showcase__title">
             Built to empower, educate, and connect the next generation of builders.
           </h2>
 
-          <div className="l-showcase__subtitle-wrap">
-            <span className="l-showcase__subtitle-text">Our Mission</span>
-          </div>
-
           <p className="l-showcase__description">
+            <span className="l-showcase__subtitle-text">Our Mission</span>
             Arcade started with a simple idea: to build a unified online learning and collaboration ecosystem for Amal Jyothi College. We bring together high-quality courses, interactive workshops, student-led forums, and certified learning achievements under one roof. Designed by builders, for builders — Arcade is here to help you level up your skills, discover new opportunities, and connect with technical communities.
           </p>
 
           <Link href="/explore" className="l-showcase__btn">
             Explore Courses
+            <ArrowRight size={16} aria-hidden="true" />
           </Link>
         </div>
 

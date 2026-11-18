@@ -196,7 +196,7 @@ export default function JourneyTimeline() {
   };
 
   return (
-    <section className="jt-section">
+    <section className={`jt-section${isResetting ? " jt-section--resetting" : ""}`}>
       <div className="jt-container">
 
         {/* Header - Subtitle / Description completely removed */}
@@ -267,7 +267,7 @@ export default function JourneyTimeline() {
                           transition: { duration: 0.3, ease: [0.25, 1, 0.5, 1] }
                         }
                   }
-                  transition={{ duration: 1.5, ease: [0.25, 1, 0.3, 1] }} // Synchronized with track horizontal slide duration (1.5 seconds)
+                  transition={isResetting ? { duration: 0 } : { duration: 1.5, ease: [0.25, 1, 0.3, 1] }} // Synchronized with track horizontal slide duration (1.5 seconds)
                   onClick={() => !isActive && goTo(idx, true)}
                 >
                   

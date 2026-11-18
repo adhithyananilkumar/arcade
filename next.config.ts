@@ -61,11 +61,6 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: '/for-creators',
-        destination: '/creators',
-        permanent: true,
-      },
-      {
         source: '/dashboard',
         destination: '/',
         permanent: true,

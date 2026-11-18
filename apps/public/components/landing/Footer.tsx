@@ -65,13 +65,9 @@ export default function Footer() {
             <h4 className="arc-footer__mono-title">DIRECTORY</h4>
             <ul className="arc-footer__mono-list">
               <li><Link href="/explore">Explore Courses</Link></li>
-              <li><Link href="/about">About Arcade</Link></li>
-              <li><Link href="/founders">Meet Founders</Link></li>
               <li><Link href="/contributors">Contributors</Link></li>
               <li><Link href="/forum">Community Forum</Link></li>
               <li><Link href="/reach-us">Reach Us</Link></li>
-              <li><Link href="/docs">Developer API</Link></li>
-              <li><Link href="/status">Network Status</Link></li>
             </ul>
           </div>
 
@@ -81,24 +77,27 @@ export default function Footer() {
             <ul className="arc-footer__mono-list">
               <li><a href="https://www.amaljyothi.ac.in" target="_blank" rel="noreferrer">College Portal ↗</a></li>
               <li><Link href="/credentials/verify">Verify a Credential</Link></li>
-              <li><Link href="/credentials/standards">Credential Standards</Link></li>
-              <li><Link href="/placement">Placements 2026</Link></li>
-              <li><Link href="/library">Digital Library</Link></li>
-              <li><Link href="/calendar">Academic Calendar</Link></li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Minimalist Bar */}
         <div className="arc-footer__monolith-bottom">
-          <div className="arc-footer__mono-copy">
-            © 2026 <strong>Arcade AJCE</strong>. All rights reserved.
+          <div className="arc-footer__bottom-text">
+            <div className="arc-footer__mono-copy">
+              © 2026 <strong>Arcade AJCE</strong>. All rights reserved.
+            </div>
+            <div className="arc-footer__mono-legal">
+              <Link href="/privacy">Privacy Policy</Link>
+              <span className="arc-footer__dot">•</span>
+              <Link href="/terms">Terms of Service</Link>
+            </div>
           </div>
-          
-          <div className="arc-footer__mono-legal">
-            <Link href="/privacy">Privacy Policy</Link>
-            <span className="arc-footer__dot">•</span>
-            <Link href="/terms">Terms of Service</Link>
+
+          <div className="arc-footer__partners" aria-label="Amal Jyothi College of Engineering, Department of Computer Applications and AES">
+            <img src="/email/ajce.png" alt="Amal Jyothi College of Engineering" className="arc-footer__partner arc-footer__partner--round" width={48} height={48} />
+            <img src="/email/dept-ca.png" alt="Department of Computer Applications" className="arc-footer__partner arc-footer__partner--round" width={48} height={48} />
+            <img src="/email/aes4.png" alt="Amal Jyothi AES 4" className="arc-footer__partner arc-footer__partner--aes" width={106} height={45} />
           </div>
         </div>
       </div>

@@ -14,7 +14,7 @@
  * ------------------------------------------------------------------
  */
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Calendar,
   Clock,
@@ -37,7 +37,7 @@ import {
 import { Dancing_Script } from 'next/font/google';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { ChannelAvatar } from '@/shared/design-system/ui/cards';
+import { EnrollTabs, InstructorCard } from '@/shared/design-system/ui/enroll';
 import { ContentArt } from '@/shared/design-system/art';
 import { getAvatarUrl } from '@/shared/utils/avatar';
 import { getEventBySlugOrId } from '@/domains/events';
@@ -173,32 +173,6 @@ function Avatar({
   );
 }
 
-function TabButton({
-  active,
-  onClick,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
-      onClick={onClick}
-      className={`relative px-5 sm:px-6 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm font-black tracking-tight transition-all duration-200 select-none cursor-pointer min-w-[96px] text-center ${
-        active
-          ? 'bg-ink text-on-ink border border-ink shadow-2xs'
-          : 'bg-surface/70 text-subtle border border-line hover:bg-surface hover:text-ink'
-      }`}
-    >
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
-
 export interface EventPublicViewProps {
   slug?: string;
 }
@@ -214,15 +188,6 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
   const [collaborators, setCollaborators] = useState<EventCollaborator[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<string>('Overview');
-  const tabsTopRef = useRef<HTMLDivElement>(null);
-  const selectTab = (t: string) => {
-    setTab(t);
-    // Bring the tab bar to the top of the viewport (below the floating navbar) so the new tab's
-    // content is in view instead of staying wherever the page was scrolled.
-    requestAnimationFrame(() =>
-      tabsTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
-    );
-  };
   const [certification, setCertification] = useState<ContentCertificationView | null>(null);
 
   const { data: myEnrollment } = useMyEnrollmentForResourceQuery(
@@ -580,21 +545,8 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
         </section>
 
         {/* ================= TABS SECTION ================= */}
-        <div ref={tabsTopRef} className="pt-4 sm:pt-6 scroll-mt-24">
-          {/* Tabs Header - matching My Learning / Course Public style */}
-          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5">
-            {tabs.map((t) => (
-              <TabButton
-                key={t}
-                active={tab === t}
-                onClick={() => selectTab(t)}
-                label={t}
-              />
-            ))}
-          </div>
-
-          {/* Tab Content Display */}
-          <div key={tab} className="mt-8 arcade-fade min-h-[70vh]">
+        <EnrollTabs tabs={tabs} active={tab} onChange={setTab}>
+          <>
             {/* OVERVIEW TAB */}
             {tab === 'Overview' && (
               <div className="space-y-8">
@@ -721,62 +673,26 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
             {/* SPEAKERS & HOSTS TAB */}
             {tab === 'Speakers & Hosts' && (
               <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-bold tracking-tight text-slate-900">
-                    Presented By
-                  </h2>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-1">
-                    Event hosts, organizers and guest speakers
-                  </p>
-                </div>
+                <InstructorCard
+                  name={hostName}
+                  avatarUrl={event.channelIconUrl}
+                  role="Organizer & Host"
+                  bio="Official host of this event. Check out their channel page to discover more upcoming events, courses, and educational series."
+                />
 
-                {/* Primary Organizer / Channel */}
-                <div className="rounded-tl-[2.25rem] rounded-br-[2.25rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 bg-surface/95 shadow-[0_8px_30px_rgba(20,20,43,0.05)] backdrop-blur-sm p-6 sm:p-8">
-                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-                    <ChannelAvatar name={hostName} iconUrl={event.channelIconUrl} size={64} />
-                    <div className="flex-1 text-center sm:text-left">
-                      <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                        Organizer & Host
-                      </span>
-                      <h3 className="text-lg sm:text-xl font-bold text-slate-900 mt-0.5">
-                        {hostName}
-                      </h3>
-                      <p className="mt-3 text-sm sm:text-base leading-relaxed text-slate-600 font-normal">
-                        Official host of this event. Check out their channel page to discover more
-                        upcoming events, courses, and educational series.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Collaborators / Speakers list */}
-                {collaborators.length > 0 && (
-                  <div className="space-y-4">
-                    <h3 className="text-base font-bold text-slate-900">
-                      Featured Speakers & Instructors
-                    </h3>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {collaborators.map((c) => (
-                        <div
-                          key={c.id}
-                          className="rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-lg rounded-bl-lg border border-slate-200/80 bg-surface/95 p-5 shadow-xs flex items-center gap-4"
-                        >
-                          <Avatar
-                            name={c.name}
-                            imageUrl={c.avatarUrl}
-                            size={44}
-                          />
-                          <div>
-                            <h4 className="text-sm font-bold text-slate-900">{c.name}</h4>
-                            <p className="text-xs text-slate-400 capitalize">
-                              {c.role?.replace(/_/g, ' ').toLowerCase() || 'Speaker'}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {collaborators.map((c) => (
+                  <InstructorCard
+                    key={c.id}
+                    name={c.name}
+                    avatarUrl={c.avatarUrl}
+                    role={
+                      c.role
+                        ? c.role.replace(/_/g, ' ').toLowerCase().replace(/^./, (ch) => ch.toUpperCase())
+                        : 'Speaker'
+                    }
+                    channel={event.channelName ? { name: event.channelName, iconUrl: event.channelIconUrl } : null}
+                  />
+                ))}
               </div>
             )}
 
@@ -900,8 +816,8 @@ export function EventPublicView({ slug: propSlug }: EventPublicViewProps) {
                 )}
               </div>
             )}
-          </div>
-        </div>
+          </>
+        </EnrollTabs>
       </div>
 
     </main>
